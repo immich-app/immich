@@ -339,3 +339,13 @@ export enum SettingInputFieldType {
   PASSWORD = 'password',
   COLOR = 'color',
 }
+
+export enum ViewMode {
+  LINK_SHARING = 'link-sharing',
+  SELECT_USERS = 'select-users',
+  SELECT_THUMBNAIL = 'select-thumbnail',
+  SELECT_ASSETS = 'select-assets',
+  VIEW_USERS = 'view-users',
+  VIEW = 'view',
+  OPTIONS = 'options',
+}

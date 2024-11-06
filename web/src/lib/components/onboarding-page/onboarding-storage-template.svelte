@@ -19,7 +19,8 @@
 
   let { onDone, onPrevious }: Props = $props();
 
-  let config: SystemConfigDto | null = $state(null);
+  let config: SystemConfigDto | undefined = $state();
+  let adminSettingsComponent = $state<ReturnType<typeof AdminSettings>>();
 
   onMount(async () => {
     config = await getConfig();
@@ -36,40 +37,42 @@
   </p>
 
   {#if config && $user}
-    <AdminSettings bind:config>
-      {#snippet children({ defaultConfig, savedConfig, handleSave, handleReset })}
-        <StorageTemplateSettings
-          minified
-          disabled={$featureFlags.configFile}
-          {config}
-          {defaultConfig}
-          {savedConfig}
-          onSave={(config) => handleSave(config)}
-          onReset={(options) => handleReset(options)}
-          duration={0}
-        >
-          <div class="flex pt-4">
-            <div class="w-full flex place-content-start">
-              <Button class="flex gap-2 place-content-center" on:click={() => onPrevious()}>
-                <Icon path={mdiArrowLeft} size="18" />
-                <p>{$t('theme')}</p>
-              </Button>
+    <AdminSettings bind:config bind:this={adminSettingsComponent}>
+      {#snippet children({ defaultConfig, savedConfig })}
+        {#if config}
+          <StorageTemplateSettings
+            minified
+            disabled={$featureFlags.configFile}
+            {config}
+            {defaultConfig}
+            {savedConfig}
+            onSave={(config) => adminSettingsComponent?.handleSave(config)}
+            onReset={(options) => adminSettingsComponent?.handleReset(options)}
+            duration={0}
+          >
+            <div class="flex pt-4">
+              <div class="w-full flex place-content-start">
+                <Button class="flex gap-2 place-content-center" onclick={() => onPrevious()}>
+                  <Icon path={mdiArrowLeft} size="18" />
+                  <p>{$t('theme')}</p>
+                </Button>
+              </div>
+              <div class="flex w-full place-content-end">
+                <Button
+                  onclick={() => {
+                    adminSettingsComponent?.handleSave({ storageTemplate: config?.storageTemplate });
+                    onDone();
+                  }}
+                >
+                  <span class="flex place-content-center place-items-center gap-2">
+                    {$t('done')}
+                    <Icon path={mdiCheck} size="18" />
+                  </span>
+                </Button>
+              </div>
             </div>
-            <div class="flex w-full place-content-end">
-              <Button
-                on:click={() => {
-                  handleSave({ storageTemplate: config?.storageTemplate });
-                  onDone();
-                }}
-              >
-                <span class="flex place-content-center place-items-center gap-2">
-                  {$t('done')}
-                  <Icon path={mdiCheck} size="18" />
-                </span>
-              </Button>
-            </div>
-          </div>
-        </StorageTemplateSettings>
+          </StorageTemplateSettings>
+        {/if}
       {/snippet}
     </AdminSettings>
   {/if}

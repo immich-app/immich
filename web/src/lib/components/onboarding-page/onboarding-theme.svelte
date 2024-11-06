@@ -49,7 +49,7 @@
 
   <div class="flex">
     <div class="w-full flex place-content-end">
-      <Button class="flex gap-2 place-content-center" on:click={() => onDone()}>
+      <Button class="flex gap-2 place-content-center" onclick={() => onDone()}>
         <p>{$t('privacy')}</p>
         <Icon path={mdiArrowRight} size="18" />
       </Button>

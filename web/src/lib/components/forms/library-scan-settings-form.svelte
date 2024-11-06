@@ -21,8 +21,8 @@
   let addExclusionPattern = $state(false);
   let editExclusionPattern: number | null = $state(null);
 
-  let exclusionPatternToAdd: string = $state();
-  let editedExclusionPattern: string = $state();
+  let exclusionPatternToAdd: string = $state('');
+  let editedExclusionPattern: string = $state('');
 
   let exclusionPatterns: string[] = $state([]);
 

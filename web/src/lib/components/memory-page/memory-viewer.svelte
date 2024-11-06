@@ -235,7 +235,7 @@
   <div class="sticky top-0 z-[90]">
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
       <CreateSharedLink />
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
 
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />

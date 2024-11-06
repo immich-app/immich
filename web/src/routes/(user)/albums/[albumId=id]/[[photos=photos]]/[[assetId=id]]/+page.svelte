@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
@@ -34,7 +32,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, ViewMode } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -100,23 +98,13 @@
 
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-  enum ViewMode {
-    LINK_SHARING = 'link-sharing',
-    SELECT_USERS = 'select-users',
-    SELECT_THUMBNAIL = 'select-thumbnail',
-    SELECT_ASSETS = 'select-assets',
-    VIEW_USERS = 'view-users',
-    VIEW = 'view',
-    OPTIONS = 'options',
-  }
-
   let backUrl: string = $state(AppRoute.ALBUMS);
   let viewMode = $state(ViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let isLiked: ActivityResponseDto | null = $state(null);
   let reactions: ActivityResponseDto[] = $state([]);
-  let globalWidth: number = $state();
+  let globalWidth: number = $state(0);
   let assetGridWidth: number = $derived(isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
@@ -403,25 +391,20 @@
     assetStore.destroy();
     timelineStore.destroy();
   });
-  let album;
-  run(() => {
-    album = data.album;
-  });
+
+  let album = $state(data.album);
   let albumId = $derived(album.id);
   let albumKey = $derived(`${albumId}_${albumOrder}`);
-  run(() => {
+
+  $effect(() => {
     if (!album.isActivityEnabled && $numberOfComments === 0) {
       isShowActivity = false;
     }
   });
-  let assetStore;
-  run(() => {
-    assetStore = new AssetStore({ albumId, order: albumOrder });
-  });
-  let timelineStore;
-  run(() => {
-    timelineStore = new AssetStore({ isArchived: false, withPartners: true }, albumId);
-  });
+
+  let assetStore = $derived(new AssetStore({ albumId, order: albumOrder }));
+  let timelineStore = $derived(new AssetStore({ isArchived: false, withPartners: true }, albumId));
+
   let isOwned = $derived($user.id == album.ownerId);
   let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
   let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
@@ -430,14 +413,13 @@
   let showActivityStatus = $derived(
     album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0),
   );
-  // svelte-ignore reactive_declaration_non_reactive_property
   let isEditor = $derived(
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
       album.ownerId === $user.id,
   );
-  // svelte-ignore reactive_declaration_non_reactive_property
+
   let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
-  run(() => {
+  $effect(() => {
     if (album.albumUsers.length > 0) {
       handlePromiseError(getFavorite());
       handlePromiseError(getNumberOfComments());
@@ -492,7 +474,7 @@
             {#if isEditor}
               <CircleIconButton
                 title={$t('add_photos')}
-                on:click={async () => {
+                onclick={async () => {
                   viewMode = ViewMode.SELECT_ASSETS;
                   oldAt = { at: $gridScrollTarget?.at };
                   await navigate(
@@ -507,14 +489,14 @@
             {#if isOwned}
               <CircleIconButton
                 title={$t('share')}
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                onclick={() => (viewMode = ViewMode.SELECT_USERS)}
                 icon={mdiShareVariantOutline}
               />
             {/if}
 
             {#if album.assetCount > 0}
-              <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
-              <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+              <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
+              <CircleIconButton title={$t('download')} onclick={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
 
               {#if isOwned}
                 <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
@@ -534,7 +516,7 @@
                 size="sm"
                 rounded="lg"
                 disabled={album.assetCount === 0}
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                onclick={() => (viewMode = ViewMode.SELECT_USERS)}
               >
                 {$t('share')}
               </Button>
@@ -563,7 +545,7 @@
             >
               {$t('select_from_computer')}
             </button>
-            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
+            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} onclick={handleAddAssets}
               >{$t('done')}</Button
             >
           {/snippet}
@@ -629,7 +611,7 @@
                         color="gray"
                         size="20"
                         icon={mdiLink}
-                        on:click={() => (viewMode = ViewMode.LINK_SHARING)}
+                        onclick={() => (viewMode = ViewMode.LINK_SHARING)}
                       />
                     {/if}
 
@@ -652,7 +634,7 @@
                         color="gray"
                         size="20"
                         icon={mdiDotsVertical}
-                        on:click={() => (viewMode = ViewMode.VIEW_USERS)}
+                        onclick={() => (viewMode = ViewMode.VIEW_USERS)}
                       />
                     {/if}
 
@@ -661,7 +643,7 @@
                         color="gray"
                         size="20"
                         icon={mdiPlus}
-                        on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                        onclick={() => (viewMode = ViewMode.SELECT_USERS)}
                         title={$t('add_more_users')}
                       />
                     {/if}
