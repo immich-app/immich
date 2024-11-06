@@ -8,12 +8,12 @@ The database is saved to your Immich upload folder in the `database-backup` subd
 
 :::info
 This script makes backups of your database along with your photo/video library. This is redundant with the [automatic database backup tool](https://immich.app/docs/administration/backup-and-restore#automatic-database-backups) built into Immich. Using this script to backup your database has two advantages over the built-in backup tool:
+
 - This script uses storage more efficiently by versioning your backups instead of making multiple copies.
 - The database backups are performed at the same time as the library backup, ensuring that the backups of your database and the library are always in sync.
 
 If you are using this script, it is therefore safe to turn off the built-in automatic database backups from your admin panel to save storage space.
 :::
-
 
 ### Prerequisites
 
