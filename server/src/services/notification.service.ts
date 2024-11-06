@@ -174,6 +174,49 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
+  async getTemplate(name: string) {
+    const { server, templates } = await this.getConfig({ withCache: false });
+    const { port } = this.configRepository.getEnv();
+
+    let templateResponse = '';
+    switch (name) {
+      case 'welcome':
+        const { html: _welcomeHtml } = await this.notificationRepository.renderEmail({
+          template: EmailTemplate.WELCOME,
+          data: {
+            baseUrl: getExternalDomain(server, port),
+            displayName: 'John Doe',
+            username: 'john@doe.com',
+            password: 'thisIsAPassword123',
+          },
+          customTemplate: templates.email.welcomeTemplate,
+        });
+
+        templateResponse = _welcomeHtml;
+        break;
+      case 'update-album':
+        const { html: _updateAlbumHtml } = await this.notificationRepository.renderEmail({
+          template: EmailTemplate.ALBUM_INVITE,
+          data: {
+            baseUrl: getExternalDomain(server, port),
+            albumId: '1',
+            albumName: 'Favorite Photos',
+            senderName: 'John Doe',
+            recipientName: 'Jane Doe',
+            cid: undefined,
+          },
+          customTemplate: templates.email.albumInviteTemplate,
+        });
+        templateResponse = _updateAlbumHtml;
+        break;
+      default:
+        templateResponse = '';
+        break;
+    }
+
+    return { name, html: templateResponse };
+  }
+
   @OnJob({ name: JobName.NOTIFY_SIGNUP, queue: QueueName.NOTIFICATION })
   async handleUserSignup({ id, tempPassword }: JobOf<JobName.NOTIFY_SIGNUP>) {
     const user = await this.userRepository.get(id, { withDeleted: false });
