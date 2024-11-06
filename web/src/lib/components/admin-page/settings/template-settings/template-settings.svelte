@@ -113,8 +113,14 @@
       </div>
 
       {#if _htmlPreview}
-        <FullScreenModal title="Preview" onClose={closePreviewModal}>
-          {@html _htmlPreview}
+        <FullScreenModal title={$t('admin.template_email_preview')} onClose={closePreviewModal} width="wide">
+          <div style="position:relative; width:100%; height:90vh; overflow: hidden">
+            <iframe
+              title={$t('admin.template_email_preview')}
+              srcdoc={_htmlPreview}
+              style="width: 100%; height: 100%; border: none; overflow:hidden; position: absolute; top: 0; left: 0;"
+            ></iframe>
+          </div>
         </FullScreenModal>
       {/if}
 

@@ -41,7 +41,7 @@
   {/if}
 
   <textarea
-    class="immich-form-input w-full pb-2"
+    class="immich-form-input w-full pb-2 h-52"
     aria-describedby={desc ? `${label}-desc` : undefined}
     aria-labelledby="{label}-label"
     id={label}
