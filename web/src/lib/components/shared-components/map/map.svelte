@@ -55,11 +55,11 @@
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
-    popup?: import('svelte').Snippet<[any]>;
+    popup?: import('svelte').Snippet<[unknown]>;
   }
 
   let {
-    mapMarkers,
+    mapMarkers = $bindable(),
     showSettingsModal = $bindable(undefined),
     zoom = undefined,
     center = $bindable(undefined),
@@ -73,10 +73,9 @@
     popup,
   }: Props = $props();
 
-  let map: maplibregl.Map = $state();
+  let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
 
-  // svelte-ignore reactive_declaration_non_reactive_property
   let style = $derived(
     (async () => {
       const config = await getServerConfig();
@@ -114,7 +113,9 @@
         marker.remove();
       }
 
-      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      if (map) {
+        marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+      }
     }
   }
 
@@ -147,8 +148,6 @@
   };
 </script>
 
-// !TODO: COMING TO MAP
-
 {#await style then style}
   <MapLibre
     {hash}
@@ -162,7 +161,7 @@
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
   >
-    {#snippet children({ map })}
+    {#snippet children({ map }: { map: maplibregl.Map })}
       <NavigationControl position="top-left" showCompass={!simplified} />
 
       {#if !simplified}
@@ -204,7 +203,7 @@
           asButton
           on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
         >
-          {#snippet children({ feature })}
+          {#snippet children({ feature }: { feature: maplibregl.Feature })}
             <div
               class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
             >
@@ -221,7 +220,7 @@
             }
           }}
         >
-          {#snippet children({ feature })}
+          {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
             {#if useLocationPin}
               <Icon
                 path={mdiMapMarker}
