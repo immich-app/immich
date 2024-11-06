@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { createBubbler, preventDefault } from 'svelte/legacy';
+
+  const bubble = createBubbler();
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplate } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
@@ -15,15 +18,19 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import SettingTextareaWysiwyg from '$lib/components/shared-components/settings/setting-textarea-wysiwyg.svelte';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto;
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
 
-  let _htmlPreview = '';
-  let loadingPreview = false;
+  let { savedConfig, defaultConfig, config, disabled = false, onReset, onSave }: Props = $props();
+
+  let _htmlPreview = $state('');
+  let loadingPreview = $state(false);
 
   const getTemplate = async (name: string, template: string) => {
     try {
@@ -68,7 +75,7 @@
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault class="mt-4">
+    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))} class="mt-4">
       <div class="flex flex-col gap-4">
         <SettingAccordion
           key="templates"
@@ -97,7 +104,7 @@
               <div class="flex justify-between">
                 <Button
                   size="sm"
-                  on:click={() => getTemplate(templateName, config.templates.email[templateKey])}
+                  onclick={() => getTemplate(templateName, config.templates.email[templateKey])}
                   title={$t('admin.template_email_preview')}
                 >
                   <Icon path={mdiEyeOutline} class="mr-1" />
