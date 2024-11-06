@@ -26,7 +26,6 @@ describe(NotificationRepository.name, () => {
       const result = await sut.renderEmail(request);
 
       expect(result.html).toContain('<!DOCTYPE html PUBLIC');
-
       expect(result.text).toContain('test email');
     });
 
