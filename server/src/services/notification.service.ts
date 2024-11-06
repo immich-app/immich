@@ -181,7 +181,7 @@ export class NotificationService extends BaseService {
     let templateResponse = '';
 
     switch (name) {
-      case 'welcome':
+      case 'welcome': {
         const { html: _welcomeHtml } = await this.notificationRepository.renderEmail({
           template: EmailTemplate.WELCOME,
           data: {
@@ -190,12 +190,13 @@ export class NotificationService extends BaseService {
             username: 'john@doe.com',
             password: 'thisIsAPassword123',
           },
-          customTemplate: tempTemplate ? tempTemplate : templates.email.welcomeTemplate,
+          customTemplate: tempTemplate || templates.email.welcomeTemplate,
         });
 
         templateResponse = _welcomeHtml;
         break;
-      case 'album-update':
+      }
+      case 'album-update': {
         const { html: _updateAlbumHtml } = await this.notificationRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
@@ -206,12 +207,13 @@ export class NotificationService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: tempTemplate ? tempTemplate : templates.email.albumInviteTemplate,
+          customTemplate: tempTemplate || templates.email.albumInviteTemplate,
         });
         templateResponse = _updateAlbumHtml;
         break;
+      }
 
-      case 'album-invite':
+      case 'album-invite': {
         const { html } = await this.notificationRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
@@ -222,13 +224,15 @@ export class NotificationService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: tempTemplate ? tempTemplate : templates.email.albumInviteTemplate,
+          customTemplate: tempTemplate || templates.email.albumInviteTemplate,
         });
         templateResponse = html;
         break;
-      default:
+      }
+      default: {
         templateResponse = '';
         break;
+      }
     }
 
     return { name, html: templateResponse };

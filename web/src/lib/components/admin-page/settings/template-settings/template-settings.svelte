@@ -6,7 +6,6 @@
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { t } from 'svelte-i18n';
-  import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -41,8 +40,6 @@
   const closePreviewModal = () => {
     _htmlPreview = '';
   };
-
-  type TemplateKeys = 'welcomeTemplate' | 'albumInviteTemplate' | 'albumUpdateTemplate';
 
   const templateConfigs = [
     {
