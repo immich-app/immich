@@ -7,7 +7,8 @@ dotenv.config();
 process.env.PUBLIC_IMMICH_BUY_HOST = process.env.PUBLIC_IMMICH_BUY_HOST || 'https://buy.immich.app';
 process.env.PUBLIC_IMMICH_PAY_HOST = process.env.PUBLIC_IMMICH_PAY_HOST || 'https://pay.futo.org';
 
-process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID = process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID || 'abc'; // TODO: we don't have a default application ID yet, must be added before merging PR
+// We load the default media receiver app id if no custom one is provided as a build-time env variable
+process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID = process.env.PUBLIC_IMMICH_CAST_APPLICATION_ID || 'CC1AD845';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {

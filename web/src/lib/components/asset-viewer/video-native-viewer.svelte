@@ -35,8 +35,11 @@
     assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
     forceMuted = false;
     element.load();
+    cast(assetFileUrl);
   }
-  $: cast(assetFileUrl);
+  $: if (assetFileUrl) {
+    console.log(assetFileUrl);
+  }
 
   onMount(async () => {
     isCastInitialized = get(castPlayer.isInitialized);
@@ -53,6 +56,7 @@
   });
 
   const cast = async (url: string) => {
+    console.log('casting', url);
     if (!url) {
       return;
     }

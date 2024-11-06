@@ -2,13 +2,9 @@
 
 Immich supports the Google's Cast protocol so that photos and videos can be cast to devices such as a Chromecast and a Nest Hub. This feature is considered experimental and has several important limitations listed below. Currently, this feature is only supported by the web client, support on Android and iOS is planned for the future.
 
-## Enabling Chromecast support
-
-Due to the limitations, this feature is hidden behind an environmental variable. Pass the `IMMICH_ENABLE_CAST` to the `immich_server` container, preferably via the `.env` file.
-
 ## Casting
 
-When the feature is enabled, there will be a Cast button in the top navigation bar whenever a cast-enabled device is detected on your network. Click the button and Chrome will pop up a menu to select the device to cast to. Now, browse Immich normally and your photos and videos should show up on the casted device!
+When you use Chrome and a chromecast is found on your local network, there will be a Cast button in the top navigation bar and in the asset viewer.  Click the button and Chrome will pop up a menu to select the device to cast to. Now, browse Immich normally and your photos and videos should show up on the casted device!
 
 When you are finished casting, click the cast menu again and press the stop button.
 

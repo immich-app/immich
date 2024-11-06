@@ -8,13 +8,6 @@ const CAST_API_KEY_NAME = 'cast';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
 
-enum DEVICE_STATE {
-  IDLE = 0,
-  ACTIVE = 1,
-  WARNING = 2,
-  ERROR = 3,
-}
-
 enum SESSION_DISCOVERY_CAUSE {
   LOAD_MEDIA,
   ACTIVE_SESSION,
@@ -37,8 +30,6 @@ class CastPlayer {
   castPlayerState = writable(chrome.cast.media.PlayerState.IDLE);
 
   currentMedia: chrome.cast.media.Media | null = null;
-
-  hasReceivers = writable(false);
 
   receiverFriendlyName = writable<string | null>(null);
 
@@ -93,13 +84,15 @@ class CastPlayer {
 
   private onSessionStateChanged(event: cast.framework.SessionStateEventData) {
     switch (event.sessionState) {
-      case cast.framework.SessionState.SESSION_ENDED:
+      case cast.framework.SessionState.SESSION_ENDED: {
         this.session = null;
         break;
+      }
       case cast.framework.SessionState.SESSION_RESUMED:
-      case cast.framework.SessionState.SESSION_STARTED:
+      case cast.framework.SessionState.SESSION_STARTED: {
         this.session = event.session.getSessionObj();
         break;
+      }
     }
   }
 
@@ -227,7 +220,7 @@ class CastPlayer {
   private async getCastApiKey() {
     const currentKeys = await getApiKeys();
 
-    let previousKey = currentKeys.find((key) => key.name == 'cast');
+    const previousKey = currentKeys.find((key) => key.name == 'cast');
 
     if (previousKey) {
       await deleteApiKey({ id: previousKey.id });
@@ -236,7 +229,7 @@ class CastPlayer {
     return await this.createCastApiKey();
   }
 
-  async play() {
+  play() {
     if (!this.currentMedia) {
       console.error("Can't play: No media loaded");
       return;
@@ -247,7 +240,7 @@ class CastPlayer {
     this.currentMedia.play(playRequest, (success: any) => console.log(success), this.onError.bind(this));
   }
 
-  async pause() {
+  pause() {
     if (!this.currentMedia) {
       console.error("Can't play: No media loaded");
       return;
@@ -258,7 +251,7 @@ class CastPlayer {
     this.currentMedia.pause(pauseRequest, (success: any) => console.log(success), this.onError.bind(this));
   }
 
-  async seek(currentTime: number) {
+  seek(currentTime: number) {
     const remotePlayer = new cast.framework.RemotePlayer();
     const remotePlayerController = new cast.framework.RemotePlayerController(remotePlayer);
     remotePlayer.currentTime = currentTime;
@@ -273,11 +266,11 @@ export const loadCastFramework = (() => {
 
   return async () => {
     if (promise === undefined) {
-      promise = new Promise((resolve) => {
+      promise = new Promise(() => {
         const script = document.createElement('script');
         script.src = FRAMEWORK_LINK;
 
-        document.body.appendChild(script);
+        document.body.append(script);
         console.log('Loading cast framework');
       });
     }

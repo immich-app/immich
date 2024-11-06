@@ -16,8 +16,24 @@ import { usePagination } from 'src/utils/pagination';
 export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
     const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
-
-    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true })));
+    const uniqueAssetIds: string[] = [];
+    const duplicates = mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true }))).filter(
+      (duplicate) => {
+        if (duplicate.assets.length === 1) {
+          uniqueAssetIds.push(duplicate.assets[0].id);
+          return false;
+        }
+        return true;
+      },
+    );
+    if (uniqueAssetIds.length > 0) {
+      try {
+        await this.assetRepository.updateAll(uniqueAssetIds, { duplicateId: null });
+      } catch (error: any) {
+        this.logger.error(`Failed to remove duplicateId from assets: ${error.message}`);
+      }
+    }
+    return duplicates;
   }
 
   @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
