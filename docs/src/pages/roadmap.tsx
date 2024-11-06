@@ -234,6 +234,13 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  {
+    icon: mdiStar,
+    iconColor: 'gold',
+    title: '50,000 Stars',
+    description: 'Reached 50K Stars on GitHub!',
+    getDateLabel: withLanguage(new Date(2024, 10, 1)),
+  },
   withRelease({
     icon: mdiFaceRecognition,
     title: 'Metadata Face Import',
