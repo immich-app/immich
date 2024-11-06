@@ -19,7 +19,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import CastPlayer from '$lib/utils/cast-sender';
+  import CastPlayer from '$lib/utils/cast-player';
   import { get } from 'svelte/store';
 
   export let asset: AssetResponseDto;
@@ -41,7 +41,6 @@
   let loader: HTMLImageElement;
 
   let castPlayer = CastPlayer.getInstance();
-  let isCastInitialized = get(castPlayer.isInitialized);
 
   let castState = get(castPlayer.castState);
 
@@ -54,7 +53,7 @@
 
   $: preload(useOriginalImage, preloadAssets);
   $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
-  $: cast(imageLoaderUrl);
+  $: void cast(imageLoaderUrl);
 
   photoZoomState.set({
     currentRotation: 0,
@@ -65,21 +64,19 @@
   });
   $zoomed = false;
 
-  onMount(async () => {
-    castPlayer.isInitialized.subscribe((value) => {
-      isCastInitialized = value;
-    });
-
+  onMount(() => {
     castPlayer.castState.subscribe((value) => {
-      castState = value;
-      if (value === 'CONNECTED') {
-        cast(assetFileUrl);
+      if (castState !== value) {
+        void cast(assetFileUrl);
       }
+      castState = value;
     });
   });
 
   const cast = async (url: string) => {
     if (!url) {
+      return;
+    } else if (castState !== 'CONNECTED') {
       return;
     }
     const fullUrl = new URL(url, window.location.href);

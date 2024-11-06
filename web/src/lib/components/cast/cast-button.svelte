@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CastPlayer, { loadCastFramework } from '$lib/utils/cast-sender';
+  import CastPlayer, { loadCastFramework } from '$lib/utils/cast-player';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { onMount } from 'svelte';
   onMount(async () => {

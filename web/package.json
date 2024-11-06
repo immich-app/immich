@@ -61,6 +61,7 @@
     "tslib": "^2.6.2",
     "typescript": "^5.5.0",
     "vite": "^5.1.4",
+    "vite-tsconfig-paths": "^5.1.0",
     "vitest": "^2.0.5"
   },
   "type": "module",

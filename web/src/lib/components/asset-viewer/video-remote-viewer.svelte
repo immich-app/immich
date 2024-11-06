@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CastPlayer from '$lib/utils/cast-sender';
+  import CastPlayer from '$lib/utils/cast-player';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import { get } from 'svelte/store';
   import { onMount } from 'svelte';
@@ -22,11 +22,11 @@
   };
 
   function handleSeek(event: Event) {
-    const newTime: number = parseFloat((event.target as HTMLInputElement).value);
+    const newTime: number = Number.parseFloat((event.target as HTMLInputElement).value);
     castPlayer.seek(newTime);
   }
 
-  onMount(async () => {
+  onMount(() => {
     castPlayer.isConnected.subscribe((value) => {
       remotePlayer.isConnected = value;
     });

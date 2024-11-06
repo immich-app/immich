@@ -6,6 +6,9 @@
     "forceConsistentCasingInFileNames": true,
     "module": "es2020",
     "moduleResolution": "bundler",
+    "paths": {
+      "chromecast-caf-sender": ["./node_modules/@types/chromecast-caf-sender/index.d.ts"]
+    },
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,

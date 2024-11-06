@@ -9,7 +9,7 @@
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
-  import CastPlayer from '$lib/utils/cast-sender';
+  import CastPlayer from '$lib/utils/cast-player';
   import { get } from 'svelte/store';
   import VideoRemoteViewer from '$lib/components/asset-viewer/video-remote-viewer.svelte';
 
@@ -28,36 +28,31 @@
   let assetFileUrl: string;
   let forceMuted = false;
 
-  let isCastInitialized = false;
   let castState = get(castPlayer.castState);
 
   $: if (element) {
     assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
     forceMuted = false;
     element.load();
-    cast(assetFileUrl);
   }
   $: if (assetFileUrl) {
-    console.log(assetFileUrl);
+    void cast(assetFileUrl);
   }
 
-  onMount(async () => {
-    isCastInitialized = get(castPlayer.isInitialized);
-    castPlayer.isInitialized.subscribe((value) => {
-      isCastInitialized = value;
-    });
-
+  onMount(() => {
     castPlayer.castState.subscribe((value) => {
-      castState = value;
-      if (value === 'CONNECTED') {
-        cast(assetFileUrl);
+      if (castState !== value && value === 'CONNECTED') {
+        void cast(assetFileUrl);
       }
+      castState = value;
     });
   });
 
   const cast = async (url: string) => {
     console.log('casting', url);
     if (!url) {
+      return;
+    } else if (castState !== 'CONNECTED') {
       return;
     }
     const fullUrl = new URL(url, window.location.href);

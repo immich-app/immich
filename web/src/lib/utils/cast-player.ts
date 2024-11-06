@@ -1,7 +1,7 @@
-/// <reference types="chromecast-caf-sender" />
-
 import { PUBLIC_IMMICH_CAST_APPLICATION_ID } from '$env/static/public';
 import { createApiKey, deleteApiKey, getApiKeys, Permission, type ApiKeyCreateResponseDto } from '@immich/sdk';
+import 'chromecast-caf-sender';
+
 import { get, writable } from 'svelte/store';
 
 const CAST_API_KEY_NAME = 'cast';
@@ -103,24 +103,30 @@ class CastPlayer {
 
   private onRemotePlayerChange(event: cast.framework.RemotePlayerChangedEvent) {
     switch (event.field) {
-      case 'isConnected':
+      case 'isConnected': {
         this.isConnected.set(event.value);
         break;
-      case 'mediaInfo':
+      }
+      case 'mediaInfo': {
         this.mediaInfo.set(event.value);
         break;
-      case 'remotePlayer':
+      }
+      case 'remotePlayer': {
         this.remotePlayer.set(event.value);
         break;
-      case 'duration':
+      }
+      case 'duration': {
         this.duration.set(event.value);
         break;
-      case 'currentTime':
+      }
+      case 'currentTime': {
         this.currentTime.set(event.value);
         break;
-      case 'playerState':
+      }
+      case 'playerState': {
         this.playerState.set(event.value);
         break;
+      }
     }
   }
 
@@ -237,7 +243,7 @@ class CastPlayer {
 
     const playRequest = new chrome.cast.media.PlayRequest();
 
-    this.currentMedia.play(playRequest, (success: any) => console.log(success), this.onError.bind(this));
+    this.currentMedia.play(playRequest, () => {}, this.onError.bind(this));
   }
 
   pause() {
@@ -248,7 +254,7 @@ class CastPlayer {
 
     const pauseRequest = new chrome.cast.media.PauseRequest();
 
-    this.currentMedia.pause(pauseRequest, (success: any) => console.log(success), this.onError.bind(this));
+    this.currentMedia.pause(pauseRequest, () => {}, this.onError.bind(this));
   }
 
   seek(currentTime: number) {
@@ -271,7 +277,7 @@ export const loadCastFramework = (() => {
         script.src = FRAMEWORK_LINK;
 
         document.body.append(script);
-        console.log('Loading cast framework');
+        console.debug('Cast framework loaded');
       });
     }
     return promise;
