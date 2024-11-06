@@ -16,6 +16,54 @@ class NotificationsApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'GET /notifications/templates/{name}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] name (required):
+  Future<Response> getNotificationTemplateWithHttpInfo(String name,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/notifications/templates/{name}'
+      .replaceAll('{name}', name);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] name (required):
+  Future<TemplateResponseDto?> getNotificationTemplate(String name,) async {
+    final response = await getNotificationTemplateWithHttpInfo(name,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TemplateResponseDto',) as TemplateResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'POST /notifications/test-email' operation and returns the [Response].
   /// Parameters:
   ///

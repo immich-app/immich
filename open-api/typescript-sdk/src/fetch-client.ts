@@ -639,6 +639,10 @@ export type MemoryUpdateDto = {
     memoryAt?: string;
     seenAt?: string;
 };
+export type TemplateResponseDto = {
+    html: string;
+    name: string;
+};
 export type SystemConfigSmtpTransportDto = {
     host: string;
     ignoreCert: boolean;
@@ -2232,6 +2236,16 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         method: "PUT",
         body: bulkIdsDto
     })));
+}
+export function getNotificationTemplate({ name }: {
+    name: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TemplateResponseDto;
+    }>(`/notifications/templates/${encodeURIComponent(name)}`, {
+        ...opts
+    }));
 }
 export function sendTestEmail({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
