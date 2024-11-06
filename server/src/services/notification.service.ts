@@ -174,11 +174,12 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
-  async getTemplate(name: string) {
+  async getTemplate(name: string, tempTemplate: string) {
     const { server, templates } = await this.getConfig({ withCache: false });
     const { port } = this.configRepository.getEnv();
 
     let templateResponse = '';
+
     switch (name) {
       case 'welcome':
         const { html: _welcomeHtml } = await this.notificationRepository.renderEmail({
@@ -189,12 +190,12 @@ export class NotificationService extends BaseService {
             username: 'john@doe.com',
             password: 'thisIsAPassword123',
           },
-          customTemplate: templates.email.welcomeTemplate,
+          customTemplate: tempTemplate ? tempTemplate : templates.email.welcomeTemplate,
         });
 
         templateResponse = _welcomeHtml;
         break;
-      case 'update-album':
+      case 'album-update':
         const { html: _updateAlbumHtml } = await this.notificationRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
@@ -205,9 +206,25 @@ export class NotificationService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: templates.email.albumInviteTemplate,
+          customTemplate: tempTemplate ? tempTemplate : templates.email.albumInviteTemplate,
         });
         templateResponse = _updateAlbumHtml;
+        break;
+
+      case 'album-invite':
+        const { html } = await this.notificationRepository.renderEmail({
+          template: EmailTemplate.ALBUM_INVITE,
+          data: {
+            baseUrl: getExternalDomain(server, port),
+            albumId: '1',
+            albumName: "John Doe's Favorites",
+            senderName: 'John Doe',
+            recipientName: 'Jane Doe',
+            cid: undefined,
+          },
+          customTemplate: tempTemplate ? tempTemplate : templates.email.albumInviteTemplate,
+        });
+        templateResponse = html;
         break;
       default:
         templateResponse = '';
