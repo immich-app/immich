@@ -16,28 +16,30 @@ class NotificationsApi {
 
   final ApiClient apiClient;
 
-  /// Performs an HTTP 'GET /notifications/templates/{name}' operation and returns the [Response].
+  /// Performs an HTTP 'POST /notifications/templates/{name}' operation and returns the [Response].
   /// Parameters:
   ///
   /// * [String] name (required):
-  Future<Response> getNotificationTemplateWithHttpInfo(String name,) async {
+  ///
+  /// * [TemplateDto] templateDto (required):
+  Future<Response> getNotificationTemplateWithHttpInfo(String name, TemplateDto templateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/notifications/templates/{name}'
       .replaceAll('{name}', name);
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = templateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
       path,
-      'GET',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -49,8 +51,10 @@ class NotificationsApi {
   /// Parameters:
   ///
   /// * [String] name (required):
-  Future<TemplateResponseDto?> getNotificationTemplate(String name,) async {
-    final response = await getNotificationTemplateWithHttpInfo(name,);
+  ///
+  /// * [TemplateDto] templateDto (required):
+  Future<TemplateResponseDto?> getNotificationTemplate(String name, TemplateDto templateDto,) async {
+    final response = await getNotificationTemplateWithHttpInfo(name, templateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -584,6 +584,8 @@ class ApiClient {
           return TagsResponse.fromJson(value);
         case 'TagsUpdate':
           return TagsUpdate.fromJson(value);
+        case 'TemplateDto':
+          return TemplateDto.fromJson(value);
         case 'TemplateResponseDto':
           return TemplateResponseDto.fromJson(value);
         case 'TestEmailResponseDto':

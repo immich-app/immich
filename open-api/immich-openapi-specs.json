@@ -3431,7 +3431,7 @@
       }
     },
     "/notifications/templates/{name}": {
-      "get": {
+      "post": {
         "operationId": "getNotificationTemplate",
         "parameters": [
           {
@@ -3443,6 +3443,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -12415,6 +12425,17 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "TemplateDto": {
+        "properties": {
+          "tempTemplate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tempTemplate"
+        ],
         "type": "object"
       },
       "TemplateResponseDto": {

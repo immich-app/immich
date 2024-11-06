@@ -144,7 +144,7 @@ Class | Method | HTTP request | Description
 *MemoriesApi* | [**removeMemoryAssets**](doc//MemoriesApi.md#removememoryassets) | **DELETE** /memories/{id}/assets | 
 *MemoriesApi* | [**searchMemories**](doc//MemoriesApi.md#searchmemories) | **GET** /memories | 
 *MemoriesApi* | [**updateMemory**](doc//MemoriesApi.md#updatememory) | **PUT** /memories/{id} | 
-*NotificationsApi* | [**getNotificationTemplate**](doc//NotificationsApi.md#getnotificationtemplate) | **GET** /notifications/templates/{name} | 
+*NotificationsApi* | [**getNotificationTemplate**](doc//NotificationsApi.md#getnotificationtemplate) | **POST** /notifications/templates/{name} | 
 *NotificationsApi* | [**sendTestEmail**](doc//NotificationsApi.md#sendtestemail) | **POST** /notifications/test-email | 
 *OAuthApi* | [**finishOAuth**](doc//OAuthApi.md#finishoauth) | **POST** /oauth/callback | 
 *OAuthApi* | [**linkOAuthAccount**](doc//OAuthApi.md#linkoauthaccount) | **POST** /oauth/link | 
@@ -452,6 +452,7 @@ Class | Method | HTTP request | Description
  - [TagUpsertDto](doc//TagUpsertDto.md)
  - [TagsResponse](doc//TagsResponse.md)
  - [TagsUpdate](doc//TagsUpdate.md)
+ - [TemplateDto](doc//TemplateDto.md)
  - [TemplateResponseDto](doc//TemplateResponseDto.md)
  - [TestEmailResponseDto](doc//TestEmailResponseDto.md)
  - [TimeBucketResponseDto](doc//TimeBucketResponseDto.md)

@@ -265,6 +265,7 @@ part 'model/tag_update_dto.dart';
 part 'model/tag_upsert_dto.dart';
 part 'model/tags_response.dart';
 part 'model/tags_update.dart';
+part 'model/template_dto.dart';
 part 'model/template_response_dto.dart';
 part 'model/test_email_response_dto.dart';
 part 'model/time_bucket_response_dto.dart';
