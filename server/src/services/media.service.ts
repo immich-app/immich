@@ -206,7 +206,7 @@ export class MediaService extends BaseService {
 
     const shouldExtract = image.extractEmbedded && mimeTypes.isRaw(asset.originalPath);
     const extractedPath = StorageCore.getTempPathInDir(dirname(previewPath));
-    const didExtract = shouldExtract && (await this.mediaRepository.extract(asset.originalPath, extractedPath));
+    const didExtract = shouldExtract && (await this.mediaRepository.extract(asset, extractedPath));
 
     try {
       const useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));

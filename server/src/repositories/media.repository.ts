@@ -5,6 +5,7 @@ import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -41,10 +42,10 @@ export class MediaRepository implements IMediaRepository {
     this.logger.setContext(MediaRepository.name);
   }
 
-  async extract(input: string, output: string): Promise<boolean> {
-    const didExtractEmbedded = await this.extractEmbedded(input, output);
+  async extract(asset: AssetEntity, outputPath: string): Promise<boolean> {
+    const didExtractEmbedded = await this.extractEmbedded(asset.originalPath, outputPath);
     if (didExtractEmbedded) {
-      await this.fixExtractedOrientation(input, output);
+      await this.fixExtractedOrientation(asset, outputPath);
     }
 
     return didExtractEmbedded;
@@ -66,10 +67,12 @@ export class MediaRepository implements IMediaRepository {
     return true;
   }
 
-  private async fixExtractedOrientation(originalPath: string, extractedPath: string) {
+  private async fixExtractedOrientation(asset: AssetEntity, extractedPath: string) {
+    const orientationValue = Number(asset.exifInfo?.orientation);
+    if (isNaN(orientationValue)) return;
+
     try {
-      const { Orientation } = await exiftool.read(originalPath, { numericTags: ['Orientation'] });
-      await exiftool.write(extractedPath, { "Orientation#": Orientation });
+      await exiftool.write(extractedPath, { "Orientation#": orientationValue });
     } catch (error: any) {
       this.logger.debug('Could not write orientation to extracted image', error.message);
     }
