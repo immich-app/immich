@@ -8,7 +8,7 @@ Hardware and software requirements for Immich:
 
 ## Software
 
-- [Docker](https://docs.docker.com/get-docker/)
+- [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 :::note
