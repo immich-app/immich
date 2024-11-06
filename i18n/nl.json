@@ -256,6 +256,7 @@
     "tag_cleanup_job": "Tag opschoning",
     "template_email_settings": "Email",
     "template_email_settings_description": "Beheer aangepaste email melding sjablonen",
+    "template_email_preview": "Voorbeeld",
     "template_email_welcome": "Welkom email sjabloon",
     "template_email_available_tags":"Je kan de volgende tags gebruiken in een sjabloon: {tags}",
     "template_email_invite_album": "Uitgenodigd in album sjabloon",
