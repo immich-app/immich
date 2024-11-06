@@ -42,12 +42,21 @@ export class MediaRepository implements IMediaRepository {
   }
 
   async extract(input: string, output: string): Promise<boolean> {
+    const didExtractEmbedded = await this.extractEmbedded(input, output);
+    if (didExtractEmbedded) {
+      await this.fixExtractedOrientation(input, output);
+    }
+
+    return didExtractEmbedded;
+  }
+
+  private async extractEmbedded(originalPath: string, extractedPath: string): Promise<boolean> {
     try {
-      await exiftool.extractJpgFromRaw(input, output);
+      await exiftool.extractJpgFromRaw(originalPath, extractedPath);
     } catch (error: any) {
       this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
       try {
-        await exiftool.extractPreview(input, output);
+        await exiftool.extractPreview(originalPath, extractedPath);
       } catch (error: any) {
         this.logger.debug('Could not extract preview from image', error.message);
         return false;
@@ -55,6 +64,15 @@ export class MediaRepository implements IMediaRepository {
     }
 
     return true;
+  }
+
+  private async fixExtractedOrientation(originalPath: string, extractedPath: string) {
+    try {
+      const { Orientation } = await exiftool.read(originalPath, { numericTags: ['Orientation'] });
+      await exiftool.write(extractedPath, { "Orientation#": Orientation });
+    } catch (error: any) {
+      this.logger.debug('Could not write orientation to extracted image', error.message);
+    }
   }
 
   decodeImage(input: string, options: DecodeToBufferOptions) {
