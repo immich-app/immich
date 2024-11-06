@@ -62,9 +62,9 @@
         </div>
       {:else if $featureFlags.oauth}
         {#if user.oauthId}
-          <Button size="sm" on:click={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
+          <Button size="sm" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}
-          <Button size="sm" on:click={() => oauth.authorize(window.location)}>{$t('link_to_oauth')}</Button>
+          <Button size="sm" onclick={() => oauth.authorize(window.location)}>{$t('link_to_oauth')}</Button>
         {/if}
       {/if}
     </div>

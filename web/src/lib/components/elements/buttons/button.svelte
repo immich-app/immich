@@ -1,6 +1,4 @@
 <script lang="ts" module>
-  import type { HTMLButtonAttributes, HTMLLinkAttributes } from 'svelte/elements';
-
   export type Color =
     | 'primary'
     | 'primary-inversed'
@@ -17,28 +15,6 @@
   export type Size = 'tiny' | 'icon' | 'link' | 'sm' | 'base' | 'lg';
   export type Rounded = 'lg' | '3xl' | 'full' | 'none';
   export type Shadow = 'md' | false;
-
-  type BaseProps = {
-    class?: string;
-    color?: Color;
-    size?: Size;
-    rounded?: Rounded;
-    shadow?: Shadow;
-    fullwidth?: boolean;
-    border?: boolean;
-  };
-
-  export type ButtonProps = HTMLButtonAttributes &
-    BaseProps & {
-      href?: never;
-    };
-
-  export type LinkProps = HTMLLinkAttributes &
-    BaseProps & {
-      type?: never;
-    };
-
-  export type Props = ButtonProps | LinkProps;
 </script>
 
 <script lang="ts">
@@ -59,6 +35,7 @@
     form?: string;
     disabled?: boolean;
     title?: string;
+    'aria-current'?: 'page' | 'step' | 'location' | 'date' | 'time' | undefined | null;
   }
 
   let {

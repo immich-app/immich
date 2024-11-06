@@ -51,9 +51,9 @@
   let totalCount: number[] = $state([]);
   let diskUsage: number[] = $state([]);
   let diskUsageUnit: ByteUnit[] = $state([]);
-  let editImportPaths: number | null = $state();
-  let editScanSettings: number | null = $state();
-  let renameLibrary: number | null = $state();
+  let editImportPaths: number | undefined = $state();
+  let editScanSettings: number | undefined = $state();
+  let renameLibrary: number | undefined = $state();
   let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
   let toCreateLibrary = $state(false);
@@ -63,9 +63,9 @@
   });
 
   const closeAll = () => {
-    editImportPaths = null;
-    editScanSettings = null;
-    renameLibrary = null;
+    editImportPaths = undefined;
+    editScanSettings = undefined;
+    renameLibrary = undefined;
     updateLibraryIndex = null;
 
     for (let index = 0; index < dropdownOpen.length; index++) {
@@ -220,14 +220,14 @@
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
-        <LinkButton on:click={() => handleScanAll()}>
+        <LinkButton onclick={() => handleScanAll()}>
           <div class="flex gap-1 text-sm">
             <Icon path={mdiSync} size="18" />
             <span>{$t('scan_all_libraries')}</span>
           </div>
         </LinkButton>
       {/if}
-      <LinkButton on:click={() => (toCreateLibrary = true)}>
+      <LinkButton onclick={() => (toCreateLibrary = true)}>
         <div class="flex gap-1 text-sm">
           <Icon path={mdiPlusBoxOutline} size="18" />
           <span>{$t('create_library')}</span>
@@ -317,13 +317,17 @@
               {#if renameLibrary === index}
                 <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm {library} onSubmit={handleUpdate} onCancel={() => (renameLibrary = null)} />
+                  <LibraryRenameForm {library} onSubmit={handleUpdate} onCancel={() => (renameLibrary = undefined)} />
                 </div>
               {/if}
               {#if editImportPaths === index}
                 <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryImportPathsForm {library} onSubmit={handleUpdate} onCancel={() => (editImportPaths = null)} />
+                  <LibraryImportPathsForm
+                    {library}
+                    onSubmit={handleUpdate}
+                    onCancel={() => (editImportPaths = undefined)}
+                  />
                 </div>
               {/if}
               {#if editScanSettings === index}
@@ -332,7 +336,7 @@
                   <LibraryScanSettingsForm
                     {library}
                     onSubmit={handleUpdate}
-                    onCancel={() => (editScanSettings = null)}
+                    onCancel={() => (editScanSettings = undefined)}
                   />
                 </div>
               {/if}

@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import {
     notificationController,
     NotificationType,
@@ -40,11 +37,16 @@
       handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleSave();
+  };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
@@ -70,7 +72,7 @@
         </div>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
+          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

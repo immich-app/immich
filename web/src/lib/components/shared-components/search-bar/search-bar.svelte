@@ -212,15 +212,22 @@
     </div>
 
     <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-2'} flex items-center pl-6 transition-all">
-      <CircleIconButton title={$t('show_search_options')} icon={mdiTune} on:click={onFilterClick} size="20" />
+      <CircleIconButton title={$t('show_search_options')} icon={mdiTune} onclick={onFilterClick} size="20" />
     </div>
     {#if showClearIcon}
       <div class="absolute inset-y-0 right-0 flex items-center pr-2">
-        <CircleIconButton on:click={onClear} icon={mdiClose} title={$t('clear')} size="20" />
+        <CircleIconButton onclick={onClear} icon={mdiClose} title={$t('clear')} size="20" />
       </div>
     {/if}
     <div class="absolute inset-y-0 left-0 flex items-center pl-2">
-      <CircleIconButton type="submit" disabled={showFilter} title={$t('search')} icon={mdiMagnify} size="20" />
+      <CircleIconButton
+        type="submit"
+        disabled={showFilter}
+        title={$t('search')}
+        icon={mdiMagnify}
+        size="20"
+        onclick={() => {}}
+      />
     </div>
   </form>
 

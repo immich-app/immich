@@ -28,7 +28,7 @@
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let selectedAssets: Set<AssetResponseDto> = $state(new Set());
-  let innerWidth: number = $state();
+  let innerWidth: number = $state(0);
 
   let assets = $derived(sharedLink.assets);
   let isMultiSelectionMode = $derived(selectedAssets.size > 0);
@@ -79,7 +79,7 @@
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
       {#if sharedLink?.allowDownload}
         <DownloadAction filename="immich-shared.zip" />
       {/if}
@@ -97,13 +97,13 @@
         {#if sharedLink?.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}
-            on:click={() => handleUploadAssets()}
+            onclick={() => handleUploadAssets()}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if sharedLink?.allowDownload}
-          <CircleIconButton title={$t('download')} on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton title={$t('download')} onclick={downloadAssets} icon={mdiFolderDownloadOutline} />
         {/if}
       {/snippet}
     </ControlAppBar>

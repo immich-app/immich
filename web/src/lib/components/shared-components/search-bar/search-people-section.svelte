@@ -90,7 +90,7 @@
             shadow={false}
             color="text-primary"
             class="flex gap-2 place-items-center"
-            on:click={() => (showAllPeople = !showAllPeople)}
+            onclick={() => (showAllPeople = !showAllPeople)}
           >
             {#if showAllPeople}
               <span><Icon path={mdiClose} ariaHidden /></span>

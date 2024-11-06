@@ -16,7 +16,7 @@
     width?: 'wide' | 'narrow';
     onCancel: () => void;
     onConfirm: () => void;
-    prompt?: import('svelte').Snippet;
+    promptSnippet?: import('svelte').Snippet;
   }
 
   let {
@@ -31,7 +31,7 @@
     width = 'narrow',
     onCancel,
     onConfirm,
-    prompt,
+    promptSnippet: prompt,
   }: Props = $props();
 
   const handleConfirm = () => {

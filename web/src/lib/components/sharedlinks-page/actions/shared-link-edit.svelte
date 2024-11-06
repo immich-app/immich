@@ -15,5 +15,5 @@
 {#if menuItem}
   <MenuOption text={$t('edit_link')} icon={mdiCircleEditOutline} onClick={onEdit} />
 {:else}
-  <CircleIconButton title={$t('edit_link')} icon={mdiCircleEditOutline} on:click={onEdit} />
+  <CircleIconButton title={$t('edit_link')} icon={mdiCircleEditOutline} onclick={onEdit} />
 {/if}

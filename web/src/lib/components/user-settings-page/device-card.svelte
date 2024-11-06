@@ -75,7 +75,7 @@
           icon={mdiTrashCanOutline}
           title={$t('log_out')}
           size="16"
-          on:click={onDelete}
+          onclick={onDelete}
         />
       </div>
     {/if}

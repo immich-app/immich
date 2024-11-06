@@ -160,13 +160,13 @@
 <UserPageLayout title={data.meta.title + ` (${data.duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <div class="flex place-items-center gap-2">
-      <LinkButton on:click={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
+      <LinkButton onclick={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiTrashCanOutline} size="18" />
           {$t('deduplicate_all')}
         </div>
       </LinkButton>
-      <LinkButton on:click={() => handleKeepAll()} disabled={!hasDuplicates}>
+      <LinkButton onclick={() => handleKeepAll()} disabled={!hasDuplicates}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCheckOutline} size="18" />
           {$t('keep_all')}
@@ -175,7 +175,7 @@
       <CircleIconButton
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
-        on:click={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+        onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
       />
     </div>
   {/snippet}

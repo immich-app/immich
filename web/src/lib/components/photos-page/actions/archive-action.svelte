@@ -41,8 +41,8 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
   {:else}
-    <CircleIconButton title={text} {icon} on:click={handleArchive} />
+    <CircleIconButton title={text} {icon} onclick={handleArchive} />
   {/if}
 {/if}

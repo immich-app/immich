@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -26,7 +24,7 @@
 
   let { data }: Props = $props();
 
-  let jobs: AllJobStatusResponseDto = $state();
+  let jobs: AllJobStatusResponseDto | undefined = $state();
 
   let running = true;
   let isOpen = $state(false);
@@ -64,12 +62,17 @@
       handleError(error, $t('errors.unable_to_submit_job'));
     }
   };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleCreate();
+  };
 </script>
 
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
     <div class="flex justify-end">
-      <LinkButton on:click={() => (isOpen = true)}>
+      <LinkButton onclick={() => (isOpen = true)}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiPlus} size="18" />
           {$t('admin.create_job')}
@@ -100,8 +103,8 @@
     onConfirm={handleCreate}
     onCancel={handleCancel}
   >
-    {#snippet promptText()}
-      <form onsubmit={preventDefault(handleCreate)} autocomplete="off" id="create-tag-form" class="w-full">
+    {#snippet promptSnippet()}
+      <form {onsubmit} autocomplete="off" id="create-tag-form" class="w-full">
         <div class="flex flex-col gap-1 text-left">
           <Combobox
             bind:selectedOption={selectedJob}

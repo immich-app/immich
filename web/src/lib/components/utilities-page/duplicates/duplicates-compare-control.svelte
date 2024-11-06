@@ -120,7 +120,7 @@
           size="sm"
           color="primary"
           class="flex place-items-center rounded-tl-full rounded-bl-full gap-2"
-          on:click={handleResolve}
+          onclick={handleResolve}
         >
           <Icon path={mdiCheck} size="20" />{$t('keep_all')}
         </Button>
@@ -129,7 +129,7 @@
           size="sm"
           color="red"
           class="flex place-items-center rounded-tl-full rounded-bl-full gap-2 py-3"
-          on:click={handleResolve}
+          onclick={handleResolve}
         >
           <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
             ? $t('trash_all')
@@ -140,7 +140,7 @@
         size="sm"
         color="primary"
         class="flex place-items-center rounded-tr-full rounded-br-full  gap-2"
-        on:click={handleStack}
+        onclick={handleStack}
         disabled={selectedAssetIds.size !== 1}
       >
         <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}

@@ -1,23 +1,19 @@
 <script lang="ts" module>
   export type Color = 'transparent-primary' | 'transparent-gray';
-
-  type BaseProps = {
-    color?: Color;
-  };
-
-  export type Props = (LinkProps & BaseProps) | (ButtonProps & BaseProps);
 </script>
 
 <script lang="ts">
-  import Button, { type ButtonProps, type LinkProps } from '$lib/components/elements/buttons/button.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
 
   interface Props {
+    href?: string;
     color?: Color;
     children?: import('svelte').Snippet;
     onclick?: (e: MouseEvent) => void;
     title?: string;
     disabled?: boolean;
     fullwidth?: boolean;
+    class?: string;
   }
 
   let { color = 'transparent-gray', children, ...rest }: Props = $props();

@@ -15,5 +15,5 @@
 {#if menuItem}
   <MenuOption text={$t('delete_link')} icon={mdiDelete} onClick={onDelete} />
 {:else}
-  <CircleIconButton title={$t('delete_link')} icon={mdiDelete} on:click={onDelete} />
+  <CircleIconButton title={$t('delete_link')} icon={mdiDelete} onclick={onDelete} />
 {/if}

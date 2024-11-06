@@ -1,4 +1,5 @@
 <script lang="ts" module>
+  // !TODO: COME BACK MAP
   void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
 </script>
 
@@ -145,6 +146,8 @@
     };
   };
 </script>
+
+// !TODO: COMING TO MAP
 
 {#await style then style}
   <MapLibre

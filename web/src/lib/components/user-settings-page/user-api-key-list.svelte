@@ -122,7 +122,7 @@
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button size="sm" on:click={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
+      <Button size="sm" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
     </div>
 
     {#if keys.length > 0}
@@ -156,14 +156,14 @@
                     icon={mdiPencilOutline}
                     title={$t('edit_key')}
                     size="16"
-                    on:click={() => (editKey = key)}
+                    onclick={() => (editKey = key)}
                   />
                   <CircleIconButton
                     color="primary"
                     icon={mdiTrashCanOutline}
                     title={$t('delete_key')}
                     size="16"
-                    on:click={() => handleDelete(key)}
+                    onclick={() => handleDelete(key)}
                   />
                 </td>
               </tr>

@@ -40,7 +40,7 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <div class="flex">
-      <LinkButton on:click={() => createAlbumAndRedirect()}>
+      <LinkButton onclick={() => createAlbumAndRedirect()}>
         <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
           <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
           <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>

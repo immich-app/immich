@@ -22,5 +22,5 @@
 {#if menuItem}
   <MenuOption text={$t('copy_link')} icon={mdiContentCopy} onClick={handleCopy} />
 {:else}
-  <CircleIconButton title={$t('copy_link')} icon={mdiContentCopy} on:click={handleCopy} />
+  <CircleIconButton title={$t('copy_link')} icon={mdiContentCopy} onclick={handleCopy} />
 {/if}

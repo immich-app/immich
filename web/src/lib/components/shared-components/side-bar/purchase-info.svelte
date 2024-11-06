@@ -138,7 +138,7 @@
         </div>
         <CircleIconButton
           icon={mdiClose}
-          on:click={() => {
+          onclick={() => {
             showMessage = false;
           }}
           title={$t('close')}
@@ -161,12 +161,12 @@
         </p>
       </div>
 
-      <Button class="mt-2" fullwidth on:click={openPurchaseModal}>{$t('purchase_button_buy_immich')}</Button>
+      <Button class="mt-2" fullwidth onclick={openPurchaseModal}>{$t('purchase_button_buy_immich')}</Button>
       <div class="mt-3 flex gap-4">
-        <Button size="sm" fullwidth shadow={false} color="transparent-gray" on:click={() => hideButton(true)}>
+        <Button size="sm" fullwidth shadow={false} color="transparent-gray" onclick={() => hideButton(true)}>
           {$t('purchase_button_never_show_again')}
         </Button>
-        <Button size="sm" fullwidth shadow={false} color="transparent-gray" on:click={() => hideButton(false)}>
+        <Button size="sm" fullwidth shadow={false} color="transparent-gray" onclick={() => hideButton(false)}>
           {$t('purchase_button_reminder')}
         </Button>
       </div>

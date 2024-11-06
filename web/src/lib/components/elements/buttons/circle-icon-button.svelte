@@ -1,32 +1,6 @@
 <script lang="ts" module>
-  import type { HTMLButtonAttributes, HTMLLinkAttributes } from 'svelte/elements';
-
   export type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque' | 'alert';
   export type Padding = '1' | '2' | '3';
-
-  type BaseProps = {
-    icon: string;
-    title: string;
-    class?: string;
-    color?: Color;
-    padding?: Padding;
-    size?: string;
-    hideMobile?: true;
-    buttonSize?: string;
-    viewBox?: string;
-  };
-
-  export type ButtonProps = HTMLButtonAttributes &
-    BaseProps & {
-      href?: never;
-    };
-
-  export type LinkProps = HTMLLinkAttributes &
-    BaseProps & {
-      type?: never;
-    };
-
-  export type Props = ButtonProps | LinkProps;
 </script>
 
 <script lang="ts">
@@ -36,6 +10,7 @@
    * Override the default styling of the button for specific use cases, such as the icon color.
    */
   interface Props {
+    id?: string;
     type?: string;
     href?: string;
     icon: string;
@@ -57,7 +32,10 @@
     viewBox?: string | undefined;
     class?: string;
 
+    'aria-hidden'?: boolean | undefined | null;
+    tabindex?: number | undefined | null;
     onclick: (e: MouseEvent) => void;
+    disabled?: boolean;
   }
 
   let {

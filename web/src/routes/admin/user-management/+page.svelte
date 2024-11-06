@@ -159,7 +159,7 @@
           hideCancelButton={true}
           confirmColor="green"
         >
-          {#snippet prompt()}
+          {#snippet promptSnippet()}
             <div class="flex flex-col gap-4">
               <p>{$t('admin.user_password_has_been_reset')}</p>
 
@@ -169,7 +169,7 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton onClick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                <LinkButton onclick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>
@@ -247,7 +247,7 @@
                       })}
                       color="primary"
                       size="16"
-                      on:click={() => restoreUserHandler(immichUser)}
+                      onclick={() => restoreUserHandler(immichUser)}
                     />
                   {/if}
                 </td>

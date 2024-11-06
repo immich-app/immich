@@ -44,7 +44,7 @@
   };
 </script>
 
-<Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleRestore}>
+<Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" onclick={handleRestore}>
   <Icon path={mdiHistory} size="24" />
   <span class="ml-2">{$t('restore')}</span>
 </Button>

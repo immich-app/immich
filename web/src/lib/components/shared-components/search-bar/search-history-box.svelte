@@ -139,7 +139,7 @@
                 size="18"
                 padding="1"
                 tabindex={-1}
-                on:click={() => handleClearSingle(savedSearchTerm)}
+                onclick={() => handleClearSingle(savedSearchTerm)}
               />
             </div>
           </div>

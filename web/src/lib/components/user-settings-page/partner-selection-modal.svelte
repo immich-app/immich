@@ -72,7 +72,7 @@
 
     {#if selectedUsers.length > 0}
       <div class="pt-5">
-        <Button size="sm" fullwidth on:click={() => onAddUsers(selectedUsers)}>{$t('add')}</Button>
+        <Button size="sm" fullwidth onclick={() => onAddUsers(selectedUsers)}>{$t('add')}</Button>
       </div>
     {/if}
   </div>

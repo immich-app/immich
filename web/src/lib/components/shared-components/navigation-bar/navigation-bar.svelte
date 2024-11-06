@@ -31,14 +31,14 @@
   let shouldShowAccountInfo = $state(false);
   let shouldShowAccountInfoPanel = $state(false);
   let shouldShowHelpPanel = $state(false);
-  let innerWidth: number = $state();
+  let innerWidth: number = $state(0);
 
   const onLogout = async () => {
     const { redirectUri } = await logout();
     await handleLogout(redirectUri);
   };
 
-  let aboutInfo: ServerAboutResponseDto = $state();
+  let aboutInfo: ServerAboutResponseDto | undefined = $state();
 
   onMount(async () => {
     aboutInfo = await getAboutInfo();
@@ -47,7 +47,7 @@
 
 <svelte:window bind:innerWidth />
 
-{#if shouldShowHelpPanel}
+{#if shouldShowHelpPanel && aboutInfo}
   <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} info={aboutInfo} />
 {/if}
 
@@ -75,6 +75,7 @@
             title={$t('go_to_search')}
             icon={mdiMagnify}
             padding="2"
+            onclick={() => {}}
           />
         {/if}
 
@@ -89,20 +90,20 @@
             id="support-feedback-button"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
-            on:click={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
             padding="1"
           />
         </div>
 
         {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <LinkButton on:click={onUploadClick} class="hidden lg:block">
+          <LinkButton onclick={onUploadClick} class="hidden lg:block">
             <div class="flex gap-2">
               <Icon path={mdiTrayArrowUp} size="1.5em" />
               <span>{$t('upload')}</span>
             </div>
           </LinkButton>
           <CircleIconButton
-            on:click={onUploadClick}
+            onclick={onUploadClick}
             title={$t('upload')}
             icon={mdiTrayArrowUp}
             class="lg:hidden"

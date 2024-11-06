@@ -36,5 +36,5 @@
 {#if menuItem}
   <MenuOption text={$t('download')} icon={menuItemIcon} onClick={handleDownloadFiles} />
 {:else}
-  <CircleIconButton title={$t('download')} icon={mdiCloudDownloadOutline} on:click={handleDownloadFiles} />
+  <CircleIconButton title={$t('download')} icon={mdiCloudDownloadOutline} onclick={handleDownloadFiles} />
 {/if}

@@ -145,7 +145,7 @@
 
         {#if $user.isAdmin}
           <div class="text-right mt-4">
-            <Button size="sm" color="red" on:click={removeServerProductKey}>{$t('purchase_button_remove_key')}</Button>
+            <Button size="sm" color="red" onclick={removeServerProductKey}>{$t('purchase_button_remove_key')}</Button>
           </div>
         {/if}
       {:else}
@@ -169,8 +169,7 @@
         </div>
 
         <div class="text-right mt-4">
-          <Button size="sm" color="red" on:click={removeIndividualProductKey}>{$t('purchase_button_remove_key')}</Button
-          >
+          <Button size="sm" color="red" onclick={removeIndividualProductKey}>{$t('purchase_button_remove_key')}</Button>
         </div>
       {/if}
     {:else}

@@ -45,9 +45,9 @@
 {#if menuItem}
   <MenuOption text={label} icon={mdiDeleteOutline} onClick={handleTrash} />
 {:else if loading}
-  <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
+  <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
 {:else}
-  <CircleIconButton title={label} icon={mdiDeleteForeverOutline} on:click={handleTrash} />
+  <CircleIconButton title={label} icon={mdiDeleteForeverOutline} onclick={handleTrash} />
 {/if}
 
 {#if isShowConfirmation}

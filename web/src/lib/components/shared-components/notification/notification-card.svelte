@@ -19,7 +19,6 @@
 
   let { notification }: Props = $props();
 
-  // svelte-ignore reactive_declaration_non_reactive_property
   let icon = $derived(notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline);
   let hoverStyle = $derived(notification.action.type === 'discard' ? 'hover:cursor-pointer' : '');
 
@@ -95,8 +94,8 @@
       class="dark:text-immich-dark-gray"
       size="20"
       padding="2"
-      on:click={discard}
-      aria-hidden="true"
+      onclick={discard}
+      aria-hidden={true}
       tabindex={-1}
     />
   </div>

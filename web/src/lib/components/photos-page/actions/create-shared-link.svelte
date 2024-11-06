@@ -9,7 +9,7 @@
   const { getAssets } = getAssetControlContext();
 </script>
 
-<CircleIconButton title={$t('share')} icon={mdiShareVariantOutline} on:click={() => (showModal = true)} />
+<CircleIconButton title={$t('share')} icon={mdiShareVariantOutline} onclick={() => (showModal = true)} />
 
 {#if showModal}
   <CreateSharedLinkModal assetIds={[...getAssets()].map(({ id }) => id)} onClose={() => (showModal = false)} />

@@ -23,7 +23,7 @@
 </script>
 
 {#if $isSelectingAllAssets}
-  <CircleIconButton title={$t('unselect_all')} icon={mdiSelectRemove} on:click={handleCancel} />
+  <CircleIconButton title={$t('unselect_all')} icon={mdiSelectRemove} onclick={handleCancel} />
 {:else}
-  <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
+  <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
 {/if}

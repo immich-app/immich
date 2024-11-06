@@ -105,13 +105,13 @@
   <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
       <div class="flex place-items-center gap-2">
-        <LinkButton on:click={handleRestoreTrash} disabled={$isMultiSelectState}>
+        <LinkButton onclick={handleRestoreTrash} disabled={$isMultiSelectState}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiHistory} size="18" />
             {$t('restore_all')}
           </div>
         </LinkButton>
-        <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
+        <LinkButton onclick={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiDeleteForeverOutline} size="18" />
             {$t('empty_trash')}
