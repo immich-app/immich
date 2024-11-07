@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Unexpected token -->
 <script lang="ts">
   import {
     notificationController,
@@ -25,7 +26,11 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let jobs: AllJobStatusResponseDto;
+  interface Props {
+    jobs: AllJobStatusResponseDto;
+  }
+
+  let { jobs = $bindable() }: Props = $props();
 
   interface JobDetails {
     title: string;
@@ -56,7 +61,7 @@
     await handleCommand(jobId, dto);
   };
 
-  let jobDetails = <Partial<Record<JobName, JobDetails>>>{
+  let jobDetails: Partial<Record<JobName, JobDetails>> = {
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: $getJobName(JobName.ThumbnailGeneration),

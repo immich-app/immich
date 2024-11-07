@@ -153,7 +153,7 @@
               <LoadingSpinner />
             </div>
           {/await}
-        {:then { default: Map }}
+        {:then {default: Map }}
           <Map
             bind:this={mapElement}
             mapMarkers={lat !== undefined && lng !== undefined && asset
