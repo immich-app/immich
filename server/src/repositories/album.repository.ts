@@ -66,6 +66,7 @@ export class AlbumRepository implements IAlbumRepository {
       relations: { owner: true, albumUsers: { user: true } },
       order: { createdAt: 'DESC' },
     };
+
     if (typeof take === 'number') {
       queryOptions.take = take;
     }
