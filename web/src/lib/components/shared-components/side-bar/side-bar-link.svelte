@@ -39,6 +39,7 @@
 
   {#if $$slots.hasDropdown}
     <button
+      type="button"
       class="relative flex cursor-default select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded"
       on:click={() => (dropdownOpen = !dropdownOpen)}
     >

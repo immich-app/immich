@@ -5,21 +5,15 @@
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { mdiArrowRight } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
+  import { t } from 'svelte-i18n';
 
-  interface Props {
-    onAlbumsLoaded?: () => void;
-  }
-
-  let { onAlbumsLoaded }: Props = $props();
-
-  let albums: AlbumResponseDto[] = $state([]);
+  let albums: AlbumResponseDto[] = [];
 
   onMount(async () => {
     try {
       albums = await getAllAlbums({ top: 3 });
-      onAlbumsLoaded!();
-    } catch (e) {
-      handleError(e, 'Could not get albums. Please try again.');
+    } catch (error) {
+      handleError(error, $t('failed_to_load_assets'));
     }
   });
 </script>
@@ -52,6 +46,6 @@
     <div>
       <div class="h-6 w-6 bg-cover rounded"><Icon path={mdiArrowRight}></Icon></div>
     </div>
-    <div class="grow text-sm font-medium">Alle Albums bekijken</div>
+    <div class="grow text-sm font-medium">{$t('all_albums')}</div>
   </a>
 {/if}
