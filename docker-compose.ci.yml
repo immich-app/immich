@@ -17,8 +17,6 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
     ports:
       - 2283:2283
     depends_on:
@@ -66,11 +64,10 @@ services:
   database:
     container_name: immich_postgres
     image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
-    env_file:
-      - .env
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
