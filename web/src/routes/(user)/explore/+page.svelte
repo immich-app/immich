@@ -16,8 +16,6 @@
 
   enum Field {
     CITY = 'exifInfo.city',
-    TAGS = 'smartInfo.tags',
-    OBJECTS = 'smartInfo.objects',
   }
 
   const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {

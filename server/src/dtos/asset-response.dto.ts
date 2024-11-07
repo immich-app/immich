@@ -12,7 +12,6 @@ import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { AssetType } from 'src/enum';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -45,7 +44,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isTrashed!: boolean;
   isOffline!: boolean;
   exifInfo?: ExifResponseDto;
-  smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
@@ -141,7 +139,6 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
-    smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
@@ -160,16 +157,4 @@ export class MemoryLaneResponseDto {
   yearsAgo!: number;
 
   assets!: AssetResponseDto[];
-}
-
-export class SmartInfoResponseDto {
-  tags?: string[] | null;
-  objects?: string[] | null;
-}
-
-export function mapSmartInfo(entity: SmartInfoEntity): SmartInfoResponseDto {
-  return {
-    tags: entity.tags,
-    objects: entity.objects,
-  };
 }

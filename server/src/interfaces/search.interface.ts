@@ -68,7 +68,6 @@ export interface SearchStatusOptions {
 
 export interface SearchOneToOneRelationOptions {
   withExif?: boolean;
-  withSmartInfo?: boolean;
   withStacked?: boolean;
 }
 
