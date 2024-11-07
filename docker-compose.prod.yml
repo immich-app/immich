@@ -35,27 +35,6 @@ services:
       - traefik
       - default
 
-  # immich-machine-learning:
-  #   container_name: immich_machine_learning
-  #   image: immich-machine-learning:latest
-  #   # extends:
-  #   #   file: hwaccel.ml.yml
-  #   #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
-  #   build:
-  #     context: ../machine-learning
-  #     dockerfile: Dockerfile
-  #     args:
-  #       - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
-  #   ports:
-  #     - 3003:3003
-  #   volumes:
-  #     - model-cache:/cache
-  #   env_file:
-  #     - .env
-  #   restart: always
-  #   healthcheck:
-  #     disable: false
-
   redis:
     container_name: immich_redis
     image: redis:6.2-alpine@sha256:2ba50e1ac3a0ea17b736ce9db2b0a9f6f8b85d4c27d5f5accc6a416d8f42c6d5
