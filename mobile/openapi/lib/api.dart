@@ -222,7 +222,6 @@ part 'model/shared_link_edit_dto.dart';
 part 'model/shared_link_response_dto.dart';
 part 'model/shared_link_type.dart';
 part 'model/sign_up_dto.dart';
-part 'model/smart_info_response_dto.dart';
 part 'model/smart_search_dto.dart';
 part 'model/source_type.dart';
 part 'model/stack_create_dto.dart';

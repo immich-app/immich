@@ -408,7 +408,6 @@ Class | Method | HTTP request | Description
  - [SharedLinkResponseDto](doc//SharedLinkResponseDto.md)
  - [SharedLinkType](doc//SharedLinkType.md)
  - [SignUpDto](doc//SignUpDto.md)
- - [SmartInfoResponseDto](doc//SmartInfoResponseDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
  - [SourceType](doc//SourceType.md)
  - [StackCreateDto](doc//StackCreateDto.md)

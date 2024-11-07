@@ -221,10 +221,6 @@ export type PersonWithFacesResponseDto = {
     /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
-export type SmartInfoResponseDto = {
-    objects?: string[] | null;
-    tags?: string[] | null;
-};
 export type AssetStackResponseDto = {
     assetCount: number;
     id: string;
@@ -267,7 +263,6 @@ export type AssetResponseDto = {
     people?: PersonWithFacesResponseDto[];
     /** This property was deprecated in v1.113.0 */
     resized?: boolean;
-    smartInfo?: SmartInfoResponseDto;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     thumbhash: string | null;
