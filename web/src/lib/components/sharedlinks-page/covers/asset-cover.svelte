@@ -2,7 +2,7 @@
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
 
   interface Props {
-    alt: any;
+    alt?: string;
     preload?: boolean;
     src: string;
     class?: string;

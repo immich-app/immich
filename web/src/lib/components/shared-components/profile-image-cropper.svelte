@@ -17,7 +17,7 @@
 
   let { asset, onClose }: Props = $props();
 
-  let imgElement = $state<HTMLDivElement>();
+  let imgElement: HTMLDivElement | undefined = $state();
 
   onMount(() => {
     if (!imgElement) {
@@ -53,6 +53,10 @@
   };
 
   const handleSetProfilePicture = async () => {
+    if (!imgElement) {
+      return;
+    }
+
     try {
       const blob = await domtoimage.toBlob(imgElement);
       if (await hasTransparentPixels(blob)) {

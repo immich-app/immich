@@ -4,12 +4,11 @@
   import Icon from '../elements/icon.svelte';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  interface Props extends HTMLInputAttributes {
     password: string;
     autocomplete: AutoFill;
     required?: boolean;
     onInput?: (value: string) => void;
-    [key: string]: any;
   }
 
   let { password = $bindable(), required = true, onInput = undefined, ...rest }: Props = $props();

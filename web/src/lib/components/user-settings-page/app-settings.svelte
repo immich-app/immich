@@ -87,7 +87,6 @@
     }),
   );
   let selectedDate = $derived(`${formattedDate} ${timePortion}`);
-  // svelte-ignore reactive_declaration_non_reactive_property
   let selectedOption = $derived({
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,

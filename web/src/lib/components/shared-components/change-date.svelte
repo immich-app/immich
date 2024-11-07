@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { DateTime } from 'luxon';
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import Combobox from './combobox.svelte';
@@ -129,7 +127,7 @@
     }
   };
 
-  run(() => {
+  $effect(() => {
     selectedOption = getPreferredTimeZone(initialDate, userTimeZone, timezones, selectedOption);
   });
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)

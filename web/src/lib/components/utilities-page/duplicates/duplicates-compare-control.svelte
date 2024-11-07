@@ -11,6 +11,7 @@
   import { mdiCheck, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -22,14 +23,14 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  let selectedAssetIds = $state(new Set<string>());
+  let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
     const suggestedAsset = suggestDuplicateByFileSize(assets);
 
     if (!suggestedAsset) {
-      selectedAssetIds = new Set(assets[0].id);
+      selectedAssetIds = new SvelteSet(assets[0].id);
       return;
     }
 
@@ -57,7 +58,7 @@
   };
 
   const onSelectAll = () => {
-    selectedAssetIds = new Set(assets.map((asset) => asset.id));
+    selectedAssetIds = new SvelteSet(assets.map((asset) => asset.id));
   };
 
   const handleResolve = () => {

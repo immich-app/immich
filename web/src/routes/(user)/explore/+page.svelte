@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { AppRoute } from '$lib/constants';
@@ -32,10 +30,8 @@
   };
 
   let places = $derived(getFieldItems(data.items, Field.CITY));
-  let people;
-  run(() => {
-    people = data.response.people;
-  });
+  let people = $state(data.response.people);
+
   let hasPeople = $derived(data.response.total > 0);
 
   onMount(() => {

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
@@ -27,7 +25,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AppRoute, PersonPageViewMode, QueryParameter } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -69,15 +67,6 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  enum ViewMode {
-    VIEW_ASSETS = 'view-assets',
-    SELECT_PERSON = 'select-person',
-    MERGE_PEOPLE = 'merge-people',
-    SUGGEST_MERGE = 'suggest-merge',
-    BIRTH_DATE = 'birth-date',
-    UNASSIGN_ASSETS = 'unassign-faces',
-  }
-
   let assetStore = new AssetStore({
     isArchived: false,
     personId: data.person.id,
@@ -86,7 +75,7 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { selectedAssets, isMultiSelectState } = assetInteractionStore;
 
-  let viewMode: ViewMode = $state(ViewMode.VIEW_ASSETS);
+  let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
   let previousRoute: string = $state(AppRoute.EXPLORE);
   let people: PersonResponseDto[] = [];
@@ -116,7 +105,7 @@
       previousRoute = getPreviousRoute;
     }
     if (action == 'merge') {
-      viewMode = ViewMode.MERGE_PEOPLE;
+      viewMode = PersonPageViewMode.MERGE_PEOPLE;
     }
 
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
@@ -127,7 +116,7 @@
   });
 
   const handleEscape = async () => {
-    if ($showAssetViewer || viewMode === ViewMode.SUGGEST_MERGE) {
+    if ($showAssetViewer || viewMode === PersonPageViewMode.SUGGEST_MERGE) {
       return;
     }
     if ($isMultiSelectState) {
@@ -158,11 +147,11 @@
   const handleUnmerge = () => {
     $assetStore.removeAssets([...$selectedAssets].map((a) => a.id));
     assetInteractionStore.clearMultiselect();
-    viewMode = ViewMode.VIEW_ASSETS;
+    viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
 
   const handleReassignAssets = () => {
-    viewMode = ViewMode.UNASSIGN_ASSETS;
+    viewMode = PersonPageViewMode.UNASSIGN_ASSETS;
   };
 
   const toggleHidePerson = async () => {
@@ -193,7 +182,7 @@
   };
 
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
-    if (viewMode !== ViewMode.SELECT_PERSON) {
+    if (viewMode !== PersonPageViewMode.SELECT_PERSON) {
       return;
     }
     try {
@@ -205,12 +194,12 @@
 
     assetInteractionStore.clearMultiselect();
 
-    viewMode = ViewMode.VIEW_ASSETS;
+    viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
 
   const handleMergeSamePerson = async (response: [PersonResponseDto, PersonResponseDto]) => {
     const [personToMerge, personToBeMergedIn] = response;
-    viewMode = ViewMode.VIEW_ASSETS;
+    viewMode = PersonPageViewMode.VIEW_ASSETS;
     isEditingName = false;
     try {
       await mergePerson({
@@ -239,11 +228,11 @@
     personName = person.name;
     personMerge1 = person;
     personMerge2 = person2;
-    viewMode = ViewMode.SUGGEST_MERGE;
+    viewMode = PersonPageViewMode.SUGGEST_MERGE;
   };
 
   const changeName = async () => {
-    viewMode = ViewMode.VIEW_ASSETS;
+    viewMode = PersonPageViewMode.VIEW_ASSETS;
     person.name = personName;
     try {
       isEditingName = false;
@@ -260,7 +249,7 @@
   };
 
   const handleCancelEditName = () => {
-    if (viewMode === ViewMode.SUGGEST_MERGE) {
+    if (viewMode === PersonPageViewMode.SUGGEST_MERGE) {
       return;
     }
     isSearchingPeople = false;
@@ -291,13 +280,13 @@
       potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
-            personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
+            personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
             person.id !== personMerge2.id &&
-            person.id !== personMerge1.id &&
+            person.id !== personMerge1?.id &&
             !person.isHidden,
         )
         .slice(0, 3);
-      viewMode = ViewMode.SUGGEST_MERGE;
+      viewMode = PersonPageViewMode.SUGGEST_MERGE;
       return;
     }
     await changeName();
@@ -305,7 +294,7 @@
 
   const handleSetBirthDate = async (birthDate: string) => {
     try {
-      viewMode = ViewMode.VIEW_ASSETS;
+      viewMode = PersonPageViewMode.VIEW_ASSETS;
       person.birthDate = birthDate;
 
       const updatedPerson = await updatePerson({
@@ -327,7 +316,7 @@
   };
 
   const handleGoBack = async () => {
-    viewMode = ViewMode.VIEW_ASSETS;
+    viewMode = PersonPageViewMode.VIEW_ASSETS;
     if ($page.url.searchParams.has(QueryParameter.ACTION)) {
       $page.url.searchParams.delete(QueryParameter.ACTION);
       await goto($page.url);
@@ -337,53 +326,50 @@
   onDestroy(() => {
     assetStore.destroy();
   });
-  let person;
-  run(() => {
-    person = data.person;
-  });
-  let thumbnailData;
-  run(() => {
-    thumbnailData = getPeopleThumbnailUrl(person);
-  });
-  run(() => {
+  let person = $derived(data.person);
+
+  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
+
+  $effect(() => {
     if (person) {
       handlePromiseError(updateAssetCount());
       handlePromiseError(assetStore.updateOptions({ personId: person.id }));
     }
   });
+
   let isAllArchive = $derived([...$selectedAssets].every((asset) => asset.isArchived));
   let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
 </script>
 
-{#if viewMode === ViewMode.UNASSIGN_ASSETS}
+{#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
     assetIds={[...$selectedAssets].map((a) => a.id)}
     personAssets={person}
-    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}
   />
 {/if}
 
-{#if viewMode === ViewMode.SUGGEST_MERGE}
+{#if viewMode === PersonPageViewMode.SUGGEST_MERGE && personMerge1 && personMerge2}
   <MergeSuggestionModal
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onReject={changeName}
     onConfirm={handleMergeSamePerson}
   />
 {/if}
 
-{#if viewMode === ViewMode.BIRTH_DATE}
+{#if viewMode === PersonPageViewMode.BIRTH_DATE}
   <SetBirthDateModal
     birthDate={person.birthDate ?? ''}
-    onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}
+    onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onUpdate={handleSetBirthDate}
   />
 {/if}
 
-{#if viewMode === ViewMode.MERGE_PEOPLE}
+{#if viewMode === PersonPageViewMode.MERGE_PEOPLE}
   <MergeFaceSelector {person} onBack={handleGoBack} onMerge={handleMerge} />
 {/if}
 
@@ -411,14 +397,14 @@
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
-    {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
+    {#if viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE}
       <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
           <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
             <MenuOption
               text={$t('select_featured_photo')}
               icon={mdiAccountBoxOutline}
-              onClick={() => (viewMode = ViewMode.SELECT_PERSON)}
+              onClick={() => (viewMode = PersonPageViewMode.SELECT_PERSON)}
             />
             <MenuOption
               text={person.isHidden ? $t('unhide_person') : $t('hide_person')}
@@ -428,20 +414,20 @@
             <MenuOption
               text={$t('set_date_of_birth')}
               icon={mdiCalendarEditOutline}
-              onClick={() => (viewMode = ViewMode.BIRTH_DATE)}
+              onClick={() => (viewMode = PersonPageViewMode.BIRTH_DATE)}
             />
             <MenuOption
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
-              onClick={() => (viewMode = ViewMode.MERGE_PEOPLE)}
+              onClick={() => (viewMode = PersonPageViewMode.MERGE_PEOPLE)}
             />
           </ButtonContextMenu>
         {/snippet}
       </ControlAppBar>
     {/if}
 
-    {#if viewMode === ViewMode.SELECT_PERSON}
-      <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW_ASSETS)}>
+    {#if viewMode === PersonPageViewMode.SELECT_PERSON}
+      <ControlAppBar onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}>
         {#snippet leading()}
           {$t('select_featured_photo')}
         {/snippet}
@@ -456,12 +442,12 @@
       enableRouting={true}
       {assetStore}
       {assetInteractionStore}
-      isSelectionMode={viewMode === ViewMode.SELECT_PERSON}
-      singleSelect={viewMode === ViewMode.SELECT_PERSON}
+      isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
+      singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
       onSelect={handleSelectFeaturePhoto}
       onEscape={handleEscape}
     >
-      {#if viewMode === ViewMode.VIEW_ASSETS || viewMode === ViewMode.SUGGEST_MERGE || viewMode === ViewMode.BIRTH_DATE}
+      {#if (viewMode === PersonPageViewMode.VIEW_ASSETS || viewMode === PersonPageViewMode.SUGGEST_MERGE || viewMode === PersonPageViewMode.BIRTH_DATE) && suggestionContainer}
         <!-- Person information block -->
         <div
           class="relative w-fit p-4 sm:px-6"

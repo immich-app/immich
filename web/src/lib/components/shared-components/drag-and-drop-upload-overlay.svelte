@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault, stopPropagation } from 'svelte/legacy';
-
   import { page } from '$app/stores';
   import { shouldIgnoreEvent } from '$lib/actions/shortcut';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
@@ -119,26 +117,41 @@
       await fileUploadHandler(filesArray, albumId);
     }
   };
+
+  const ondragenter = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDragEnter(e);
+  };
+
+  const ondragleave = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onDragLeave(e);
+  };
+
+  const ondrop = async (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    await onDrop(e);
+  };
+
+  const onDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 </script>
 
 <svelte:window onpaste={onPaste} />
 
-<svelte:body
-  ondragenter={stopPropagation(preventDefault(onDragEnter))}
-  ondragleave={stopPropagation(preventDefault(onDragLeave))}
-  ondrop={stopPropagation(preventDefault(onDrop))}
-/>
+<svelte:body {ondragenter} {ondragleave} {ondrop} />
 
 {#if dragStartTarget}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="fixed inset-0 z-[1000] flex h-full w-full flex-col items-center justify-center bg-gray-100/90 text-immich-dark-gray dark:bg-immich-dark-bg/90 dark:text-immich-gray"
     transition:fade={{ duration: 250 }}
-    ondragover={(e) => {
-      // Prevent browser from opening the dropped file.
-      e.stopPropagation();
-      e.preventDefault();
-    }}
+    ondragover={onDragOver}
   >
     <ImmichLogo noText class="m-16 w-48 animate-bounce" />
     <div class="text-2xl">{$t('drop_files_to_upload')}</div>

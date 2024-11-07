@@ -3,8 +3,6 @@
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { getProfileImageUrl } from '$lib/utils';
   import { type UserAvatarColor } from '@immich/sdk';
   import { t } from 'svelte-i18n';
@@ -40,12 +38,12 @@
     label = undefined,
   }: Props = $props();
 
-  let img: HTMLImageElement = $state();
+  let img: HTMLImageElement | undefined = $state();
   let showFallback = $state(true);
 
   const tryLoadImage = async () => {
     try {
-      await img.decode();
+      await img?.decode();
       showFallback = false;
     } catch {
       showFallback = true;
@@ -75,11 +73,12 @@
     xxxl: 'w-28 h-28',
   };
 
-  // sveeeeeeelteeeeee fiveeeeee
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  run(() => {
-    img, user, void tryLoadImage();
+  $effect(() => {
+    if (img && user) {
+      tryLoadImage().catch(console.error);
+    }
   });
+
   let colorClass = $derived(colorClasses[color || user.avatarColor]);
   let sizeClass = $derived(sizeClasses[size]);
   let title = $derived(label ?? `${user.name} (${user.email})`);

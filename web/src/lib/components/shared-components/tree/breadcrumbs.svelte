@@ -25,6 +25,7 @@
         href={getLink(pathSegments.slice(0, -1).join('/'))}
         class="mr-2"
         padding="2"
+        onclick={() => {}}
       />
     </div>
   {/if}
@@ -41,6 +42,7 @@
           size="1.25em"
           padding="2"
           aria-current={isRoot ? 'page' : undefined}
+          onclick={() => {}}
         />
       </li>
       {#each pathSegments as segment, index}

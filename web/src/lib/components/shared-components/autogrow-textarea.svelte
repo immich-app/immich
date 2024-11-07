@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { autoGrowHeight } from '$lib/actions/autogrow';
   import { shortcut } from '$lib/actions/shortcut';
   import { tick } from 'svelte';
@@ -14,16 +12,10 @@
 
   let { content = '', class: className = '', onContentUpdate = () => null, placeholder = '' }: Props = $props();
 
-  let textarea: HTMLTextAreaElement = $state();
-  let newContent;
-  run(() => {
-    newContent = content;
-  });
+  let textarea: HTMLTextAreaElement | undefined = $state();
+  let newContent = $state(content);
 
-  run(() => {
-    // re-visit with svelte 5. runes will make this better.
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    newContent;
+  $effect(() => {
     if (textarea && newContent.length > 0) {
       void tick().then(() => autoGrowHeight(textarea));
     }

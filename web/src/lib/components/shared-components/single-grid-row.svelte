@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   interface Props {
     class?: string;
     itemCount?: number;
-    children?: import('svelte').Snippet<[any]>;
+    children?: import('svelte').Snippet<[{ itemCount: number }]>;
   }
 
   let { class: className = '', itemCount = $bindable(1), children }: Props = $props();
@@ -34,7 +32,7 @@
     return Math.floor((containerWidth + columnGap) / (childWidth + columnGap)) || 1;
   };
 
-  run(() => {
+  $effect(() => {
     if (container && contentRect) {
       itemCount = getItemCount(container, contentRect.width);
     }

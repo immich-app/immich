@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { quartInOut } from 'svelte/easing';
   import { fade, scale } from 'svelte/transition';
   import { uploadAssetsStore } from '$lib/stores/upload';
@@ -29,7 +27,7 @@
     }
   };
 
-  run(() => {
+  $effect(() => {
     if ($isUploading) {
       autoHide();
     }

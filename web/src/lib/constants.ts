@@ -340,7 +340,7 @@ export enum SettingInputFieldType {
   COLOR = 'color',
 }
 
-export enum ViewMode {
+export enum AlbumPageViewMode {
   LINK_SHARING = 'link-sharing',
   SELECT_USERS = 'select-users',
   SELECT_THUMBNAIL = 'select-thumbnail',
@@ -348,4 +348,13 @@ export enum ViewMode {
   VIEW_USERS = 'view-users',
   VIEW = 'view',
   OPTIONS = 'options',
+}
+
+export enum PersonPageViewMode {
+  VIEW_ASSETS = 'view-assets',
+  SELECT_PERSON = 'select-person',
+  MERGE_PEOPLE = 'merge-people',
+  SUGGEST_MERGE = 'suggest-merge',
+  BIRTH_DATE = 'birth-date',
+  UNASSIGN_ASSETS = 'unassign-faces',
 }

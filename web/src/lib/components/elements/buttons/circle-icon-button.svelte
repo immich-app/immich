@@ -33,7 +33,10 @@
     class?: string;
 
     'aria-hidden'?: boolean | undefined | null;
+    'aria-checked'?: 'true' | 'false' | undefined | null;
+    'aria-current'?: 'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false' | undefined | null;
     tabindex?: number | undefined | null;
+    role?: string | undefined | null;
     onclick: (e: MouseEvent) => void;
     disabled?: boolean;
   }

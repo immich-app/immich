@@ -19,7 +19,7 @@
     /**
      * Optional icon to display next to the modal title, if `showLogo` is false.
      */
-    icon?: string | undefined;
+    icon?: string;
   }
 
   let { id, title, onClose, showLogo = false, icon = undefined }: Props = $props();

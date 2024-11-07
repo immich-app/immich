@@ -10,7 +10,7 @@
     required?: boolean;
     value?: number | null;
     onInput: (value: number | null) => void;
-    onPaste?: ClipboardEventHandler<HTMLInputElement> | undefined;
+    onPaste?: ClipboardEventHandler<HTMLInputElement>;
   }
 
   let {

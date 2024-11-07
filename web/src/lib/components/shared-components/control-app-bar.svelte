@@ -33,7 +33,7 @@
   let appBarBorder = $state('bg-immich-bg border border-transparent');
 
   const onScroll = () => {
-    if (window.pageYOffset > 80) {
+    if (window.scrollY > 80) {
       appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
 
       if (forceDark) {

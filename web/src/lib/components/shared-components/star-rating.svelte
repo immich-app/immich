@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -16,12 +14,12 @@
 
   let { count = 5, rating, readOnly = false, onRating }: Props = $props();
 
-  let ratingSelection = $state(0);
+  let ratingSelection = $state(rating);
   let hoverRating = $state(0);
   let focusRating = $state(0);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  run(() => {
+  $effect(() => {
     ratingSelection = rating;
   });
 

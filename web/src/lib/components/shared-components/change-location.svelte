@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -42,7 +40,7 @@
   let lng = $derived(asset?.exifInfo?.longitude ?? undefined);
   let zoom = $derived(lat !== undefined && lng !== undefined ? 12.5 : 1);
 
-  run(() => {
+  $effect(() => {
     if (places) {
       suggestedPlaces = places.slice(0, 5);
     }
@@ -153,7 +151,7 @@
               <LoadingSpinner />
             </div>
           {/await}
-        {:then {default: Map }}
+        {:then { default: Map }}
           <Map
             bind:this={mapElement}
             mapMarkers={lat !== undefined && lng !== undefined && asset

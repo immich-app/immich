@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Icon from '$lib/components/elements/icon.svelte';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { mdiPlus } from '@mdi/js';
@@ -15,7 +13,6 @@
 
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);
-  let filteredAlbums: AlbumResponseDto[] = $state([]);
   let loading = $state(true);
   let search = $state('');
 
@@ -34,16 +31,16 @@
     loading = false;
   });
 
-  run(() => {
-    filteredAlbums = sortAlbums(
+  let filteredAlbums = $derived(
+    sortAlbums(
       search.length > 0 && albums.length > 0
         ? albums.filter((album) => {
             return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
           })
         : albums,
       { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
-    );
-  });
+    ),
+  );
 
   const getTitle = () => {
     if (shared) {

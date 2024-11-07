@@ -5,7 +5,7 @@
     onClick?: undefined | (() => unknown);
     text: string;
     fullWidth?: boolean;
-    src?: any;
+    src?: string;
   }
 
   let { onClick = undefined, text, fullWidth = false, src = empty1Url }: Props = $props();

@@ -9,12 +9,9 @@
   import type { HTMLImgAttributes } from 'svelte/elements';
   import { t } from 'svelte-i18n';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
-  interface Props {
+  interface Props extends HTMLImgAttributes {
     noText?: boolean;
     draggable?: boolean;
-    [key: string]: any;
   }
 
   let { noText = false, draggable = false, ...rest }: Props = $props();
