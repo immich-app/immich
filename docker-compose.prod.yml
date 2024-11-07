@@ -8,6 +8,15 @@ services:
   immich-server:
     container_name: immich_server
     image: '${IMAGE_NAME}-server'
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      UPLOAD_LOCATION: ${UPLOAD_LOCATION}
+      DB_DATA_LOCATION: ${DB_DATA_LOCATION}
+      IMMICH_VERSION: ${IMMICH_VERSION}
+
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
@@ -17,8 +26,6 @@ services:
     volumes:
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
     ports:
       - 2283:2283
     depends_on:
