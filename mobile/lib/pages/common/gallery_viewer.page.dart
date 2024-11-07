@@ -93,12 +93,11 @@ class GalleryViewerPage extends HookConsumerWidget {
 
       void onError(Object exception, StackTrace? stackTrace) {
         // swallow error silently
-        debugPrint('Error precaching next image: $exception, $stackTrace');
+        log.severe('Error precaching next image: $exception, $stackTrace');
       }
 
       try {
         if (index < totalAssets.value && index >= 0) {
-          log.info('Precaching next image at index $index');
           final asset = loadAsset(index);
           await precacheImage(
             ImmichImage.imageProvider(asset: asset),
@@ -108,15 +107,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         }
       } catch (e) {
         // swallow error silently
-        debugPrint('Error precaching next image: $e');
+        log.severe('Error precaching next image: $e');
         context.maybePop();
       }
     }
 
     // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
-    ref.listen(currentAssetProvider, (prev, cur) {
-      log.info('Current asset changed from ${prev?.id} to ${cur?.id}');
-    });
+    ref.listen(currentAssetProvider, (prev, cur) {});
 
     useEffect(() {
       ref.read(currentAssetProvider.notifier).set(asset);
@@ -338,7 +335,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       if (newAsset.isImage && !isPlayingMotionVideo.value) {
         return buildImage(context, newAsset);
       }
-      log.info('Loading asset ${newAsset.id} (index $index) as video');
       return buildVideo(context, newAsset);
     }
 
@@ -386,7 +382,6 @@ class GalleryViewerPage extends HookConsumerWidget {
               itemCount: totalAssets.value,
               scrollDirection: Axis.horizontal,
               onPageChanged: (value) {
-                log.info('Page changed to $value');
                 final next = currentIndex.value < value ? value + 1 : value - 1;
 
                 ref.read(hapticFeedbackProvider.notifier).selectionClick();

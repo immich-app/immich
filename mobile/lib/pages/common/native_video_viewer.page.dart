@@ -24,7 +24,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
   final bool showControls;
   final Duration hideControlsTimer;
   final Widget placeholder;
-  // final ValueNotifier<bool>? doInitialize;
 
   const NativeVideoViewerPage({
     super.key,
@@ -48,7 +47,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final isCurrent = currentAsset.value == asset;
 
     final log = Logger('NativeVideoViewerPage');
-    log.info('Building NativeVideoViewerPage');
 
     final localEntity = useMemoized(() {
       if (!asset.isLocal) {
@@ -60,11 +58,9 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     Future<double?> calculateAspectRatio() async {
       if (!context.mounted) {
-        log.info('calculateAspectRatio: Context is not mounted');
         return null;
       }
 
-      log.info('Calculating aspect ratio');
       late final double? orientatedWidth;
       late final double? orientatedHeight;
 
@@ -81,7 +77,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         orientatedHeight = entity.orientatedHeight?.toDouble();
       }
 
-      log.info('Calculated aspect ratio');
       if (orientatedWidth != null &&
           orientatedHeight != null &&
           orientatedWidth > 0 &&
@@ -94,13 +89,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
-        log.info('createSource: Context is not mounted');
         return null;
       }
 
       if (localEntity != null && asset.livePhotoVideoId == null) {
-        log.info('Loading video from local storage');
-
         final file = await (await localEntity)!.file;
         if (file == null) {
           throw Exception('No file found for the video');
@@ -110,11 +102,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           path: file.path,
           type: VideoSourceType.file,
         );
-        log.info('Loaded video from local storage');
         return source;
       }
-
-      log.info('Loading video from server');
 
       // Use a network URL for the video player controller
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
@@ -127,7 +116,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         type: VideoSourceType.network,
         headers: ApiService.getRequestHeaders(),
       );
-      log.info('Loaded video from server');
       return source;
     }
 
@@ -136,14 +124,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     useMemoized(
       () async {
         if (!context.mounted) {
-          log.info('combined: Context is not mounted');
           return null;
         }
 
         final (videoSourceRes, aspectRatioRes) =
             await (createSource(), calculateAspectRatio()).wait;
         if (videoSourceRes == null || aspectRatioRes == null) {
-          log.info('combined: Video source or aspect ratio is null');
           return;
         }
 
@@ -162,12 +148,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      log.info('Checking if buffering');
       final videoPlayback = ref.read(videoPlaybackValueProvider);
       if ((isBuffering.value ||
               videoPlayback.state == VideoPlaybackState.initializing) &&
           videoPlayback.state != VideoPlaybackState.buffering) {
-        log.info('Marking video as buffering');
         ref.read(videoPlaybackValueProvider.notifier).value =
             videoPlayback.copyWith(state: VideoPlaybackState.buffering);
       }
@@ -237,10 +221,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       try {
         if (pause) {
-          log.info('Pausing video');
           videoController.pause();
         } else {
-          log.info('Playing video');
           videoController.play();
         }
       } catch (error) {
@@ -254,8 +236,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      log.info('Playback ready for video ${asset.id}');
-
       try {
         videoController.play();
         videoController.setVolume(0.9);
@@ -265,18 +245,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     ref.listen(currentAssetProvider, (_, value) {
-      log.info(
-        'Changing currentAsset from ${currentAsset.value?.id} isCurrent to ${value?.id}',
-      );
       // Delay the video playback to avoid a stutter in the swipe animation
       Timer(const Duration(milliseconds: 350), () {
         if (!context.mounted) {
           return;
         }
 
-        log.info(
-          'Changed currentAsset from ${currentAsset.value?.id} isCurrent to ${value?.id}',
-        );
         currentAsset.value = value;
         if (currentAsset.value == asset) {
           onPlaybackReady();
@@ -300,11 +274,9 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       if (videoPlayback.state == VideoPlaybackState.playing) {
         // Sync with the controls playing
         WakelockPlus.enable();
-        log.info('Video ${asset.id} is playing; enabled wakelock');
       } else {
         // Sync with the controls pause
         WakelockPlus.disable();
-        log.info('Video ${asset.id} is not playing; disabled wakelock');
       }
     }
 
@@ -350,10 +322,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     void initController(NativeVideoPlayerController nc) {
-      log.info('initController for ${asset.id} started');
       if (controller.value != null) {
-        log.info(
-            'initController for ${asset.id}: Controller already initialized');
         return;
       }
       ref.read(videoPlayerControlsProvider.notifier).reset();
@@ -366,7 +335,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       nc.loadVideoSource(videoSource.value!);
 
-      log.info('initController for ${asset.id}: setting controller');
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
@@ -374,10 +342,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     useEffect(
       () {
         return () {
-          log.info('Cleaning up video ${asset.id}');
           final playerController = controller.value;
           if (playerController == null) {
-            log.info('Controller is null');
             return;
           }
 
