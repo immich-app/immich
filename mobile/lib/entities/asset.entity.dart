@@ -22,12 +22,8 @@ class Asset {
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = remote.originalFileName,
-        height = isFlipped(remote)
-            ? remote.exifInfo?.exifImageWidth?.toInt()
-            : remote.exifInfo?.exifImageHeight?.toInt(),
-        width = isFlipped(remote)
-            ? remote.exifInfo?.exifImageHeight?.toInt()
-            : remote.exifInfo?.exifImageWidth?.toInt(),
+        height = remote.exifInfo?.exifImageHeight?.toInt(),
+        width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
         ownerId = fastHash(remote.ownerId),
         exifInfo =
@@ -173,6 +169,9 @@ class Asset {
   bool get isImage => type == AssetType.image;
 
   @ignore
+  bool get isMotionPhoto => livePhotoVideoId != null;
+
+  @ignore
   AssetState get storage {
     if (isRemote && isLocal) {
       return AssetState.merged;
@@ -191,6 +190,14 @@ class Asset {
   // ignore: invalid_annotation_target
   @ignore
   set byteHash(List<int> hash) => checksum = base64.encode(hash);
+
+  @ignore
+  int? get orientatedWidth =>
+      exifInfo != null && exifInfo!.isFlipped ? height : width;
+
+  @ignore
+  int? get orientatedHeight =>
+      exifInfo != null && exifInfo!.isFlipped ? width : height;
 
   @override
   bool operator ==(other) {
@@ -510,22 +517,4 @@ extension AssetsHelper on IsarCollection<Asset> {
   ) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
-}
-
-/// Returns `true` if this [int] is flipped 90° clockwise
-bool isRotated90CW(int orientation) {
-  return [7, 8, -90].contains(orientation);
-}
-
-/// Returns `true` if this [int] is flipped 270° clockwise
-bool isRotated270CW(int orientation) {
-  return [5, 6, 90].contains(orientation);
-}
-
-/// Returns `true` if this [Asset] is flipped 90° or 270° clockwise
-bool isFlipped(AssetResponseDto response) {
-  final int orientation =
-      int.tryParse(response.exifInfo?.orientation ?? '0') ?? 0;
-  return orientation != 0 &&
-      (isRotated90CW(orientation) || isRotated270CW(orientation));
 }

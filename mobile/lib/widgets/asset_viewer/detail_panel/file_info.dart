@@ -15,9 +15,10 @@ class FileInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor = context.isDarkTheme ? Colors.white : Colors.black;
 
-    String resolution = asset.width != null && asset.height != null
-        ? "${asset.height} x ${asset.width}  "
-        : "";
+    String resolution =
+        asset.orientatedHeight != null && asset.orientatedWidth != null
+            ? "${asset.orientatedHeight} x ${asset.orientatedWidth}  "
+            : "";
     String fileSize = asset.exifInfo?.fileSize != null
         ? formatBytes(asset.exifInfo!.fileSize!)
         : "";

@@ -23,7 +23,7 @@ class VideoPlaybackValue {
   /// The volume of the video
   final double volume;
 
-  VideoPlaybackValue({
+  const VideoPlaybackValue({
     required this.position,
     required this.duration,
     required this.state,
@@ -33,32 +33,24 @@ class VideoPlaybackValue {
   factory VideoPlaybackValue.fromNativeController(
     NativeVideoPlayerController controller,
   ) {
-    PlaybackInfo? playbackInfo;
-    VideoInfo? videoInfo;
-    try {
-      playbackInfo = controller.playbackInfo;
-      videoInfo = controller.videoInfo;
-    } catch (_) {
-      // Consume error from the controller
-    }
-    late VideoPlaybackState s;
-    if (playbackInfo?.status == null) {
-      s = VideoPlaybackState.initializing;
-    } else if (playbackInfo?.status == PlaybackStatus.stopped &&
-        (playbackInfo?.positionFraction == 1 ||
-            playbackInfo?.positionFraction == 0)) {
-      s = VideoPlaybackState.completed;
-    } else if (playbackInfo?.status == PlaybackStatus.playing) {
-      s = VideoPlaybackState.playing;
-    } else {
-      s = VideoPlaybackState.paused;
+    final playbackInfo = controller.playbackInfo;
+    final videoInfo = controller.videoInfo;
+
+    if (playbackInfo == null || videoInfo == null) {
+      return videoPlaybackValueDefault;
     }
 
+    final VideoPlaybackState status = switch (playbackInfo.status) {
+      PlaybackStatus.playing => VideoPlaybackState.playing,
+      PlaybackStatus.paused => VideoPlaybackState.paused,
+      PlaybackStatus.stopped => VideoPlaybackState.completed,
+    };
+
     return VideoPlaybackValue(
-      position: Duration(seconds: playbackInfo?.position ?? 0),
-      duration: Duration(seconds: videoInfo?.duration ?? 0),
-      state: s,
-      volume: playbackInfo?.volume ?? 0.0,
+      position: Duration(seconds: playbackInfo.position),
+      duration: Duration(seconds: videoInfo.duration),
+      state: status,
+      volume: playbackInfo.volume,
     );
   }
 
@@ -85,15 +77,6 @@ class VideoPlaybackValue {
     );
   }
 
-  factory VideoPlaybackValue.uninitialized() {
-    return VideoPlaybackValue(
-      position: Duration.zero,
-      duration: Duration.zero,
-      state: VideoPlaybackState.initializing,
-      volume: 0.0,
-    );
-  }
-
   VideoPlaybackValue copyWith({
     Duration? position,
     Duration? duration,
@@ -109,16 +92,20 @@ class VideoPlaybackValue {
   }
 }
 
+const VideoPlaybackValue videoPlaybackValueDefault = VideoPlaybackValue(
+  position: Duration.zero,
+  duration: Duration.zero,
+  state: VideoPlaybackState.initializing,
+  volume: 0.0,
+);
+
 final videoPlaybackValueProvider =
     StateNotifierProvider<VideoPlaybackValueState, VideoPlaybackValue>((ref) {
   return VideoPlaybackValueState(ref);
 });
 
 class VideoPlaybackValueState extends StateNotifier<VideoPlaybackValue> {
-  VideoPlaybackValueState(this.ref)
-      : super(
-          VideoPlaybackValue.uninitialized(),
-        );
+  VideoPlaybackValueState(this.ref) : super(videoPlaybackValueDefault);
 
   final Ref ref;
 
@@ -129,11 +116,16 @@ class VideoPlaybackValueState extends StateNotifier<VideoPlaybackValue> {
   }
 
   set position(Duration value) {
+    if (state.position == value) return;
     state = VideoPlaybackValue(
       position: value,
       duration: state.duration,
       state: state.state,
       volume: state.volume,
     );
+  }
+
+  void reset() {
+    state = videoPlaybackValueDefault;
   }
 }

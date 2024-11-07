@@ -47,7 +47,10 @@ class ExifInfo {
   String get focalLength => mm != null ? mm!.toStringAsFixed(1) : "";
 
   @ignore
-  bool get isFlipped => _isOrientationFlipped(orientation);
+  bool? _isFlipped;
+
+  @ignore
+  bool get isFlipped => _isFlipped ??= _isOrientationFlipped(orientation);
 
   @ignore
   double? get latitude => lat;
