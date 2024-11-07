@@ -13,6 +13,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
+import 'package:immich_mobile/utils/throttle.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -71,18 +72,14 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       if (asset.exifInfo != null) {
         orientatedWidth = asset.orientatedWidth?.toDouble();
         orientatedHeight = asset.orientatedHeight?.toDouble();
-      }
-
-      if (orientatedWidth == null && localEntity != null) {
+      } else if (localEntity != null) {
         final entity = await localEntity;
         if (entity != null) {
           asset.local = entity;
           orientatedWidth = entity.orientatedWidth.toDouble();
           orientatedHeight = entity.orientatedHeight.toDouble();
         }
-      }
-
-      if (orientatedWidth == null) {
+      } else {
         final entity = await ref.read(assetServiceProvider).loadExif(asset);
         orientatedWidth = entity.orientatedWidth?.toDouble();
         orientatedHeight = entity.orientatedHeight?.toDouble();
@@ -196,6 +193,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     });
 
     // When the position changes, seek to the position
+    final seekThrottler =
+        useThrottler(interval: const Duration(milliseconds: 200));
     ref.listen(videoPlayerControlsProvider.select((value) => value.position),
         (_, position) {
       final playerController = controller.value;
@@ -212,7 +211,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       final int seek = (asset.duration * (position / 100.0)).inSeconds;
       if (seek != playbackInfo.position) {
         try {
-          playerController.seekTo(seek);
+          seekThrottler.run(() => playerController.seekTo(seek));
         } catch (error) {
           log.severe('Error seeking to position $position: $error');
         }
