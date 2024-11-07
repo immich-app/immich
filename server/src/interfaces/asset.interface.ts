@@ -28,9 +28,7 @@ export enum WithoutProperty {
   EXIF = 'exif',
   SMART_SEARCH = 'smart-search',
   DUPLICATE = 'duplicate',
-  OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
-  PERSON = 'person',
   SIDECAR = 'sidecar',
 }
 
@@ -94,7 +92,6 @@ export type AssetWithoutRelations = Omit<
   | 'library'
   | 'exifInfo'
   | 'sharedLinks'
-  | 'smartInfo'
   | 'smartSearch'
   | 'tags'
 >;
@@ -190,7 +187,6 @@ export interface IAssetRepository {
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
