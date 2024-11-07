@@ -88,26 +88,6 @@ describe(BackupService.name, () => {
     });
   });
 
-  describe('onConfigValidateEvent', () => {
-    it('should allow a valid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { backup: { database: { cronExpression: '0 0 * * *' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).not.toThrow(expect.stringContaining('Invalid cron expression'));
-    });
-
-    it('should fail for an invalid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { backup: { database: { cronExpression: 'foo' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).toThrow(/Invalid cron expression.*/);
-    });
-  });
-
   describe('cleanupDatabaseBackups', () => {
     it('should do nothing if not reached keepLastAmount', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);

@@ -8,7 +8,6 @@ import { ArgOf } from 'src/interfaces/event.interface';
 import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { handlePromiseError } from 'src/utils/misc';
-import { validateCronExpression } from 'src/validation';
 
 @Injectable()
 export class BackupService extends BaseService {
@@ -47,14 +46,6 @@ export class BackupService extends BaseService {
       expression: backup.database.cronExpression,
       start: backup.database.enabled,
     });
-  }
-
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
-    const { database } = newConfig.backup;
-    if (!validateCronExpression(database.cronExpression)) {
-      throw new Error(`Invalid cron expression ${database.cronExpression}`);
-    }
   }
 
   async cleanupDatabaseBackups() {
