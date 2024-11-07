@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
@@ -29,10 +28,9 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
         }
       },
     );
-
-    final showBuffering = useState(false);
     final VideoPlaybackState state =
-        ref.watch(videoPlaybackValueProvider).state;
+        ref.watch(videoPlaybackValueProvider.select((value) => value.state));
+    final showBuffering = state == VideoPlaybackState.buffering;
 
     /// Shows the controls and starts the timer to hide them
     void showControlsAndStartHideTimer() {
@@ -52,16 +50,9 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
       showControlsAndStartHideTimer();
     });
 
-    ref.listen(videoPlaybackValueProvider.select((value) => value.state),
-        (_, state) {
-      // Show buffering
-      showBuffering.value = state == VideoPlaybackState.buffering;
-    });
-
     /// Toggles between playing and pausing depending on the state of the video
     void togglePlay() {
       showControlsAndStartHideTimer();
-      final state = ref.read(videoPlaybackValueProvider).state;
       if (state == VideoPlaybackState.playing) {
         ref.read(videoPlayerControlsProvider.notifier).pause();
       } else if (state == VideoPlaybackState.completed) {
@@ -78,7 +69,7 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
         absorbing: !ref.watch(showControlsProvider),
         child: Stack(
           children: [
-            if (showBuffering.value)
+            if (showBuffering)
               const Center(
                 child: DelayedLoadingIndicator(
                   fadeInDuration: Duration(milliseconds: 400),

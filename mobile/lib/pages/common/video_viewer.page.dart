@@ -124,8 +124,7 @@ class VideoViewerPage extends HookConsumerWidget {
 
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
-        ref.read(videoPlaybackValueProvider.notifier).value =
-            VideoPlaybackValue.uninitialized();
+        ref.read(videoPlaybackValueProvider.notifier).reset();
       },
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),

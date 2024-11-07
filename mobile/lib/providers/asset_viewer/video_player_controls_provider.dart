@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class VideoPlaybackControls {
-  VideoPlaybackControls({
+  const VideoPlaybackControls({
     required this.position,
     required this.mute,
     required this.pause,
@@ -17,15 +17,14 @@ final videoPlayerControlsProvider =
   return VideoPlayerControls(ref);
 });
 
+const videoPlayerControlsDefault = VideoPlaybackControls(
+  position: 0,
+  pause: false,
+  mute: false,
+);
+
 class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
-  VideoPlayerControls(this.ref)
-      : super(
-          VideoPlaybackControls(
-            position: 0,
-            pause: false,
-            mute: false,
-          ),
-        );
+  VideoPlayerControls(this.ref) : super(videoPlayerControlsDefault);
 
   final Ref ref;
 
@@ -36,17 +35,17 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void reset() {
-    state = VideoPlaybackControls(
-      position: 0,
-      pause: false,
-      mute: false,
-    );
+    state = videoPlayerControlsDefault;
   }
 
   double get position => state.position;
   bool get mute => state.mute;
 
   set position(double value) {
+    if (state.position == value) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: value,
       mute: state.mute,
@@ -55,6 +54,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   set mute(bool value) {
+    if (state.mute == value) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: state.position,
       mute: value,
@@ -71,6 +74,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void pause() {
+    if (state.pause) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: state.position,
       mute: state.mute,
@@ -79,6 +86,10 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void play() {
+    if (!state.pause) {
+      return;
+    }
+
     state = VideoPlaybackControls(
       position: state.position,
       mute: state.mute,
@@ -95,12 +106,6 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void restart() {
-    state = VideoPlaybackControls(
-      position: 0,
-      mute: state.mute,
-      pause: true,
-    );
-
     state = VideoPlaybackControls(
       position: 0,
       mute: state.mute,
