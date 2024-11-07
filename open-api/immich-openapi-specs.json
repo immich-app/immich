@@ -7436,7 +7436,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.120.0",
+    "version": "1.120.1",
     "contact": {}
   },
   "tags": [],
@@ -8452,9 +8452,6 @@
             "deprecated": true,
             "description": "This property was deprecated in v1.113.0",
             "type": "boolean"
-          },
-          "smartInfo": {
-            "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
           "stack": {
             "allOf": [
@@ -11333,25 +11330,6 @@
           "name",
           "password"
         ],
-        "type": "object"
-      },
-      "SmartInfoResponseDto": {
-        "properties": {
-          "objects": {
-            "items": {
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          }
-        },
         "type": "object"
       },
       "SmartSearchDto": {
