@@ -33,6 +33,7 @@ describe(NotificationRepository.name, () => {
       const request: EmailRenderRequest = {
         template: EmailTemplate.WELCOME,
         data: { displayName: 'Alen Turing', username: 'turing', baseUrl: 'http://localhost' },
+        customTemplate: '',
       };
 
       const result = await sut.renderEmail(request);
@@ -51,6 +52,7 @@ describe(NotificationRepository.name, () => {
           recipientName: 'Jane',
           baseUrl: 'http://localhost',
         },
+        customTemplate: '',
       };
 
       const result = await sut.renderEmail(request);
@@ -63,6 +65,7 @@ describe(NotificationRepository.name, () => {
       const request: EmailRenderRequest = {
         template: EmailTemplate.ALBUM_UPDATE,
         data: { albumName: 'Holiday', albumId: '123', recipientName: 'Jane', baseUrl: 'http://localhost' },
+        customTemplate: '',
       };
 
       const result = await sut.renderEmail(request);
