@@ -178,6 +178,7 @@ jobs:
             kv/data/common docker_host;
             kv/data/${{ needs.env-vars.outputs.basename }}/${{ needs.env-vars.outputs.env }} DEPLOY_URL;
             kv/data/${{ needs.env-vars.outputs.basename }}/${{ needs.env-vars.outputs.env }} DB_DATA_LOCATION;
+            kv/data/${{ needs.env-vars.outputs.basename }}/${{ needs.env-vars.outputs.env }} DB_DATABASE_NAME;
             kv/data/${{ needs.env-vars.outputs.basename }}/${{ needs.env-vars.outputs.env }} DB_PASSWORD;
             kv/data/${{ needs.env-vars.outputs.basename }}/${{ needs.env-vars.outputs.env }} DB_USERNAME;
             kv/data/${{ needs.env-vars.outputs.basename }}/${{ needs.env-vars.outputs.env }} IMMICH_VERSION;
