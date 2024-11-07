@@ -235,7 +235,6 @@ jobs:
           fi
           if [[ "$ENV" = "review" || "$ENV" = "testing" ]]; then
             docker compose -f docker-compose.ci.yml -p $PROJECT_NAME up -d --force-recreate
-            docker compose -f docker-compose.ci.yml -p $PROJECT_NAME exec lager-be sh -c './lager-be seed' 
           fi
       - name: prune system
         run: docker system prune -f 2> /dev/null || true
