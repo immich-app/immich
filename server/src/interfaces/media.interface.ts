@@ -1,6 +1,5 @@
 import { Writable } from 'node:stream';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
+import { ExifOrientation, ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
 
 export const IMediaRepository = 'IMediaRepository';
 
@@ -32,6 +31,7 @@ interface DecodeImageOptions {
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size: number;
+  orientation?: ExifOrientation;
 }
 
 export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
@@ -127,7 +127,7 @@ export interface ProbeOptions {
 
 export interface IMediaRepository {
   // image
-  extract(asset: AssetEntity, outputPath: string): Promise<boolean>;
+  extract(input: string, output: string): Promise<boolean>;
   decodeImage(input: string, options: DecodeToBufferOptions): Promise<ImageBuffer>;
   generateThumbnail(input: string, options: GenerateThumbnailOptions, outputFile: string): Promise<void>;
   generateThumbnail(input: Buffer, options: GenerateThumbnailFromBufferOptions, outputFile: string): Promise<void>;

@@ -5,8 +5,7 @@ import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { Colorspace, LogLevel } from 'src/enum';
+import { Colorspace, ExifOrientation, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DecodeToBufferOptions,
@@ -42,22 +41,13 @@ export class MediaRepository implements IMediaRepository {
     this.logger.setContext(MediaRepository.name);
   }
 
-  async extract(asset: AssetEntity, outputPath: string): Promise<boolean> {
-    const didExtractEmbedded = await this.extractEmbedded(asset.originalPath, outputPath);
-    if (didExtractEmbedded) {
-      await this.fixExtractedOrientation(asset, outputPath);
-    }
-
-    return didExtractEmbedded;
-  }
-
-  private async extractEmbedded(originalPath: string, extractedPath: string): Promise<boolean> {
+  async extract(input: string, output: string): Promise<boolean> {
     try {
-      await exiftool.extractJpgFromRaw(originalPath, extractedPath);
+      await exiftool.extractJpgFromRaw(input, output);
     } catch (error: any) {
       this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
       try {
-        await exiftool.extractPreview(originalPath, extractedPath);
+        await exiftool.extractPreview(input, output);
       } catch (error: any) {
         this.logger.debug('Could not extract preview from image', error.message);
         return false;
@@ -65,17 +55,6 @@ export class MediaRepository implements IMediaRepository {
     }
 
     return true;
-  }
-
-  private async fixExtractedOrientation(asset: AssetEntity, extractedPath: string) {
-    const orientationValue = Number(asset.exifInfo?.orientation);
-    if (isNaN(orientationValue)) return;
-
-    try {
-      await exiftool.write(extractedPath, { "Orientation#": orientationValue });
-    } catch (error: any) {
-      this.logger.debug('Could not write orientation to extracted image', error.message);
-    }
   }
 
   decodeImage(input: string, options: DecodeToBufferOptions) {
@@ -103,7 +82,15 @@ export class MediaRepository implements IMediaRepository {
       .withIccProfile(options.colorspace);
 
     if (!options.raw) {
-      pipeline = pipeline.rotate();
+      const { angle, flip, flop } = this.getRotationAngleFromOrientation(options.orientation);
+      pipeline = pipeline.rotate(angle);
+      if (flip) {
+        pipeline = pipeline.flip();
+      }
+
+      if (flop) {
+        pipeline = pipeline.flop();
+      }
     }
 
     if (options.crop) {
@@ -111,6 +98,23 @@ export class MediaRepository implements IMediaRepository {
     }
 
     return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
+  }
+
+  private getRotationAngleFromOrientation(orientation: ExifOrientation | undefined) {
+    if (!orientation) return {};
+
+    const valueMap: Record<ExifOrientation, { angle?: number, flip?: boolean, flop?: boolean }> = {
+      [ExifOrientation.Horizontal]: { angle: 0, },
+      [ExifOrientation.MirrorHorizontal]: { angle: 0, flop: true },
+      [ExifOrientation.Rotate180]: { angle: 180 },
+      [ExifOrientation.MirrorVertical]: { angle: 180, flop: true },
+      [ExifOrientation.MirrorHorizontalRotate270CW]: { angle: 270, flip: true },
+      [ExifOrientation.Rotate90CW]: { angle: 90 },
+      [ExifOrientation.MirrorHorizontalRotate90CW]: { angle: 90, flip: true },
+      [ExifOrientation.Rotate270CW]: { angle: 270 },
+    };
+
+    return valueMap[orientation] ?? {};
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
