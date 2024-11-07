@@ -6,6 +6,7 @@ import { UserEntity } from 'src/entities/user.entity';
 import { AssetType, ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ICronRepository } from 'src/interfaces/cron.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IJobRepository,
@@ -36,13 +37,15 @@ describe(LibraryService.name, () => {
 
   let assetMock: Mocked<IAssetRepository>;
   let configMock: Mocked<IConfigRepository>;
+  let cronMock: Mocked<ICronRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
   let storageMock: Mocked<IStorageRepository>;
 
   beforeEach(() => {
-    ({ sut, assetMock, configMock, databaseMock, jobMock, libraryMock, storageMock } = newTestService(LibraryService));
+    ({ sut, assetMock, configMock, cronMock, databaseMock, jobMock, libraryMock, storageMock } =
+      newTestService(LibraryService));
 
     databaseMock.tryLock.mockResolvedValue(true);
     configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
@@ -56,7 +59,7 @@ describe(LibraryService.name, () => {
     it('should init cron job and handle config changes', async () => {
       await sut.onConfigInit({ newConfig: defaults });
 
-      expect(jobMock.addCronJob).toHaveBeenCalled();
+      expect(cronMock.create).toHaveBeenCalled();
 
       await sut.onConfigUpdate({
         oldConfig: defaults,
@@ -71,7 +74,7 @@ describe(LibraryService.name, () => {
         } as SystemConfig,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith('libraryScan', '0 1 * * *', true);
+      expect(cronMock.update).toHaveBeenCalledWith({ name: 'libraryScan', expression: '0 1 * * *', start: true });
     });
 
     it('should initialize watcher for all external libraries', async () => {
@@ -117,14 +120,14 @@ describe(LibraryService.name, () => {
 
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
 
-      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+      expect(cronMock.create).not.toHaveBeenCalled();
     });
 
     it('should not initialize watcher or library scan job when running on api', async () => {
       configMock.getWorker.mockReturnValue(ImmichWorker.API);
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryScan as SystemConfig });
 
-      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+      expect(cronMock.create).not.toHaveBeenCalled();
     });
   });
 
@@ -138,7 +141,7 @@ describe(LibraryService.name, () => {
       databaseMock.tryLock.mockResolvedValue(false);
       await sut.onConfigInit({ newConfig: defaults });
       await sut.onConfigUpdate({ newConfig: systemConfigStub.libraryScan as SystemConfig, oldConfig: defaults });
-      expect(jobMock.updateCronJob).not.toHaveBeenCalled();
+      expect(cronMock.update).not.toHaveBeenCalled();
     });
 
     it('should update cron job and enable watching', async () => {
@@ -148,11 +151,11 @@ describe(LibraryService.name, () => {
         oldConfig: defaults,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith(
-        'libraryScan',
-        systemConfigStub.libraryScan.library.scan.cronExpression,
-        systemConfigStub.libraryScan.library.scan.enabled,
-      );
+      expect(cronMock.update).toHaveBeenCalledWith({
+        name: 'libraryScan',
+        expression: systemConfigStub.libraryScan.library.scan.cronExpression,
+        start: systemConfigStub.libraryScan.library.scan.enabled,
+      });
     });
 
     it('should update cron job and disable watching', async () => {
@@ -166,11 +169,11 @@ describe(LibraryService.name, () => {
         oldConfig: defaults,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith(
-        'libraryScan',
-        systemConfigStub.libraryScan.library.scan.cronExpression,
-        systemConfigStub.libraryScan.library.scan.enabled,
-      );
+      expect(cronMock.update).toHaveBeenCalledWith({
+        name: 'libraryScan',
+        expression: systemConfigStub.libraryScan.library.scan.cronExpression,
+        start: systemConfigStub.libraryScan.library.scan.enabled,
+      });
     });
   });
 

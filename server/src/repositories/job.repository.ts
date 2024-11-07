@@ -4,7 +4,6 @@ import { ModuleRef, Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { ClassConstructor } from 'class-transformer';
-import { CronJob, CronTime } from 'cron';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
 import { MetadataKey } from 'src/enum';
@@ -117,43 +116,6 @@ export class JobRepository implements IJobRepository {
     }
 
     return item.handler(data);
-  }
-
-  addCronJob(name: string, expression: string, onTick: () => void, start = true): void {
-    const job = new CronJob<null, null>(
-      expression,
-      onTick,
-      // function to run onComplete
-      undefined,
-      // whether it should start directly
-      start,
-      // timezone
-      undefined,
-      // context
-      undefined,
-      // runOnInit
-      undefined,
-      // utcOffset
-      undefined,
-      // prevents memory leaking by automatically stopping when the node process finishes
-      true,
-    );
-
-    this.schedulerRegistry.addCronJob(name, job);
-  }
-
-  updateCronJob(name: string, expression?: string, start?: boolean): void {
-    const job = this.schedulerRegistry.getCronJob(name);
-    if (expression) {
-      job.setTime(new CronTime(expression));
-    }
-    if (start !== undefined) {
-      if (start) {
-        job.start();
-      } else {
-        job.stop();
-      }
-    }
   }
 
   setConcurrency(queueName: QueueName, concurrency: number) {
