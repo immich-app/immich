@@ -120,8 +120,6 @@
   let isShowActivity = false;
   let isLiked: ActivityResponseDto | null = null;
   let reactions: ActivityResponseDto[] = [];
-  let globalWidth: number;
-  let assetGridWidth: number;
   let albumOrder: AssetOrder | undefined = data.album.order;
 
   $: assetStore = new AssetStore({ albumId, order: albumOrder });
@@ -136,9 +134,6 @@
   $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
   $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
   $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
-  $: {
-    assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
-  }
   $: showActivityStatus =
     album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
@@ -434,7 +429,7 @@
   });
 </script>
 
-<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
+<div class="flex overflow-hidden">
   <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
@@ -568,7 +563,6 @@
 
     <main
       class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
-      style={`width:${assetGridWidth}px`}
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
       {#key albumKey}
