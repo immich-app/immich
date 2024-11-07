@@ -85,7 +85,7 @@ export class BackupService extends BaseService {
     } = this.configRepository.getEnv();
 
     const isUrlConnection = config.connectionType === 'url';
-    const databaseParams = isUrlConnection ? [config.url] : ['-U', config.username, '-h', config.host];
+    const databaseParams = isUrlConnection ? ['-d', config.url] : ['-U', config.username, '-h', config.host];
     const backupFilePath = path.join(
       StorageCore.getBaseFolder(StorageFolder.BACKUPS),
       `immich-db-backup-${Date.now()}.sql.gz.tmp`,
@@ -97,7 +97,8 @@ export class BackupService extends BaseService {
           env: { PATH: process.env.PATH, PGPASSWORD: isUrlConnection ? undefined : config.password },
         });
 
-        const gzip = this.processRepository.spawn(`gzip`, []);
+        // NOTE: `--rsyncable` is only supported in GNU gzip
+        const gzip = this.processRepository.spawn(`gzip`, ['--rsyncable']);
         pgdump.stdout.pipe(gzip.stdin);
 
         const fileStream = this.storageRepository.createWriteStream(backupFilePath);
