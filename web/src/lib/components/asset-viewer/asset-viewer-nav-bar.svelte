@@ -61,6 +61,7 @@
 
   const sharedLink = getSharedLink();
   $: isOwner = $user && asset.ownerId === $user?.id;
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
   // $: showEditorButton =
   //   isOwner &&

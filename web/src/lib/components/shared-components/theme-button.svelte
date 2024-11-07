@@ -5,8 +5,11 @@
   import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
   import { t } from 'svelte-i18n';
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: icon = $colorTheme.value === Theme.LIGHT ? moonPath : sunPath;
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: viewBox = $colorTheme.value === Theme.LIGHT ? moonViewBox : sunViewBox;
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: isDark = $colorTheme.value === Theme.DARK;
 
   export let padding: Padding = '3';

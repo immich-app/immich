@@ -14,14 +14,15 @@ import { validateCronExpression } from 'src/validation';
 export class BackupService extends BaseService {
   private backupLock = false;
 
-  @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap(workerType: ImmichWorker) {
-    if (workerType !== ImmichWorker.API) {
+  @OnEvent({ name: 'config.init' })
+  async onConfigInit({
+    newConfig: {
+      backup: { database },
+    },
+  }: ArgOf<'config.init'>) {
+    if (this.worker !== ImmichWorker.API) {
       return;
     }
-    const {
-      backup: { database },
-    } = await this.getConfig({ withCache: true });
 
     this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
 
@@ -36,8 +37,8 @@ export class BackupService extends BaseService {
   }
 
   @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: { backup }, oldConfig }: ArgOf<'config.update'>) {
-    if (!oldConfig || !this.backupLock) {
+  onConfigUpdate({ newConfig: { backup } }: ArgOf<'config.update'>) {
+    if (!this.backupLock) {
       return;
     }
 
