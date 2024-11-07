@@ -1,6 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiArrowDownDropCircleOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
   import { mdiInformationOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
@@ -9,8 +10,10 @@
   export let routeId: string;
   export let icon: string;
   export let flippedLogo = false;
-  export let isSelected = false;
   export let preloadData = true;
+  export let isSelected = false;
+
+  export let dropdownOpen = false;
 
   let showMoreInformation = false;
   $: routePath = resolveRoute(routeId, {});
@@ -33,6 +36,21 @@
     <Icon path={icon} size="1.5em" class="shrink-0" flipped={flippedLogo} ariaHidden />
     <span class="text-sm font-medium">{title}</span>
   </div>
+
+  {#if $$slots.hasDropdown}
+    <button
+      class="relative flex cursor-default select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded"
+      on:click={() => (dropdownOpen = !dropdownOpen)}
+    >
+      <Icon
+        path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
+        size="1em"
+        class="shrink-0 delay-100 duration-100 "
+        flipped={flippedLogo}
+        ariaHidden
+      />
+    </button>
+  {/if}
 
   <div
     class="h-0 overflow-hidden transition-[height] delay-1000 duration-100 sm:group-hover:h-auto group-hover:sm:overflow-visible md:h-auto md:overflow-visible"
@@ -63,3 +81,6 @@
     {/if}
   </div>
 </a>
+{#if $$slots.hasDropdown && dropdownOpen}
+  <slot name="hasDropdown" class="delay-100 duration-100"></slot>
+{/if}

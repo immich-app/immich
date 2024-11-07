@@ -29,6 +29,7 @@
   import { t } from 'svelte-i18n';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import { preferences } from '$lib/stores/user.store';
+  import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
 
   let isArchiveSelected: boolean;
   let isFavoritesSelected: boolean;
@@ -102,9 +103,12 @@
       </svelte:fragment>
     </SideBarLink>
 
-    <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
+    <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo dropdownOpen>
       <svelte:fragment slot="moreInformation">
         <MoreInformationAlbums albumType="owned" />
+      </svelte:fragment>
+      <svelte:fragment slot="hasDropdown">
+        <RecentAlbums />
       </svelte:fragment>
     </SideBarLink>
 
