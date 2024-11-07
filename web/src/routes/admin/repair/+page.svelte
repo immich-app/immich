@@ -187,25 +187,25 @@
   {#snippet sidebar()}{/snippet}
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
-      <LinkButton onClick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
+      <LinkButton onclick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiWrench} size="18" />
           {$t('admin.repair_all')}
         </div>
       </LinkButton>
-      <LinkButton onClick={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
+      <LinkButton onclick={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiCheckAll} size="18" />
           {$t('admin.check_all')}
         </div>
       </LinkButton>
-      <LinkButton onClick={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
+      <LinkButton onclick={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiDownload} size="18" />
           {$t('export')}
         </div>
       </LinkButton>
-      <LinkButton onClick={() => handleRefresh()}>
+      <LinkButton onclick={() => handleRefresh()}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiRefresh} size="18" />
           {$t('refresh')}
@@ -286,7 +286,7 @@
                   title={orphan.pathValue}
                 >
                   <td onclick={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" onclick={() => {}} />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -328,7 +328,7 @@
                   title={extra.filename}
                 >
                   <td onclick={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" onclick={() => {}} />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

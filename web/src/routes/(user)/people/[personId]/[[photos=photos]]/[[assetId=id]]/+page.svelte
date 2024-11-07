@@ -90,8 +90,8 @@
   let isEditingName = $state(false);
   let previousRoute: string = $state(AppRoute.EXPLORE);
   let people: PersonResponseDto[] = [];
-  let personMerge1: PersonResponseDto = $state();
-  let personMerge2: PersonResponseDto = $state();
+  let personMerge1: PersonResponseDto | undefined = $state();
+  let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
 
   let refreshAssetGrid = false;
@@ -107,7 +107,7 @@
    * or if the new search word starts with another word / letter
    **/
   let isSearchingPeople = $state(false);
-  let suggestionContainer: HTMLDivElement = $state();
+  let suggestionContainer: HTMLDivElement | undefined = $state();
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);

@@ -170,7 +170,7 @@
 
   {#snippet buttons()}
     <section>
-      <LinkButton onClick={handleCreate}>
+      <LinkButton onclick={handleCreate}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiPlus} size="18" />
           <p class="hidden md:block">{$t('create_tag')}</p>
@@ -178,13 +178,13 @@
       </LinkButton>
 
       {#if pathSegments.length > 0 && tag}
-        <LinkButton onClick={handleEdit}>
+        <LinkButton onclick={handleEdit}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiPencil} size="18" />
             <p class="hidden md:block">{$t('edit_tag')}</p>
           </div>
         </LinkButton>
-        <LinkButton onClick={handleDelete}>
+        <LinkButton onclick={handleDelete}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiTrashCanOutline} size="18" />
             <p class="hidden md:block">{$t('delete_tag')}</p>

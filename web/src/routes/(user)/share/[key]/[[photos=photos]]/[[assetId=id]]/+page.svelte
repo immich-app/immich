@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import AlbumViewer from '$lib/components/album-page/album-viewer.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import IndividualSharedViewer from '$lib/components/share-page/individual-shared-viewer.svelte';
@@ -26,16 +24,15 @@
   let { gridScrollTarget } = assetViewingStore;
   let { sharedLink, passwordRequired, sharedLinkKey: key, meta } = $state(data);
   let { title, description } = $state(meta);
-  let isOwned = $state($user ? $user.id === sharedLink?.userId : false);
+  let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
-  let innerWidth: number = $state();
+  let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
     try {
       sharedLink = await getMySharedLink({ password, key });
       setSharedLink(sharedLink);
       passwordRequired = false;
-      isOwned = $user ? $user.id === sharedLink.userId : false;
       title = (sharedLink.album ? sharedLink.album.albumName : $t('public_share')) + ' - Immich';
       description =
         sharedLink.description ||
@@ -48,6 +45,11 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_get_shared_link'));
     }
+  };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handlePasswordSubmit();
   };
 </script>
 
@@ -78,7 +80,7 @@
         {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">
-        <form novalidate autocomplete="off" onsubmit={preventDefault(handlePasswordSubmit)}>
+        <form novalidate autocomplete="off" {onsubmit}>
           <input type="password" class="immich-form-input mr-2" placeholder={$t('password')} bind:value={password} />
           <Button type="submit">{$t('submit')}</Button>
         </form>

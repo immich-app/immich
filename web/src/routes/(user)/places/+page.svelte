@@ -24,7 +24,7 @@
   let places = $derived(data.items.filter((item): item is AssetWithCity => !!item.exifInfo?.city));
   let hasPlaces = $derived(places.length > 0);
 
-  let innerHeight: number = $state();
+  let innerHeight: number = $state(0);
 </script>
 
 <svelte:window bind:innerHeight />
