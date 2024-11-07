@@ -1,15 +1,19 @@
 name: immich-prod
 
+networks:
+  traefik:
+    external: true
+
 services:
   immich-server:
     container_name: immich_server
-    image: immich-server:latest
+    image: '${IMAGE_NAME}-server'
     # extends:
     #   file: hwaccel.transcoding.yml
     #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    build:
-      context: ../
-      dockerfile: server/Dockerfile
+    #build:
+    #  context: ../
+    #  dockerfile: server/Dockerfile
     volumes:
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
@@ -23,6 +27,13 @@ services:
     restart: always
     healthcheck:
       disable: false
+
+    labels:
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-server.rule=Host(`$DEPLOY_URL`)'
+
+    networks:
+      - traefik
+      - default
 
   # immich-machine-learning:
   #   container_name: immich_machine_learning
@@ -73,25 +84,6 @@ services:
       start_period: 5m
     command: [ 'postgres', '-c', 'shared_preload_libraries=vectors.so', '-c', 'search_path="$$user", public, vectors', '-c', 'logging_collector=on', '-c', 'max_wal_size=2GB', '-c', 'shared_buffers=512MB', '-c', 'wal_compression=on' ]
     restart: always
-  # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
-  # immich-prometheus:
-  #   container_name: immich_prometheus
-  #   ports:
-  #     - 9090:9090
-  #   image: prom/prometheus@sha256:378f4e03703557d1c6419e6caccf922f96e6d88a530f7431d66a4c4f4b1000fe
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheus-data:/prometheus
-  # first login uses admin/admin
-  # add data source for http://immich-prometheus:9090 to get started
-  # immich-grafana:
-  #   container_name: immich_grafana
-  #   command: [ './run.sh', '-disable-reporting' ]
-  #   ports:
-  #     - 3000:3000
-  #   image: grafana/grafana:11.3.0-ubuntu@sha256:51587e148ac0214d7938e7f3fe8512182e4eb6141892a3ffb88bba1901b49285
-  #   volumes:
-  #     - grafana-data:/var/lib/grafana
 
 volumes:
   model-cache:
