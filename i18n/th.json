@@ -957,6 +957,7 @@
     "unable_to_update_user": "ไม่สามารถอัพเดทผู้ใช้ได้",
     "unable_to_upload_file": "ไม่สามารถอัปโหลดได้"
   },
+  "exif": "",
   "exif_bottom_sheet_description": "เพิ่มคำอธิบาย",
   "exif_bottom_sheet_details": "รายละเอียด",
   "exif_bottom_sheet_location": "ตำแหน่ง",
