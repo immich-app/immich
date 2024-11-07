@@ -27,12 +27,12 @@ export class BackupService extends BaseService {
     this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
 
     if (this.backupLock) {
-      this.jobRepository.addCronJob(
-        'backupDatabase',
-        database.cronExpression,
-        () => handlePromiseError(this.jobRepository.queue({ name: JobName.BACKUP_DATABASE }), this.logger),
-        database.enabled,
-      );
+      this.cronRepository.create({
+        name: 'backupDatabase',
+        expression: database.cronExpression,
+        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.BACKUP_DATABASE }), this.logger),
+        start: database.enabled,
+      });
     }
   }
 
@@ -42,7 +42,11 @@ export class BackupService extends BaseService {
       return;
     }
 
-    this.jobRepository.updateCronJob('backupDatabase', backup.database.cronExpression, backup.database.enabled);
+    this.cronRepository.update({
+      name: 'backupDatabase',
+      expression: backup.database.cronExpression,
+      start: backup.database.enabled,
+    });
   }
 
   @OnEvent({ name: 'config.validate' })

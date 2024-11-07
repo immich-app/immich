@@ -48,12 +48,13 @@ export class LibraryService extends BaseService {
     this.watchLibraries = this.lock && watch.enabled;
 
     if (this.lock) {
-      this.jobRepository.addCronJob(
-        'libraryScan',
-        scan.cronExpression,
-        () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
-        scan.enabled,
-      );
+      this.cronRepository.create({
+        name: 'libraryScan',
+        expression: scan.cronExpression,
+        onTick: () =>
+          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+        start: scan.enabled,
+      });
     }
 
     if (this.watchLibraries) {
@@ -67,7 +68,11 @@ export class LibraryService extends BaseService {
       return;
     }
 
-    this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
+    this.cronRepository.update({
+      name: 'libraryScan',
+      expression: library.scan.cronExpression,
+      start: library.scan.enabled,
+    });
 
     if (library.watch.enabled !== this.watchLibraries) {
       // Watch configuration changed, update accordingly
