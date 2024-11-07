@@ -43,7 +43,6 @@
     placeholder?: string;
     onReset?: () => void;
     onSearch?: () => void;
-    handleSearch?: (force?: boolean, name?: string) => Promise<void>;
   }
 
   let {
@@ -56,40 +55,41 @@
     placeholder = $t('name_or_nickname'),
     onReset = () => {},
     onSearch = () => {},
-    handleSearch = async (force?: boolean, name?: string) => {
-      // searchName = name ?? searchName;
-      // onSearch();
-      // if (searchName === '') {
-      //   reset();
-      //   return;
-      // }
-      // if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
-      //   search();
-      //   return;
-      // }
-      // cancelPreviousRequest();
-      // abortController = new AbortController();
-      // timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
-      // try {
-      //   const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
-      //   searchedPeople = data;
-      //   searchWord = searchName;
-      // } catch (error) {
-      //   handleError(error, $t('errors.cant_search_people'));
-      // } finally {
-      //   clearTimeout(timeout);
-      //   timeout = null;
-      //   abortController = null;
-      //   showLoadingSpinner = false;
-      //   search();
-      // }
-    },
   }: Props = $props();
 
   const handleReset = () => {
     reset();
     onReset();
   };
+
+  export async function searchPeople(force?: boolean, name?: string) {
+    searchName = name ?? searchName;
+    onSearch();
+    if (searchName === '') {
+      reset();
+      return;
+    }
+    if (!force && searchedPeople.length < maximumLengthSearchPeople && searchName.startsWith(searchWord)) {
+      search();
+      return;
+    }
+    cancelPreviousRequest();
+    abortController = new AbortController();
+    timeout = setTimeout(() => (showLoadingSpinner = true), timeBeforeShowLoadingSpinner);
+    try {
+      const data = await searchPerson({ name: searchName }, { signal: abortController?.signal });
+      searchedPeople = data;
+      searchWord = searchName;
+    } catch (error) {
+      handleError(error, $t('errors.cant_search_people'));
+    } finally {
+      clearTimeout(timeout);
+      timeout = null;
+      abortController = null;
+      showLoadingSpinner = false;
+      search();
+    }
+  }
 </script>
 
 {#if type === 'searchBar'}
@@ -98,7 +98,7 @@
     {showLoadingSpinner}
     {placeholder}
     onReset={handleReset}
-    onSearch={({ force }) => handleSearch(force ?? false)}
+    onSearch={({ force }) => searchPeople(force ?? false)}
   />
 {:else}
   <input
@@ -106,7 +106,7 @@
     type="text"
     {placeholder}
     bind:value={searchName}
-    oninput={() => handleSearch(false)}
+    oninput={() => searchPeople(false)}
     use:initInput
   />
 {/if}

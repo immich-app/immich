@@ -7,8 +7,6 @@
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -108,12 +106,9 @@
       showLoadingSpinner = false;
     }
   };
-  let personIsHidden;
-  run(() => {
-    personIsHidden = getPersonIsHidden(people);
-  });
-  // svelte-ignore reactive_declaration_non_reactive_property
-  // svelte-ignore reactive_declaration_module_script_dependency
+
+  let personIsHidden = $state(getPersonIsHidden(people));
+
   let toggleButtonOptions = $derived(
     ((): Record<ToggleVisibility, { icon: string; label: string }> => {
       return {

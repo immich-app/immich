@@ -11,7 +11,7 @@
   interface Props {
     onAssetDelete: OnDelete;
     menuItem?: boolean;
-    force?: any;
+    force?: boolean;
   }
 
   let { onAssetDelete, menuItem = false, force = !$featureFlags.trash }: Props = $props();
