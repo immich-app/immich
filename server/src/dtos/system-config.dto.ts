@@ -12,11 +12,8 @@ import {
   IsUrl,
   Max,
   Min,
-  Validate,
   ValidateIf,
   ValidateNested,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
 import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
@@ -33,14 +30,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-import { ValidateBoolean, validateCronExpression } from 'src/validation';
-
-@ValidatorConstraint({ name: 'cronValidator' })
-class CronValidator implements ValidatorConstraintInterface {
-  validate(expression: string): boolean {
-    return validateCronExpression(expression);
-  }
-}
+import { IsCronExpression, ValidateBoolean } from 'src/validation';
 
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
@@ -54,7 +44,7 @@ export class DatabaseBackupConfig {
 
   @ValidateIf(isDatabaseBackupEnabled)
   @IsNotEmpty()
-  @Validate(CronValidator, { message: 'Invalid cron expression' })
+  @IsCronExpression()
   @IsString()
   cronExpression!: string;
 
@@ -244,7 +234,7 @@ class SystemConfigLibraryScanDto {
 
   @ValidateIf(isLibraryScanEnabled)
   @IsNotEmpty()
-  @Validate(CronValidator, { message: 'Invalid cron expression' })
+  @IsCronExpression()
   @IsString()
   cronExpression!: string;
 }

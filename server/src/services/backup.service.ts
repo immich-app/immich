@@ -8,7 +8,6 @@ import { ArgOf } from 'src/interfaces/event.interface';
 import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { handlePromiseError } from 'src/utils/misc';
-import { validateCronExpression } from 'src/validation';
 
 @Injectable()
 export class BackupService extends BaseService {
@@ -27,12 +26,12 @@ export class BackupService extends BaseService {
     this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
 
     if (this.backupLock) {
-      this.jobRepository.addCronJob(
-        'backupDatabase',
-        database.cronExpression,
-        () => handlePromiseError(this.jobRepository.queue({ name: JobName.BACKUP_DATABASE }), this.logger),
-        database.enabled,
-      );
+      this.cronRepository.create({
+        name: 'backupDatabase',
+        expression: database.cronExpression,
+        onTick: () => handlePromiseError(this.jobRepository.queue({ name: JobName.BACKUP_DATABASE }), this.logger),
+        start: database.enabled,
+      });
     }
   }
 
@@ -42,15 +41,11 @@ export class BackupService extends BaseService {
       return;
     }
 
-    this.jobRepository.updateCronJob('backupDatabase', backup.database.cronExpression, backup.database.enabled);
-  }
-
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
-    const { database } = newConfig.backup;
-    if (!validateCronExpression(database.cronExpression)) {
-      throw new Error(`Invalid cron expression ${database.cronExpression}`);
-    }
+    this.cronRepository.update({
+      name: 'backupDatabase',
+      expression: backup.database.cronExpression,
+      start: backup.database.enabled,
+    });
   }
 
   async cleanupDatabaseBackups() {
