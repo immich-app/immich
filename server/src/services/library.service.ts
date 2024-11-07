@@ -24,7 +24,6 @@ import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
-import { validateCronExpression } from 'src/validation';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -78,14 +77,6 @@ export class LibraryService extends BaseService {
       // Watch configuration changed, update accordingly
       this.watchLibraries = library.watch.enabled;
       await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
-    }
-  }
-
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
-    const { scan } = newConfig.library;
-    if (!validateCronExpression(scan.cronExpression)) {
-      throw new Error(`Invalid cron expression ${scan.cronExpression}`);
     }
   }
 

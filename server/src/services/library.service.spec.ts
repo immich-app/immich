@@ -177,26 +177,6 @@ describe(LibraryService.name, () => {
     });
   });
 
-  describe('onConfigValidateEvent', () => {
-    it('should allow a valid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { library: { scan: { cronExpression: '0 0 * * *' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).not.toThrow(expect.stringContaining('Invalid cron expression'));
-    });
-
-    it('should fail for an invalid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { library: { scan: { cronExpression: 'foo' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).toThrow(/Invalid cron expression.*/);
-    });
-  });
-
   describe('handleQueueSyncFiles', () => {
     it('should queue refresh of a new asset', async () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
