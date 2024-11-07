@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -16,7 +17,6 @@ import 'package:immich_mobile/utils/hooks/interval_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
-import 'package:photo_manager/photo_manager.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 class NativeVideoViewerPage extends HookConsumerWidget {
@@ -53,7 +53,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return null;
       }
 
-      return AssetEntity.fromId(asset.localId!);
+      final local = asset.local;
+      if (local == null || local.orientation > 0) {
+        return Future.value(local);
+      }
+
+      return local.obtainForNewProperties();
     });
 
     Future<double?> calculateAspectRatio() async {
@@ -67,11 +72,18 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       if (asset.exifInfo != null) {
         orientatedWidth = asset.orientatedWidth?.toDouble();
         orientatedHeight = asset.orientatedHeight?.toDouble();
-      } else if (localEntity != null) {
+      }
+
+      if (orientatedWidth == null && localEntity != null) {
         final entity = await localEntity;
-        orientatedWidth = entity?.orientatedWidth.toDouble();
-        orientatedHeight = entity?.orientatedHeight.toDouble();
-      } else {
+        if (entity != null) {
+          asset.local = entity;
+          orientatedWidth = entity.orientatedWidth.toDouble();
+          orientatedHeight = entity.orientatedHeight.toDouble();
+        }
+      }
+
+      if (orientatedWidth == null) {
         final entity = await ref.read(assetServiceProvider).loadExif(asset);
         orientatedWidth = entity.orientatedWidth?.toDouble();
         orientatedHeight = entity.orientatedHeight?.toDouble();
