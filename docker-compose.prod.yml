@@ -16,12 +16,6 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       IMMICH_VERSION: ${IMMICH_VERSION}
 
-    # extends:
-    #   file: hwaccel.transcoding.yml
-    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
-    #build:
-    #  context: ../
-    #  dockerfile: server/Dockerfile
     volumes:
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
