@@ -97,7 +97,8 @@ export class BackupService extends BaseService {
           env: { PATH: process.env.PATH, PGPASSWORD: isUrlConnection ? undefined : config.password },
         });
 
-        const gzip = this.processRepository.spawn(`gzip`, []);
+        // NOTE: `--rsyncable` is only supported in GNU gzip
+        const gzip = this.processRepository.spawn(`gzip`, ['--rsyncable']);
         pgdump.stdout.pipe(gzip.stdin);
 
         const fileStream = this.storageRepository.createWriteStream(backupFilePath);
