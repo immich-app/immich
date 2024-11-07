@@ -150,6 +150,9 @@ export class BackupService extends BaseService {
       await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
     } catch (error) {
       this.logger.error('Database Backup Failure', error);
+      await this.storageRepository
+        .unlink(backupFilePath)
+        .catch((error) => this.logger.error('Failed to delete failed backup file', error));
       return JobStatus.FAILED;
     }
 
