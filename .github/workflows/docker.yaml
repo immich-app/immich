@@ -20,6 +20,7 @@ on:
 env:
   REGISTRY: registry.esek.se
   DEFAULT_BRANCH: main
+  env: production
   ONLY_PROD: false
 
 jobs:
