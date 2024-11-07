@@ -1,23 +1,42 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowDownDropCircleOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
   import { mdiInformationOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
+  import { mdiArrowDownDropCircleOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
 
-  export let title: string;
-  export let routeId: string;
-  export let icon: string;
-  export let flippedLogo = false;
-  export let preloadData = true;
-  export let isSelected = false;
+  interface Props {
+    title: string;
+    routeId: string;
+    icon: string;
+    flippedLogo?: boolean;
+    isSelected?: boolean;
+    preloadData?: boolean;
+    moreInformation?: import('svelte').Snippet;
+    hasDropdown?: import('svelte').Snippet;
+    dropdownOpen?: boolean;
+  }
 
-  export let dropdownOpen = false;
+  let {
+    title,
+    routeId,
+    icon,
+    flippedLogo = false,
+    isSelected = $bindable(false),
+    preloadData = true,
+    moreInformation,
+    hasDropdown,
+    dropdownOpen = false,
+  }: Props = $props();
 
-  let showMoreInformation = false;
-  $: routePath = resolveRoute(routeId, {});
-  $: isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+  let showMoreInformation = $state(false);
+  let routePath = $derived(resolveRoute(routeId, {}));
+  run(() => {
+    isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+  });
 </script>
 
 <a
@@ -37,11 +56,11 @@
     <span class="text-sm font-medium">{title}</span>
   </div>
 
-  {#if $$slots.hasDropdown}
+  {#if hasDropdown}
     <button
       type="button"
       class="relative flex cursor-default select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded"
-      on:click={() => (dropdownOpen = !dropdownOpen)}
+      onclick={() => (dropdownOpen = !dropdownOpen)}
     >
       <Icon
         path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
@@ -56,12 +75,12 @@
   <div
     class="h-0 overflow-hidden transition-[height] delay-1000 duration-100 sm:group-hover:h-auto group-hover:sm:overflow-visible md:h-auto md:overflow-visible"
   >
-    {#if $$slots.moreInformation}
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
+    {#if moreInformation}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="relative flex cursor-default select-none justify-center"
-        on:mouseenter={() => (showMoreInformation = true)}
-        on:mouseleave={() => (showMoreInformation = false)}
+        onmouseenter={() => (showMoreInformation = true)}
+        onmouseleave={() => (showMoreInformation = false)}
       >
         <div class="p-1 text-gray-600 hover:cursor-help dark:text-gray-400">
           <Icon path={mdiInformationOutline} />
@@ -74,7 +93,7 @@
               class:hidden={!showMoreInformation}
               transition:fade={{ duration: 200 }}
             >
-              <slot name="moreInformation" />
+              {@render moreInformation?.()}
             </div>
           </div>
         {/if}
@@ -82,6 +101,6 @@
     {/if}
   </div>
 </a>
-{#if $$slots.hasDropdown && dropdownOpen}
-  <slot name="hasDropdown" class="delay-100 duration-100"></slot>
+{#if hasDropdown && dropdownOpen}
+  {@render hasDropdown?.()}
 {/if}

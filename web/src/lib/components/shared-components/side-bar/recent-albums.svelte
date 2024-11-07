@@ -7,7 +7,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
 
-  let albums: AlbumResponseDto[] = [];
+  let albums: AlbumResponseDto[] = $state([]);
 
   onMount(async () => {
     try {
