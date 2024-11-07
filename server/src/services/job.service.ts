@@ -164,6 +164,10 @@ export class JobService extends BaseService {
         return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, data: { force } });
       }
 
+      case QueueName.BACKUP_DATABASE: {
+        return this.jobRepository.queue({ name: JobName.BACKUP_DATABASE, data: { force } });
+      }
+
       default: {
         throw new BadRequestException(`Invalid job name: ${name}`);
       }

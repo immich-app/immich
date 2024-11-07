@@ -85,7 +85,7 @@ export class BackupService extends BaseService {
     } = this.configRepository.getEnv();
 
     const isUrlConnection = config.connectionType === 'url';
-    const databaseParams = isUrlConnection ? [config.url] : ['-U', config.username, '-h', config.host];
+    const databaseParams = isUrlConnection ? ['-d', config.url] : ['-U', config.username, '-h', config.host];
     const backupFilePath = path.join(
       StorageCore.getBaseFolder(StorageFolder.BACKUPS),
       `immich-db-backup-${Date.now()}.sql.gz.tmp`,
