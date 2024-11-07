@@ -37,18 +37,21 @@ export class AlbumService extends BaseService {
     };
   }
 
-  async getAll({ user: { id: ownerId } }: AuthDto, { assetId, shared }: GetAlbumsDto): Promise<AlbumResponseDto[]> {
+  async getAll(
+    { user: { id: ownerId } }: AuthDto,
+    { assetId, shared, top }: GetAlbumsDto,
+  ): Promise<AlbumResponseDto[]> {
     await this.albumRepository.updateThumbnails();
 
     let albums: AlbumEntity[];
     if (assetId) {
       albums = await this.albumRepository.getByAssetId(ownerId, assetId);
     } else if (shared === true) {
-      albums = await this.albumRepository.getShared(ownerId);
+      albums = await this.albumRepository.getShared(ownerId, top);
     } else if (shared === false) {
-      albums = await this.albumRepository.getNotShared(ownerId);
+      albums = await this.albumRepository.getNotShared(ownerId, top);
     } else {
-      albums = await this.albumRepository.getOwned(ownerId);
+      albums = await this.albumRepository.getOwned(ownerId, top);
     }
 
     // Get asset count for each album. Then map the result to an object:

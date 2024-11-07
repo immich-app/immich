@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayNotEmpty, IsArray, IsEnum, IsString, ValidateNested } from 'class-validator';
+import { ArrayNotEmpty, IsArray, IsEnum, IsNumber, IsString, ValidateNested } from 'class-validator';
 import _ from 'lodash';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -93,6 +93,9 @@ export class GetAlbumsDto {
    */
   @ValidateUUID({ optional: true })
   assetId?: string;
+
+  @IsNumber()
+  top?: number;
 }
 
 export class AlbumStatisticsResponseDto {
