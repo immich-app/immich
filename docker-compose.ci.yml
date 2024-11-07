@@ -9,12 +9,11 @@ services:
     container_name: immich_server
     image: '${IMAGE_NAME}-server'
     environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE_NAME: ${DB_DATABASE_NAME}
-      POSTGRES_DB: ${DB_DATABASE_NAME}
       UPLOAD_LOCATION: ${UPLOAD_LOCATION}
       DB_DATA_LOCATION: ${DB_DATA_LOCATION}
+      DB_USERNAME: ${DB_USERNAME}
       IMMICH_VERSION: ${IMMICH_VERSION}
 
     # extends:
