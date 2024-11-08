@@ -32,7 +32,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute, ViewMode } from '$lib/constants';
+  import { AppRoute, AlbumPageViewMode } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -99,7 +99,7 @@
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
   let backUrl: string = $state(AppRoute.ALBUMS);
-  let viewMode = $state(ViewMode.VIEW);
+  let viewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let isLiked: ActivityResponseDto | null = $state(null);
@@ -210,21 +210,21 @@
   };
 
   const handleEscape = async () => {
-    if (viewMode === ViewMode.SELECT_USERS) {
-      viewMode = ViewMode.VIEW;
+    if (viewMode === AlbumPageViewMode.SELECT_USERS) {
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
 
-    if (viewMode === ViewMode.SELECT_ASSETS) {
+    if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       await handleCloseSelectAssets();
       return;
     }
-    if (viewMode === ViewMode.LINK_SHARING) {
-      viewMode = ViewMode.VIEW;
+    if (viewMode === AlbumPageViewMode.LINK_SHARING) {
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
-    if (viewMode === ViewMode.OPTIONS) {
-      viewMode = ViewMode.VIEW;
+    if (viewMode === AlbumPageViewMode.OPTIONS) {
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
     if ($showAssetViewer) {
@@ -267,7 +267,7 @@
   };
 
   const setModeToView = async () => {
-    viewMode = ViewMode.VIEW;
+    viewMode = AlbumPageViewMode.VIEW;
     assetStore.destroy();
     assetStore = new AssetStore({ albumId, order: albumOrder });
     timelineStore.destroy();
@@ -300,13 +300,13 @@
       });
       await refreshAlbum();
 
-      viewMode = ViewMode.VIEW;
+      viewMode = AlbumPageViewMode.VIEW;
     } catch (error) {
       handleError(error, $t('errors.error_adding_users_to_album'));
     }
   };
 
-  const handleRemoveUser = async (userId: string, nextViewMode: ViewMode) => {
+  const handleRemoveUser = async (userId: string, nextViewMode: AlbumPageViewMode) => {
     if (userId == 'me' || userId === $user.id) {
       await goto(backUrl);
       return;
@@ -316,7 +316,7 @@
       await refreshAlbum();
 
       // Dynamically set the view mode based on the passed argument
-      viewMode = album.albumUsers.length > 0 ? nextViewMode : ViewMode.VIEW;
+      viewMode = album.albumUsers.length > 0 ? nextViewMode : AlbumPageViewMode.VIEW;
     } catch (error) {
       handleError(error, $t('errors.error_deleting_shared_user'));
     }
@@ -330,7 +330,7 @@
     const isConfirmed = await confirmAlbumDelete(album);
 
     if (!isConfirmed) {
-      viewMode = ViewMode.VIEW;
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
 
@@ -340,7 +340,7 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_album'));
     } finally {
-      viewMode = ViewMode.VIEW;
+      viewMode = AlbumPageViewMode.VIEW;
     }
   };
 
@@ -350,11 +350,11 @@
   };
 
   const handleUpdateThumbnail = async (assetId: string) => {
-    if (viewMode !== ViewMode.SELECT_THUMBNAIL) {
+    if (viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL) {
       return;
     }
 
-    viewMode = ViewMode.VIEW;
+    viewMode = AlbumPageViewMode.VIEW;
     assetInteractionStore.clearMultiselect();
 
     await updateThumbnail(assetId);
@@ -468,14 +468,14 @@
         </ButtonContextMenu>
       </AssetSelectControlBar>
     {:else}
-      {#if viewMode === ViewMode.VIEW}
+      {#if viewMode === AlbumPageViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
           {#snippet trailing()}
             {#if isEditor}
               <CircleIconButton
                 title={$t('add_photos')}
                 onclick={async () => {
-                  viewMode = ViewMode.SELECT_ASSETS;
+                  viewMode = AlbumPageViewMode.SELECT_ASSETS;
                   oldAt = { at: $gridScrollTarget?.at };
                   await navigate(
                     { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
@@ -489,7 +489,7 @@
             {#if isOwned}
               <CircleIconButton
                 title={$t('share')}
-                onclick={() => (viewMode = ViewMode.SELECT_USERS)}
+                onclick={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
                 icon={mdiShareVariantOutline}
               />
             {/if}
@@ -503,9 +503,13 @@
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
-                    onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                    onClick={() => (viewMode = AlbumPageViewMode.SELECT_THUMBNAIL)}
                   />
-                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
+                  <MenuOption
+                    icon={mdiCogOutline}
+                    text={$t('options')}
+                    onClick={() => (viewMode = AlbumPageViewMode.OPTIONS)}
+                  />
                   <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
                 </ButtonContextMenu>
               {/if}
@@ -516,7 +520,7 @@
                 size="sm"
                 rounded="lg"
                 disabled={album.assetCount === 0}
-                onclick={() => (viewMode = ViewMode.SELECT_USERS)}
+                onclick={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
               >
                 {$t('share')}
               </Button>
@@ -525,7 +529,7 @@
         </ControlAppBar>
       {/if}
 
-      {#if viewMode === ViewMode.SELECT_ASSETS}
+      {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
         <ControlAppBar onClose={handleCloseSelectAssets}>
           {#snippet leading()}
             <p class="text-lg dark:text-immich-dark-fg">
@@ -552,8 +556,8 @@
         </ControlAppBar>
       {/if}
 
-      {#if viewMode === ViewMode.SELECT_THUMBNAIL}
-        <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW)}>
+      {#if viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
+        <ControlAppBar onClose={() => (viewMode = AlbumPageViewMode.VIEW)}>
           {#snippet leading()}
             {$t('select_album_cover')}
           {/snippet}
@@ -567,7 +571,7 @@
     >
       <!-- Use key because AssetGrid can't deal with changing stores -->
       {#key albumKey}
-        {#if viewMode === ViewMode.SELECT_ASSETS}
+        {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
           <AssetGrid
             enableRouting={false}
             assetStore={timelineStore}
@@ -581,13 +585,13 @@
             {assetStore}
             {assetInteractionStore}
             isShared={album.albumUsers.length > 0}
-            isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
-            singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
+            isSelectionMode={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
+            singleSelect={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
             onSelect={({ id }) => handleUpdateThumbnail(id)}
             onEscape={handleEscape}
           >
-            {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
+            {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-8 md:pt-24">
                 <AlbumTitle
@@ -611,18 +615,18 @@
                         color="gray"
                         size="20"
                         icon={mdiLink}
-                        onclick={() => (viewMode = ViewMode.LINK_SHARING)}
+                        onclick={() => (viewMode = AlbumPageViewMode.LINK_SHARING)}
                       />
                     {/if}
 
                     <!-- owner -->
-                    <button type="button" onclick={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button type="button" onclick={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -634,7 +638,7 @@
                         color="gray"
                         size="20"
                         icon={mdiDotsVertical}
-                        onclick={() => (viewMode = ViewMode.VIEW_USERS)}
+                        onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}
                       />
                     {/if}
 
@@ -643,7 +647,7 @@
                         color="gray"
                         size="20"
                         icon={mdiPlus}
-                        onclick={() => (viewMode = ViewMode.SELECT_USERS)}
+                        onclick={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
                         title={$t('add_more_users')}
                       />
                     {/if}
@@ -660,7 +664,7 @@
                   <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
                   <button
                     type="button"
-                    onclick={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                    onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
                     <span class="text-text-immich-primary dark:text-immich-dark-primary"
@@ -712,29 +716,29 @@
     </div>
   {/if}
 </div>
-{#if viewMode === ViewMode.SELECT_USERS}
+{#if viewMode === AlbumPageViewMode.SELECT_USERS}
   <UserSelectionModal
     {album}
     onSelect={handleAddUsers}
-    onShare={() => (viewMode = ViewMode.LINK_SHARING)}
-    onClose={() => (viewMode = ViewMode.VIEW)}
+    onShare={() => (viewMode = AlbumPageViewMode.LINK_SHARING)}
+    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
   />
 {/if}
 
-{#if viewMode === ViewMode.LINK_SHARING}
-  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = ViewMode.VIEW)} />
+{#if viewMode === AlbumPageViewMode.LINK_SHARING}
+  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = AlbumPageViewMode.VIEW)} />
 {/if}
 
-{#if viewMode === ViewMode.VIEW_USERS}
+{#if viewMode === AlbumPageViewMode.VIEW_USERS}
   <ShareInfoModal
-    onClose={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
     {album}
-    onRemove={(userId) => handleRemoveUser(userId, ViewMode.VIEW_USERS)}
+    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.VIEW_USERS)}
     onRefreshAlbum={refreshAlbum}
   />
 {/if}
 
-{#if viewMode === ViewMode.OPTIONS && $user}
+{#if viewMode === AlbumPageViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
     order={albumOrder}
@@ -743,11 +747,11 @@
       albumOrder = order;
       await setModeToView();
     }}
-    onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.OPTIONS)}
     onRefreshAlbum={refreshAlbum}
-    onClose={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
-    onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
+    onShowSelectSharedUser={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
   />
 {/if}
 

@@ -8,7 +8,7 @@ import AlbumCard from '../album-card.svelte';
 const onShowContextMenu = vi.fn();
 
 describe('AlbumCard component', () => {
-  let sut: RenderResult<AlbumCard>;
+  let sut: RenderResult<typeof AlbumCard>;
 
   beforeAll(async () => {
     await init({ fallbackLocale: 'en-US' });
