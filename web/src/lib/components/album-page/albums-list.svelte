@@ -38,6 +38,7 @@
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
+  import { run } from 'svelte/legacy';
 
   interface Props {
     ownedAlbums?: AlbumResponseDto[];
@@ -149,7 +150,7 @@
   let isOpen = $state(false);
 
   // Step 1: Filter between Owned and Shared albums, or both.
-  $effect(() => {
+  run(() => {
     switch (userSettings.filter) {
       case AlbumFilter.Owned: {
         albums = ownedAlbums;
@@ -168,7 +169,7 @@
   });
 
   // Step 2: Filter using the given search query.
-  $effect(() => {
+  run(() => {
     if (searchQuery) {
       const searchAlbumNormalized = normalizeSearchString(searchQuery);
 
@@ -181,14 +182,14 @@
   });
 
   // Step 3: Group albums.
-  $effect(() => {
+  run(() => {
     albumGroupOption = getSelectedAlbumGroupOption(userSettings);
     const groupFunc = groupOptions[albumGroupOption] ?? groupOptions[AlbumGroupBy.None];
     groupedAlbums = groupFunc(stringToSortOrder(userSettings.groupOrder), filteredAlbums);
   });
 
   // Step 4: Sort albums amongst each group.
-  $effect(() => {
+  run(() => {
     groupedAlbums = groupedAlbums.map((group) => ({
       id: group.id,
       name: group.name,

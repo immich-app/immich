@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -79,7 +77,6 @@
       $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 
-  let selectedGroupOption: AlbumGroupOptionMetadata | undefined = $state();
   let groupIcon: string = $state('');
 
   let albumFilterNames = $derived(
@@ -93,13 +90,9 @@
   );
   let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);
   let selectedSortOption = $derived(findSortOptionMetadata($albumViewSettings.sortBy));
-  run(() => {
-    selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
-    if (selectedGroupOption.isDisabled()) {
-      selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
-    }
-  });
-  run(() => {
+  const selectedGroupOption = $derived(findGroupOptionMetadata($albumViewSettings.groupBy));
+
+  $effect(() => {
     if (selectedGroupOption?.id === AlbumGroupBy.None) {
       groupIcon = mdiFolderRemoveOutline;
     } else {
