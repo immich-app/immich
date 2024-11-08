@@ -102,6 +102,8 @@ For the mobile app, you can use `https://demo.immich.app/api` for the `Server En
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
+| Tags                                         | No     | Yes |
+| Folder View                                  | No     | Yes |
 
 ## Translations
 

@@ -8,7 +8,6 @@ import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { format } from 'sql-formatter';
-import { databaseConfig } from 'src/database.config';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { entities } from 'src/entities';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
@@ -74,12 +73,12 @@ class SqlGenerator {
     await rm(this.options.targetDir, { force: true, recursive: true });
     await mkdir(this.options.targetDir);
 
-    const { otel } = new ConfigRepository().getEnv();
+    const { database, otel } = new ConfigRepository().getEnv();
 
     const moduleFixture = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
-          ...databaseConfig,
+          ...database.config,
           host: 'localhost',
           entities,
           logging: ['query'],

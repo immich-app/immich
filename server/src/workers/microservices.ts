@@ -6,12 +6,14 @@ import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
-import { isStartUpError } from 'src/services/storage.service';
-import { otelStart } from 'src/utils/instrumentation';
+import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
+import { isStartUpError } from 'src/utils/misc';
 
 export async function bootstrap() {
   const { telemetry } = new ConfigRepository().getEnv();
-  otelStart(telemetry.microservicesPort);
+  if (telemetry.metrics.size > 0) {
+    bootstrapTelemetry(telemetry.microservicesPort);
+  }
 
   const app = await NestFactory.create(MicroservicesModule, { bufferLogs: true });
   const logger = await app.resolve(ILoggerRepository);

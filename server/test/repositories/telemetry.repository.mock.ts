@@ -12,6 +12,7 @@ const newMetricGroupMock = () => {
 
 export const newTelemetryRepositoryMock = (): Mocked<ITelemetryRepository> => {
   return {
+    setup: vitest.fn(),
     api: newMetricGroupMock(),
     host: newMetricGroupMock(),
     jobs: newMetricGroupMock(),

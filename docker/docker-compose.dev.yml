@@ -66,6 +66,7 @@ services:
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
+      - ../i18n:/usr/src/i18n
       - ../open-api/:/usr/src/open-api/
       - /usr/src/app/node_modules
     ulimits:
@@ -142,7 +143,7 @@ services:
         'wal_compression=on',
       ]
 
-  # set IMMICH_METRICS=true in .env to enable metrics
+  # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
   #   ports:

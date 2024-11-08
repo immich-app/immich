@@ -14,14 +14,14 @@
     mdiPlay,
     mdiSelectionSearch,
   } from '@mdi/js';
-  import { type ComponentType } from 'svelte';
+  import { type Component } from 'svelte';
   import { t } from 'svelte-i18n';
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
 
   export let title: string;
   export let subtitle: string | undefined;
-  export let description: ComponentType | undefined;
+  export let description: Component | undefined;
   export let jobCounts: JobCountsDto;
   export let queueStatus: QueueStatusDto;
   export let icon: string;

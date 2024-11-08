@@ -181,6 +181,7 @@ export enum StorageFolder {
   UPLOAD = 'upload',
   PROFILE = 'profile',
   THUMBNAILS = 'thumbs',
+  BACKUPS = 'backups',
 }
 
 export enum SystemMetadataKey {
@@ -334,6 +335,8 @@ export enum MetadataKey {
   SHARED_ROUTE = 'shared_route',
   API_KEY_SECURITY = 'api_key',
   EVENT_CONFIG = 'event_config',
+  JOB_CONFIG = 'job_config',
+  TELEMETRY_ENABLED = 'telemetry_enabled',
 }
 
 export enum RouteKey {
@@ -361,4 +364,12 @@ export enum ImmichEnvironment {
 export enum ImmichWorker {
   API = 'api',
   MICROSERVICES = 'microservices',
+}
+
+export enum ImmichTelemetry {
+  HOST = 'host',
+  API = 'api',
+  IO = 'io',
+  REPO = 'repo',
+  JOB = 'job',
 }

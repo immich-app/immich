@@ -24,7 +24,6 @@ import {
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService } from 'src/services/auth.service';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { handlePromiseError } from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
@@ -37,7 +36,6 @@ type Item<T extends EmitEvent> = {
   label: string;
 };
 
-@Instrumentation()
 @WebSocketGateway({
   cors: true,
   path: '/api/socket.io',
@@ -59,7 +57,6 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
   setup({ services }: { services: ClassConstructor<unknown>[] }) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
-    const repository = this.moduleRef.get<IEventRepository>(IEventRepository);
     const items: Item<EmitEvent>[] = [];
 
     // discovery
@@ -96,7 +93,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
     // register by priority
     for (const handler of handlers) {
-      repository.on(handler);
+      this.addHandler(handler);
     }
   }
 
@@ -136,7 +133,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     await client.leave(client.nsp.name);
   }
 
-  on<T extends EmitEvent>(item: EventItem<T>): void {
+  private addHandler<T extends EmitEvent>(item: EventItem<T>): void {
     const event = item.event;
 
     if (!this.emitHandlers[event]) {

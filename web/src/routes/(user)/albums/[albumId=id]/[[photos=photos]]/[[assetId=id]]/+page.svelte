@@ -142,10 +142,12 @@
   $: showActivityStatus =
     album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: isEditor =
     album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
     album.ownerId === $user.id;
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
@@ -747,6 +749,7 @@
       await setModeToView();
     }}
     onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRefreshAlbum={refreshAlbum}
     onClose={() => (viewMode = ViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
     onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}

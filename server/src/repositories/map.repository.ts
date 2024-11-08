@@ -20,11 +20,9 @@ import {
 } from 'src/interfaces/map.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { OptionalBetween } from 'src/utils/database';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, IsNull, Not, QueryRunner, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
 
-@Instrumentation()
 @Injectable()
 export class MapRepository implements IMapRepository {
   constructor(
@@ -251,6 +249,7 @@ export class MapRepository implements IMapRepository {
     const input = createReadStream(filePath);
     let bufferGeodata: QueryDeepPartialEntity<GeodataPlacesEntity>[] = [];
     const lineReader = readLine.createInterface({ input });
+    let count = 0;
 
     for await (const line of lineReader) {
       const lineSplit = line.split('\t');
@@ -259,8 +258,12 @@ export class MapRepository implements IMapRepository {
       }
       const geoData = lineToEntityMapper(lineSplit);
       bufferGeodata.push(geoData);
-      if (bufferGeodata.length > 1000) {
+      if (bufferGeodata.length >= 1000) {
         await queryRunner.manager.upsert(GeodataPlacesEntity, bufferGeodata, ['id']);
+        count += bufferGeodata.length;
+        if (count % 10_000 === 0) {
+          this.logger.log(`${count} geodata records imported`);
+        }
         bufferGeodata = [];
       }
     }
