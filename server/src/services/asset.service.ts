@@ -94,7 +94,6 @@ export class AssetService extends BaseService {
       {
         exifInfo: true,
         sharedLinks: true,
-        smartInfo: true,
         tags: true,
         owner: true,
         faces: {
@@ -162,7 +161,6 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      smartInfo: true,
       tags: true,
       faces: {
         person: true,
