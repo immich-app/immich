@@ -50,7 +50,7 @@
   let assetFileUrl: string = $state('');
   let imageLoaded: boolean = $state(false);
   let imageError: boolean = $state(false);
-  let forceUseOriginal: boolean = $state(false);
+
   let loader = $state<HTMLImageElement>();
 
   photoZoomState.set({
@@ -70,6 +70,7 @@
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
+        console.log('preloadAsset.id:', preloadAsset.id);
         img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
       }
     }
@@ -79,6 +80,8 @@
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
       return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
     }
+
+    console.trace(id, useOriginal);
 
     return useOriginal
       ? getAssetOriginalUrl({ id, checksum })
@@ -147,16 +150,17 @@
   let isWebCompatible = $derived(isWebCompatibleImage(asset));
   let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
   // when true, will force loading of the original image
-  $effect(() => {
-    forceUseOriginal =
-      forceUseOriginal ||
-      asset.originalMimeType === 'image/gif' ||
-      ($photoZoomState.currentZoom > 1 && isWebCompatible);
-  });
+
+  let forceUseOriginal: boolean = $derived(
+    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible),
+  );
+
   let useOriginalImage = $derived(useOriginalByDefault || forceUseOriginal);
+
   $effect(() => {
     preload(useOriginalImage, preloadAssets);
   });
+
   let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.checksum));
 </script>
 
