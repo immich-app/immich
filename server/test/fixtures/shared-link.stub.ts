@@ -62,10 +62,6 @@ const assetResponse: AssetResponseDto = {
   updatedAt: today,
   isFavorite: false,
   isArchived: false,
-  smartInfo: {
-    tags: [],
-    objects: ['a', 'b', 'c'],
-  },
   duration: '0:00:00.00000',
   exifInfo: assetInfo,
   livePhotoVideoId: null,
@@ -205,12 +201,6 @@ export const sharedLinkStub = {
           isArchived: false,
           isExternal: false,
           isOffline: false,
-          smartInfo: {
-            assetId: 'id_1',
-            tags: [],
-            objects: ['a', 'b', 'c'],
-            asset: null as any,
-          },
           files: [],
           thumbhash: null,
           encodedVideoPath: '',

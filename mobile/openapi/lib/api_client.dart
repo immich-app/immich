@@ -498,8 +498,6 @@ class ApiClient {
           return SharedLinkTypeTypeTransformer().decode(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
-        case 'SmartInfoResponseDto':
-          return SmartInfoResponseDto.fromJson(value);
         case 'SmartSearchDto':
           return SmartSearchDto.fromJson(value);
         case 'SourceType':
