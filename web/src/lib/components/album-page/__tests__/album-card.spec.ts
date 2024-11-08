@@ -1,7 +1,8 @@
 import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { albumFactory } from '@test-data/factories/album-factory';
 import '@testing-library/jest-dom';
-import { fireEvent, render, waitFor, type RenderResult } from '@testing-library/svelte';
+import { render, waitFor, type RenderResult } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
 import { init, register, waitLocale } from 'svelte-i18n';
 import AlbumCard from '../album-card.svelte';
 
@@ -93,7 +94,7 @@ describe('AlbumCard component', () => {
       await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
     });
 
-    it.skip('dispatches "onShowContextMenu" event on context menu click with mouse coordinates', async () => {
+    it('dispatches "onShowContextMenu" event on context menu click with mouse coordinates', async () => {
       const contextMenuButton = sut.getByTestId('context-button-parent').children[0];
       expect(contextMenuButton).toBeDefined();
 
@@ -110,13 +111,9 @@ describe('AlbumCard component', () => {
         toJSON: () => ({}),
       });
 
-      await fireEvent(
-        contextMenuButton,
-        new MouseEvent('click', {
-          clientX: 123,
-          clientY: 456,
-        }),
-      );
+      const user = userEvent.setup();
+      await user.click(contextMenuButton);
+
       expect(onShowContextMenu).toHaveBeenCalledTimes(1);
       expect(onShowContextMenu).toHaveBeenCalledWith(expect.objectContaining({ x: 123, y: 456 }));
     });
