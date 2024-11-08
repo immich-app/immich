@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import type { SystemConfigDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
@@ -20,11 +17,15 @@
   }
 
   let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))} class="mx-4 mt-4">
+    <form autocomplete="off" {onsubmit} class="mx-4 mt-4">
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.metadata_faces_import_setting')}

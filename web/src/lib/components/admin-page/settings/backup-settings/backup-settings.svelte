@@ -28,11 +28,15 @@
     { text: $t('interval.day_at_onepm'), value: '0 13 * * *' },
     { text: $t('interval.hours', { values: { hours: 6 } }), value: '0 */6 * * *' },
   ]);
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={(e) => e.preventDefault()}>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.backup_database_enable_description')}
@@ -56,7 +60,7 @@
           bind:value={config.backup.database.cronExpression}
           isEdited={config.backup.database.cronExpression !== savedConfig.backup.database.cronExpression}
         >
-          {#snippet desc()}
+          {#snippet descriptionSnippet()}
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.cron_expression_description">
                 {#snippet children({ message })}

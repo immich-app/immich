@@ -20,13 +20,13 @@
     },
   }: Props = $props();
 
-  let zeros = $derived((value: number) => {
+  const zeros = (value: number) => {
     const maxLength = 13;
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
 
     return '0'.repeat(zeroLength);
-  });
+  };
 
   const TiB = 1024 ** 4;
   let [statsUsage, statsUsageUnit] = $derived(getBytesWithUnit(stats.usage, stats.usage > TiB ? 2 : 0));

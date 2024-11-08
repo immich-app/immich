@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { updateAlbumInfo } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
   import { shortcut } from '$lib/actions/shortcut';
@@ -15,8 +13,9 @@
 
   let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
 
-  let newAlbumName;
-  run(() => {
+  let newAlbumName = $state(albumName);
+
+  $effect(() => {
     newAlbumName = albumName;
   });
 

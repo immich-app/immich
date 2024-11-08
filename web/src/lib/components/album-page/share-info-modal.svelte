@@ -27,7 +27,7 @@
 
   let { album, onClose, onRemove, onRefreshAlbum }: Props = $props();
 
-  let currentUser: UserResponseDto = $state();
+  let currentUser: UserResponseDto | undefined = $state();
   let selectedRemoveUser: UserResponseDto | null = $state(null);
 
   let isOwned = $derived(currentUser?.id == album.ownerId);

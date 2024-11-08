@@ -52,7 +52,6 @@
     onConfirm={() => handleSave(true)}
   >
     {#snippet promptSnippet()}
-      ""
       <div class="flex flex-col gap-4">
         <p>{$t('admin.authentication_settings_disable_all')}</p>
         <p>

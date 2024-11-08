@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { flip } from 'svelte/animate';
   import { slide } from 'svelte/transition';
   import { AppRoute } from '$lib/constants';
@@ -38,6 +36,11 @@
   };
 
   let iconRotation = $derived(isCollapsed ? 'rotate-0' : 'rotate-90');
+
+  const oncontextmenu = (event: MouseEvent, album: AlbumResponseDto) => {
+    event.preventDefault();
+    showContextMenu({ x: event.x, y: event.y }, album);
+  };
 </script>
 
 {#if group}
@@ -68,7 +71,7 @@
           data-sveltekit-preload-data="hover"
           href="{AppRoute.ALBUMS}/{album.id}"
           animate:flip={{ duration: 400 }}
-          oncontextmenu={preventDefault((e) => showContextMenu({ x: e.x, y: e.y }, album))}
+          oncontextmenu={(event) => oncontextmenu(event, album)}
         >
           <AlbumCard
             {album}

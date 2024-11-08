@@ -11,7 +11,7 @@
 
   let { icon, title, value, unit = undefined }: Props = $props();
 
-  let zeros = $derived(() => {
+  const zeros = $derived(() => {
     const maxLength = 13;
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { onMount } from 'svelte';
   import { groupBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
@@ -147,12 +145,11 @@
   let albumToDelete: AlbumResponseDto | null = null;
 
   let contextMenuPosition: ContextMenuPosition = $state({ x: 0, y: 0 });
-  let contextMenuTargetAlbum: AlbumResponseDto | null = $state(null);
+  let contextMenuTargetAlbum: AlbumResponseDto | undefined = $state();
   let isOpen = $state(false);
 
   // Step 1: Filter between Owned and Shared albums, or both.
-  // svelte-ignore reactive_declaration_non_reactive_property
-  run(() => {
+  $effect(() => {
     switch (userSettings.filter) {
       case AlbumFilter.Owned: {
         albums = ownedAlbums;
@@ -171,7 +168,7 @@
   });
 
   // Step 2: Filter using the given search query.
-  run(() => {
+  $effect(() => {
     if (searchQuery) {
       const searchAlbumNormalized = normalizeSearchString(searchQuery);
 
@@ -184,14 +181,14 @@
   });
 
   // Step 3: Group albums.
-  run(() => {
+  $effect(() => {
     albumGroupOption = getSelectedAlbumGroupOption(userSettings);
     const groupFunc = groupOptions[albumGroupOption] ?? groupOptions[AlbumGroupBy.None];
     groupedAlbums = groupFunc(stringToSortOrder(userSettings.groupOrder), filteredAlbums);
   });
 
   // Step 4: Sort albums amongst each group.
-  run(() => {
+  $effect(() => {
     groupedAlbums = groupedAlbums.map((group) => ({
       id: group.id,
       name: group.name,
@@ -338,6 +335,10 @@
   };
 
   const openShareModal = () => {
+    if (!contextMenuTargetAlbum) {
+      return;
+    }
+
     albumToShare = contextMenuTargetAlbum;
     closeAlbumContextMenu();
   };

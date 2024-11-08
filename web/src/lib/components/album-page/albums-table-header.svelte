@@ -17,7 +17,6 @@
       $albumViewSettings.sortOrder = option.defaultOrder;
     }
   };
-  // svelte-ignore reactive_declaration_non_reactive_property
   let albumSortByNames = $derived(
     ((): Record<AlbumSortBy, string> => {
       return {

@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import { getJobName } from '$lib/utils';
   import { JobName, type SystemConfigDto, type SystemConfigJobDto } from '@immich/sdk';
   import { isEqual } from 'lodash-es';
@@ -40,11 +37,15 @@
   function isSystemConfigJobDto(jobName: any): jobName is keyof SystemConfigJobDto {
     return jobName in config.job;
   }
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))}>
+    <form autocomplete="off" {onsubmit}>
       {#each jobNames as jobName}
         <div class="ml-4 mt-4 flex flex-col gap-4">
           {#if isSystemConfigJobDto(jobName)}
