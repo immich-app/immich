@@ -80,8 +80,6 @@
       return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
     }
 
-    console.trace(id, useOriginal);
-
     return useOriginal
       ? getAssetOriginalUrl({ id, checksum })
       : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
