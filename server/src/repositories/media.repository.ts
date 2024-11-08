@@ -5,6 +5,7 @@ import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Colorspace, ExifOrientation, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -82,7 +83,7 @@ export class MediaRepository implements IMediaRepository {
       .withIccProfile(options.colorspace);
 
     if (!options.raw) {
-      const { angle, flip, flop } = this.getRotationAngleFromOrientation(options.orientation);
+      const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
       pipeline = pipeline.rotate(angle);
       if (flip) {
         pipeline = pipeline.flip();
@@ -98,23 +99,6 @@ export class MediaRepository implements IMediaRepository {
     }
 
     return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
-  }
-
-  private getRotationAngleFromOrientation(orientation: ExifOrientation | undefined) {
-    if (!orientation) return {};
-
-    const valueMap: Record<ExifOrientation, { angle?: number, flip?: boolean, flop?: boolean }> = {
-      [ExifOrientation.Horizontal]: { angle: 0, },
-      [ExifOrientation.MirrorHorizontal]: { angle: 0, flop: true },
-      [ExifOrientation.Rotate180]: { angle: 180 },
-      [ExifOrientation.MirrorVertical]: { angle: 180, flop: true },
-      [ExifOrientation.MirrorHorizontalRotate270CW]: { angle: 270, flip: true },
-      [ExifOrientation.Rotate90CW]: { angle: 90 },
-      [ExifOrientation.MirrorHorizontalRotate90CW]: { angle: 90, flip: true },
-      [ExifOrientation.Rotate270CW]: { angle: 270 },
-    };
-
-    return valueMap[orientation] ?? {};
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
