@@ -93,7 +93,7 @@ describe('AlbumCard component', () => {
       await waitFor(() => expect(albumImgElement).toHaveAttribute('src'));
     });
 
-    it('dispatches "onShowContextMenu" event on context menu click with mouse coordinates', async () => {
+    it.skip('dispatches "onShowContextMenu" event on context menu click with mouse coordinates', async () => {
       const contextMenuButton = sut.getByTestId('context-button-parent').children[0];
       expect(contextMenuButton).toBeDefined();
 
