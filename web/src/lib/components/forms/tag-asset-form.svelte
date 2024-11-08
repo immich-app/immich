@@ -9,6 +9,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     onTag: (tagIds: string[]) => void;
@@ -19,7 +20,7 @@
 
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
-  let selectedIds = $state(new Set<string>());
+  let selectedIds = $state(new SvelteSet<string>());
   let disabled = $derived(selectedIds.size === 0);
 
   onMount(async () => {

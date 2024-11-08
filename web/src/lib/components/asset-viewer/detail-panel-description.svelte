@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import {
     NotificationType,
     notificationController,
@@ -17,10 +15,7 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let description;
-  run(() => {
-    description = asset.exifInfo?.description || '';
-  });
+  let description = $state(asset.exifInfo?.description || '');
 
   const handleFocusOut = async (newDescription: string) => {
     try {

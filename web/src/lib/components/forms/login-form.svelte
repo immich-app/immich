@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { goto } from '$app/navigation';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';

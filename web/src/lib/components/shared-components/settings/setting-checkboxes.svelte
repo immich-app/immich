@@ -58,7 +58,7 @@
         checked={value.includes(option.value)}
         {disabled}
         labelClass="text-gray-500 dark:text-gray-300"
-        onChange={() => handleCheckboxChange(option.value)}
+        onchange={() => handleCheckboxChange(option.value)}
       />
     {/each}
   </div>

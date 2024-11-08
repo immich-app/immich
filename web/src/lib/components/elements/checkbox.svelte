@@ -7,7 +7,7 @@
     labelClass?: string | undefined;
     name?: string | undefined;
     value?: string | undefined;
-    onChange?: () => void;
+    onchange?: () => void;
   }
 
   let {
@@ -18,7 +18,7 @@
     labelClass = undefined,
     name = undefined,
     value = undefined,
-    onChange = () => {},
+    onchange = () => {},
   }: Props = $props();
 </script>
 
@@ -31,7 +31,7 @@
     {disabled}
     class="size-5 flex-shrink-0 focus-visible:ring"
     bind:checked
-    onchange={() => onChange()}
+    {onchange}
   />
   <label class={labelClass} for={id}>{label}</label>
 </div>

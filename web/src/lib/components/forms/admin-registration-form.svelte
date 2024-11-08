@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run, preventDefault } from 'svelte/legacy';
-
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { signUpAdmin } from '@immich/sdk';
@@ -15,10 +13,10 @@
   let confirmPassword = $state('');
   let name = $state('');
 
-  let errorMessage: string = $state();
+  let errorMessage: string = $state('');
   let canRegister = $state(false);
 
-  run(() => {
+  $effect(() => {
     if (password !== confirmPassword && confirmPassword.length > 0) {
       errorMessage = $t('password_does_not_match');
       canRegister = false;
@@ -42,9 +40,14 @@
       }
     }
   }
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await registerAdmin();
+  };
 </script>
 
-<form onsubmit={preventDefault(registerAdmin)} method="post" class="mt-5 flex flex-col gap-5">
+<form {onsubmit} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="email">{$t('admin_email')}</label>
     <input class="immich-form-input" id="email" bind:value={email} type="email" autocomplete="email" required />

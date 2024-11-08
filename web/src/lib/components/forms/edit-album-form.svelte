@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
   import Button from '$lib/components/elements/buttons/button.svelte';

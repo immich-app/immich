@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { type PersonResponseDto } from '@immich/sdk';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import Button from '../elements/buttons/button.svelte';
@@ -24,6 +22,11 @@
     isSearchingPeople = $bindable(),
     onChange,
   }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onChange(name);
+  };
 </script>
 
 <div
@@ -32,11 +35,7 @@
     : 'rounded-lg'}  bg-gray-100 p-2 dark:bg-gray-700"
 >
   <ImageThumbnail circle shadow url={thumbnailData} altText={person.name} widthStyle="2rem" heightStyle="2rem" />
-  <form
-    class="ml-4 flex w-full justify-between gap-16"
-    autocomplete="off"
-    onsubmit={preventDefault(() => onChange(name))}
-  >
+  <form class="ml-4 flex w-full justify-between gap-16" autocomplete="off" {onsubmit}>
     <SearchPeople
       bind:searchName={name}
       bind:searchedPeopleLocal={suggestedPeople}

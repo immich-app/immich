@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { Duration } from 'luxon';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
@@ -17,8 +15,8 @@
     playbackOnIconHover?: boolean;
     showTime?: boolean;
     curve?: boolean;
-    playIcon?: any;
-    pauseIcon?: any;
+    playIcon?: string;
+    pauseIcon?: string;
   }
 
   let {
@@ -37,9 +35,9 @@
   let remainingSeconds = $state(durationInSeconds);
   let loading = $state(true);
   let error = $state(false);
-  let player: HTMLVideoElement = $state();
+  let player: HTMLVideoElement | undefined = $state();
 
-  run(() => {
+  $effect(() => {
     if (!enablePlayback) {
       // Reset remaining time when playback is disabled.
       remainingSeconds = durationInSeconds;

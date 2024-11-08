@@ -93,7 +93,10 @@
   ];
 
   let selectedSize: CropAspectRatio = $state('free');
-  $cropAspectRatio = selectedSize;
+
+  $effect(() => {
+    $cropAspectRatio = selectedSize;
+  });
 
   let sizesRows = $derived([
     sizes.filter((s) => s.rotate === false),

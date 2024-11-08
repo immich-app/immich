@@ -80,7 +80,7 @@
           label={$t('admin.user_delete_immediately_checkbox')}
           labelClass="text-sm dark:text-immich-dark-fg"
           bind:checked={forceDelete}
-          onChange={() => {
+          onchange={() => {
             deleteButtonDisabled = forceDelete;
           }}
         />

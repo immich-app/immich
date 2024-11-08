@@ -5,7 +5,7 @@
 
   interface Props {
     key: Translations;
-    values: ComponentProps<FormatMessage>['values'];
+    values: ComponentProps<typeof FormatMessage>['values'];
   }
 
   let { key, values }: Props = $props();

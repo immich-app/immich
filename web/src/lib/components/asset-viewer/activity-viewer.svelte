@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run, preventDefault } from 'svelte/legacy';
-
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, timeBeforeShowLoadingSpinner } from '$lib/constants';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -159,12 +157,12 @@
     }
     isSendingMessage = false;
   };
-  run(() => {
+  $effect(() => {
     if (innerHeight && activityHeight) {
       divHeight = innerHeight - activityHeight;
     }
   });
-  run(() => {
+  $effect(() => {
     if (assetId && previousAssetId != assetId) {
       handlePromiseError(getReactions());
       previousAssetId = assetId;

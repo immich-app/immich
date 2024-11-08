@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import type { LibraryResponseDto } from '@immich/sdk';
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
@@ -12,9 +10,14 @@
   }
 
   let { library = $bindable(), onCancel, onSubmit }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSubmit({ ...library });
+  };
 </script>
 
-<form onsubmit={preventDefault(() => onSubmit({ ...library }))} autocomplete="off" class="m-4 flex flex-col gap-2">
+<form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-2">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="path">{$t('name')}</label>
     <input class="immich-form-input" id="name" name="name" type="text" bind:value={library.name} />

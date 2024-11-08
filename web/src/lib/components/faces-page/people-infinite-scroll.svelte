@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import type { PersonResponseDto } from '@immich/sdk';
 
   interface Props {
     people: PersonResponseDto[];
     hasNextPage?: boolean | undefined;
     loadNextPage: () => void;
-    children?: import('svelte').Snippet<[any]>;
+    children?: import('svelte').Snippet<[{ person: PersonResponseDto; index: number }]>;
   }
 
   let { people, hasNextPage = undefined, loadNextPage, children }: Props = $props();
@@ -21,7 +19,7 @@
     }
   });
 
-  run(() => {
+  $effect(() => {
     if (lastPersonContainer) {
       intersectionObserver.disconnect();
       intersectionObserver.observe(lastPersonContainer);

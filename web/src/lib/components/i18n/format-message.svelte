@@ -21,7 +21,7 @@
   interface Props {
     key: Translations;
     values?: InterpolationValues;
-    children?: import('svelte').Snippet<[any]>;
+    children?: import('svelte').Snippet<[{ tag?: string; message?: string }]>;
   }
 
   let { key, values = {}, children }: Props = $props();

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { preventDefault } from 'svelte/legacy';
-
   import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
@@ -140,6 +138,11 @@
       editImportPath = null;
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSubmit({ ...library });
+  };
 </script>
 
 {#if addImportPath}
@@ -169,7 +172,7 @@
   />
 {/if}
 
-<form onsubmit={preventDefault(() => onSubmit({ ...library }))} autocomplete="off" class="m-4 flex flex-col gap-4">
+<form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each validatedPaths as validatedPath, listIndex}

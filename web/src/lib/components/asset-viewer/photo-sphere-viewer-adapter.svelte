@@ -20,10 +20,14 @@
 
   let { panorama, originalImageUrl, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
 
-  let container: HTMLDivElement = $state();
+  let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
 
   onMount(() => {
+    if (!container) {
+      return;
+    }
+
     viewer = new Viewer({
       adapter,
       plugins,

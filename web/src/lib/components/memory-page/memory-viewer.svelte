@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { intersectionObserver } from '$lib/actions/intersection-observer';
@@ -44,8 +42,9 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { tweened } from 'svelte/motion';
-  import { derived } from 'svelte/store';
+  import { derived as storeDerived } from 'svelte/store';
   import { fade } from 'svelte/transition';
+  import { SvelteSet } from 'svelte/reactivity';
 
   type MemoryIndex = {
     memoryIndex: number;
@@ -61,11 +60,11 @@
     nextMemory?: MemoryLaneResponseDto;
   };
 
-  let memoryGallery: HTMLElement = $state();
-  let memoryWrapper: HTMLElement = $state();
+  let memoryGallery: HTMLElement | undefined = $state();
+  let memoryWrapper: HTMLElement | undefined = $state();
   let galleryInView = $state(false);
   let paused = $state(false);
-  let selectedAssets: Set<AssetResponseDto> = $state(new Set());
+  let selectedAssets: SvelteSet<AssetResponseDto> = $state(new SvelteSet());
   let current: MemoryAsset | undefined = $state(undefined);
   // let memories: MemoryAsset[] = [];
   let resetPromise = $state(Promise.resolve());
@@ -73,7 +72,7 @@
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const progress = tweened<number>(0, { duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0) });
-  const memories = derived(memoryStore, (memories) => {
+  const memories = storeDerived(memoryStore, (memories) => {
     memories = memories ?? [];
     const memoryAssets: MemoryAsset[] = [];
     let previous: MemoryAsset | undefined;
@@ -125,7 +124,7 @@
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
   const handleEscape = async () => goto(AppRoute.PHOTOS);
-  const handleSelectAll = () => (selectedAssets = new Set(current?.memory.assets || []));
+  const handleSelectAll = () => (selectedAssets = new SvelteSet(current?.memory.assets || []));
   const handleAction = async (action: 'reset' | 'pause' | 'play') => {
     switch (action) {
       case 'play': {
@@ -205,16 +204,19 @@
 
     current = loadFromParams($memories, target);
   });
-  run(() => {
-    selectedAssets = galleryInView ? selectedAssets : new Set();
+  $effect(() => {
+    selectedAssets = galleryInView ? selectedAssets : new SvelteSet();
   });
+
   let isMultiSelectionMode = $derived(selectedAssets.size > 0);
   let isAllArchived = $derived([...selectedAssets].every((asset) => asset.isArchived));
   let isAllFavorite = $derived([...selectedAssets].every((asset) => asset.isFavorite));
-  run(() => {
+
+  $effect(() => {
     handlePromiseError(handleProgress($progress));
   });
-  run(() => {
+
+  $effect(() => {
     handlePromiseError(handleAction(galleryInView ? 'pause' : 'play'));
   });
 </script>
@@ -233,7 +235,7 @@
 
 {#if isMultiSelectionMode}
   <div class="sticky top-0 z-[90]">
-    <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
+    <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new SvelteSet())}>
       <CreateSharedLink />
       <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
 
@@ -259,9 +261,11 @@
   {#if current && current.memory.assets.length > 0}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark>
       {#snippet leading()}
-        <p class="text-lg">
-          {$memoryLaneTitle(current.memory.yearsAgo)}
-        </p>
+        {#if current}
+          <p class="text-lg">
+            {$memoryLaneTitle(current.memory.yearsAgo)}
+          </p>
+        {/if}
       {/snippet}
 
       <div class="flex place-content-center place-items-center gap-2 overflow-hidden">
@@ -303,7 +307,7 @@
       >
         <button
           type="button"
-          onclick={() => memoryWrapper.scrollIntoView({ behavior: 'smooth' })}
+          onclick={() => memoryWrapper?.scrollIntoView({ behavior: 'smooth' })}
           disabled={!galleryInView}
         >
           <CircleIconButton title={$t('hide_gallery')} icon={mdiChevronUp} color="light" onclick={() => {}} />
@@ -459,7 +463,7 @@
           title={$t('show_gallery')}
           icon={mdiChevronDown}
           color="light"
-          onclick={() => memoryGallery.scrollIntoView({ behavior: 'smooth' })}
+          onclick={() => memoryGallery?.scrollIntoView({ behavior: 'smooth' })}
         />
       </div>
 

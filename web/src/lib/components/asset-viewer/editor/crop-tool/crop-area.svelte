@@ -1,5 +1,3 @@
-<!-- @migration-task Error while migrating Svelte code: `$:` is not allowed in runes mode, use `$derived` or `$effect` instead -->
-<!-- @migration-task Error while migrating Svelte code: Cannot use `export let` in runes mode — use `$props()` instead -->
 <script lang="ts">
   import { onMount, onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';

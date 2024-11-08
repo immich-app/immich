@@ -51,7 +51,7 @@
         </div>
         <div class="flex justify-center text-xs">
           <LinkButton
-            onClick={() => {
+            onclick={() => {
               customDateRange = false;
               settings.dateAfter = '';
               settings.dateBefore = '';
@@ -96,7 +96,7 @@
         />
         <div class="text-xs">
           <LinkButton
-            onClick={() => {
+            onclick={() => {
               customDateRange = true;
               settings.relativeDate = '';
             }}

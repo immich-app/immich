@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
@@ -18,7 +16,7 @@
 
   // This part of the code is responsible for splitting album name into 3 parts where part 2 is the search query
   // It is used to highlight the search query in the album name
-  run(() => {
+  $effect(() => {
     let { albumName } = album;
     let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
     let findLength = searchQuery.length;

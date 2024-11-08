@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { goto } from '$app/navigation';
   import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
@@ -70,7 +68,7 @@
   let showEditFaces = $state(false);
   let previousId: string | undefined = $state();
 
-  run(() => {
+  $effect(() => {
     if (!previousId) {
       previousId = asset.id;
     }
@@ -91,7 +89,7 @@
     }
   };
 
-  run(() => {
+  $effect(() => {
     handlePromiseError(handleNewAsset(asset));
   });
 

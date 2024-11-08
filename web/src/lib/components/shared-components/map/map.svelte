@@ -55,7 +55,7 @@
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
-    popup?: import('svelte').Snippet<[unknown]>;
+    popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
   }
 
   let {
