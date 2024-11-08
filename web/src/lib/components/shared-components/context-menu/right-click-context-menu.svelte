@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run, preventDefault } from 'svelte/legacy';
-
   import { tick } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
@@ -21,7 +19,7 @@
   let { title, direction = 'right', x = 0, y = 0, isOpen = false, onClose, children }: Props = $props();
 
   let uniqueKey = $state({});
-  let menuContainer: HTMLUListElement = $state();
+  let menuContainer: HTMLUListElement | undefined = $state();
   let triggerElement: HTMLElement | undefined = $state(undefined);
 
   const id = generateId();
@@ -38,7 +36,7 @@
 
     const elements = document.elementsFromPoint(event.x, event.y);
 
-    if (elements.includes(menuContainer)) {
+    if (menuContainer && elements.includes(menuContainer)) {
       // User right-clicked on the context menu itself, we keep the context
       // menu as is
       return;
@@ -57,13 +55,18 @@
     triggerElement?.focus();
     onClose?.();
   };
-  run(() => {
+  $effect(() => {
     if (isOpen && menuContainer) {
       triggerElement = document.activeElement as HTMLElement;
       menuContainer.focus();
       $optionClickCallbackStore = closeContextMenu;
     }
   });
+
+  const oncontextmenu = async (event: MouseEvent) => {
+    event.preventDefault();
+    await reopenContextMenu(event);
+  };
 </script>
 
 {#key uniqueKey}
@@ -87,11 +90,7 @@
         },
       ]}
     >
-      <section
-        class="fixed left-0 top-0 z-10 flex h-screen w-screen"
-        oncontextmenu={preventDefault(reopenContextMenu)}
-        role="presentation"
-      >
+      <section class="fixed left-0 top-0 z-10 flex h-screen w-screen" {oncontextmenu} role="presentation">
         <ContextMenu
           {direction}
           {x}

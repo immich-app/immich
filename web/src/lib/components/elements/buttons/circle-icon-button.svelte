@@ -35,6 +35,9 @@
     'aria-hidden'?: boolean | undefined | null;
     'aria-checked'?: 'true' | 'false' | undefined | null;
     'aria-current'?: 'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false' | undefined | null;
+    'aria-controls'?: string | undefined | null;
+    'aria-expanded'?: boolean;
+    'aria-haspopup'?: boolean;
     tabindex?: number | undefined | null;
     role?: string | undefined | null;
     onclick: (e: MouseEvent) => void;

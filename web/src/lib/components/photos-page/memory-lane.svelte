@@ -18,20 +18,22 @@
     $memoryStore = await getMemoryLane({ month: localTime.getMonth() + 1, day: localTime.getDate() });
   });
 
-  let memoryLaneElement: HTMLElement = $state();
+  let memoryLaneElement: HTMLElement | undefined = $state();
   let offsetWidth = $state(0);
   let innerWidth = $state(0);
 
   let scrollLeftPosition = $state(0);
 
-  const onScroll = () => (scrollLeftPosition = memoryLaneElement?.scrollLeft);
+  const onScroll = () => {
+    scrollLeftPosition = memoryLaneElement?.scrollLeft ?? 0;
+  };
 
   let canScrollLeft = $derived(scrollLeftPosition > 0);
   let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < innerWidth - offsetWidth);
 
   const scrollBy = 400;
-  const scrollLeft = () => memoryLaneElement.scrollBy({ left: -scrollBy, behavior: 'smooth' });
-  const scrollRight = () => memoryLaneElement.scrollBy({ left: scrollBy, behavior: 'smooth' });
+  const scrollLeft = () => memoryLaneElement?.scrollBy({ left: -scrollBy, behavior: 'smooth' });
+  const scrollRight = () => memoryLaneElement?.scrollBy({ left: scrollBy, behavior: 'smooth' });
 </script>
 
 {#if shouldRender}

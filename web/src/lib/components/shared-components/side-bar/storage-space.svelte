@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { locale } from '$lib/stores/preferences.store';
   import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
@@ -33,7 +31,7 @@
     return 'bg-immich-primary dark:bg-immich-dark-primary';
   };
 
-  run(() => {
+  $effect(() => {
     if ($user) {
       onUpdate();
     }

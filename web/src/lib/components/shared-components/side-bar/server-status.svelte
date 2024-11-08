@@ -17,7 +17,7 @@
 
   let isOpen = $state(false);
 
-  let info: ServerAboutResponseDto = $state();
+  let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
   onMount(async () => {
@@ -30,7 +30,7 @@
   );
 </script>
 
-{#if isOpen}
+{#if isOpen && info}
   <ServerAboutModal onClose={() => (isOpen = false)} {info} {versions} />
 {/if}
 
@@ -53,7 +53,7 @@
     {#if $connected && version}
       <button type="button" onclick={() => (isOpen = true)} class="dark:text-immich-gray flex gap-1">
         {#if isMain}
-          <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info.sourceRef}
+          <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
         {:else}
           {version}
         {/if}

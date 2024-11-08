@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiInformationOutline } from '@mdi/js';
@@ -29,7 +27,8 @@
 
   let showMoreInformation = $state(false);
   let routePath = $derived(resolveRoute(routeId, {}));
-  run(() => {
+
+  $effect(() => {
     isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
   });
 </script>

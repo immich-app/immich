@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiClose, mdiInformationOutline } from '@mdi/js';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
@@ -65,7 +63,7 @@
     }
   };
 
-  run(() => {
+  $effect(() => {
     if (showMessage && !hoverMessage && !hoverButton) {
       setTimeout(() => {
         if (!hoverMessage && !hoverButton) {

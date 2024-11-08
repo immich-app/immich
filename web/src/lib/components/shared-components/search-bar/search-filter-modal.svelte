@@ -36,6 +36,7 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { mdiTune } from '@mdi/js';
   import { generateId } from '$lib/utils/generate-id';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
     searchQuery: MetadataSearchDto | SmartSearchDto;
@@ -57,7 +58,7 @@
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: 'query' in searchQuery ? 'smart' : 'metadata',
-    personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
+    personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),

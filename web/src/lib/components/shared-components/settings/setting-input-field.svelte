@@ -41,7 +41,7 @@
     descriptionSnippet,
   }: Props = $props();
 
-  let input = $state<HTMLInputElement>();
+  let input: HTMLInputElement | undefined = $state();
 
   const handleChange: FormEventHandler<HTMLInputElement> = (e) => {
     value = e.currentTarget.value;

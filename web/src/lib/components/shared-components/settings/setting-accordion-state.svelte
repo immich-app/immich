@@ -6,8 +6,6 @@
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { writable, type Writable } from 'svelte/store';
   import { createContext } from '$lib/utils/context';
   import { page } from '$app/stores';
@@ -27,7 +25,7 @@
   let { queryParam, state = writable(getParamValues(queryParam)), children }: Props = $props();
   setAccordionState(state);
 
-  run(() => {
+  $effect(() => {
     if (queryParam && $state) {
       const searchParams = new URLSearchParams($page.url.searchParams);
       if ($state.size > 0) {

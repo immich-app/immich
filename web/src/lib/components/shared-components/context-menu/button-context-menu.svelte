@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import CircleIconButton, {
     type Color,
     type Padding,

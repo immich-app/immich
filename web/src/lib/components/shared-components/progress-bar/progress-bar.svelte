@@ -6,8 +6,6 @@
 </script>
 
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { handlePromiseError } from '$lib/utils';
 
   import { onMount } from 'svelte';
@@ -40,20 +38,18 @@
     onPaused = () => {},
   }: Props = $props();
 
-  const onChange = async () => {
-    progress = setDuration(duration);
+  const onChange = async (progressDuration: number) => {
+    progress = setDuration(progressDuration);
     await play();
   };
 
   let progress = setDuration(duration);
 
-  // svelte 5, again....
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  run(() => {
-    duration, handlePromiseError(onChange());
+  $effect(() => {
+    handlePromiseError(onChange(duration));
   });
 
-  run(() => {
+  $effect(() => {
     if ($progress === 1) {
       onDone();
     }
