@@ -84,12 +84,12 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
 };
 
 type SharpRotationData = {
-  angle?: number,
-  flip?: boolean,
-  flop?: boolean,
+  angle?: number;
+  flip?: boolean;
+  flop?: boolean;
 };
 export const ORIENTATION_TO_SHARP_ROTATION: Record<ExifOrientation, SharpRotationData> = {
-  [ExifOrientation.Horizontal]: { angle: 0, },
+  [ExifOrientation.Horizontal]: { angle: 0 },
   [ExifOrientation.MirrorHorizontal]: { angle: 0, flop: true },
   [ExifOrientation.Rotate180]: { angle: 180 },
   [ExifOrientation.MirrorVertical]: { angle: 180, flop: true },
