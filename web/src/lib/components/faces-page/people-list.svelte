@@ -16,14 +16,12 @@
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
 
   let name = $state('');
-  let showPeople: PersonResponseDto[] = $state([]);
 
-  $effect(() => {
-    showPeople = name ? searchedPeopleLocal : people;
-    showPeople = showPeople.filter(
+  const showPeople = $derived(
+    (name ? searchedPeopleLocal : people).filter(
       (person) => !peopleToNotShow.some((unselectedPerson) => unselectedPerson.id === person.id),
-    );
-  });
+    ),
+  );
 </script>
 
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">

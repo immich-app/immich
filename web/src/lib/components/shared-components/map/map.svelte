@@ -7,12 +7,13 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { getServerConfig, type MapMarkerResponseDto } from '@immich/sdk';
+  import { type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-  import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
+  import type { GeoJSONSource, LngLatLike } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
   import { t } from 'svelte-i18n';
   import {
@@ -76,15 +77,9 @@
   let map: maplibregl.Map | undefined = $state();
   let marker: maplibregl.Marker | null = null;
 
-  let style = $derived(
-    (async () => {
-      const config = await getServerConfig();
-      const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;
-      const styleUrl = theme === Theme.DARK ? config.mapDarkStyleUrl : config.mapLightStyleUrl;
-      const style = await fetch(styleUrl).then((response) => response.json());
-      return style as StyleSpecification;
-    })(),
-  );
+  const theme = $derived($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT);
+  const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
+  const style = $derived(fetch(styleUrl).then((response) => response.json()));
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
