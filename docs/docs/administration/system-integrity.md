@@ -40,7 +40,9 @@ The above error messages show that the server has previously (successfully) writ
 
 ### Ignoring the checks
 
-The checks are designed to catch common problems that we have seen users have in the past, but if you want to disable them you can set the following environment variable:
+:::warning
+The checks are designed to catch common problems that we have seen users have in the past, and often indicate there's something wrong that you should solve. If you know what you're doing and you want to disable them you can set the following environment variable:
+:::
 
 ```
 IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
