@@ -1029,7 +1029,7 @@ packages:
     description:
       path: "."
       ref: "feat/headers"
-      resolved-ref: "568c76e1552791f06dcf44b45d3373cad12913ed"
+      resolved-ref: "35398174bb73ec62ee3a3fb81f4e4d5728d09ec0"
       url: "https://github.com/immich-app/native_video_player"
     source: git
     version: "1.3.1"
