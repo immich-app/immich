@@ -30,7 +30,7 @@
 
   let {
     autoplay = false,
-    status = $bindable(ProgressBarStatus.Paused),
+    status = $bindable(),
     hidden = false,
     duration = 5,
     onDone,
