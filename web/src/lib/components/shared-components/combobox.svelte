@@ -43,7 +43,7 @@
     label,
     hideLabel = false,
     options = [],
-    selectedOption = $bindable(undefined),
+    selectedOption = $bindable(),
     placeholder = '',
     onSelect = () => {},
   }: Props = $props();
@@ -218,7 +218,7 @@
   const getInputPosition = () => input?.getBoundingClientRect();
 
   $effect(() => {
-    searchQuery = selectedOption ? selectedOption.label : '';
+    // searchQuery = selectedOption ? selectedOption.label : '';
   });
 
   let filteredOptions = $derived(

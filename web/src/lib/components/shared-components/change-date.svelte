@@ -1,7 +1,7 @@
 <script lang="ts">
   import { DateTime } from 'luxon';
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
-  import Combobox from './combobox.svelte';
+  import Combobox, { type ComboBoxOption } from './combobox.svelte';
   import DateInput from '../elements/date-input.svelte';
   import { t } from 'svelte-i18n';
 
@@ -53,18 +53,15 @@
 
   const knownTimezones = Intl.supportedValuesOf('timeZone');
 
-  let timezones: ZoneOption[] = $derived(
-    knownTimezones
-      .map((zone) => zoneOptionForDate(zone, selectedDate))
-      .filter((zone) => zone.valid)
-      .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB)),
-  );
-
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
-  let selectedOption: ZoneOption | undefined = $state();
 
   let selectedDate = $state(initialDate.toFormat("yyyy-MM-dd'T'HH:mm"));
+  let timezones: ZoneOption[] = knownTimezones
+    .map((zone) => zoneOptionForDate(zone, selectedDate))
+    .filter((zone) => zone.valid)
+    .sort((zoneA, zoneB) => sortTwoZones(zoneA, zoneB));
+  // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
+  let selectedOption: ZoneOption | undefined = $state(getPreferredTimeZone(initialDate, userTimeZone, timezones));
 
   function zoneOptionForDate(zone: string, date: string) {
     const dateAtZone: DateTime = DateTime.fromISO(date, { zone });
@@ -127,9 +124,11 @@
     }
   };
 
-  $effect(() => {
-    selectedOption = getPreferredTimeZone(initialDate, userTimeZone, timezones, selectedOption);
-  });
+  const handleOnSelect = (option?: ComboBoxOption) => {
+    if (option) {
+      selectedOption = getPreferredTimeZone(initialDate, userTimeZone, timezones, option as ZoneOption);
+    }
+  };
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   let date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
 </script>
@@ -151,7 +150,13 @@
         <DateInput class="immich-form-input" id="datetime" type="datetime-local" bind:value={selectedDate} />
       </div>
       <div>
-        <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
+        <Combobox
+          bind:selectedOption
+          label={$t('timezone')}
+          options={timezones}
+          placeholder={$t('search_timezone')}
+          onSelect={(option) => handleOnSelect(option)}
+        />
       </div>
     </div>
   {/snippet}
