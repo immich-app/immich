@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
-import { Colorspace, ExifOrientation, LogLevel } from 'src/enum';
+import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DecodeToBufferOptions,

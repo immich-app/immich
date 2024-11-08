@@ -1,7 +1,7 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { SemVer } from 'semver';
-import { ExifOrientation } from './enum';
+import { ExifOrientation } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
