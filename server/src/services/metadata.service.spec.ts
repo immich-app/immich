@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType, ImmichWorker, SourceType } from 'src/enum';
+import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -18,7 +18,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { MetadataService, Orientation } from 'src/services/metadata.service';
+import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -539,7 +539,7 @@ describe(MetadataService.name, () => {
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ orientation: Orientation.Rotate270CW.toString() }),
+        expect.objectContaining({ orientation: ExifOrientation.Rotate270CW.toString() }),
       );
     });
 

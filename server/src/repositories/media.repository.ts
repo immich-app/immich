@@ -5,6 +5,7 @@ import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
+import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -82,7 +83,15 @@ export class MediaRepository implements IMediaRepository {
       .withIccProfile(options.colorspace);
 
     if (!options.raw) {
-      pipeline = pipeline.rotate();
+      const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
+      pipeline = pipeline.rotate(angle);
+      if (flip) {
+        pipeline = pipeline.flip();
+      }
+
+      if (flop) {
+        pipeline = pipeline.flop();
+      }
     }
 
     if (options.crop) {
