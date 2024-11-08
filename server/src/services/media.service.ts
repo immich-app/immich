@@ -214,7 +214,8 @@ export class MediaService extends BaseService {
       const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
       const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
 
-      const decodeOptions = { colorspace, processInvalidImages, size: image.preview.size };
+      const orientation = Number(asset.exifInfo?.orientation) || undefined;
+      const decodeOptions = { colorspace, processInvalidImages, size: image.preview.size, orientation };
       const { data, info } = await this.mediaRepository.decodeImage(inputPath, decodeOptions);
 
       const options = { colorspace, processInvalidImages, raw: info };

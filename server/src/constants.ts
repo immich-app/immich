@@ -1,6 +1,7 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { SemVer } from 'semver';
+import { ExifOrientation } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
@@ -81,3 +82,19 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'nllb-clip-large-siglip__mrl': { dimSize: 1152 },
   'nllb-clip-large-siglip__v1': { dimSize: 1152 },
 };
+
+type SharpRotationData = {
+  angle?: number;
+  flip?: boolean;
+  flop?: boolean;
+};
+export const ORIENTATION_TO_SHARP_ROTATION: Record<ExifOrientation, SharpRotationData> = {
+  [ExifOrientation.Horizontal]: { angle: 0 },
+  [ExifOrientation.MirrorHorizontal]: { angle: 0, flop: true },
+  [ExifOrientation.Rotate180]: { angle: 180 },
+  [ExifOrientation.MirrorVertical]: { angle: 180, flop: true },
+  [ExifOrientation.MirrorHorizontalRotate270CW]: { angle: 270, flip: true },
+  [ExifOrientation.Rotate90CW]: { angle: 90 },
+  [ExifOrientation.MirrorHorizontalRotate90CW]: { angle: 90, flip: true },
+  [ExifOrientation.Rotate270CW]: { angle: 270 },
+} as const;
