@@ -70,7 +70,6 @@
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
-        console.log('preloadAsset.id:', preloadAsset.id);
         img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
       }
     }
