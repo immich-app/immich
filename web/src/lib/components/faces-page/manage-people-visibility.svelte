@@ -109,15 +109,11 @@
 
   let personIsHidden = $state(getPersonIsHidden(people));
 
-  let toggleButtonOptions = $derived(
-    ((): Record<ToggleVisibility, { icon: string; label: string }> => {
-      return {
-        [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
-        [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
-        [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
-      };
-    })(),
-  );
+  let toggleButtonOptions: Record<ToggleVisibility, { icon: string; label: string }> = $derived({
+    [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
+    [ToggleVisibility.HIDE_UNNANEMD]: { icon: mdiEyeSettings, label: $t('hide_unnamed_people') },
+    [ToggleVisibility.SHOW_ALL]: { icon: mdiEye, label: $t('show_all_people') },
+  });
   let toggleButton = $derived(toggleButtonOptions[getNextVisibility(toggleVisibility)]);
 </script>
 

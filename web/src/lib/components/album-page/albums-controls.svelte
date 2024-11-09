@@ -77,54 +77,38 @@
       $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 
-  let groupIcon: string = $state('');
-
-  let albumFilterNames = $derived(
-    ((): Record<AlbumFilter, string> => {
-      return {
-        [AlbumFilter.All]: $t('all'),
-        [AlbumFilter.Owned]: $t('owned'),
-        [AlbumFilter.Shared]: $t('shared'),
-      };
-    })(),
-  );
-  let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);
-  let selectedSortOption = $derived(findSortOptionMetadata($albumViewSettings.sortBy));
-  const selectedGroupOption = $derived(findGroupOptionMetadata($albumViewSettings.groupBy));
-
-  $effect(() => {
+  let groupIcon = $derived.by(() => {
     if (selectedGroupOption?.id === AlbumGroupBy.None) {
-      groupIcon = mdiFolderRemoveOutline;
-    } else {
-      groupIcon =
-        $albumViewSettings.groupOrder === SortOrder.Desc ? mdiFolderArrowDownOutline : mdiFolderArrowUpOutline;
+      return mdiFolderRemoveOutline;
     }
+    return $albumViewSettings.groupOrder === SortOrder.Desc ? mdiFolderArrowDownOutline : mdiFolderArrowUpOutline;
   });
 
+  let albumFilterNames: Record<AlbumFilter, string> = $derived({
+    [AlbumFilter.All]: $t('all'),
+    [AlbumFilter.Owned]: $t('owned'),
+    [AlbumFilter.Shared]: $t('shared'),
+  });
+
+  let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);
+  let selectedSortOption = $derived(findSortOptionMetadata($albumViewSettings.sortBy));
+  let selectedGroupOption = $derived(findGroupOptionMetadata($albumViewSettings.groupBy));
   let sortIcon = $derived($albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin);
 
-  let albumSortByNames = $derived(
-    ((): Record<AlbumSortBy, string> => {
-      return {
-        [AlbumSortBy.Title]: $t('sort_title'),
-        [AlbumSortBy.ItemCount]: $t('sort_items'),
-        [AlbumSortBy.DateModified]: $t('sort_modified'),
-        [AlbumSortBy.DateCreated]: $t('sort_created'),
-        [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
-        [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
-      };
-    })(),
-  );
+  let albumSortByNames: Record<AlbumSortBy, string> = $derived({
+    [AlbumSortBy.Title]: $t('sort_title'),
+    [AlbumSortBy.ItemCount]: $t('sort_items'),
+    [AlbumSortBy.DateModified]: $t('sort_modified'),
+    [AlbumSortBy.DateCreated]: $t('sort_created'),
+    [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+    [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+  });
 
-  let albumGroupByNames = $derived(
-    ((): Record<AlbumGroupBy, string> => {
-      return {
-        [AlbumGroupBy.None]: $t('group_no'),
-        [AlbumGroupBy.Owner]: $t('group_owner'),
-        [AlbumGroupBy.Year]: $t('group_year'),
-      };
-    })(),
-  );
+  let albumGroupByNames: Record<AlbumGroupBy, string> = $derived({
+    [AlbumGroupBy.None]: $t('group_no'),
+    [AlbumGroupBy.Owner]: $t('group_owner'),
+    [AlbumGroupBy.Year]: $t('group_year'),
+  });
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
