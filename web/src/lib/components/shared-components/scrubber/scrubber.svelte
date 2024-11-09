@@ -5,7 +5,6 @@
   import { clamp } from 'lodash-es';
   import { onMount } from 'svelte';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
-  import { parseUtcDate } from '$lib/utils/date-time';
   import { fade, fly } from 'svelte/transition';
 
   export let timelineTopOffset = 0;
@@ -75,7 +74,6 @@
   $: timelineFullHeight = $assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset;
   $: relativeTopOffset = toScrollY(timelineTopOffset / timelineFullHeight);
   $: relativeBottomOffset = toScrollY(timelineBottomOffset / timelineFullHeight);
-  $: formatedDate = scrubBucket?.bucketDate ? parseUtcDate(scrubBucket?.bucketDate).toFormat('MMM yyyy') : '';
 
   const listener: BucketListener = (event) => {
     const { type } = event;
@@ -243,12 +241,12 @@
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
     >
-      {#if $isTimelineScrolling && formatedDate}
+      {#if $isTimelineScrolling && scrubBucket?.bucketDate}
         <p
           transition:fade={{ duration: 200 }}
           class="truncate pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
         >
-          {formatedDate}
+          {assetStore.getBucketByDate(scrubBucket.bucketDate)?.bucketDateFormattted}
         </p>
       {/if}
     </div>

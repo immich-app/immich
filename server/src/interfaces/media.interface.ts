@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream';
-import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
+import { ExifOrientation, ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
 
 export const IMediaRepository = 'IMediaRepository';
 
@@ -31,6 +31,7 @@ interface DecodeImageOptions {
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size: number;
+  orientation?: ExifOrientation;
 }
 
 export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
