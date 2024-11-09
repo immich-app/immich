@@ -87,7 +87,9 @@
     }
   });
 
-  const handleDone = () => {
+  const handleDone = async () => {
+    await progressBar?.reset();
+
     if ($slideshowNavigation === SlideshowNavigation.AscendingOrder) {
       onPrevious();
       return;
