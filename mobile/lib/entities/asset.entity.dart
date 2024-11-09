@@ -169,6 +169,9 @@ class Asset {
   bool get isImage => type == AssetType.image;
 
   @ignore
+  bool get isVideo => type == AssetType.video;
+
+  @ignore
   bool get isMotionPhoto => livePhotoVideoId != null;
 
   @ignore
