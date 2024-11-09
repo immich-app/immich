@@ -589,7 +589,7 @@
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
     >
       <div class="relative w-full whitespace-nowrap transition-all">
-        {#each stackedAssets as stackedAsset, index (stackedAsset.id)}
+        {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
             class="{stackedAsset.id == asset.id
               ? '-translate-y-[1px]'
@@ -602,7 +602,6 @@
               asset={stackedAsset}
               onClick={(stackedAsset) => {
                 asset = stackedAsset;
-                preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               disableMouseOver
