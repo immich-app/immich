@@ -135,12 +135,15 @@
 
   const handleToggleEnableActivity = async () => {
     try {
-      await updateAlbumInfo({
+      const updateAlbum = await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           isActivityEnabled: !album.isActivityEnabled,
         },
       });
+
+      album = { ...album, isActivityEnabled: updateAlbum.isActivityEnabled };
+
       await refreshAlbum();
       notificationController.show({
         type: NotificationType.Info,
