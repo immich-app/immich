@@ -256,7 +256,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     ref.listen(currentAssetProvider, (_, value) {
       // Delay the video playback to avoid a stutter in the swipe animation
-      Timer(const Duration(milliseconds: 350), () {
+      Timer(const Duration(milliseconds: 300), () {
         if (!context.mounted) {
           return;
         }
