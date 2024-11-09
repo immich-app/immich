@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 /// Throttles function calls with the [interval] provided.
@@ -17,6 +15,8 @@ class Throttler {
       _lastActionTime = DateTime.now();
       return response;
     }
+
+    return null;
   }
 
   void dispose() {
