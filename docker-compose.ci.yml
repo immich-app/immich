@@ -23,7 +23,7 @@ services:
     #  context: ../
     #  dockerfile: server/Dockerfile
     volumes:
-      - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - /usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     ports:
       - 2283:2283
@@ -58,7 +58,7 @@ services:
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      - /var/lib/postgresql/data
     ports:
       - 5432:5432
     command: [ 'postgres', '-c', 'shared_preload_libraries=vectors.so', '-c', 'search_path="$$user", public, vectors', '-c', 'logging_collector=on', '-c', 'max_wal_size=2GB', '-c', 'shared_buffers=512MB', '-c', 'wal_compression=on' ]
