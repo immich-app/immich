@@ -74,7 +74,6 @@ import {
   mdiFaceRecognition,
   mdiVideo,
   mdiWeb,
-  mdiDatabase,
   mdiDatabaseOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
@@ -153,6 +152,9 @@ const weirdTags = {
   'v1.3.0': 'v1.3.0-dev ',
   'v1.2.0': 'v0.2-dev ',
 };
+
+const title = 'Roadmap';
+const description = 'A list of future plans and goals, as well as past achievements and milestones.';
 
 const withLanguage = (date: Date) => (language: string) => date.toLocaleDateString(language);
 
@@ -870,14 +872,12 @@ const milestones: Item[] = [
 
 export default function MilestonePage(): JSX.Element {
   return (
-    <Layout title="Milestones" description="History of Immich">
+    <Layout title={title} description={description}>
       <section className="my-8">
         <h1 className="md:text-6xl text-center mb-10 text-immich-primary dark:text-immich-dark-primary px-2">
-          Roadmap
+          {title}
         </h1>
-        <p className="text-center text-xl px-2">
-          A list of future plans and goals, as well as past achievements and milestones.
-        </p>
+        <p className="text-center text-xl px-2">{description}</p>
         <div className="flex justify-around mt-8 w-full max-w-full">
           <Timeline items={[...roadmap, ...milestones]} />
         </div>
