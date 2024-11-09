@@ -22,6 +22,10 @@ export class SharedLinkService extends BaseService {
   async getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
   }
+  /**
+   * 
+   * @returns A list of all sharedLinks(excluding those with passwords and upload allowed) with their corresponding album
+   */
   async getAllUnchecked(): Promise<SharedLinkResponseDto[]> {
     const links = await this.sharedLinkRepository.getAllUnchecked().then((links) =>
       links

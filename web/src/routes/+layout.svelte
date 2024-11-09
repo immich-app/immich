@@ -35,6 +35,7 @@
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
+      // Yup this is a comment, done to trigger test for web in ci
       theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
