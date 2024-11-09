@@ -10,11 +10,12 @@ class Throttler {
 
   Throttler({required this.interval});
 
-  void run(FutureOr<void> Function() action) {
+  T? run<T>(T Function() action) {
     if (_lastActionTime == null ||
         (DateTime.now().difference(_lastActionTime!) > interval)) {
-      action();
+      final response = action();
       _lastActionTime = DateTime.now();
+      return response;
     }
   }
 
