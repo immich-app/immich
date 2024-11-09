@@ -15,11 +15,14 @@
 
   let { asset, isOwner }: Props = $props();
 
-  let description = $state(asset.exifInfo?.description || '');
+  let description = $derived(asset.exifInfo?.description || '');
 
   const handleFocusOut = async (newDescription: string) => {
     try {
       await updateAsset({ id: asset.id, updateAssetDto: { description: newDescription } });
+
+      asset.exifInfo = { ...asset.exifInfo, description: newDescription };
+
       notificationController.show({
         type: NotificationType.Info,
         message: $t('asset_description_updated'),
@@ -27,7 +30,6 @@
     } catch (error) {
       handleError(error, $t('cannot_update_the_description'));
     }
-    description = newDescription;
   };
 </script>
 
