@@ -136,6 +136,8 @@ class _BlurredBackdrop extends HookWidget {
             image: DecorationImage(
               image: ImmichImage.imageProvider(
                 asset: asset,
+                height: context.height,
+                width: context.width,
               ),
               fit: BoxFit.cover,
             ),

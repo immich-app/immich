@@ -100,7 +100,11 @@ class GalleryViewerPage extends HookConsumerWidget {
         if (index < totalAssets.value && index >= 0) {
           final asset = loadAsset(index);
           await precacheImage(
-            ImmichImage.imageProvider(asset: asset),
+            ImmichImage.imageProvider(
+              asset: asset,
+              width: context.width,
+              height: context.height,
+            ),
             context,
             onError: onError,
           );
@@ -313,7 +317,11 @@ class GalleryViewerPage extends HookConsumerWidget {
               asset: asset,
               placeholder: Image(
                 key: ValueKey(asset),
-                image: ImmichImage.imageProvider(asset: asset),
+                image: ImmichImage.imageProvider(
+                  asset: asset,
+                  width: context.width,
+                  height: context.height,
+                ),
                 fit: BoxFit.contain,
                 height: context.height,
                 width: context.width,
@@ -396,12 +404,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 stackIndex.value = -1;
                 isPlayingMotionVideo.value = false;
 
-                // Delay setting the new asset to avoid a stutter in the page change animation
-                // TODO: make the scroll animation finish more quickly, and ideally have a callback for when it's done
                 ref.read(currentAssetProvider.notifier).set(newAsset);
-                // Timer(const Duration(milliseconds: 450), () {
-                // ref.read(currentAssetProvider.notifier).set(newAsset);
-                // });
 
                 // Wait for page change animation to finish, then precache the next image
                 Timer(const Duration(milliseconds: 400), () {
