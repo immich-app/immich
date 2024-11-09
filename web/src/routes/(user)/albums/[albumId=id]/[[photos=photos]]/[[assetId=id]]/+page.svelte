@@ -242,7 +242,7 @@
   };
 
   const refreshAlbum = async () => {
-    data.album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
   const handleAddAssets = async () => {
