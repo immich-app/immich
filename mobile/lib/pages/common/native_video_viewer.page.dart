@@ -170,7 +170,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     // When the volume changes, set the volume
     ref.listen(videoPlayerControlsProvider.select((value) => value.mute),
-        (_, mute) {
+        (_, mute) async {
       final playerController = controller.value;
       if (playerController == null) {
         return;
@@ -183,9 +183,9 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       try {
         if (mute && playbackInfo.volume != 0.0) {
-          playerController.setVolume(0.0);
+          await playerController.setVolume(0.0);
         } else if (!mute && playbackInfo.volume != 0.7) {
-          playerController.setVolume(0.7);
+          await playerController.setVolume(0.7);
         }
       } catch (error) {
         log.severe('Error setting volume: $error');
@@ -196,7 +196,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final seekThrottler =
         useThrottler(interval: const Duration(milliseconds: 200));
     ref.listen(videoPlayerControlsProvider.select((value) => value.position),
-        (_, position) {
+        (_, position) async {
       final playerController = controller.value;
       if (playerController == null) {
         return;
@@ -211,7 +211,11 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       final int seek = (asset.duration * (position / 100.0)).inSeconds;
       if (seek != playbackInfo.position) {
         try {
-          seekThrottler.run(() => playerController.seekTo(seek));
+          final maybeSeek =
+              seekThrottler.run(() => playerController.seekTo(seek));
+          if (maybeSeek != null) {
+            await maybeSeek;
+          }
         } catch (error) {
           log.severe('Error seeking to position $position: $error');
         }
@@ -223,7 +227,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     // // When the custom video controls pause or play
     ref.listen(videoPlayerControlsProvider.select((value) => value.pause),
-        (_, pause) {
+        (_, pause) async {
       final videoController = controller.value;
       if (videoController == null || !context.mounted) {
         return;
@@ -231,42 +235,28 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       try {
         if (pause) {
-          videoController.pause();
+          await videoController.pause();
         } else {
-          videoController.play();
+          await videoController.play();
         }
       } catch (error) {
         log.severe('Error pausing or playing video: $error');
       }
     });
 
-    void onPlaybackReady() {
+    void onPlaybackReady() async {
       final videoController = controller.value;
       if (videoController == null || !isCurrent || !context.mounted) {
         return;
       }
 
       try {
-        videoController.play();
-        videoController.setVolume(0.9);
+        await videoController.play();
+        await videoController.setVolume(0.9);
       } catch (error) {
         log.severe('Error playing video: $error');
       }
     }
-
-    ref.listen(currentAssetProvider, (_, value) {
-      // Delay the video playback to avoid a stutter in the swipe animation
-      Timer(const Duration(milliseconds: 300), () {
-        if (!context.mounted) {
-          return;
-        }
-
-        currentAsset.value = value;
-        if (currentAsset.value == asset) {
-          onPlaybackReady();
-        }
-      });
-    });
 
     void onPlaybackStatusChanged() {
       final videoController = controller.value;
@@ -331,6 +321,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     }
 
+    void removeListeners(NativeVideoPlayerController controller) {
+      controller.onPlaybackPositionChanged
+          .removeListener(onPlaybackPositionChanged);
+      controller.onPlaybackStatusChanged
+          .removeListener(onPlaybackStatusChanged);
+      controller.onPlaybackReady.removeListener(onPlaybackReady);
+      controller.onPlaybackEnded.removeListener(onPlaybackEnded);
+    }
+
     void initController(NativeVideoPlayerController nc) {
       if (controller.value != null) {
         return;
@@ -349,6 +348,25 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
 
+    ref.listen(currentAssetProvider, (_, value) {
+      final playerController = controller.value;
+      if (playerController != null && value != asset) {
+        removeListeners(playerController);
+      }
+
+      // Delay the video playback to avoid a stutter in the swipe animation
+      Timer(const Duration(milliseconds: 300), () {
+        if (!context.mounted) {
+          return;
+        }
+
+        currentAsset.value = value;
+        if (currentAsset.value == asset) {
+          onPlaybackReady();
+        }
+      });
+    });
+
     useEffect(
       () {
         return () {
@@ -356,19 +374,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           if (playerController == null) {
             return;
           }
-
-          try {
-            playerController.stop();
-
-            playerController.onPlaybackPositionChanged
-                .removeListener(onPlaybackPositionChanged);
-            playerController.onPlaybackStatusChanged
-                .removeListener(onPlaybackStatusChanged);
-            playerController.onPlaybackReady.removeListener(onPlaybackReady);
-            playerController.onPlaybackEnded.removeListener(onPlaybackEnded);
-          } catch (error) {
-            log.severe('Error during useEffect cleanup: $error');
-          }
+          removeListeners(playerController);
+          playerController.stop().catchError((error) {
+            log.severe('Error stopping video: $error');
+          });
 
           controller.value = null;
           WakelockPlus.disable();
