@@ -184,8 +184,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       try {
         if (mute && playbackInfo.volume != 0.0) {
           await playerController.setVolume(0.0);
-        } else if (!mute && playbackInfo.volume != 0.7) {
-          await playerController.setVolume(0.7);
+        } else if (!mute && playbackInfo.volume != 0.9) {
+          await playerController.setVolume(0.9);
         }
       } catch (error) {
         log.severe('Error setting volume: $error');

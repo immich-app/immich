@@ -79,10 +79,8 @@ class GalleryViewerPage extends HookConsumerWidget {
       ref.listen(
           videoPlaybackValueProvider.select(
             (playback) => playback.state == VideoPlaybackState.playing,
-          ), (wasPlaying, isPlaying) {
-        if (wasPlaying != null && wasPlaying && !isPlaying) {
-          isPlayingMotionVideo.value = false;
-        }
+          ), (_, isPlaying) {
+        isPlayingMotionVideo.value = isPlaying;
       });
     }
 
@@ -271,11 +269,13 @@ class GalleryViewerPage extends HookConsumerWidget {
         onTapDown: (_, __, ___) {
           ref.read(showControlsProvider.notifier).toggle();
         },
-        onLongPressStart: (_, __, ___) {
-          if (asset.livePhotoVideoId != null) {
-            isPlayingMotionVideo.value = true;
-          }
-        },
+        onLongPressStart: asset.isMotionPhoto
+            ? (_, __, ___) {
+                if (asset.isMotionPhoto) {
+                  isPlayingMotionVideo.value = true;
+                }
+              }
+            : null,
         imageProvider: ImmichImage.imageProvider(asset: asset),
         heroAttributes: PhotoViewHeroAttributes(
           tag: getHeroTag(asset),
@@ -336,10 +336,6 @@ class GalleryViewerPage extends HookConsumerWidget {
     PhotoViewGalleryPageOptions buildAsset(BuildContext context, int index) {
       final newAsset = index == currentIndex.value ? asset : loadAsset(index);
 
-      if (newAsset.isImage) {
-        ref.read(showControlsProvider.notifier).show = false;
-      }
-
       if (newAsset.isImage && !isPlayingMotionVideo.value) {
         return buildImage(context, newAsset);
       }
@@ -357,8 +353,11 @@ class GalleryViewerPage extends HookConsumerWidget {
             PhotoViewGallery.builder(
               key: ValueKey(asset),
               scaleStateChangedCallback: (state) {
-                isZoomed.value = state != PhotoViewScaleState.initial;
-                ref.read(showControlsProvider.notifier).show = !isZoomed.value;
+                if (asset.isImage && !isPlayingMotionVideo.value) {
+                  isZoomed.value = state != PhotoViewScaleState.initial;
+                  ref.read(showControlsProvider.notifier).show =
+                      !isZoomed.value;
+                }
               },
               // wantKeepAlive: true,
               gaplessPlayback: true,
@@ -396,15 +395,15 @@ class GalleryViewerPage extends HookConsumerWidget {
 
                 final newAsset =
                     value == currentIndex.value ? asset : loadAsset(value);
-                if (!newAsset.isImage || newAsset.isMotionPhoto) {
-                  ref.read(videoPlaybackValueProvider.notifier).reset();
-                }
 
                 currentIndex.value = value;
                 stackIndex.value = -1;
                 isPlayingMotionVideo.value = false;
 
                 ref.read(currentAssetProvider.notifier).set(newAsset);
+                if (newAsset.isVideo || newAsset.isMotionPhoto) {
+                  ref.read(videoPlaybackValueProvider.notifier).reset();
+                }
 
                 // Wait for page change animation to finish, then precache the next image
                 Timer(const Duration(milliseconds: 400), () {
@@ -418,11 +417,8 @@ class GalleryViewerPage extends HookConsumerWidget {
               left: 0,
               right: 0,
               child: GalleryAppBar(
-                asset: asset,
                 showInfo: showInfo,
-                isPlayingVideo: isPlayingMotionVideo.value,
-                onToggleMotionVideo: () =>
-                    isPlayingMotionVideo.value = !isPlayingMotionVideo.value,
+                isPlayingMotionVideo: isPlayingMotionVideo,
               ),
             ),
             Positioned(
@@ -444,10 +440,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     controller: controller,
                     showStack: showStack,
                     stackIndex: stackIndex.value,
-                    asset: asset,
                     assetIndex: currentIndex,
-                    showVideoPlayerControls:
-                        !asset.isImage && !asset.isMotionPhoto,
                   ),
                 ],
               ),
