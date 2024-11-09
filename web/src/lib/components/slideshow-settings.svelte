@@ -19,7 +19,11 @@
 
   const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
-  let { onClose = () => {} } = $props();
+  interface Props {
+    onClose?: () => void;
+  }
+
+  let { onClose = () => {} }: Props = $props();
 
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
@@ -45,7 +49,7 @@
   };
 </script>
 
-<FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose}>
+<FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose()}>
   <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
     <SettingDropdown
       title={$t('direction')}
@@ -75,6 +79,6 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="primary" onclick={(_) => onClose}>{$t('done')}</Button>
+    <Button fullwidth color="primary" onclick={(_) => onClose()}>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>
