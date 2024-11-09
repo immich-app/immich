@@ -65,15 +65,16 @@
   type SettingsComponent = ComponentType<SvelteComponent<SettingsComponentProps>>;
 
   // https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify/43636793#43636793
-  const jsonReplacer = (key, value) =>
-  value instanceof Object && !(value instanceof Array) ? 
-      Object.keys(value)
-      .sort()
-      .reduce((sorted, key) => {
-          sorted[key] = value[key];
-          return sorted 
-      }, {}) :
-      value;
+  const jsonReplacer = (key: string, value: unknown) =>
+    value instanceof Object && !Array.isArray(value)
+      ? Object.keys(value)
+          .sort()
+          // eslint-disable-next-line unicorn/no-array-reduce
+          .reduce((sorted: { [key: string]: unknown }, key) => {
+            sorted[key] = (value as { [key: string]: unknown })[key];
+            return sorted;
+          }, {})
+      : value;
 
   const downloadConfig = () => {
     const blob = new Blob([JSON.stringify(config, jsonReplacer, 2)], { type: 'application/json' });
