@@ -39,7 +39,7 @@ attach-server:
 renovate:
   LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
 
-MODULES = e2e server web cli sdk
+MODULES = e2e server web cli sdk docs
 
 audit-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix

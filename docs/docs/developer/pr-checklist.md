@@ -1,5 +1,6 @@
 # PR Checklist
 
+A minimal devcontainer is supplied with this repository. All commands can be executed directly inside this container to avoid tedious installation of the environment.
 When contributing code through a pull request, please check the following:
 
 ## Web Checks
