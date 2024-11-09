@@ -4,12 +4,12 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    lat?: number | null | undefined;
-    lng?: number | null | undefined;
+    lat?: number;
+    lng?: number;
     onUpdate: (lat: number, lng: number) => void;
   }
 
-  let { lat = $bindable(undefined), lng = $bindable(undefined), onUpdate }: Props = $props();
+  let { lat = $bindable(), lng = $bindable(), onUpdate }: Props = $props();
 
   const id = generateId();
 

@@ -8,7 +8,7 @@
     max: number;
     step?: number | string;
     required?: boolean;
-    value?: number | null;
+    value?: number;
     onInput: (value: number | null) => void;
     onPaste?: ClipboardEventHandler<HTMLInputElement>;
   }
@@ -19,10 +19,21 @@
     max,
     step = 'any',
     required = true,
-    value = $bindable(null),
+    value = $bindable(),
     onInput,
     onPaste = undefined,
   }: Props = $props();
+
+  const oninput = () => {
+    if (!value) {
+      return;
+    }
+
+    if (value !== null && (value < min || value > max)) {
+      value = clamp(value, min, max);
+    }
+    onInput(value);
+  };
 </script>
 
 <input
@@ -34,11 +45,6 @@
   {step}
   {required}
   bind:value
-  oninput={() => {
-    if (value !== null && (value < min || value > max)) {
-      value = clamp(value, min, max);
-    }
-    onInput(value);
-  }}
+  {oninput}
   onpaste={onPaste}
 />
