@@ -76,7 +76,7 @@ Setting these in the IDE give a better developer experience, auto-formatting cod
 
 ### Dart Code Metrics
 
-The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/getting-started/#installation) page for more information on setting up DCM
+The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/) page for more information on setting up DCM
 
 Note: Activating the license is not required.
 
