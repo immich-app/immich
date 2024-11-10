@@ -142,7 +142,7 @@
 {#if selectedRemoveUser && selectedRemoveUser?.id === currentUser?.id}
   <ConfirmDialog
     title={$t('album_leave')}
-    promptText={$t('album_leave_confirmation', { values: { album: album.albumName } })}
+    prompt={$t('album_leave_confirmation', { values: { album: album.albumName } })}
     confirmText={$t('leave')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}
@@ -152,7 +152,7 @@
 {#if selectedRemoveUser && selectedRemoveUser?.id !== currentUser?.id}
   <ConfirmDialog
     title={$t('album_remove_user')}
-    promptText={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
+    prompt={$t('album_remove_user_confirmation', { values: { user: selectedRemoveUser.name } })}
     confirmText={$t('remove_user')}
     onConfirm={handleRemoveUser}
     onCancel={() => (selectedRemoveUser = null)}

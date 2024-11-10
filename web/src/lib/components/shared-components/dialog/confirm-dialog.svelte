@@ -6,7 +6,7 @@
 
   interface Props {
     title?: string;
-    promptText?: string;
+    prompt?: string;
     confirmText?: string;
     confirmColor?: Color;
     cancelText?: string;
@@ -21,7 +21,7 @@
 
   let {
     title = $t('confirm'),
-    promptText = $t('are_you_sure_to_do_this'),
+    prompt = $t('are_you_sure_to_do_this'),
     confirmText = $t('confirm'),
     confirmColor = 'red',
     cancelText = $t('cancel'),
@@ -31,7 +31,7 @@
     width = 'narrow',
     onCancel,
     onConfirm,
-    promptSnippet: prompt,
+    promptSnippet,
   }: Props = $props();
 
   const handleConfirm = () => {
@@ -41,8 +41,8 @@
 
 <FullScreenModal {title} onClose={onCancel} {width}>
   <div class="text-md py-5 text-center">
-    {#if prompt}{@render prompt()}{:else}
-      <p>{promptText}</p>
+    {#if promptSnippet}{@render promptSnippet()}{:else}
+      <p>{prompt}</p>
     {/if}
   </div>
 

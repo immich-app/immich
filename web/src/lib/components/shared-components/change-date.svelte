@@ -136,7 +136,7 @@
 <ConfirmDialog
   confirmColor="primary"
   title={$t('edit_date_and_time')}
-  promptText="Please select a new date:"
+  prompt="Please select a new date:"
   disabled={!date.isValid}
   onConfirm={handleConfirm}
   {onCancel}
