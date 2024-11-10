@@ -1,7 +1,7 @@
 # Hardware Transcoding [Experimental]
 
 This feature allows you to use a GPU to accelerate transcoding and reduce CPU load.
-Note that hardware transcoding is much less efficient for file sizes.
+Note that hardware transcoding is much less efficient for small file sizes.
 As this is a new feature, it is still experimental and may not work on all systems.
 
 :::info
