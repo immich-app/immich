@@ -11,7 +11,7 @@ name: immich
 services:
   immich-server:
     container_name: immich_server
-    user: "0:0"
+    user: "1000:1000"
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     # extends:
     #   file: hwaccel.transcoding.yml
@@ -60,7 +60,7 @@ services:
 
   database:
     container_name: immich_postgres
-    user: "0:0"
+    user: "1000:1000"
     image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
     environment:
       DB_USERNAME: ${DB_USERNAME}
