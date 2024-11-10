@@ -55,8 +55,8 @@
   }: Props = $props();
 
   const componentId = generateId();
-  let bucketDate = $derived(bucket.bucketDate);
-  let dateGroups = $derived(bucket.dateGroups);
+  let bucketDate = $state(bucket.bucketDate);
+  let dateGroups = $state(bucket.dateGroups);
 
   const {
     DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
