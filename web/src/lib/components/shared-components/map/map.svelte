@@ -32,18 +32,6 @@
     type Map,
   } from 'svelte-maplibre';
 
-  export function addClipMapMarker(lng: number, lat: number) {
-    if (map) {
-      if (marker) {
-        marker.remove();
-      }
-
-      center = { lng, lat };
-      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
-      map.setZoom(15);
-    }
-  }
-
   interface Props {
     mapMarkers: MapMarkerResponseDto[];
     showSettingsModal?: boolean | undefined;
@@ -80,6 +68,17 @@
   const theme = $derived($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT);
   const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
   const style = $derived(fetch(styleUrl).then((response) => response.json()));
+
+  export function addClipMapMarker(lng: number, lat: number) {
+    if (map) {
+      if (marker) {
+        marker.remove();
+      }
+
+      center = { lng, lat };
+      marker = new maplibregl.Marker().setLngLat([lng, lat]).addTo(map);
+    }
+  }
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {

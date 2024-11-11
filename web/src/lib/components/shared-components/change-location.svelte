@@ -106,42 +106,45 @@
 <ConfirmDialog confirmColor="primary" title={$t('change_location')} width="wide" onConfirm={handleConfirm} {onCancel}>
   {#snippet promptSnippet()}
     <div class="flex flex-col w-full h-full gap-2">
-      {#if suggestionContainer}
-        <div
-          class="relative w-64 sm:w-96"
-          use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
-          use:listNavigation={suggestionContainer}
-        >
-          <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
-            <SearchBar
-              placeholder={$t('search_places')}
-              bind:name={searchWord}
-              {showLoadingSpinner}
-              onReset={() => (suggestedPlaces = [])}
-              onSearch={handleSearchPlaces}
-              roundedBottom={suggestedPlaces.length === 0 || hideSuggestion}
-            />
-          </button>
-          <div class="absolute z-[99] w-full" id="suggestion" bind:this={suggestionContainer}>
-            {#if !hideSuggestion}
-              {#each suggestedPlaces as place, index}
-                <button
-                  type="button"
-                  class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
-                  suggestedPlaces.length - 1
-                    ? 'rounded-b-lg border-b'
-                    : ''}"
-                  onclick={() => handleUseSuggested(place.latitude, place.longitude)}
-                >
-                  <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
-                    {getLocation(place.name, place.admin1name, place.admin2name)}
-                  </p>
-                </button>
-              {/each}
-            {/if}
+      <div class="relative w-64 sm:w-96">
+        {#if suggestionContainer}
+          <div
+            use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
+            use:listNavigation={suggestionContainer}
+          >
+            <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
+              <SearchBar
+                placeholder={$t('search_places')}
+                bind:name={searchWord}
+                {showLoadingSpinner}
+                onReset={() => (suggestedPlaces = [])}
+                onSearch={handleSearchPlaces}
+                roundedBottom={suggestedPlaces.length === 0 || hideSuggestion}
+              />
+            </button>
           </div>
+        {/if}
+
+        <div class="absolute z-[99] w-full" id="suggestion" bind:this={suggestionContainer}>
+          {#if !hideSuggestion}
+            {#each suggestedPlaces as place, index}
+              <button
+                type="button"
+                class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
+                suggestedPlaces.length - 1
+                  ? 'rounded-b-lg border-b'
+                  : ''}"
+                onclick={() => handleUseSuggested(place.latitude, place.longitude)}
+              >
+                <p class="ml-4 text-sm text-gray-700 dark:text-gray-100 truncate">
+                  {getLocation(place.name, place.admin1name, place.admin2name)}
+                </p>
+              </button>
+            {/each}
+          {/if}
         </div>
-      {/if}
+      </div>
+
       <span>{$t('pick_a_location')}</span>
       <div class="h-[500px] min-h-[300px] w-full">
         {#await import('../shared-components/map/map.svelte')}
