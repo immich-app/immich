@@ -146,6 +146,7 @@ describe(BackupService.name, () => {
       storageMock.readdir.mockResolvedValue([]);
       processMock.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
       storageMock.rename.mockResolvedValue();
+      storageMock.unlink.mockResolvedValue();
       systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);
       storageMock.createWriteStream.mockReturnValue(new PassThrough());
     });
@@ -186,6 +187,13 @@ describe(BackupService.name, () => {
     it('should fail if rename fails', async () => {
       storageMock.rename.mockRejectedValue(new Error('error'));
       const result = await sut.handleBackupDatabase();
+      expect(result).toBe(JobStatus.FAILED);
+    });
+    it('should ignore unlink failing and still return failed job status', async () => {
+      processMock.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
+      storageMock.unlink.mockRejectedValue(new Error('error'));
+      const result = await sut.handleBackupDatabase();
+      expect(storageMock.unlink).toHaveBeenCalled();
       expect(result).toBe(JobStatus.FAILED);
     });
   });
