@@ -23,6 +23,28 @@ describe('PhotoViewer component', () => {
   beforeAll(() => {
     getAssetOriginalUrlSpy = vi.spyOn(utils, 'getAssetOriginalUrl');
     getAssetThumbnailUrlSpy = vi.spyOn(utils, 'getAssetThumbnailUrl');
+    vi.stubGlobal('cast', {
+      framework: {
+        CastState: {
+          NO_DEVICES_AVAILABLE: 'NO_DEVICES_AVAILABLE',
+        },
+        RemotePlayer: vi.fn().mockImplementation(() => ({})),
+        RemotePlayerEventType: {
+          ANY_CHANGE: 'anyChanged',
+        },
+        RemotePlayerController: vi.fn().mockImplementation(() => ({ addEventListener: vi.fn() })),
+        CastContext: {
+          getInstance: vi.fn().mockImplementation(() => ({ setOptions: vi.fn(), addEventListener: vi.fn() })),
+        },
+        CastContextEventType: {
+          SESSION_STATE_CHANGED: 'sessionstatechanged',
+          CAST_STATE_CHANGED: 'caststatechanged',
+        },
+      },
+    });
+    vi.stubGlobal('chrome', {
+      cast: { media: { PlayerState: { IDLE: 'IDLE' } }, AutoJoinPolicy: { ORIGIN_SCOPED: 'origin_scoped' } },
+    });
   });
 
   beforeEach(() => {
