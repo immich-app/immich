@@ -156,6 +156,21 @@ className="border rounded-xl"
 />
 The image above has example values.
 
+<br/>
+
+### Additional Storage [(External Libraries)](/docs/features/libraries)
+
+<img
+src={require('./img/truenas10.png').default}
+width="40%"
+alt="Configure Storage Host Paths"
+className="border rounded-xl"
+/>
+
+You may configure [External Libraries](/docs/features/libraries) by mounting them using **Additional Storage**.
+The **Mount Path** is the loaction you will need to copy and paste into the External Library settings within Immich.
+The **Host Path** is the location on the TrueNAS SCALE server where your external library is located.
+
 <!-- A section for Labels would go here but I don't know what they do. -->
 
 ### Resources Configuration
