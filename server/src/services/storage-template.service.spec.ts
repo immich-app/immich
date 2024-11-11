@@ -38,7 +38,7 @@ describe(StorageTemplateService.name, () => {
 
     systemMock.get.mockResolvedValue({ storageTemplate: { enabled: true } });
 
-    sut.onConfigInitOrUpdate({ newConfig: defaults });
+    sut.onConfigInit({ newConfig: defaults });
   });
 
   describe('onConfigValidate', () => {
@@ -171,7 +171,7 @@ describe(StorageTemplateService.name, () => {
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other/{{MM}}{{/if}}/{{filename}}';
 
-      sut.onConfigInitOrUpdate({ newConfig: config });
+      sut.onConfigInit({ newConfig: config });
 
       userMock.get.mockResolvedValue(user);
       assetMock.getByIds.mockResolvedValueOnce([asset]);
@@ -192,7 +192,7 @@ describe(StorageTemplateService.name, () => {
       const user = userStub.user1;
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other//{{MM}}{{/if}}/{{filename}}';
-      sut.onConfigInitOrUpdate({ newConfig: config });
+      sut.onConfigInit({ newConfig: config });
 
       userMock.get.mockResolvedValue(user);
       assetMock.getByIds.mockResolvedValueOnce([asset]);
