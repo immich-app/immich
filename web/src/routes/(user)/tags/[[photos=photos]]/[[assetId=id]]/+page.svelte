@@ -54,7 +54,7 @@
   let tagId = $derived(tag?.id);
   let tree = $derived(buildTree(tags.map((tag) => tag.value)));
 
-  $effect(() => {
+  $effect.pre(() => {
     void assetStore.updateOptions({ tagId });
   });
 
