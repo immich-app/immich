@@ -267,19 +267,10 @@ class CastPlayer {
 
 export default CastPlayer;
 
-export const loadCastFramework = (() => {
-  let promise: Promise<typeof cast> | undefined;
-
-  return async () => {
-    if (promise === undefined) {
-      promise = new Promise(() => {
-        const script = document.createElement('script');
-        script.src = FRAMEWORK_LINK;
-
-        document.body.append(script);
-        console.debug('Cast framework loaded');
-      });
-    }
-    return promise;
-  };
-})();
+export const loadCastFramework = function () {
+  if (!document.querySelector(`script[src="${FRAMEWORK_LINK}"]`)) {
+    const script = document.createElement('script');
+    script.src = FRAMEWORK_LINK;
+    document.body.append(script);
+  }
+};
