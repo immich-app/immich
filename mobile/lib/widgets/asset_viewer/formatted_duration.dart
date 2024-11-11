@@ -18,11 +18,10 @@ class FormattedDuration extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String text = _formatDuration(data);
     return SizedBox(
       width: data.inHours > 0 ? 62 : 41, // use a fixed width to prevent jitter
       child: Text(
-        text,
+        _formatDuration(data),
         style: const TextStyle(
           fontSize: 14.0,
           color: whiteOpacity75,
