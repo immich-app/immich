@@ -14,49 +14,28 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import { generateId } from '$lib/utils/generate-id';
 
-  interface Props {
-    element?: HTMLElement | undefined;
-    isSelectionMode?: boolean;
-    viewport: Viewport;
-    singleSelect?: boolean;
-    withStacked?: boolean;
-    showArchiveIcon?: boolean;
-    assetGridElement?: HTMLElement | undefined;
-    renderThumbsAtBottomMargin?: string | undefined;
-    renderThumbsAtTopMargin?: string | undefined;
-    assetStore: AssetStore;
-    bucket: AssetBucket;
-    assetInteractionStore: AssetInteractionStore;
-    onScrollTarget?: ScrollTargetListener | undefined;
-    onAssetInGrid?: ((asset: AssetResponseDto) => void) | undefined;
-    onSelect: ({ title, assets }: { title: string; assets: AssetResponseDto[] }) => void;
-    onSelectAssets: (asset: AssetResponseDto) => void;
-    onSelectAssetCandidates: (asset: AssetResponseDto | null) => void;
-  }
+  export let element: HTMLElement | undefined = undefined;
+  export let isSelectionMode = false;
+  export let viewport: Viewport;
+  export let singleSelect = false;
+  export let withStacked = false;
+  export let showArchiveIcon = false;
+  export let assetGridElement: HTMLElement | undefined = undefined;
+  export let renderThumbsAtBottomMargin: string | undefined = undefined;
+  export let renderThumbsAtTopMargin: string | undefined = undefined;
+  export let assetStore: AssetStore;
+  export let bucket: AssetBucket;
+  export let assetInteractionStore: AssetInteractionStore;
 
-  let {
-    element = $bindable(undefined),
-    isSelectionMode = false,
-    viewport,
-    singleSelect = false,
-    withStacked = false,
-    showArchiveIcon = false,
-    assetGridElement = undefined,
-    renderThumbsAtBottomMargin = undefined,
-    renderThumbsAtTopMargin = undefined,
-    assetStore,
-    bucket,
-    assetInteractionStore,
-    onScrollTarget = undefined,
-    onAssetInGrid = undefined,
-    onSelect,
-    onSelectAssets,
-    onSelectAssetCandidates,
-  }: Props = $props();
+  export let onScrollTarget: ScrollTargetListener | undefined = undefined;
+  export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onSelect: ({ title, assets }: { title: string; assets: AssetResponseDto[] }) => void;
+  export let onSelectAssets: (asset: AssetResponseDto) => void;
+  export let onSelectAssetCandidates: (asset: AssetResponseDto | null) => void;
 
   const componentId = generateId();
-  let bucketDate = $state(bucket.bucketDate);
-  let dateGroups = $state(bucket.dateGroups);
+  $: bucketDate = bucket.bucketDate;
+  $: dateGroups = bucket.dateGroups;
 
   const {
     DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
@@ -66,8 +45,8 @@
 
   const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
 
-  let isMouseOverGroup = $state(false);
-  let hoveredDateGroup = $state('');
+  let isMouseOverGroup = false;
+  let hoveredDateGroup = '';
 
   const onClick = (assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
     if (isSelectionMode || $isMultiSelectState) {
@@ -147,9 +126,9 @@
       {/if}
       {#if display}
         <!-- Asset Group By Date -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
-          onmouseenter={() =>
+          on:mouseenter={() =>
             $assetStore.taskManager.queueScrollSensitiveTask({
               componentId,
               task: () => {
@@ -157,7 +136,7 @@
                 assetMouseEventHandler(dateGroup.groupTitle, null);
               },
             })}
-          onmouseleave={() => {
+          on:mouseleave={() => {
             $assetStore.taskManager.queueScrollSensitiveTask({
               componentId,
               task: () => {
@@ -176,8 +155,8 @@
               <div
                 transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
                 class="inline-block px-2 hover:cursor-pointer"
-                onclick={() => handleSelectGroup(dateGroup.groupTitle, dateGroup.assets)}
-                onkeydown={() => handleSelectGroup(dateGroup.groupTitle, dateGroup.assets)}
+                on:click={() => handleSelectGroup(dateGroup.groupTitle, dateGroup.assets)}
+                on:keydown={() => handleSelectGroup(dateGroup.groupTitle, dateGroup.assets)}
               >
                 {#if $selectedGroup.has(dateGroup.groupTitle)}
                   <Icon path={mdiCheckCircle} size="24" color="#4250af" />
