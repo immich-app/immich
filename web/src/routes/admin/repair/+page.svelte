@@ -184,7 +184,6 @@
 </script>
 
 <UserPageLayout title={data.meta.title} admin>
-  {#snippet sidebar()}{/snippet}
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       <LinkButton onclick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
