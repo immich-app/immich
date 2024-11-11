@@ -39,8 +39,7 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 @Injectable()
 export class JobService extends BaseService {
   @OnEvent({ name: 'config.init' })
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigInitOrUpdate({ newConfig: config }: ArgOf<'config.init'>) {
+  onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
     if (this.worker !== ImmichWorker.MICROSERVICES) {
       return;
     }
@@ -54,6 +53,11 @@ export class JobService extends BaseService {
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
     }
+  }
+
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
+    this.onConfigInit({ newConfig: config });
   }
 
   async create(dto: JobCreateDto): Promise<void> {
