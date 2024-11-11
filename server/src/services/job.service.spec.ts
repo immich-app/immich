@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { defaults } from 'src/config';
+import { defaults, SystemConfig } from 'src/config';
 import { ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -31,7 +31,7 @@ describe(JobService.name, () => {
 
   describe('onConfigUpdate', () => {
     it('should update concurrency', () => {
-      sut.onConfigInitOrUpdate({ newConfig: defaults });
+      sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
       expect(jobMock.setConcurrency).toHaveBeenCalledTimes(15);
       expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
