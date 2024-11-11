@@ -38,9 +38,8 @@
     }
   };
 
-  const onsubmit = async (event: Event) => {
+  const onsubmit = (event: Event) => {
     event.preventDefault();
-    await handleSave();
   };
 </script>
 
