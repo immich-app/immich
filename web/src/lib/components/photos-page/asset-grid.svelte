@@ -694,18 +694,18 @@
     assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = (asset: AssetResponseDto) => {
+  const selectAssetCandidates = (endAsset: AssetResponseDto) => {
     if (!shiftKeyIsDown) {
       return;
     }
 
-    const rangeStart = $assetSelectionStart;
-    if (!rangeStart) {
+    const startAsset = $assetSelectionStart;
+    if (!startAsset) {
       return;
     }
 
-    let start = $assetStore.assets.indexOf(rangeStart);
-    let end = $assetStore.assets.indexOf(asset);
+    let start = $assetStore.assets.findIndex((a) => a.id === startAsset.id);
+    let end = $assetStore.assets.findIndex((a) => a.id === endAsset.id);
 
     if (start > end) {
       [start, end] = [end, start];
