@@ -10,25 +10,6 @@ import 'package:immich_mobile/widgets/asset_viewer/formatted_duration.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_mute_button.dart';
 
 class VideoPosition extends HookConsumerWidget {
-  static void _onChangedDummy(_) {}
-  static const placeholder = Row(
-    children: [
-      FormattedDuration(Duration.zero),
-      Expanded(
-        child: Slider(
-          value: 0.0,
-          min: 0,
-          max: 100,
-          thumbColor: Colors.white,
-          activeColor: Colors.white,
-          inactiveColor: whiteOpacity75,
-          onChanged: _onChangedDummy,
-        ),
-      ),
-      FormattedDuration(Duration.zero),
-      VideoMuteButton(),
-    ],
-  );
   const VideoPosition({super.key});
 
   @override
@@ -38,7 +19,7 @@ class VideoPosition extends HookConsumerWidget {
     );
     final wasPlaying = useRef<bool>(true);
     return duration == Duration.zero
-        ? placeholder
+        ? const _VideoPositionPlaceholder()
         : Row(
             children: [
               FormattedDuration(position),
@@ -73,5 +54,33 @@ class VideoPosition extends HookConsumerWidget {
               const VideoMuteButton(),
             ],
           );
+  }
+}
+
+class _VideoPositionPlaceholder extends StatelessWidget {
+  const _VideoPositionPlaceholder();
+
+  static void _onChangedDummy(_) {}
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        FormattedDuration(Duration.zero),
+        Expanded(
+          child: Slider(
+            value: 0.0,
+            min: 0,
+            max: 100,
+            thumbColor: Colors.white,
+            activeColor: Colors.white,
+            inactiveColor: whiteOpacity75,
+            onChanged: _onChangedDummy,
+          ),
+        ),
+        FormattedDuration(Duration.zero),
+        VideoMuteButton(),
+      ],
+    );
   }
 }
