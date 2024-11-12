@@ -292,6 +292,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     PhotoViewGalleryPageOptions buildVideo(BuildContext context, Asset asset) {
+      // This key is to prevent the video player from being re-initialized during the hero animation
       final key = GlobalKey();
       final tag = getHeroTag(asset);
       return PhotoViewGalleryPageOptions.customChild(

@@ -125,6 +125,16 @@ class VideoPlaybackValueState extends StateNotifier<VideoPlaybackValue> {
     );
   }
 
+  set status(VideoPlaybackState value) {
+    if (state.state == value) return;
+    state = VideoPlaybackValue(
+      position: state.position,
+      duration: state.duration,
+      state: value,
+      volume: state.volume,
+    );
+  }
+
   void reset() {
     state = videoPlaybackValueDefault;
   }
