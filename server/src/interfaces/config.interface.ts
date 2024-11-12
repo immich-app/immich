@@ -83,6 +83,7 @@ export interface EnvData {
 
   storage: {
     ignoreMountCheckErrors: boolean;
+    skipUtimes: boolean;
   };
 
   workers: ImmichWorker[];

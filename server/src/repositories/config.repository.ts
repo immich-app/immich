@@ -209,6 +209,7 @@ const getEnv = (): EnvData => {
 
     storage: {
       ignoreMountCheckErrors: !!dto.IMMICH_IGNORE_MOUNT_CHECK_ERRORS,
+      skipUtimes: !!dto.IMMICH_SKIP_UTIMES,
     },
 
     telemetry: {

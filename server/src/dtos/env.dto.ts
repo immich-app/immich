@@ -66,6 +66,9 @@ export class EnvDto {
   @Optional()
   IMMICH_REPOSITORY_URL?: string;
 
+  @ValidateBoolean({ optional: true })
+  IMMICH_SKIP_UTIMES?: boolean;
+
   @IsString()
   @Optional()
   IMMICH_SOURCE_REF?: string;

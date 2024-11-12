@@ -8,6 +8,7 @@ import path from 'node:path';
 import { Writable } from 'node:stream';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IConfigRepository } from "src/interfaces/config.interface";
 import {
   DiskUsage,
   IStorageRepository,
@@ -19,7 +20,10 @@ import { mimeTypes } from 'src/utils/mime-types';
 
 @Injectable()
 export class StorageRepository implements IStorageRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(
+    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+  ) {
     this.logger.setContext(StorageRepository.name);
   }
 
@@ -60,6 +64,9 @@ export class StorageRepository implements IStorageRepository {
   }
 
   utimes(filepath: string, atime: Date, mtime: Date) {
+    if (this.configRepository.getEnv().storage.skipUtimes){
+      return Promise.resolve();
+    }
     return fs.utimes(filepath, atime, mtime);
   }
 
