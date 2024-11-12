@@ -343,6 +343,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: false,
       });
 
       expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
@@ -521,6 +522,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.SRGB,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: false,
       });
 
       expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
@@ -566,6 +568,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.SRGB,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: false,
       });
 
       expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
@@ -618,6 +621,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: true,
       });
       expect(extractedPath?.endsWith('.tmp')).toBe(true);
       expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
@@ -636,6 +640,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: true,
       });
       const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
       expect(extractedPath?.endsWith('.tmp')).toBe(true);
@@ -653,6 +658,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: false,
       });
       expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
     });
@@ -669,6 +675,7 @@ describe(MediaService.name, () => {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
+        isEmbeddedImage: false,
       });
       expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
     });
