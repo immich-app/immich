@@ -41,6 +41,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       _ref;
   final _log = Logger("AuthenticationNotifier");
 
+  static const Duration _timeoutDuration = Duration(seconds: 7);
+
   Future<bool> login(
     String email,
     String password,
@@ -102,12 +104,15 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       await _apiService.authenticationApi
           .logout()
+          .timeout(_timeoutDuration)
           .then((_) => log.info("Logout was successful for $userEmail"))
           .onError(
             (error, stackTrace) =>
                 log.severe("Logout failed for $userEmail", error, stackTrace),
           );
-
+    } catch (e, stack) {
+      log.severe('Logout failed', e, stack);
+    } finally {
       await Future.wait([
         clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
@@ -125,8 +130,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         shouldChangePassword: false,
         isAuthenticated: false,
       );
-    } catch (e, stack) {
-      log.severe('Logout failed', e, stack);
     }
   }
 
