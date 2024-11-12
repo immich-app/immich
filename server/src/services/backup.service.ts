@@ -105,9 +105,8 @@ export class BackupService extends BaseService {
     const databaseVersion = await this.databaseRepository.getPostgresVersion();
     const databaseSemver = semver.coerce(databaseVersion);
     const databaseMajorVersion = databaseSemver?.major;
-    const databaseSupported = semver.satisfies(databaseVersion, '>=14.0.0 <18.0.0');
 
-    if (!databaseMajorVersion || !databaseSupported) {
+    if (!databaseMajorVersion || !databaseSemver || !semver.satisfies(databaseSemver, '>=14.0.0 <18.0.0')) {
       this.logger.error(`Database Backup Failure: Unsupported PostgreSQL version: ${databaseVersion}`);
       return JobStatus.FAILED;
     }

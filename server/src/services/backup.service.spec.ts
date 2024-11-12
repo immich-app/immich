@@ -149,7 +149,6 @@ describe(BackupService.name, () => {
       storageMock.unlink.mockResolvedValue();
       systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);
       storageMock.createWriteStream.mockReturnValue(new PassThrough());
-      databaseMock.getPostgresVersion.mockResolvedValue('14.3.2');
     });
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
@@ -198,11 +197,13 @@ describe(BackupService.name, () => {
       expect(result).toBe(JobStatus.FAILED);
     });
     it.each`
-      postgresVersion | expectedVersion
-      ${'14.6.4'}     | ${14}
-      ${'15.3.3'}     | ${15}
-      ${'16.4.2'}     | ${16}
-      ${'17.15.1'}    | ${17}
+      postgresVersion                       | expectedVersion
+      ${'14.10'}                            | ${14}
+      ${'14.10.3'}                          | ${14}
+      ${'14.10 (Debian 14.10-1.pgdg120+1)'} | ${14}
+      ${'15.3.3'}                           | ${15}
+      ${'16.4.2'}                           | ${16}
+      ${'17.15.1'}                          | ${17}
     `(
       `should use pg_dumpall $expectedVersion with postgres version $postgresVersion`,
       async ({ postgresVersion, expectedVersion }) => {
