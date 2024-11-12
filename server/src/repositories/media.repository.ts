@@ -83,18 +83,14 @@ export class MediaRepository implements IMediaRepository {
       .withIccProfile(options.colorspace);
 
     if (!options.raw) {
-      if (options.isEmbeddedImage) {
-        const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
-        pipeline = pipeline.rotate(angle);
-        if (flip) {
-          pipeline = pipeline.flip();
-        }
+      const { angle, flip, flop } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
+      pipeline = pipeline.rotate(angle);
+      if (flip) {
+        pipeline = pipeline.flip();
+      }
 
-        if (flop) {
-          pipeline = pipeline.flop();
-        }
-      } else {
-        pipeline = pipeline.rotate();
+      if (flop) {
+        pipeline = pipeline.flop();
       }
     }
 
