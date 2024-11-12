@@ -149,6 +149,7 @@ describe(BackupService.name, () => {
       storageMock.unlink.mockResolvedValue();
       systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);
       storageMock.createWriteStream.mockReturnValue(new PassThrough());
+      databaseMock.getPostgresVersion.mockResolvedValue('14.3.2');
     });
     it('should run a database backup successfully', async () => {
       const result = await sut.handleBackupDatabase();
@@ -194,6 +195,34 @@ describe(BackupService.name, () => {
       storageMock.unlink.mockRejectedValue(new Error('error'));
       const result = await sut.handleBackupDatabase();
       expect(storageMock.unlink).toHaveBeenCalled();
+      expect(result).toBe(JobStatus.FAILED);
+    });
+    it.each`
+      postgresVersion | expectedVersion
+      ${'14.6.4'}     | ${14}
+      ${'15.3.3'}     | ${15}
+      ${'16.4.2'}     | ${16}
+      ${'17.15.1'}    | ${17}
+    `(
+      `should use pg_dumpall $expectedVersion with postgres version $postgresVersion`,
+      async ({ postgresVersion, expectedVersion }) => {
+        databaseMock.getPostgresVersion.mockResolvedValue(postgresVersion);
+        await sut.handleBackupDatabase();
+        expect(processMock.spawn).toHaveBeenCalledWith(
+          `/usr/lib/postgresql/${expectedVersion}/bin/pg_dumpall`,
+          expect.any(Array),
+          expect.any(Object),
+        );
+      },
+    );
+    it.each`
+      postgresVersion
+      ${'13.99.99'}
+      ${'18.0.0'}
+    `(`should fail if postgres version $postgresVersion is not supported`, async ({ postgresVersion }) => {
+      databaseMock.getPostgresVersion.mockResolvedValue(postgresVersion);
+      const result = await sut.handleBackupDatabase();
+      expect(processMock.spawn).not.toHaveBeenCalled();
       expect(result).toBe(JobStatus.FAILED);
     });
   });
