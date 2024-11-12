@@ -215,7 +215,14 @@ export class MediaService extends BaseService {
       const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
 
       const orientation = Number(asset.exifInfo?.orientation) || undefined;
-      const decodeOptions = { colorspace, processInvalidImages, size: image.preview.size, orientation };
+      const decodeOptions = {
+        colorspace,
+        processInvalidImages,
+        size: image.preview.size,
+        orientation,
+        isEmbeddedImage: didExtract,
+      };
+
       const { data, info } = await this.mediaRepository.decodeImage(inputPath, decodeOptions);
 
       const options = { colorspace, processInvalidImages, raw: info };

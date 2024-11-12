@@ -32,6 +32,7 @@ interface DecodeImageOptions {
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size: number;
   orientation?: ExifOrientation;
+  isEmbeddedImage?: boolean;
 }
 
 export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
