@@ -17,7 +17,7 @@ In our `.env` file, we will define variables that will help us in the future whe
 + THUMB_LOCATION=/custom/path/immich/thumbs
 + ENCODED_VIDEO_LOCATION=/custom/path/immich/encoded-video
 + PROFILE_LOCATION=/custom/path/immich/profile
-+ BACKUP_LOCATION=/custom/path/immich/backup
++ BACKUP_LOCATION=/custom/path/immich/backups
 ...
 ```
 
@@ -31,7 +31,7 @@ services:
 +     - ${THUMB_LOCATION}:/usr/src/app/upload/thumbs
 +     - ${ENCODED_VIDEO_LOCATION}:/usr/src/app/upload/encoded-video
 +     - ${PROFILE_LOCATION}:/usr/src/app/upload/profile
-+     - ${BACKUP_LOCATION}:/usr/src/app/upload/backup
++     - ${BACKUP_LOCATION}:/usr/src/app/upload/backups
       - /etc/localtime:/etc/localtime:ro
 ```
 
