@@ -124,6 +124,10 @@
       error = false;
     }}
     onerror={() => {
+      if (!player?.src) {
+        // Do not show error when the URL is empty.
+        return;
+      }
       error = true;
       loading = false;
     }}
