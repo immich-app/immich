@@ -71,7 +71,9 @@
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
-  const progress = tweened<number>(0, { duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0) });
+  const progressBarController = tweened<number>(0, {
+    duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
+  });
   const memories = storeDerived(memoryStore, (memories) => {
     memories = memories ?? [];
     const memoryAssets: MemoryAsset[] = [];
@@ -129,19 +131,19 @@
     switch (action) {
       case 'play': {
         paused = false;
-        await progress.set(1);
+        await progressBarController.set(1);
         break;
       }
 
       case 'pause': {
         paused = true;
-        await progress.set($progress);
+        await progressBarController.set($progressBarController);
         break;
       }
 
       case 'reset': {
         paused = false;
-        resetPromise = progress.set(0);
+        resetPromise = progressBarController.set(0);
         break;
       }
     }
@@ -153,6 +155,7 @@
     }
 
     if (progress === 1) {
+      await progressBarController.set(0);
       await (current?.next ? handleNextAsset() : handleAction('pause'));
     }
   };
@@ -213,7 +216,7 @@
   let isAllFavorite = $derived([...selectedAssets].every((asset) => asset.isFavorite));
 
   $effect(() => {
-    handlePromiseError(handleProgress($progress));
+    handlePromiseError(handleProgress($progressBarController));
   });
 
   $effect(() => {
@@ -285,7 +288,7 @@
             {:then}
               <span
                 class="absolute left-0 h-[2px] bg-white"
-                style:width={`${index < current.assetIndex ? 100 : index > current.assetIndex ? 0 : $progress * 100}%`}
+                style:width={`${index < current.assetIndex ? 100 : index > current.assetIndex ? 0 : $progressBarController * 100}%`}
               ></span>
             {/await}
           </a>
