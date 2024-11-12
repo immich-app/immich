@@ -12,8 +12,8 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
-import 'package:immich_mobile/utils/throttle.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -43,6 +43,11 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
+
+    // When a video is opened through the timeline, `isCurrent` will immediately be true.
+    // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
+    // If the swipe is completed, `isCurrent` will be true for video B after a delay.
+    // If the swipe is canceled, `currentAsset` will not have changed and video A will continue to play.
     final currentAsset = useState(ref.read(currentAssetProvider));
     final isCurrent = currentAsset.value == asset;
 
@@ -193,8 +198,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     });
 
     // When the position changes, seek to the position
-    final seekThrottler =
-        useThrottler(interval: const Duration(milliseconds: 200));
+    // Debounce the seek to avoid seeking too often
+    // But also don't delay the seek too much to maintain visual feedback
+    final seekDebouncer = useDebouncer(
+      interval: const Duration(milliseconds: 100),
+      maxWaitTime: const Duration(milliseconds: 200),
+    );
     ref.listen(videoPlayerControlsProvider.select((value) => value.position),
         (_, position) async {
       final playerController = controller.value;
@@ -208,21 +217,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
 
       // Find the position to seek to
-      final int seek = (asset.duration * (position / 100.0)).inSeconds;
+      final seek = position ~/ 1;
       if (seek != playbackInfo.position) {
-        try {
-          final maybeSeek =
-              seekThrottler.run(() => playerController.seekTo(seek));
-          if (maybeSeek != null) {
-            await maybeSeek;
-          }
-        } catch (error) {
-          log.severe('Error seeking to position $position: $error');
-        }
+        seekDebouncer.run(() => playerController.seekTo(seek));
       }
-
-      ref.read(videoPlaybackValueProvider.notifier).position =
-          Duration(seconds: seek);
     });
 
     // // When the custom video controls pause or play
@@ -231,6 +229,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       final videoController = controller.value;
       if (videoController == null || !context.mounted) {
         return;
+      }
+
+      // Make sure the last seek is complete before pausing or playing
+      // Otherwise, `onPlaybackPositionChanged` can receive outdated events
+      if (seekDebouncer.isActive) {
+        await seekDebouncer.drain();
       }
 
       try {
@@ -250,6 +254,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
+      final videoPlayback =
+          VideoPlaybackValue.fromNativeController(videoController);
+      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
+
       try {
         await videoController.play();
         await videoController.setVolume(0.9);
@@ -266,11 +274,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       final videoPlayback =
           VideoPlaybackValue.fromNativeController(videoController);
+      // No need to update the UI when it's about to loop
       if (videoPlayback.state == VideoPlaybackState.completed && loopVideo) {
         return;
       }
-      ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
-
+      ref.read(videoPlaybackValueProvider.notifier).status =
+          videoPlayback.state;
       if (videoPlayback.state == VideoPlaybackState.playing) {
         // Sync with the controls playing
         WakelockPlus.enable();
@@ -281,6 +290,11 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     }
 
     void onPlaybackPositionChanged() {
+      // When seeking, these events sometimes move the slider to an older position
+      if (seekDebouncer.isActive) {
+        return;
+      }
+
       final videoController = controller.value;
       if (videoController == null || !context.mounted) {
         return;
@@ -388,7 +402,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     return Stack(
       children: [
-        placeholder,
+        placeholder, // this is always under the video to avoid flickering
         Center(
           key: ValueKey('player-${asset.hashCode}'),
           child: aspectRatio.value != null
@@ -404,7 +418,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
                 )
               : null,
         ),
-        // covers the video with the placeholder
         if (showControls)
           Center(
             key: ValueKey('controls-${asset.hashCode}'),
