@@ -1,5 +1,8 @@
 **/node_modules/**
 
+.github/workflows/*
+!.github/workflows/docker.yaml
+
 .DS_Store
 .vscode/*
 !.vscode/launch.json
