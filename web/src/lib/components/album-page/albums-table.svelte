@@ -21,7 +21,7 @@
     onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
   }
 
-  let { groupedAlbums, albumGroupOption = AlbumGroupBy.None, onShowContextMenu = undefined }: Props = $props();
+  let { groupedAlbums, albumGroupOption = AlbumGroupBy.None, onShowContextMenu }: Props = $props();
 </script>
 
 <table class="mt-2 w-full text-left">
