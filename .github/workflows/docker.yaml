@@ -21,7 +21,7 @@ env:
   REGISTRY: registry.esek.se
   DEFAULT_BRANCH: main
   env: production
-  ONLY_PROD: false
+  ONLY_PROD: true
 
 jobs:
   # This can only contain env vars and not secrets since actions is a fussy about it
