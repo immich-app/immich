@@ -22,7 +22,7 @@ class VideoPosition extends HookConsumerWidget {
         ? const _VideoPositionPlaceholder()
         : Row(
             children: [
-              FormattedDuration(position),
+              SizedBox(width: 60, child: FormattedDuration(position)),
               Expanded(
                 child: Slider(
                   value: min(
@@ -50,7 +50,7 @@ class VideoPosition extends HookConsumerWidget {
                   },
                 ),
               ),
-              FormattedDuration(duration),
+              SizedBox(width: 60, child: FormattedDuration(duration)),
               const VideoMuteButton(),
             ],
           );
