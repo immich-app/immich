@@ -315,8 +315,6 @@ export interface IJobRepository {
   setup(options: { services: ClassConstructor<unknown>[] }): void;
   startWorkers(): void;
   run(job: JobItem): Promise<JobStatus>;
-  addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
-  updateCronJob(name: string, expression?: string, start?: boolean): void;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   queueAll(items: JobItem[]): Promise<void>;

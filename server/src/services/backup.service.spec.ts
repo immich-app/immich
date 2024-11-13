@@ -3,8 +3,9 @@ import { defaults, SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { ImmichWorker, StorageFolder } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ICronRepository } from 'src/interfaces/cron.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { IJobRepository, JobStatus } from 'src/interfaces/job.interface';
+import { JobStatus } from 'src/interfaces/job.interface';
 import { IProcessRepository } from 'src/interfaces/process.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -18,13 +19,13 @@ describe(BackupService.name, () => {
 
   let databaseMock: Mocked<IDatabaseRepository>;
   let configMock: Mocked<IConfigRepository>;
-  let jobMock: Mocked<IJobRepository>;
+  let cronMock: Mocked<ICronRepository>;
   let processMock: Mocked<IProcessRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    ({ sut, configMock, databaseMock, jobMock, processMock, storageMock, systemMock } = newTestService(BackupService));
+    ({ sut, cronMock, configMock, databaseMock, processMock, storageMock, systemMock } = newTestService(BackupService));
   });
 
   it('should work', () => {
@@ -37,7 +38,7 @@ describe(BackupService.name, () => {
 
       await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
-      expect(jobMock.addCronJob).toHaveBeenCalled();
+      expect(cronMock.create).toHaveBeenCalled();
     });
 
     it('should not initialize backup database cron job when lock is taken', async () => {
@@ -45,14 +46,14 @@ describe(BackupService.name, () => {
 
       await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
-      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+      expect(cronMock.create).not.toHaveBeenCalled();
     });
 
     it('should not initialise backup database job when running on microservices', async () => {
       configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
       await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
-      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+      expect(cronMock.create).not.toHaveBeenCalled();
     });
   });
 
@@ -75,35 +76,15 @@ describe(BackupService.name, () => {
         } as SystemConfig,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith('backupDatabase', '0 1 * * *', true);
-      expect(jobMock.updateCronJob).toHaveBeenCalled();
+      expect(cronMock.update).toHaveBeenCalledWith({ name: 'backupDatabase', expression: '0 1 * * *', start: true });
+      expect(cronMock.update).toHaveBeenCalled();
     });
 
     it('should do nothing if instance does not have the backup database lock', async () => {
       databaseMock.tryLock.mockResolvedValue(false);
       await sut.onConfigInit({ newConfig: defaults });
       sut.onConfigUpdate({ newConfig: systemConfigStub.backupEnabled as SystemConfig, oldConfig: defaults });
-      expect(jobMock.updateCronJob).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('onConfigValidateEvent', () => {
-    it('should allow a valid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { backup: { database: { cronExpression: '0 0 * * *' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).not.toThrow(expect.stringContaining('Invalid cron expression'));
-    });
-
-    it('should fail for an invalid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { backup: { database: { cronExpression: 'foo' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).toThrow(/Invalid cron expression.*/);
+      expect(cronMock.update).not.toHaveBeenCalled();
     });
   });
 
@@ -165,6 +146,7 @@ describe(BackupService.name, () => {
       storageMock.readdir.mockResolvedValue([]);
       processMock.spawn.mockReturnValue(mockSpawn(0, 'data', ''));
       storageMock.rename.mockResolvedValue();
+      storageMock.unlink.mockResolvedValue();
       systemMock.get.mockResolvedValue(systemConfigStub.backupEnabled);
       storageMock.createWriteStream.mockReturnValue(new PassThrough());
     });
@@ -205,6 +187,43 @@ describe(BackupService.name, () => {
     it('should fail if rename fails', async () => {
       storageMock.rename.mockRejectedValue(new Error('error'));
       const result = await sut.handleBackupDatabase();
+      expect(result).toBe(JobStatus.FAILED);
+    });
+    it('should ignore unlink failing and still return failed job status', async () => {
+      processMock.spawn.mockReturnValueOnce(mockSpawn(1, '', 'error'));
+      storageMock.unlink.mockRejectedValue(new Error('error'));
+      const result = await sut.handleBackupDatabase();
+      expect(storageMock.unlink).toHaveBeenCalled();
+      expect(result).toBe(JobStatus.FAILED);
+    });
+    it.each`
+      postgresVersion                       | expectedVersion
+      ${'14.10'}                            | ${14}
+      ${'14.10.3'}                          | ${14}
+      ${'14.10 (Debian 14.10-1.pgdg120+1)'} | ${14}
+      ${'15.3.3'}                           | ${15}
+      ${'16.4.2'}                           | ${16}
+      ${'17.15.1'}                          | ${17}
+    `(
+      `should use pg_dumpall $expectedVersion with postgres version $postgresVersion`,
+      async ({ postgresVersion, expectedVersion }) => {
+        databaseMock.getPostgresVersion.mockResolvedValue(postgresVersion);
+        await sut.handleBackupDatabase();
+        expect(processMock.spawn).toHaveBeenCalledWith(
+          `/usr/lib/postgresql/${expectedVersion}/bin/pg_dumpall`,
+          expect.any(Array),
+          expect.any(Object),
+        );
+      },
+    );
+    it.each`
+      postgresVersion
+      ${'13.99.99'}
+      ${'18.0.0'}
+    `(`should fail if postgres version $postgresVersion is not supported`, async ({ postgresVersion }) => {
+      databaseMock.getPostgresVersion.mockResolvedValue(postgresVersion);
+      const result = await sut.handleBackupDatabase();
+      expect(processMock.spawn).not.toHaveBeenCalled();
       expect(result).toBe(JobStatus.FAILED);
     });
   });

@@ -35,6 +35,13 @@ The default configuration looks like this:
     "accel": "disabled",
     "accelDecode": false
   },
+  "backup": {
+    "database": {
+      "enabled": true,
+      "cronExpression": "0 02 * * *",
+      "keepLastAmount": 14
+    }
+  },
   "job": {
     "backgroundTask": {
       "concurrency": 5

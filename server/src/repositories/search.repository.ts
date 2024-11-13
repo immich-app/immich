@@ -6,7 +6,6 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { AssetType, PaginationMode } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -34,7 +33,6 @@ export class SearchRepository implements ISearchRepository {
   private assetsByCityQuery: string;
 
   constructor(
-    @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
@@ -278,7 +276,7 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     const parameters = [userIds, true, false, AssetType.IMAGE];
-    const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
+    const rawRes = await this.assetRepository.query(this.assetsByCityQuery, parameters);
 
     const items: AssetEntity[] = [];
     for (const res of rawRes) {

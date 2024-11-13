@@ -5,7 +5,6 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, PaginationMode } from 'src/enum';
 import {
   AssetBuilderOptions,
@@ -60,7 +59,6 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
-    @InjectRepository(SmartInfoEntity) private smartInfoRepository: Repository<SmartInfoEntity>,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -119,7 +117,6 @@ export class AssetRepository implements IAssetRepository {
       where: { id: In(ids) },
       relations: {
         exifInfo: true,
-        smartInfo: true,
         tags: true,
         faces: {
           person: true,
@@ -422,22 +419,6 @@ export class AssetRepository implements IAssetRepository {
         break;
       }
 
-      case WithoutProperty.OBJECT_TAGS: {
-        relations = {
-          smartInfo: true,
-        };
-        where = {
-          jobStatus: {
-            previewAt: Not(IsNull()),
-          },
-          isVisible: true,
-          smartInfo: {
-            tags: IsNull(),
-          },
-        };
-        break;
-      }
-
       case WithoutProperty.FACES: {
         relations = {
           faces: true,
@@ -452,23 +433,6 @@ export class AssetRepository implements IAssetRepository {
           jobStatus: {
             previewAt: Not(IsNull()),
             facesRecognizedAt: IsNull(),
-          },
-        };
-        break;
-      }
-
-      case WithoutProperty.PERSON: {
-        relations = {
-          faces: true,
-        };
-        where = {
-          jobStatus: {
-            previewAt: Not(IsNull()),
-          },
-          isVisible: true,
-          faces: {
-            assetId: Not(IsNull()),
-            personId: IsNull(),
           },
         };
         break;
@@ -609,35 +573,6 @@ export class AssetRepository implements IAssetRepository {
       .getRawMany();
 
     return { fieldName: 'exifInfo.city', items };
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })
-  async getAssetIdByTag(
-    ownerId: string,
-    { minAssetsPerField, maxFields }: AssetExploreFieldOptions,
-  ): Promise<SearchExploreItem<string>> {
-    const cte = this.smartInfoRepository
-      .createQueryBuilder('si')
-      .select('unnest(tags)', 'tag')
-      .groupBy('tag')
-      .having('count(*) >= :minAssetsPerField', { minAssetsPerField });
-
-    const items = await this.getBuilder({
-      userIds: [ownerId],
-      exifInfo: false,
-      assetType: AssetType.IMAGE,
-      isArchived: false,
-    })
-      .select('unnest(si.tags)', 'value')
-      .addSelect('asset.id', 'data')
-      .distinctOn(['unnest(si.tags)'])
-      .innerJoin('smart_info', 'si', 'asset.id = si."assetId"')
-      .addCommonTableExpression(cte, 'random_tags')
-      .innerJoin('random_tags', 't', 'si.tags @> ARRAY[t.tag]')
-      .limit(maxFields)
-      .getRawMany();
-
-    return { fieldName: 'smartInfo.tags', items };
   }
 
   private getBuilder(options: AssetBuilderOptions) {
