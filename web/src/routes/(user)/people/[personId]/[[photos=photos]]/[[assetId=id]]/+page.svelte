@@ -176,7 +176,7 @@
     await updateAssetCount();
     await handleGoBack();
 
-    data.person = person;
+    data = { ...data, person };
 
     refreshAssetGrid = !refreshAssetGrid;
   };
