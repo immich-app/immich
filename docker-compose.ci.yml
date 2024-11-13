@@ -32,7 +32,7 @@ services:
     labels:
       - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-server.rule=Host(`$DEPLOY_URL`)'
 
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-root.redirectregex.regex=^https?://${DEPLOY_URL}/?$'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-root.redirectregex.regex=^https?://${DEPLOY_URL}/?$$'
       - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-root.redirectregex.replacement=https://${DEPLOY_URL}/publish'
       - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-root.redirectregex.permanent=true'
 
