@@ -11,7 +11,7 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [test-ci]
+    branches: [main]
   pull_request:
     types: [opened, closed, reopened, synchronize]
   release:
