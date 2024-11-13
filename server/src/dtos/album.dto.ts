@@ -7,6 +7,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AlbumUserRole, AssetOrder } from 'src/enum';
+import { getAssetDateTime } from 'src/utils/date-time';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class AlbumInfoDto {
@@ -164,8 +165,8 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
   const hasSharedLink = entity.sharedLinks?.length > 0;
   const hasSharedUser = sharedUsers.length > 0;
 
-  let startDate = assets.at(0)?.fileCreatedAt || undefined;
-  let endDate = assets.at(-1)?.fileCreatedAt || undefined;
+  let startDate = getAssetDateTime(assets.at(0));
+  let endDate = getAssetDateTime(assets.at(-1));
   // Swap dates if start date is greater than end date.
   if (startDate && endDate && startDate > endDate) {
     [startDate, endDate] = [endDate, startDate];
