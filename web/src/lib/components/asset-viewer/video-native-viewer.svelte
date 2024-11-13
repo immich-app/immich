@@ -4,15 +4,11 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { onDestroy, onMount, tick } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
 
   interface Props {
     assetId: string;
