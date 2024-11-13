@@ -83,8 +83,6 @@
   let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
 
-  let refreshAssetGrid = false;
-
   let personName = '';
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
@@ -177,8 +175,6 @@
     await handleGoBack();
 
     data = { ...data, person };
-
-    refreshAssetGrid = !refreshAssetGrid;
   };
 
   const handleSelectFeaturePhoto = async (asset: AssetResponseDto) => {
@@ -213,7 +209,6 @@
       people = people.filter((person: PersonResponseDto) => person.id !== personToMerge.id);
       if (personToBeMergedIn.name != personName && person.id === personToBeMergedIn.id) {
         await updateAssetCount();
-        refreshAssetGrid = !refreshAssetGrid;
         return;
       }
       await goto(`${AppRoute.PEOPLE}/${personToBeMergedIn.id}`, { replaceState: true });
