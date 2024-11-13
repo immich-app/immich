@@ -4,11 +4,15 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { tick } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   import { swipe } from 'svelte-gestures';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
 
   interface Props {
     assetId: string;
@@ -32,16 +36,22 @@
     onClose = () => {},
   }: Props = $props();
 
-  let element: HTMLVideoElement | undefined = $state(undefined);
-  let isVideoLoading = $state(true);
+  let videoPlayer: HTMLVideoElement | undefined = $state();
+  let isLoading = $state(true);
   let assetFileUrl = $state('');
   let forceMuted = $state(false);
 
-  $effect(() => {
-    if (element) {
+  onMount(() => {
+    if (videoPlayer) {
       assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
       forceMuted = false;
-      element.load();
+      videoPlayer.load();
+    }
+  });
+
+  onDestroy(() => {
+    if (videoPlayer) {
+      videoPlayer.src = '';
     }
   });
 
@@ -54,16 +64,16 @@
         await tryForceMutedPlay(video);
         return;
       }
+
       handleError(error, $t('errors.unable_to_play_video'));
     } finally {
-      isVideoLoading = false;
+      isLoading = false;
     }
   };
 
   const tryForceMutedPlay = async (video: HTMLVideoElement) => {
     try {
-      forceMuted = true;
-      await tick();
+      video.muted = true;
       await handleCanPlay(video);
     } catch (error) {
       handleError(error, $t('errors.unable_to_play_video'));
@@ -82,7 +92,7 @@
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
-    bind:this={element}
+    bind:this={videoPlayer}
     loop={$loopVideoPreference && loopVideo}
     autoplay
     playsinline
@@ -105,7 +115,7 @@
   >
   </video>
 
-  {#if isVideoLoading}
+  {#if isLoading}
     <div class="absolute flex place-content-center place-items-center">
       <LoadingSpinner />
     </div>
