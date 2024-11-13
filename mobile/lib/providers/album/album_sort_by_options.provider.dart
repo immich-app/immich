@@ -38,14 +38,15 @@ class _AlbumSortHandlers {
 
   static const AlbumSortFn mostRecent = _sortByMostRecent;
   static List<Album> _sortByMostRecent(List<Album> albums, bool isReverse) {
-  final sorted = albums.sorted((a, b) {
-    if (a.endDate == null && b.endDate == null) return 0;
-    if (a.endDate == null) return 1;  // Put nulls at the end for recent sorting
-    if (b.endDate == null) return -1;
-    return b.endDate!.compareTo(a.endDate!);  // Sort by descending recent date
-  });
-  return (isReverse ? sorted.reversed : sorted).toList();
-}
+    final sorted = albums.sorted((a, b) {
+      if (a.endDate == null && b.endDate == null) return 0;
+      if (a.endDate == null)
+        return 1; // Put nulls at the end for recent sorting
+      if (b.endDate == null) return -1;
+      return b.endDate!.compareTo(a.endDate!); // Sort by descending recent date
+    });
+    return (isReverse ? sorted.reversed : sorted).toList();
+  }
 
   static const AlbumSortFn mostOldest = _sortByMostOldest;
   static List<Album> _sortByMostOldest(List<Album> albums, bool isReverse) {
