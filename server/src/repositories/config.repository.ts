@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
+import { plainToInstance } from 'class-transformer';
+import { validateSync } from 'class-validator';
+import { Request, Response } from 'express';
+import { CLS_ID } from 'nestjs-cls';
 import { join, resolve } from 'node:path';
-import { citiesFile, excludePaths } from 'src/constants';
+import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
-import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
+import { EnvDto } from 'src/dtos/env.dto';
+import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { setDifference } from 'src/utils/set';
-
-// TODO replace src/config validation with class-validator, here
 
 const productionKeys = {
   client:
@@ -33,8 +36,16 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
 };
 
 const getEnv = (): EnvData => {
-  const includedWorkers = asSet(process.env.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
-  const excludedWorkers = asSet(process.env.IMMICH_WORKERS_EXCLUDE, []);
+  const dto = plainToInstance(EnvDto, process.env);
+  const errors = validateSync(dto);
+  if (errors.length > 0) {
+    throw new Error(
+      `Invalid environment variables: ${errors.map((error) => `${error.property}=${error.value}`).join(', ')}`,
+    );
+  }
+
+  const includedWorkers = asSet(dto.IMMICH_WORKERS_INCLUDE, [ImmichWorker.API, ImmichWorker.MICROSERVICES]);
+  const excludedWorkers = asSet(dto.IMMICH_WORKERS_EXCLUDE, []);
   const workers = [...setDifference(includedWorkers, excludedWorkers)];
   for (const worker of workers) {
     if (!WORKER_TYPES.has(worker)) {
@@ -42,9 +53,9 @@ const getEnv = (): EnvData => {
     }
   }
 
-  const environment = process.env.IMMICH_ENV as ImmichEnvironment;
+  const environment = dto.IMMICH_ENV || ImmichEnvironment.PRODUCTION;
   const isProd = environment === ImmichEnvironment.PRODUCTION;
-  const buildFolder = process.env.IMMICH_BUILD_DATA || '/build';
+  const buildFolder = dto.IMMICH_BUILD_DATA || '/build';
   const folders = {
     // eslint-disable-next-line unicorn/prefer-module
     dist: resolve(`${__dirname}/..`),
@@ -52,18 +63,18 @@ const getEnv = (): EnvData => {
     web: join(buildFolder, 'www'),
   };
 
-  const databaseUrl = process.env.DB_URL;
+  const databaseUrl = dto.DB_URL;
 
   let redisConfig = {
-    host: process.env.REDIS_HOSTNAME || 'redis',
-    port: Number.parseInt(process.env.REDIS_PORT || '') || 6379,
-    db: Number.parseInt(process.env.REDIS_DBINDEX || '') || 0,
-    username: process.env.REDIS_USERNAME || undefined,
-    password: process.env.REDIS_PASSWORD || undefined,
-    path: process.env.REDIS_SOCKET || undefined,
+    host: dto.REDIS_HOSTNAME || 'redis',
+    port: dto.REDIS_PORT || 6379,
+    db: dto.REDIS_DBINDEX || 0,
+    username: dto.REDIS_USERNAME || undefined,
+    password: dto.REDIS_PASSWORD || undefined,
+    path: dto.REDIS_SOCKET || undefined,
   };
 
-  const redisUrl = process.env.REDIS_URL;
+  const redisUrl = dto.REDIS_URL;
   if (redisUrl && redisUrl.startsWith('ioredis://')) {
     try {
       redisConfig = JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
@@ -73,11 +84,11 @@ const getEnv = (): EnvData => {
   }
 
   const includedTelemetries =
-    process.env.IMMICH_TELEMETRY_INCLUDE === 'all'
+    dto.IMMICH_TELEMETRY_INCLUDE === 'all'
       ? new Set(Object.values(ImmichTelemetry))
-      : asSet<ImmichTelemetry>(process.env.IMMICH_TELEMETRY_INCLUDE, []);
+      : asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_INCLUDE, []);
 
-  const excludedTelemetries = asSet<ImmichTelemetry>(process.env.IMMICH_TELEMETRY_EXCLUDE, []);
+  const excludedTelemetries = asSet<ImmichTelemetry>(dto.IMMICH_TELEMETRY_EXCLUDE, []);
   const telemetries = setDifference(includedTelemetries, excludedTelemetries);
   for (const telemetry of telemetries) {
     if (!TELEMETRY_TYPES.has(telemetry)) {
@@ -86,26 +97,26 @@ const getEnv = (): EnvData => {
   }
 
   return {
-    host: process.env.IMMICH_HOST,
-    port: Number(process.env.IMMICH_PORT) || 2283,
+    host: dto.IMMICH_HOST,
+    port: dto.IMMICH_PORT || 2283,
     environment,
-    configFile: process.env.IMMICH_CONFIG_FILE,
-    logLevel: process.env.IMMICH_LOG_LEVEL as LogLevel,
+    configFile: dto.IMMICH_CONFIG_FILE,
+    logLevel: dto.IMMICH_LOG_LEVEL,
 
     buildMetadata: {
-      build: process.env.IMMICH_BUILD,
-      buildUrl: process.env.IMMICH_BUILD_URL,
-      buildImage: process.env.IMMICH_BUILD_IMAGE,
-      buildImageUrl: process.env.IMMICH_BUILD_IMAGE_URL,
-      repository: process.env.IMMICH_REPOSITORY,
-      repositoryUrl: process.env.IMMICH_REPOSITORY_URL,
-      sourceRef: process.env.IMMICH_SOURCE_REF,
-      sourceCommit: process.env.IMMICH_SOURCE_COMMIT,
-      sourceUrl: process.env.IMMICH_SOURCE_URL,
-      thirdPartySourceUrl: process.env.IMMICH_THIRD_PARTY_SOURCE_URL,
-      thirdPartyBugFeatureUrl: process.env.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
-      thirdPartyDocumentationUrl: process.env.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
-      thirdPartySupportUrl: process.env.IMMICH_THIRD_PARTY_SUPPORT_URL,
+      build: dto.IMMICH_BUILD,
+      buildUrl: dto.IMMICH_BUILD_URL,
+      buildImage: dto.IMMICH_BUILD_IMAGE,
+      buildImageUrl: dto.IMMICH_BUILD_IMAGE_URL,
+      repository: dto.IMMICH_REPOSITORY,
+      repositoryUrl: dto.IMMICH_REPOSITORY_URL,
+      sourceRef: dto.IMMICH_SOURCE_REF,
+      sourceCommit: dto.IMMICH_SOURCE_COMMIT,
+      sourceUrl: dto.IMMICH_SOURCE_URL,
+      thirdPartySourceUrl: dto.IMMICH_THIRD_PARTY_SOURCE_URL,
+      thirdPartyBugFeatureUrl: dto.IMMICH_THIRD_PARTY_BUG_FEATURE_URL,
+      thirdPartyDocumentationUrl: dto.IMMICH_THIRD_PARTY_DOCUMENTATION_URL,
+      thirdPartySupportUrl: dto.IMMICH_THIRD_PARTY_SUPPORT_URL,
     },
 
     bull: {
@@ -121,6 +132,22 @@ const getEnv = (): EnvData => {
       queues: Object.values(QueueName).map((name) => ({ name })),
     },
 
+    cls: {
+      config: {
+        middleware: {
+          mount: true,
+          generateId: true,
+          setup: (cls, req: Request, res: Response) => {
+            const headerValues = req.headers[ImmichHeader.CID];
+            const headerValue = Array.isArray(headerValues) ? headerValues[0] : headerValues;
+            const cid = headerValue || cls.get(CLS_ID);
+            cls.set(CLS_ID, cid);
+            res.header(ImmichHeader.CID, cid);
+          },
+        },
+      },
+    },
+
     database: {
       config: {
         type: 'postgres',
@@ -132,28 +159,25 @@ const getEnv = (): EnvData => {
         connectTimeoutMS: 10_000, // 10 seconds
         parseInt8: true,
         ...(databaseUrl
-          ? { url: databaseUrl }
+          ? { connectionType: 'url', url: databaseUrl }
           : {
-              host: process.env.DB_HOSTNAME || 'database',
-              port: Number(process.env.DB_PORT) || 5432,
-              username: process.env.DB_USERNAME || 'postgres',
-              password: process.env.DB_PASSWORD || 'postgres',
-              database: process.env.DB_DATABASE_NAME || 'immich',
+              connectionType: 'parts',
+              host: dto.DB_HOSTNAME || 'database',
+              port: dto.DB_PORT || 5432,
+              username: dto.DB_USERNAME || 'postgres',
+              password: dto.DB_PASSWORD || 'postgres',
+              database: dto.DB_DATABASE_NAME || 'immich',
             }),
       },
 
-      skipMigrations: process.env.DB_SKIP_MIGRATIONS === 'true',
-      vectorExtension:
-        process.env.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
+      skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
+      vectorExtension: dto.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
 
     network: {
-      trustedProxies: (process.env.IMMICH_TRUSTED_PROXIES ?? '')
-        .split(',')
-        .map((value) => value.trim())
-        .filter(Boolean),
+      trustedProxies: dto.IMMICH_TRUSTED_PROXIES ?? [],
     },
 
     otel: {
@@ -184,18 +208,18 @@ const getEnv = (): EnvData => {
     },
 
     storage: {
-      ignoreMountCheckErrors: process.env.IMMICH_IGNORE_MOUNT_CHECK_ERRORS === 'true',
+      ignoreMountCheckErrors: !!dto.IMMICH_IGNORE_MOUNT_CHECK_ERRORS,
     },
 
     telemetry: {
-      apiPort: Number(process.env.IMMICH_API_METRICS_PORT || '') || 8081,
-      microservicesPort: Number(process.env.IMMICH_MICROSERVICES_METRICS_PORT || '') || 8082,
+      apiPort: dto.IMMICH_API_METRICS_PORT || 8081,
+      microservicesPort: dto.IMMICH_MICROSERVICES_METRICS_PORT || 8082,
       metrics: telemetries,
     },
 
     workers,
 
-    noColor: !!process.env.NO_COLOR,
+    noColor: !!dto.NO_COLOR,
   };
 };
 
@@ -204,12 +228,18 @@ let cached: EnvData | undefined;
 @Injectable()
 @Telemetry({ enabled: false })
 export class ConfigRepository implements IConfigRepository {
+  constructor(@Inject(IWorker) @Optional() private worker?: ImmichWorker) {}
+
   getEnv(): EnvData {
     if (!cached) {
       cached = getEnv();
     }
 
     return cached;
+  }
+
+  getWorker() {
+    return this.worker;
   }
 }
 

@@ -12,6 +12,7 @@ import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -28,6 +29,7 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
@@ -56,6 +58,7 @@ export class BaseService {
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
     @Inject(IConfigRepository) protected configRepository: IConfigRepository,
+    @Inject(ICronRepository) protected cronRepository: ICronRepository,
     @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
@@ -72,6 +75,7 @@ export class BaseService {
     @Inject(IOAuthRepository) protected oauthRepository: IOAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
+    @Inject(IProcessRepository) protected processRepository: IProcessRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
     @Inject(IServerInfoRepository) protected serverInfoRepository: IServerInfoRepository,
     @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,
@@ -97,6 +101,10 @@ export class BaseService {
       systemMetadataRepository,
       this.logger,
     );
+  }
+
+  get worker() {
+    return this.configRepository.getWorker();
   }
 
   private get configRepos() {

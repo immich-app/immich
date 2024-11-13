@@ -1,17 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { ArgOf } from 'src/interfaces/event.interface';
 import {
-  IEmailJob,
   IEntityJob,
-  INotifyAlbumInviteJob,
   INotifyAlbumUpdateJob,
-  INotifySignupJob,
   JobItem,
   JobName,
+  JobOf,
   JobStatus,
+  QueueName,
 } from 'src/interfaces/job.interface';
 import { EmailImageAttachment, EmailTemplate } from 'src/interfaces/notification.interface';
 import { BaseService } from 'src/services/base.service';
@@ -176,7 +175,8 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
-  async handleUserSignup({ id, tempPassword }: INotifySignupJob) {
+  @OnJob({ name: JobName.NOTIFY_SIGNUP, queue: QueueName.NOTIFICATION })
+  async handleUserSignup({ id, tempPassword }: JobOf<JobName.NOTIFY_SIGNUP>) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
       return JobStatus.SKIPPED;
@@ -207,7 +207,8 @@ export class NotificationService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAlbumInvite({ id, recipientId }: INotifyAlbumInviteJob) {
+  @OnJob({ name: JobName.NOTIFY_ALBUM_INVITE, queue: QueueName.NOTIFICATION })
+  async handleAlbumInvite({ id, recipientId }: JobOf<JobName.NOTIFY_ALBUM_INVITE>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
     if (!album) {
       return JobStatus.SKIPPED;
@@ -254,7 +255,8 @@ export class NotificationService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAlbumUpdate({ id, recipientIds }: INotifyAlbumUpdateJob) {
+  @OnJob({ name: JobName.NOTIFY_ALBUM_UPDATE, queue: QueueName.NOTIFICATION })
+  async handleAlbumUpdate({ id, recipientIds }: JobOf<JobName.NOTIFY_ALBUM_UPDATE>) {
     const album = await this.albumRepository.getById(id, { withAssets: false });
 
     if (!album) {
@@ -312,7 +314,8 @@ export class NotificationService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSendEmail(data: IEmailJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SEND_EMAIL, queue: QueueName.NOTIFICATION })
+  async handleSendEmail(data: JobOf<JobName.SEND_EMAIL>): Promise<JobStatus> {
     const { notifications } = await this.getConfig({ withCache: false });
     if (!notifications.smtp.enabled) {
       return JobStatus.SKIPPED;

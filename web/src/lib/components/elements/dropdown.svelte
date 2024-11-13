@@ -102,7 +102,7 @@
               {renderedOption.title}
             </p>
           {:else}
-            <div />
+            <div></div>
             <p class="justify-self-start">
               {renderedOption.title}
             </p>

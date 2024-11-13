@@ -15,6 +15,7 @@
 
   export let notification: Notification | ComponentNotification;
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
   $: hoverStyle = notification.action.type === 'discard' ? 'hover:cursor-pointer' : '';
 

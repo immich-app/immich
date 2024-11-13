@@ -13,7 +13,7 @@
       $albumViewSettings.sortOrder = option.defaultOrder;
     }
   };
-
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
     return {
       [AlbumSortBy.Title]: $t('sort_title'),

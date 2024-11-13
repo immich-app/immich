@@ -90,7 +90,6 @@ export function searchAssetBuilder(
     isNotInAlbum,
     withFaces,
     withPeople,
-    withSmartInfo,
     personIds,
     withStacked,
     trashedAfter,
@@ -121,10 +120,6 @@ export function searchAssetBuilder(
 
   if (withPeople) {
     builder.leftJoinAndSelect('faces.person', 'person');
-  }
-
-  if (withSmartInfo) {
-    builder.leftJoinAndSelect(`${builder.alias}.smartInfo`, 'smartInfo');
   }
 
   if (personIds && personIds.length > 0) {

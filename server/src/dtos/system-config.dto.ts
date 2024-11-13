@@ -12,11 +12,8 @@ import {
   IsUrl,
   Max,
   Min,
-  Validate,
   ValidateIf,
   ValidateNested,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
 import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
@@ -33,19 +30,36 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-import { ValidateBoolean, validateCronExpression } from 'src/validation';
-
-@ValidatorConstraint({ name: 'cronValidator' })
-class CronValidator implements ValidatorConstraintInterface {
-  validate(expression: string): boolean {
-    return validateCronExpression(expression);
-  }
-}
+import { IsCronExpression, ValidateBoolean } from 'src/validation';
 
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;
 const isOAuthEnabled = (config: SystemConfigOAuthDto) => config.enabled;
 const isOAuthOverrideEnabled = (config: SystemConfigOAuthDto) => config.mobileOverrideEnabled;
 const isEmailNotificationEnabled = (config: SystemConfigSmtpDto) => config.enabled;
+const isDatabaseBackupEnabled = (config: DatabaseBackupConfig) => config.enabled;
+
+export class DatabaseBackupConfig {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @ValidateIf(isDatabaseBackupEnabled)
+  @IsNotEmpty()
+  @IsCronExpression()
+  @IsString()
+  cronExpression!: string;
+
+  @IsInt()
+  @IsPositive()
+  @IsNotEmpty()
+  keepLastAmount!: number;
+}
+
+export class SystemConfigBackupsDto {
+  @Type(() => DatabaseBackupConfig)
+  @ValidateNested()
+  @IsObject()
+  database!: DatabaseBackupConfig;
+}
 
 export class SystemConfigFFmpegDto {
   @IsInt()
@@ -109,12 +123,6 @@ export class SystemConfigFFmpegDto {
   @Type(() => Number)
   @ApiProperty({ type: 'integer' })
   gopSize!: number;
-
-  @IsInt()
-  @Min(0)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer' })
-  npl!: number;
 
   @ValidateBoolean()
   temporalAQ!: boolean;
@@ -226,7 +234,7 @@ class SystemConfigLibraryScanDto {
 
   @ValidateIf(isLibraryScanEnabled)
   @IsNotEmpty()
-  @Validate(CronValidator, { message: 'Invalid cron expression' })
+  @IsCronExpression()
   @IsString()
   cronExpression!: string;
 }
@@ -531,6 +539,11 @@ class SystemConfigUserDto {
 }
 
 export class SystemConfigDto implements SystemConfig {
+  @Type(() => SystemConfigBackupsDto)
+  @ValidateNested()
+  @IsObject()
+  backup!: SystemConfigBackupsDto;
+
   @Type(() => SystemConfigFFmpegDto)
   @ValidateNested()
   @IsObject()

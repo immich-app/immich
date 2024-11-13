@@ -119,7 +119,7 @@
   <ControlAppBar {onClose}>
     <svelte:fragment slot="leading">
       <slot name="header" />
-      <div />
+      <div></div>
     </svelte:fragment>
     <svelte:fragment slot="trailing">
       <div class="flex gap-4">

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto, mapDuplicateResponse } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
-import { IBaseJob, IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { AssetDuplicateResult } from 'src/interfaces/search.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -15,11 +16,28 @@ import { usePagination } from 'src/utils/pagination';
 export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
     const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
-
-    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true })));
+    const uniqueAssetIds: string[] = [];
+    const duplicates = mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true }))).filter(
+      (duplicate) => {
+        if (duplicate.assets.length === 1) {
+          uniqueAssetIds.push(duplicate.assets[0].id);
+          return false;
+        }
+        return true;
+      },
+    );
+    if (uniqueAssetIds.length > 0) {
+      try {
+        await this.assetRepository.updateAll(uniqueAssetIds, { duplicateId: null });
+      } catch (error: any) {
+        this.logger.error(`Failed to remove duplicateId from assets: ${error.message}`);
+      }
+    }
+    return duplicates;
   }
 
-  async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
+  async handleQueueSearchDuplicates({ force }: JobOf<JobName.QUEUE_DUPLICATE_DETECTION>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
@@ -40,7 +58,8 @@ export class DuplicateService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
+  async handleSearchDuplicates({ id }: JobOf<JobName.DUPLICATE_DETECTION>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;

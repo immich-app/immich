@@ -149,7 +149,11 @@ export class BaseConfig implements VideoCodecSWConfig {
       options.push(`scale=${this.getScaling(videoStream)}`);
     }
 
-    options.push(...this.getToneMapping(videoStream), 'format=yuv420p');
+    options.push(...this.getToneMapping(videoStream));
+    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
+      options.push(`format=yuv420p`);
+    }
+
     return options;
   }
 
@@ -271,19 +275,10 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getColors() {
     return {
-      primaries: '709',
-      transfer: '709',
-      matrix: '709',
+      primaries: 'bt709',
+      transfer: 'bt709',
+      matrix: 'bt709',
     };
-  }
-
-  getNPL() {
-    if (this.config.npl <= 0) {
-      // since hable already outputs a darker image, we use a lower npl value for it
-      return this.config.tonemap === ToneMapping.HABLE ? 100 : 250;
-    } else {
-      return this.config.npl;
-    }
   }
 
   getToneMapping(videoStream: VideoStreamInfo) {
@@ -291,13 +286,9 @@ export class BaseConfig implements VideoCodecSWConfig {
       return [];
     }
 
-    const colors = this.getColors();
-
-    return [
-      `zscale=t=linear:npl=${this.getNPL()}`,
-      `tonemap=${this.config.tonemap}:desat=0`,
-      `zscale=p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:range=pc`,
-    ];
+    const { primaries, transfer, matrix } = this.getColors();
+    const options = `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=yuv420p`;
+    return [options];
   }
 
   getAudioCodec(): string {
@@ -395,19 +386,14 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo): string[] {
-    const options = [
+    return [
       'fps=12:eof_action=pass:round=down',
       'thumbnail=12',
       String.raw`select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20)`,
       'trim=end_frame=2',
       'reverse',
+      ...super.getFilterOptions(videoStream),
     ];
-    if (this.shouldScale(videoStream)) {
-      options.push(`scale=${this.getScaling(videoStream)}`);
-    }
-
-    options.push(...this.getToneMapping(videoStream), 'format=yuv420p');
-    return options;
   }
 
   getPresetOptions() {
@@ -423,19 +409,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getScaling(videoStream: VideoStreamInfo) {
-    let options = super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int';
-    if (!this.shouldToneMap(videoStream)) {
-      options += ':out_color_matrix=bt601:out_range=pc';
-    }
-    return options;
-  }
-
-  getColors() {
-    return {
-      primaries: '709',
-      transfer: '601',
-      matrix: '470bg',
-    };
+    return super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc';
   }
 }
 
@@ -559,9 +533,9 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = this.getToneMapping(videoStream);
-    options.push('format=nv12', 'hwupload_cuda');
+    options.push('hwupload_cuda');
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_cuda=${this.getScaling(videoStream)}`);
+      options.push(`scale_cuda=${this.getScaling(videoStream)}:format=nv12`);
     }
 
     return options;
@@ -622,6 +596,8 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     options.push(...this.getToneMapping(videoStream));
     if (options.length > 0) {
       options[options.length - 1] += ':format=nv12';
+    } else if (!videoStream.pixelFormat.endsWith('420p')) {
+      options.push('format=nv12');
     }
     return options;
   }
@@ -631,14 +607,16 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
       return [];
     }
 
-    const colors = this.getColors();
+    const { matrix, primaries, transfer } = this.getColors();
     const tonemapOptions = [
       'desat=0',
-      `matrix=${colors.matrix}`,
-      `primaries=${colors.primaries}`,
+      `matrix=${matrix}`,
+      `primaries=${primaries}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=${colors.transfer}`,
+      'tonemap_mode=lum',
+      `transfer=${transfer}`,
+      'peak=100',
     ];
 
     return [`tonemap_cuda=${tonemapOptions.join(':')}`];
@@ -650,14 +628,6 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
 
   getOutputThreadOptions() {
     return [];
-  }
-
-  getColors() {
-    return {
-      primaries: 'bt709',
-      transfer: 'bt709',
-      matrix: 'bt709',
-    };
   }
 }
 
@@ -687,9 +657,9 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = this.getToneMapping(videoStream);
-    options.push('format=nv12', 'hwupload=extra_hw_frames=64');
+    options.push('hwupload=extra_hw_frames=64');
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_qsv=${this.getScaling(videoStream)}:mode=hq`);
+      options.push(`scale_qsv=${this.getScaling(videoStream)}:mode=hq:format=nv12`);
     }
     return options;
   }
@@ -764,15 +734,18 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
-    if (this.shouldScale(videoStream) || !this.shouldToneMap(videoStream)) {
+    const tonemapOptions = this.getToneMapping(videoStream);
+    if (this.shouldScale(videoStream) || tonemapOptions.length === 0) {
       let scaling = `scale_qsv=${this.getScaling(videoStream)}:async_depth=4:mode=hq`;
-      if (!this.shouldToneMap(videoStream)) {
+      if (tonemapOptions.length === 0) {
         scaling += ':format=nv12';
       }
       options.push(scaling);
     }
-
-    options.push(...this.getToneMapping(videoStream));
+    options.push(...tonemapOptions);
+    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
+      options.push('format=nv12');
+    }
     return options;
   }
 
@@ -781,15 +754,17 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
       return [];
     }
 
-    const colors = this.getColors();
+    const { matrix, primaries, transfer } = this.getColors();
     const tonemapOptions = [
       'desat=0',
       'format=nv12',
-      `matrix=${colors.matrix}`,
-      `primaries=${colors.primaries}`,
+      `matrix=${matrix}`,
+      `primaries=${primaries}`,
+      `transfer=${transfer}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=${colors.transfer}`,
+      'tonemap_mode=lum',
+      'peak=100',
     ];
 
     return [
@@ -801,14 +776,6 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
 
   getInputThreadOptions() {
     return [`-threads 1`];
-  }
-
-  getColors() {
-    return {
-      primaries: 'bt709',
-      transfer: 'bt709',
-      matrix: 'bt709',
-    };
   }
 }
 
@@ -828,9 +795,9 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = this.getToneMapping(videoStream);
-    options.push('format=nv12', 'hwupload');
+    options.push('hwupload=extra_hw_frames=64');
     if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`);
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
     }
 
     return options;
@@ -901,15 +868,18 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
-    if (this.shouldScale(videoStream) || !this.shouldToneMap(videoStream)) {
+    const tonemapOptions = this.getToneMapping(videoStream);
+    if (this.shouldScale(videoStream) || tonemapOptions.length === 0) {
       let scaling = `scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`;
-      if (!this.shouldToneMap(videoStream)) {
+      if (tonemapOptions.length === 0) {
         scaling += ':format=nv12';
       }
       options.push(scaling);
     }
-
-    options.push(...this.getToneMapping(videoStream));
+    options.push(...tonemapOptions);
+    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
+      options.push('format=nv12');
+    }
     return options;
   }
 
@@ -918,15 +888,17 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
       return [];
     }
 
-    const colors = this.getColors();
+    const { matrix, primaries, transfer } = this.getColors();
     const tonemapOptions = [
       'desat=0',
       'format=nv12',
-      `matrix=${colors.matrix}`,
-      `primaries=${colors.primaries}`,
+      `matrix=${matrix}`,
+      `primaries=${primaries}`,
+      `transfer=${transfer}`,
       'range=pc',
       `tonemap=${this.config.tonemap}`,
-      `transfer=${colors.transfer}`,
+      'tonemap_mode=lum',
+      'peak=100',
     ];
 
     return [
@@ -938,14 +910,6 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
 
   getInputThreadOptions() {
     return [`-threads 1`];
-  }
-
-  getColors() {
-    return {
-      primaries: 'bt709',
-      transfer: 'bt709',
-      matrix: 'bt709',
-    };
   }
 }
 
@@ -1014,11 +978,11 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     if (this.shouldToneMap(videoStream)) {
-      const colors = this.getColors();
+      const { primaries, transfer, matrix } = this.getColors();
       return [
         `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
         'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${colors.primaries}:t=${colors.transfer}:m=${colors.matrix}:tonemap=${this.config.tonemap}:desat=0`,
+        `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
         'hwmap=derive_device=rkmpp:mode=write:reverse=1',
         'format=drm_prime',
       ];
@@ -1026,13 +990,5 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
     }
     return [];
-  }
-
-  getColors() {
-    return {
-      primaries: 'bt709',
-      transfer: 'bt709',
-      matrix: 'bt709',
-    };
   }
 }

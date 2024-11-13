@@ -1,6 +1,7 @@
 <script lang="ts">
   import AdminSettings from '$lib/components/admin-page/settings/admin-settings.svelte';
   import AuthSettings from '$lib/components/admin-page/settings/auth/auth-settings.svelte';
+  import BackupSettings from '$lib/components/admin-page/settings/backup-settings/backup-settings.svelte';
   import FFmpegSettings from '$lib/components/admin-page/settings/ffmpeg/ffmpeg-settings.svelte';
   import ImageSettings from '$lib/components/admin-page/settings/image/image-settings.svelte';
   import JobSettings from '$lib/components/admin-page/settings/job-settings/job-settings.svelte';
@@ -30,6 +31,7 @@
   import {
     mdiAccountOutline,
     mdiAlert,
+    mdiBackupRestore,
     mdiBellOutline,
     mdiBookshelf,
     mdiContentCopy,
@@ -62,8 +64,20 @@
 
   type SettingsComponent = ComponentType<SvelteComponent<SettingsComponentProps>>;
 
+  // https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify/43636793#43636793
+  const jsonReplacer = (key: string, value: unknown) =>
+    value instanceof Object && !Array.isArray(value)
+      ? Object.keys(value)
+          .sort()
+          // eslint-disable-next-line unicorn/no-array-reduce
+          .reduce((sorted: { [key: string]: unknown }, key) => {
+            sorted[key] = (value as { [key: string]: unknown })[key];
+            return sorted;
+          }, {})
+      : value;
+
   const downloadConfig = () => {
-    const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(config, jsonReplacer, 2)], { type: 'application/json' });
     const downloadKey = 'immich-config.json';
     downloadManager.add(downloadKey, blob.size);
     downloadManager.update(downloadKey, blob.size);
@@ -98,6 +112,13 @@
       subtitle: $t('admin.authentication_settings_description'),
       key: 'authentication',
       icon: mdiLockOutline,
+    },
+    {
+      component: BackupSettings,
+      title: $t('admin.backup_settings'),
+      subtitle: $t('admin.backup_settings_description'),
+      key: 'backup',
+      icon: mdiBackupRestore,
     },
     {
       component: ImageSettings,
@@ -231,7 +252,7 @@
       <div class="hidden lg:block">
         <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
       </div>
-      <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, null, 2))}>
+      <LinkButton on:click={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}>
         <div class="flex place-items-center gap-2 text-sm">
           <Icon path={mdiContentCopy} size="18" />
           {$t('copy_to_clipboard')}

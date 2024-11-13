@@ -16,7 +16,7 @@ export const logGlobalError = (logger: ILoggerRepository, error: Error) => {
   }
 
   if (error instanceof Error) {
-    logger.error(`Unknown error: ${error}`);
+    logger.error(`Unknown error: ${error}`, error?.stack);
     return;
   }
 };

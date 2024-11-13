@@ -52,6 +52,7 @@
     })),
   ];
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: shareType = albumId ? SharedLinkType.Album : SharedLinkType.Individual;
   $: {
     if (!showMetadata) {

@@ -50,5 +50,5 @@
     {value}
     on:input={handleInput}
     {disabled}
-  />
+  ></textarea>
 </div>
