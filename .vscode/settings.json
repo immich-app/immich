@@ -40,5 +40,6 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
-  }
+  },
+  "vitest.disableWorkspaceWarning": true
 }

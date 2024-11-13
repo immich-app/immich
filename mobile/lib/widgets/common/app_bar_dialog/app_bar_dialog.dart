@@ -114,7 +114,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         Icons.logout_rounded,
         "profile_drawer_sign_out",
         () async {
-          if (isLoggingOut.value) return;
+          if (isLoggingOut.value) {
+            return;
+          }
+
           showDialog(
             context: context,
             builder: (BuildContext ctx) {
