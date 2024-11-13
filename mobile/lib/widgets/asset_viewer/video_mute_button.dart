@@ -16,6 +16,8 @@ class VideoMuteButton extends ConsumerWidget {
       onPressed: () =>
           ref.read(videoPlayerControlsProvider.notifier).toggleMute(),
       color: Colors.white,
+      padding: const EdgeInsets.all(0),
+      alignment: Alignment.centerRight,
     );
   }
 }
