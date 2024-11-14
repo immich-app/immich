@@ -6,15 +6,21 @@
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 </script>
 
 {#if $featureFlags.loaded}
   <FullscreenContainer title={data.meta.title} showMessage={!!$serverConfig.loginPageMessage}>
-    <p slot="message">
-      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-      {@html $serverConfig.loginPageMessage}
-    </p>
+    {#snippet message()}
+      <p>
+        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+        {@html $serverConfig.loginPageMessage}
+      </p>
+    {/snippet}
 
     <LoginForm
       onSuccess={async () => await goto(AppRoute.PHOTOS, { invalidateAll: true })}

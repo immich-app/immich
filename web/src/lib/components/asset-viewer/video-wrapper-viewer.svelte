@@ -4,12 +4,29 @@
   import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
   import PanoramaViewer from '$lib/components/asset-viewer/panorama-viewer.svelte';
 
-  export let assetId: string;
-  export let projectionType: string | null | undefined;
-  export let checksum: string;
-  export let loopVideo: boolean;
-  export let onPreviousAsset: () => void;
-  export let onNextAsset: () => void;
+  interface Props {
+    assetId: string;
+    projectionType: string | null | undefined;
+    checksum: string;
+    loopVideo: boolean;
+    onClose?: () => void;
+    onPreviousAsset?: () => void;
+    onNextAsset?: () => void;
+    onVideoEnded?: () => void;
+    onVideoStarted?: () => void;
+  }
+
+  let {
+    assetId,
+    projectionType,
+    checksum,
+    loopVideo,
+    onPreviousAsset,
+    onClose,
+    onNextAsset,
+    onVideoEnded,
+    onVideoStarted,
+  }: Props = $props();
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
@@ -21,7 +38,8 @@
     {assetId}
     {onPreviousAsset}
     {onNextAsset}
-    on:onVideoEnded
-    on:onVideoStarted
+    {onVideoEnded}
+    {onVideoStarted}
+    {onClose}
   />
 {/if}

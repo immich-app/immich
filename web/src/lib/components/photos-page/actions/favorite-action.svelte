@@ -12,15 +12,18 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-  export let onFavorite: OnFavorite;
+  interface Props {
+    onFavorite: OnFavorite;
+    menuItem?: boolean;
+    removeFavorite: boolean;
+  }
 
-  export let menuItem = false;
-  export let removeFavorite: boolean;
+  let { onFavorite, menuItem = false, removeFavorite }: Props = $props();
 
-  $: text = removeFavorite ? $t('remove_from_favorites') : $t('to_favorite');
-  $: icon = removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline;
+  let text = $derived(removeFavorite ? $t('remove_from_favorites') : $t('to_favorite'));
+  let icon = $derived(removeFavorite ? mdiHeartMinusOutline : mdiHeartOutline);
 
-  let loading = false;
+  let loading = $state(false);
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -65,8 +68,8 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
   {:else}
-    <CircleIconButton title={text} {icon} on:click={handleFavorite} />
+    <CircleIconButton title={text} {icon} onclick={handleFavorite} />
   {/if}
 {/if}

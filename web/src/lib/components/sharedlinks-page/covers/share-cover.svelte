@@ -6,10 +6,13 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { t } from 'svelte-i18n';
 
-  export let link: SharedLinkResponseDto;
-  export let preload = false;
-  let className = '';
-  export { className as class };
+  interface Props {
+    link: SharedLinkResponseDto;
+    preload?: boolean;
+    class?: string;
+  }
+
+  let { link, preload = false, class: className = '' }: Props = $props();
 </script>
 
 <div class="relative shrink-0 size-24">

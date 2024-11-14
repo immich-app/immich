@@ -10,7 +10,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiMerge, mdiPlus } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -21,20 +21,26 @@
   import PeopleList from './people-list.svelte';
   import { t } from 'svelte-i18n';
 
-  export let assetIds: string[];
-  export let personAssets: PersonResponseDto;
-  export let onConfirm: () => void;
-  export let onClose: () => void;
+  interface Props {
+    assetIds: string[];
+    personAssets: PersonResponseDto;
+    onConfirm: () => void;
+    onClose: () => void;
+    header?: Snippet;
+    merge?: Snippet;
+  }
 
-  let people: PersonResponseDto[] = [];
-  let selectedPerson: PersonResponseDto | null = null;
-  let disableButtons = false;
-  let showLoadingSpinnerCreate = false;
-  let showLoadingSpinnerReassign = false;
-  let hasSelection = false;
-  let screenHeight: number;
+  let { assetIds, personAssets, onConfirm, onClose, header, merge }: Props = $props();
 
-  $: peopleToNotShow = selectedPerson ? [personAssets, selectedPerson] : [personAssets];
+  let people: PersonResponseDto[] = $state([]);
+  let selectedPerson: PersonResponseDto | null = $state(null);
+  let disableButtons = $state(false);
+  let showLoadingSpinnerCreate = $state(false);
+  let showLoadingSpinnerReassign = $state(false);
+  let hasSelection = $state(false);
+  let screenHeight: number = $state(0);
+
+  let peopleToNotShow = $derived(selectedPerson ? [personAssets, selectedPerson] : [personAssets]);
 
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
@@ -117,17 +123,17 @@
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar {onClose}>
-    <svelte:fragment slot="leading">
-      <slot name="header" />
+    {#snippet leading()}
+      {@render header?.()}
       <div></div>
-    </svelte:fragment>
-    <svelte:fragment slot="trailing">
+    {/snippet}
+    {#snippet trailing()}
       <div class="flex gap-4">
         <Button
           title={$t('create_new_person_hint')}
           size={'sm'}
           disabled={disableButtons || hasSelection}
-          on:click={handleCreate}
+          onclick={handleCreate}
         >
           {#if !showLoadingSpinnerCreate}
             <Icon path={mdiPlus} size={18} />
@@ -140,7 +146,7 @@
           size={'sm'}
           title={$t('reassing_hint')}
           disabled={disableButtons || !hasSelection}
-          on:click={handleReassign}
+          onclick={handleReassign}
         >
           {#if !showLoadingSpinnerReassign}
             <div>
@@ -152,9 +158,9 @@
           <span class="ml-2"> {$t('reassign')}</span></Button
         >
       </div>
-    </svelte:fragment>
+    {/snippet}
   </ControlAppBar>
-  <slot name="merge" />
+  {@render merge?.()}
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
       {#if selectedPerson !== null}

@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import type { FormatXMLElementFn, PrimitiveType } from 'intl-messageformat';
   export type InterpolationValues = Record<string, PrimitiveType | FormatXMLElementFn<unknown>>;
 </script>
@@ -18,8 +18,13 @@
     tag?: string;
   };
 
-  export let key: Translations;
-  export let values: InterpolationValues = {};
+  interface Props {
+    key: Translations;
+    values?: InterpolationValues;
+    children?: import('svelte').Snippet<[{ tag?: string; message?: string }]>;
+  }
+
+  let { key, values = {}, children }: Props = $props();
 
   const getLocale = (locale?: string | null) => {
     if (locale == null) {
@@ -96,9 +101,9 @@
     }
   };
 
-  $: message = ($json(key) as string) || key;
-  $: locale = getLocale($i18nLocale);
-  $: parts = getParts(message, locale);
+  let message = $derived(($json(key) as string) || key);
+  let locale = $derived(getLocale($i18nLocale));
+  let parts = $derived(getParts(message, locale));
 </script>
 
 <!--
@@ -130,7 +135,7 @@ Result: Visit <a href="">docs</a> <strong>now</strong>
 -->
 {#each parts as { tag, message }}
   {#if tag}
-    <slot {tag} {message}>{message}</slot>
+    {#if children}{@render children({ tag, message })}{:else}{message}{/if}
   {:else}
     {message}
   {/if}

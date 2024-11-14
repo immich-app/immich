@@ -5,7 +5,11 @@
   import { t } from 'svelte-i18n';
   import NavigationArea from '../navigation-area.svelte';
 
-  export let onPreviousAsset: () => void;
+  interface Props {
+    onPreviousAsset: () => void;
+  }
+
+  let { onPreviousAsset }: Props = $props();
 </script>
 
 <svelte:window

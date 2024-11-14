@@ -10,29 +10,33 @@
   import Slider from '../elements/slider.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
 
-  export let onClose: () => void;
-  export let onSubmit: () => void;
-  export let onCancel: () => void;
-  export let oauthEnabled = false;
+  interface Props {
+    onClose: () => void;
+    onSubmit: () => void;
+    onCancel: () => void;
+    oauthEnabled?: boolean;
+  }
 
-  let error: string;
-  let success: string;
+  let { onClose, onSubmit, onCancel, oauthEnabled = false }: Props = $props();
 
-  let email = '';
-  let password = '';
-  let confirmPassword = '';
-  let name = '';
-  let shouldChangePassword = true;
-  let notify = true;
+  let error = $state('');
+  let success = $state('');
 
-  let canCreateUser = false;
-  let quotaSize: number | undefined;
-  let isCreatingUser = false;
+  let email = $state('');
+  let password = $state('');
+  let confirmPassword = $state('');
+  let name = $state('');
+  let shouldChangePassword = $state(true);
+  let notify = $state(true);
 
-  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null;
-  $: quotaSizeWarning = quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw;
+  let canCreateUser = $state(false);
+  let quotaSize: number | undefined = $state();
+  let isCreatingUser = $state(false);
 
-  $: {
+  let quotaSizeInBytes = $derived(quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
+  let quotaSizeWarning = $derived(quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw);
+
+  $effect(() => {
     if (password !== confirmPassword && confirmPassword.length > 0) {
       error = $t('password_does_not_match');
       canCreateUser = false;
@@ -40,7 +44,7 @@
       error = '';
       canCreateUser = true;
     }
-  }
+  });
 
   async function registerUser() {
     if (canCreateUser && !isCreatingUser) {
@@ -71,10 +75,15 @@
       }
     }
   }
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await registerUser();
+  };
 </script>
 
 <FullScreenModal title={$t('create_new_user')} showLogo {onClose}>
-  <form on:submit|preventDefault={registerUser} autocomplete="off" id="create-new-user-form">
+  <form {onsubmit} autocomplete="off" id="create-new-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" bind:value={email} type="email" required />
@@ -134,8 +143,9 @@
       <p class="text-sm text-immich-primary">{success}</p>
     {/if}
   </form>
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
+
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

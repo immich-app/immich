@@ -20,33 +20,38 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
 
-  export let asset: AssetResponseDto;
-  export let preloadAssets: AssetResponseDto[] | undefined = undefined;
-  export let element: HTMLDivElement | undefined = undefined;
-  export let haveFadeTransition = true;
-  export let sharedLink: SharedLinkResponseDto | undefined = undefined;
-  export let onPreviousAsset: (() => void) | null = null;
-  export let onNextAsset: (() => void) | null = null;
-  export let copyImage: (() => Promise<void>) | null = null;
-  export let zoomToggle: (() => void) | null = null;
+  interface Props {
+    asset: AssetResponseDto;
+    preloadAssets?: AssetResponseDto[] | undefined;
+    element?: HTMLDivElement | undefined;
+    haveFadeTransition?: boolean;
+    sharedLink?: SharedLinkResponseDto | undefined;
+    onPreviousAsset?: (() => void) | null;
+    onNextAsset?: (() => void) | null;
+    copyImage?: () => Promise<void>;
+    zoomToggle?: (() => void) | null;
+    onClose?: () => void;
+  }
+
+  let {
+    asset,
+    preloadAssets = undefined,
+    element = $bindable(),
+    haveFadeTransition = true,
+    sharedLink = undefined,
+    onPreviousAsset = null,
+    onNextAsset = null,
+    copyImage = $bindable(),
+    zoomToggle = $bindable(),
+  }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
 
-  let assetFileUrl: string = '';
-  let imageLoaded: boolean = false;
-  let imageError: boolean = false;
-  let forceUseOriginal: boolean = false;
-  let loader: HTMLImageElement;
+  let assetFileUrl: string = $state('');
+  let imageLoaded: boolean = $state(false);
+  let imageError: boolean = $state(false);
 
-  $: isWebCompatible = isWebCompatibleImage(asset);
-  $: useOriginalByDefault = isWebCompatible && $alwaysLoadOriginalFile;
-  $: useOriginalImage = useOriginalByDefault || forceUseOriginal;
-  // when true, will force loading of the original image
-  $: forceUseOriginal =
-    forceUseOriginal || asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible);
-
-  $: preload(useOriginalImage, preloadAssets);
-  $: imageLoaderUrl = getAssetUrl(asset.id, useOriginalImage, asset.checksum);
+  let loader = $state<HTMLImageElement>();
 
   photoZoomState.set({
     currentRotation: 0,
@@ -129,16 +134,31 @@
     const onerror = () => {
       imageError = imageLoaded = true;
     };
-    if (loader.complete) {
+    if (loader?.complete) {
       onload();
     }
-    loader.addEventListener('load', onload);
-    loader.addEventListener('error', onerror);
+    loader?.addEventListener('load', onload);
+    loader?.addEventListener('error', onerror);
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);
     };
   });
+  let isWebCompatible = $derived(isWebCompatibleImage(asset));
+  let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
+  // when true, will force loading of the original image
+
+  let forceUseOriginal: boolean = $derived(
+    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible),
+  );
+
+  let useOriginalImage = $derived(useOriginalByDefault || forceUseOriginal);
+
+  $effect(() => {
+    preload(useOriginalImage, preloadAssets);
+  });
+
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.checksum));
 </script>
 
 <svelte:window
@@ -150,15 +170,15 @@
 {#if imageError}
   <BrokenAsset class="text-xl" />
 {/if}
-<!-- svelte-ignore a11y-missing-attribute -->
+<!-- svelte-ignore a11y_missing_attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
 <div bind:this={element} class="relative h-full select-none">
   <img
     style="display:none"
     src={imageLoaderUrl}
     alt={$getAltText(asset)}
-    on:load={() => ((imageLoaded = true), (assetFileUrl = imageLoaderUrl))}
-    on:error={() => (imageError = imageLoaded = true)}
+    onload={() => ((imageLoaded = true), (assetFileUrl = imageLoaderUrl))}
+    onerror={() => (imageError = imageLoaded = true)}
   />
   {#if !imageLoaded}
     <div id="spinner" class="flex h-full items-center justify-center">
@@ -168,7 +188,7 @@
     <div
       use:zoomImageAction
       use:swipe
-      on:swipe={onSwipe}
+      onswipe={onSwipe}
       class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
     >

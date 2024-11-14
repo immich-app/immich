@@ -3,7 +3,11 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { t } from 'svelte-i18n';
 
-  export let assetStats: NonNullable<Parameters<typeof getAssetStatistics>[0]>;
+  interface Props {
+    assetStats: NonNullable<Parameters<typeof getAssetStatistics>[0]>;
+  }
+
+  let { assetStats }: Props = $props();
 </script>
 
 {#await getAssetStatistics(assetStats)}

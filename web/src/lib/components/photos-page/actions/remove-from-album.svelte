@@ -11,9 +11,13 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
-  export let onRemove: ((assetIds: string[]) => void) | undefined;
-  export let menuItem = false;
+  interface Props {
+    album: AlbumResponseDto;
+    onRemove: ((assetIds: string[]) => void) | undefined;
+    menuItem?: boolean;
+  }
+
+  let { album = $bindable(), onRemove, menuItem = false }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -57,5 +61,5 @@
 {#if menuItem}
   <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} onClick={removeFromAlbum} />
 {:else}
-  <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} on:click={removeFromAlbum} />
+  <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} onclick={removeFromAlbum} />
 {/if}

@@ -7,13 +7,17 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import TagAssetForm from '$lib/components/forms/tag-asset-form.svelte';
 
-  export let menuItem = false;
+  interface Props {
+    menuItem?: boolean;
+  }
+
+  let { menuItem = false }: Props = $props();
 
   const text = $t('tag');
   const icon = mdiTagMultipleOutline;
 
-  let loading = false;
-  let isOpen = false;
+  let loading = $state(false);
+  let isOpen = $state(false);
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -36,9 +40,9 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
   {:else}
-    <CircleIconButton title={text} {icon} on:click={handleOpen} />
+    <CircleIconButton title={text} {icon} onclick={handleOpen} />
   {/if}
 {/if}
 

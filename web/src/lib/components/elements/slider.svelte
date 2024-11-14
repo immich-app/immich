@@ -1,15 +1,25 @@
 <script lang="ts">
-  /**
-   * Unique identifier for the checkbox element, used to associate labels with the input element.
-   */
-  export let id: string;
-  /**
-   * Optional aria-describedby attribute to associate the checkbox with a description.
-   */
-  export let ariaDescribedBy: string | undefined = undefined;
-  export let checked = false;
-  export let disabled = false;
-  export let onToggle: ((checked: boolean) => void) | undefined = undefined;
+  interface Props {
+    /**
+     * Unique identifier for the checkbox element, used to associate labels with the input element.
+     */
+    id: string;
+    /**
+     * Optional aria-describedby attribute to associate the checkbox with a description.
+     */
+    ariaDescribedBy?: string | undefined;
+    checked?: boolean;
+    disabled?: boolean;
+    onToggle?: ((checked: boolean) => void) | undefined;
+  }
+
+  let {
+    id,
+    ariaDescribedBy = undefined,
+    checked = $bindable(false),
+    disabled = false,
+    onToggle = undefined,
+  }: Props = $props();
 
   const handleToggle = (event: Event) => onToggle?.((event.target as HTMLInputElement).checked);
 </script>
@@ -20,7 +30,7 @@
     class="disabled::cursor-not-allowed h-0 w-0 opacity-0 peer"
     type="checkbox"
     bind:checked
-    on:click={handleToggle}
+    onclick={handleToggle}
     {disabled}
     aria-describedby={ariaDescribedBy}
   />

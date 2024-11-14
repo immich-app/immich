@@ -3,11 +3,14 @@
   import { mdiImageBrokenVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  let className = '';
-  export { className as class };
-  export let hideMessage = false;
-  export let width: string | undefined = undefined;
-  export let height: string | undefined = undefined;
+  interface Props {
+    class?: string;
+    hideMessage?: boolean;
+    width?: string | undefined;
+    height?: string | undefined;
+  }
+
+  let { class: className = '', hideMessage = false, width = undefined, height = undefined }: Props = $props();
 </script>
 
 <div

@@ -4,17 +4,34 @@
   import { mdiInformationOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
+  import type { Snippet } from 'svelte';
 
-  export let title: string;
-  export let routeId: string;
-  export let icon: string;
-  export let flippedLogo = false;
-  export let isSelected = false;
-  export let preloadData = true;
+  interface Props {
+    title: string;
+    routeId: string;
+    icon: string;
+    flippedLogo?: boolean;
+    isSelected?: boolean;
+    preloadData?: boolean;
+    moreInformation?: Snippet;
+  }
 
-  let showMoreInformation = false;
-  $: routePath = resolveRoute(routeId, {});
-  $: isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+  let {
+    title,
+    routeId,
+    icon,
+    flippedLogo = false,
+    isSelected = $bindable(false),
+    preloadData = true,
+    moreInformation,
+  }: Props = $props();
+
+  let showMoreInformation = $state(false);
+  let routePath = $derived(resolveRoute(routeId, {}));
+
+  $effect(() => {
+    isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+  });
 </script>
 
 <a
@@ -37,12 +54,12 @@
   <div
     class="h-0 overflow-hidden transition-[height] delay-1000 duration-100 sm:group-hover:h-auto group-hover:sm:overflow-visible md:h-auto md:overflow-visible"
   >
-    {#if $$slots.moreInformation}
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
+    {#if moreInformation}
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="relative flex cursor-default select-none justify-center"
-        on:mouseenter={() => (showMoreInformation = true)}
-        on:mouseleave={() => (showMoreInformation = false)}
+        onmouseenter={() => (showMoreInformation = true)}
+        onmouseleave={() => (showMoreInformation = false)}
       >
         <div class="p-1 text-gray-600 hover:cursor-help dark:text-gray-400">
           <Icon path={mdiInformationOutline} />
@@ -55,7 +72,7 @@
               class:hidden={!showMoreInformation}
               transition:fade={{ duration: 200 }}
             >
-              <slot name="moreInformation" />
+              {@render moreInformation?.()}
             </div>
           </div>
         {/if}
