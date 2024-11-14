@@ -84,7 +84,7 @@
     filter = {
       query: '',
       queryType: 'smart',
-      personIds: new Set(),
+      personIds: new SvelteSet(),
       location: {},
       camera: {},
       date: {},
