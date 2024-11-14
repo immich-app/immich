@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 
 @pragma('vm:prefer-inline')
 String _formatDuration(Duration position) {
@@ -24,8 +23,8 @@ class FormattedDuration extends StatelessWidget {
         _formatDuration(data),
         style: const TextStyle(
           fontSize: 14.0,
-          color: whiteOpacity75,
-          fontWeight: FontWeight.normal,
+          color: Colors.white,
+          fontWeight: FontWeight.w500,
         ),
         textAlign: TextAlign.center,
       ),
