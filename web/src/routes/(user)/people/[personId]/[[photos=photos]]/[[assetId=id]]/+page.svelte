@@ -90,6 +90,7 @@
   let viewMode: ViewMode = ViewMode.VIEW_ASSETS;
   let isEditingName = false;
   let previousRoute: string = AppRoute.EXPLORE;
+  let afterMergeRoute: string | undefined = undefined;
   let people: PersonResponseDto[] = [];
   let personMerge1: PersonResponseDto;
   let personMerge2: PersonResponseDto;
@@ -118,6 +119,11 @@
     const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
       previousRoute = getPreviousRoute;
+    }
+
+    const getAfterMergeRoute = $page.url.searchParams.get(QueryParameter.AFTER_MERGE_ROUTE);
+    if (getAfterMergeRoute && !isExternalUrl(getAfterMergeRoute)) {
+      afterMergeRoute = getAfterMergeRoute;
     }
     if (action == 'merge') {
       viewMode = ViewMode.MERGE_PEOPLE;
@@ -188,6 +194,10 @@
   };
 
   const handleMerge = async (person: PersonResponseDto) => {
+    if (afterMergeRoute) {
+      await goto(afterMergeRoute);
+      return;
+    }
     await updateAssetCount();
     await handleGoBack();
 
