@@ -104,8 +104,6 @@
   let isShowActivity = $state(false);
   let isLiked: ActivityResponseDto | null = $state(null);
   let reactions: ActivityResponseDto[] = $state([]);
-  let globalWidth: number = $state(0);
-  let assetGridWidth: number = $derived(isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
   const assetInteractionStore = createAssetInteractionStore();
@@ -430,7 +428,7 @@
   });
 </script>
 
-<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
+<div class="flex overflow-hidden">
   <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
@@ -568,10 +566,7 @@
       {/if}
     {/if}
 
-    <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
-      style={`width:${assetGridWidth}px`}
-    >
+    <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
       <!-- Use key because AssetGrid can't deal with changing stores -->
       {#key albumKey}
         {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
