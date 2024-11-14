@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, afterNavigate } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
@@ -50,9 +50,16 @@
     await refresh();
     editSharedLink = null;
   };
+
+  let backUrl: string = AppRoute.SHARING;
+
+  afterNavigate(({ from }) => {
+    let url: string | undefined = from?.url?.pathname;
+    backUrl = url || AppRoute.SHARING;
+  });
 </script>
 
-<ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
+<ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
   {#snippet leading()}
     {$t('shared_links')}
   {/snippet}
