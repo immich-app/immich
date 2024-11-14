@@ -1,5 +1,5 @@
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec, VideoContainer } from 'src/enum';
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/enum';
 import {
   AudioStreamInfo,
   BitrateDistribution,
@@ -384,11 +384,9 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
-    if (format?.formatName === 'mpegts') {
-      return ['-sws_flags accurate_rnd+full_chroma_int'];
-    } else {
-      return ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
-    }
+    return format?.formatName === 'mpegts'
+      ? ['-sws_flags accurate_rnd+full_chroma_int']
+      : ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
   }
 
   getBaseOutputOptions() {
