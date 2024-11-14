@@ -14,6 +14,7 @@ import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
+import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
 import 'package:immich_mobile/pages/library/places/places_collection.page.dart';
@@ -271,6 +272,10 @@ class AppRouter extends RootStackRouter {
       page: PlacesCollectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    AutoRoute(
+      page: NativeVideoViewerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
   ];
 }

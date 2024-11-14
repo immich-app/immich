@@ -1080,6 +1080,70 @@ class MemoryRouteArgs {
 }
 
 /// generated route for
+/// [NativeVideoViewerPage]
+class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
+  NativeVideoViewerRoute({
+    Key? key,
+    required Asset asset,
+    required Widget placeholder,
+    bool showControls = true,
+    Duration hideControlsTimer = const Duration(seconds: 5),
+    List<PageRouteInfo>? children,
+  }) : super(
+          NativeVideoViewerRoute.name,
+          args: NativeVideoViewerRouteArgs(
+            key: key,
+            asset: asset,
+            placeholder: placeholder,
+            showControls: showControls,
+            hideControlsTimer: hideControlsTimer,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'NativeVideoViewerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<NativeVideoViewerRouteArgs>();
+      return NativeVideoViewerPage(
+        key: args.key,
+        asset: args.asset,
+        placeholder: args.placeholder,
+        showControls: args.showControls,
+        hideControlsTimer: args.hideControlsTimer,
+      );
+    },
+  );
+}
+
+class NativeVideoViewerRouteArgs {
+  const NativeVideoViewerRouteArgs({
+    this.key,
+    required this.asset,
+    required this.placeholder,
+    this.showControls = true,
+    this.hideControlsTimer = const Duration(seconds: 5),
+  });
+
+  final Key? key;
+
+  final Asset asset;
+
+  final Widget placeholder;
+
+  final bool showControls;
+
+  final Duration hideControlsTimer;
+
+  @override
+  String toString() {
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer}';
+  }
+}
+
+/// generated route for
 /// [PartnerDetailPage]
 class PartnerDetailRoute extends PageRouteInfo<PartnerDetailRouteArgs> {
   PartnerDetailRoute({
