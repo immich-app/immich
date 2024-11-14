@@ -4,6 +4,7 @@
   import Slider from '$lib/components/elements/slider.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -12,7 +13,7 @@
     disabled?: boolean;
     isEdited?: boolean;
     onToggle?: (isChecked: boolean) => void;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let {

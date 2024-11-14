@@ -18,7 +18,7 @@
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { copyToClipboard, setKey } from '$lib/utils';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
@@ -26,7 +26,7 @@
   import Error from '$lib/components/error.svelte';
   import { shortcut } from '$lib/actions/shortcut';
   interface Props {
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { children }: Props = $props();

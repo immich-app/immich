@@ -4,6 +4,7 @@
   import { fade } from 'svelte/transition';
   import ModalHeader from '$lib/components/shared-components/modal-header.svelte';
   import { generateId } from '$lib/utils/generate-id';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     onClose: () => void;
@@ -24,8 +25,8 @@
      * - `auto`: fits the width of the modal content, up to a maximum of 32rem
      */
     width?: 'extra-wide' | 'wide' | 'narrow' | 'auto';
-    stickyBottom?: import('svelte').Snippet;
-    children?: import('svelte').Snippet;
+    stickyBottom?: Snippet;
+    children?: Snippet;
   }
 
   let {

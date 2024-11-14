@@ -3,6 +3,7 @@
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -12,7 +13,7 @@
     options: ComboBoxOption[];
     selectedOption: ComboBoxOption;
     onSelect: (combobox: ComboBoxOption | undefined) => void;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let {

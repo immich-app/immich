@@ -18,6 +18,8 @@
 </script>
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
     type?: string;
     href?: string;
@@ -28,7 +30,7 @@
     fullwidth?: boolean;
     border?: boolean;
     class?: string;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
     onclick?: (event: MouseEvent) => void;
     onfocus?: () => void;
     onblur?: () => void;

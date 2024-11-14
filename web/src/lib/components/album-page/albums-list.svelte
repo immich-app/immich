@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { groupBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
@@ -48,7 +48,7 @@
     allowEdit?: boolean;
     showOwner?: boolean;
     albumGroupIds?: string[];
-    empty?: import('svelte').Snippet;
+    empty?: Snippet;
   }
 
   let {

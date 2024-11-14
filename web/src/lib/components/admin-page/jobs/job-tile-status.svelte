@@ -3,9 +3,11 @@
 </script>
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
     color: Color;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { color, children }: Props = $props();

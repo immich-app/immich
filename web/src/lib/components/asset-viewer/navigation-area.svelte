@@ -1,8 +1,10 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
     onClick: (e: MouseEvent) => void;
     label: string;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { onClick, label, children }: Props = $props();

@@ -3,6 +3,7 @@
   import { fly } from 'svelte/transition';
   import Dropdown, { type RenderedOption } from '$lib/components/elements/dropdown.svelte';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -11,7 +12,7 @@
     selectedOption: RenderedOption;
     isEdited?: boolean;
     onToggle: (option: RenderedOption) => void;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let {

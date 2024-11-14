@@ -4,11 +4,12 @@
 
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     href?: string;
     color?: Color;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
     onclick?: (e: MouseEvent) => void;
     title?: string;
     disabled?: boolean;

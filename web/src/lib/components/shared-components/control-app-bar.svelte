@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
 
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
@@ -14,9 +14,9 @@
     tailwindClasses?: string;
     forceDark?: boolean;
     onClose?: () => void;
-    leading?: import('svelte').Snippet;
-    children?: import('svelte').Snippet;
-    trailing?: import('svelte').Snippet;
+    leading?: Snippet;
+    children?: Snippet;
+    trailing?: Snippet;
   }
 
   let {

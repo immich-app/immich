@@ -7,6 +7,7 @@
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     hideNavbar?: boolean;
@@ -15,10 +16,10 @@
     description?: string | undefined;
     scrollbar?: boolean;
     admin?: boolean;
-    header?: import('svelte').Snippet;
-    sidebar?: import('svelte').Snippet;
-    buttons?: import('svelte').Snippet;
-    children?: import('svelte').Snippet;
+    header?: Snippet;
+    sidebar?: Snippet;
+    buttons?: Snippet;
+    children?: Snippet;
   }
 
   let {

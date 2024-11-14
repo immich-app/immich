@@ -2,6 +2,7 @@
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     isVisible?: boolean;
@@ -14,7 +15,7 @@
     ariaActiveDescendant?: string | undefined;
     menuElement?: HTMLUListElement | undefined;
     onClose?: (() => void) | undefined;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let {

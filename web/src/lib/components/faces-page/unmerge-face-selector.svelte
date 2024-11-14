@@ -10,7 +10,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiMerge, mdiPlus } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -26,8 +26,8 @@
     personAssets: PersonResponseDto;
     onConfirm: () => void;
     onClose: () => void;
-    header?: import('svelte').Snippet;
-    merge?: import('svelte').Snippet;
+    header?: Snippet;
+    merge?: Snippet;
   }
 
   let { assetIds, personAssets, onConfirm, onClose, header, merge }: Props = $props();

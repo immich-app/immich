@@ -1,11 +1,12 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import ImmichLogo from './immich-logo.svelte';
 
   interface Props {
     title: string;
-    message?: import('svelte').Snippet;
+    message?: Snippet;
     showMessage?: boolean;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { title, message, showMessage = message != undefined, children }: Props = $props();

@@ -1,6 +1,6 @@
 <script module lang="ts">
   import { handlePromiseError } from '$lib/utils';
-  import { tick } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
 
   /**
    * Usage: <div use:portal={'css selector'}> or <div use:portal={document.body}>
@@ -69,7 +69,7 @@ Used for every occurrence of an HTML tag in a message
      * DOM Element or CSS Selector
      */
     target?: HTMLElement | string;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { target = 'body', children }: Props = $props();

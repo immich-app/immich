@@ -4,7 +4,7 @@
   import { fly } from 'svelte/transition';
   import PasswordField from '../password-field.svelte';
   import { t } from 'svelte-i18n';
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
   import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
@@ -21,7 +21,7 @@
     isEdited?: boolean;
     autofocus?: boolean;
     passwordAutocomplete?: AutoFill;
-    descriptionSnippet?: import('svelte').Snippet;
+    descriptionSnippet?: Snippet;
   }
 
   let {

@@ -22,7 +22,7 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { throttle } from 'lodash-es';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -55,8 +55,8 @@
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: AssetResponseDto) => void;
     onEscape?: () => void;
-    children?: import('svelte').Snippet;
-    empty?: import('svelte').Snippet;
+    children?: Snippet;
+    empty?: Snippet;
   }
 
   let {

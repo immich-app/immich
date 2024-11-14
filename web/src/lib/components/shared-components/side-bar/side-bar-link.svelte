@@ -4,6 +4,7 @@
   import { mdiInformationOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -12,7 +13,7 @@
     flippedLogo?: boolean;
     isSelected?: boolean;
     preloadData?: boolean;
-    moreInformation?: import('svelte').Snippet;
+    moreInformation?: Snippet;
   }
 
   let {

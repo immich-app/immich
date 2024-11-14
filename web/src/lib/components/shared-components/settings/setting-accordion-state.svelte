@@ -11,6 +11,7 @@
   import { page } from '$app/stores';
   import { handlePromiseError } from '$lib/utils';
   import { goto } from '$app/navigation';
+  import type { Snippet } from 'svelte';
 
   const getParamValues = (param: string) => {
     return new Set(($page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
@@ -19,7 +20,7 @@
   interface Props {
     queryParam: string;
     state?: Writable<AccordionState>;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { queryParam, state = writable(getParamValues(queryParam)), children }: Props = $props();

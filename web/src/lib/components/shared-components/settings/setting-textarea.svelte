@@ -2,6 +2,7 @@
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     value: string;
@@ -10,7 +11,7 @@
     required?: boolean;
     disabled?: boolean;
     isEdited?: boolean;
-    descriptionSnippet?: import('svelte').Snippet;
+    descriptionSnippet?: Snippet;
   }
 
   let {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { slide } from 'svelte/transition';
   import { getAccordionState } from './setting-accordion-state.svelte';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
 
   const accordionState = getAccordionState();
@@ -13,8 +13,8 @@
     isOpen?: boolean;
     autoScrollTo?: boolean;
     icon?: string;
-    subtitleSnippet?: import('svelte').Snippet;
-    children?: import('svelte').Snippet;
+    subtitleSnippet?: Snippet;
+    children?: Snippet;
   }
 
   let {

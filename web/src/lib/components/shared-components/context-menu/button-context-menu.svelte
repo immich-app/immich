@@ -14,6 +14,7 @@
   import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import { clickOutside } from '$lib/actions/click-outside';
   import { shortcuts } from '$lib/actions/shortcut';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     icon: string;
@@ -34,7 +35,7 @@
      */
     buttonClass?: string | undefined;
     hideContent?: boolean;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let {

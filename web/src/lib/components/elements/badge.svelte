@@ -4,10 +4,12 @@
 </script>
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
     color?: Color;
     rounded?: Rounded;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { color = 'primary', rounded = true, children }: Props = $props();

@@ -17,12 +17,13 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     assets: Set<AssetResponseDto>;
     clearSelect: () => void;
     ownerId?: string | undefined;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { assets, clearSelect, ownerId = undefined, children }: Props = $props();

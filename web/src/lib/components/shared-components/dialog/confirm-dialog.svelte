@@ -3,6 +3,7 @@
   import Button from '../../elements/buttons/button.svelte';
   import type { Color } from '$lib/components/elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title?: string;
@@ -16,7 +17,7 @@
     width?: 'wide' | 'narrow';
     onCancel: () => void;
     onConfirm: () => void;
-    promptSnippet?: import('svelte').Snippet;
+    promptSnippet?: Snippet;
   }
 
   let {

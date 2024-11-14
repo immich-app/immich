@@ -22,6 +22,7 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -32,7 +33,7 @@
     onReset: SettingsResetEvent;
     onSave: SettingsSaveEvent;
     duration?: number;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let {

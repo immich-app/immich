@@ -5,8 +5,9 @@
   import { page } from '$app/stores';
 
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import type { Snippet } from 'svelte';
   interface Props {
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { children }: Props = $props();

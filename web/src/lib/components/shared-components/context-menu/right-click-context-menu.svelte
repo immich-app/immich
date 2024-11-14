@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tick } from 'svelte';
+  import { tick, type Snippet } from 'svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
   import { shortcuts } from '$lib/actions/shortcut';
   import { generateId } from '$lib/utils/generate-id';
@@ -13,7 +13,7 @@
     y?: number;
     isOpen?: boolean;
     onClose: (() => unknown) | undefined;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
   }
 
   let { title, direction = 'right', x = 0, y = 0, isOpen = false, onClose, children }: Props = $props();

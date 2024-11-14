@@ -44,6 +44,7 @@
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -59,7 +60,7 @@
     onShowDetail: () => void;
     // export let showEditorHandler: () => void;
     onClose: () => void;
-    motionPhoto?: import('svelte').Snippet;
+    motionPhoto?: Snippet;
   }
 
   let {

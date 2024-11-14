@@ -3,10 +3,12 @@
 </script>
 
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   interface Props {
     color: Colors;
     disabled?: boolean;
-    children?: import('svelte').Snippet;
+    children?: Snippet;
     onClick?: () => void;
   }
 
