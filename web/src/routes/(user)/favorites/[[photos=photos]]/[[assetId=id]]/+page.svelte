@@ -20,6 +20,8 @@
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   interface Props {
     data: PageData;
@@ -53,6 +55,9 @@
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
