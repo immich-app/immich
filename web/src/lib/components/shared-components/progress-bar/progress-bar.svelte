@@ -1,11 +1,5 @@
-<script module lang="ts">
-  export enum ProgressBarStatus {
-    Playing = 'playing',
-    Paused = 'paused',
-  }
-</script>
-
 <script lang="ts">
+  import { ProgressBarStatus } from '$lib/constants';
   import { handlePromiseError } from '$lib/utils';
 
   import { onMount } from 'svelte';
