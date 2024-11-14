@@ -34,7 +34,7 @@ const DuplicatedAssetSchema = CollectionSchema(
   getId: _duplicatedAssetGetId,
   getLinks: _duplicatedAssetGetLinks,
   attach: _duplicatedAssetAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _duplicatedAssetEstimateSize(

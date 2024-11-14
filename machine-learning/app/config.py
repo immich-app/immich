@@ -6,7 +6,8 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseModel
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
 from uvicorn import Server
@@ -14,11 +15,22 @@ from uvicorn.workers import UvicornWorker
 
 
 class PreloadModelData(BaseModel):
-    clip: str | None
-    facial_recognition: str | None
+    clip: str | None = None
+    facial_recognition: str | None = None
+
+
+class MaxBatchSize(BaseModel):
+    facial_recognition: int | None = None
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix="MACHINE_LEARNING_",
+        case_sensitive=False,
+        env_nested_delimiter="__",
+        protected_namespaces=("settings_",),
+    )
+
     cache_folder: Path = Path("/cache")
     model_ttl: int = 300
     model_ttl_poll_s: int = 10
@@ -33,11 +45,7 @@ class Settings(BaseSettings):
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2
     preload: PreloadModelData | None = None
-
-    class Config:
-        env_prefix = "MACHINE_LEARNING_"
-        case_sensitive = False
-        env_nested_delimiter = "__"
+    max_batch_size: MaxBatchSize | None = None
 
     @property
     def device_id(self) -> str:
@@ -45,11 +53,10 @@ class Settings(BaseSettings):
 
 
 class LogSettings(BaseSettings):
+    model_config = SettingsConfigDict(case_sensitive=False)
+
     immich_log_level: str = "info"
     no_color: bool = False
-
-    class Config:
-        case_sensitive = False
 
 
 _clean_name = str.maketrans(":\\/", "___", ".")

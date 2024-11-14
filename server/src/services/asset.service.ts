@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
+import { OnJob } from 'src/decorators';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
@@ -21,15 +22,15 @@ import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, Permission } from 'src/enum';
 import {
-  IAssetDeleteJob,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
   JobName,
+  JobOf,
   JobStatus,
+  QueueName,
 } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
@@ -86,14 +87,13 @@ export class AssetService extends BaseService {
   }
 
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_READ, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [id] });
 
     const asset = await this.assetRepository.getById(
       id,
       {
         exifInfo: true,
         sharedLinks: true,
-        smartInfo: true,
         tags: true,
         owner: true,
         faces: {
@@ -135,7 +135,7 @@ export class AssetService extends BaseService {
   }
 
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
     const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
@@ -161,7 +161,6 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      smartInfo: true,
       tags: true,
       faces: {
         person: true,
@@ -178,7 +177,7 @@ export class AssetService extends BaseService {
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
     const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids });
+    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
     for (const id of ids) {
       await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
@@ -187,6 +186,7 @@ export class AssetService extends BaseService {
     await this.assetRepository.updateAll(ids, options);
   }
 
+  @OnJob({ name: JobName.ASSET_DELETION_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleAssetDeletionCheck(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
@@ -212,7 +212,8 @@ export class AssetService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeleteJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.ASSET_DELETION, queue: QueueName.BACKGROUND_TASK })
+  async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {
@@ -275,7 +276,7 @@ export class AssetService extends BaseService {
   async deleteAll(auth: AuthDto, dto: AssetBulkDeleteDto): Promise<void> {
     const { ids, force } = dto;
 
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_DELETE, ids });
+    await this.requireAccess({ auth, permission: Permission.ASSET_DELETE, ids });
     await this.assetRepository.updateAll(ids, {
       deletedAt: new Date(),
       status: force ? AssetStatus.DELETED : AssetStatus.TRASHED,
@@ -284,7 +285,7 @@ export class AssetService extends BaseService {
   }
 
   async run(auth: AuthDto, dto: AssetJobsDto) {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
+    await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds });
 
     const jobs: JobItem[] = [];
 

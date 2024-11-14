@@ -202,7 +202,7 @@
       return;
     }
     try {
-      await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
+      person = await updatePerson({ id: person.id, personUpdateDto: { featureFaceAssetId: asset.id } });
       notificationController.show({ message: $t('feature_photo_updated'), type: NotificationType.Info });
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_feature_photo'));
@@ -253,7 +253,7 @@
     try {
       isEditingName = false;
 
-      await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
+      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
         message: $t('change_name_successfully'),

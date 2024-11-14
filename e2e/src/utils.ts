@@ -68,6 +68,7 @@ export const immichCli = (args: string[]) =>
   executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]).promise;
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
+export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
@@ -373,8 +374,8 @@ export const utils = {
   },
 
   createDirectory: (path: string) => {
-    if (!existsSync(dirname(path))) {
-      mkdirSync(dirname(path), { recursive: true });
+    if (!existsSync(path)) {
+      mkdirSync(path, { recursive: true });
     }
   },
 
@@ -391,7 +392,7 @@ export const utils = {
       return;
     }
 
-    rmSync(path);
+    rmSync(path, { recursive: true });
   },
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),

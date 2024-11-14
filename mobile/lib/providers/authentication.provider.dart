@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
@@ -41,6 +40,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final StateNotifierProviderRef<AuthenticationNotifier, AuthenticationState>
       _ref;
   final _log = Logger("AuthenticationNotifier");
+
+  static const Duration _timeoutDuration = Duration(seconds: 7);
 
   Future<bool> login(
     String email,
@@ -103,19 +104,21 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       await _apiService.authenticationApi
           .logout()
+          .timeout(_timeoutDuration)
           .then((_) => log.info("Logout was successful for $userEmail"))
           .onError(
             (error, stackTrace) =>
                 log.severe("Logout failed for $userEmail", error, stackTrace),
           );
-
+    } catch (e, stack) {
+      log.severe('Logout failed', e, stack);
+    } finally {
       await Future.wait([
         clearAssetsAndAlbums(_db),
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
       ]);
       _ref.invalidate(albumProvider);
-      _ref.invalidate(sharedAlbumProvider);
 
       state = state.copyWith(
         deviceId: "",
@@ -127,8 +130,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         shouldChangePassword: false,
         isAuthenticated: false,
       );
-    } catch (e, stack) {
-      log.severe('Logout failed', e, stack);
     }
   }
 
@@ -170,10 +171,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     UserPreferencesResponseDto? userPreferences;
     try {
       final responses = await Future.wait([
-        _apiService.usersApi.getMyUser().timeout(const Duration(seconds: 7)),
-        _apiService.usersApi
-            .getMyPreferences()
-            .timeout(const Duration(seconds: 7)),
+        _apiService.usersApi.getMyUser().timeout(_timeoutDuration),
+        _apiService.usersApi.getMyPreferences().timeout(_timeoutDuration),
       ]);
       userResponse = responses[0] as UserAdminResponseDto;
       userPreferences = responses[1] as UserPreferencesResponseDto;

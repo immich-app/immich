@@ -5,6 +5,8 @@ import { render, screen } from '@testing-library/svelte';
 import { init, locale, register, waitLocale, type Translations } from 'svelte-i18n';
 import { describe } from 'vitest';
 
+const getSanitizedHTML = (container: HTMLElement) => container.innerHTML.replaceAll('<!---->', '');
+
 describe('FormatMessage component', () => {
   beforeAll(async () => {
     register('en', () =>
@@ -57,7 +59,7 @@ describe('FormatMessage component', () => {
       key: 'html' as Translations,
       values: { name: 'test' },
     });
-    expect(container.innerHTML).toBe('Hello <strong>test</strong>');
+    expect(getSanitizedHTML(container)).toBe('Hello <strong>test</strong>');
   });
 
   it('renders a message with html and plural', () => {
@@ -65,7 +67,7 @@ describe('FormatMessage component', () => {
       key: 'plural' as Translations,
       values: { count: 1 },
     });
-    expect(container.innerHTML).toBe('You have <strong>1 item</strong>');
+    expect(getSanitizedHTML(container)).toBe('You have <strong>1 item</strong>');
   });
 
   it('protects agains XSS injection', () => {
@@ -85,7 +87,7 @@ describe('FormatMessage component', () => {
       key: 'plural_with_html' as Translations,
       values: { count: 10 },
     });
-    expect(container.innerHTML).toBe('You have <strong>10</strong> items');
+    expect(getSanitizedHTML(container)).toBe('You have <strong>10</strong> items');
   });
 
   it('supports html tags inside select', () => {
@@ -93,7 +95,7 @@ describe('FormatMessage component', () => {
       key: 'select_with_html' as Translations,
       values: { status: true },
     });
-    expect(container.innerHTML).toBe('Item is <strong>disabled</strong>');
+    expect(getSanitizedHTML(container)).toBe('Item is <strong>disabled</strong>');
   });
 
   it('supports html tags inside selectordinal', () => {
@@ -101,6 +103,6 @@ describe('FormatMessage component', () => {
       key: 'ordinal_with_html' as Translations,
       values: { count: 4 },
     });
-    expect(container.innerHTML).toBe('<strong>4th</strong> item');
+    expect(getSanitizedHTML(container)).toBe('<strong>4th</strong> item');
   });
 });

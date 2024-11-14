@@ -266,8 +266,8 @@ class SearchFilter {
     AssetType? mediaType,
   }) {
     return SearchFilter(
-      context: context ?? this.context,
-      filename: filename ?? this.filename,
+      context: context,
+      filename: filename,
       people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,

@@ -113,7 +113,10 @@
     }}
     on:timeupdate={({ currentTarget }) => {
       const remaining = currentTarget.duration - currentTarget.currentTime;
-      remainingSeconds = Math.min(Math.ceil(remaining), durationInSeconds);
+      remainingSeconds = Math.min(
+        Math.ceil(Number.isNaN(remaining) ? Number.POSITIVE_INFINITY : remaining),
+        durationInSeconds,
+      );
     }}
-  />
+  ></video>
 {/if}

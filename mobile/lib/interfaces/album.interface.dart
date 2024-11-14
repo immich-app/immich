@@ -2,6 +2,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
+import 'package:immich_mobile/models/albums/album_search.model.dart';
 
 abstract interface class IAlbumRepository implements IDatabaseRepository {
   Future<Album> create(Album album);
@@ -38,6 +39,8 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
   Future<void> removeAssets(Album album, List<Asset> assets);
 
   Future<Album> recalculateMetadata(Album album);
+
+  Future<List<Album>> search(String searchTerm, QuickFilterMode filterMode);
 }
 
 enum AlbumSort { remoteId, localId }

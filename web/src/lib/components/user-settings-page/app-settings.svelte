@@ -33,6 +33,7 @@
   });
   $: selectedDate = `${formattedDate} ${timePortion}`;
   $: editedLocale = findLocale($locale).code;
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: selectedOption = {
     value: findLocale(editedLocale).code || fallbackLocale.code,
     label: findLocale(editedLocale).name || fallbackLocale.name,

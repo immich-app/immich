@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/models/search/search_result.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -44,7 +46,7 @@ class SearchService {
     }
   }
 
-  Future<List<Asset>?> search(SearchFilter filter, int page) async {
+  Future<SearchResult?> search(SearchFilter filter, int page) async {
     try {
       SearchResponseDto? response;
       AssetTypeEnum? type;
@@ -103,8 +105,12 @@ class SearchService {
         return null;
       }
 
-      return _assetRepository
-          .getAllByRemoteId(response.assets.items.map((e) => e.id));
+      return SearchResult(
+        assets: await _assetRepository.getAllByRemoteId(
+          response.assets.items.map((e) => e.id),
+        ),
+        nextPage: response.assets.nextPage?.toInt(),
+      );
     } catch (error, stackTrace) {
       _log.severe("Failed to search for assets", error, stackTrace);
     }

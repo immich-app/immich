@@ -44,6 +44,8 @@
     return personIsHidden;
   };
 
+  // svelte-ignore reactive_declaration_non_reactive_property
+  // svelte-ignore reactive_declaration_module_script_dependency
   $: toggleButtonOptions = ((): Record<ToggleVisibility, { icon: string; label: string }> => {
     return {
       [ToggleVisibility.HIDE_ALL]: { icon: mdiEyeOff, label: $t('hide_all_people') },
@@ -145,7 +147,7 @@
     {@const hidden = personIsHidden[person.id]}
     <button
       type="button"
-      class="group relative"
+      class="group relative w-full h-full"
       on:click={() => (personIsHidden[person.id] = !hidden)}
       aria-pressed={hidden}
       aria-label={person.name ? $t('hide_named_person', { values: { name: person.name } }) : $t('hide_person')}

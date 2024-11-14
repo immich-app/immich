@@ -3,6 +3,28 @@ export enum AuthType {
   OAUTH = 'oauth',
 }
 
+export enum ImmichCookie {
+  ACCESS_TOKEN = 'immich_access_token',
+  AUTH_TYPE = 'immich_auth_type',
+  IS_AUTHENTICATED = 'immich_is_authenticated',
+  SHARED_LINK_TOKEN = 'immich_shared_link_token',
+}
+
+export enum ImmichHeader {
+  API_KEY = 'x-api-key',
+  USER_TOKEN = 'x-immich-user-token',
+  SESSION_TOKEN = 'x-immich-session-token',
+  SHARED_LINK_KEY = 'x-immich-share-key',
+  CHECKSUM = 'x-immich-checksum',
+  CID = 'x-immich-cid',
+}
+
+export enum ImmichQuery {
+  SHARED_LINK_KEY = 'key',
+  API_KEY = 'apiKey',
+  SESSION_KEY = 'sessionKey',
+}
+
 export enum AssetType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
@@ -159,6 +181,7 @@ export enum StorageFolder {
   UPLOAD = 'upload',
   PROFILE = 'profile',
   THUMBNAILS = 'thumbs',
+  BACKUPS = 'backups',
 }
 
 export enum SystemMetadataKey {
@@ -256,6 +279,7 @@ export enum AudioCodec {
   MP3 = 'mp3',
   AAC = 'aac',
   LIBOPUS = 'libopus',
+  PCMS16LE = 'pcm_s16le',
 }
 
 export enum VideoContainer {
@@ -311,6 +335,8 @@ export enum MetadataKey {
   SHARED_ROUTE = 'shared_route',
   API_KEY_SECURITY = 'api_key',
   EVENT_CONFIG = 'event_config',
+  JOB_CONFIG = 'job_config',
+  TELEMETRY_ENABLED = 'telemetry_enabled',
 }
 
 export enum RouteKey {
@@ -338,4 +364,23 @@ export enum ImmichEnvironment {
 export enum ImmichWorker {
   API = 'api',
   MICROSERVICES = 'microservices',
+}
+
+export enum ImmichTelemetry {
+  HOST = 'host',
+  API = 'api',
+  IO = 'io',
+  REPO = 'repo',
+  JOB = 'job',
+}
+
+export enum ExifOrientation {
+  Horizontal = 1,
+  MirrorHorizontal = 2,
+  Rotate180 = 3,
+  MirrorVertical = 4,
+  MirrorHorizontalRotate270CW = 5,
+  Rotate90CW = 6,
+  MirrorHorizontalRotate90CW = 7,
+  Rotate270CW = 8,
 }

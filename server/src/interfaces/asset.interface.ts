@@ -28,9 +28,7 @@ export enum WithoutProperty {
   EXIF = 'exif',
   SMART_SEARCH = 'smart-search',
   DUPLICATE = 'duplicate',
-  OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
-  PERSON = 'person',
   SIDECAR = 'sidecar',
 }
 
@@ -94,7 +92,6 @@ export type AssetWithoutRelations = Omit<
   | 'library'
   | 'exifInfo'
   | 'sharedLinks'
-  | 'smartInfo'
   | 'smartSearch'
   | 'tags'
 >;
@@ -172,12 +169,6 @@ export interface IAssetRepository {
     order?: FindOptionsOrder<AssetEntity>,
   ): Promise<AssetEntity | null>;
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
-  getWith(
-    pagination: PaginationOptions,
-    property: WithProperty,
-    libraryId?: string,
-    withDeleted?: boolean,
-  ): Paginated<AssetEntity>;
   getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
   getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
@@ -196,7 +187,6 @@ export interface IAssetRepository {
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;

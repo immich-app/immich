@@ -154,7 +154,7 @@
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
             {#if $user?.isAdmin}
-              <p>{$t('admin.asset_offline_description')}</p>
+              {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
             {/if}
@@ -345,43 +345,45 @@
       </Portal>
     {/if}
 
-    {#if asset.exifInfo?.fileSizeInByte}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiImageOutline} size="24" /></div>
+    <div class="flex gap-4 py-4">
+      <div><Icon path={mdiImageOutline} size="24" /></div>
 
-        <div>
-          <p class="break-all flex place-items-center gap-2">
-            {asset.originalFileName}
-            {#if isOwner}
-              <CircleIconButton
-                icon={mdiInformationOutline}
-                title={$t('show_file_location')}
-                size="16"
-                padding="2"
-                on:click={toggleAssetPath}
-              />
-            {/if}
+      <div>
+        <p class="break-all flex place-items-center gap-2">
+          {asset.originalFileName}
+          {#if isOwner}
+            <CircleIconButton
+              icon={mdiInformationOutline}
+              title={$t('show_file_location')}
+              size="16"
+              padding="2"
+              on:click={toggleAssetPath}
+            />
+          {/if}
+        </p>
+        {#if showAssetPath}
+          <p class="text-xs opacity-50 break-all pb-2" transition:slide={{ duration: 250 }}>
+            {asset.originalPath}
           </p>
+        {/if}
+        {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">
-            {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
+            {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
               {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                 <p>
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
+                {@const { width, height } = getDimensions(asset.exifInfo)}
+                <p>{width} x {height}</p>
               {/if}
-              {@const { width, height } = getDimensions(asset.exifInfo)}
-              <p>{width} x {height}</p>
             {/if}
-            <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {#if asset.exifInfo?.fileSizeInByte}
+              <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {/if}
           </div>
-          {#if showAssetPath}
-            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
-              {asset.originalPath}
-            </p>
-          {/if}
-        </div>
+        {/if}
       </div>
-    {/if}
+    </div>
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">

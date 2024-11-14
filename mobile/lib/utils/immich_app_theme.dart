@@ -7,10 +7,10 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 class ImmichTheme {
-  ColorScheme light;
-  ColorScheme dark;
+  final ColorScheme light;
+  final ColorScheme dark;
 
-  ImmichTheme({required this.light, required this.dark});
+  const ImmichTheme({required this.light, required this.dark});
 }
 
 ImmichTheme? _immichDynamicTheme;
@@ -151,7 +151,7 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
 
   return ThemeData(
     useMaterial3: true,
-    brightness: isDark ? Brightness.dark : Brightness.light,
+    brightness: colorScheme.brightness,
     colorScheme: colorScheme,
     primaryColor: primaryColor,
     hintColor: colorScheme.onSurfaceSecondary,
@@ -190,17 +190,14 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
       displayLarge: TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : primaryColor,
       ),
       displayMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.bold,
-        color: isDark ? Colors.white : Colors.black87,
       ),
       displaySmall: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.bold,
-        color: primaryColor,
       ),
       titleSmall: const TextStyle(
         fontSize: 16.0,
@@ -241,7 +238,7 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
           isDark ? colorScheme.surfaceContainer : colorScheme.surface,
       labelTextStyle: const WidgetStatePropertyAll(
         TextStyle(
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
       ),

@@ -25,11 +25,12 @@
       plugins,
       container,
       panorama,
-      touchmoveTwoFingers: true,
+      touchmoveTwoFingers: false,
       mousewheelCtrlKey: false,
       navbar,
-      maxFov: 180,
-      fisheye: true,
+      minFov: 10,
+      maxFov: 120,
+      fisheye: false,
     });
 
     if (originalImageUrl && !$alwaysLoadOriginalFile) {
@@ -54,4 +55,4 @@
   });
 </script>
 
-<div class="h-full w-full mb-0" bind:this={container} />
+<div class="h-full w-full mb-0" bind:this={container}></div>

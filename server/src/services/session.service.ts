@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { Permission } from 'src/enum';
-import { JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { requireAccess } from 'src/utils/access';
 
 @Injectable()
 export class SessionService extends BaseService {
-  async handleCleanup() {
+  @OnJob({ name: JobName.CLEAN_OLD_SESSION_TOKENS, queue: QueueName.BACKGROUND_TASK })
+  async handleCleanup(): Promise<JobStatus> {
     const sessions = await this.sessionRepository.search({
       updatedBefore: DateTime.now().minus({ days: 90 }).toJSDate(),
     });
@@ -34,7 +35,7 @@ export class SessionService extends BaseService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.accessRepository, { auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
     await this.sessionRepository.delete(id);
   }
 

@@ -44,12 +44,19 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.VIDEO_CONVERSION]: { concurrency: 1 },
     [QueueName.NOTIFICATION]: { concurrency: 5 },
   },
+  backup: {
+    database: {
+      enabled: true,
+      cronExpression: '0 02 * * *',
+      keepLastAmount: 14,
+    },
+  },
   ffmpeg: {
     crf: 30,
     threads: 0,
     preset: 'ultrafast',
     targetAudioCodec: AudioCodec.AAC,
-    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS],
+    acceptedAudioCodecs: [AudioCodec.AAC, AudioCodec.MP3, AudioCodec.LIBOPUS, AudioCodec.PCMS16LE],
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
@@ -58,7 +65,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     bframes: -1,
     refs: 0,
     gopSize: 0,
-    npl: 0,
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
@@ -237,6 +243,47 @@ describe(SystemConfigService.name, () => {
       expect(systemMock.readFile).toHaveBeenCalledWith('immich-config.json');
     });
 
+    it('should transform booleans', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { twoPass: 'false' } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        ffmpeg: expect.objectContaining({ twoPass: false }),
+      });
+    });
+
+    it('should transform numbers', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ ffmpeg: { threads: '42' } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        ffmpeg: expect.objectContaining({ threads: 42 }),
+      });
+    });
+
+    it('should accept valid cron expressions', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: '0 0 * * *' } } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        library: {
+          scan: {
+            enabled: true,
+            cronExpression: '0 0 * * *',
+          },
+        },
+      });
+    });
+
+    it('should reject invalid cron expressions', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: 'foo' } } }));
+
+      await expect(sut.getSystemConfig()).rejects.toThrow(
+        'library.scan.cronExpression has failed the following constraints: cronValidator',
+      );
+    });
+
     it('should log errors with the config file', async () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
 
@@ -339,41 +386,6 @@ describe(SystemConfigService.name, () => {
         }
       });
     }
-  });
-
-  describe('getStorageTemplateOptions', () => {
-    it('should send back the datetime variables', () => {
-      expect(sut.getStorageTemplateOptions()).toEqual({
-        dayOptions: ['d', 'dd'],
-        hourOptions: ['h', 'hh', 'H', 'HH'],
-        minuteOptions: ['m', 'mm'],
-        monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
-        presetOptions: [
-          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{MM}}/{{filename}}',
-          '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
-          '{{y}}/{{MMM}}/{{filename}}',
-          '{{y}}/{{MMMM}}/{{filename}}',
-          '{{y}}/{{MM}}/{{dd}}/{{filename}}',
-          '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
-          '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}-{{MM}}-{{dd}}/{{filename}}',
-          '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
-          '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
-          '{{y}}/{{y}}-{{MM}}/{{filename}}',
-          '{{y}}/{{y}}-{{WW}}/{{filename}}',
-          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
-          '{{y}}/{{y}}-{{MM}}/{{assetId}}',
-          '{{y}}/{{y}}-{{WW}}/{{assetId}}',
-          '{{album}}/{{filename}}',
-        ],
-        secondOptions: ['s', 'ss', 'SSS'],
-        weekOptions: ['W', 'WW'],
-        yearOptions: ['y', 'yy'],
-      });
-    });
   });
 
   describe('updateConfig', () => {

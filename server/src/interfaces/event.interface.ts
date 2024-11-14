@@ -2,27 +2,27 @@ import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichWorker } from 'src/enum';
+import { JobItem, QueueName } from 'src/interfaces/job.interface';
 
 export const IEventRepository = 'IEventRepository';
 
 type EventMap = {
   // app events
-  'app.bootstrap': [ImmichWorker];
-  'app.shutdown': [ImmichWorker];
+  'app.bootstrap': [];
+  'app.shutdown': [];
 
+  'config.init': [{ newConfig: SystemConfig }];
   // config events
   'config.update': [
     {
       newConfig: SystemConfig;
-      /** When the server starts, `oldConfig` is `undefined` */
-      oldConfig?: SystemConfig;
+      oldConfig: SystemConfig;
     },
   ];
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; updatedBy: string }];
+  'album.update': [{ id: string; recipientIds: string[] }];
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
@@ -37,6 +37,8 @@ type EventMap = {
   'assets.trash': [{ assetIds: string[]; userId: string }];
   'assets.delete': [{ assetIds: string[]; userId: string }];
   'assets.restore': [{ assetIds: string[]; userId: string }];
+
+  'job.start': [QueueName, JobItem];
 
   // session events
   'session.delete': [{ sessionId: string }];
@@ -86,9 +88,15 @@ export type EventItem<T extends EmitEvent> = {
   server: boolean;
 };
 
+export enum BootstrapEventPriority {
+  // Database service should be initialized before anything else, most other services need database access
+  DatabaseService = -200,
+  // Initialise config after other bootstrap services, stop other services from using config on bootstrap
+  SystemConfig = 100,
+}
+
 export interface IEventRepository {
   setup(options: { services: ClassConstructor<unknown>[] }): void;
-  on<T extends keyof EventMap>(item: EventItem<T>): void;
   emit<T extends keyof EventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
 
   /**

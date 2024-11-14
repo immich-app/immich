@@ -27,7 +27,7 @@ jobs:
               - 'docs/**'
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ github.event_name == 'release' || github.ref_name == 'main' }}" >> "$GITHUB_OUTPUT"
 
   build:
     name: Docs Build

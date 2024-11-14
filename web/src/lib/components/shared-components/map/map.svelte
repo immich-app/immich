@@ -8,7 +8,7 @@
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { getServerConfig, type MapMarkerResponseDto } from '@immich/sdk';
-  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text?url';
+  import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike, StyleSpecification } from 'maplibre-gl';
@@ -57,6 +57,7 @@
   let map: maplibregl.Map;
   let marker: maplibregl.Marker | null = null;
 
+  // svelte-ignore reactive_declaration_non_reactive_property
   $: style = (async () => {
     const config = await getServerConfig();
     const theme = $mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT;

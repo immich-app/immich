@@ -28,7 +28,7 @@
   export let disabled = false;
   export let isEdited = false;
   export let autofocus = false;
-  export let passwordAutocomplete: string = 'current-password';
+  export let passwordAutocomplete: AutoFill = 'current-password';
 
   let input: HTMLInputElement;
 

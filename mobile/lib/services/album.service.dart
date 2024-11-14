@@ -16,6 +16,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
@@ -152,7 +153,7 @@ class AlbumService {
 
   /// Checks remote albums (owned if `isShared` is false) for changes,
   /// updates the local database and returns `true` if there were any changes
-  Future<bool> refreshRemoteAlbums({required bool isShared}) async {
+  Future<bool> refreshRemoteAlbums() async {
     if (!_remoteCompleter.isCompleted) {
       // guard against concurrent calls
       return _remoteCompleter.future;
@@ -162,12 +163,21 @@ class AlbumService {
     bool changes = false;
     try {
       await _userService.refreshUsers();
-      final List<Album> serverAlbums =
-          await _albumApiRepository.getAll(shared: isShared ? true : null);
-      changes = await _syncService.syncRemoteAlbumsToDb(
-        serverAlbums,
-        isShared: isShared,
+      final List<Album> sharedAlbum =
+          await _albumApiRepository.getAll(shared: true);
+
+      final List<Album> ownedAlbum =
+          await _albumApiRepository.getAll(shared: null);
+
+      final albums = HashSet<Album>(
+        equals: (a, b) => a.remoteId == b.remoteId,
+        hashCode: (a) => a.remoteId.hashCode,
       );
+
+      albums.addAll(sharedAlbum);
+      albums.addAll(ownedAlbum);
+
+      changes = await _syncService.syncRemoteAlbumsToDb(albums.toList());
     } finally {
       _remoteCompleter.complete(changes);
     }
@@ -213,9 +223,9 @@ class AlbumService {
     );
   }
 
-  Future<AlbumAddAssetsResponse?> addAdditionalAssetToAlbum(
-    Iterable<Asset> assets,
+  Future<AlbumAddAssetsResponse?> addAssets(
     Album album,
+    Iterable<Asset> assets,
   ) async {
     try {
       final result = await _albumApiRepository.addAssets(
@@ -234,7 +244,7 @@ class AlbumService {
         successfullyAdded: addedAssets.length,
       );
     } catch (e) {
-      debugPrint("Error addAdditionalAssetToAlbum  ${e.toString()}");
+      debugPrint("Error addAssets  ${e.toString()}");
     }
     return null;
   }
@@ -253,30 +263,14 @@ class AlbumService {
         await _albumRepository.update(album);
       });
 
-  Future<bool> addAdditionalUserToAlbum(
-    List<String> sharedUserIds,
-    Album album,
-  ) async {
-    try {
-      final updatedAlbum =
-          await _albumApiRepository.addUsers(album.remoteId!, sharedUserIds);
-      await _entityService.fillAlbumWithDatabaseEntities(updatedAlbum);
-      await _albumRepository.update(updatedAlbum);
-      return true;
-    } catch (e) {
-      debugPrint("Error addAdditionalUserToAlbum  ${e.toString()}");
-    }
-    return false;
-  }
-
-  Future<bool> setActivityEnabled(Album album, bool enabled) async {
+  Future<bool> setActivityStatus(Album album, bool enabled) async {
     try {
       final updatedAlbum = await _albumApiRepository.update(
         album.remoteId!,
         activityEnabled: enabled,
       );
-      await _entityService.fillAlbumWithDatabaseEntities(updatedAlbum);
-      await _albumRepository.update(updatedAlbum);
+      album.activityEnabled = updatedAlbum.activityEnabled;
+      await _albumRepository.update(album);
       return true;
     } catch (e) {
       debugPrint("Error setActivityEnabled  ${e.toString()}");
@@ -327,7 +321,7 @@ class AlbumService {
     }
   }
 
-  Future<bool> removeAssetFromAlbum(
+  Future<bool> removeAsset(
     Album album,
     Iterable<Asset> assets,
   ) async {
@@ -346,7 +340,7 @@ class AlbumService {
     return false;
   }
 
-  Future<bool> removeUserFromAlbum(
+  Future<bool> removeUser(
     Album album,
     User user,
   ) async {
@@ -363,10 +357,31 @@ class AlbumService {
       await _albumRepository.update(a!);
 
       return true;
-    } catch (e) {
-      debugPrint("Error removeUserFromAlbum  ${e.toString()}");
+    } catch (error) {
+      debugPrint("Error removeUser  ${error.toString()}");
       return false;
     }
+  }
+
+  Future<bool> addUsers(
+    Album album,
+    List<String> userIds,
+  ) async {
+    try {
+      final updatedAlbum =
+          await _albumApiRepository.addUsers(album.remoteId!, userIds);
+
+      album.sharedUsers.addAll(updatedAlbum.remoteUsers);
+      album.shared = true;
+
+      await _albumRepository.addUsers(album, album.sharedUsers.toList());
+      await _albumRepository.update(album);
+
+      return true;
+    } catch (error) {
+      debugPrint("Error addUsers ${error.toString()}");
+    }
+    return false;
   }
 
   Future<bool> changeTitleAlbum(
@@ -374,11 +389,12 @@ class AlbumService {
     String newAlbumTitle,
   ) async {
     try {
-      album = await _albumApiRepository.update(
+      final updatedAlbum = await _albumApiRepository.update(
         album.remoteId!,
         name: newAlbumTitle,
       );
-      await _entityService.fillAlbumWithDatabaseEntities(album);
+
+      album.name = updatedAlbum.name;
       await _albumRepository.update(album);
       return true;
     } catch (e) {
@@ -404,5 +420,16 @@ class AlbumService {
         await _albumApiRepository.addAssets(album.remoteId!, assetIds);
       }
     }
+  }
+
+  Future<List<Album>> getAll() async {
+    return _albumRepository.getAll(remote: true);
+  }
+
+  Future<List<Album>> search(
+    String searchTerm,
+    QuickFilterMode filterMode,
+  ) async {
+    return _albumRepository.search(searchTerm, filterMode);
   }
 }

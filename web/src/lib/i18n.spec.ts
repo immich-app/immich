@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 
 describe('i18n', () => {
   describe('loaders', () => {
-    const languageFiles = readdirSync('src/lib/i18n').sort();
+    const languageFiles = readdirSync('../i18n').sort();
     for (const filename of languageFiles) {
       test(`${filename} should have a loader`, async () => {
         const code = filename.replaceAll('.json', '');
@@ -17,7 +17,7 @@ describe('i18n', () => {
         // verify it loads the right file
         const module: { default?: unknown } = await item.loader();
         const translations = JSON.stringify(module.default, null, 2).trim();
-        const content = readFileSync(`src/lib/i18n/${filename}`).toString().trim();
+        const content = readFileSync(`../i18n/${filename}`).toString().trim();
         expect(translations === content, `${item.name} did not load ${filename}`).toEqual(true);
       });
     }

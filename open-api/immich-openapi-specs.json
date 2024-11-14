@@ -7385,7 +7385,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.117.0",
+    "version": "1.120.2",
     "contact": {}
   },
   "tags": [],
@@ -7745,6 +7745,9 @@
           "backgroundTask": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
+          "backupDatabase": {
+            "$ref": "#/components/schemas/JobStatusDto"
+          },
           "duplicateDetection": {
             "$ref": "#/components/schemas/JobStatusDto"
           },
@@ -7787,6 +7790,7 @@
         },
         "required": [
           "backgroundTask",
+          "backupDatabase",
           "duplicateDetection",
           "faceDetection",
           "facialRecognition",
@@ -8398,9 +8402,6 @@
             "description": "This property was deprecated in v1.113.0",
             "type": "boolean"
           },
-          "smartInfo": {
-            "$ref": "#/components/schemas/SmartInfoResponseDto"
-          },
           "stack": {
             "allOf": [
               {
@@ -8507,7 +8508,8 @@
         "enum": [
           "mp3",
           "aac",
-          "libopus"
+          "libopus",
+          "pcm_s16le"
         ],
         "type": "string"
       },
@@ -8750,6 +8752,26 @@
           "profileChangedAt",
           "profileImagePath",
           "userId"
+        ],
+        "type": "object"
+      },
+      "DatabaseBackupConfig": {
+        "properties": {
+          "cronExpression": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "keepLastAmount"
         ],
         "type": "object"
       },
@@ -9288,7 +9310,8 @@
           "search",
           "sidecar",
           "library",
-          "notifications"
+          "notifications",
+          "backupDatabase"
         ],
         "type": "string"
       },
@@ -11258,25 +11281,6 @@
         ],
         "type": "object"
       },
-      "SmartInfoResponseDto": {
-        "properties": {
-          "objects": {
-            "items": {
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          }
-        },
-        "type": "object"
-      },
       "SmartSearchDto": {
         "properties": {
           "city": {
@@ -11455,8 +11459,22 @@
         },
         "type": "object"
       },
+      "SystemConfigBackupsDto": {
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/DatabaseBackupConfig"
+          }
+        },
+        "required": [
+          "database"
+        ],
+        "type": "object"
+      },
       "SystemConfigDto": {
         "properties": {
+          "backup": {
+            "$ref": "#/components/schemas/SystemConfigBackupsDto"
+          },
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
@@ -11513,6 +11531,7 @@
           }
         },
         "required": [
+          "backup",
           "ffmpeg",
           "image",
           "job",
@@ -11580,10 +11599,6 @@
           "maxBitrate": {
             "type": "string"
           },
-          "npl": {
-            "minimum": 0,
-            "type": "integer"
-          },
           "preferredHwDevice": {
             "type": "string"
           },
@@ -11632,7 +11647,6 @@
           "crf",
           "gopSize",
           "maxBitrate",
-          "npl",
           "preferredHwDevice",
           "preset",
           "refs",
