@@ -239,7 +239,7 @@ export class MediaService extends BaseService {
     const thumbnailPath = StorageCore.getImagePath(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     this.storageCore.ensureFolders(previewPath);
 
-    const { audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
+    const { format, audioStreams, videoStreams } = await this.mediaRepository.probe(asset.originalPath);
     const mainVideoStream = this.getMainStream(videoStreams);
     if (!mainVideoStream) {
       throw new Error(`No video streams found for asset ${asset.id}`);
@@ -248,9 +248,14 @@ export class MediaService extends BaseService {
 
     const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
     const thumbnailConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
-
-    const previewOptions = previewConfig.getCommand(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream);
-    const thumbnailOptions = thumbnailConfig.getCommand(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream);
+    const previewOptions = previewConfig.getCommand(TranscodeTarget.VIDEO, mainVideoStream, mainAudioStream, format);
+    const thumbnailOptions = thumbnailConfig.getCommand(
+      TranscodeTarget.VIDEO,
+      mainVideoStream,
+      mainAudioStream,
+      format,
+    );
+    this.logger.error(format.formatName);
     await this.mediaRepository.transcode(asset.originalPath, previewPath, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, thumbnailOptions);
 
