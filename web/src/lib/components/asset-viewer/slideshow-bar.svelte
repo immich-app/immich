@@ -1,8 +1,9 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import ProgressBar, { ProgressBarStatus } from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
+  import ProgressBar from '$lib/components/shared-components/progress-bar/progress-bar.svelte';
   import SlideshowSettings from '$lib/components/slideshow-settings.svelte';
+  import { ProgressBarStatus } from '$lib/constants';
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
