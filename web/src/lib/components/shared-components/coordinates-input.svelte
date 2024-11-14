@@ -35,6 +35,7 @@
 
     event.preventDefault();
     [lat, lng] = [latitude, longitude];
+    onInput();
   };
 </script>
 
