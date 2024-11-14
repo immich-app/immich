@@ -7,24 +7,39 @@
 
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
-  export let openByDefault = false;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+    openByDefault?: boolean;
+  }
+
+  let {
+    savedConfig,
+    defaultConfig,
+    config = $bindable(),
+    disabled = false,
+    onReset,
+    onSave,
+    openByDefault = false,
+  }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingAccordion
           key="thumbnail-settings"
@@ -65,7 +80,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
-            desc={$t('admin.image_thumbnail_quality_description')}
+            description={$t('admin.image_thumbnail_quality_description')}
             bind:value={config.image.thumbnail.quality}
             isEdited={config.image.thumbnail.quality !== savedConfig.image.thumbnail.quality}
             {disabled}
@@ -110,7 +125,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.image_quality')}
-            desc={$t('admin.image_preview_quality_description')}
+            description={$t('admin.image_preview_quality_description')}
             bind:value={config.image.preview.quality}
             isEdited={config.image.preview.quality !== savedConfig.image.preview.quality}
             {disabled}

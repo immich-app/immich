@@ -5,10 +5,14 @@
   import { restoreUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let user: UserResponseDto;
-  export let onSuccess: () => void;
-  export let onFail: () => void;
-  export let onCancel: () => void;
+  interface Props {
+    user: UserResponseDto;
+    onSuccess: () => void;
+    onFail: () => void;
+    onCancel: () => void;
+  }
+
+  let { user, onSuccess, onFail, onCancel }: Props = $props();
 
   const handleRestoreUser = async () => {
     try {
@@ -32,11 +36,13 @@
   onConfirm={handleRestoreUser}
   {onCancel}
 >
-  <svelte:fragment slot="prompt">
+  {#snippet promptSnippet()}
     <p>
-      <FormatMessage key="admin.user_restore_description" values={{ user: user.name }} let:message>
-        <b>{message}</b>
+      <FormatMessage key="admin.user_restore_description" values={{ user: user.name }}>
+        {#snippet children({ message })}
+          <b>{message}</b>
+        {/snippet}
       </FormatMessage>
     </p>
-  </svelte:fragment>
+  {/snippet}
 </ConfirmDialog>

@@ -8,12 +8,12 @@
   import { getByteUnitString } from '../../../utils/byte-units';
   import LoadingSpinner from '../loading-spinner.svelte';
 
-  let usageClasses = '';
+  let usageClasses = $state('');
 
-  $: hasQuota = $user?.quotaSizeInBytes !== null;
-  $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0;
-  $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0;
-  $: usedPercentage = Math.min(Math.round((usedBytes / availableBytes) * 100), 100);
+  let hasQuota = $derived($user?.quotaSizeInBytes !== null);
+  let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0);
+  let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0);
+  let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
 
   const onUpdate = () => {
     usageClasses = getUsageClass();
@@ -31,9 +31,11 @@
     return 'bg-immich-primary dark:bg-immich-dark-primary';
   };
 
-  $: if ($user) {
-    onUpdate();
-  }
+  $effect(() => {
+    if ($user) {
+      onUpdate();
+    }
+  });
 
   onMount(async () => {
     await requestServerInfo();

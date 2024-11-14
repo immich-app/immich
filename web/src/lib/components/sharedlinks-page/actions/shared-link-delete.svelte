@@ -4,12 +4,16 @@
   import { mdiDelete } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let menuItem = false;
-  export let onDelete: () => void;
+  interface Props {
+    menuItem?: boolean;
+    onDelete: () => void;
+  }
+
+  let { menuItem = false, onDelete }: Props = $props();
 </script>
 
 {#if menuItem}
   <MenuOption text={$t('delete_link')} icon={mdiDelete} onClick={onDelete} />
 {:else}
-  <CircleIconButton title={$t('delete_link')} icon={mdiDelete} on:click={onDelete} />
+  <CircleIconButton title={$t('delete_link')} icon={mdiDelete} onclick={onDelete} />
 {/if}

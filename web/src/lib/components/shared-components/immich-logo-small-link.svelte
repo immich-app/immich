@@ -1,7 +1,11 @@
 <script lang="ts">
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
 
-  export let width: number;
+  interface Props {
+    width: number;
+  }
+
+  let { width }: Props = $props();
 </script>
 
 <a data-sveltekit-preload-data="hover" class="ml-4" href="/">

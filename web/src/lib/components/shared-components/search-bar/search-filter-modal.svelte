@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import type { SearchLocationFilter } from './search-location-section.svelte';
   import type { SearchDisplayFilters } from './search-display-section.svelte';
   import type { SearchDateFilter } from './search-date-section.svelte';
@@ -36,10 +36,15 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { mdiTune } from '@mdi/js';
   import { generateId } from '$lib/utils/generate-id';
+  import { SvelteSet } from 'svelte/reactivity';
 
-  export let searchQuery: MetadataSearchDto | SmartSearchDto;
-  export let onClose: () => void;
-  export let onSearch: (search: SmartSearchDto | MetadataSearchDto) => void;
+  interface Props {
+    searchQuery: MetadataSearchDto | SmartSearchDto;
+    onClose: () => void;
+    onSearch: (search: SmartSearchDto | MetadataSearchDto) => void;
+  }
+
+  let { searchQuery, onClose, onSearch }: Props = $props();
 
   const parseOptionalDate = (dateString?: string) => (dateString ? parseUtcDate(dateString) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day').toISODate() || undefined;
@@ -50,10 +55,10 @@
     return value === null ? undefined : value;
   }
 
-  let filter: SearchFilter = {
+  let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: 'query' in searchQuery ? 'smart' : 'metadata',
-    personIds: new Set('personIds' in searchQuery ? searchQuery.personIds : []),
+    personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),
@@ -78,7 +83,7 @@
         : searchQuery.type === AssetTypeEnum.Video
           ? MediaType.Video
           : MediaType.All,
-  };
+  });
 
   const resetForm = () => {
     filter = {
@@ -122,10 +127,20 @@
 
     onSearch(payload);
   };
+
+  const onreset = (event: Event) => {
+    event.preventDefault();
+    resetForm();
+  };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    search();
+  };
 </script>
 
 <FullScreenModal icon={mdiTune} width="extra-wide" title={$t('search_options')} {onClose}>
-  <form id={formId} autocomplete="off" on:submit|preventDefault={search} on:reset|preventDefault={resetForm}>
+  <form id={formId} autocomplete="off" {onsubmit} {onreset}>
     <div class="space-y-10 pb-10" tabindex="-1">
       <!-- PEOPLE -->
       <SearchPeopleSection bind:selectedPeople={filter.personIds} />
@@ -152,8 +167,8 @@
     </div>
   </form>
 
-  <svelte:fragment slot="sticky-bottom">
+  {#snippet stickyBottom()}
     <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
     <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>
