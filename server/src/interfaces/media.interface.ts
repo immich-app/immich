@@ -114,7 +114,12 @@ export interface ImageBuffer {
 }
 
 export interface VideoCodecSWConfig {
-  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeCommand;
+  getCommand(
+    target: TranscodeTarget,
+    videoStream: VideoStreamInfo,
+    audioStream: AudioStreamInfo,
+    format?: VideoFormat,
+  ): TranscodeCommand;
 }
 
 export interface VideoCodecHWConfig extends VideoCodecSWConfig {

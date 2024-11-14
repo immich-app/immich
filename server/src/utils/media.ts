@@ -1,11 +1,12 @@
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec } from 'src/enum';
+import { CQMode, ToneMapping, TranscodeHWAccel, TranscodeTarget, VideoCodec, VideoContainer } from 'src/enum';
 import {
   AudioStreamInfo,
   BitrateDistribution,
   TranscodeCommand,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
+  VideoFormat,
   VideoStreamInfo,
 } from 'src/interfaces/media.interface';
 
@@ -77,9 +78,14 @@ export class BaseConfig implements VideoCodecSWConfig {
     return handler;
   }
 
-  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getCommand(
+    target: TranscodeTarget,
+    videoStream: VideoStreamInfo,
+    audioStream?: AudioStreamInfo,
+    format?: VideoFormat,
+  ) {
     const options = {
-      inputOptions: this.getBaseInputOptions(videoStream),
+      inputOptions: this.getBaseInputOptions(videoStream, format),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
       progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
@@ -101,7 +107,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
     return this.getInputThreadOptions();
   }
 
@@ -377,8 +383,12 @@ export class ThumbnailConfig extends BaseConfig {
     return new ThumbnailConfig(config);
   }
 
-  getBaseInputOptions(): string[] {
-    return ['-sws_flags accurate_rnd+full_chroma_int'];
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
+    if (format?.formatName === 'mpegts') {
+      return ['-sws_flags accurate_rnd+full_chroma_int'];
+    } else {
+      return ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
+    }
   }
 
   getBaseOutputOptions() {
