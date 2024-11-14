@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface SearchLocationFilter {
     country?: string;
     state?: string;
@@ -7,22 +7,22 @@
 </script>
 
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let filters: SearchLocationFilter;
+  interface Props {
+    filters: SearchLocationFilter;
+  }
 
-  let countries: string[] = [];
-  let states: string[] = [];
-  let cities: string[] = [];
+  let { filters = $bindable() }: Props = $props();
 
-  $: countryFilter = filters.country;
-  $: stateFilter = filters.state;
-  $: handlePromiseError(updateCountries());
-  $: handlePromiseError(updateStates(countryFilter));
-  $: handlePromiseError(updateCities(countryFilter, stateFilter));
+  let countries: string[] = $state([]);
+  let states: string[] = $state([]);
+  let cities: string[] = $state([]);
 
   async function updateCountries() {
     const results: Array<string | null> = await getSearchSuggestions({
@@ -64,6 +64,17 @@
       filters.city = undefined;
     }
   }
+  let countryFilter = $derived(filters.country);
+  let stateFilter = $derived(filters.state);
+  run(() => {
+    handlePromiseError(updateCountries());
+  });
+  run(() => {
+    handlePromiseError(updateStates(countryFilter));
+  });
+  run(() => {
+    handlePromiseError(updateCities(countryFilter, stateFilter));
+  });
 </script>
 
 <div id="location-selection">

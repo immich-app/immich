@@ -5,8 +5,12 @@
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
 
-  export let secret = '';
-  export let onDone: () => void;
+  interface Props {
+    secret?: string;
+    onDone: () => void;
+  }
+
+  let { secret = '', onDone }: Props = $props();
 </script>
 
 <FullScreenModal title={$t('api_key')} icon={mdiKeyVariant} onClose={onDone}>
@@ -21,8 +25,8 @@
     <textarea class="immich-form-input" id="secret" name="secret" readonly={true} value={secret}></textarea>
   </div>
 
-  <svelte:fragment slot="sticky-bottom">
-    <Button on:click={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
-    <Button on:click={onDone} fullwidth>{$t('done')}</Button>
-  </svelte:fragment>
+  {#snippet stickyBottom()}
+    <Button onclick={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
+    <Button onclick={onDone} fullwidth>{$t('done')}</Button>
+  {/snippet}
 </FullScreenModal>

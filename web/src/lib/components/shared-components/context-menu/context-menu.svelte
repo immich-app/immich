@@ -2,27 +2,44 @@
   import { quintOut } from 'svelte/easing';
   import { slide } from 'svelte/transition';
   import { clickOutside } from '$lib/actions/click-outside';
+  import type { Snippet } from 'svelte';
 
-  export let isVisible: boolean = false;
-  export let direction: 'left' | 'right' = 'right';
-  export let x = 0;
-  export let y = 0;
-  export let id: string | undefined = undefined;
-  export let ariaLabel: string | undefined = undefined;
-  export let ariaLabelledBy: string | undefined = undefined;
-  export let ariaActiveDescendant: string | undefined = undefined;
+  interface Props {
+    isVisible?: boolean;
+    direction?: 'left' | 'right';
+    x?: number;
+    y?: number;
+    id?: string | undefined;
+    ariaLabel?: string | undefined;
+    ariaLabelledBy?: string | undefined;
+    ariaActiveDescendant?: string | undefined;
+    menuElement?: HTMLUListElement | undefined;
+    onClose?: (() => void) | undefined;
+    children?: Snippet;
+  }
 
-  export let menuElement: HTMLUListElement | undefined = undefined;
-  export let onClose: (() => void) | undefined = undefined;
+  let {
+    isVisible = false,
+    direction = 'right',
+    x = 0,
+    y = 0,
+    id = undefined,
+    ariaLabel = undefined,
+    ariaLabelledBy = undefined,
+    ariaActiveDescendant = undefined,
+    menuElement = $bindable(),
+    onClose = undefined,
+    children,
+  }: Props = $props();
 
-  let left: number;
-  let top: number;
+  let left: number = $state(0);
+  let top: number = $state(0);
 
   // We need to bind clientHeight since the bounding box may return a height
   // of zero when starting the 'slide' animation.
-  let height: number;
+  let height: number = $state(0);
 
-  $: {
+  $effect(() => {
     if (menuElement) {
       const rect = menuElement.getBoundingClientRect();
       const directionWidth = direction === 'left' ? rect.width : 0;
@@ -31,7 +48,7 @@
       left = Math.min(window.innerWidth - rect.width, x - directionWidth);
       top = Math.min(window.innerHeight - menuHeight, y);
     }
-  }
+  });
 </script>
 
 <div
@@ -54,6 +71,6 @@
     role="menu"
     tabindex="-1"
   >
-    <slot />
+    {@render children?.()}
   </ul>
 </div>
