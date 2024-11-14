@@ -6,7 +6,11 @@
   import type { PageData } from './$types';
   import { asyncTimeout } from '$lib/utils';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data = $bindable() }: Props = $props();
 
   let running = true;
 

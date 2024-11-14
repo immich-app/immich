@@ -75,13 +75,17 @@ export class StorageTemplateService extends BaseService {
   }
 
   @OnEvent({ name: 'config.init' })
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigInitOrUpdate({ newConfig }: ArgOf<'config.init'>) {
+  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
     const template = newConfig.storageTemplate.template;
     if (!this._template || template !== this.template.raw) {
       this.logger.debug(`Compiling new storage template: ${template}`);
       this._template = this.compile(template);
     }
+  }
+
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.onConfigInit({ newConfig });
   }
 
   @OnEvent({ name: 'config.validate' })

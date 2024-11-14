@@ -4,18 +4,32 @@
   import Slider from '$lib/components/elements/slider.svelte';
   import { generateId } from '$lib/utils/generate-id';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
-  export let title: string;
-  export let subtitle = '';
-  export let checked = false;
-  export let disabled = false;
-  export let isEdited = false;
-  export let onToggle: (isChecked: boolean) => void = () => {};
+  interface Props {
+    title: string;
+    subtitle?: string;
+    checked?: boolean;
+    disabled?: boolean;
+    isEdited?: boolean;
+    onToggle?: (isChecked: boolean) => void;
+    children?: Snippet;
+  }
+
+  let {
+    title,
+    subtitle = '',
+    checked = $bindable(false),
+    disabled = false,
+    isEdited = false,
+    onToggle = () => {},
+    children,
+  }: Props = $props();
 
   let id: string = generateId();
 
-  $: sliderId = `${id}-slider`;
-  $: subtitleId = subtitle ? `${id}-subtitle` : undefined;
+  let sliderId = $derived(`${id}-slider`);
+  let subtitleId = $derived(subtitle ? `${id}-subtitle` : undefined);
 </script>
 
 <div class="flex place-items-center justify-between">
@@ -37,7 +51,7 @@
     {#if subtitle}
       <p id={subtitleId} class="text-sm dark:text-immich-dark-fg">{subtitle}</p>
     {/if}
-    <slot />
+    {@render children?.()}
   </div>
 
   <Slider id={sliderId} bind:checked {disabled} {onToggle} ariaDescribedBy={subtitleId} />

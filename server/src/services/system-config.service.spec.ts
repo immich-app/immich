@@ -261,6 +261,29 @@ describe(SystemConfigService.name, () => {
       });
     });
 
+    it('should accept valid cron expressions', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: '0 0 * * *' } } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        library: {
+          scan: {
+            enabled: true,
+            cronExpression: '0 0 * * *',
+          },
+        },
+      });
+    });
+
+    it('should reject invalid cron expressions', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: 'foo' } } }));
+
+      await expect(sut.getSystemConfig()).rejects.toThrow(
+        'library.scan.cronExpression has failed the following constraints: cronValidator',
+      );
+    });
+
     it('should log errors with the config file', async () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
 

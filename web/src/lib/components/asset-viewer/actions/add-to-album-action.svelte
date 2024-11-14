@@ -9,11 +9,15 @@
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
-  export let shared = false;
+  interface Props {
+    asset: AssetResponseDto;
+    onAction: OnAction;
+    shared?: boolean;
+  }
 
-  let showSelectionModal = false;
+  let { asset, onAction, shared = false }: Props = $props();
+
+  let showSelectionModal = $state(false);
 
   const handleAddToNewAlbum = async (albumName: string) => {
     showSelectionModal = false;

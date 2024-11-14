@@ -7,10 +7,10 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 class ImmichTheme {
-  ColorScheme light;
-  ColorScheme dark;
+  final ColorScheme light;
+  final ColorScheme dark;
 
-  ImmichTheme({required this.light, required this.dark});
+  const ImmichTheme({required this.light, required this.dark});
 }
 
 ImmichTheme? _immichDynamicTheme;
@@ -151,7 +151,7 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
 
   return ThemeData(
     useMaterial3: true,
-    brightness: isDark ? Brightness.dark : Brightness.light,
+    brightness: colorScheme.brightness,
     colorScheme: colorScheme,
     primaryColor: primaryColor,
     hintColor: colorScheme.onSurfaceSecondary,
