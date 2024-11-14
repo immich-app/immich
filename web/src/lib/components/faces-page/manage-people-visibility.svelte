@@ -1,11 +1,3 @@
-<script lang="ts" module>
-  const enum ToggleVisibility {
-    HIDE_ALL = 'hide-all',
-    HIDE_UNNANEMD = 'hide-unnamed',
-    SHOW_ALL = 'show-all',
-  }
-</script>
-
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
@@ -23,6 +15,7 @@
   import { mdiClose, mdiEye, mdiEyeOff, mdiEyeSettings, mdiRestart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { ToggleVisibility } from '$lib/constants';
 
   interface Props {
     people: PersonResponseDto[];

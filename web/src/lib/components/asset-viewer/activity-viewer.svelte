@@ -77,7 +77,6 @@
     onClose,
   }: Props = $props();
 
-  let textArea: HTMLTextAreaElement | undefined = $state();
   let innerHeight: number = $state(0);
   let activityHeight: number = $state(0);
   let chatHeight: number = $state(0);
@@ -141,10 +140,6 @@
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);
-
-      if (textArea) {
-        textArea.style.height = '18px';
-      }
 
       message = '';
       onAddComment();
@@ -306,11 +301,9 @@
           <div class="flex w-full items-center gap-4">
             <textarea
               {disabled}
-              bind:this={textArea}
               bind:value={message}
-              use:autoGrowHeight={'5px'}
+              use:autoGrowHeight={{ height: '5px', value: message }}
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              oninput={() => autoGrowHeight(textArea, '5px')}
               use:shortcut={{
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),
