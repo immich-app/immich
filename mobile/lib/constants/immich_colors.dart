@@ -19,6 +19,8 @@ const String defaultColorPresetName = "indigo";
 
 const Color immichBrandColorLight = Color(0xFF4150AF);
 const Color immichBrandColorDark = Color(0xFFACCBFA);
+const Color whiteOpacity75 = Color.fromARGB((0.75 * 255) ~/ 1, 255, 255, 255);
+const Color blackOpacity90 = Color.fromARGB((0.90 * 255) ~/ 1, 0, 0, 0);
 
 final Map<ImmichColorPreset, ImmichTheme> _themePresetsMap = {
   ImmichColorPreset.indigo: ImmichTheme(

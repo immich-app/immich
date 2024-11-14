@@ -7,12 +7,13 @@
 <FormatMessage
   key="admin.storage_template_migration_description"
   values={{ template: $t('admin.storage_template_settings') }}
-  let:message
 >
-  <a
-    href="{AppRoute.ADMIN_SETTINGS}?{QueryParameter.IS_OPEN}={OpenSettingQueryParameterValue.STORAGE_TEMPLATE}"
-    class="text-immich-primary dark:text-immich-dark-primary"
-  >
-    {message}
-  </a>
+  {#snippet children({ message })}
+    <a
+      href="{AppRoute.ADMIN_SETTINGS}?{QueryParameter.IS_OPEN}={OpenSettingQueryParameterValue.STORAGE_TEMPLATE}"
+      class="text-immich-primary dark:text-immich-dark-primary"
+    >
+      {message}
+    </a>
+  {/snippet}
 </FormatMessage>

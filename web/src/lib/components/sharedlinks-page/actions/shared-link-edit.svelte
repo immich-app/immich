@@ -4,12 +4,16 @@
   import { mdiCircleEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let menuItem = false;
-  export let onEdit: () => void;
+  interface Props {
+    menuItem?: boolean;
+    onEdit: () => void;
+  }
+
+  let { menuItem = false, onEdit }: Props = $props();
 </script>
 
 {#if menuItem}
   <MenuOption text={$t('edit_link')} icon={mdiCircleEditOutline} onClick={onEdit} />
 {:else}
-  <CircleIconButton title={$t('edit_link')} icon={mdiCircleEditOutline} on:click={onEdit} />
+  <CircleIconButton title={$t('edit_link')} icon={mdiCircleEditOutline} onclick={onEdit} />
 {/if}

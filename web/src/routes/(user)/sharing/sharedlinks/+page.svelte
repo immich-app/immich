@@ -15,8 +15,8 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  let sharedLinks: SharedLinkResponseDto[] = [];
-  let editSharedLink: SharedLinkResponseDto | null = null;
+  let sharedLinks: SharedLinkResponseDto[] = $state([]);
+  let editSharedLink: SharedLinkResponseDto | null = $state(null);
 
   const refresh = async () => {
     sharedLinks = await getAllSharedLinks();
@@ -60,7 +60,9 @@
 </script>
 
 <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
-  <svelte:fragment slot="leading">{$t('shared_links')}</svelte:fragment>
+  {#snippet leading()}
+    {$t('shared_links')}
+  {/snippet}
 </ControlAppBar>
 
 <section class="mt-[120px] flex flex-col pb-[120px] container max-w-screen-lg mx-auto px-3">

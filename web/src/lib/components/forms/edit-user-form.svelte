@@ -10,23 +10,35 @@
   import { t } from 'svelte-i18n';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
 
-  export let user: UserAdminResponseDto;
-  export let canResetPassword = true;
-  export let newPassword: string;
-  export let onClose: () => void;
-  export let onResetPasswordSuccess: () => void;
-  export let onEditSuccess: () => void;
+  interface Props {
+    user: UserAdminResponseDto;
+    canResetPassword?: boolean;
+    newPassword: string;
+    onClose: () => void;
+    onResetPasswordSuccess: () => void;
+    onEditSuccess: () => void;
+  }
+
+  let {
+    user,
+    canResetPassword = true,
+    newPassword = $bindable(),
+    onClose,
+    onResetPasswordSuccess,
+    onEditSuccess,
+  }: Props = $props();
 
   let error: string;
   let success: string;
-  let quotaSize = user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null;
+  let quotaSize = $state(user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
 
   const previousQutoa = user.quotaSizeInBytes;
 
-  $: quotaSizeWarning =
+  let quotaSizeWarning = $derived(
     previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
-    !!quotaSize &&
-    convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw;
+      !!quotaSize &&
+      convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw,
+  );
 
   const editUser = async () => {
     try {
@@ -89,10 +101,15 @@
 
     return generatedPassword;
   }
+
+  const onSubmit = async (event: Event) => {
+    event.preventDefault();
+    await editUser();
+  };
 </script>
 
 <FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
-  <form on:submit|preventDefault={editUser} autocomplete="off" id="edit-user-form">
+  <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
@@ -140,10 +157,11 @@
       <p class="ml-4 text-sm text-immich-primary">{success}</p>
     {/if}
   </form>
-  <svelte:fragment slot="sticky-bottom">
+
+  {#snippet stickyBottom()}
     {#if canResetPassword}
-      <Button color="light-red" fullwidth on:click={resetPassword}>{$t('reset_password')}</Button>
+      <Button color="light-red" fullwidth onclick={resetPassword}>{$t('reset_password')}</Button>
     {/if}
     <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

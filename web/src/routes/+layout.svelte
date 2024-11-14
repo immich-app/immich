@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/stores';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
@@ -16,22 +18,20 @@
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { copyToClipboard, setKey } from '$lib/utils';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import { t } from 'svelte-i18n';
   import Error from '$lib/components/error.svelte';
   import { shortcut } from '$lib/actions/shortcut';
-
-  let showNavigationLoadingBar = false;
-  $: changeTheme($colorTheme);
-
-  $: if ($user) {
-    openWebsocketConnection();
-  } else {
-    closeWebsocketConnection();
+  interface Props {
+    children?: Snippet;
   }
+
+  let { children }: Props = $props();
+
+  let showNavigationLoadingBar = $state(false);
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
@@ -82,11 +82,21 @@
   afterNavigate(() => {
     showNavigationLoadingBar = false;
   });
+  run(() => {
+    changeTheme($colorTheme);
+  });
+  run(() => {
+    if ($user) {
+      openWebsocketConnection();
+    } else {
+      closeWebsocketConnection();
+    }
+  });
 </script>
 
 <svelte:head>
   <title>{$page.data.meta?.title || 'Web'} - Immich</title>
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="currentColor" />
   <AppleHeader />
 
@@ -135,7 +145,7 @@
 {#if $page.data.error}
   <Error error={$page.data.error}></Error>
 {:else}
-  <slot />
+  {@render children?.()}
 {/if}
 
 {#if showNavigationLoadingBar}

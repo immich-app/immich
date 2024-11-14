@@ -34,10 +34,8 @@ export class SearchService extends BaseService {
 
   async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     const options = { maxFields: 12, minAssetsPerField: 5 };
-    const results = await Promise.all([
-      this.assetRepository.getAssetIdByCity(auth.user.id, options),
-      this.assetRepository.getAssetIdByTag(auth.user.id, options),
-    ]);
+    const result = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
+    const results = [result];
     const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
     const assets = await this.assetRepository.getByIdsWithAllRelations([...assetIds]);
     const assetMap = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, mapAsset(asset)]));

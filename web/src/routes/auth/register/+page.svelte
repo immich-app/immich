@@ -4,13 +4,19 @@
   import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 </script>
 
 <FullscreenContainer title={data.meta.title}>
-  <p slot="message">
-    {$t('admin.registration_description')}
-  </p>
+  {#snippet message()}
+    <p>
+      {$t('admin.registration_description')}
+    </p>
+  {/snippet}
 
   <AdminRegistrationForm />
 </FullscreenContainer>

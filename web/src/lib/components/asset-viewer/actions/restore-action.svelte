@@ -11,8 +11,12 @@
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    asset: AssetResponseDto;
+    onAction: OnAction;
+  }
+
+  let { asset = $bindable(), onAction }: Props = $props();
 
   const handleRestoreAsset = async () => {
     try {

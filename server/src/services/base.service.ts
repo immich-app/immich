@@ -1,6 +1,9 @@
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
+import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -9,6 +12,7 @@ import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -25,6 +29,7 @@ import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
+import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
@@ -53,6 +58,7 @@ export class BaseService {
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
     @Inject(IConfigRepository) protected configRepository: IConfigRepository,
+    @Inject(ICronRepository) protected cronRepository: ICronRepository,
     @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
@@ -69,6 +75,7 @@ export class BaseService {
     @Inject(IOAuthRepository) protected oauthRepository: IOAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
+    @Inject(IProcessRepository) protected processRepository: IProcessRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
     @Inject(IServerInfoRepository) protected serverInfoRepository: IServerInfoRepository,
     @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,
@@ -96,6 +103,10 @@ export class BaseService {
     );
   }
 
+  get worker() {
+    return this.configRepository.getWorker();
+  }
+
   private get configRepos() {
     return {
       configRepo: this.configRepository,
@@ -118,5 +129,29 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
+    const user = await this.userRepository.getByEmail(dto.email);
+    if (user) {
+      throw new BadRequestException('User exists');
+    }
+
+    if (!dto.isAdmin) {
+      const localAdmin = await this.userRepository.getAdmin();
+      if (!localAdmin) {
+        throw new BadRequestException('The first registered account must the administrator.');
+      }
+    }
+
+    const payload: Partial<UserEntity> = { ...dto };
+    if (payload.password) {
+      payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
+    }
+    if (payload.storageLabel) {
+      payload.storageLabel = sanitize(payload.storageLabel.replaceAll('.', ''));
+    }
+
+    return this.userRepository.create(payload);
   }
 }

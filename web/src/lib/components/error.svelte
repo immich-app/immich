@@ -6,7 +6,11 @@
   import { mdiCodeTags, mdiContentCopy, mdiMessage, mdiPartyPopper } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let error: { message: string; code?: string | number; stack?: string } | undefined | null = undefined;
+  interface Props {
+    error?: { message: string; code?: string | number; stack?: string } | undefined | null;
+  }
+
+  let { error = undefined }: Props = $props();
 
   const handleCopy = async () => {
     if (!error) {
@@ -41,7 +45,7 @@
                 color="primary"
                 icon={mdiContentCopy}
                 title={$t('copy_error')}
-                on:click={() => handleCopy()}
+                onclick={() => handleCopy()}
               />
             </div>
           </div>
