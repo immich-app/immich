@@ -66,11 +66,15 @@
 
   const handleNext = async () => {
     try {
-      const asset = onNext ? await onNext() : assets[++currentViewAssetIndex];
-      if (asset) {
-        setAsset(asset);
-        await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      let asset: AssetResponseDto | undefined;
+      if (onNext) {
+        asset = await onNext();
+      } else {
+        currentViewAssetIndex = Math.min(currentViewAssetIndex + 1, assets.length - 1);
+        asset = assets[currentViewAssetIndex];
       }
+
+      await navigateToAsset(asset);
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_next_asset'));
     }
@@ -78,13 +82,24 @@
 
   const handlePrevious = async () => {
     try {
-      const asset = onPrevious ? await onPrevious() : assets[--currentViewAssetIndex];
-      if (asset) {
-        setAsset(asset);
-        await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      let asset: AssetResponseDto | undefined;
+      if (onPrevious) {
+        asset = await onPrevious();
+      } else {
+        currentViewAssetIndex = Math.max(currentViewAssetIndex - 1, 0);
+        asset = assets[currentViewAssetIndex];
       }
+
+      await navigateToAsset(asset);
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_previous_asset'));
+    }
+  };
+
+  const navigateToAsset = async (asset?: AssetResponseDto) => {
+    if (asset && asset.id !== $viewingAsset.id) {
+      setAsset(asset);
+      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     }
   };
 
