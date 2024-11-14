@@ -163,7 +163,7 @@ describe('/server', () => {
       expect(body).toEqual({
         photos: 0,
         usage: 0,
-        usagephotos: 0,
+        usagePhotos: 0,
         usageVideos: 0,
         usageByUser: [
           {
