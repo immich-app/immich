@@ -1,4 +1,4 @@
-export const autoGrowHeight = (textarea: HTMLTextAreaElement, height = 'auto') => {
+export const autoGrowHeight = (textarea?: HTMLTextAreaElement, height = 'auto') => {
   if (!textarea) {
     return;
   }

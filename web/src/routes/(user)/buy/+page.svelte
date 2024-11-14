@@ -11,8 +11,12 @@
   import { purchaseStore } from '$lib/stores/purchase.store';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
 
-  export let data: PageData;
-  let showLicenseActivated = false;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
+  let showLicenseActivated = $state(false);
   const { isPurchased } = purchaseStore;
 </script>
 

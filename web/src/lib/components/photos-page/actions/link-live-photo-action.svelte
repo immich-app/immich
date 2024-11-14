@@ -8,15 +8,19 @@
   import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
 
-  export let onLink: OnLink;
-  export let onUnlink: OnUnlink;
-  export let menuItem = false;
-  export let unlink = false;
+  interface Props {
+    onLink: OnLink;
+    onUnlink: OnUnlink;
+    menuItem?: boolean;
+    unlink?: boolean;
+  }
 
-  let loading = false;
+  let { onLink, onUnlink, menuItem = false, unlink = false }: Props = $props();
 
-  $: text = unlink ? $t('unlink_motion_video') : $t('link_motion_video');
-  $: icon = unlink ? mdiLinkOff : mdiMotionPlayOutline;
+  let loading = $state(false);
+
+  let text = $derived(unlink ? $t('unlink_motion_video') : $t('link_motion_video'));
+  let icon = $derived(unlink ? mdiLinkOff : mdiMotionPlayOutline);
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
@@ -68,8 +72,8 @@
 
 {#if !menuItem}
   {#if loading}
-    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} />
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
   {:else}
-    <CircleIconButton title={text} {icon} on:click={onClick} />
+    <CircleIconButton title={text} {icon} onclick={onClick} />
   {/if}
 {/if}

@@ -1,6 +1,10 @@
 <script lang="ts">
-  export let title: string | null = null;
-  export let height: string | null = null;
+  interface Props {
+    title?: string | null;
+    height?: string | null;
+  }
+
+  let { title = null, height = null }: Props = $props();
 </script>
 
 <div class="overflow-clip" style={`height: ${height}`}>

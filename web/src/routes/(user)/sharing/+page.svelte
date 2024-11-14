@@ -20,7 +20,11 @@
   import Albums from '$lib/components/album-page/albums-list.svelte';
   import { t } from 'svelte-i18n';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const settings: AlbumViewSettings = {
     view: AlbumViewMode.Cover,
@@ -34,21 +38,23 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <div class="flex" slot="buttons">
-    <LinkButton on:click={() => createAlbumAndRedirect()}>
-      <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-        <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>
-      </div>
-    </LinkButton>
+  {#snippet buttons()}
+    <div class="flex">
+      <LinkButton onclick={() => createAlbumAndRedirect()}>
+        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+          <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
+          <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>
+        </div>
+      </LinkButton>
 
-    <LinkButton href={AppRoute.SHARED_LINKS}>
-      <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-        <Icon path={mdiLink} size="18" class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>
-      </div>
-    </LinkButton>
-  </div>
+      <LinkButton href={AppRoute.SHARED_LINKS}>
+        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
+          <Icon path={mdiLink} size="18" class="shrink-0" />
+          <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>
+        </div>
+      </LinkButton>
+    </div>
+  {/snippet}
 
   <div class="flex flex-col">
     {#if data.partners.length > 0}
@@ -89,7 +95,9 @@
         <!-- Shared Album List -->
         <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
           <!-- Empty List -->
-          <EmptyPlaceholder slot="empty" text={$t('no_shared_albums_message')} src={empty2Url} />
+          {#snippet empty()}
+            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} />
+          {/snippet}
         </Albums>
       </div>
     </div>
