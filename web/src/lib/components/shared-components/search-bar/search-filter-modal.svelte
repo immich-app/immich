@@ -2,12 +2,7 @@
   import type { SearchLocationFilter } from './search-location-section.svelte';
   import type { SearchDisplayFilters } from './search-display-section.svelte';
   import type { SearchDateFilter } from './search-date-section.svelte';
-
-  export enum MediaType {
-    All = 'all',
-    Image = 'image',
-    Video = 'video',
-  }
+  import { MediaType } from '$lib/constants';
 
   export type SearchFilter = {
     query: string;

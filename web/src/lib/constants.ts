@@ -361,3 +361,20 @@ export enum PersonPageViewMode {
   BIRTH_DATE = 'birth-date',
   UNASSIGN_ASSETS = 'unassign-faces',
 }
+
+export enum MediaType {
+  All = 'all',
+  Image = 'image',
+  Video = 'video',
+}
+
+export enum ProgressBarStatus {
+  Playing = 'playing',
+  Paused = 'paused',
+}
+
+export enum ToggleVisibility {
+  HIDE_ALL = 'hide-all',
+  HIDE_UNNANEMD = 'hide-unnamed',
+  SHOW_ALL = 'show-all',
+}
