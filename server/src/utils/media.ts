@@ -384,6 +384,7 @@ export class ThumbnailConfig extends BaseConfig {
   }
 
   getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
+    // skip_frame nointra skips all frames for some MPEG-TS files. Look at ffmpeg tickets 7950 and 7895 for more details.
     return format?.formatName === 'mpegts'
       ? ['-sws_flags accurate_rnd+full_chroma_int']
       : ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
