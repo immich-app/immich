@@ -128,6 +128,8 @@
 
     if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
+    } else if (backUrl === AppRoute.SHARED_LINKS) {
+      backUrl = history.state?.backUrl || AppRoute.ALBUMS;
     }
   });
 
