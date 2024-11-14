@@ -135,7 +135,7 @@ export class ServerService extends BaseService {
       serverStats.usage += usage.usage;
       serverStats.usagePhotos += usage.usagePhotos;
       serverStats.usageVideos += usage.usageVideos;
-    
+
       serverStats.usageByUser.push(usage);
     }
 

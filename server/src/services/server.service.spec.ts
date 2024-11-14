@@ -215,6 +215,8 @@ describe(ServerService.name, () => {
         photos: 120,
         videos: 31,
         usage: 1_123_455,
+        usagePhotos: 1001,
+        usageVideos: 122_455,
         usageByUser: [
           {
             photos: 10,

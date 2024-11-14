@@ -108,8 +108,14 @@ export class UserRepository implements IUserRepository {
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
       .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
       .addSelect('COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL), 0)', 'usage')
-      .addSelect(`COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL AND assets.type = 'IMAGE'), 0)`, 'usagePhotos')
-      .addSelect(`COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL AND assets.type = 'VIDEO'), 0)`, 'usageVideos')
+      .addSelect(
+        `COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL AND assets.type = 'IMAGE'), 0)`,
+        'usagePhotos',
+      )
+      .addSelect(
+        `COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL AND assets.type = 'VIDEO'), 0)`,
+        'usageVideos',
+      )
       .addSelect('users.quotaSizeInBytes', 'quotaSizeInBytes')
       .leftJoin('users.assets', 'assets')
       .leftJoin('assets.exifInfo', 'exif')
