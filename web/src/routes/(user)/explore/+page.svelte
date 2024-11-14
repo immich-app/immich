@@ -18,16 +18,12 @@
 
   let { data }: Props = $props();
 
-  enum Field {
-    CITY = 'exifInfo.city',
-  }
-
-  const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
+  const getFieldItems = (items: SearchExploreResponseDto[], field: string) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
   };
 
-  let places = $derived(getFieldItems(data.items, Field.CITY));
+  let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
   let people = $state(data.response.people);
 
   let hasPeople = $derived(data.response.total > 0);
