@@ -6,6 +6,7 @@ import {
   TranscodeCommand,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
+  VideoFormat,
   VideoStreamInfo,
 } from 'src/interfaces/media.interface';
 
@@ -77,9 +78,14 @@ export class BaseConfig implements VideoCodecSWConfig {
     return handler;
   }
 
-  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getCommand(
+    target: TranscodeTarget,
+    videoStream: VideoStreamInfo,
+    audioStream?: AudioStreamInfo,
+    format?: VideoFormat,
+  ) {
     const options = {
-      inputOptions: this.getBaseInputOptions(videoStream),
+      inputOptions: this.getBaseInputOptions(videoStream, format),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
       progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
@@ -101,7 +107,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
     return this.getInputThreadOptions();
   }
 
@@ -377,8 +383,11 @@ export class ThumbnailConfig extends BaseConfig {
     return new ThumbnailConfig(config);
   }
 
-  getBaseInputOptions(): string[] {
-    return ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
+    // skip_frame nointra skips all frames for some MPEG-TS files. Look at ffmpeg tickets 7950 and 7895 for more details.
+    return format?.formatName === 'mpegts'
+      ? ['-sws_flags accurate_rnd+full_chroma_int']
+      : ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
   }
 
   getBaseOutputOptions() {
