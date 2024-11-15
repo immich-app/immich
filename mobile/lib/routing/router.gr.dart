@@ -1087,7 +1087,6 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
     required Asset asset,
     required Widget placeholder,
     bool showControls = true,
-    Duration hideControlsTimer = const Duration(seconds: 5),
     List<PageRouteInfo>? children,
   }) : super(
           NativeVideoViewerRoute.name,
@@ -1096,7 +1095,6 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
             asset: asset,
             placeholder: placeholder,
             showControls: showControls,
-            hideControlsTimer: hideControlsTimer,
           ),
           initialChildren: children,
         );
@@ -1112,7 +1110,6 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
         asset: args.asset,
         placeholder: args.placeholder,
         showControls: args.showControls,
-        hideControlsTimer: args.hideControlsTimer,
       );
     },
   );
@@ -1124,7 +1121,6 @@ class NativeVideoViewerRouteArgs {
     required this.asset,
     required this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
   });
 
   final Key? key;
@@ -1135,11 +1131,9 @@ class NativeVideoViewerRouteArgs {
 
   final bool showControls;
 
-  final Duration hideControlsTimer;
-
   @override
   String toString() {
-    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, placeholder: $placeholder, showControls: $showControls, hideControlsTimer: $hideControlsTimer}';
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, placeholder: $placeholder, showControls: $showControls}';
   }
 }
 

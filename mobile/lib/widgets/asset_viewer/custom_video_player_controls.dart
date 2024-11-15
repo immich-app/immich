@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
@@ -12,7 +13,7 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
 
   const CustomVideoPlayerControls({
     super.key,
-    this.hideTimerDuration = const Duration(seconds: 3),
+    this.hideTimerDuration = const Duration(seconds: 5),
   });
 
   @override
@@ -28,7 +29,12 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
 
         final state = ref.read(videoPlaybackValueProvider).state;
         // Do not hide on paused
-        if (state != VideoPlaybackState.paused) {
+        if (state == VideoPlaybackState.paused) {
+          return;
+        }
+
+        final asset = ref.read(currentAssetProvider);
+        if (asset != null && asset.isVideo) {
           ref.read(showControlsProvider.notifier).show = false;
         }
       },
