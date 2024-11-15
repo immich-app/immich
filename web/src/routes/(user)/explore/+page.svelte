@@ -35,8 +35,6 @@
           person.updatedAt = Date.now().toString();
         }
       });
-      // trigger reactivity
-      people = people;
     });
   });
 </script>

@@ -58,7 +58,6 @@
   const handleToggle = (user: UserResponseDto) => {
     if (Object.keys(selectedUsers).includes(user.id)) {
       delete selectedUsers[user.id];
-      selectedUsers = selectedUsers;
     } else {
       selectedUsers[user.id] = { user, role: AlbumUserRole.Editor };
     }
@@ -67,7 +66,6 @@
   const handleChangeRole = (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
       delete selectedUsers[user.id];
-      selectedUsers = selectedUsers;
     } else {
       selectedUsers[user.id].role = role;
     }
