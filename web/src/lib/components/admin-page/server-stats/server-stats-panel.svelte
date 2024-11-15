@@ -16,6 +16,8 @@
       photos: 0,
       videos: 0,
       usage: 0,
+      usagePhotos: 0,
+      usageVideos: 0,
       usageByUser: [],
     },
   }: Props = $props();
@@ -105,8 +107,12 @@
             class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
           >
             <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
-            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.photos.toLocaleString($locale)}</td>
-            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.videos.toLocaleString($locale)}</td>
+            <td class="w-1/4 text-ellipsis px-2 text-sm"
+              >{user.photos.toLocaleString($locale)} ({getByteUnitString(user.usagePhotos, $locale, 0)})</td
+            >
+            <td class="w-1/4 text-ellipsis px-2 text-sm"
+              >{user.videos.toLocaleString($locale)} ({getByteUnitString(user.usageVideos, $locale, 0)})</td
+            >
             <td class="w-1/4 text-ellipsis px-2 text-sm">
               {getByteUnitString(user.usage, $locale, 0)}
               {#if user.quotaSizeInBytes}
