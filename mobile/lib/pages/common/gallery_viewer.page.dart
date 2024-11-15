@@ -67,22 +67,17 @@ class GalleryViewerPage extends HookConsumerWidget {
         ? ref.watch(assetStackStateProvider(currentAsset))
         : <Asset>[];
     final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
-    // Assets from response DTOs do not have an isar id, querying which would give us the default autoIncrement id
-    final isFromDto = currentAsset.id == noDbId;
-
-    Asset asset = stackIndex.value == -1
-        ? currentAsset
-        : stackElements.elementAt(stackIndex.value);
 
     // // Update is playing motion video
-    if (asset.isMotionPhoto) {
-      ref.listen(
-          videoPlaybackValueProvider.select(
-            (playback) => playback.state == VideoPlaybackState.playing,
-          ), (_, isPlaying) {
+    ref.listen(
+        videoPlaybackValueProvider.select(
+          (playback) => playback.state == VideoPlaybackState.playing,
+        ), (_, isPlaying) {
+      final asset = ref.read(currentAssetProvider);
+      if (asset != null && asset.isMotionPhoto) {
         isPlayingMotionVideo.value = isPlaying;
-      });
-    }
+      }
+    });
 
     Future<void> precacheNextImage(int index) async {
       if (!context.mounted) {
@@ -114,26 +109,29 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     }
 
-    // Listen provider to prevent autoDispose when navigating to other routes from within the gallery page
-    ref.listen(currentAssetProvider, (prev, cur) {});
+    useEffect(
+      () {
+        if (ref.read(showControlsProvider)) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        } else {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+        }
 
-    useEffect(() {
-      ref.read(currentAssetProvider.notifier).set(asset);
-      if (ref.read(showControlsProvider)) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      }
+        // Delay this a bit so we can finish loading the page
+        Timer(const Duration(milliseconds: 400), () {
+          precacheNextImage(currentIndex.value + 1);
+        });
 
-      // Delay this a bit so we can finish loading the page
-      Timer(const Duration(milliseconds: 400), () {
-        precacheNextImage(currentIndex.value + 1);
-      });
-
-      return null;
-    });
+        return null;
+      },
+      [],
+    );
 
     void showInfo() {
+      final asset = ref.read(currentAssetProvider);
+      if (asset == null) {
+        return;
+      }
       showModalBottomSheet(
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(15.0)),
@@ -205,7 +203,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
 
       return ListView.builder(
-        key: ValueKey(currentAsset),
         shrinkWrap: true,
         scrollDirection: Axis.horizontal,
         itemCount: stackElements.length,
@@ -252,12 +249,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       );
     }
 
-    Object getHeroTag(Asset asset) {
-      return isFromDto
-          ? '${asset.remoteId}-$heroOffset'
-          : asset.id + heroOffset;
-    }
-
     PhotoViewGalleryPageOptions buildImage(BuildContext context, Asset asset) {
       return PhotoViewGalleryPageOptions(
         onDragStart: (_, details, __) {
@@ -277,10 +268,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               }
             : null,
         imageProvider: ImmichImage.imageProvider(asset: asset),
-        heroAttributes: PhotoViewHeroAttributes(
-          tag: getHeroTag(asset),
-          transitionOnUserGestures: true,
-        ),
+        heroAttributes: _getHeroAttributes(asset),
         filterQuality: FilterQuality.high,
         tightMode: true,
         minScale: PhotoViewComputedScale.contained,
@@ -294,40 +282,33 @@ class GalleryViewerPage extends HookConsumerWidget {
     PhotoViewGalleryPageOptions buildVideo(BuildContext context, Asset asset) {
       // This key is to prevent the video player from being re-initialized during the hero animation
       final key = GlobalKey();
-      final tag = getHeroTag(asset);
       return PhotoViewGalleryPageOptions.customChild(
         onDragStart: (_, details, __) =>
             localPosition.value = details.localPosition,
         onDragUpdate: (_, details, __) => handleSwipeUpDown(details),
-        heroAttributes: PhotoViewHeroAttributes(
-          tag: tag,
-          transitionOnUserGestures: true,
-        ),
+        heroAttributes: _getHeroAttributes(asset),
         filterQuality: FilterQuality.high,
         initialScale: 1.0,
         maxScale: 1.0,
         minScale: 1.0,
         basePosition: Alignment.center,
-        child: Hero(
-          tag: tag,
-          child: SizedBox(
-            width: context.width,
-            height: context.height,
-            child: NativeVideoViewerPage(
-              key: key,
-              asset: asset,
-              placeholder: Image(
-                key: ValueKey(asset),
-                image: ImmichImage.imageProvider(
-                  asset: asset,
-                  width: context.width,
-                  height: context.height,
-                ),
-                fit: BoxFit.contain,
-                height: context.height,
+        child: SizedBox(
+          width: context.width,
+          height: context.height,
+          child: NativeVideoViewerPage(
+            key: key,
+            asset: asset,
+            placeholder: Image(
+              key: ValueKey(asset),
+              image: ImmichImage.imageProvider(
+                asset: asset,
                 width: context.width,
-                alignment: Alignment.center,
+                height: context.height,
               ),
+              fit: BoxFit.contain,
+              height: context.height,
+              width: context.width,
+              alignment: Alignment.center,
             ),
           ),
         ),
@@ -335,13 +316,15 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     PhotoViewGalleryPageOptions buildAsset(BuildContext context, int index) {
-      final newAsset = index == currentIndex.value ? asset : loadAsset(index);
+      final newAsset = loadAsset(index);
 
       if (newAsset.isImage && !isPlayingMotionVideo.value) {
         return buildImage(context, newAsset);
       }
       return buildVideo(context, newAsset);
     }
+
+    log.info('GalleryViewerPage: Building gallery viewer page');
 
     return PopScope(
       // Change immersive mode back to normal "edgeToEdge" mode
@@ -352,34 +335,41 @@ class GalleryViewerPage extends HookConsumerWidget {
         body: Stack(
           children: [
             PhotoViewGallery.builder(
-              key: ValueKey(asset),
+              key: const ValueKey('gallery'),
               scaleStateChangedCallback: (state) {
+                final asset = ref.read(currentAssetProvider);
+                if (asset == null) {
+                  return;
+                }
+
                 if (asset.isImage && !isPlayingMotionVideo.value) {
                   isZoomed.value = state != PhotoViewScaleState.initial;
                   ref.read(showControlsProvider.notifier).show =
                       !isZoomed.value;
                 }
               },
-              // wantKeepAlive: true,
               gaplessPlayback: true,
-              loadingBuilder: (context, event, index) => ClipRect(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    BackdropFilter(
-                      filter: ui.ImageFilter.blur(
-                        sigmaX: 10,
-                        sigmaY: 10,
+              loadingBuilder: (context, event, index) {
+                final asset = loadAsset(index);
+                return ClipRect(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      BackdropFilter(
+                        filter: ui.ImageFilter.blur(
+                          sigmaX: 10,
+                          sigmaY: 10,
+                        ),
                       ),
-                    ),
-                    ImmichThumbnail(
-                      key: ValueKey(asset),
-                      asset: asset,
-                      fit: BoxFit.contain,
-                    ),
-                  ],
-                ),
-              ),
+                      ImmichThumbnail(
+                        key: ValueKey(asset),
+                        asset: asset,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
+                  ),
+                );
+              },
               pageController: controller,
               scrollPhysics: isZoomed.value
                   ? const NeverScrollableScrollPhysics() // Don't allow paging while scrolled in
@@ -394,8 +384,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
                 ref.read(hapticFeedbackProvider.notifier).selectionClick();
 
-                final newAsset =
-                    value == currentIndex.value ? asset : loadAsset(value);
+                final newAsset = loadAsset(value);
 
                 currentIndex.value = value;
                 stackIndex.value = -1;
@@ -418,6 +407,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               left: 0,
               right: 0,
               child: GalleryAppBar(
+                key: const ValueKey('app-bar'),
                 showInfo: showInfo,
                 isPlayingMotionVideo: isPlayingMotionVideo,
               ),
@@ -436,6 +426,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     ),
                   ),
                   BottomGalleryBar(
+                    key: const ValueKey('bottom-bar'),
                     renderList: renderList,
                     totalAssets: totalAssets,
                     controller: controller,
@@ -450,6 +441,16 @@ class GalleryViewerPage extends HookConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+
+  @pragma('vm:prefer-inline')
+  PhotoViewHeroAttributes _getHeroAttributes(Asset asset) {
+    return PhotoViewHeroAttributes(
+      tag: asset.isInDb
+          ? asset.id + heroOffset
+          : '${asset.remoteId}-$heroOffset',
+      transitionOnUserGestures: true,
     );
   }
 }

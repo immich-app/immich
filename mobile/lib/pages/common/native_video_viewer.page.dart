@@ -24,7 +24,6 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class NativeVideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool showControls;
-  final Duration hideControlsTimer;
   final Widget placeholder;
 
   const NativeVideoViewerPage({
@@ -32,7 +31,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     required this.asset,
     required this.placeholder,
     this.showControls = true,
-    this.hideControlsTimer = const Duration(seconds: 5),
   });
 
   @override
@@ -370,6 +368,18 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         removeListeners(playerController);
       }
 
+      final curAsset = currentAsset.value;
+      if (curAsset == asset) {
+        return;
+      }
+
+      // no need to delay video playback when swiping from an image to a video
+      if (curAsset != null && !curAsset.isVideo) {
+        currentAsset.value = value;
+        onPlaybackReady();
+        return;
+      }
+
       // Delay the video playback to avoid a stutter in the swipe animation
       Timer(const Duration(milliseconds: 300), () {
         if (!context.mounted) {
@@ -395,38 +405,30 @@ class NativeVideoViewerPage extends HookConsumerWidget {
             log.severe('Error stopping video: $error');
           });
 
-          controller.value = null;
           WakelockPlus.disable();
         };
       },
-      [videoSource],
+      [],
     );
 
     return Stack(
       children: [
         placeholder, // this is always under the video to avoid flickering
-        Center(
-          key: ValueKey('player-${asset.hashCode}'),
-          child: aspectRatio.value != null
-              ? AspectRatio(
-                  key: ValueKey(asset),
-                  aspectRatio: aspectRatio.value!,
-                  child: isCurrent
-                      ? NativeVideoPlayerView(
-                          key: ValueKey(asset),
-                          onViewReady: initController,
-                        )
-                      : null,
-                )
-              : null,
-        ),
-        if (showControls)
+        if (aspectRatio.value != null)
           Center(
-            key: ValueKey('controls-${asset.hashCode}'),
-            child: CustomVideoPlayerControls(
-              hideTimerDuration: hideControlsTimer,
+            key: ValueKey(asset),
+            child: AspectRatio(
+              key: ValueKey(asset),
+              aspectRatio: aspectRatio.value!,
+              child: isCurrent
+                  ? NativeVideoPlayerView(
+                      key: ValueKey(asset),
+                      onViewReady: initController,
+                    )
+                  : null,
             ),
           ),
+        if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
   }

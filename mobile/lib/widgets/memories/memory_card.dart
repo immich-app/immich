@@ -71,7 +71,6 @@ class MemoryCard extends StatelessWidget {
                   child: NativeVideoViewerPage(
                     key: ValueKey(asset.id),
                     asset: asset,
-                    hideControlsTimer: const Duration(seconds: 2),
                     showControls: false,
                     placeholder: SizedBox.expand(
                       child: ImmichImage(
