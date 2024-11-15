@@ -27,7 +27,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let { savedConfig, defaultConfig, config, disabled = false, onReset, onSave }: Props = $props();
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
   let _htmlPreview = $state('');
   let loadingPreview = $state(false);
@@ -96,7 +96,7 @@
             {#each templateConfigs as { label, templateKey, descriptionTags, templateName }}
               <SettingTextareaWysiwyg
                 {label}
-                desc={$t('admin.template_email_available_tags', { values: { tags: descriptionTags } })}
+                description={$t('admin.template_email_available_tags', { values: { tags: descriptionTags } })}
                 bind:value={config.templates.email[templateKey]}
                 isEdited={isEdited(templateKey)}
                 disabled={!config.notifications.smtp.enabled}
