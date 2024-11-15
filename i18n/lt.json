@@ -400,7 +400,7 @@
   "confirm_password": "Patvirtinti slaptažodį",
   "contain": "",
   "context": "Kontekstas",
-  "continue_text": "Tęsti",
+  "continue": "Tęsti",
   "copied_image_to_clipboard": "Nuotrauka nukopijuota į iškarpinę.",
   "copied_to_clipboard": "Nukopijuota į iškapinę!",
   "copy_error": "Kopijavimo klaida",

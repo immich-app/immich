@@ -492,7 +492,7 @@
   "confirm_password": "Подтвердите пароль",
   "contain": "Вместить",
   "context": "Контекст",
-  "continue_text": "Продолжить",
+  "continue": "Продолжить",
   "copied_image_to_clipboard": "Изображение скопировано в буфер обмена.",
   "copied_to_clipboard": "Скопировано в буфер обмена!",
   "copy_error": "Ошибка копирования",

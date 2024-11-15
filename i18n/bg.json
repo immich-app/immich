@@ -439,7 +439,7 @@
   "confirm_password": "Потвърдете паролата",
   "contain": "",
   "context": "Контекст",
-  "continue_text": "Продължи",
+  "continue": "Продължи",
   "copied_image_to_clipboard": "Изображението е копирано в клипборда.",
   "copied_to_clipboard": "Копирано в клипборда!",
   "copy_error": "Грешка при копирането",

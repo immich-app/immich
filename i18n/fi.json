@@ -484,7 +484,7 @@
   "confirm_password": "Vahvista salasana",
   "contain": "Mahduta",
   "context": "Konteksti",
-  "continue_text": "Jatka",
+  "continue": "Jatka",
   "copied_image_to_clipboard": "Kuva kopioitu leikepöydälle.",
   "copied_to_clipboard": "Kopioitu leikepöydälle!",
   "copy_error": "Kopiointivirhe",

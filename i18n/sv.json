@@ -484,7 +484,7 @@
   "confirm_password": "Bekräfta lösenord",
   "contain": "Anpassa",
   "context": "Sammanhang",
-  "continue_text": "Fortsätt",
+  "continue": "Fortsätt",
   "copied_image_to_clipboard": "Kopierade bilden till urklipp.",
   "copied_to_clipboard": "Kopierat till urklipp!",
   "copy_error": "Kopieringsfel",

@@ -386,7 +386,7 @@
   "confirm_password": "ยืนยันรหัสผ่าน",
   "contain": "มี",
   "context": "บริบท",
-  "continue_text": "ต่อไป",
+  "continue": "ต่อไป",
   "copied_image_to_clipboard": "คัดลอกภาพไปยังคลิปบอร์ดแล้ว",
   "copy_error": "คัดลอกข้อผิดพลาด",
   "copy_file_path": "คัดลอกพาธของไฟล์",

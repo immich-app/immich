@@ -492,7 +492,7 @@
   "confirm_password": "비밀번호 확인",
   "contain": "맞춤",
   "context": "내용",
-  "continue_text": "계속",
+  "continue": "계속",
   "copied_image_to_clipboard": "이미지가 클립보드에 복사되었습니다.",
   "copied_to_clipboard": "클립보드에 복사되었습니다!",
   "copy_error": "오류 복사",

@@ -462,7 +462,7 @@
   "confirm_password": "Bekræft adgangskode",
   "contain": "Inddæm",
   "context": "Kontekst",
-  "continue_text": "Fortsæt",
+  "continue": "Fortsæt",
   "copied_image_to_clipboard": "Kopierede billede til clipboard.",
   "copied_to_clipboard": "Kopieret til udklipsholder!",
   "copy_error": "Kopifejl",
