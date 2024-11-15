@@ -32,7 +32,7 @@
     type AssetResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -120,9 +120,11 @@
       stack = null;
     }
 
-    if (stack && stack?.assets.length > 1) {
-      preloadAssets.push(stack.assets[1]);
-    }
+    untrack(() => {
+      if (stack && stack?.assets.length > 1) {
+        preloadAssets.push(stack.assets[1]);
+      }
+    });
   };
 
   const handleAddComment = () => {
