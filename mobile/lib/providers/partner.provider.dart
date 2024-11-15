@@ -11,12 +11,12 @@ import 'package:isar/isar.dart';
 class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
   PartnerSharedWithNotifier(Isar db, this._ps) : super([]) {
     final query = db.users.filter().isPartnerSharedWithEqualTo(true).sortById();
-    Function eq = const ListEquality().equals;
     query.findAll().then((partners) {
       if (partners.isNotEmpty) {
         state = partners;
       }
     }).then((_) {
+      Function eq = const ListEquality<User>().equals;
       query.watch().listen((partners) {
         if (!eq(state, partners)) {
           state = partners;
@@ -43,12 +43,12 @@ final partnerSharedWithProvider =
 class PartnerSharedByNotifier extends StateNotifier<List<User>> {
   PartnerSharedByNotifier(Isar db) : super([]) {
     final query = db.users.filter().isPartnerSharedByEqualTo(true);
-    Function eq = const ListEquality().equals;
     query.findAll().then((partners) {
       if (partners.isNotEmpty) {
         state = partners;
       }
     }).then((_) {
+      Function eq = const ListEquality<User>().equals;
       streamSub = query.watch().listen((partners) {
         if (!eq(state, partners)) {
           state = partners;
