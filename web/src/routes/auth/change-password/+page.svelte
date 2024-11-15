@@ -8,7 +8,11 @@
   import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const onSuccess = async () => {
     await goto(AppRoute.AUTH_LOGIN);
@@ -18,12 +22,14 @@
 </script>
 
 <FullscreenContainer title={data.meta.title}>
-  <p slot="message">
-    {$t('hi_user', { values: { name: $user.name, email: $user.email } })}
-    <br />
-    <br />
-    {$t('change_password_description')}
-  </p>
+  {#snippet message()}
+    <p>
+      {$t('hi_user', { values: { name: $user.name, email: $user.email } })}
+      <br />
+      <br />
+      {$t('change_password_description')}
+    </p>
+  {/snippet}
 
   <ChangePasswordForm {onSuccess} />
 </FullscreenContainer>

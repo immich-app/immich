@@ -7,8 +7,12 @@
   import { mdiCloudDownloadOutline, mdiFileDownloadOutline, mdiFolderDownloadOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let filename = 'immich.zip';
-  export let menuItem = false;
+  interface Props {
+    filename?: string;
+    menuItem?: boolean;
+  }
+
+  let { filename = 'immich.zip', menuItem = false }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -24,7 +28,7 @@
     await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) });
   };
 
-  $: menuItemIcon = getAssets().size === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline;
+  let menuItemIcon = $derived(getAssets().size === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline);
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: handleDownloadFiles }} />
@@ -32,5 +36,5 @@
 {#if menuItem}
   <MenuOption text={$t('download')} icon={menuItemIcon} onClick={handleDownloadFiles} />
 {:else}
-  <CircleIconButton title={$t('download')} icon={mdiCloudDownloadOutline} on:click={handleDownloadFiles} />
+  <CircleIconButton title={$t('download')} icon={mdiCloudDownloadOutline} onclick={handleDownloadFiles} />
 {/if}

@@ -196,5 +196,35 @@ describe(BackupService.name, () => {
       expect(storageMock.unlink).toHaveBeenCalled();
       expect(result).toBe(JobStatus.FAILED);
     });
+    it.each`
+      postgresVersion                       | expectedVersion
+      ${'14.10'}                            | ${14}
+      ${'14.10.3'}                          | ${14}
+      ${'14.10 (Debian 14.10-1.pgdg120+1)'} | ${14}
+      ${'15.3.3'}                           | ${15}
+      ${'16.4.2'}                           | ${16}
+      ${'17.15.1'}                          | ${17}
+    `(
+      `should use pg_dumpall $expectedVersion with postgres version $postgresVersion`,
+      async ({ postgresVersion, expectedVersion }) => {
+        databaseMock.getPostgresVersion.mockResolvedValue(postgresVersion);
+        await sut.handleBackupDatabase();
+        expect(processMock.spawn).toHaveBeenCalledWith(
+          `/usr/lib/postgresql/${expectedVersion}/bin/pg_dumpall`,
+          expect.any(Array),
+          expect.any(Object),
+        );
+      },
+    );
+    it.each`
+      postgresVersion
+      ${'13.99.99'}
+      ${'18.0.0'}
+    `(`should fail if postgres version $postgresVersion is not supported`, async ({ postgresVersion }) => {
+      databaseMock.getPostgresVersion.mockResolvedValue(postgresVersion);
+      const result = await sut.handleBackupDatabase();
+      expect(processMock.spawn).not.toHaveBeenCalled();
+      expect(result).toBe(JobStatus.FAILED);
+    });
   });
 });

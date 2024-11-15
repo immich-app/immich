@@ -27,7 +27,11 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   if (!$featureFlags.trash) {
     handlePromiseError(goto(AppRoute.PHOTOS));
@@ -99,26 +103,30 @@
 
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
-    <div class="flex place-items-center gap-2" slot="buttons">
-      <LinkButton on:click={handleRestoreTrash} disabled={$isMultiSelectState}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiHistory} size="18" />
-          {$t('restore_all')}
-        </div>
-      </LinkButton>
-      <LinkButton on:click={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiDeleteForeverOutline} size="18" />
-          {$t('empty_trash')}
-        </div>
-      </LinkButton>
-    </div>
+    {#snippet buttons()}
+      <div class="flex place-items-center gap-2">
+        <LinkButton onclick={handleRestoreTrash} disabled={$isMultiSelectState}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiHistory} size="18" />
+            {$t('restore_all')}
+          </div>
+        </LinkButton>
+        <LinkButton onclick={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
+          <div class="flex place-items-center gap-2 text-sm">
+            <Icon path={mdiDeleteForeverOutline} size="18" />
+            {$t('empty_trash')}
+          </div>
+        </LinkButton>
+      </div>
+    {/snippet}
 
     <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>
-      <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} slot="empty" />
+      {#snippet empty()}
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} />
+      {/snippet}
     </AssetGrid>
   </UserPageLayout>
 {/if}

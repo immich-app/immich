@@ -4,9 +4,13 @@
   import AutogrowTextarea from '$lib/components/shared-components/autogrow-textarea.svelte';
   import { t } from 'svelte-i18n';
 
-  export let id: string;
-  export let description: string;
-  export let isOwned: boolean;
+  interface Props {
+    id: string;
+    description: string;
+    isOwned: boolean;
+  }
+
+  let { id, description = $bindable(), isOwned }: Props = $props();
 
   const handleUpdateDescription = async (newDescription: string) => {
     try {

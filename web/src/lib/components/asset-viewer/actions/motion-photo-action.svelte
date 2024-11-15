@@ -3,13 +3,17 @@
   import { mdiMotionPauseOutline, mdiPlaySpeed } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let isPlaying: boolean;
-  export let onClick: (shouldPlay: boolean) => void;
+  interface Props {
+    isPlaying: boolean;
+    onClick: (shouldPlay: boolean) => void;
+  }
+
+  let { isPlaying, onClick }: Props = $props();
 </script>
 
 <CircleIconButton
   color="opaque"
   icon={isPlaying ? mdiMotionPauseOutline : mdiPlaySpeed}
   title={isPlaying ? $t('stop_motion_photo') : $t('play_motion_photo')}
-  on:click={() => onClick(!isPlaying)}
+  onclick={() => onClick(!isPlaying)}
 />

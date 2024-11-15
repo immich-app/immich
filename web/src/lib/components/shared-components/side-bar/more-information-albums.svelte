@@ -3,7 +3,11 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { t } from 'svelte-i18n';
 
-  export let albumType: keyof AlbumStatisticsResponseDto;
+  interface Props {
+    albumType: keyof AlbumStatisticsResponseDto;
+  }
+
+  let { albumType }: Props = $props();
 
   const handleAlbumCount = async () => {
     try {

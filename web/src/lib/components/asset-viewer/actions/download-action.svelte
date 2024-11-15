@@ -7,8 +7,12 @@
   import { mdiFolderDownloadOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let menuItem = false;
+  interface Props {
+    asset: AssetResponseDto;
+    menuItem?: boolean;
+  }
+
+  let { asset, menuItem = false }: Props = $props();
 
   const onDownloadFile = () => downloadFile(asset);
 </script>
@@ -16,7 +20,7 @@
 <svelte:window use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: onDownloadFile }} />
 
 {#if !menuItem}
-  <CircleIconButton color="opaque" icon={mdiFolderDownloadOutline} title={$t('download')} on:click={onDownloadFile} />
+  <CircleIconButton color="opaque" icon={mdiFolderDownloadOutline} title={$t('download')} onclick={onDownloadFile} />
 {:else}
   <MenuOption icon={mdiFolderDownloadOutline} text={$t('download')} onClick={onDownloadFile} />
 {/if}
