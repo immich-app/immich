@@ -5,6 +5,8 @@ import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetType, ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ICronRepository } from 'src/interfaces/cron.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IJobRepository,
@@ -16,7 +18,6 @@ import {
 } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { LibraryService } from 'src/services/library.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -35,30 +36,30 @@ describe(LibraryService.name, () => {
   let sut: LibraryService;
 
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
+  let cronMock: Mocked<ICronRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
   let jobMock: Mocked<IJobRepository>;
   let libraryMock: Mocked<ILibraryRepository>;
   let storageMock: Mocked<IStorageRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {
-    ({ sut, assetMock, databaseMock, jobMock, libraryMock, storageMock, systemMock } = newTestService(LibraryService));
+    ({ sut, assetMock, configMock, cronMock, databaseMock, jobMock, libraryMock, storageMock } =
+      newTestService(LibraryService));
 
     databaseMock.tryLock.mockResolvedValue(true);
+    configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('onBootstrapEvent', () => {
+  describe('onConfigInit', () => {
     it('should init cron job and handle config changes', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryScan);
+      await sut.onConfigInit({ newConfig: defaults });
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
-
-      expect(jobMock.addCronJob).toHaveBeenCalled();
-      expect(systemMock.get).toHaveBeenCalled();
+      expect(cronMock.create).toHaveBeenCalled();
 
       await sut.onConfigUpdate({
         oldConfig: defaults,
@@ -73,7 +74,7 @@ describe(LibraryService.name, () => {
         } as SystemConfig,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith('libraryScan', '0 1 * * *', true);
+      expect(cronMock.update).toHaveBeenCalledWith({ name: 'libraryScan', expression: '0 1 * * *', start: true });
     });
 
     it('should initialize watcher for all external libraries', async () => {
@@ -82,7 +83,6 @@ describe(LibraryService.name, () => {
         libraryStub.externalLibraryWithImportPaths2,
       ]);
 
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockImplementation((id) =>
         Promise.resolve(
           [libraryStub.externalLibraryWithImportPaths1, libraryStub.externalLibraryWithImportPaths2].find(
@@ -91,7 +91,7 @@ describe(LibraryService.name, () => {
         ),
       );
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
 
       expect(storageMock.watch.mock.calls).toEqual(
         expect.arrayContaining([
@@ -102,113 +102,78 @@ describe(LibraryService.name, () => {
     });
 
     it('should not initialize watcher when watching is disabled', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
-
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchDisabled as SystemConfig });
 
       expect(storageMock.watch).not.toHaveBeenCalled();
     });
 
     it('should not initialize watcher when lock is taken', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       databaseMock.tryLock.mockResolvedValue(false);
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
 
       expect(storageMock.watch).not.toHaveBeenCalled();
     });
 
     it('should not initialize library scan cron job when lock is taken', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       databaseMock.tryLock.mockResolvedValue(false);
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
 
-      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+      expect(cronMock.create).not.toHaveBeenCalled();
     });
 
     it('should not initialize watcher or library scan job when running on api', async () => {
-      await sut.onBootstrap(ImmichWorker.API);
+      configMock.getWorker.mockReturnValue(ImmichWorker.API);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryScan as SystemConfig });
 
-      expect(jobMock.addCronJob).not.toHaveBeenCalled();
+      expect(cronMock.create).not.toHaveBeenCalled();
     });
   });
 
   describe('onConfigUpdateEvent', () => {
     beforeEach(async () => {
-      systemMock.get.mockResolvedValue(defaults);
       databaseMock.tryLock.mockResolvedValue(true);
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
-    });
-
-    it('should do nothing if oldConfig is not provided', async () => {
-      await sut.onConfigUpdate({ newConfig: systemConfigStub.libraryScan as SystemConfig });
-      expect(jobMock.updateCronJob).not.toHaveBeenCalled();
+      await sut.onConfigInit({ newConfig: defaults });
     });
 
     it('should do nothing if instance does not have the watch lock', async () => {
       databaseMock.tryLock.mockResolvedValue(false);
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: defaults });
       await sut.onConfigUpdate({ newConfig: systemConfigStub.libraryScan as SystemConfig, oldConfig: defaults });
-      expect(jobMock.updateCronJob).not.toHaveBeenCalled();
+      expect(cronMock.update).not.toHaveBeenCalled();
     });
 
     it('should update cron job and enable watching', async () => {
       libraryMock.getAll.mockResolvedValue([]);
       await sut.onConfigUpdate({
-        newConfig: {
-          library: { ...systemConfigStub.libraryScan.library, ...systemConfigStub.libraryWatchEnabled.library },
-        } as SystemConfig,
+        newConfig: systemConfigStub.libraryScanAndWatch as SystemConfig,
         oldConfig: defaults,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith(
-        'libraryScan',
-        systemConfigStub.libraryScan.library.scan.cronExpression,
-        systemConfigStub.libraryScan.library.scan.enabled,
-      );
+      expect(cronMock.update).toHaveBeenCalledWith({
+        name: 'libraryScan',
+        expression: systemConfigStub.libraryScan.library.scan.cronExpression,
+        start: systemConfigStub.libraryScan.library.scan.enabled,
+      });
     });
 
     it('should update cron job and disable watching', async () => {
       libraryMock.getAll.mockResolvedValue([]);
       await sut.onConfigUpdate({
-        newConfig: {
-          library: { ...systemConfigStub.libraryScan.library, ...systemConfigStub.libraryWatchEnabled.library },
-        } as SystemConfig,
+        newConfig: systemConfigStub.libraryScanAndWatch as SystemConfig,
         oldConfig: defaults,
       });
       await sut.onConfigUpdate({
-        newConfig: {
-          library: { ...systemConfigStub.libraryScan.library, ...systemConfigStub.libraryWatchDisabled.library },
-        } as SystemConfig,
+        newConfig: systemConfigStub.libraryScan as SystemConfig,
         oldConfig: defaults,
       });
 
-      expect(jobMock.updateCronJob).toHaveBeenCalledWith(
-        'libraryScan',
-        systemConfigStub.libraryScan.library.scan.cronExpression,
-        systemConfigStub.libraryScan.library.scan.enabled,
-      );
-    });
-  });
-
-  describe('onConfigValidateEvent', () => {
-    it('should allow a valid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { library: { scan: { cronExpression: '0 0 * * *' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).not.toThrow(expect.stringContaining('Invalid cron expression'));
-    });
-
-    it('should fail for an invalid cron expression', () => {
-      expect(() =>
-        sut.onConfigValidate({
-          newConfig: { library: { scan: { cronExpression: 'foo' } } } as SystemConfig,
-          oldConfig: {} as SystemConfig,
-        }),
-      ).toThrow(/Invalid cron expression.*/);
+      expect(cronMock.update).toHaveBeenCalledWith({
+        name: 'libraryScan',
+        expression: systemConfigStub.libraryScan.library.scan.cronExpression,
+        start: systemConfigStub.libraryScan.library.scan.enabled,
+      });
     });
   });
 
@@ -703,12 +668,10 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       libraryMock.getAll.mockResolvedValue([libraryStub.externalLibraryWithImportPaths1]);
 
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
-
       const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
       await sut.delete(libraryStub.externalLibraryWithImportPaths1.id);
 
       expect(mockClose).toHaveBeenCalled();
@@ -837,12 +800,11 @@ describe(LibraryService.name, () => {
       });
 
       it('should create watched with import paths', async () => {
-        systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
         libraryMock.create.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
         libraryMock.getAll.mockResolvedValue([]);
 
-        await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+        await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
         await sut.create({
           ownerId: authStub.admin.user.id,
           importPaths: libraryStub.externalLibraryWithImportPaths1.importPaths,
@@ -902,10 +864,9 @@ describe(LibraryService.name, () => {
 
   describe('update', () => {
     beforeEach(async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.getAll.mockResolvedValue([]);
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
     });
 
     it('should throw an error if an import path is invalid', async () => {
@@ -944,9 +905,7 @@ describe(LibraryService.name, () => {
 
     describe('watching disabled', () => {
       beforeEach(async () => {
-        systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchDisabled);
-
-        await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+        await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchDisabled as SystemConfig });
       });
 
       it('should not watch library', async () => {
@@ -960,9 +919,8 @@ describe(LibraryService.name, () => {
 
     describe('watching enabled', () => {
       beforeEach(async () => {
-        systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
         libraryMock.getAll.mockResolvedValue([]);
-        await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+        await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
       });
 
       it('should watch library', async () => {
@@ -1114,7 +1072,6 @@ describe(LibraryService.name, () => {
         libraryStub.externalLibraryWithImportPaths2,
       ]);
 
-      systemMock.get.mockResolvedValue(systemConfigStub.libraryWatchEnabled);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
       libraryMock.get.mockImplementation((id) =>
@@ -1128,7 +1085,7 @@ describe(LibraryService.name, () => {
       const mockClose = vitest.fn();
       storageMock.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
 
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
       await sut.onShutdown();
 
       expect(mockClose).toHaveBeenCalledTimes(2);

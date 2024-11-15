@@ -24,7 +24,6 @@ import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
-import { validateCronExpression } from 'src/validation';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -32,15 +31,15 @@ export class LibraryService extends BaseService {
   private lock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
-  @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap(workerType: ImmichWorker) {
-    if (workerType !== ImmichWorker.MICROSERVICES) {
+  @OnEvent({ name: 'config.init' })
+  async onConfigInit({
+    newConfig: {
+      library: { watch, scan },
+    },
+  }: ArgOf<'config.init'>) {
+    if (this.worker !== ImmichWorker.MICROSERVICES) {
       return;
     }
-
-    const config = await this.getConfig({ withCache: false });
-
-    const { watch, scan } = config.library;
 
     // This ensures that library watching only occurs in one microservice
     this.lock = await this.databaseRepository.tryLock(DatabaseLock.Library);
@@ -48,12 +47,13 @@ export class LibraryService extends BaseService {
     this.watchLibraries = this.lock && watch.enabled;
 
     if (this.lock) {
-      this.jobRepository.addCronJob(
-        'libraryScan',
-        scan.cronExpression,
-        () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
-        scan.enabled,
-      );
+      this.cronRepository.create({
+        name: 'libraryScan',
+        expression: scan.cronExpression,
+        onTick: () =>
+          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+        start: scan.enabled,
+      });
     }
 
     if (this.watchLibraries) {
@@ -62,25 +62,21 @@ export class LibraryService extends BaseService {
   }
 
   @OnEvent({ name: 'config.update', server: true })
-  async onConfigUpdate({ newConfig: { library }, oldConfig }: ArgOf<'config.update'>) {
-    if (!oldConfig || !this.lock) {
+  async onConfigUpdate({ newConfig: { library } }: ArgOf<'config.update'>) {
+    if (!this.lock) {
       return;
     }
 
-    this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
+    this.cronRepository.update({
+      name: 'libraryScan',
+      expression: library.scan.cronExpression,
+      start: library.scan.enabled,
+    });
 
     if (library.watch.enabled !== this.watchLibraries) {
       // Watch configuration changed, update accordingly
       this.watchLibraries = library.watch.enabled;
       await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
-    }
-  }
-
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
-    const { scan } = newConfig.library;
-    if (!validateCronExpression(scan.cronExpression)) {
-      throw new Error(`Invalid cron expression ${scan.cronExpression}`);
     }
   }
 

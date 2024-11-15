@@ -5,17 +5,23 @@
   import { generateId } from '$lib/utils/generate-id';
   import { t } from 'svelte-i18n';
 
-  export let count = 5;
-  export let rating: number;
-  export let readOnly = false;
-  export let onRating: (rating: number) => void | undefined;
+  interface Props {
+    count?: number;
+    rating: number;
+    readOnly?: boolean;
+    onRating: (rating: number) => void | undefined;
+  }
 
-  let ratingSelection = 0;
-  let hoverRating = 0;
-  let focusRating = 0;
+  let { count = 5, rating, readOnly = false, onRating }: Props = $props();
+
+  let ratingSelection = $state(rating);
+  let hoverRating = $state(0);
+  let focusRating = $state(0);
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  $: ratingSelection = rating;
+  $effect(() => {
+    ratingSelection = rating;
+  });
 
   const starIcon =
     'M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z';
@@ -53,10 +59,10 @@
   };
 </script>
 
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
+<!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <fieldset
   class="text-immich-primary dark:text-immich-dark-primary w-fit cursor-default"
-  on:mouseleave={() => setHoverRating(0)}
+  onmouseleave={() => setHoverRating(0)}
   use:focusOutside={{ onFocusOut: reset }}
   use:shortcuts={[
     { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: (event) => event.stopPropagation() },
@@ -69,13 +75,13 @@
       {@const value = index + 1}
       {@const filled = hoverRating >= value || (hoverRating === 0 && ratingSelection >= value)}
       {@const starId = `${id}-${value}`}
-      <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-      <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+      <!-- svelte-ignore a11y_mouse_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <label
         for={starId}
         class:cursor-pointer={!readOnly}
         class:ring-2={focusRating === value}
-        on:mouseover={() => setHoverRating(value)}
+        onmouseover={() => setHoverRating(value)}
         tabindex={-1}
         data-testid="star"
       >
@@ -96,10 +102,10 @@
         id={starId}
         bind:group={ratingSelection}
         disabled={readOnly}
-        on:focus={() => {
+        onfocus={() => {
           focusRating = value;
         }}
-        on:change={() => handleSelectDebounced(value)}
+        onchange={() => handleSelectDebounced(value)}
         class="sr-only"
       />
     {/each}
@@ -108,7 +114,7 @@
 {#if ratingSelection > 0 && !readOnly}
   <button
     type="button"
-    on:click={() => {
+    onclick={() => {
       ratingSelection = 0;
       handleSelect(ratingSelection);
     }}

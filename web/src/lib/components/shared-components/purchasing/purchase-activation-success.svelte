@@ -7,7 +7,11 @@
   import { preferences } from '$lib/stores/user.store';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
 
-  export let onDone: () => void;
+  interface Props {
+    onDone: () => void;
+  }
+
+  let { onDone }: Props = $props();
 </script>
 
 <div class="m-auto w-3/4 text-center flex flex-col place-content-center place-items-center dark:text-white my-6">
@@ -25,6 +29,6 @@
   </div>
 
   <div class="mt-6 w-full">
-    <Button fullwidth on:click={onDone}>{$t('ok')}</Button>
+    <Button fullwidth onclick={onDone}>{$t('ok')}</Button>
   </div>
 </div>

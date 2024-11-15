@@ -12,13 +12,17 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { mdiDotsVertical } from '@mdi/js';
 
-  export let link: SharedLinkResponseDto;
-  export let onDelete: () => void;
-  export let onEdit: () => void;
+  interface Props {
+    link: SharedLinkResponseDto;
+    onDelete: () => void;
+    onEdit: () => void;
+  }
+
+  let { link, onDelete, onEdit }: Props = $props();
 
   let now = DateTime.now();
-  $: expiresAt = link.expiresAt ? DateTime.fromISO(link.expiresAt) : undefined;
-  $: isExpired = expiresAt ? now > expiresAt : false;
+  let expiresAt = $derived(link.expiresAt ? DateTime.fromISO(link.expiresAt) : undefined);
+  let isExpired = $derived(expiresAt ? now > expiresAt : false);
 
   const getCountDownExpirationDate = (expiresAtDate: DateTime, now: DateTime) => {
     const relativeUnits: ToRelativeUnit[] = ['days', 'hours', 'minutes', 'seconds'];

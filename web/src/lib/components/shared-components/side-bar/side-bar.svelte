@@ -30,14 +30,14 @@
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import { preferences } from '$lib/stores/user.store';
 
-  let isArchiveSelected: boolean;
-  let isFavoritesSelected: boolean;
-  let isMapSelected: boolean;
-  let isPeopleSelected: boolean;
-  let isPhotosSelected: boolean;
-  let isSharingSelected: boolean;
-  let isTrashSelected: boolean;
-  let isUtilitiesSelected: boolean;
+  let isArchiveSelected: boolean = $state(false);
+  let isFavoritesSelected: boolean = $state(false);
+  let isMapSelected: boolean = $state(false);
+  let isPeopleSelected: boolean = $state(false);
+  let isPhotosSelected: boolean = $state(false);
+  let isSharingSelected: boolean = $state(false);
+  let isTrashSelected: boolean = $state(false);
+  let isUtilitiesSelected: boolean = $state(false);
 </script>
 
 <SideBarSection>
@@ -48,9 +48,9 @@
       bind:isSelected={isPhotosSelected}
       icon={isPhotosSelected ? mdiImageMultiple : mdiImageMultipleOutline}
     >
-      <svelte:fragment slot="moreInformation">
+      {#snippet moreInformation()}
         <MoreInformationAssets assetStats={{ isArchived: false }} />
-      </svelte:fragment>
+      {/snippet}
     </SideBarLink>
 
     {#if $featureFlags.search}
@@ -81,9 +81,9 @@
       icon={isSharingSelected ? mdiAccountMultiple : mdiAccountMultipleOutline}
       bind:isSelected={isSharingSelected}
     >
-      <svelte:fragment slot="moreInformation">
+      {#snippet moreInformation()}
         <MoreInformationAlbums albumType="shared" />
-      </svelte:fragment>
+      {/snippet}
     </SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
@@ -97,15 +97,15 @@
       icon={isFavoritesSelected ? mdiHeart : mdiHeartOutline}
       bind:isSelected={isFavoritesSelected}
     >
-      <svelte:fragment slot="moreInformation">
+      {#snippet moreInformation()}
         <MoreInformationAssets assetStats={{ isFavorite: true }} />
-      </svelte:fragment>
+      {/snippet}
     </SideBarLink>
 
     <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo>
-      <svelte:fragment slot="moreInformation">
+      {#snippet moreInformation()}
         <MoreInformationAlbums albumType="owned" />
-      </svelte:fragment>
+      {/snippet}
     </SideBarLink>
 
     {#if $preferences.tags.enabled && $preferences.tags.sidebarWeb}
@@ -129,9 +129,9 @@
       bind:isSelected={isArchiveSelected}
       icon={isArchiveSelected ? mdiArchiveArrowDown : mdiArchiveArrowDownOutline}
     >
-      <svelte:fragment slot="moreInformation">
+      {#snippet moreInformation()}
         <MoreInformationAssets assetStats={{ isArchived: true }} />
-      </svelte:fragment>
+      {/snippet}
     </SideBarLink>
 
     {#if $featureFlags.trash}
@@ -141,9 +141,9 @@
         bind:isSelected={isTrashSelected}
         icon={isTrashSelected ? mdiTrashCan : mdiTrashCanOutline}
       >
-        <svelte:fragment slot="moreInformation">
+        {#snippet moreInformation()}
           <MoreInformationAssets assetStats={{ isTrashed: true }} />
-        </svelte:fragment>
+        {/snippet}
       </SideBarLink>
     {/if}
   </nav>

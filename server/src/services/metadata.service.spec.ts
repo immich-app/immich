@@ -3,9 +3,10 @@ import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType, ImmichWorker, SourceType } from 'src/enum';
+import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -17,7 +18,7 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { MetadataService, Orientation } from 'src/services/metadata.service';
+import { MetadataService } from 'src/services/metadata.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -32,6 +33,7 @@ describe(MetadataService.name, () => {
 
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let cryptoMock: Mocked<ICryptoRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
@@ -55,6 +57,7 @@ describe(MetadataService.name, () => {
       sut,
       albumMock,
       assetMock,
+      configMock,
       cryptoMock,
       eventMock,
       jobMock,
@@ -70,6 +73,8 @@ describe(MetadataService.name, () => {
 
     mockReadTags();
 
+    configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
+
     delete process.env.TZ;
   });
 
@@ -83,17 +88,16 @@ describe(MetadataService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should pause and resume queue during init', async () => {
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+      await sut.onBootstrap();
 
       expect(jobMock.pause).toHaveBeenCalledTimes(1);
       expect(mapMock.init).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
     });
 
-    it('should return if reverse geocoding is disabled', async () => {
-      systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: false } });
-
-      await sut.onBootstrap(ImmichWorker.MICROSERVICES);
+    it('should return if running on api', async () => {
+      configMock.getWorker.mockReturnValue(ImmichWorker.API);
+      await sut.onBootstrap();
 
       expect(jobMock.pause).not.toHaveBeenCalled();
       expect(mapMock.init).not.toHaveBeenCalled();
@@ -535,7 +539,7 @@ describe(MetadataService.name, () => {
 
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.video.id], { faces: { person: false } });
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({ orientation: Orientation.Rotate270CW.toString() }),
+        expect.objectContaining({ orientation: ExifOrientation.Rotate270CW.toString() }),
       );
     });
 

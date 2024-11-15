@@ -93,4 +93,5 @@ export interface EnvData {
 
 export interface IConfigRepository {
   getEnv(): EnvData;
+  getWorker(): ImmichWorker | undefined;
 }

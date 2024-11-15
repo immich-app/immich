@@ -19,26 +19,7 @@
   import { fade } from 'svelte/transition';
   import { invalidateAll } from '$app/navigation';
 
-  let time = new Date();
-
-  $: formattedDate = time.toLocaleString(editedLocale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-  $: timePortion = time.toLocaleString(editedLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-  $: selectedDate = `${formattedDate} ${timePortion}`;
-  $: editedLocale = findLocale($locale).code;
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: selectedOption = {
-    value: findLocale(editedLocale).code || fallbackLocale.code,
-    label: findLocale(editedLocale).name || fallbackLocale.name,
-  };
-  $: closestLanguage = getClosestAvailableLocale([$lang], langCodes);
+  let time = $state(new Date());
 
   onMount(() => {
     const interval = setInterval(() => {
@@ -90,6 +71,27 @@
       $locale = newLocale;
     }
   };
+  let editedLocale = $derived(findLocale($locale).code);
+  let formattedDate = $derived(
+    time.toLocaleString(editedLocale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }),
+  );
+  let timePortion = $derived(
+    time.toLocaleString(editedLocale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
+  );
+  let selectedDate = $derived(`${formattedDate} ${timePortion}`);
+  let selectedOption = $derived({
+    value: findLocale(editedLocale).code || fallbackLocale.code,
+    label: findLocale(editedLocale).name || fallbackLocale.name,
+  });
+  let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));
 </script>
 
 <section class="my-4">

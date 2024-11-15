@@ -5,7 +5,6 @@ import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
@@ -142,9 +141,6 @@ export class AssetEntity {
 
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
-
-  @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
-  smartInfo?: SmartInfoEntity;
 
   @OneToOne(() => SmartSearchEntity, (smartSearchEntity) => smartSearchEntity.asset)
   smartSearch?: SmartSearchEntity;

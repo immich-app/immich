@@ -19,22 +19,37 @@
   import JobTileButton from './job-tile-button.svelte';
   import JobTileStatus from './job-tile-status.svelte';
 
-  export let title: string;
-  export let subtitle: string | undefined;
-  export let description: Component | undefined;
-  export let jobCounts: JobCountsDto;
-  export let queueStatus: QueueStatusDto;
-  export let icon: string;
-  export let disabled = false;
+  interface Props {
+    title: string;
+    subtitle: string | undefined;
+    description: Component | undefined;
+    jobCounts: JobCountsDto;
+    queueStatus: QueueStatusDto;
+    icon: string;
+    disabled?: boolean;
+    allText: string | undefined;
+    refreshText: string | undefined;
+    missingText: string;
+    onCommand: (command: JobCommandDto) => void;
+  }
 
-  export let allText: string | undefined;
-  export let refreshText: string | undefined;
-  export let missingText: string;
-  export let onCommand: (command: JobCommandDto) => void;
+  let {
+    title,
+    subtitle,
+    description,
+    jobCounts,
+    queueStatus,
+    icon,
+    disabled = false,
+    allText,
+    refreshText,
+    missingText,
+    onCommand,
+  }: Props = $props();
 
-  $: waitingCount = jobCounts.waiting + jobCounts.paused + jobCounts.delayed;
-  $: isIdle = !queueStatus.isActive && !queueStatus.isPaused;
-  $: multipleButtons = allText || refreshText;
+  let waitingCount = $derived(jobCounts.waiting + jobCounts.paused + jobCounts.delayed);
+  let isIdle = $derived(!queueStatus.isActive && !queueStatus.isPaused);
+  let multipleButtons = $derived(allText || refreshText);
 
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pr-4 pl-6';
 </script>
@@ -67,7 +82,7 @@
                   title={$t('clear_message')}
                   size="12"
                   padding="1"
-                  on:click={() => onCommand({ command: JobCommand.ClearFailed, force: false })}
+                  onclick={() => onCommand({ command: JobCommand.ClearFailed, force: false })}
                 />
               </div>
             </Badge>
@@ -87,8 +102,9 @@
       {/if}
 
       {#if description}
+        {@const SvelteComponent = description}
         <div class="text-sm dark:text-white">
-          <svelte:component this={description} />
+          <SvelteComponent />
         </div>
       {/if}
 
@@ -118,7 +134,7 @@
       <JobTileButton
         disabled={true}
         color="light-gray"
-        on:click={() => onCommand({ command: JobCommand.Start, force: false })}
+        onClick={() => onCommand({ command: JobCommand.Start, force: false })}
       >
         <Icon path={mdiAlertCircle} size="36" />
         {$t('disabled').toUpperCase()}
@@ -127,20 +143,20 @@
 
     {#if !disabled && !isIdle}
       {#if waitingCount > 0}
-        <JobTileButton color="gray" on:click={() => onCommand({ command: JobCommand.Empty, force: false })}>
+        <JobTileButton color="gray" onClick={() => onCommand({ command: JobCommand.Empty, force: false })}>
           <Icon path={mdiClose} size="24" />
           {$t('clear').toUpperCase()}
         </JobTileButton>
       {/if}
       {#if queueStatus.isPaused}
         {@const size = waitingCount > 0 ? '24' : '48'}
-        <JobTileButton color="light-gray" on:click={() => onCommand({ command: JobCommand.Resume, force: false })}>
+        <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Resume, force: false })}>
           <!-- size property is not reactive, so have to use width and height -->
           <Icon path={mdiFastForward} {size} />
           {$t('resume').toUpperCase()}
         </JobTileButton>
       {:else}
-        <JobTileButton color="light-gray" on:click={() => onCommand({ command: JobCommand.Pause, force: false })}>
+        <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Pause, force: false })}>
           <Icon path={mdiPause} size="24" />
           {$t('pause').toUpperCase()}
         </JobTileButton>
@@ -149,25 +165,25 @@
 
     {#if !disabled && multipleButtons && isIdle}
       {#if allText}
-        <JobTileButton color="dark-gray" on:click={() => onCommand({ command: JobCommand.Start, force: true })}>
+        <JobTileButton color="dark-gray" onClick={() => onCommand({ command: JobCommand.Start, force: true })}>
           <Icon path={mdiAllInclusive} size="24" />
           {allText}
         </JobTileButton>
       {/if}
       {#if refreshText}
-        <JobTileButton color="gray" on:click={() => onCommand({ command: JobCommand.Start, force: undefined })}>
+        <JobTileButton color="gray" onClick={() => onCommand({ command: JobCommand.Start, force: undefined })}>
           <Icon path={mdiImageRefreshOutline} size="24" />
           {refreshText}
         </JobTileButton>
       {/if}
-      <JobTileButton color="light-gray" on:click={() => onCommand({ command: JobCommand.Start, force: false })}>
+      <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiSelectionSearch} size="24" />
         {missingText}
       </JobTileButton>
     {/if}
 
     {#if !disabled && !multipleButtons && isIdle}
-      <JobTileButton color="light-gray" on:click={() => onCommand({ command: JobCommand.Start, force: false })}>
+      <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiPlay} size="48" />
         {$t('start').toUpperCase()}
       </JobTileButton>

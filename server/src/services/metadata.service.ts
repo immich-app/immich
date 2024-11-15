@@ -12,7 +12,7 @@ import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, ImmichWorker, SourceType } from 'src/enum';
+import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
@@ -35,17 +35,6 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'MediaCreateDate',
   'DateTimeCreated',
 ];
-
-export enum Orientation {
-  Horizontal = 1,
-  MirrorHorizontal = 2,
-  Rotate180 = 3,
-  MirrorVertical = 4,
-  MirrorHorizontalRotate270CW = 5,
-  Rotate90CW = 6,
-  MirrorHorizontalRotate90CW = 7,
-  Rotate270CW = 8,
-}
 
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
@@ -80,12 +69,12 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 @Injectable()
 export class MetadataService extends BaseService {
   @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== ImmichWorker.MICROSERVICES) {
+  async onBootstrap() {
+    if (this.worker !== ImmichWorker.MICROSERVICES) {
       return;
     }
-    const config = await this.getConfig({ withCache: false });
-    await this.init(config);
+    this.logger.log('Bootstrapping metadata service');
+    await this.init();
   }
 
   @OnEvent({ name: 'app.shutdown' })
@@ -93,17 +82,8 @@ export class MetadataService extends BaseService {
     await this.metadataRepository.teardown();
   }
 
-  @OnEvent({ name: 'config.update' })
-  async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
-    await this.init(newConfig);
-  }
-
-  private async init({ reverseGeocoding }: SystemConfig) {
-    const { enabled } = reverseGeocoding;
-
-    if (!enabled) {
-      return;
-    }
+  private async init() {
+    this.logger.log('Initializing metadata service');
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
@@ -685,19 +665,19 @@ export class MetadataService extends BaseService {
     if (videoStreams[0]) {
       switch (videoStreams[0].rotation) {
         case -90: {
-          tags.Orientation = Orientation.Rotate90CW;
+          tags.Orientation = ExifOrientation.Rotate90CW;
           break;
         }
         case 0: {
-          tags.Orientation = Orientation.Horizontal;
+          tags.Orientation = ExifOrientation.Horizontal;
           break;
         }
         case 90: {
-          tags.Orientation = Orientation.Rotate270CW;
+          tags.Orientation = ExifOrientation.Rotate270CW;
           break;
         }
         case 180: {
-          tags.Orientation = Orientation.Rotate180;
+          tags.Orientation = ExifOrientation.Rotate180;
           break;
         }
       }

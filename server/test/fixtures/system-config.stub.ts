@@ -54,6 +54,9 @@ export const systemConfigStub = {
   },
   libraryWatchEnabled: {
     library: {
+      scan: {
+        enabled: false,
+      },
       watch: {
         enabled: true,
       },
@@ -61,6 +64,9 @@ export const systemConfigStub = {
   },
   libraryWatchDisabled: {
     library: {
+      scan: {
+        enabled: false,
+      },
       watch: {
         enabled: false,
       },
@@ -71,6 +77,20 @@ export const systemConfigStub = {
       scan: {
         enabled: true,
         cronExpression: '0 0 * * *',
+      },
+      watch: {
+        enabled: false,
+      },
+    },
+  },
+  libraryScanAndWatch: {
+    library: {
+      scan: {
+        enabled: true,
+        cronExpression: '0 0 * * *',
+      },
+      watch: {
+        enabled: true,
       },
     },
   },
@@ -86,6 +106,15 @@ export const systemConfigStub = {
   machineLearningDisabled: {
     machineLearning: {
       enabled: false,
+    },
+  },
+  machineLearningEnabled: {
+    machineLearning: {
+      enabled: true,
+      clip: {
+        modelName: 'ViT-B-16__openai',
+        enabled: true,
+      },
     },
   },
 } satisfies Record<string, DeepPartial<SystemConfig>>;

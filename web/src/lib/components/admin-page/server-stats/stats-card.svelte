@@ -2,18 +2,22 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { ByteUnit } from '$lib/utils/byte-units';
 
-  export let icon: string;
-  export let title: string;
-  export let value: number;
-  export let unit: ByteUnit | undefined = undefined;
+  interface Props {
+    icon: string;
+    title: string;
+    value: number;
+    unit?: ByteUnit | undefined;
+  }
 
-  $: zeros = () => {
+  let { icon, title, value, unit = undefined }: Props = $props();
+
+  const zeros = $derived(() => {
     const maxLength = 13;
     const valueLength = value.toString().length;
     const zeroLength = maxLength - valueLength;
 
     return '0'.repeat(zeroLength);
-  };
+  });
 </script>
 
 <div class="flex h-[140px] w-[250px] flex-col justify-between rounded-3xl bg-immich-gray p-5 dark:bg-immich-dark-gray">

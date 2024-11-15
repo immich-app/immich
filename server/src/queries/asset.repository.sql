@@ -183,9 +183,6 @@ SELECT
   "AssetEntity__AssetEntity_exifInfo"."bitsPerSample" AS "AssetEntity__AssetEntity_exifInfo_bitsPerSample",
   "AssetEntity__AssetEntity_exifInfo"."rating" AS "AssetEntity__AssetEntity_exifInfo_rating",
   "AssetEntity__AssetEntity_exifInfo"."fps" AS "AssetEntity__AssetEntity_exifInfo_fps",
-  "AssetEntity__AssetEntity_smartInfo"."assetId" AS "AssetEntity__AssetEntity_smartInfo_assetId",
-  "AssetEntity__AssetEntity_smartInfo"."tags" AS "AssetEntity__AssetEntity_smartInfo_tags",
-  "AssetEntity__AssetEntity_smartInfo"."objects" AS "AssetEntity__AssetEntity_smartInfo_objects",
   "AssetEntity__AssetEntity_tags"."id" AS "AssetEntity__AssetEntity_tags_id",
   "AssetEntity__AssetEntity_tags"."value" AS "AssetEntity__AssetEntity_tags_value",
   "AssetEntity__AssetEntity_tags"."createdAt" AS "AssetEntity__AssetEntity_tags_createdAt",
@@ -252,7 +249,6 @@ SELECT
 FROM
   "assets" "AssetEntity"
   LEFT JOIN "exif" "AssetEntity__AssetEntity_exifInfo" ON "AssetEntity__AssetEntity_exifInfo"."assetId" = "AssetEntity"."id"
-  LEFT JOIN "smart_info" "AssetEntity__AssetEntity_smartInfo" ON "AssetEntity__AssetEntity_smartInfo"."assetId" = "AssetEntity"."id"
   LEFT JOIN "tag_asset" "AssetEntity_AssetEntity__AssetEntity_tags" ON "AssetEntity_AssetEntity__AssetEntity_tags"."assetsId" = "AssetEntity"."id"
   LEFT JOIN "tags" "AssetEntity__AssetEntity_tags" ON "AssetEntity__AssetEntity_tags"."id" = "AssetEntity_AssetEntity__AssetEntity_tags"."tagsId"
   LEFT JOIN "asset_faces" "AssetEntity__AssetEntity_faces" ON "AssetEntity__AssetEntity_faces"."assetId" = "AssetEntity"."id"
@@ -921,36 +917,6 @@ FROM
   "assets" "asset"
   INNER JOIN "exif" "e" ON "asset"."id" = e."assetId"
   INNER JOIN "cities" "c" ON c.city = "e"."city"
-WHERE
-  (
-    "asset"."isVisible" = true
-    AND "asset"."type" = $2
-    AND "asset"."ownerId" IN ($3)
-    AND "asset"."isArchived" = $4
-  )
-  AND ("asset"."deletedAt" IS NULL)
-LIMIT
-  12
-
--- AssetRepository.getAssetIdByTag
-WITH
-  "random_tags" AS (
-    SELECT
-      unnest(tags) AS "tag"
-    FROM
-      "smart_info" "si"
-    GROUP BY
-      tag
-    HAVING
-      count(*) >= $1
-  )
-SELECT DISTINCT
-  ON (unnest("si"."tags")) "asset"."id" AS "data",
-  unnest("si"."tags") AS "value"
-FROM
-  "assets" "asset"
-  INNER JOIN "smart_info" "si" ON "asset"."id" = si."assetId"
-  INNER JOIN "random_tags" "t" ON "si"."tags" @> ARRAY[t.tag]
 WHERE
   (
     "asset"."isVisible" = true

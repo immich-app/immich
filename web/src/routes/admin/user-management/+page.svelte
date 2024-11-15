@@ -27,16 +27,20 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let allUsers: UserAdminResponseDto[] = [];
-  let shouldShowEditUserForm = false;
-  let shouldShowCreateUserForm = false;
-  let shouldShowPasswordResetSuccess = false;
-  let shouldShowDeleteConfirmDialog = false;
-  let shouldShowRestoreDialog = false;
-  let selectedUser: UserAdminResponseDto;
-  let newPassword: string;
+  let { data }: Props = $props();
+
+  let allUsers: UserAdminResponseDto[] = $state([]);
+  let shouldShowEditUserForm = $state(false);
+  let shouldShowCreateUserForm = $state(false);
+  let shouldShowPasswordResetSuccess = $state(false);
+  let shouldShowDeleteConfirmDialog = $state(false);
+  let shouldShowRestoreDialog = $state(false);
+  let selectedUser = $state<UserAdminResponseDto>();
+  let newPassword = $state('');
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -117,7 +121,7 @@
         />
       {/if}
 
-      {#if shouldShowEditUserForm}
+      {#if shouldShowEditUserForm && selectedUser}
         <EditUserForm
           user={selectedUser}
           bind:newPassword
@@ -128,7 +132,7 @@
         />
       {/if}
 
-      {#if shouldShowDeleteConfirmDialog}
+      {#if shouldShowDeleteConfirmDialog && selectedUser}
         <DeleteConfirmDialog
           user={selectedUser}
           onSuccess={onUserDelete}
@@ -137,7 +141,7 @@
         />
       {/if}
 
-      {#if shouldShowRestoreDialog}
+      {#if shouldShowRestoreDialog && selectedUser}
         <RestoreDialogue
           user={selectedUser}
           onSuccess={onUserRestore}
@@ -155,7 +159,7 @@
           hideCancelButton={true}
           confirmColor="green"
         >
-          <svelte:fragment slot="prompt">
+          {#snippet promptSnippet()}
             <div class="flex flex-col gap-4">
               <p>{$t('admin.user_password_has_been_reset')}</p>
 
@@ -165,7 +169,7 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                <LinkButton onclick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>
@@ -174,7 +178,7 @@
 
               <p>{$t('admin.user_password_reset_description')}</p>
             </div>
-          </svelte:fragment>
+          {/snippet}
         </ConfirmDialog>
       {/if}
 
@@ -223,7 +227,7 @@
                       title={$t('edit_user')}
                       color="primary"
                       size="16"
-                      on:click={() => editUserHandler(immichUser)}
+                      onclick={() => editUserHandler(immichUser)}
                     />
                     {#if immichUser.id !== $user.id}
                       <CircleIconButton
@@ -231,7 +235,7 @@
                         title={$t('delete_user')}
                         color="primary"
                         size="16"
-                        on:click={() => deleteUserHandler(immichUser)}
+                        onclick={() => deleteUserHandler(immichUser)}
                       />
                     {/if}
                   {/if}
@@ -243,7 +247,7 @@
                       })}
                       color="primary"
                       size="16"
-                      on:click={() => restoreUserHandler(immichUser)}
+                      onclick={() => restoreUserHandler(immichUser)}
                     />
                   {/if}
                 </td>
@@ -253,7 +257,7 @@
         </tbody>
       </table>
 
-      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
+      <Button size="sm" onclick={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

@@ -39,7 +39,7 @@ const StoreValueSchema = CollectionSchema(
   getId: _storeValueGetId,
   getLinks: _storeValueGetLinks,
   attach: _storeValueAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _storeValueEstimateSize(

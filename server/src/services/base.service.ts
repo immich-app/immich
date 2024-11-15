@@ -1,10 +1,9 @@
-import { BadRequestException, Inject, Optional } from '@nestjs/common';
+import { BadRequestException, Inject } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
-import { IWorker, SALT_ROUNDS } from 'src/constants';
+import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserEntity } from 'src/entities/user.entity';
-import { ImmichWorker } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
@@ -13,6 +12,7 @@ import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
+import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -50,7 +50,6 @@ export class BaseService {
   protected storageCore: StorageCore;
 
   constructor(
-    @Inject(IWorker) @Optional() protected worker: ImmichWorker | undefined,
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
     @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
     @Inject(IActivityRepository) protected activityRepository: IActivityRepository,
@@ -59,6 +58,7 @@ export class BaseService {
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
     @Inject(IConfigRepository) protected configRepository: IConfigRepository,
+    @Inject(ICronRepository) protected cronRepository: ICronRepository,
     @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
@@ -101,6 +101,10 @@ export class BaseService {
       systemMetadataRepository,
       this.logger,
     );
+  }
+
+  get worker() {
+    return this.configRepository.getWorker();
   }
 
   private get configRepos() {
