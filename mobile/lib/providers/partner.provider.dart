@@ -42,7 +42,7 @@ final partnerSharedWithProvider =
 
 class PartnerSharedByNotifier extends StateNotifier<List<User>> {
   PartnerSharedByNotifier(Isar db) : super([]) {
-    final query = db.users.filter().isPartnerSharedByEqualTo(true);
+    final query = db.users.filter().isPartnerSharedByEqualTo(true).sortById();
     query.findAll().then((partners) {
       if (partners.isNotEmpty) {
         state = partners;
