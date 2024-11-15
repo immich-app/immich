@@ -110,7 +110,6 @@
     try {
       await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
-      reactions = reactions;
       if (isLiked && reaction.type === ReactionType.Like && reaction.id == isLiked.id) {
         onDeleteLike();
       } else {
@@ -143,8 +142,6 @@
 
       message = '';
       onAddComment();
-      // Re-render the activity feed
-      reactions = reactions;
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_comment'));
     } finally {
