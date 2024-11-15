@@ -12,7 +12,7 @@
 
   interface Props {
     panorama: string | { source: string };
-    originalImageUrl: string | null;
+    originalImageUrl?: string;
     adapter?: AdapterConstructor | [AdapterConstructor, unknown];
     plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
     navbar?: boolean;
