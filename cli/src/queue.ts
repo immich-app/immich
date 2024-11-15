@@ -72,8 +72,8 @@ export class Queue<T, R> {
    * @returns Promise<void> - The returned Promise will be resolved when all tasks in the queue have been processed by a worker.
    * This promise could be ignored as it will not lead to a `unhandledRejection`.
    */
-  async drained(): Promise<void> {
-    await this.queue.drain();
+  drained(): Promise<void> {
+    return this.queue.drained();
   }
 
   /**
