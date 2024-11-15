@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiArrowDownDropCircleOutline, mdiInformationOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
