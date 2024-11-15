@@ -31,62 +31,89 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
 
-  export let asset: AssetResponseDto;
-  export let dateGroup: DateGroup | undefined = undefined;
-  export let assetStore: AssetStore | undefined = undefined;
-  export let groupIndex = 0;
-  export let thumbnailSize: number | undefined = undefined;
-  export let thumbnailWidth: number | undefined = undefined;
-  export let thumbnailHeight: number | undefined = undefined;
-  export let selected = false;
-  export let selectionCandidate = false;
-  export let disabled = false;
-  export let readonly = false;
-  export let showArchiveIcon = false;
-  export let showStackedIcon = true;
-  export let disableMouseOver = false;
-  export let intersectionConfig: {
-    root?: HTMLElement;
-    bottom?: string;
-    top?: string;
-    left?: string;
-    priority?: number;
+  interface Props {
+    asset: AssetResponseDto;
+    dateGroup?: DateGroup | undefined;
+    assetStore?: AssetStore | undefined;
+    groupIndex?: number;
+    thumbnailSize?: number | undefined;
+    thumbnailWidth?: number | undefined;
+    thumbnailHeight?: number | undefined;
+    selected?: boolean;
+    selectionCandidate?: boolean;
     disabled?: boolean;
-  } = {};
+    readonly?: boolean;
+    showArchiveIcon?: boolean;
+    showStackedIcon?: boolean;
+    disableMouseOver?: boolean;
+    intersectionConfig?: {
+      root?: HTMLElement;
+      bottom?: string;
+      top?: string;
+      left?: string;
+      priority?: number;
+      disabled?: boolean;
+    };
+    retrieveElement?: boolean;
+    onIntersected?: (() => void) | undefined;
+    onClick?: ((asset: AssetResponseDto) => void) | undefined;
+    onRetrieveElement?: ((elment: HTMLElement) => void) | undefined;
+    onSelect?: ((asset: AssetResponseDto) => void) | undefined;
+    onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
+    class?: string;
+  }
 
-  export let retrieveElement: boolean = false;
-  export let onIntersected: (() => void) | undefined = undefined;
-  export let onClick: ((asset: AssetResponseDto) => void) | undefined = undefined;
-  export let onRetrieveElement: ((elment: HTMLElement) => void) | undefined = undefined;
-  export let onSelect: ((asset: AssetResponseDto) => void) | undefined = undefined;
-  export let onMouseEvent: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined =
-    undefined;
-
-  let className = '';
-  export { className as class };
+  let {
+    asset,
+    dateGroup = undefined,
+    assetStore = undefined,
+    groupIndex = 0,
+    thumbnailSize = undefined,
+    thumbnailWidth = undefined,
+    thumbnailHeight = undefined,
+    selected = false,
+    selectionCandidate = false,
+    disabled = false,
+    readonly = false,
+    showArchiveIcon = false,
+    showStackedIcon = true,
+    disableMouseOver = false,
+    intersectionConfig = {},
+    retrieveElement = false,
+    onIntersected = undefined,
+    onClick = undefined,
+    onRetrieveElement = undefined,
+    onSelect = undefined,
+    onMouseEvent = undefined,
+    class: className = '',
+  }: Props = $props();
 
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
   const componentId = generateId();
-  let element: HTMLElement | undefined;
-  let mouseOver = false;
-  let intersecting = false;
-  let lastRetrievedElement: HTMLElement | undefined;
-  let loaded = false;
+  let element: HTMLElement | undefined = $state();
+  let mouseOver = $state(false);
+  let intersecting = $state(false);
+  let lastRetrievedElement: HTMLElement | undefined = $state();
+  let loaded = $state(false);
 
-  $: if (!retrieveElement) {
-    lastRetrievedElement = undefined;
-  }
-  $: if (retrieveElement && element && lastRetrievedElement !== element) {
-    lastRetrievedElement = element;
-    onRetrieveElement?.(element);
-  }
+  $effect(() => {
+    if (!retrieveElement) {
+      lastRetrievedElement = undefined;
+    }
+  });
+  $effect(() => {
+    if (retrieveElement && element && lastRetrievedElement !== element) {
+      lastRetrievedElement = element;
+      onRetrieveElement?.(element);
+    }
+  });
 
-  $: width = thumbnailSize || thumbnailWidth || 235;
-  $: height = thumbnailSize || thumbnailHeight || 235;
-  $: display = intersecting;
+  let width = $derived(thumbnailSize || thumbnailWidth || 235);
+  let height = $derived(thumbnailSize || thumbnailHeight || 235);
+  let display = $derived(intersecting);
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -197,15 +224,15 @@
       class="group"
       class:cursor-not-allowed={disabled}
       class:cursor-pointer={!disabled}
-      on:mouseenter={onMouseEnter}
-      on:mouseleave={onMouseLeave}
-      on:keypress={(evt) => {
+      onmouseenter={onMouseEnter}
+      onmouseleave={onMouseLeave}
+      onkeypress={(evt) => {
         if (evt.key === 'Enter') {
           callClickHandlers();
         }
       }}
       tabindex={0}
-      on:click={handleClick}
+      onclick={handleClick}
       role="link"
     >
       {#if mouseOver && !disableMouseOver}
@@ -216,7 +243,7 @@
           style:width="{width}px"
           style:height="{height}px"
           href={currentUrlReplaceAssetId(asset.id)}
-          on:click={(evt) => evt.preventDefault()}
+          onclick={(evt) => evt.preventDefault()}
           tabindex={0}
           aria-label="Thumbnail URL"
         >
@@ -227,7 +254,7 @@
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             type="button"
-            on:click={onIconClickedHandler}
+            onclick={onIconClickedHandler}
             class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}
             role="checkbox"

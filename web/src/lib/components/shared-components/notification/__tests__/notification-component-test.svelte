@@ -1,5 +1,9 @@
 <script lang="ts">
-  export let href: string;
+  interface Props {
+    href: string;
+  }
+
+  let { href }: Props = $props();
 </script>
 
 Notification <b>message</b> with <a {href}>link</a>

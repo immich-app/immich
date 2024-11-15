@@ -8,17 +8,21 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let library: Partial<LibraryResponseDto>;
-  export let onCancel: () => void;
-  export let onSubmit: (library: Partial<LibraryResponseDto>) => void;
+  interface Props {
+    library: Partial<LibraryResponseDto>;
+    onCancel: () => void;
+    onSubmit: (library: Partial<LibraryResponseDto>) => void;
+  }
 
-  let addExclusionPattern = false;
-  let editExclusionPattern: number | null = null;
+  let { library = $bindable(), onCancel, onSubmit }: Props = $props();
 
-  let exclusionPatternToAdd: string;
-  let editedExclusionPattern: string;
+  let addExclusionPattern = $state(false);
+  let editExclusionPattern: number | null = $state(null);
 
-  let exclusionPatterns: string[] = [];
+  let exclusionPatternToAdd: string = $state('');
+  let editedExclusionPattern: string = $state('');
+
+  let exclusionPatterns: string[] = $state([]);
 
   onMount(() => {
     if (library.exclusionPatterns) {
@@ -89,6 +93,11 @@
       editExclusionPattern = null;
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSubmit(library);
+  };
 </script>
 
 {#if addExclusionPattern}
@@ -113,7 +122,7 @@
   />
 {/if}
 
-<form on:submit|preventDefault={() => onSubmit(library)} autocomplete="off" class="m-4 flex flex-col gap-4">
+<form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="w-full text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each exclusionPatterns as exclusionPattern, listIndex}
@@ -131,7 +140,7 @@
               icon={mdiPencilOutline}
               title={$t('edit_exclusion_pattern')}
               size="16"
-              on:click={() => {
+              onclick={() => {
                 editExclusionPattern = listIndex;
                 editedExclusionPattern = exclusionPattern;
               }}
@@ -154,7 +163,7 @@
         <td class="w-1/4 text-ellipsis px-4 text-sm"
           ><Button
             size="sm"
-            on:click={() => {
+            onclick={() => {
               addExclusionPattern = true;
             }}>{$t('add_exclusion_pattern')}</Button
           ></td
@@ -164,7 +173,7 @@
   </table>
 
   <div class="flex w-full justify-end gap-4">
-    <Button size="sm" color="gray" on:click={onCancel}>{$t('cancel')}</Button>
+    <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
     <Button size="sm" type="submit">{$t('save')}</Button>
   </div>
 </form>

@@ -18,15 +18,19 @@
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  const viewport: Viewport = { width: 0, height: 0 };
+  let { data }: Props = $props();
 
-  $: pathSegments = data.path ? data.path.split('/') : [];
-  $: tree = buildTree($foldersStore?.uniquePaths || []);
-  $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
-  $: currentTreeItems = currentPath ? data.currentFolders : Object.keys(tree);
+  let selectedAssets: Set<AssetResponseDto> = $state(new Set());
+  const viewport: Viewport = $state({ width: 0, height: 0 });
+
+  let pathSegments = $derived(data.path ? data.path.split('/') : []);
+  let tree = $derived(buildTree($foldersStore?.uniquePaths || []));
+  let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
+  let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -48,20 +52,22 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <SideBarSection slot="sidebar">
-    <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} />
-    <section>
-      <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
-      <div class="h-full">
-        <TreeItems
-          icons={{ default: mdiFolderOutline, active: mdiFolder }}
-          items={tree}
-          active={currentPath}
-          {getLink}
-        />
-      </div>
-    </section>
-  </SideBarSection>
+  {#snippet sidebar()}
+    <SideBarSection>
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} />
+      <section>
+        <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="h-full">
+          <TreeItems
+            icons={{ default: mdiFolderOutline, active: mdiFolder }}
+            items={tree}
+            active={currentPath}
+            {getLink}
+          />
+        </div>
+      </section>
+    </SideBarSection>
+  {/snippet}
 
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 

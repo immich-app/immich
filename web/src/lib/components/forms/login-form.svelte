@@ -12,16 +12,20 @@
   import PasswordField from '../shared-components/password-field.svelte';
   import { t } from 'svelte-i18n';
 
-  export let onSuccess: () => unknown | Promise<unknown>;
-  export let onFirstLogin: () => unknown | Promise<unknown>;
-  export let onOnboarding: () => unknown | Promise<unknown>;
+  interface Props {
+    onSuccess: () => unknown | Promise<unknown>;
+    onFirstLogin: () => unknown | Promise<unknown>;
+    onOnboarding: () => unknown | Promise<unknown>;
+  }
 
-  let errorMessage: string;
-  let email = '';
-  let password = '';
-  let oauthError = '';
-  let loading = false;
-  let oauthLoading = true;
+  let { onSuccess, onFirstLogin, onOnboarding }: Props = $props();
+
+  let errorMessage: string = $state('');
+  let email = $state('');
+  let password = $state('');
+  let oauthError = $state('');
+  let loading = $state(false);
+  let oauthLoading = $state(true);
 
   onMount(async () => {
     if (!$featureFlags.oauth) {
@@ -87,10 +91,15 @@
       oauthError = $t('errors.unable_to_login_with_oauth');
     }
   };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleLogin();
+  };
 </script>
 
 {#if !oauthLoading && $featureFlags.passwordLogin}
-  <form on:submit|preventDefault={handleLogin} class="mt-5 flex flex-col gap-5">
+  <form {onsubmit} class="mt-5 flex flex-col gap-5">
     {#if errorMessage}
       <p class="text-red-400" transition:fade>
         {errorMessage}
@@ -150,7 +159,7 @@
       size="lg"
       fullwidth
       color={$featureFlags.passwordLogin ? 'secondary' : 'primary'}
-      on:click={handleOAuthLogin}
+      onclick={handleOAuthLogin}
     >
       {#if oauthLoading}
         <span class="h-6">

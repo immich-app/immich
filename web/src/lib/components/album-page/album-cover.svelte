@@ -5,13 +5,18 @@
   import AssetCover from '$lib/components/sharedlinks-page/covers/asset-cover.svelte';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
-  export let preload = false;
-  let className = '';
-  export { className as class };
+  interface Props {
+    album: AlbumResponseDto;
+    preload?: boolean;
+    class?: string;
+  }
 
-  $: alt = album.albumName || $t('unnamed_album');
-  $: thumbnailUrl = album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null;
+  let { album, preload = false, class: className = '' }: Props = $props();
+
+  let alt = $derived(album.albumName || $t('unnamed_album'));
+  let thumbnailUrl = $derived(
+    album.albumThumbnailAssetId ? getAssetThumbnailUrl({ id: album.albumThumbnailAssetId }) : null,
+  );
 </script>
 
 {#if thumbnailUrl}

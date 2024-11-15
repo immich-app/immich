@@ -25,7 +25,11 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let jobs: AllJobStatusResponseDto;
+  interface Props {
+    jobs: AllJobStatusResponseDto;
+  }
+
+  let { jobs = $bindable() }: Props = $props();
 
   interface JobDetails {
     title: string;
@@ -56,8 +60,7 @@
     await handleCommand(jobId, dto);
   };
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: jobDetails = <Partial<Record<JobName, JobDetails>>>{
+  let jobDetails: Partial<Record<JobName, JobDetails>> = {
     [JobName.ThumbnailGeneration]: {
       icon: mdiFileJpgBox,
       title: $getJobName(JobName.ThumbnailGeneration),
@@ -142,7 +145,8 @@
       missingText: $t('missing'),
     },
   };
-  $: jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
+
+  let jobList = Object.entries(jobDetails) as [JobName, JobDetails][];
 
   async function handleCommand(jobId: JobName, jobCommand: JobCommandDto) {
     const title = jobDetails[jobId]?.title;

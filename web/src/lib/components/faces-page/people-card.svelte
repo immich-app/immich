@@ -15,28 +15,32 @@
   import { focusOutside } from '$lib/actions/focus-outside';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
-  export let person: PersonResponseDto;
-  export let preload = false;
-  export let onChangeName: () => void;
-  export let onSetBirthDate: () => void;
-  export let onMergePeople: () => void;
-  export let onHidePerson: () => void;
+  interface Props {
+    person: PersonResponseDto;
+    preload?: boolean;
+    onChangeName: () => void;
+    onSetBirthDate: () => void;
+    onMergePeople: () => void;
+    onHidePerson: () => void;
+  }
 
-  let showVerticalDots = false;
+  let { person, preload = false, onChangeName, onSetBirthDate, onMergePeople, onHidePerson }: Props = $props();
+
+  let showVerticalDots = $state(false);
 </script>
 
 <div
   id="people-card"
   class="relative"
-  on:mouseenter={() => (showVerticalDots = true)}
-  on:mouseleave={() => (showVerticalDots = false)}
+  onmouseenter={() => (showVerticalDots = true)}
+  onmouseleave={() => (showVerticalDots = false)}
   role="group"
   use:focusOutside={{ onFocusOut: () => (showVerticalDots = false) }}
 >
   <a
     href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={AppRoute.PEOPLE}"
     draggable="false"
-    on:focus={() => (showVerticalDots = true)}
+    onfocus={() => (showVerticalDots = true)}
   >
     <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail

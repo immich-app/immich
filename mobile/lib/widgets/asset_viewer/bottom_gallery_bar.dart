@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
@@ -327,39 +328,51 @@ class BottomGalleryBar extends ConsumerWidget {
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
         opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
-        child: Column(
-          children: [
-            Visibility(
-              visible: showVideoPlayerControls,
-              child: const VideoControls(),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [blackOpacity90, Colors.transparent],
             ),
-            BottomNavigationBar(
-              backgroundColor: Colors.black.withOpacity(0.4),
-              unselectedIconTheme: const IconThemeData(color: Colors.white),
-              selectedIconTheme: const IconThemeData(color: Colors.white),
-              unselectedLabelStyle: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                height: 2.3,
-              ),
-              selectedLabelStyle: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                height: 2.3,
-              ),
-              unselectedFontSize: 14,
-              selectedFontSize: 14,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white,
-              showSelectedLabels: true,
-              showUnselectedLabels: true,
-              items:
-                  albumActions.map((e) => e.keys.first).toList(growable: false),
-              onTap: (index) {
-                albumActions[index].values.first.call(index);
-              },
+          ),
+          position: DecorationPosition.background,
+          child: Padding(
+            padding: EdgeInsets.only(top: 40.0),
+            child: Column(
+              children: [
+                if (showVideoPlayerControls) const VideoControls(),
+                BottomNavigationBar(
+                  elevation: 0.0,
+                  backgroundColor: Colors.transparent,
+                  unselectedIconTheme: const IconThemeData(color: Colors.white),
+                  selectedIconTheme: const IconThemeData(color: Colors.white),
+                  unselectedLabelStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    height: 2.3,
+                  ),
+                  selectedLabelStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    height: 2.3,
+                  ),
+                  unselectedFontSize: 14,
+                  selectedFontSize: 14,
+                  selectedItemColor: Colors.white,
+                  unselectedItemColor: Colors.white,
+                  showSelectedLabels: true,
+                  showUnselectedLabels: true,
+                  items: albumActions
+                      .map((e) => e.keys.first)
+                      .toList(growable: false),
+                  onTap: (index) {
+                    albumActions[index].values.first.call(index);
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

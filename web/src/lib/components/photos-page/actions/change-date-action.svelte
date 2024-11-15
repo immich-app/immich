@@ -9,10 +9,14 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  export let menuItem = false;
+  interface Props {
+    menuItem?: boolean;
+  }
+
+  let { menuItem = false }: Props = $props();
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  let isShowChangeDate = false;
+  let isShowChangeDate = $state(false);
 
   const handleConfirm = async (dateTimeOriginal: string) => {
     isShowChangeDate = false;
