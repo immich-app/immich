@@ -112,7 +112,6 @@
           assets.findIndex((a) => a.id === action.asset.id),
           1,
         );
-        assets = assets;
         if (assets.length === 0) {
           await goto(AppRoute.PHOTOS);
         } else if (currentViewAssetIndex === assets.length) {

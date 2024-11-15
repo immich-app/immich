@@ -35,12 +35,10 @@
     }
 
     selectedIds.add(option.value);
-    selectedIds = selectedIds;
   };
 
   const handleRemove = (tag: string) => {
     selectedIds.delete(tag);
-    selectedIds = selectedIds;
   };
 
   const onsubmit = (event: Event) => {
