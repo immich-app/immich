@@ -108,7 +108,9 @@
         <MoreInformationAlbums albumType="owned" />
       {/snippet}
       {#snippet hasDropdown()}
-        <RecentAlbums />
+        <span class="hidden md:block">
+          <RecentAlbums />
+        </span>
       {/snippet}
     </SideBarLink>
 

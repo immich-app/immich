@@ -3,7 +3,7 @@
 
   import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiInformationOutline } from '@mdi/js';
+  import { mdiArrowDownDropCircleOutline, mdiInformationOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
@@ -58,19 +58,21 @@
   </div>
 
   {#if hasDropdown}
-    <button
-      type="button"
-      class="relative flex cursor-default select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded"
-      onclick={() => (dropdownOpen = !dropdownOpen)}
-    >
-      <Icon
-        path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
-        size="1em"
-        class="shrink-0 delay-100 duration-100 "
-        flipped={flippedLogo}
-        ariaHidden
-      />
-    </button>
+    <span class="hidden md:block">
+      <button
+        type="button"
+        class="relative flex cursor-default select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded"
+        onclick={() => (dropdownOpen = !dropdownOpen)}
+      >
+        <Icon
+          path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
+          size="1em"
+          class="shrink-0 delay-100 duration-100 "
+          flipped={flippedLogo}
+          ariaHidden
+        />
+      </button>
+    </span>
   {/if}
 
   <div
