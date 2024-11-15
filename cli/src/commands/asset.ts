@@ -131,9 +131,10 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
       results.push(dto);
       checkBulkUploadRequests.push(dto);
-      if (checkBulkUploadRequests.length > 5000) {
-        void checkBulkUploadQueue.push([...checkBulkUploadRequests]);
+      if (checkBulkUploadRequests.length === 5000) {
+        const batch = checkBulkUploadRequests;
         checkBulkUploadRequests = [];
+        void checkBulkUploadQueue.push(batch);
       }
 
       hashProgressBar.increment();
@@ -149,7 +150,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   await queue.drained();
 
   if (checkBulkUploadRequests.length > 0) {
-    void checkBulkUploadQueue.push([...checkBulkUploadRequests]);
+    void checkBulkUploadQueue.push(checkBulkUploadRequests);
   }
 
   await checkBulkUploadQueue.drained();
