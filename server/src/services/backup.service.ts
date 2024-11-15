@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { default as path } from 'node:path';
+import semver from 'semver';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ImmichWorker, StorageFolder } from 'src/enum';
@@ -101,14 +102,29 @@ export class BackupService extends BaseService {
       `immich-db-backup-${Date.now()}.sql.gz.tmp`,
     );
 
+    const databaseVersion = await this.databaseRepository.getPostgresVersion();
+    const databaseSemver = semver.coerce(databaseVersion);
+    const databaseMajorVersion = databaseSemver?.major;
+
+    if (!databaseMajorVersion || !databaseSemver || !semver.satisfies(databaseSemver, '>=14.0.0 <18.0.0')) {
+      this.logger.error(`Database Backup Failure: Unsupported PostgreSQL version: ${databaseVersion}`);
+      return JobStatus.FAILED;
+    }
+
+    this.logger.log(`Database Backup Starting. Database Version: ${databaseMajorVersion}`);
+
     try {
       await new Promise<void>((resolve, reject) => {
-        const pgdump = this.processRepository.spawn(`pg_dumpall`, databaseParams, {
-          env: {
-            PATH: process.env.PATH,
-            PGPASSWORD: isUrlConnection ? undefined : config.password,
+        const pgdump = this.processRepository.spawn(
+          `/usr/lib/postgresql/${databaseMajorVersion}/bin/pg_dumpall`,
+          databaseParams,
+          {
+            env: {
+              PATH: process.env.PATH,
+              PGPASSWORD: isUrlConnection ? undefined : config.password,
+            },
           },
-        });
+        );
 
         // NOTE: `--rsyncable` is only supported in GNU gzip
         const gzip = this.processRepository.spawn(`gzip`, ['--rsyncable']);
@@ -163,10 +179,13 @@ export class BackupService extends BaseService {
       await this.storageRepository.rename(backupFilePath, backupFilePath.replace('.tmp', ''));
     } catch (error) {
       this.logger.error('Database Backup Failure', error);
+      await this.storageRepository
+        .unlink(backupFilePath)
+        .catch((error) => this.logger.error('Failed to delete failed backup file', error));
       return JobStatus.FAILED;
     }
 
-    this.logger.debug(`Database Backup Success`);
+    this.logger.log(`Database Backup Success`);
     await this.cleanupDatabaseBackups();
     return JobStatus.SUCCESS;
   }

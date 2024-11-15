@@ -270,6 +270,7 @@ export const langs = [
   { name: 'Estonian', code: 'et', loader: () => import('$i18n/et.json') },
   { name: 'Persian', code: 'fa', loader: () => import('$i18n/fa.json') },
   { name: 'Finnish', code: 'fi', loader: () => import('$i18n/fi.json') },
+  { name: 'Filipino', code: 'fil', loader: () => import('$i18n/fil.json') },
   { name: 'French', code: 'fr', loader: () => import('$i18n/fr.json') },
   { name: 'Hebrew', code: 'he', loader: () => import('$i18n/he.json') },
   { name: 'Hindi', code: 'hi', loader: () => import('$i18n/hi.json') },
@@ -291,6 +292,7 @@ export const langs = [
   { name: 'Malay', code: 'ms', loader: () => import('$i18n/ms.json') },
   { name: 'Norwegian Bokmål', code: 'nb-NO', weblateCode: 'nb_NO', loader: () => import('$i18n/nb_NO.json') },
   { name: 'Dutch', code: 'nl', loader: () => import('$i18n/nl.json') },
+  { name: 'Norwegian Nynorsk', code: 'nn', loader: () => import('$i18n/nn.json') },
   { name: 'Polish', code: 'pl', loader: () => import('$i18n/pl.json') },
   { name: 'Portuguese', code: 'pt', loader: () => import('$i18n/pt.json') },
   { name: 'Portuguese (Brazil) ', code: 'pt-BR', weblateCode: 'pt_BR', loader: () => import('$i18n/pt_BR.json') },
@@ -330,4 +332,48 @@ export const langs = [
 export enum ImmichProduct {
   Client = 'immich-client',
   Server = 'immich-server',
+}
+
+export enum SettingInputFieldType {
+  EMAIL = 'email',
+  TEXT = 'text',
+  NUMBER = 'number',
+  PASSWORD = 'password',
+  COLOR = 'color',
+}
+
+export enum AlbumPageViewMode {
+  LINK_SHARING = 'link-sharing',
+  SELECT_USERS = 'select-users',
+  SELECT_THUMBNAIL = 'select-thumbnail',
+  SELECT_ASSETS = 'select-assets',
+  VIEW_USERS = 'view-users',
+  VIEW = 'view',
+  OPTIONS = 'options',
+}
+
+export enum PersonPageViewMode {
+  VIEW_ASSETS = 'view-assets',
+  SELECT_PERSON = 'select-person',
+  MERGE_PEOPLE = 'merge-people',
+  SUGGEST_MERGE = 'suggest-merge',
+  BIRTH_DATE = 'birth-date',
+  UNASSIGN_ASSETS = 'unassign-faces',
+}
+
+export enum MediaType {
+  All = 'all',
+  Image = 'image',
+  Video = 'video',
+}
+
+export enum ProgressBarStatus {
+  Playing = 'playing',
+  Paused = 'paused',
+}
+
+export enum ToggleVisibility {
+  HIDE_ALL = 'hide-all',
+  HIDE_UNNANEMD = 'hide-unnamed',
+  SHOW_ALL = 'show-all',
 }

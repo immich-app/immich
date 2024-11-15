@@ -6,7 +6,7 @@
   import { mdiInformationOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
-  import { mdiArrowDownDropCircleOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
+  import type { Snippet } from 'svelte';
 
   interface Props {
     title: string;
@@ -15,8 +15,8 @@
     flippedLogo?: boolean;
     isSelected?: boolean;
     preloadData?: boolean;
-    moreInformation?: import('svelte').Snippet;
-    hasDropdown?: import('svelte').Snippet;
+    moreInformation?: Snippet;
+    hasDropdown?: Snippet;
     dropdownOpen?: boolean;
   }
 
@@ -34,7 +34,8 @@
 
   let showMoreInformation = $state(false);
   let routePath = $derived(resolveRoute(routeId, {}));
-  run(() => {
+
+  $effect(() => {
     isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
   });
 </script>

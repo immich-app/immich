@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, afterNavigate } from '$app/navigation';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
   import {
@@ -15,8 +15,8 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  let sharedLinks: SharedLinkResponseDto[] = [];
-  let editSharedLink: SharedLinkResponseDto | null = null;
+  let sharedLinks: SharedLinkResponseDto[] = $state([]);
+  let editSharedLink: SharedLinkResponseDto | null = $state(null);
 
   const refresh = async () => {
     sharedLinks = await getAllSharedLinks();
@@ -50,10 +50,19 @@
     await refresh();
     editSharedLink = null;
   };
+
+  let backUrl: string = AppRoute.SHARING;
+
+  afterNavigate(({ from }) => {
+    let url: string | undefined = from?.url?.pathname;
+    backUrl = url || AppRoute.SHARING;
+  });
 </script>
 
-<ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
-  <svelte:fragment slot="leading">{$t('shared_links')}</svelte:fragment>
+<ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
+  {#snippet leading()}
+    {$t('shared_links')}
+  {/snippet}
 </ControlAppBar>
 
 <section class="mt-[120px] flex flex-col pb-[120px] container max-w-screen-lg mx-auto px-3">

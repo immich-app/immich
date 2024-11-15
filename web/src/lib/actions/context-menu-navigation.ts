@@ -10,7 +10,7 @@ interface Options {
   /**
    * The container element that with direct children that should be navigated.
    */
-  container: HTMLElement;
+  container?: HTMLElement;
   /**
    * Indicates if the dropdown is open.
    */
@@ -52,7 +52,11 @@ export const contextMenuNavigation: Action<HTMLElement, Options> = (node, option
       await tick();
     }
 
-    const children = Array.from(container?.children).filter((child) => child.tagName !== 'HR') as HTMLElement[];
+    if (!container) {
+      return;
+    }
+
+    const children = Array.from(container.children).filter((child) => child.tagName !== 'HR') as HTMLElement[];
     if (children.length === 0) {
       return;
     }

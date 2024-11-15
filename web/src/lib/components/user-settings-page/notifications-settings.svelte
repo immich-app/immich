@@ -12,9 +12,9 @@
   import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
 
-  let emailNotificationsEnabled = $preferences?.emailNotifications?.enabled ?? true;
-  let albumInviteNotificationEnabled = $preferences?.emailNotifications?.albumInvite ?? true;
-  let albumUpdateNotificationEnabled = $preferences?.emailNotifications?.albumUpdate ?? true;
+  let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
+  let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
+  let albumUpdateNotificationEnabled = $state($preferences?.emailNotifications?.albumUpdate ?? true);
 
   const handleSave = async () => {
     try {
@@ -37,11 +37,15 @@
       handleError(error, $t('errors.unable_to_update_settings'));
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <div class="ml-4">
           <SettingSwitch
@@ -67,7 +71,7 @@
         </div>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" on:click={() => handleSave()}>{$t('save')}</Button>
+          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

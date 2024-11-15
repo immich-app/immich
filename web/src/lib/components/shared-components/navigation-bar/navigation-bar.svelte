@@ -21,20 +21,24 @@
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import { onMount } from 'svelte';
 
-  export let showUploadButton = true;
-  export let onUploadClick: () => void;
+  interface Props {
+    showUploadButton?: boolean;
+    onUploadClick: () => void;
+  }
 
-  let shouldShowAccountInfo = false;
-  let shouldShowAccountInfoPanel = false;
-  let shouldShowHelpPanel = false;
-  let innerWidth: number;
+  let { showUploadButton = true, onUploadClick }: Props = $props();
+
+  let shouldShowAccountInfo = $state(false);
+  let shouldShowAccountInfoPanel = $state(false);
+  let shouldShowHelpPanel = $state(false);
+  let innerWidth: number = $state(0);
 
   const onLogout = async () => {
     const { redirectUri } = await logout();
     await handleLogout(redirectUri);
   };
 
-  let aboutInfo: ServerAboutResponseDto;
+  let aboutInfo: ServerAboutResponseDto | undefined = $state();
 
   onMount(async () => {
     aboutInfo = await getAboutInfo();
@@ -43,7 +47,7 @@
 
 <svelte:window bind:innerWidth />
 
-{#if shouldShowHelpPanel}
+{#if shouldShowHelpPanel && aboutInfo}
   <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} info={aboutInfo} />
 {/if}
 
@@ -71,6 +75,7 @@
             title={$t('go_to_search')}
             icon={mdiMagnify}
             padding="2"
+            onclick={() => {}}
           />
         {/if}
 
@@ -85,20 +90,20 @@
             id="support-feedback-button"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
-            on:click={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
             padding="1"
           />
         </div>
 
         {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <LinkButton on:click={onUploadClick} class="hidden lg:block">
+          <LinkButton onclick={onUploadClick} class="hidden lg:block">
             <div class="flex gap-2">
               <Icon path={mdiTrayArrowUp} size="1.5em" />
               <span>{$t('upload')}</span>
             </div>
           </LinkButton>
           <CircleIconButton
-            on:click={onUploadClick}
+            onclick={onUploadClick}
             title={$t('upload')}
             icon={mdiTrayArrowUp}
             class="lg:hidden"
@@ -115,11 +120,11 @@
           <button
             type="button"
             class="flex pl-2"
-            on:mouseover={() => (shouldShowAccountInfo = true)}
-            on:focus={() => (shouldShowAccountInfo = true)}
-            on:blur={() => (shouldShowAccountInfo = false)}
-            on:mouseleave={() => (shouldShowAccountInfo = false)}
-            on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
+            onmouseover={() => (shouldShowAccountInfo = true)}
+            onfocus={() => (shouldShowAccountInfo = true)}
+            onblur={() => (shouldShowAccountInfo = false)}
+            onmouseleave={() => (shouldShowAccountInfo = false)}
+            onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />

@@ -1,11 +1,25 @@
 <script lang="ts">
-  export let id: string;
-  export let label: string;
-  export let checked: boolean | undefined = undefined;
-  export let disabled: boolean = false;
-  export let labelClass: string | undefined = undefined;
-  export let name: string | undefined = undefined;
-  export let value: string | undefined = undefined;
+  interface Props {
+    id: string;
+    label: string;
+    checked?: boolean | undefined;
+    disabled?: boolean;
+    labelClass?: string | undefined;
+    name?: string | undefined;
+    value?: string | undefined;
+    onchange?: () => void;
+  }
+
+  let {
+    id,
+    label,
+    checked = $bindable(),
+    disabled = false,
+    labelClass = undefined,
+    name = undefined,
+    value = undefined,
+    onchange = () => {},
+  }: Props = $props();
 </script>
 
 <div class="flex items-center space-x-2">
@@ -17,7 +31,7 @@
     {disabled}
     class="size-5 flex-shrink-0 focus-visible:ring"
     bind:checked
-    on:change
+    {onchange}
   />
   <label class={labelClass} for={id}>{label}</label>
 </div>

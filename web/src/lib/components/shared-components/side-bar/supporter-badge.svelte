@@ -2,8 +2,12 @@
   import { t } from 'svelte-i18n';
   import ImmichLogo from '../immich-logo.svelte';
 
-  export let centered = false;
-  export let logoSize: 'sm' | 'lg' = 'sm';
+  interface Props {
+    centered?: boolean;
+    logoSize?: 'sm' | 'lg';
+  }
+
+  let { centered = false, logoSize = 'sm' }: Props = $props();
 </script>
 
 <div

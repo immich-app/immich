@@ -1,51 +1,53 @@
-<script context="module" lang="ts">
-  export enum ProgressBarStatus {
-    Playing = 'playing',
-    Paused = 'paused',
-  }
-</script>
-
 <script lang="ts">
+  import { ProgressBarStatus } from '$lib/constants';
   import { handlePromiseError } from '$lib/utils';
 
   import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
-  /**
-   * Autoplay on mount
-   * @default false
-   */
-  export let autoplay = false;
+  interface Props {
+    /**
+     * Autoplay on mount
+     * @default false
+     */
+    autoplay?: boolean;
+    /**
+     * Progress bar status
+     */
+    status?: ProgressBarStatus;
+    hidden?: boolean;
+    duration?: number;
+    onDone: () => void;
+    onPlaying?: () => void;
+    onPaused?: () => void;
+  }
 
-  /**
-   * Progress bar status
-   */
-  export let status: ProgressBarStatus = ProgressBarStatus.Paused;
+  let {
+    autoplay = false,
+    status = $bindable(),
+    hidden = false,
+    duration = 5,
+    onDone,
+    onPlaying = () => {},
+    onPaused = () => {},
+  }: Props = $props();
 
-  export let hidden = false;
-
-  export let duration = 5;
-
-  export let onDone: () => void;
-  export let onPlaying: () => void = () => {};
-  export let onPaused: () => void = () => {};
-
-  const onChange = async () => {
-    progress = setDuration(duration);
+  const onChange = async (progressDuration: number) => {
+    progress = setDuration(progressDuration);
     await play();
   };
 
   let progress = setDuration(duration);
 
-  // svelte 5, again....
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  $: duration, handlePromiseError(onChange());
+  $effect(() => {
+    handlePromiseError(onChange(duration));
+  });
 
-  $: {
+  $effect(() => {
     if ($progress === 1) {
       onDone();
     }
-  }
+  });
 
   onMount(async () => {
     if (autoplay) {

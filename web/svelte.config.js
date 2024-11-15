@@ -9,8 +9,7 @@ process.env.PUBLIC_IMMICH_PAY_HOST = process.env.PUBLIC_IMMICH_PAY_HOST || 'http
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-  // TODO: migrate all enums to .ts files and remove `{script: true}` once
-  preprocess: vitePreprocess({ script: true }),
+  preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({
       fallback: 'index.html',

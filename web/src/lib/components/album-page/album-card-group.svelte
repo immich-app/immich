@@ -11,28 +11,43 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { t } from 'svelte-i18n';
 
-  export let albums: AlbumResponseDto[];
-  export let group: AlbumGroup | undefined = undefined;
-  export let showOwner = false;
-  export let showDateRange = false;
-  export let showItemCount = false;
-  export let onShowContextMenu: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined =
-    undefined;
+  interface Props {
+    albums: AlbumResponseDto[];
+    group?: AlbumGroup | undefined;
+    showOwner?: boolean;
+    showDateRange?: boolean;
+    showItemCount?: boolean;
+    onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
+  }
 
-  $: isCollapsed = !!group && isAlbumGroupCollapsed($albumViewSettings, group.id);
+  let {
+    albums,
+    group = undefined,
+    showOwner = false,
+    showDateRange = false,
+    showItemCount = false,
+    onShowContextMenu = undefined,
+  }: Props = $props();
+
+  let isCollapsed = $derived(!!group && isAlbumGroupCollapsed($albumViewSettings, group.id));
 
   const showContextMenu = (position: ContextMenuPosition, album: AlbumResponseDto) => {
     onShowContextMenu?.(position, album);
   };
 
-  $: iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90';
+  let iconRotation = $derived(isCollapsed ? 'rotate-0' : 'rotate-90');
+
+  const oncontextmenu = (event: MouseEvent, album: AlbumResponseDto) => {
+    event.preventDefault();
+    showContextMenu({ x: event.x, y: event.y }, album);
+  };
 </script>
 
 {#if group}
   <div class="grid">
     <button
       type="button"
-      on:click={() => toggleAlbumGroupCollapsing(group.id)}
+      onclick={() => toggleAlbumGroupCollapsing(group.id)}
       class="w-fit mt-2 pt-2 pr-2 mb-2 dark:text-immich-dark-fg"
       aria-expanded={!isCollapsed}
     >
@@ -56,7 +71,7 @@
           data-sveltekit-preload-data="hover"
           href="{AppRoute.ALBUMS}/{album.id}"
           animate:flip={{ duration: 400 }}
-          on:contextmenu|preventDefault={(e) => showContextMenu({ x: e.x, y: e.y }, album)}
+          oncontextmenu={(event) => oncontextmenu(event, album)}
         >
           <AlbumCard
             {album}
