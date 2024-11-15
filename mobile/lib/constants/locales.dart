@@ -48,3 +48,5 @@ const Map<String, Locale> locales = {
 };
 
 const String translationsPath = 'assets/i18n';
+
+const List<String> localesNotSupportedByOverpass = ['el'];
