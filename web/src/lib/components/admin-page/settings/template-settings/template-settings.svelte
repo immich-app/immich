@@ -22,7 +22,7 @@
     savedConfig: SystemConfigDto;
     defaultConfig: SystemConfigDto;
     config: SystemConfigDto;
-    disabled: boolean;
+    disabled?: boolean;
     onReset: SettingsResetEvent;
     onSave: SettingsSaveEvent;
   }
