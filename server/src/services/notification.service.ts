@@ -174,14 +174,14 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
-  async getTemplate(name: string, tempTemplate: string) {
+  async getTemplate(name: EmailTemplate, tempTemplate: string) {
     const { server, templates } = await this.getConfig({ withCache: false });
     const { port } = this.configRepository.getEnv();
 
     let templateResponse = '';
 
     switch (name) {
-      case 'welcome': {
+      case EmailTemplate.WELCOME: {
         const { html: _welcomeHtml } = await this.notificationRepository.renderEmail({
           template: EmailTemplate.WELCOME,
           data: {
@@ -196,14 +196,13 @@ export class NotificationService extends BaseService {
         templateResponse = _welcomeHtml;
         break;
       }
-      case 'album-update': {
+      case EmailTemplate.ALBUM_UPDATE: {
         const { html: _updateAlbumHtml } = await this.notificationRepository.renderEmail({
-          template: EmailTemplate.ALBUM_INVITE,
+          template: EmailTemplate.ALBUM_UPDATE,
           data: {
             baseUrl: getExternalDomain(server, port),
             albumId: '1',
             albumName: 'Favorite Photos',
-            senderName: 'John Doe',
             recipientName: 'Jane Doe',
             cid: undefined,
           },
@@ -213,7 +212,7 @@ export class NotificationService extends BaseService {
         break;
       }
 
-      case 'album-invite': {
+      case EmailTemplate.ALBUM_INVITE: {
         const { html } = await this.notificationRepository.renderEmail({
           template: EmailTemplate.ALBUM_INVITE,
           data: {
