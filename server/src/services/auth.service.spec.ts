@@ -53,7 +53,7 @@ const oauthUserWithDefaultQuota = {
   email,
   name: ' ',
   oauthId: sub,
-  quotaSizeInBytes: 1_073_741_824,
+  quotaSizeInBytes: '1073741824',
   storageLabel: null,
 };
 
@@ -567,7 +567,7 @@ describe('AuthService', () => {
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
+      expect(userMock.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
     });
 
     it('should ignore an invalid storage quota', async () => {
@@ -581,7 +581,7 @@ describe('AuthService', () => {
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
+      expect(userMock.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
     });
 
     it('should ignore a negative quota', async () => {
@@ -595,7 +595,7 @@ describe('AuthService', () => {
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith(oauthUserWithDefaultQuota);
+      expect(userMock.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
     });
 
     it('should not set quota for 0 quota', async () => {
