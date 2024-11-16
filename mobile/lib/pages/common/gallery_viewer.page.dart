@@ -8,19 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/pages/common/download_panel.dart';
 import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
+import 'package:immich_mobile/pages/common/gallery_stacked_children.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/advanced_bottom_sheet.dart';
@@ -57,16 +56,10 @@ class GalleryViewerPage extends HookConsumerWidget {
     final totalAssets = useState(renderList.totalAssets);
     final isZoomed = useState(false);
     final isPlayingMotionVideo = useState(false);
-    final stackIndex = useState(-1);
+    final stackIndex = useState(0);
     final localPosition = useRef<Offset?>(null);
     final currentIndex = useValueNotifier(initialIndex);
     final loadAsset = renderList.loadAsset;
-    final currentAsset = loadAsset(currentIndex.value);
-
-    final stack = showStack && currentAsset.stackCount > 0
-        ? ref.watch(assetStackStateProvider(currentAsset))
-        : <Asset>[];
-    final stackElements = showStack ? [currentAsset, ...stack] : <Asset>[];
 
     // // Update is playing motion video
     ref.listen(
@@ -197,58 +190,6 @@ class GalleryViewerPage extends HookConsumerWidget {
       }
     });
 
-    Widget buildStackedChildren() {
-      if (!showStack) {
-        return const SizedBox();
-      }
-
-      return ListView.builder(
-        shrinkWrap: true,
-        scrollDirection: Axis.horizontal,
-        itemCount: stackElements.length,
-        padding: const EdgeInsets.only(
-          left: 5,
-          right: 5,
-          bottom: 30,
-        ),
-        itemBuilder: (context, index) {
-          final assetId = stackElements.elementAt(index).remoteId;
-          if (assetId == null) {
-            return const SizedBox();
-          }
-          return Padding(
-            key: ValueKey(assetId),
-            padding: const EdgeInsets.only(right: 5),
-            child: GestureDetector(
-              onTap: () => stackIndex.value = index,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  border: (stackIndex.value == -1 && index == 0) ||
-                          index == stackIndex.value
-                      ? Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        )
-                      : null,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Image(
-                    fit: BoxFit.cover,
-                    image: ImmichRemoteImageProvider(assetId: assetId),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      );
-    }
-
     PhotoViewGalleryPageOptions buildImage(BuildContext context, Asset asset) {
       return PhotoViewGalleryPageOptions(
         onDragStart: (_, details, __) {
@@ -262,9 +203,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         },
         onLongPressStart: asset.isMotionPhoto
             ? (_, __, ___) {
-                if (asset.isMotionPhoto) {
-                  isPlayingMotionVideo.value = true;
-                }
+                isPlayingMotionVideo.value = true;
               }
             : null,
         imageProvider: ImmichImage.imageProvider(asset: asset),
@@ -316,15 +255,22 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     PhotoViewGalleryPageOptions buildAsset(BuildContext context, int index) {
-      final newAsset = loadAsset(index);
+      isPlayingMotionVideo.value = false;
+      var newAsset = loadAsset(index);
+      final stackId = newAsset.stackId;
+      if (stackId != null && currentIndex.value == index) {
+        final stackElements =
+            ref.read(assetStackStateProvider(newAsset.stackId!));
+        if (stackIndex.value < stackElements.length) {
+          newAsset = stackElements.elementAt(stackIndex.value);
+        }
+      }
 
       if (newAsset.isImage && !isPlayingMotionVideo.value) {
         return buildImage(context, newAsset);
       }
       return buildVideo(context, newAsset);
     }
-
-    log.info('GalleryViewerPage: Building gallery viewer page');
 
     return PopScope(
       // Change immersive mode back to normal "edgeToEdge" mode
@@ -387,7 +333,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                 final newAsset = loadAsset(value);
 
                 currentIndex.value = value;
-                stackIndex.value = -1;
+                stackIndex.value = 0;
                 isPlayingMotionVideo.value = false;
 
                 ref.read(currentAssetProvider.notifier).set(newAsset);
@@ -418,13 +364,7 @@ class GalleryViewerPage extends HookConsumerWidget {
               right: 0,
               child: Column(
                 children: [
-                  Visibility(
-                    visible: stack.isNotEmpty,
-                    child: SizedBox(
-                      height: 80,
-                      child: buildStackedChildren(),
-                    ),
-                  ),
+                  GalleryStackedChildren(stackIndex),
                   BottomGalleryBar(
                     key: const ValueKey('bottom-bar'),
                     renderList: renderList,

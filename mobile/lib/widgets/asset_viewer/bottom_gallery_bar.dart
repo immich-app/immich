@@ -52,9 +52,10 @@ class BottomGalleryBar extends ConsumerWidget {
     }
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
     final showControls = ref.watch(showControlsProvider);
+    final stackId = asset.stackId;
 
-    final stackItems = showStack && asset.stackCount > 0
-        ? ref.watch(assetStackStateProvider(asset))
+    final stackItems = showStack && stackId != null
+        ? ref.watch(assetStackStateProvider(stackId))
         : <Asset>[];
     bool isStackPrimaryAsset = asset.stackPrimaryAssetId == null;
     final navStack = AutoRouter.of(context).stackData;
@@ -66,9 +67,9 @@ class BottomGalleryBar extends ConsumerWidget {
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
 
     void removeAssetFromStack() {
-      if (stackIndex > 0 && showStack) {
+      if (stackIndex > 0 && showStack && stackId != null) {
         ref
-            .read(assetStackStateProvider(asset).notifier)
+            .read(assetStackStateProvider(stackId).notifier)
             .removeChild(stackIndex - 1);
       }
     }
@@ -137,7 +138,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
       await ref
           .read(stackServiceProvider)
-          .deleteStack(asset.stackId!, [asset, ...stackItems]);
+          .deleteStack(asset.stackId!, stackItems);
     }
 
     void showStackActionItems() {
