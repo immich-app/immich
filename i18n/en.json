@@ -256,7 +256,7 @@
     "template_settings": "Notification Templates",
     "template_settings_description": "Manage custom templates for notifications.",
     "template_email_if_empty": "If the template is empty, the default email will be used.",
-    "template_email_available_tags": "You can use following variables in your template: {tags}",
+    "template_email_available_tags": "You can use the following variables in your template: {tags}",
     "theme_custom_css_settings": "Custom CSS",
     "theme_custom_css_settings_description": "Cascading Style Sheets allow the design of Immich to be customized.",
     "theme_settings": "Theme Settings",
