@@ -65,7 +65,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final log = Logger('NativeVideoViewerPage');
 
     final localEntity = useMemoized(() {
-      if (!asset.isLocal) {
+      if (!asset.isLocal || asset.isMotionPhoto) {
         return null;
       }
 
@@ -116,7 +116,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return null;
       }
 
-      if (localEntity != null && asset.livePhotoVideoId == null) {
+      if (localEntity != null) {
         final file = await (await localEntity)!.file;
         if (file == null) {
           throw Exception('No file found for the video');
@@ -151,8 +151,18 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           return null;
         }
 
-        final (videoSourceRes, aspectRatioRes) =
-            await (createSource(), calculateAspectRatio()).wait;
+        late final VideoSource? videoSourceRes;
+        late final double? aspectRatioRes;
+        try {
+          (videoSourceRes, aspectRatioRes) =
+              await (createSource(), calculateAspectRatio()).wait;
+        } catch (error) {
+          log.severe(
+            'Error initializing video for asset ${asset.fileName}: $error',
+          );
+          return;
+        }
+
         if (videoSourceRes == null || aspectRatioRes == null) {
           return;
         }
