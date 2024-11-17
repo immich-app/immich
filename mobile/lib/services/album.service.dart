@@ -119,8 +119,8 @@ class AlbumService {
         // on Android, the virtual "Recent" `lastModified` value is always null
         if (Platform.isAndroid) {
           onDevice.removeWhere((album) => album.isAll);
+          _log.info("'Recents' is selected, keeping all individual albums");
         }
-        _log.info("'Recents' is selected, keeping all individual albums");
       } else {
         // keep only the explicitly selected albums
         onDevice.removeWhere((album) => !selectedIds.contains(album.localId));
