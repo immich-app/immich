@@ -140,6 +140,7 @@ services:
         '-c',
         'wal_compression=on',
       ]
+
   # set IMMICH_METRICS=true in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
