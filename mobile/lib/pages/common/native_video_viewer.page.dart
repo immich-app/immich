@@ -61,6 +61,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     // If the swipe is canceled, `currentAsset` will not have changed and video A will continue to play.
     final currentAsset = useState(ref.read(currentAssetProvider));
     final isCurrent = currentAsset.value == asset;
+
+    // used to show the placeholder during hero animations for remote videos to avoid a stutter
     final isVisible = useState(asset.isLocal || asset.isMotionPhoto);
 
     final log = Logger('NativeVideoViewerPage');
