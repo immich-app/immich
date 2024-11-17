@@ -259,6 +259,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     return Dismissible(
+      behavior: HitTestBehavior.translucent,
       direction: DismissDirection.down,
       onDismissed: (_) => Navigator.of(context).pop(),
       key: const Key('app_bar_dialog'),
