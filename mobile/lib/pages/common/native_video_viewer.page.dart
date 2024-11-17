@@ -49,9 +49,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
 
-    if (isPlayingMotionVideo != null) {
-      useListenable(isPlayingMotionVideo);
-    }
+    useListenable(isPlayingMotionVideo);
     final showMotionVideo =
         isPlayingMotionVideo != null && isPlayingMotionVideo!.value;
 
@@ -62,124 +60,67 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final currentAsset = useState(ref.read(currentAssetProvider));
     final isCurrent = currentAsset.value == asset;
 
-    // used to show the placeholder during hero animations for remote videos to avoid a stutter
+    // Used to show the placeholder during hero animations for remote videos to avoid a stutter
     final isVisible = useState(asset.isLocal || asset.isMotionPhoto);
 
     final log = Logger('NativeVideoViewerPage');
-
-    final localEntity = useMemoized(() {
-      if (!asset.isLocal || asset.isMotionPhoto) {
-        return null;
-      }
-
-      final local = asset.local;
-      if (local == null || local.orientation > 0) {
-        return Future.value(local);
-      }
-
-      return local.obtainForNewProperties();
-    });
-
-    Future<double?> calculateAspectRatio() async {
-      if (!context.mounted) {
-        return null;
-      }
-
-      late final double? orientatedWidth;
-      late final double? orientatedHeight;
-
-      if (asset.exifInfo != null) {
-        orientatedWidth = asset.orientatedWidth?.toDouble();
-        orientatedHeight = asset.orientatedHeight?.toDouble();
-      } else if (localEntity != null) {
-        final entity = await localEntity;
-        if (entity != null) {
-          asset.local = entity;
-          orientatedWidth = entity.orientatedWidth.toDouble();
-          orientatedHeight = entity.orientatedHeight.toDouble();
-        }
-      } else {
-        final entity = await ref.read(assetServiceProvider).loadExif(asset);
-        orientatedWidth = entity.orientatedWidth?.toDouble();
-        orientatedHeight = entity.orientatedHeight?.toDouble();
-      }
-
-      if (orientatedWidth != null &&
-          orientatedHeight != null &&
-          orientatedWidth > 0 &&
-          orientatedHeight > 0) {
-        return orientatedWidth / orientatedHeight;
-      }
-
-      return 1.0;
-    }
 
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
         return null;
       }
 
-      if (localEntity != null) {
-        final file = await (await localEntity)!.file;
-        if (file == null) {
-          throw Exception('No file found for the video');
+      try {
+        final local = asset.local;
+        if (local != null && !asset.isMotionPhoto) {
+          final file = await local.file;
+          if (file == null) {
+            throw Exception('No file found for the video');
+          }
+
+          final source = await VideoSource.init(
+            path: file.path,
+            type: VideoSourceType.file,
+          );
+          return source;
         }
 
+        // Use a network URL for the video player controller
+        final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+        final String videoUrl = asset.livePhotoVideoId != null
+            ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/video/playback'
+            : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
+
         final source = await VideoSource.init(
-          path: file.path,
-          type: VideoSourceType.file,
+          path: videoUrl,
+          type: VideoSourceType.network,
+          headers: ApiService.getRequestHeaders(),
         );
         return source;
+      } catch (error) {
+        log.severe(
+          'Error creating video source for asset ${asset.fileName}: $error',
+        );
+        return null;
       }
-
-      // Use a network URL for the video player controller
-      final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-      final String videoUrl = asset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/video/playback'
-          : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
-
-      final source = await VideoSource.init(
-        path: videoUrl,
-        type: VideoSourceType.network,
-        headers: ApiService.getRequestHeaders(),
-      );
-      return source;
     }
 
-    final videoSource = useState<VideoSource?>(null);
-    final aspectRatio = useState<double?>(null);
+    final videoSource = useMemoized<Future<VideoSource?>>(() => createSource());
+    final aspectRatio = useState<double?>(asset.aspectRatio);
     useMemoized(
       () async {
-        if (!context.mounted) {
+        if (!context.mounted || aspectRatio.value != null) {
           return null;
         }
 
-        late final VideoSource? videoSourceRes;
-        late final double? aspectRatioRes;
         try {
-          (videoSourceRes, aspectRatioRes) =
-              await (createSource(), calculateAspectRatio()).wait;
+          aspectRatio.value =
+              await ref.read(assetServiceProvider).getAspectRatio(asset);
         } catch (error) {
           log.severe(
-            'Error initializing video for asset ${asset.fileName}: $error',
-          );
-          return;
-        }
-
-        if (videoSourceRes == null || aspectRatioRes == null) {
-          return;
-        }
-
-        // if opening a remote video from a hero animation, delay visibility to avoid a stutter
-        if (!asset.isLocal && isCurrent) {
-          Timer(
-            const Duration(milliseconds: 200),
-            () => isVisible.value = true,
+            'Error getting aspect ratio for asset ${asset.fileName}: $error',
           );
         }
-
-        videoSource.value = videoSourceRes;
-        aspectRatio.value = aspectRatioRes;
       },
     );
 
@@ -197,7 +138,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     }
 
-    // timer to mark videos as buffering if the position does not change
+    // Timer to mark videos as buffering if the position does not change
     useInterval(const Duration(seconds: 5), checkIfBuffering);
 
     // When the volume changes, set the volume
@@ -286,7 +227,11 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
 
       try {
-        await videoController.play();
+        if (asset.isVideo ||
+            isPlayingMotionVideo == null ||
+            isPlayingMotionVideo!.value) {
+          await videoController.play();
+        }
         await videoController.setVolume(0.9);
       } catch (error) {
         log.severe('Error playing video: $error');
@@ -362,6 +307,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     }
 
+    void onToggleMotionVideo() async {
+      final videoController = controller.value;
+      if (videoController == null || !context.mounted) {
+        return;
+      }
+
+      try {
+        if (isPlayingMotionVideo!.value) {
+          await videoController.seekTo(0);
+          await videoController.play();
+        } else {
+          await videoController.pause();
+        }
+      } catch (error) {
+        log.severe('Error toggling motion video: $error');
+      }
+    }
+
     void removeListeners(NativeVideoPlayerController controller) {
       controller.onPlaybackPositionChanged
           .removeListener(onPlaybackPositionChanged);
@@ -371,19 +334,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       controller.onPlaybackEnded.removeListener(onPlaybackEnded);
     }
 
-    void initController(NativeVideoPlayerController nc) {
+    void initController(NativeVideoPlayerController nc) async {
       if (controller.value != null) {
         return;
       }
       ref.read(videoPlayerControlsProvider.notifier).reset();
       ref.read(videoPlaybackValueProvider.notifier).reset();
 
+      final source = await videoSource;
+      if (source == null) {
+        return;
+      }
+
       nc.onPlaybackPositionChanged.addListener(onPlaybackPositionChanged);
       nc.onPlaybackStatusChanged.addListener(onPlaybackStatusChanged);
       nc.onPlaybackReady.addListener(onPlaybackReady);
       nc.onPlaybackEnded.addListener(onPlaybackEnded);
-      nc.loadVideoSource(videoSource.value!);
 
+      nc.loadVideoSource(source);
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }
@@ -399,7 +367,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      // no need to delay video playback when swiping from an image to a video
+      // No need to delay video playback when swiping from an image to a video
       if (curAsset != null && !curAsset.isVideo) {
         currentAsset.value = value;
         onPlaybackReady();
@@ -421,7 +389,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     useEffect(
       () {
+        // If opening a remote video from a hero animation, delay visibility to avoid a stutter
+        final timer = isVisible.value
+            ? null
+            : Timer(
+                const Duration(milliseconds: 300),
+                () => isVisible.value = true,
+              );
+
+        if (isPlayingMotionVideo != null) {
+          isPlayingMotionVideo!.addListener(onToggleMotionVideo);
+        }
+
         return () {
+          timer?.cancel();
+          if (isPlayingMotionVideo != null) {
+            isPlayingMotionVideo!.removeListener(onToggleMotionVideo);
+          }
+
           final playerController = controller.value;
           if (playerController == null) {
             return;
@@ -442,23 +427,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
         Center(key: ValueKey(asset.id), child: image),
-        Visibility.maintain(
-          key: ValueKey(asset),
-          visible: (asset.isVideo || showMotionVideo) && isVisible.value,
-          child: Center(
+        if (aspectRatio.value != null)
+          Visibility.maintain(
             key: ValueKey(asset),
-            child: AspectRatio(
+            visible: (asset.isVideo || showMotionVideo) && isVisible.value,
+            child: Center(
               key: ValueKey(asset),
-              aspectRatio: aspectRatio.value!,
-              child: isCurrent
-                  ? NativeVideoPlayerView(
-                      key: ValueKey(asset),
-                      onViewReady: initController,
-                    )
-                  : null,
+              child: AspectRatio(
+                key: ValueKey(asset),
+                aspectRatio: aspectRatio.value!,
+                child: isCurrent
+                    ? NativeVideoPlayerView(
+                        key: ValueKey(asset),
+                        onViewReady: initController,
+                      )
+                    : null,
+              ),
             ),
           ),
-        ),
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );

@@ -89,6 +89,34 @@ class Asset {
 
   set local(AssetEntity? assetEntity) => _local = assetEntity;
 
+  @ignore
+  bool _didUpdateLocal = false;
+
+  @ignore
+  bool get didUpdateLocal => _didUpdateLocal;
+
+  Future<AssetEntity> get localAsync async {
+    final currentLocal = local;
+    if (currentLocal == null) {
+      throw Exception('Asset $fileName has no local data');
+    }
+
+    if (_didUpdateLocal) {
+      return currentLocal;
+    }
+
+    final updatedLocal = _didUpdateLocal
+        ? currentLocal
+        : await currentLocal.obtainForNewProperties();
+    if (updatedLocal == null) {
+      throw Exception('Could not fetch local data for $fileName');
+    }
+
+    local = updatedLocal;
+    _didUpdateLocal = true;
+    return updatedLocal;
+  }
+
   Id id = Isar.autoIncrement;
 
   /// stores the raw SHA1 bytes as a base64 String
@@ -147,9 +175,36 @@ class Asset {
   int stackCount;
 
   /// Aspect ratio of the asset
+  /// Returns null if the asset has no sync access to the exif info
   @ignore
-  double? get aspectRatio =>
-      width == null || height == null ? 0 : width! / height!;
+  double? get aspectRatio {
+    late final double? orientatedWidth;
+    late final double? orientatedHeight;
+
+    if (exifInfo != null) {
+      orientatedWidth = this.orientatedWidth?.toDouble();
+      orientatedHeight = this.orientatedHeight?.toDouble();
+    } else if (didUpdateLocal) {
+      final currentLocal = local;
+      if (currentLocal == null) {
+        throw Exception('Asset $fileName has no local data');
+      }
+      orientatedWidth = currentLocal.orientatedWidth.toDouble();
+      orientatedHeight = currentLocal.orientatedHeight.toDouble();
+    } else {
+      orientatedWidth = null;
+      orientatedHeight = null;
+    }
+
+    if (orientatedWidth != null &&
+        orientatedHeight != null &&
+        orientatedWidth > 0 &&
+        orientatedHeight > 0) {
+      return orientatedWidth / orientatedHeight;
+    }
+
+    return null;
+  }
 
   /// `true` if this [Asset] is present on the device
   @ignore
