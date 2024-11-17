@@ -106,7 +106,7 @@ class GalleryViewerPage extends HookConsumerWidget {
 
         return null;
       },
-      [],
+      const [],
     );
 
     void showInfo() {
