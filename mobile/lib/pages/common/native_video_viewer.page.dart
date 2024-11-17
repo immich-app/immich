@@ -434,7 +434,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     final video = aspectRatio.value != null
         ? Center(
-            key: ValueKey(asset),
+            key: ValueKey(asset.id),
             child: AspectRatio(
               key: ValueKey(asset),
               aspectRatio: aspectRatio.value!,
