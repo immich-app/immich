@@ -169,7 +169,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
         // if opening a remote video from a hero animation, delay initialization to avoid a stutter
         if (!asset.isLocal && isCurrent) {
-          await Future.delayed(const Duration(milliseconds: 150));
+          await Future.delayed(const Duration(milliseconds: 200));
         }
 
         videoSource.value = videoSourceRes;
@@ -376,7 +376,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       nc.onPlaybackStatusChanged.addListener(onPlaybackStatusChanged);
       nc.onPlaybackReady.addListener(onPlaybackReady);
       nc.onPlaybackEnded.addListener(onPlaybackEnded);
-
       nc.loadVideoSource(videoSource.value!);
 
       controller.value = nc;
@@ -429,12 +428,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           WakelockPlus.disable();
         };
       },
-      [],
+      const [],
     );
 
     final video = aspectRatio.value != null
         ? Center(
-            key: ValueKey(asset.id),
+            key: ValueKey(asset),
             child: AspectRatio(
               key: ValueKey(asset),
               aspectRatio: aspectRatio.value!,
@@ -452,11 +451,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       children: [
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
-        image,
+        Center(key: ValueKey(asset.id), child: image),
         if (video != null)
           asset.isVideo
               ? video
-              : Visibility.maintain(visible: showMotionVideo, child: video),
+              : Visibility.maintain(
+                  key: ValueKey(asset),
+                  visible: showMotionVideo,
+                  child: video,
+                ),
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
