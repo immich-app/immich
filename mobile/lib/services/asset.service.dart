@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -404,12 +405,27 @@ class AssetService {
   }
 
   Future<double> getAspectRatio(Asset asset) async {
-    if (asset.isLocal) {
+    // platform_manager always returns 0 for orientation on iOS, so only prefer it on Android
+    if (asset.isLocal && Platform.isAndroid) {
       await asset.localAsync;
     } else if (asset.isRemote) {
       asset = await loadExif(asset);
+    } else if (asset.isLocal) {
+      await asset.localAsync;
     }
 
-    return asset.aspectRatio ?? 1.0;
+    final aspectRatio = asset.aspectRatio;
+    if (aspectRatio != null) {
+      return aspectRatio;
+    }
+
+    final width = asset.width;
+    final height = asset.height;
+    if (width != null && height != null) {
+      // we don't know the orientation, so assume it's normal
+      return width / height;
+    }
+
+    return 1.0;
   }
 }

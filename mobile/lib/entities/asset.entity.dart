@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -92,27 +93,19 @@ class Asset {
   @ignore
   bool _didUpdateLocal = false;
 
-  @ignore
-  bool get didUpdateLocal => _didUpdateLocal;
-
   Future<AssetEntity> get localAsync async {
-    final currentLocal = local;
-    if (currentLocal == null) {
+    final local = this.local;
+    if (local == null) {
       throw Exception('Asset $fileName has no local data');
     }
 
-    if (_didUpdateLocal) {
-      return currentLocal;
-    }
-
-    final updatedLocal = _didUpdateLocal
-        ? currentLocal
-        : await currentLocal.obtainForNewProperties();
+    final updatedLocal =
+        _didUpdateLocal ? local : await local.obtainForNewProperties();
     if (updatedLocal == null) {
       throw Exception('Could not fetch local data for $fileName');
     }
 
-    local = updatedLocal;
+    this.local = updatedLocal;
     _didUpdateLocal = true;
     return updatedLocal;
   }
@@ -242,7 +235,7 @@ class Asset {
       return exifInfo.isFlipped;
     }
 
-    if (didUpdateLocal) {
+    if (_didUpdateLocal && Platform.isAndroid) {
       final local = this.local;
       if (local == null) {
         throw Exception('Asset $fileName has no local data');
