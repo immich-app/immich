@@ -145,12 +145,16 @@ class AlbumService {
     Set<String> excludedAlbumIds,
   ) async {
     final Set<String> result = HashSet<String>();
-    for (Album album in albums) {
-      if (excludedAlbumIds.contains(album.localId)) {
-        final assetIds =
-            await _albumMediaRepository.getAssetIds(album.localId!);
-        result.addAll(assetIds);
-      }
+    for (final batchAlbums in albums
+        .where((album) => excludedAlbumIds.contains(album.localId))
+        .slices(5)) {
+      await batchAlbums
+          .map(
+            (album) => _albumMediaRepository
+                .getAssetIds(album.localId!)
+                .then((assetIds) => result.addAll(assetIds)),
+          )
+          .wait;
     }
     return result;
   }
