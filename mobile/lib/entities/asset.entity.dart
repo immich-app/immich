@@ -174,33 +174,17 @@ class Asset {
 
   int stackCount;
 
-  /// Aspect ratio of the asset
   /// Returns null if the asset has no sync access to the exif info
   @ignore
   double? get aspectRatio {
-    late final double? orientatedWidth;
-    late final double? orientatedHeight;
-
-    if (exifInfo != null) {
-      orientatedWidth = this.orientatedWidth?.toDouble();
-      orientatedHeight = this.orientatedHeight?.toDouble();
-    } else if (didUpdateLocal) {
-      final currentLocal = local;
-      if (currentLocal == null) {
-        throw Exception('Asset $fileName has no local data');
-      }
-      orientatedWidth = currentLocal.orientatedWidth.toDouble();
-      orientatedHeight = currentLocal.orientatedHeight.toDouble();
-    } else {
-      orientatedWidth = null;
-      orientatedHeight = null;
-    }
+    final orientatedWidth = this.orientatedWidth;
+    final orientatedHeight = this.orientatedHeight;
 
     if (orientatedWidth != null &&
         orientatedHeight != null &&
         orientatedWidth > 0 &&
         orientatedHeight > 0) {
-      return orientatedWidth / orientatedHeight;
+      return orientatedWidth.toDouble() / orientatedHeight.toDouble();
     }
 
     return null;
@@ -249,13 +233,49 @@ class Asset {
   @ignore
   set byteHash(List<int> hash) => checksum = base64.encode(hash);
 
+  /// Returns null if the asset has no sync access to the exif info
   @ignore
-  int? get orientatedWidth =>
-      exifInfo != null && exifInfo!.isFlipped ? height : width;
+  @pragma('vm:prefer-inline')
+  bool? get isFlipped {
+    final exifInfo = this.exifInfo;
+    if (exifInfo != null) {
+      return exifInfo.isFlipped;
+    }
 
+    if (didUpdateLocal) {
+      final local = this.local;
+      if (local == null) {
+        throw Exception('Asset $fileName has no local data');
+      }
+      return local.orientation == 90 || local.orientation == 270;
+    }
+
+    return null;
+  }
+
+  /// Returns null if the asset has no sync access to the exif info
   @ignore
-  int? get orientatedHeight =>
-      exifInfo != null && exifInfo!.isFlipped ? width : height;
+  @pragma('vm:prefer-inline')
+  int? get orientatedHeight {
+    final isFlipped = this.isFlipped;
+    if (isFlipped == null) {
+      return null;
+    }
+
+    return isFlipped ? width : height;
+  }
+
+  /// Returns null if the asset has no sync access to the exif info
+  @ignore
+  @pragma('vm:prefer-inline')
+  int? get orientatedWidth {
+    final isFlipped = this.isFlipped;
+    if (isFlipped == null) {
+      return null;
+    }
+
+    return isFlipped ? height : width;
+  }
 
   @override
   bool operator ==(other) {
