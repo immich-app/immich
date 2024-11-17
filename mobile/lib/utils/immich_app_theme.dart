@@ -147,7 +147,7 @@ ImmichTheme _decolorizeSurfaces({
 }
 
 String? getFontFamilyFromLocale(Locale locale) {
-  if (localesNotSupportedByOverpass.contains(locale.languageCode)) {
+  if (localesNotSupportedByOverpass.contains(locale)) {
     // Let Flutter use the default font
     return null;
   }

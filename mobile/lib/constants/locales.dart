@@ -49,4 +49,7 @@ const Map<String, Locale> locales = {
 
 const String translationsPath = 'assets/i18n';
 
-const List<String> localesNotSupportedByOverpass = ['el'];
+const List<Locale> localesNotSupportedByOverpass = [
+  Locale('el', 'GR'),
+  Locale('sr', 'Cyrl'),
+];
