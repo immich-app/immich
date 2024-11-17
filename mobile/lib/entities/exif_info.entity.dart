@@ -50,6 +50,7 @@ class ExifInfo {
   bool? _isFlipped;
 
   @ignore
+  @pragma('vm:prefer-inline')
   bool get isFlipped => _isFlipped ??= _isOrientationFlipped(orientation);
 
   @ignore
