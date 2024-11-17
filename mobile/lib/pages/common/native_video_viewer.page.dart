@@ -422,28 +422,31 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       [],
     );
 
+    final video = aspectRatio.value != null
+        ? Center(
+            key: ValueKey(asset),
+            child: AspectRatio(
+              key: ValueKey(asset),
+              aspectRatio: aspectRatio.value!,
+              child: isCurrent
+                  ? NativeVideoPlayerView(
+                      key: ValueKey(asset),
+                      onViewReady: initController,
+                    )
+                  : null,
+            ),
+          )
+        : null;
+
     return Stack(
       children: [
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
         image,
-        if (aspectRatio.value != null)
-          Visibility.maintain(
-            visible: asset.isVideo || showMotionVideo,
-            child: Center(
-              key: ValueKey(asset),
-              child: AspectRatio(
-                key: ValueKey(asset),
-                aspectRatio: aspectRatio.value!,
-                child: isCurrent
-                    ? NativeVideoPlayerView(
-                        key: ValueKey(asset),
-                        onViewReady: initController,
-                      )
-                    : null,
-              ),
-            ),
-          ),
+        if (video != null)
+          asset.isVideo
+              ? video
+              : Visibility.maintain(visible: showMotionVideo, child: video),
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
