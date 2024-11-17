@@ -402,4 +402,14 @@ class AssetService {
 
     return exifInfo?.description ?? "";
   }
+
+  Future<double> getAspectRatio(Asset asset) async {
+    if (asset.isLocal) {
+      await asset.localAsync;
+    } else if (asset.isRemote) {
+      asset = await loadExif(asset);
+    }
+
+    return asset.aspectRatio ?? 1.0;
+  }
 }
