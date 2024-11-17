@@ -336,12 +336,12 @@ class BottomGalleryBar extends ConsumerWidget {
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
-              colors: [blackOpacity90, Colors.transparent],
+              colors: [Colors.black, Colors.transparent],
             ),
           ),
           position: DecorationPosition.background,
           child: Padding(
-            padding: EdgeInsets.only(top: 40.0),
+            padding: const EdgeInsets.only(top: 40.0),
             child: Column(
               children: [
                 if (asset.isVideo) const VideoControls(),
