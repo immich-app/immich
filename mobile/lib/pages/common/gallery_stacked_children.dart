@@ -42,7 +42,7 @@ class GalleryStackedChildren extends HookConsumerWidget {
           }
 
           return Padding(
-            key: ValueKey(assetId),
+            key: ValueKey(currentAsset),
             padding: const EdgeInsets.only(right: 5),
             child: GestureDetector(
               onTap: () {
