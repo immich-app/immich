@@ -55,22 +55,11 @@ class GalleryViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totalAssets = useState(renderList.totalAssets);
     final isZoomed = useState(false);
-    final isPlayingMotionVideo = useState(false);
+    final isPlayingMotionVideo = useValueNotifier(false);
     final stackIndex = useState(0);
     final localPosition = useRef<Offset?>(null);
     final currentIndex = useValueNotifier(initialIndex);
     final loadAsset = renderList.loadAsset;
-
-    // // Update is playing motion video
-    ref.listen(
-        videoPlaybackValueProvider.select(
-          (playback) => playback.state == VideoPlaybackState.playing,
-        ), (_, isPlaying) {
-      final asset = ref.read(currentAssetProvider);
-      if (asset != null && asset.isMotionPhoto) {
-        isPlayingMotionVideo.value = isPlaying;
-      }
-    });
 
     Future<void> precacheNextImage(int index) async {
       if (!context.mounted) {
@@ -237,7 +226,8 @@ class GalleryViewerPage extends HookConsumerWidget {
           child: NativeVideoViewerPage(
             key: key,
             asset: asset,
-            placeholder: Image(
+            isPlayingMotionVideo: isPlayingMotionVideo,
+            image: Image(
               key: ValueKey(asset),
               image: ImmichImage.imageProvider(
                 asset: asset,
@@ -266,7 +256,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         }
       }
 
-      if (newAsset.isImage && !isPlayingMotionVideo.value) {
+      if (newAsset.isImage && !newAsset.isMotionPhoto) {
         return buildImage(context, newAsset);
       }
       return buildVideo(context, newAsset);

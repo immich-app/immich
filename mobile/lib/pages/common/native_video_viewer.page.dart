@@ -24,12 +24,17 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class NativeVideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool showControls;
-  final Widget placeholder;
+  final Widget image;
+
+  /// Whether to display the video part of the motion photo
+  /// TODO: this should probably be a provider
+  final ValueNotifier<bool>? isPlayingMotionVideo;
 
   const NativeVideoViewerPage({
     super.key,
     required this.asset,
-    required this.placeholder,
+    required this.image,
+    this.isPlayingMotionVideo,
     this.showControls = true,
   });
 
@@ -43,6 +48,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
+
+    if (isPlayingMotionVideo != null) {
+      useListenable(isPlayingMotionVideo);
+    }
+    final showMotionVideo =
+        isPlayingMotionVideo != null && isPlayingMotionVideo!.value;
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
@@ -413,19 +424,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     return Stack(
       children: [
-        placeholder, // this is always under the video to avoid flickering
+        // This remains under the video to avoid flickering
+        // For motion videos, this is the image portion of the asset
+        image,
         if (aspectRatio.value != null)
-          Center(
-            key: ValueKey(asset),
-            child: AspectRatio(
+          Visibility.maintain(
+            visible: asset.isVideo || showMotionVideo,
+            child: Center(
               key: ValueKey(asset),
-              aspectRatio: aspectRatio.value!,
-              child: isCurrent
-                  ? NativeVideoPlayerView(
-                      key: ValueKey(asset),
-                      onViewReady: initController,
-                    )
-                  : null,
+              child: AspectRatio(
+                key: ValueKey(asset),
+                aspectRatio: aspectRatio.value!,
+                child: isCurrent
+                    ? NativeVideoPlayerView(
+                        key: ValueKey(asset),
+                        onViewReady: initController,
+                      )
+                    : null,
+              ),
             ),
           ),
         if (showControls) const Center(child: CustomVideoPlayerControls()),

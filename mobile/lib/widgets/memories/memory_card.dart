@@ -72,7 +72,7 @@ class MemoryCard extends StatelessWidget {
                     key: ValueKey(asset.id),
                     asset: asset,
                     showControls: false,
-                    placeholder: SizedBox.expand(
+                    image: SizedBox.expand(
                       child: ImmichImage(
                         asset,
                         fit: fit,

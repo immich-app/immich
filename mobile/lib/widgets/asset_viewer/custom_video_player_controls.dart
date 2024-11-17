@@ -18,7 +18,13 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final assetIsVideo = ref.watch(
+      currentAssetProvider.select((asset) => asset != null && asset.isVideo),
+    );
     final showControls = ref.watch(showControlsProvider);
+    final VideoPlaybackState state =
+        ref.watch(videoPlaybackValueProvider.select((value) => value.state));
+
     // A timer to hide the controls
     final hideTimer = useTimer(
       hideTimerDuration,
@@ -27,20 +33,12 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
           return;
         }
 
-        final state = ref.read(videoPlaybackValueProvider).state;
         // Do not hide on paused
-        if (state == VideoPlaybackState.paused) {
-          return;
-        }
-
-        final asset = ref.read(currentAssetProvider);
-        if (asset != null && asset.isVideo) {
+        if (state != VideoPlaybackState.paused && assetIsVideo) {
           ref.read(showControlsProvider.notifier).show = false;
         }
       },
     );
-    final VideoPlaybackState state =
-        ref.watch(videoPlaybackValueProvider.select((value) => value.state));
     final showBuffering = state == VideoPlaybackState.buffering;
 
     /// Shows the controls and starts the timer to hide them
@@ -95,7 +93,7 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
                   iconColor: Colors.white,
                   isFinished: state == VideoPlaybackState.completed,
                   isPlaying: state == VideoPlaybackState.playing,
-                  show: showControls,
+                  show: assetIsVideo && showControls,
                   onPressed: togglePlay,
                 ),
               ),
