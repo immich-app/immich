@@ -112,24 +112,21 @@ class AlbumService {
           "Ignoring ${excludedIds.length} excluded albums resulting in ${onDevice.length} device albums",
         );
       }
-      final hasAll = selectedIds
-          .map(
-            (id) => onDevice.firstWhereOrNull((album) => album.localId == id),
-          )
-          .whereNotNull()
-          .any((a) => a.isAll);
-      if (hasAll) {
+
+      final allAlbum = onDevice.firstWhereOrNull((album) => album.isAll);
+      if (allAlbum != null && selectedIds.contains(allAlbum.localId)) {
+        // remove the virtual "Recent" album and keep and individual albums
+        // on Android, the virtual "Recent" `lastModified` value is always null
         if (Platform.isAndroid) {
-          // remove the virtual "Recent" album and keep and individual albums
-          // on Android, the virtual "Recent" `lastModified` value is always null
-          onDevice.removeWhere((e) => e.isAll);
-          _log.info("'Recents' is selected, keeping all individual albums");
+          onDevice.removeWhere((album) => album.isAll);
         }
+        _log.info("'Recents' is selected, keeping all individual albums");
       } else {
         // keep only the explicitly selected albums
-        onDevice.removeWhere((e) => !selectedIds.contains(e.localId));
+        onDevice.removeWhere((album) => !selectedIds.contains(album.localId));
         _log.info("'Recents' is not selected, keeping only selected albums");
       }
+
       changes =
           await _syncService.syncLocalAlbumAssetsToDb(onDevice, excludedAssets);
       _log.info("Syncing completed. Changes: $changes");
