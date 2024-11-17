@@ -61,6 +61,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     // If the swipe is canceled, `currentAsset` will not have changed and video A will continue to play.
     final currentAsset = useState(ref.read(currentAssetProvider));
     final isCurrent = currentAsset.value == asset;
+    final isVisible = useState(asset.isLocal || asset.isMotionPhoto);
 
     final log = Logger('NativeVideoViewerPage');
 
@@ -167,9 +168,12 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           return;
         }
 
-        // if opening a remote video from a hero animation, delay initialization to avoid a stutter
+        // if opening a remote video from a hero animation, delay visibility to avoid a stutter
         if (!asset.isLocal && isCurrent) {
-          await Future.delayed(const Duration(milliseconds: 200));
+          Timer(
+            const Duration(milliseconds: 200),
+            () => isVisible.value = true,
+          );
         }
 
         videoSource.value = videoSourceRes;
@@ -431,8 +435,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       const [],
     );
 
-    final video = aspectRatio.value != null
-        ? Center(
+    return Stack(
+      children: [
+        // This remains under the video to avoid flickering
+        // For motion videos, this is the image portion of the asset
+        Center(key: ValueKey(asset.id), child: image),
+        Visibility.maintain(
+          key: ValueKey(asset),
+          visible: (asset.isVideo || showMotionVideo) && isVisible.value,
+          child: Center(
             key: ValueKey(asset),
             child: AspectRatio(
               key: ValueKey(asset),
@@ -444,22 +455,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
                     )
                   : null,
             ),
-          )
-        : null;
-
-    return Stack(
-      children: [
-        // This remains under the video to avoid flickering
-        // For motion videos, this is the image portion of the asset
-        Center(key: ValueKey(asset.id), child: image),
-        if (video != null)
-          asset.isVideo
-              ? video
-              : Visibility.maintain(
-                  key: ValueKey(asset),
-                  visible: showMotionVideo,
-                  child: video,
-                ),
+          ),
+        ),
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
