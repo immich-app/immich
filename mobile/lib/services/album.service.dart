@@ -76,10 +76,16 @@ class AlbumService {
     final Stopwatch sw = Stopwatch()..start();
     bool changes = false;
     try {
-      final List<String> excludedIds = await _backupAlbumRepository
-          .getIdsBySelection(BackupSelection.exclude);
-      final List<String> selectedIds = await _backupAlbumRepository
-          .getIdsBySelection(BackupSelection.select);
+      final (selectedIds, excludedIds, onDevice) = await (
+        _backupAlbumRepository
+            .getIdsBySelection(BackupSelection.select)
+            .then((value) => value.toSet()),
+        _backupAlbumRepository
+            .getIdsBySelection(BackupSelection.exclude)
+            .then((value) => value.toSet()),
+        _albumMediaRepository.getAll()
+      ).wait;
+      _log.info("Found ${onDevice.length} device albums");
       if (selectedIds.isEmpty) {
         final numLocal = await _albumRepository.count(local: true);
         if (numLocal > 0) {
@@ -87,8 +93,6 @@ class AlbumService {
         }
         return false;
       }
-      final List<Album> onDevice = await _albumMediaRepository.getAll();
-      _log.info("Found ${onDevice.length} device albums");
       Set<String>? excludedAssets;
       if (excludedIds.isNotEmpty) {
         if (Platform.isIOS) {
@@ -138,7 +142,7 @@ class AlbumService {
 
   Future<Set<String>> _loadExcludedAssetIds(
     List<Album> albums,
-    List<String> excludedAlbumIds,
+    Set<String> excludedAlbumIds,
   ) async {
     final Set<String> result = HashSet<String>();
     for (Album album in albums) {
@@ -163,11 +167,10 @@ class AlbumService {
     bool changes = false;
     try {
       await _userService.refreshUsers();
-      final List<Album> sharedAlbum =
-          await _albumApiRepository.getAll(shared: true);
-
-      final List<Album> ownedAlbum =
-          await _albumApiRepository.getAll(shared: null);
+      final (sharedAlbum, ownedAlbum) = await (
+        _albumApiRepository.getAll(shared: true),
+        _albumApiRepository.getAll(shared: null)
+      ).wait;
 
       final albums = HashSet<Album>(
         equals: (a, b) => a.remoteId == b.remoteId,
