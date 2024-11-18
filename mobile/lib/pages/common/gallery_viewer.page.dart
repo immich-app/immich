@@ -36,6 +36,7 @@ import 'package:immich_mobile/widgets/photo_view/src/utils/photo_view_hero_attri
 
 @RoutePage()
 // ignore: must_be_immutable
+/// Expects [currentAssetProvider] to be set before navigating to this page
 class GalleryViewerPage extends HookConsumerWidget {
   final int initialIndex;
   final int heroOffset;
