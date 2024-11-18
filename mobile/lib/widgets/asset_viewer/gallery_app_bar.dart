@@ -21,13 +21,8 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GalleryAppBar extends ConsumerWidget {
   final void Function() showInfo;
-  final ValueNotifier<bool> isPlayingMotionVideo;
 
-  const GalleryAppBar({
-    super.key,
-    required this.showInfo,
-    required this.isPlayingMotionVideo,
-  });
+  const GalleryAppBar({super.key, required this.showInfo});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -109,15 +104,12 @@ class GalleryAppBar extends ConsumerWidget {
           child: TopControlAppBar(
             isOwner: isOwner,
             isPartner: isPartner,
-            isPlayingMotionVideo: isPlayingMotionVideo.value,
             asset: asset,
             onMoreInfoPressed: showInfo,
             onFavorite: toggleFavorite,
             onRestorePressed: () => handleRestore(asset),
             onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,
             onDownloadPressed: asset.isLocal ? null : handleDownloadAsset,
-            onToggleMotionVideo: () =>
-                isPlayingMotionVideo.value = !isPlayingMotionVideo.value,
             onAddToAlbumPressed: () => addToAlbum(asset),
             onActivitiesPressed: handleActivities,
           ),
