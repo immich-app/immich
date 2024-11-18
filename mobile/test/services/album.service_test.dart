@@ -54,6 +54,7 @@ void main() {
           .thenAnswer((_) async => []);
       when(() => backupRepository.getIdsBySelection(BackupSelection.select))
           .thenAnswer((_) async => []);
+      when(() => albumMediaRepository.getAll()).thenAnswer((_) async => []);
       when(() => albumRepository.count(local: true)).thenAnswer((_) async => 1);
       when(() => syncService.removeAllLocalAlbumsAndAssets())
           .thenAnswer((_) async => true);
