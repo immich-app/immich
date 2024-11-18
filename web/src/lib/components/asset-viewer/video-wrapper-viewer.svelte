@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { AssetTypeEnum } from '@immich/sdk';
   import { ProjectionType } from '$lib/constants';
   import VideoNativeViewer from '$lib/components/asset-viewer/video-native-viewer.svelte';
-  import PanoramaViewer from '$lib/components/asset-viewer/panorama-viewer.svelte';
+  import VideoPanoramaViewer from '$lib/components/asset-viewer/video-panorama-viewer.svelte';
 
   interface Props {
     assetId: string;
@@ -30,7 +29,7 @@
 </script>
 
 {#if projectionType === ProjectionType.EQUIRECTANGULAR}
-  <PanoramaViewer asset={{ id: assetId, type: AssetTypeEnum.Video }} />
+  <VideoPanoramaViewer {assetId} />
 {:else}
   <VideoNativeViewer
     {loopVideo}

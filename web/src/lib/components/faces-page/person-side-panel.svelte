@@ -101,15 +101,9 @@
   const handleReset = (id: string) => {
     if (selectedPersonToReassign[id]) {
       delete selectedPersonToReassign[id];
-
-      // trigger reactivity
-      selectedPersonToReassign = selectedPersonToReassign;
     }
     if (selectedPersonToCreate[id]) {
       delete selectedPersonToCreate[id];
-
-      // trigger reactivity
-      selectedPersonToCreate = selectedPersonToCreate;
     }
   };
 

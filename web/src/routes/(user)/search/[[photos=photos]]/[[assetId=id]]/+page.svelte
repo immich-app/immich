@@ -156,8 +156,6 @@
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
-      searchResultAlbums = searchResultAlbums;
-      searchResultAssets = searchResultAssets;
 
       nextPage = assets.nextPage ? Number(assets.nextPage) : null;
     } catch (error) {
