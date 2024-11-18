@@ -445,8 +445,8 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
 
   try {
     const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
-    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
     await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
+    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
 
     notificationController.show({
       type: NotificationType.Info,
