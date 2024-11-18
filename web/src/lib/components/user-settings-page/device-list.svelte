@@ -7,12 +7,16 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let devices: SessionResponseDto[];
+  interface Props {
+    devices: SessionResponseDto[];
+  }
+
+  let { devices = $bindable() }: Props = $props();
 
   const refresh = () => getSessions().then((_devices) => (devices = _devices));
 
-  $: currentDevice = devices.find((device) => device.current);
-  $: otherDevices = devices.filter((device) => !device.current);
+  let currentDevice = $derived(devices.find((device) => device.current));
+  let otherDevices = $derived(devices.filter((device) => !device.current));
 
   const handleDelete = async (device: SessionResponseDto) => {
     const isConfirmed = await dialogController.show({
@@ -78,7 +82,7 @@
       {$t('log_out_all_devices').toUpperCase()}
     </h3>
     <div class="flex justify-end">
-      <Button color="red" size="sm" on:click={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
+      <Button color="red" size="sm" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
     </div>
   {/if}
 </section>

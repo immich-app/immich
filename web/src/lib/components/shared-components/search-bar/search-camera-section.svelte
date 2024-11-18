@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface SearchCameraFilter {
     make?: string;
     model?: string;
@@ -6,20 +6,21 @@
 </script>
 
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { SearchSuggestionType, getSearchSuggestions } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let filters: SearchCameraFilter;
+  interface Props {
+    filters: SearchCameraFilter;
+  }
 
-  let makes: string[] = [];
-  let models: string[] = [];
+  let { filters = $bindable() }: Props = $props();
 
-  $: makeFilter = filters.make;
-  $: modelFilter = filters.model;
-  $: handlePromiseError(updateMakes());
-  $: handlePromiseError(updateModels(makeFilter));
+  let makes: string[] = $state([]);
+  let models: string[] = $state([]);
 
   async function updateMakes() {
     const results: Array<string | null> = await getSearchSuggestions({
@@ -47,6 +48,14 @@
       filters.model = undefined;
     }
   }
+  let makeFilter = $derived(filters.make);
+  let modelFilter = $derived(filters.model);
+  run(() => {
+    handlePromiseError(updateMakes());
+  });
+  run(() => {
+    handlePromiseError(updateModels(makeFilter));
+  });
 </script>
 
 <div id="camera-selection">

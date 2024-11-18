@@ -58,23 +58,22 @@ class SearchPage extends HookConsumerWidget {
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
 
-    final currentPage = useState(1);
-    final searchProvider = ref.watch(paginatedSearchProvider);
-    final searchResultCount = useState(0);
+    final isSearching = useState(false);
 
     search() async {
       if (prefilter == null && filter.value == previousFilter.value) return;
 
+      isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-
-      currentPage.value = 1;
-
-      final searchResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .getNextPage(filter.value, currentPage.value);
-
+      await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
       previousFilter.value = filter.value;
-      searchResultCount.value = searchResult.length;
+      isSearching.value = false;
+    }
+
+    loadMoreSearchResult() async {
+      isSearching.value = true;
+      await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      isSearching.value = false;
     }
 
     searchPrefilter() {
@@ -97,19 +96,15 @@ class SearchPage extends HookConsumerWidget {
 
     useEffect(
       () {
+        Future.microtask(
+          () => ref.invalidate(paginatedSearchProvider),
+        );
         searchPrefilter();
+
         return null;
       },
       [],
     );
-
-    loadMoreSearchResult() async {
-      currentPage.value += 1;
-      final searchResult = await ref
-          .watch(paginatedSearchProvider.notifier)
-          .getNextPage(filter.value, currentPage.value);
-      searchResultCount.value = searchResult.length;
-    }
 
     showPeoplePicker() {
       handleOnSelect(Set<Person> value) {
@@ -192,7 +187,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
+        isDismissible: true,
         child: FilterBottomSheetScaffold(
           title: 'search_filter_location_title'.tr(),
           onSearch: search,
@@ -243,7 +238,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
+        isDismissible: true,
         child: FilterBottomSheetScaffold(
           title: 'search_filter_camera_title'.tr(),
           onSearch: search,
@@ -465,41 +460,6 @@ class SearchPage extends HookConsumerWidget {
       search();
     }
 
-    buildSearchResult() {
-      return switch (searchProvider) {
-        AsyncData() => Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: NotificationListener<ScrollEndNotification>(
-                onNotification: (notification) {
-                  final metrics = notification.metrics;
-                  final shouldLoadMore = searchResultCount.value > 75;
-                  if (metrics.pixels >= metrics.maxScrollExtent &&
-                      shouldLoadMore) {
-                    loadMoreSearchResult();
-                  }
-                  return true;
-                },
-                child: MultiselectGrid(
-                  renderListProvider: paginatedSearchRenderListProvider,
-                  archiveEnabled: true,
-                  deleteEnabled: true,
-                  editEnabled: true,
-                  favoriteEnabled: true,
-                  stackEnabled: false,
-                  emptyIndicator: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: SearchEmptyContent(),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        AsyncError(:final error) => Text('Error: $error'),
-        _ => const Expanded(child: Center(child: CircularProgressIndicator())),
-      };
-    }
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -635,8 +595,62 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          buildSearchResult(),
+          SearchResultGrid(
+            onScrollEnd: loadMoreSearchResult,
+            isSearching: isSearching.value,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class SearchResultGrid extends StatelessWidget {
+  final VoidCallback onScrollEnd;
+  final bool isSearching;
+
+  const SearchResultGrid({
+    super.key,
+    required this.onScrollEnd,
+    this.isSearching = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: NotificationListener<ScrollEndNotification>(
+          onNotification: (notification) {
+            final isBottomSheetNotification = notification.context
+                    ?.findAncestorWidgetOfExactType<
+                        DraggableScrollableSheet>() !=
+                null;
+
+            final metrics = notification.metrics;
+            final isVerticalScroll = metrics.axis == Axis.vertical;
+
+            if (metrics.pixels >= metrics.maxScrollExtent &&
+                isVerticalScroll &&
+                !isBottomSheetNotification) {
+              onScrollEnd();
+            }
+
+            return true;
+          },
+          child: MultiselectGrid(
+            renderListProvider: paginatedSearchRenderListProvider,
+            archiveEnabled: true,
+            deleteEnabled: true,
+            editEnabled: true,
+            favoriteEnabled: true,
+            stackEnabled: false,
+            emptyIndicator: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: !isSearching ? SearchEmptyContent() : SizedBox.shrink(),
+            ),
+          ),
+        ),
       ),
     );
   }

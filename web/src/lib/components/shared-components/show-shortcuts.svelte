@@ -15,25 +15,31 @@
     info?: string;
   }
 
-  export let onClose: () => void;
+  interface Props {
+    onClose: () => void;
+    shortcuts?: Shortcuts;
+  }
 
-  export let shortcuts: Shortcuts = {
-    general: [
-      { key: ['←', '→'], action: $t('previous_or_next_photo') },
-      { key: ['Esc'], action: $t('back_close_deselect') },
-      { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
-      { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
-    ],
-    actions: [
-      { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
-      { key: ['i'], action: $t('show_or_hide_info') },
-      { key: ['s'], action: $t('stack_selected_photos') },
-      { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
-      { key: ['⇧', 'd'], action: $t('download') },
-      { key: ['Space'], action: $t('play_or_pause_video') },
-      { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
-    ],
-  };
+  let {
+    onClose,
+    shortcuts = {
+      general: [
+        { key: ['←', '→'], action: $t('previous_or_next_photo') },
+        { key: ['Esc'], action: $t('back_close_deselect') },
+        { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
+        { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },
+      ],
+      actions: [
+        { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
+        { key: ['i'], action: $t('show_or_hide_info') },
+        { key: ['s'], action: $t('stack_selected_photos') },
+        { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
+        { key: ['⇧', 'd'], action: $t('download') },
+        { key: ['Space'], action: $t('play_or_pause_video') },
+        { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
+      ],
+    },
+  }: Props = $props();
 </script>
 
 <FullScreenModal title={$t('keyboard_shortcuts')} width="auto" {onClose}>

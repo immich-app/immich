@@ -11,9 +11,13 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { t } from 'svelte-i18n';
 
-  export let user: UserAdminResponseDto;
+  interface Props {
+    user: UserAdminResponseDto;
+  }
 
-  let loading = true;
+  let { user = $bindable() }: Props = $props();
+
+  let loading = $state(true);
 
   onMount(async () => {
     if (oauth.isCallback(window.location)) {
@@ -58,9 +62,9 @@
         </div>
       {:else if $featureFlags.oauth}
         {#if user.oauthId}
-          <Button size="sm" on:click={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
+          <Button size="sm" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}
-          <Button size="sm" on:click={() => oauth.authorize(window.location)}>{$t('link_to_oauth')}</Button>
+          <Button size="sm" onclick={() => oauth.authorize(window.location)}>{$t('link_to_oauth')}</Button>
         {/if}
       {/if}
     </div>

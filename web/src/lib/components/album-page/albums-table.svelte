@@ -15,10 +15,13 @@
   } from '$lib/utils/album-utils';
   import { t } from 'svelte-i18n';
 
-  export let groupedAlbums: AlbumGroup[];
-  export let albumGroupOption: string = AlbumGroupBy.None;
-  export let onShowContextMenu: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined =
-    undefined;
+  interface Props {
+    groupedAlbums: AlbumGroup[];
+    albumGroupOption?: string;
+    onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
+  }
+
+  let { groupedAlbums, albumGroupOption = AlbumGroupBy.None, onShowContextMenu }: Props = $props();
 </script>
 
 <table class="mt-2 w-full text-left">
@@ -46,7 +49,7 @@
       >
         <tr
           class="flex w-full place-items-center p-2 md:pl-5 md:pr-5 md:pt-3 md:pb-3"
-          on:click={() => toggleAlbumGroupCollapsing(albumGroup.id)}
+          onclick={() => toggleAlbumGroupCollapsing(albumGroup.id)}
           aria-expanded={!isCollapsed}
         >
           <td class="text-md text-left -mb-1">

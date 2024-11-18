@@ -1,9 +1,11 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
+import { ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
-import { ImmichEnvironment, ImmichWorker, LogLevel } from 'src/enum';
-import { VectorExtension } from 'src/interfaces/database.interface';
+import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
+import { DatabaseConnectionParams, VectorExtension } from 'src/interfaces/database.interface';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
 export const IConfigRepository = 'IConfigRepository';
 
@@ -35,13 +37,12 @@ export interface EnvData {
     queues: RegisterQueueOptions[];
   };
 
+  cls: {
+    config: ClsModuleOptions;
+  };
+
   database: {
-    url?: string;
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    name: string;
+    config: PostgresConnectionOptions & DatabaseConnectionParams;
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };
@@ -77,11 +78,7 @@ export interface EnvData {
   telemetry: {
     apiPort: number;
     microservicesPort: number;
-    enabled: boolean;
-    apiMetrics: boolean;
-    hostMetrics: boolean;
-    repoMetrics: boolean;
-    jobMetrics: boolean;
+    metrics: Set<ImmichTelemetry>;
   };
 
   storage: {
@@ -96,4 +93,5 @@ export interface EnvData {
 
 export interface IConfigRepository {
   getEnv(): EnvData;
+  getWorker(): ImmichWorker | undefined;
 }

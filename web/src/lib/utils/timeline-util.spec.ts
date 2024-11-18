@@ -5,11 +5,13 @@ import { DateTime } from 'luxon';
 describe('formatGroupTitle', () => {
   beforeAll(() => {
     vi.useFakeTimers();
+    process.env.TZ = 'UTC';
     vi.setSystemTime(new Date('2024-07-27T12:00:00Z'));
   });
 
   afterAll(() => {
     vi.useRealTimers();
+    delete process.env.TZ;
   });
 
   it('formats today', () => {
