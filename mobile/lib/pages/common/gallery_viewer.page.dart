@@ -17,6 +17,7 @@ import 'package:immich_mobile/pages/common/gallery_stacked_children.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -55,7 +56,6 @@ class GalleryViewerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final totalAssets = useState(renderList.totalAssets);
     final isZoomed = useState(false);
-    final isPlayingMotionVideo = useValueNotifier(false);
     final stackIndex = useState(0);
     final localPosition = useRef<Offset?>(null);
     final currentIndex = useValueNotifier(initialIndex);
@@ -192,7 +192,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         },
         onLongPressStart: asset.isMotionPhoto
             ? (_, __, ___) {
-                isPlayingMotionVideo.value = true;
+                ref.read(isPlayingMotionVideoProvider.notifier).playing = true;
               }
             : null,
         imageProvider: ImmichImage.imageProvider(asset: asset),
@@ -226,7 +226,6 @@ class GalleryViewerPage extends HookConsumerWidget {
           child: NativeVideoViewerPage(
             key: key,
             asset: asset,
-            isPlayingMotionVideo: isPlayingMotionVideo,
             image: Image(
               key: ValueKey(asset),
               image: ImmichImage.imageProvider(
@@ -245,7 +244,7 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     PhotoViewGalleryPageOptions buildAsset(BuildContext context, int index) {
-      isPlayingMotionVideo.value = false;
+      ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       var newAsset = loadAsset(index);
       final stackId = newAsset.stackId;
       if (stackId != null && currentIndex.value == index) {
@@ -278,7 +277,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                   return;
                 }
 
-                if (asset.isImage && !isPlayingMotionVideo.value) {
+                if (asset.isImage && !ref.read(isPlayingMotionVideoProvider)) {
                   isZoomed.value = state != PhotoViewScaleState.initial;
                   ref.read(showControlsProvider.notifier).show =
                       !isZoomed.value;
@@ -324,7 +323,6 @@ class GalleryViewerPage extends HookConsumerWidget {
 
                 currentIndex.value = value;
                 stackIndex.value = 0;
-                isPlayingMotionVideo.value = false;
 
                 ref.read(currentAssetProvider.notifier).set(newAsset);
                 if (newAsset.isVideo || newAsset.isMotionPhoto) {
@@ -345,7 +343,6 @@ class GalleryViewerPage extends HookConsumerWidget {
               child: GalleryAppBar(
                 key: const ValueKey('app-bar'),
                 showInfo: showInfo,
-                isPlayingMotionVideo: isPlayingMotionVideo,
               ),
             ),
             Positioned(

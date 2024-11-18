@@ -1086,7 +1086,6 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
     Key? key,
     required Asset asset,
     required Widget placeholder,
-    ValueNotifier<bool>? isPlayingMotionVideo,
     bool showControls = true,
     List<PageRouteInfo>? children,
   }) : super(
@@ -1095,7 +1094,6 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
             key: key,
             asset: asset,
             placeholder: placeholder,
-            isPlayingMotionVideo: isPlayingMotionVideo,
             showControls: showControls,
           ),
           initialChildren: children,
@@ -1111,7 +1109,6 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
         key: args.key,
         asset: args.asset,
         image: args.placeholder,
-        isPlayingMotionVideo: args.isPlayingMotionVideo,
         showControls: args.showControls,
       );
     },
@@ -1123,7 +1120,6 @@ class NativeVideoViewerRouteArgs {
     this.key,
     required this.asset,
     required this.placeholder,
-    this.isPlayingMotionVideo,
     this.showControls = true,
   });
 
@@ -1132,8 +1128,6 @@ class NativeVideoViewerRouteArgs {
   final Asset asset;
 
   final Widget placeholder;
-
-  final ValueNotifier<bool>? isPlayingMotionVideo;
 
   final bool showControls;
 

@@ -8,6 +8,7 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -26,15 +27,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
   final bool showControls;
   final Widget image;
 
-  /// Whether to display the video part of the motion photo
-  /// TODO: this should probably be a provider
-  final ValueNotifier<bool>? isPlayingMotionVideo;
-
   const NativeVideoViewerPage({
     super.key,
     required this.asset,
     required this.image,
-    this.isPlayingMotionVideo,
     this.showControls = true,
   });
 
@@ -48,10 +44,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
-
-    useListenable(isPlayingMotionVideo);
-    final showMotionVideo =
-        isPlayingMotionVideo != null && isPlayingMotionVideo!.value;
+    final showMotionVideo = useState(false);
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
@@ -64,6 +57,25 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final isVisible = useState(asset.isLocal || asset.isMotionPhoto);
 
     final log = Logger('NativeVideoViewerPage');
+
+    ref.listen(isPlayingMotionVideoProvider, (_, value) async {
+      final videoController = controller.value;
+      if (!asset.isMotionPhoto || videoController == null || !context.mounted) {
+        return;
+      }
+
+      showMotionVideo.value = value;
+      try {
+        if (value) {
+          await videoController.seekTo(0);
+          await videoController.play();
+        } else {
+          await videoController.pause();
+        }
+      } catch (error) {
+        log.severe('Error toggling motion video: $error');
+      }
+    });
 
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
@@ -227,9 +239,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
 
       try {
-        if (asset.isVideo ||
-            isPlayingMotionVideo == null ||
-            isPlayingMotionVideo!.value) {
+        if (asset.isVideo || showMotionVideo.value) {
           await videoController.play();
         }
         await videoController.setVolume(0.9);
@@ -307,24 +317,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     }
 
-    void onToggleMotionVideo() async {
-      final videoController = controller.value;
-      if (videoController == null || !context.mounted) {
-        return;
-      }
-
-      try {
-        if (isPlayingMotionVideo!.value) {
-          await videoController.seekTo(0);
-          await videoController.play();
-        } else {
-          await videoController.pause();
-        }
-      } catch (error) {
-        log.severe('Error toggling motion video: $error');
-      }
-    }
-
     void removeListeners(NativeVideoPlayerController controller) {
       controller.onPlaybackPositionChanged
           .removeListener(onPlaybackPositionChanged);
@@ -397,16 +389,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
                 () => isVisible.value = true,
               );
 
-        if (isPlayingMotionVideo != null) {
-          isPlayingMotionVideo!.addListener(onToggleMotionVideo);
-        }
-
         return () {
           timer?.cancel();
-          if (isPlayingMotionVideo != null) {
-            isPlayingMotionVideo!.removeListener(onToggleMotionVideo);
-          }
-
           final playerController = controller.value;
           if (playerController == null) {
             return;
@@ -430,7 +414,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         if (aspectRatio.value != null)
           Visibility.maintain(
             key: ValueKey(asset),
-            visible: (asset.isVideo || showMotionVideo) && isVisible.value,
+            visible:
+                (asset.isVideo || showMotionVideo.value) && isVisible.value,
             child: Center(
               key: ValueKey(asset),
               child: AspectRatio(
