@@ -462,7 +462,7 @@
   "confirm": "Confirm",
   "confirm_admin_password": "Confirm Admin Password",
   "confirm_delete_shared_link": "Are you sure you want to delete this shared link?",
-  "confirm_keep_this_delete_others": "Are you sure you want to keep this asset and delete the others?",
+  "confirm_keep_this_delete_others": "All other assets in the stack will be deleted except for this asset. Are you sure you want to continue?",
   "confirm_password": "Confirm password",
   "contain": "Contain",
   "context": "Context",
