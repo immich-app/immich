@@ -188,7 +188,7 @@ class BottomGalleryBar extends ConsumerWidget {
     void handleEdit() async {
       final image = Image(image: ImmichImage.imageProvider(asset: asset));
 
-      Navigator.of(context).push(
+      context.navigator.push(
         MaterialPageRoute(
           builder: (context) => EditImagePage(
             asset: asset,

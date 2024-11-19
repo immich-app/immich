@@ -202,7 +202,7 @@ class PeopleCollectionCard extends ConsumerWidget {
       builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
         final widthFactor = isTablet ? 0.25 : 0.5;
-        final size = MediaQuery.of(context).size.width * widthFactor - 20.0;
+        final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
           onTap: () => context.pushRoute(const PeopleCollectionRoute()),
@@ -272,7 +272,7 @@ class LocalAlbumsCollectionCard extends HookConsumerWidget {
       builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
         final widthFactor = isTablet ? 0.25 : 0.5;
-        final size = MediaQuery.of(context).size.width * widthFactor - 20.0;
+        final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
           onTap: () => context.pushRoute(
@@ -335,7 +335,7 @@ class PlacesCollectionCard extends StatelessWidget {
       builder: (context, constraints) {
         final isTablet = constraints.maxWidth > 600;
         final widthFactor = isTablet ? 0.25 : 0.5;
-        final size = MediaQuery.of(context).size.width * widthFactor - 20.0;
+        final size = context.width * widthFactor - 20.0;
 
         return GestureDetector(
           onTap: () => context.pushRoute(const PlacesCollectionRoute()),
