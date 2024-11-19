@@ -193,6 +193,12 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Intl.defaultLocale = context.locale.toLanguageTag();
+  }
+
+  @override
   initState() {
     super.initState();
     initApp().then((_) => debugPrint("App Init Completed"));
