@@ -1,6 +1,7 @@
 import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { QueueOptions } from 'bullmq';
 import { RedisOptions } from 'ioredis';
+import { KyselyConfig } from 'kysely';
 import { ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { ImmichEnvironment, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
@@ -42,7 +43,7 @@ export interface EnvData {
   };
 
   database: {
-    config: PostgresConnectionOptions & DatabaseConnectionParams;
+    config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: KyselyConfig };
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };

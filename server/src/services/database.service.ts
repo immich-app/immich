@@ -113,6 +113,7 @@ export class DatabaseService extends BaseService {
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
+      await this.databaseRepository.init();
     });
   }
 

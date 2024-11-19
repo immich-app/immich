@@ -51,9 +51,7 @@ describe(AssetService.name, () => {
   });
 
   const mockGetById = (assets: AssetEntity[]) => {
-    assetMock.getById.mockImplementation((assetId) =>
-      Promise.resolve(assets.find((asset) => asset.id === assetId) ?? null),
-    );
+    assetMock.getById.mockImplementation((assetId) => Promise.resolve(assets.find((asset) => asset.id === assetId)));
   };
 
   beforeEach(() => {
@@ -80,7 +78,20 @@ describe(AssetService.name, () => {
       const image4 = { ...assetStub.image, localDateTime: new Date(2009, 1, 15) };
 
       partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getByDayOfYear.mockResolvedValue([image1, image2, image3, image4]);
+      assetMock.getByDayOfYear.mockResolvedValue([
+        {
+          yearsAgo: 1,
+          assets: [image1, image2],
+        },
+        {
+          yearsAgo: 9,
+          assets: [image3],
+        },
+        {
+          yearsAgo: 15,
+          assets: [image4],
+        },
+      ]);
 
       await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { yearsAgo: 1, title: '1 year ago', assets: [mapAsset(image1), mapAsset(image2)] },
@@ -237,14 +248,20 @@ describe(AssetService.name, () => {
     it('should update the asset', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       assetMock.getById.mockResolvedValue(assetStub.image);
+      assetMock.update.mockResolvedValue(assetStub.image);
+
       await sut.update(authStub.admin, 'asset-1', { isFavorite: true });
+
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-1', isFavorite: true });
     });
 
     it('should update the exif description', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       assetMock.getById.mockResolvedValue(assetStub.image);
+      assetMock.update.mockResolvedValue(assetStub.image);
+
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
+
       expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
     });
 

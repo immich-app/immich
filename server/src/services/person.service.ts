@@ -249,14 +249,14 @@ export class PersonService extends BaseService {
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force === false
-        ? this.assetRepository.getWithout(pagination, WithoutProperty.FACES)
-        : this.assetRepository.getAll(pagination, {
-            orderDirection: 'DESC',
+      return force
+        ? this.assetRepository.getAll(pagination, {
+            orderDirection: 'desc',
             withFaces: true,
             withArchived: true,
             isVisible: true,
-          });
+          })
+        : this.assetRepository.getWithout(pagination, WithoutProperty.FACES);
     });
 
     for await (const assets of assetPagination) {
@@ -279,13 +279,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = {
-      exifInfo: true,
-      faces: {
-        person: false,
-      },
-      files: true,
-    };
+    const relations = { exifInfo: true, faces: { person: false }, files: true };
     const [asset] = await this.assetRepository.getByIds([id], relations);
     const { previewFile } = getAssetFiles(asset.files);
     if (!asset || !previewFile) {
@@ -482,7 +476,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    let personId = matches.find((match) => match.face.personId)?.face.personId;
+    let personId = matches.find((match) => match.personId)?.personId;
     if (!personId) {
       const matchWithPerson = await this.searchRepository.searchFaces({
         userIds: [face.asset.ownerId],
@@ -493,7 +487,7 @@ export class PersonService extends BaseService {
       });
 
       if (matchWithPerson.length > 0) {
-        personId = matchWithPerson[0].face.personId;
+        personId = matchWithPerson[0].personId;
       }
     }
 
