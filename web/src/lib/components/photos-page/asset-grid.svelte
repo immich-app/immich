@@ -857,7 +857,7 @@
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
       <div
-        id="bucket"
+        class="bucket"
         use:intersectionObserver={{
           key: bucket.viewId,
           onIntersect: () => handleIntersect(bucket),
@@ -930,5 +930,10 @@
   #asset-grid {
     contain: strict;
     scrollbar-width: none;
+  }
+
+  .bucket {
+    contain: layout size;
+    transition: height 0.2s ease-out;
   }
 </style>
