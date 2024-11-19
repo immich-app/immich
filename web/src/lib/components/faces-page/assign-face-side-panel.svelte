@@ -14,24 +14,28 @@
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
   import { t } from 'svelte-i18n';
 
-  export let allPeople: PersonResponseDto[];
-  export let editedFace: AssetFaceResponseDto;
-  export let assetId: string;
-  export let assetType: AssetTypeEnum;
-  export let onClose: () => void;
-  export let onCreatePerson: (featurePhoto: string | null) => void;
-  export let onReassign: (person: PersonResponseDto) => void;
+  interface Props {
+    allPeople: PersonResponseDto[];
+    editedFace: AssetFaceResponseDto;
+    assetId: string;
+    assetType: AssetTypeEnum;
+    onClose: () => void;
+    onCreatePerson: (featurePhoto: string | null) => void;
+    onReassign: (person: PersonResponseDto) => void;
+  }
+
+  let { allPeople, editedFace, assetId, assetType, onClose, onCreatePerson, onReassign }: Props = $props();
 
   // loading spinners
-  let isShowLoadingNewPerson = false;
-  let isShowLoadingSearch = false;
+  let isShowLoadingNewPerson = $state(false);
+  let isShowLoadingSearch = $state(false);
 
   // search people
-  let searchedPeople: PersonResponseDto[] = [];
-  let searchFaces = false;
-  let searchName = '';
+  let searchedPeople: PersonResponseDto[] = $state([]);
+  let searchFaces = $state(false);
+  let searchName = $state('');
 
-  $: showPeople = searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden);
+  let showPeople = $derived(searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden));
 
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
@@ -53,19 +57,19 @@
   <div class="flex place-items-center justify-between gap-2">
     {#if !searchFaces}
       <div class="flex items-center gap-2">
-        <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
+        <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} onclick={onClose} />
         <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('select_face')}</p>
       </div>
       <div class="flex justify-end gap-2">
         <CircleIconButton
           icon={mdiMagnify}
           title={$t('search_for_existing_person')}
-          on:click={() => {
+          onclick={() => {
             searchFaces = true;
           }}
         />
         {#if !isShowLoadingNewPerson}
-          <CircleIconButton icon={mdiPlus} title={$t('create_new_person')} on:click={handleCreatePerson} />
+          <CircleIconButton icon={mdiPlus} title={$t('create_new_person')} onclick={handleCreatePerson} />
         {:else}
           <div class="flex place-content-center place-items-center">
             <LoadingSpinner />
@@ -73,7 +77,7 @@
         {/if}
       </div>
     {:else}
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={onClose} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} onclick={onClose} />
       <div class="w-full flex">
         <SearchPeople
           type="input"
@@ -87,7 +91,7 @@
           </div>
         {/if}
       </div>
-      <CircleIconButton icon={mdiClose} title={$t('cancel_search')} on:click={() => (searchFaces = false)} />
+      <CircleIconButton icon={mdiClose} title={$t('cancel_search')} onclick={() => (searchFaces = false)} />
     {/if}
   </div>
   <div class="px-4 py-4 text-sm">
@@ -96,7 +100,7 @@
       {#each showPeople as person (person.id)}
         {#if !editedFace.person || person.id !== editedFace.person.id}
           <div class="w-fit">
-            <button type="button" class="w-[90px]" on:click={() => onReassign(person)}>
+            <button type="button" class="w-[90px]" onclick={() => onReassign(person)}>
               <div class="relative">
                 <ImageThumbnail
                   curve

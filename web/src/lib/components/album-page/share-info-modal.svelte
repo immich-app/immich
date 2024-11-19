@@ -18,15 +18,19 @@
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
-  export let album: AlbumResponseDto;
-  export let onClose: () => void;
-  export let onRemove: (userId: string) => void;
-  export let onRefreshAlbum: () => void;
+  interface Props {
+    album: AlbumResponseDto;
+    onClose: () => void;
+    onRemove: (userId: string) => void;
+    onRefreshAlbum: () => void;
+  }
 
-  let currentUser: UserResponseDto;
-  let selectedRemoveUser: UserResponseDto | null = null;
+  let { album, onClose, onRemove, onRefreshAlbum }: Props = $props();
 
-  $: isOwned = currentUser?.id == album.ownerId;
+  let currentUser: UserResponseDto | undefined = $state();
+  let selectedRemoveUser: UserResponseDto | null = $state(null);
+
+  let isOwned = $derived(currentUser?.id == album.ownerId);
 
   onMount(async () => {
     try {
@@ -123,7 +127,7 @@
             {:else if user.id == currentUser?.id}
               <button
                 type="button"
-                on:click={() => (selectedRemoveUser = user)}
+                onclick={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >{$t('leave')}</button
               >

@@ -58,7 +58,7 @@ docker compose up -d            # Start remainder of Immich apps
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | Set-Content -Encoding utf8 "C:\path\to\backup\dump.sql"
+[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres))
 ```
 
 ```powershell title='Restore'

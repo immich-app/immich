@@ -19,7 +19,11 @@
   import { t } from 'svelte-i18n';
   import { locale } from '$lib/stores/preferences.store';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   interface UntrackedFile {
     filename: string;
@@ -33,12 +37,12 @@
 
   const normalize = (filenames: string[]) => filenames.map((filename) => ({ filename, checksum: null }));
 
-  let checking = false;
-  let repairing = false;
+  let checking = $state(false);
+  let repairing = $state(false);
 
-  let orphans: FileReportItemDto[] = data.orphans;
-  let extras: UntrackedFile[] = normalize(data.extras);
-  let matches: Match[] = [];
+  let orphans: FileReportItemDto[] = $state(data.orphans);
+  let extras: UntrackedFile[] = $state(normalize(data.extras));
+  let matches: Match[] = $state([]);
 
   const handleDownload = () => {
     if (extras.length > 0) {
@@ -180,33 +184,34 @@
 </script>
 
 <UserPageLayout title={data.meta.title} admin>
-  <svelte:fragment slot="sidebar" />
-  <div class="flex justify-end gap-2" slot="buttons">
-    <LinkButton on:click={() => handleRepair()} disabled={matches.length === 0 || repairing}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiWrench} size="18" />
-        {$t('admin.repair_all')}
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiCheckAll} size="18" />
-        {$t('admin.check_all')}
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiDownload} size="18" />
-        {$t('export')}
-      </div>
-    </LinkButton>
-    <LinkButton on:click={() => handleRefresh()}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiRefresh} size="18" />
-        {$t('refresh')}
-      </div>
-    </LinkButton>
-  </div>
+  {#snippet buttons()}
+    <div class="flex justify-end gap-2">
+      <LinkButton onclick={() => handleRepair()} disabled={matches.length === 0 || repairing}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiWrench} size="18" />
+          {$t('admin.repair_all')}
+        </div>
+      </LinkButton>
+      <LinkButton onclick={() => handleCheckAll()} disabled={extras.length === 0 || checking}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiCheckAll} size="18" />
+          {$t('admin.check_all')}
+        </div>
+      </LinkButton>
+      <LinkButton onclick={() => handleDownload()} disabled={extras.length + orphans.length === 0}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiDownload} size="18" />
+          {$t('export')}
+        </div>
+      </LinkButton>
+      <LinkButton onclick={() => handleRefresh()}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiRefresh} size="18" />
+          {$t('refresh')}
+        </div>
+      </LinkButton>
+    </div>
+  {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if matches.length + extras.length + orphans.length === 0}
@@ -238,7 +243,7 @@
                 <tr
                   class="w-full h-[75px] place-items-center border-[3px] border-transparent p-2 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 flex justify-between"
                   tabindex="0"
-                  on:click={() => handleSplit(match)}
+                  onclick={() => handleSplit(match)}
                 >
                   <td class="text-sm text-ellipsis flex flex-col gap-1 font-mono">
                     <span>{match.orphan.pathValue} =></span>
@@ -279,8 +284,8 @@
                   tabindex="0"
                   title={orphan.pathValue}
                 >
-                  <td on:click={() => copyToClipboard(orphan.pathValue)}>
-                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
+                  <td onclick={() => copyToClipboard(orphan.pathValue)}>
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" onclick={() => {}} />
                   </td>
                   <td class="truncate text-sm font-mono text-left" title={orphan.pathValue}>
                     {orphan.pathValue}
@@ -318,11 +323,11 @@
                 <tr
                   class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-1 odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5 justify-between"
                   tabindex="0"
-                  on:click={() => handleCheckOne(extra.filename)}
+                  onclick={() => handleCheckOne(extra.filename)}
                   title={extra.filename}
                 >
-                  <td on:click={() => copyToClipboard(extra.filename)}>
-                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" />
+                  <td onclick={() => copyToClipboard(extra.filename)}>
+                    <CircleIconButton title={$t('copy_file_path')} icon={mdiContentCopy} size="18" onclick={() => {}} />
                   </td>
                   <td class="w-full text-md text-ellipsis flex justify-between pr-5">
                     <span class="text-ellipsis grow truncate font-mono text-sm pr-5" title={extra.filename}

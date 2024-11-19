@@ -11,17 +11,19 @@
   import { sortAlbums } from '$lib/utils/album-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
 
-  export let onNewAlbum: (search: string) => void;
-  export let onAlbumClick: (album: AlbumResponseDto) => void;
+  let albums: AlbumResponseDto[] = $state([]);
+  let recentAlbums: AlbumResponseDto[] = $state([]);
+  let loading = $state(true);
+  let search = $state('');
 
-  let albums: AlbumResponseDto[] = [];
-  let recentAlbums: AlbumResponseDto[] = [];
-  let filteredAlbums: AlbumResponseDto[] = [];
-  let loading = true;
-  let search = '';
+  interface Props {
+    onNewAlbum: (search: string) => void;
+    onAlbumClick: (album: AlbumResponseDto) => void;
+    shared: boolean;
+    onClose: () => void;
+  }
 
-  export let shared: boolean;
-  export let onClose: () => void;
+  let { onNewAlbum, onAlbumClick, shared, onClose }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({ shared: shared || undefined });
@@ -29,13 +31,15 @@
     loading = false;
   });
 
-  $: filteredAlbums = sortAlbums(
-    search.length > 0 && albums.length > 0
-      ? albums.filter((album) => {
-          return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
-        })
-      : albums,
-    { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
+  let filteredAlbums = $derived(
+    sortAlbums(
+      search.length > 0 && albums.length > 0
+        ? albums.filter((album) => {
+            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
+          })
+        : albums,
+      { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
+    ),
   );
 
   const getTitle = () => {
@@ -71,7 +75,7 @@
       <div class="immich-scrollbar overflow-y-auto">
         <button
           type="button"
-          on:click={() => onNewAlbum(search)}
+          onclick={() => onNewAlbum(search)}
           class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >
           <div class="flex h-12 w-12 items-center justify-center">

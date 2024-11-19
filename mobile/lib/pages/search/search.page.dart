@@ -187,7 +187,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
+        isDismissible: true,
         child: FilterBottomSheetScaffold(
           title: 'search_filter_location_title'.tr(),
           onSearch: search,
@@ -238,7 +238,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
+        isDismissible: true,
         child: FilterBottomSheetScaffold(
           title: 'search_filter_camera_title'.tr(),
           onSearch: search,
@@ -661,29 +661,31 @@ class SearchEmptyContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      children: [
-        SizedBox(height: 40),
-        Center(
-          child: Image.asset(
-            context.isDarkTheme
-                ? 'assets/polaroid-dark.png'
-                : 'assets/polaroid-light.png',
-            height: 125,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (_) => true,
+      child: ListView(
+        shrinkWrap: false,
+        children: [
+          SizedBox(height: 40),
+          Center(
+            child: Image.asset(
+              context.isDarkTheme
+                  ? 'assets/polaroid-dark.png'
+                  : 'assets/polaroid-light.png',
+              height: 125,
+            ),
           ),
-        ),
-        SizedBox(height: 16),
-        Center(
-          child: Text(
-            "Search for your photos and videos",
-            style: context.textTheme.labelLarge,
+          SizedBox(height: 16),
+          Center(
+            child: Text(
+              "Search for your photos and videos",
+              style: context.textTheme.labelLarge,
+            ),
           ),
-        ),
-        SizedBox(height: 32),
-        QuickLinkList(),
-      ],
+          SizedBox(height: 32),
+          QuickLinkList(),
+        ],
+      ),
     );
   }
 }

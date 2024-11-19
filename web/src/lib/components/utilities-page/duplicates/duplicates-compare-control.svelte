@@ -11,26 +11,30 @@
   import { mdiCheck, mdiTrashCanOutline, mdiImageMultipleOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { SvelteSet } from 'svelte/reactivity';
 
-  export let assets: AssetResponseDto[];
-  export let onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
-  export let onStack: (assets: AssetResponseDto[]) => void;
+  interface Props {
+    assets: AssetResponseDto[];
+    onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
+    onStack: (assets: AssetResponseDto[]) => void;
+  }
+
+  let { assets, onResolve, onStack }: Props = $props();
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  let selectedAssetIds = new Set<string>();
-  $: trashCount = assets.length - selectedAssetIds.size;
+  let selectedAssetIds = $state(new SvelteSet<string>());
+  let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
     const suggestedAsset = suggestDuplicateByFileSize(assets);
 
     if (!suggestedAsset) {
-      selectedAssetIds = new Set(assets[0].id);
+      selectedAssetIds = new SvelteSet(assets[0].id);
       return;
     }
 
     selectedAssetIds.add(suggestedAsset.id);
-    selectedAssetIds = selectedAssetIds;
   });
 
   onDestroy(() => {
@@ -43,17 +47,14 @@
     } else {
       selectedAssetIds.add(asset.id);
     }
-
-    selectedAssetIds = selectedAssetIds;
   };
 
   const onSelectNone = () => {
     selectedAssetIds.clear();
-    selectedAssetIds = selectedAssetIds;
   };
 
   const onSelectAll = () => {
-    selectedAssetIds = new Set(assets.map((asset) => asset.id));
+    selectedAssetIds = new SvelteSet(assets.map((asset) => asset.id));
   };
 
   const handleResolve = () => {
@@ -100,12 +101,12 @@
       <button
         type="button"
         class="px-4 py-3 flex place-items-center gap-2 rounded-tl-full rounded-bl-full dark:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/90 bg-immich-primary/25 hover:bg-immich-primary/50"
-        on:click={onSelectAll}><Icon path={mdiCheck} size="20" />{$t('select_keep_all')}</button
+        onclick={onSelectAll}><Icon path={mdiCheck} size="20" />{$t('select_keep_all')}</button
       >
       <button
         type="button"
         class="px-4 py-3 flex place-items-center gap-2 rounded-tr-full rounded-br-full dark:bg-immich-dark-primary/50 hover:dark:bg-immich-dark-primary/70 bg-immich-primary hover:bg-immich-primary/80 text-white"
-        on:click={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />{$t('select_trash_all')}</button
+        onclick={onSelectNone}><Icon path={mdiTrashCanOutline} size="20" />{$t('select_trash_all')}</button
       >
     </div>
 
@@ -116,7 +117,7 @@
           size="sm"
           color="primary"
           class="flex place-items-center rounded-tl-full rounded-bl-full gap-2"
-          on:click={handleResolve}
+          onclick={handleResolve}
         >
           <Icon path={mdiCheck} size="20" />{$t('keep_all')}
         </Button>
@@ -125,7 +126,7 @@
           size="sm"
           color="red"
           class="flex place-items-center rounded-tl-full rounded-bl-full gap-2 py-3"
-          on:click={handleResolve}
+          onclick={handleResolve}
         >
           <Icon path={mdiTrashCanOutline} size="20" />{trashCount === assets.length
             ? $t('trash_all')
@@ -136,7 +137,7 @@
         size="sm"
         color="primary"
         class="flex place-items-center rounded-tr-full rounded-br-full  gap-2"
-        on:click={handleStack}
+        onclick={handleStack}
         disabled={selectedAssetIds.size !== 1}
       >
         <Icon path={mdiImageMultipleOutline} size="20" />{$t('stack')}

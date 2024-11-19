@@ -19,15 +19,19 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { t } from 'svelte-i18n';
 
-  export let sharedLink: SharedLinkResponseDto;
-  export let isOwned: boolean;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+    isOwned: boolean;
+  }
 
-  const viewport: Viewport = { width: 0, height: 0 };
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  let innerWidth: number;
+  let { sharedLink = $bindable(), isOwned }: Props = $props();
 
-  $: assets = sharedLink.assets;
-  $: isMultiSelectionMode = selectedAssets.size > 0;
+  const viewport: Viewport = $state({ width: 0, height: 0 });
+  let selectedAssets: Set<AssetResponseDto> = $state(new Set());
+  let innerWidth: number = $state(0);
+
+  let assets = $derived(sharedLink.assets);
+  let isMultiSelectionMode = $derived(selectedAssets.size > 0);
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -75,7 +79,7 @@
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if isMultiSelectionMode}
     <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
       {#if sharedLink?.allowDownload}
         <DownloadAction filename="immich-shared.zip" />
       {/if}
@@ -85,23 +89,23 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
-      <svelte:fragment slot="leading">
+      {#snippet leading()}
         <ImmichLogoSmallLink width={innerWidth} />
-      </svelte:fragment>
+      {/snippet}
 
-      <svelte:fragment slot="trailing">
+      {#snippet trailing()}
         {#if sharedLink?.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}
-            on:click={() => handleUploadAssets()}
+            onclick={() => handleUploadAssets()}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
 
         {#if sharedLink?.allowDownload}
-          <CircleIconButton title={$t('download')} on:click={downloadAssets} icon={mdiFolderDownloadOutline} />
+          <CircleIconButton title={$t('download')} onclick={downloadAssets} icon={mdiFolderDownloadOutline} />
         {/if}
-      </svelte:fragment>
+      {/snippet}
     </ControlAppBar>
   {/if}
   <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>

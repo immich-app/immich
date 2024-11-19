@@ -232,8 +232,14 @@ class ImmichAppState extends ConsumerState<ImmichApp>
           title: 'Immich',
           debugShowCheckedModeBanner: false,
           themeMode: ref.watch(immichThemeModeProvider),
-          darkTheme: getThemeData(colorScheme: immichTheme.dark),
-          theme: getThemeData(colorScheme: immichTheme.light),
+          darkTheme: getThemeData(
+            colorScheme: immichTheme.dark,
+            locale: context.locale,
+          ),
+          theme: getThemeData(
+            colorScheme: immichTheme.light,
+            locale: context.locale,
+          ),
           routeInformationParser: router.defaultRouteParser(),
           routerDelegate: router.delegate(
             navigatorObservers: () => [TabNavigationObserver(ref: ref)],

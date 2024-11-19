@@ -3,19 +3,31 @@
   import { type PersonResponseDto } from '@immich/sdk';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
-  export let person: PersonResponseDto;
-  export let selectable = false;
-  export let selected = false;
-  export let thumbnailSize: number | null = null;
-  export let circle = false;
-  export let border = false;
-  export let onClick: (person: PersonResponseDto) => void = () => {};
+  interface Props {
+    person: PersonResponseDto;
+    selectable?: boolean;
+    selected?: boolean;
+    thumbnailSize?: number | null;
+    circle?: boolean;
+    border?: boolean;
+    onClick?: (person: PersonResponseDto) => void;
+  }
+
+  let {
+    person,
+    selectable = false,
+    selected = false,
+    thumbnailSize = null,
+    circle = false,
+    border = false,
+    onClick = () => {},
+  }: Props = $props();
 </script>
 
 <button
   type="button"
   class="relative rounded-lg transition-all"
-  on:click={() => onClick(person)}
+  onclick={() => onClick(person)}
   disabled={!selectable}
   style:width={thumbnailSize ? thumbnailSize + 'px' : '100%'}
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}

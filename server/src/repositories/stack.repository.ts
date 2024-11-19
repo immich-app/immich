@@ -127,6 +127,7 @@ export class StackRepository implements IStackRepository {
       relations: {
         assets: {
           exifInfo: true,
+          tags: true,
         },
       },
       order: {

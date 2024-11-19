@@ -33,8 +33,12 @@
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
 
-  export let keys: ApiKeyResponseDto[] = [];
-  export let sessions: SessionResponseDto[] = [];
+  interface Props {
+    keys?: ApiKeyResponseDto[];
+    sessions?: SessionResponseDto[];
+  }
+
+  let { keys = $bindable([]), sessions = $bindable([]) }: Props = $props();
 
   let oauthOpen =
     oauth.isCallback(window.location) ||

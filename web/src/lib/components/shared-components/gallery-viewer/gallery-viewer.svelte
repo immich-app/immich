@@ -17,20 +17,34 @@
   import Portal from '../portal/portal.svelte';
   import { handlePromiseError } from '$lib/utils';
 
-  export let assets: AssetResponseDto[];
-  export let selectedAssets: Set<AssetResponseDto> = new Set();
-  export let disableAssetSelect = false;
-  export let showArchiveIcon = false;
-  export let viewport: Viewport;
-  export let onIntersected: (() => void) | undefined = undefined;
-  export let showAssetName = false;
-  export let onPrevious: (() => Promise<AssetResponseDto | undefined>) | undefined = undefined;
-  export let onNext: (() => Promise<AssetResponseDto | undefined>) | undefined = undefined;
+  interface Props {
+    assets: AssetResponseDto[];
+    selectedAssets?: Set<AssetResponseDto>;
+    disableAssetSelect?: boolean;
+    showArchiveIcon?: boolean;
+    viewport: Viewport;
+    onIntersected?: (() => void) | undefined;
+    showAssetName?: boolean;
+    onPrevious?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+    onNext?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+  }
+
+  let {
+    assets = $bindable(),
+    selectedAssets = $bindable(new Set()),
+    disableAssetSelect = false,
+    showArchiveIcon = false,
+    viewport,
+    onIntersected = undefined,
+    showAssetName = false,
+    onPrevious = undefined,
+    onNext = undefined,
+  }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
   let currentViewAssetIndex = 0;
-  $: isMultiSelectionMode = selectedAssets.size > 0;
+  let isMultiSelectionMode = $derived(selectedAssets.size > 0);
 
   const viewAssetHandler = async (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
@@ -52,11 +66,15 @@
 
   const handleNext = async () => {
     try {
-      const asset = onNext ? await onNext() : assets[++currentViewAssetIndex];
-      if (asset) {
-        setAsset(asset);
-        await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      let asset: AssetResponseDto | undefined;
+      if (onNext) {
+        asset = await onNext();
+      } else {
+        currentViewAssetIndex = Math.min(currentViewAssetIndex + 1, assets.length - 1);
+        asset = assets[currentViewAssetIndex];
       }
+
+      await navigateToAsset(asset);
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_next_asset'));
     }
@@ -64,13 +82,24 @@
 
   const handlePrevious = async () => {
     try {
-      const asset = onPrevious ? await onPrevious() : assets[--currentViewAssetIndex];
-      if (asset) {
-        setAsset(asset);
-        await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      let asset: AssetResponseDto | undefined;
+      if (onPrevious) {
+        asset = await onPrevious();
+      } else {
+        currentViewAssetIndex = Math.max(currentViewAssetIndex - 1, 0);
+        asset = assets[currentViewAssetIndex];
       }
+
+      await navigateToAsset(asset);
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_previous_asset'));
+    }
+  };
+
+  const navigateToAsset = async (asset?: AssetResponseDto) => {
+    if (asset && asset.id !== $viewingAsset.id) {
+      setAsset(asset);
+      await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
     }
   };
 
@@ -83,7 +112,6 @@
           assets.findIndex((a) => a.id === action.asset.id),
           1,
         );
-        assets = assets;
         if (assets.length === 0) {
           await goto(AppRoute.PHOTOS);
         } else if (currentViewAssetIndex === assets.length) {
@@ -100,23 +128,25 @@
     $isViewerOpen = false;
   });
 
-  $: geometry = (() => {
-    const justifiedLayoutResult = justifiedLayout(
-      assets.map((asset) => getAssetRatio(asset)),
-      {
-        boxSpacing: 2,
-        containerWidth: Math.floor(viewport.width),
-        containerPadding: 0,
-        targetRowHeightTolerance: 0.15,
-        targetRowHeight: 235,
-      },
-    );
+  let geometry = $derived(
+    (() => {
+      const justifiedLayoutResult = justifiedLayout(
+        assets.map((asset) => getAssetRatio(asset)),
+        {
+          boxSpacing: 2,
+          containerWidth: Math.floor(viewport.width),
+          containerPadding: 0,
+          targetRowHeightTolerance: 0.15,
+          targetRowHeight: 235,
+        },
+      );
 
-    return {
-      ...justifiedLayoutResult,
-      containerWidth: calculateWidth(justifiedLayoutResult.boxes),
-    };
-  })();
+      return {
+        ...justifiedLayoutResult,
+        containerWidth: calculateWidth(justifiedLayoutResult.boxes),
+      };
+    })(),
+  );
 </script>
 
 {#if assets.length > 0}

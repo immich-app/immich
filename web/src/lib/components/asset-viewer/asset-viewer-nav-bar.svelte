@@ -13,6 +13,7 @@
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
+  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -44,25 +45,44 @@
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
-  export let asset: AssetResponseDto;
-  export let album: AlbumResponseDto | null = null;
-  export let stack: StackResponseDto | null = null;
-  export let showDetailButton: boolean;
-  export let showSlideshow = false;
-  export let onZoomImage: () => void;
-  export let onCopyImage: () => void;
-  export let onAction: OnAction;
-  export let onRunJob: (name: AssetJobName) => void;
-  export let onPlaySlideshow: () => void;
-  export let onShowDetail: () => void;
-  // export let showEditorHandler: () => void;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    album?: AlbumResponseDto | null;
+    stack?: StackResponseDto | null;
+    showDetailButton: boolean;
+    showSlideshow?: boolean;
+    onZoomImage: () => void;
+    onCopyImage?: () => Promise<void>;
+    onAction: OnAction;
+    onRunJob: (name: AssetJobName) => void;
+    onPlaySlideshow: () => void;
+    onShowDetail: () => void;
+    // export let showEditorHandler: () => void;
+    onClose: () => void;
+    motionPhoto?: Snippet;
+  }
+
+  let {
+    asset,
+    album = null,
+    stack = null,
+    showDetailButton,
+    showSlideshow = false,
+    onZoomImage,
+    onCopyImage,
+    onAction,
+    onRunJob,
+    onPlaySlideshow,
+    onShowDetail,
+    onClose,
+    motionPhoto,
+  }: Props = $props();
 
   const sharedLink = getSharedLink();
-  $: isOwner = $user && asset.ownerId === $user?.id;
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let isOwner = $derived($user && asset.ownerId === $user?.id);
+  let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -88,10 +108,10 @@
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton color="alert" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
+      <CircleIconButton color="alert" icon={mdiAlertOutline} onclick={onShowDetail} title={$t('asset_offline')} />
     {/if}
     {#if asset.livePhotoVideoId}
-      <slot name="motion-photo" />
+      {@render motionPhoto?.()}
     {/if}
     {#if asset.type === AssetTypeEnum.Image}
       <CircleIconButton
@@ -99,11 +119,11 @@
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title={$t('zoom_image')}
-        on:click={onZoomImage}
+        onclick={onZoomImage}
       />
     {/if}
     {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
-      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={() => onCopyImage?.()} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -122,7 +142,7 @@
         color="opaque"
         hideMobile={true}
         icon={mdiImageEditOutline}
-        on:click={showEditorHandler}
+        onclick={showEditorHandler}
         title={$t('editor')}
       />
     {/if} -->
@@ -147,6 +167,7 @@
         {#if isOwner}
           {#if stack}
             <UnstackAction {stack} {onAction} />
+            <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
           {/if}
           {#if album}
             <SetAlbumCoverAction {asset} {album} />

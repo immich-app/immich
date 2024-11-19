@@ -11,9 +11,9 @@
   import { t } from 'svelte-i18n';
   import { locale } from '$lib/stores/preferences.store';
 
-  let showDetail = false;
-  let showOptions = false;
-  let concurrency = uploadExecutionQueue.concurrency;
+  let showDetail = $state(false);
+  let showOptions = $state(false);
+  let concurrency = $state(uploadExecutionQueue.concurrency);
 
   let { stats, isDismissible, isUploading, remainingUploads } = uploadAssetsStore;
 
@@ -27,16 +27,18 @@
     }
   };
 
-  $: if ($isUploading) {
-    autoHide();
-  }
+  $effect(() => {
+    if ($isUploading) {
+      autoHide();
+    }
+  });
 </script>
 
 {#if $isUploading}
   <div
     in:fade={{ duration: 250 }}
     out:fade={{ duration: 250 }}
-    on:outroend={() => {
+    onoutroend={() => {
       if ($stats.errors > 0) {
         notificationController.show({
           message: $t('upload_errors', { values: { count: $stats.errors } }),
@@ -92,14 +94,14 @@
                 icon={mdiCog}
                 size="14"
                 padding="1"
-                on:click={() => (showOptions = !showOptions)}
+                onclick={() => (showOptions = !showOptions)}
               />
               <CircleIconButton
                 title={$t('minimize')}
                 icon={mdiWindowMinimize}
                 size="14"
                 padding="1"
-                on:click={() => (showDetail = false)}
+                onclick={() => (showDetail = false)}
               />
             </div>
             {#if $isDismissible}
@@ -108,7 +110,7 @@
                 icon={mdiCancel}
                 size="14"
                 padding="1"
-                on:click={() => uploadAssetsStore.dismissErrors()}
+                onclick={() => uploadAssetsStore.dismissErrors()}
               />
             {/if}
           </div>
@@ -128,7 +130,7 @@
               max="50"
               step="1"
               bind:value={concurrency}
-              on:change={() => (uploadExecutionQueue.concurrency = concurrency)}
+              onchange={() => (uploadExecutionQueue.concurrency = concurrency)}
             />
           </div>
         {/if}
@@ -143,7 +145,7 @@
         <button
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
-          on:click={() => (showDetail = true)}
+          onclick={() => (showDetail = true)}
           class="absolute -left-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-primary p-5 text-xs text-gray-200"
         >
           {$remainingUploads.toLocaleString($locale)}
@@ -152,7 +154,7 @@
           <button
             type="button"
             in:scale={{ duration: 250, easing: quartInOut }}
-            on:click={() => (showDetail = true)}
+            onclick={() => (showDetail = true)}
             class="absolute -right-4 -top-4 flex h-10 w-10 place-content-center place-items-center rounded-full bg-immich-error p-5 text-xs text-gray-200"
           >
             {$stats.errors.toLocaleString($locale)}
@@ -161,7 +163,7 @@
         <button
           type="button"
           in:scale={{ duration: 250, easing: quartInOut }}
-          on:click={() => (showDetail = true)}
+          onclick={() => (showDetail = true)}
           class="flex h-16 w-16 place-content-center place-items-center rounded-full bg-gray-200 p-5 text-sm text-immich-primary shadow-lg dark:bg-gray-600 dark:text-immich-gray"
         >
           <div class="animate-pulse">

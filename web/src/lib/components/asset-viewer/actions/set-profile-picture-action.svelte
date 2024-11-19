@@ -6,9 +6,13 @@
   import { mdiAccountCircleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
+  interface Props {
+    asset: AssetResponseDto;
+  }
 
-  let showProfileImageCrop = false;
+  let { asset }: Props = $props();
+
+  let showProfileImageCrop = $state(false);
 </script>
 
 <MenuOption

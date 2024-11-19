@@ -6,22 +6,41 @@
   import { t } from 'svelte-i18n';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
 
-  export let id: string;
-  export let searchQuery: string = '';
-  export let isSearchSuggestions: boolean = false;
-  export let isOpen: boolean = false;
-  export let onSelectSearchTerm: (searchTerm: string) => void;
-  export let onClearSearchTerm: (searchTerm: string) => void;
-  export let onClearAllSearchTerms: () => void;
-  export let onActiveSelectionChange: (selectedId: string | undefined) => void;
+  interface Props {
+    id: string;
+    searchQuery?: string;
+    isSearchSuggestions?: boolean;
+    isOpen?: boolean;
+    onSelectSearchTerm: (searchTerm: string) => void;
+    onClearSearchTerm: (searchTerm: string) => void;
+    onClearAllSearchTerms: () => void;
+    onActiveSelectionChange: (selectedId: string | undefined) => void;
+  }
 
-  $: filteredSearchTerms = $savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase()));
-  $: isSearchSuggestions = filteredSearchTerms.length > 0;
-  $: showClearAll = searchQuery === '';
-  $: suggestionCount = showClearAll ? filteredSearchTerms.length + 1 : filteredSearchTerms.length;
+  let {
+    id,
+    searchQuery = '',
+    isSearchSuggestions = $bindable(false),
+    isOpen = false,
+    onSelectSearchTerm,
+    onClearSearchTerm,
+    onClearAllSearchTerms,
+    onActiveSelectionChange,
+  }: Props = $props();
 
-  let selectedIndex: number | undefined = undefined;
-  let element: HTMLDivElement;
+  let filteredSearchTerms = $derived(
+    $savedSearchTerms.filter((term) => term.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+
+  $effect(() => {
+    isSearchSuggestions = filteredSearchTerms.length > 0;
+  });
+
+  let showClearAll = $derived(searchQuery === '');
+  let suggestionCount = $derived(showClearAll ? filteredSearchTerms.length + 1 : filteredSearchTerms.length);
+
+  let selectedIndex: number | undefined = $state(undefined);
+  let element = $state<HTMLDivElement>();
 
   export function moveSelection(increment: 1 | -1) {
     if (!isSearchSuggestions) {
@@ -45,7 +64,7 @@
     if (selectedIndex === undefined) {
       return;
     }
-    const selectedElement = element.querySelector(`#${getId(selectedIndex)}`) as HTMLElement;
+    const selectedElement = element?.querySelector(`#${getId(selectedIndex)}`) as HTMLElement;
     selectedElement?.click();
   }
 
@@ -86,7 +105,7 @@
             type="button"
             class="rounded-lg p-2 font-semibold text-immich-primary aria-selected:bg-immich-primary/25 hover:bg-immich-primary/25 dark:text-immich-dark-primary"
             role="option"
-            on:click={() => handleClearAll()}
+            onclick={() => handleClearAll()}
             tabindex="-1"
             aria-selected={selectedIndex === 0}
             aria-label={$t('clear_all_recent_searches')}
@@ -100,11 +119,11 @@
         {@const index = showClearAll ? i + 1 : i}
         <div class="flex w-full items-center justify-between text-sm text-black dark:text-gray-300">
           <div class="relative w-full items-center">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
               id={getId(index)}
               class="relative flex w-full cursor-pointer gap-3 py-3 pl-5 hover:bg-gray-100 aria-selected:bg-gray-100 dark:aria-selected:bg-gray-500/30 dark:hover:bg-gray-500/30"
-              on:click={() => handleSelect(savedSearchTerm)}
+              onclick={() => handleSelect(savedSearchTerm)}
               role="option"
               tabindex="-1"
               aria-selected={selectedIndex === index}
@@ -120,7 +139,7 @@
                 size="18"
                 padding="1"
                 tabindex={-1}
-                on:click={() => handleClearSingle(savedSearchTerm)}
+                onclick={() => handleClearSingle(savedSearchTerm)}
               />
             </div>
           </div>
