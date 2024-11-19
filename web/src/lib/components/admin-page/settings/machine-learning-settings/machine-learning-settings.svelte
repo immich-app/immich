@@ -12,6 +12,9 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { mdiMinusCircle } from '@mdi/js';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -42,15 +45,34 @@
 
         <hr />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('url')}
-          description={$t('admin.machine_learning_url_description')}
-          bind:value={config.machineLearning.url}
-          required={true}
-          disabled={disabled || !config.machineLearning.enabled}
-          isEdited={config.machineLearning.url !== savedConfig.machineLearning.url}
-        />
+        {#each config.machineLearning.url as url, i}
+          <div
+            class="flex place-content-center place-items-center vertical-align align-items justify-center items-center gap-2"
+          >
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={i === 0 ? $t('url') : undefined}
+              description={i === 0 ? $t('admin.machine_learning_url_description') : undefined}
+              bind:value={config.machineLearning.url[i]}
+              required={i === 0}
+              disabled={disabled || !config.machineLearning.enabled}
+              isEdited={url !== savedConfig.machineLearning.url[i]}
+            />
+
+            {#if config.machineLearning.url.length > 1}
+              <CircleIconButton
+                size="24"
+                padding="2"
+                color="red"
+                title=""
+                onclick={() => config.machineLearning.url.splice(i, 1)}
+                icon={mdiMinusCircle}
+              />
+            {/if}
+          </div>
+        {/each}
+
+        <Button type="button" size="sm" onclick={() => config.machineLearning.url.push('')}>{$t('add_url')}</Button>
       </div>
 
       <SettingAccordion

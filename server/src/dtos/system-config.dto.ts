@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -269,9 +270,12 @@ class SystemConfigMachineLearningDto {
   @ValidateBoolean()
   enabled!: boolean;
 
-  @IsUrl({ require_tld: false, allow_underscores: true })
+  @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
+  @ArrayMinSize(1)
+  @Transform(({ value }) => (value instanceof Array ? value : [value]))
   @ValidateIf((dto) => dto.enabled)
-  url!: string;
+  @ApiProperty({ type: 'array', items: { type: 'string', format: 'uri' }, minItems: 1 })
+  url!: string[];
 
   @Type(() => CLIPConfig)
   @ValidateNested()
