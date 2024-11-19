@@ -74,7 +74,7 @@ export class AlbumService extends BaseService {
           startDate: albumMetadata[album.id].startDate,
           endDate: albumMetadata[album.id].endDate,
           assetCount: albumMetadata[album.id].assetCount,
-          lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
+          lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
       }),
     );
