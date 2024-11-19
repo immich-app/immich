@@ -187,7 +187,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
+        isDismissible: true,
         child: FilterBottomSheetScaffold(
           title: 'search_filter_location_title'.tr(),
           onSearch: search,
@@ -238,7 +238,7 @@ class SearchPage extends HookConsumerWidget {
       showFilterBottomSheet(
         context: context,
         isScrollControlled: true,
-        isDismissible: false,
+        isDismissible: true,
         child: FilterBottomSheetScaffold(
           title: 'search_filter_camera_title'.tr(),
           onSearch: search,
