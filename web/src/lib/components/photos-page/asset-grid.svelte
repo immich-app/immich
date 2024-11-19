@@ -931,4 +931,9 @@
     contain: strict;
     scrollbar-width: none;
   }
+
+  #bucket {
+    contain: layout size;
+    transition: height 0.2s ease-out;
+  }
 </style>
