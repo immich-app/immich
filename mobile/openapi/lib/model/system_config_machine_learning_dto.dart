@@ -17,7 +17,7 @@ class SystemConfigMachineLearningDto {
     required this.duplicateDetection,
     required this.enabled,
     required this.facialRecognition,
-    required this.url,
+    this.url = const [],
   });
 
   CLIPConfig clip;
@@ -28,7 +28,7 @@ class SystemConfigMachineLearningDto {
 
   FacialRecognitionConfig facialRecognition;
 
-  String url;
+  List<String> url;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigMachineLearningDto &&
@@ -36,7 +36,7 @@ class SystemConfigMachineLearningDto {
     other.duplicateDetection == duplicateDetection &&
     other.enabled == enabled &&
     other.facialRecognition == facialRecognition &&
-    other.url == url;
+    _deepEquality.equals(other.url, url);
 
   @override
   int get hashCode =>
@@ -73,7 +73,9 @@ class SystemConfigMachineLearningDto {
         duplicateDetection: DuplicateDetectionConfig.fromJson(json[r'duplicateDetection'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         facialRecognition: FacialRecognitionConfig.fromJson(json[r'facialRecognition'])!,
-        url: mapValueOfType<String>(json, r'url')!,
+        url: json[r'url'] is Iterable
+            ? (json[r'url'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;

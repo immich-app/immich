@@ -1177,7 +1177,7 @@ export type SystemConfigMachineLearningDto = {
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    url: string;
+    url: string[];
 };
 export type SystemConfigMapDto = {
     darkStyle: string;

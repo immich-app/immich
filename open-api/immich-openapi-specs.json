@@ -11853,7 +11853,12 @@
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
-            "type": "string"
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "required": [
