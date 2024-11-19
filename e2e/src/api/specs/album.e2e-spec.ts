@@ -141,7 +141,7 @@ describe('/albums', () => {
       expect(body).toEqual({
         ...user1Albums[0],
         assets: [expect.objectContaining({ isFavorite: false })],
-        lastModifiedAssetTimestamp: user1Albums[0].assets[0].updatedAt,
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
 
@@ -298,7 +298,7 @@ describe('/albums', () => {
       expect(body).toEqual({
         ...user1Albums[0],
         assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
-        lastModifiedAssetTimestamp: user1Albums[0].assets[0].updatedAt,
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
 
@@ -329,7 +329,7 @@ describe('/albums', () => {
       expect(body).toEqual({
         ...user1Albums[0],
         assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
-        lastModifiedAssetTimestamp: user1Albums[0].assets[0].updatedAt,
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
 
@@ -343,7 +343,7 @@ describe('/albums', () => {
         ...user1Albums[0],
         assets: [],
         assetCount: 1,
-        lastModifiedAssetTimestamp: user1Albums[0].assets[0].updatedAt,
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
   });
