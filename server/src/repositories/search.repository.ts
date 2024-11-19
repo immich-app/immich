@@ -111,7 +111,7 @@ export class SearchRepository implements ISearchRepository {
 
   @GenerateSql({
     params: [
-      { page: 1, size: 100 },
+      { page: 1, size: 200 },
       {
         takenAfter: DummyValue.DATE,
         embedding: Array.from({ length: 512 }, Math.random),
@@ -137,7 +137,10 @@ export class SearchRepository implements ISearchRepository {
         .orderBy('search.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
-      await manager.query(this.getRuntimeConfig(pagination.size));
+      const runtimeConfig = this.getRuntimeConfig(pagination.size);
+      if (runtimeConfig) {
+        await manager.query(runtimeConfig);
+      }
       results = await paginatedBuilder<AssetEntity>(builder, {
         mode: PaginationMode.LIMIT_OFFSET,
         skip: (pagination.page - 1) * pagination.size,
@@ -196,7 +199,7 @@ export class SearchRepository implements ISearchRepository {
       {
         userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
-        numResults: 100,
+        numResults: 10,
         maxDistance: 0.6,
       },
     ],
@@ -236,7 +239,10 @@ export class SearchRepository implements ISearchRepository {
         cte.addSelect(`faces.${col}`, col);
       }
 
-      await manager.query(this.getRuntimeConfig(numResults));
+      const runtimeConfig = this.getRuntimeConfig(numResults);
+      if (runtimeConfig) {
+        await manager.query(runtimeConfig);
+      }
       results = await manager
         .createQueryBuilder()
         .select('res.*')
@@ -421,17 +427,14 @@ export class SearchRepository implements ISearchRepository {
     return results.map(({ model }) => model).filter((item) => item !== '');
   }
 
-  private getRuntimeConfig(numResults?: number): string {
+  private getRuntimeConfig(numResults?: number): string | undefined {
     if (this.vectorExtension === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 
-    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=vbase;';
-    if (numResults) {
-      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults};`;
+    if (numResults && numResults !== 100) {
+      return `SET LOCAL vectors.hnsw_ef_search = ${Math.max(numResults, 100)};`;
     }
-
-    return runtimeConfig;
   }
 }
 
