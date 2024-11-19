@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { isNumber, isString } from 'class-validator';
+import { isString } from 'class-validator';
 import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
@@ -226,7 +226,7 @@ export class AuthService extends BaseService {
       const storageQuota = this.getClaim(profile, {
         key: storageQuotaClaim,
         default: defaultStorageQuota,
-        isValid: (value: unknown) => isNumber(value) && value >= 0,
+        isValid: (value: unknown) => Number(value) >= 0,
       });
 
       const userName = profile.name ?? `${profile.given_name || ''} ${profile.family_name || ''}`;
