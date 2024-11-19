@@ -23,6 +23,7 @@ class LibraryPage extends ConsumerWidget {
   const LibraryPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    context.locale;
     final trashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
