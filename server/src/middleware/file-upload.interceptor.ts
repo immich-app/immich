@@ -126,10 +126,9 @@ export class FileUploadInterceptor implements NestInterceptor {
     (file as ImmichMulterFile).uuid = randomUUID();
 
     request.on('error', (error) => {
-      if (error.message === 'aborted') {
-        this.assetService.onUploadError(request, file).catch(this.logger.error);
-        return;
-      }
+      this.logger.warn('Request error while uploading file, cleaning up', error);
+      this.assetService.onUploadError(request, file).catch(this.logger.error);
+      return;
     });
 
     if (!this.isAssetUploadFile(file)) {
@@ -138,7 +137,6 @@ export class FileUploadInterceptor implements NestInterceptor {
     }
 
     const hash = createHash('sha1');
-    file.stream.on('data', (chunk) => hash.update(chunk));
     this.defaultStorage._handleFile(request, file, (error, info) => {
       if (error) {
         hash.destroy();
