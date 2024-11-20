@@ -597,7 +597,6 @@
             {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-8 md:pt-24">
-                {viewMode}
                 <AlbumTitle
                   id={album.id}
                   albumName={album.albumName}
