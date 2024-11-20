@@ -1351,6 +1351,7 @@
   "permanent_deletion_warning": "स्थायी विलोपन चेतावनी",
   "permanent_deletion_warning_setting_description": "संपत्तियों को स्थायी रूप से हटाते समय एक चेतावनी दिखाएं",
   "permanently_delete": "स्थायी रूप से हटाना",
+  "permanently_delete_assets_count": "",
   "permanently_delete_assets_prompt": "",
   "permanently_deleted_asset": "स्थायी रूप से हटाई गई संपत्ति",
   "permanently_deleted_assets_count": "",
