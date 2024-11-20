@@ -11,7 +11,7 @@ import { RouteKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
-import { StorageService } from 'src/services/storage.service';
+import { asRequest, mapToUploadFile } from 'src/utils/asset.util';
 
 export interface UploadFiles {
   assetData: ImmichFile[];
@@ -36,16 +36,6 @@ export interface ImmichFile extends Express.Multer.File {
   checksum: Buffer;
 }
 
-export function mapToUploadFile(file: ImmichFile): UploadFile {
-  return {
-    uuid: file.uuid,
-    checksum: file.checksum,
-    originalPath: file.path,
-    originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
-    size: file.size,
-  };
-}
-
 type DiskStorageCallback = (error: Error | null, result: string) => void;
 
 type ImmichMulterFile = Express.Multer.File & { uuid: string };
@@ -63,14 +53,6 @@ const callbackify = <T>(target: (...arguments_: any[]) => T, callback: Callback<
   }
 };
 
-const asRequest = (request: AuthRequest, file: Express.Multer.File) => {
-  return {
-    auth: request.user || null,
-    fieldName: file.fieldname as UploadFieldName,
-    file: mapToUploadFile(file as ImmichFile),
-  };
-};
-
 @Injectable()
 export class FileUploadInterceptor implements NestInterceptor {
   private handlers: {
@@ -82,7 +64,6 @@ export class FileUploadInterceptor implements NestInterceptor {
   constructor(
     private reflect: Reflector,
     private assetService: AssetMediaService,
-    private storageService: StorageService,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
@@ -146,7 +127,7 @@ export class FileUploadInterceptor implements NestInterceptor {
 
     request.on('error', (error) => {
       if (error.message === 'aborted') {
-        this.handleAbortedRequest(request, file);
+        this.assetService.onUploadError(request, file).catch(this.logger.error);
         return;
       }
     });
@@ -165,16 +146,6 @@ export class FileUploadInterceptor implements NestInterceptor {
       } else {
         callback(null, { ...info, checksum: hash.digest() });
       }
-    });
-  }
-
-  private handleAbortedRequest(request: AuthRequest, file: Express.Multer.File) {
-    const uploadFilename = this.assetService.getUploadFilename(asRequest(request, file));
-    const uploadFolder = this.assetService.getUploadFolder(asRequest(request, file));
-    const uploadPath = `${uploadFolder}/${uploadFilename}`;
-
-    this.storageService.deleteFiles([uploadPath]).catch((error) => {
-      this.logger.warn(`Failed to delete aborted file: ${uploadPath}`, error);
     });
   }
 

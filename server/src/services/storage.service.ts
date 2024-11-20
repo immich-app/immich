@@ -84,10 +84,6 @@ export class StorageService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async deleteFiles(files: string[]) {
-    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files } });
-  }
-
   private async verifyReadAccess(folder: StorageFolder) {
     const { internalPath, externalPath } = this.getMountFilePaths(folder);
     try {
