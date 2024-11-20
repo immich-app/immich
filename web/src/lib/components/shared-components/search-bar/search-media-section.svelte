@@ -1,9 +1,13 @@
 <script lang="ts">
   import RadioButton from '$lib/components/elements/radio-button.svelte';
-  import { MediaType } from './search-filter-modal.svelte';
+  import { MediaType } from '$lib/constants';
   import { t } from 'svelte-i18n';
 
-  export let filteredMedia: MediaType;
+  interface Props {
+    filteredMedia: MediaType;
+  }
+
+  let { filteredMedia = $bindable() }: Props = $props();
 </script>
 
 <div id="media-type-selection">

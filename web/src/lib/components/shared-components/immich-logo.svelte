@@ -9,14 +9,12 @@
   import type { HTMLImgAttributes } from 'svelte/elements';
   import { t } from 'svelte-i18n';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface $$Props extends HTMLImgAttributes {
+  interface Props extends HTMLImgAttributes {
     noText?: boolean;
     draggable?: boolean;
   }
 
-  export let noText = false;
-  export let draggable = false;
+  let { noText = false, draggable = false, ...rest }: Props = $props();
 
   const today = DateTime.now().toLocal();
 </script>
@@ -28,6 +26,6 @@
     src={noText ? logoNoText : $colorTheme.value == Theme.LIGHT ? logoLightUrl : logoDarkUrl}
     alt={$t('immich_logo')}
     {draggable}
-    {...$$restProps}
+    {...rest}
   />
 {/if}

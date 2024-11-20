@@ -35,13 +35,12 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  let isAllFavorite: boolean;
-  let isAllOwned: boolean;
-  let isAssetStackSelected: boolean;
-  let isLinkActionAvailable: boolean;
+  let isAllFavorite = $state(false);
+  let isAllOwned = $state(false);
+  let isAssetStackSelected = $state(false);
+  let isLinkActionAvailable = $state(false);
 
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: {
+  $effect(() => {
     const selection = [...$selectedAssets];
     isAllOwned = selection.every((asset) => asset.ownerId === $user.id);
     isAllFavorite = selection.every((asset) => asset.isFavorite);
@@ -52,7 +51,7 @@
       selection.some((asset) => asset.type === AssetTypeEnum.Image) &&
       selection.some((asset) => asset.type === AssetTypeEnum.Image);
     isLinkActionAvailable = isAllOwned && (isLivePhoto || isLivePhotoCandidate);
-  }
+  });
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -134,6 +133,8 @@
     {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} slot="empty" />
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

@@ -98,6 +98,10 @@ SELECT * FROM "move_history";
 SELECT * FROM "users";
 ```
 
+```sql title="Get owner info from asset ID"
+SELECT "users".* FROM "users" JOIN "assets" ON "users"."id" = "assets"."ownerId" WHERE "assets"."id" = 'fa310b01-2f26-4b7a-9042-d578226e021f';
+```
+
 ## System Config
 
 ```sql title="Custom settings"

@@ -12,20 +12,21 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
 
-  export let data: PageData;
-
-  enum Field {
-    CITY = 'exifInfo.city',
+  interface Props {
+    data: PageData;
   }
 
-  const getFieldItems = (items: SearchExploreResponseDto[], field: Field) => {
+  let { data }: Props = $props();
+
+  const getFieldItems = (items: SearchExploreResponseDto[], field: string) => {
     const targetField = items.find((item) => item.fieldName === field);
     return targetField?.items || [];
   };
 
-  $: places = getFieldItems(data.items, Field.CITY);
-  $: people = data.response.people;
-  $: hasPeople = data.response.total > 0;
+  let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
+  let people = $state(data.response.people);
+
+  let hasPeople = $derived(data.response.total > 0);
 
   onMount(() => {
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
@@ -34,8 +35,6 @@
           person.updatedAt = Date.now().toString();
         }
       });
-      // trigger reactivity
-      people = people;
     });
   });
 </script>
@@ -51,13 +50,21 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4" let:itemCount>
-        {#each people.slice(0, itemCount) as person (person.id)}
-          <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center">
-            <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
-            <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
-          </a>
-        {/each}
+      <SingleGridRow class="grid md:grid-auto-fill-28 grid-auto-fill-20 gap-x-4">
+        {#snippet children({ itemCount })}
+          {#each people.slice(0, itemCount) as person (person.id)}
+            <a href="{AppRoute.PEOPLE}/{person.id}" class="text-center">
+              <ImageThumbnail
+                circle
+                shadow
+                url={getPeopleThumbnailUrl(person)}
+                altText={person.name}
+                widthStyle="100%"
+              />
+              <p class="mt-2 text-ellipsis text-sm font-medium dark:text-white">{person.name}</p>
+            </a>
+          {/each}
+        {/snippet}
       </SingleGridRow>
     </div>
   {/if}
@@ -72,23 +79,29 @@
           draggable="false">{$t('view_all')}</a
         >
       </div>
-      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4" let:itemCount>
-        {#each places.slice(0, itemCount) as item (item.data.id)}
-          <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}" draggable="false">
-            <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
-              <img
-                src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
-                alt={item.value}
-                class="object-cover aspect-square w-full"
-              />
-            </div>
-            <span
-              class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+      <SingleGridRow class="grid md:grid-auto-fill-36 grid-auto-fill-28 gap-x-4">
+        {#snippet children({ itemCount })}
+          {#each places.slice(0, itemCount) as item (item.data.id)}
+            <a
+              class="relative"
+              href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
+              draggable="false"
             >
-              {item.value}
-            </span>
-          </a>
-        {/each}
+              <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">
+                <img
+                  src={getAssetThumbnailUrl({ id: item.data.id, size: AssetMediaSize.Thumbnail })}
+                  alt={item.value}
+                  class="object-cover aspect-square w-full"
+                />
+              </div>
+              <span
+                class="w-100 absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+              >
+                {item.value}
+              </span>
+            </a>
+          {/each}
+        {/snippet}
       </SingleGridRow>
     </div>
   {/if}

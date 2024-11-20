@@ -5,11 +5,15 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
 
-  export let size: number;
-  export let onConfirm: () => void;
-  export let onCancel: () => void;
+  interface Props {
+    size: number;
+    onConfirm: () => void;
+    onCancel: () => void;
+  }
 
-  let checked = false;
+  let { size, onConfirm, onCancel }: Props = $props();
+
+  let checked = $state(false);
 
   const handleConfirm = () => {
     if (checked) {
@@ -25,10 +29,12 @@
   onConfirm={handleConfirm}
   {onCancel}
 >
-  <svelte:fragment slot="prompt">
+  {#snippet promptSnippet()}
     <p>
-      <FormatMessage key="permanently_delete_assets_prompt" values={{ count: size }} let:message>
-        <b>{message}</b>
+      <FormatMessage key="permanently_delete_assets_prompt" values={{ count: size }}>
+        {#snippet children({ message })}
+          <b>{message}</b>
+        {/snippet}
       </FormatMessage>
     </p>
     <p><b>{$t('cannot_undo_this_action')}</b></p>
@@ -36,5 +42,5 @@
     <div class="pt-4 flex justify-center items-center">
       <Checkbox id="confirm-deletion-input" label={$t('do_not_show_again')} bind:checked />
     </div>
-  </svelte:fragment>
+  {/snippet}
 </ConfirmDialog>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { groupBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
@@ -38,14 +38,29 @@
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
+  import { run } from 'svelte/legacy';
 
-  export let ownedAlbums: AlbumResponseDto[] = [];
-  export let sharedAlbums: AlbumResponseDto[] = [];
-  export let searchQuery: string = '';
-  export let userSettings: AlbumViewSettings;
-  export let allowEdit = false;
-  export let showOwner = false;
-  export let albumGroupIds: string[] = [];
+  interface Props {
+    ownedAlbums?: AlbumResponseDto[];
+    sharedAlbums?: AlbumResponseDto[];
+    searchQuery?: string;
+    userSettings: AlbumViewSettings;
+    allowEdit?: boolean;
+    showOwner?: boolean;
+    albumGroupIds?: string[];
+    empty?: Snippet;
+  }
+
+  let {
+    ownedAlbums = $bindable([]),
+    sharedAlbums = $bindable([]),
+    searchQuery = '',
+    userSettings,
+    allowEdit = false,
+    showOwner = false,
+    albumGroupIds = $bindable([]),
+    empty,
+  }: Props = $props();
 
   interface AlbumGroupOption {
     [option: string]: (order: SortOrder, albums: AlbumResponseDto[]) => AlbumGroup[];
@@ -118,25 +133,24 @@
     },
   };
 
-  let albums: AlbumResponseDto[] = [];
-  let filteredAlbums: AlbumResponseDto[] = [];
-  let groupedAlbums: AlbumGroup[] = [];
+  let albums: AlbumResponseDto[] = $state([]);
+  let filteredAlbums: AlbumResponseDto[] = $state([]);
+  let groupedAlbums: AlbumGroup[] = $state([]);
 
-  let albumGroupOption: string = AlbumGroupBy.None;
+  let albumGroupOption: string = $state(AlbumGroupBy.None);
 
-  let showShareByURLModal = false;
+  let showShareByURLModal = $state(false);
 
-  let albumToEdit: AlbumResponseDto | null = null;
-  let albumToShare: AlbumResponseDto | null = null;
+  let albumToEdit: AlbumResponseDto | null = $state(null);
+  let albumToShare: AlbumResponseDto | null = $state(null);
   let albumToDelete: AlbumResponseDto | null = null;
 
-  let contextMenuPosition: ContextMenuPosition = { x: 0, y: 0 };
-  let contextMenuTargetAlbum: AlbumResponseDto | null = null;
-  let isOpen = false;
+  let contextMenuPosition: ContextMenuPosition = $state({ x: 0, y: 0 });
+  let contextMenuTargetAlbum: AlbumResponseDto | undefined = $state();
+  let isOpen = $state(false);
 
   // Step 1: Filter between Owned and Shared albums, or both.
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: {
+  run(() => {
     switch (userSettings.filter) {
       case AlbumFilter.Owned: {
         albums = ownedAlbums;
@@ -152,10 +166,10 @@
         albums = nonOwnedAlbums.length > 0 ? ownedAlbums.concat(nonOwnedAlbums) : ownedAlbums;
       }
     }
-  }
+  });
 
   // Step 2: Filter using the given search query.
-  $: {
+  run(() => {
     if (searchQuery) {
       const searchAlbumNormalized = normalizeSearchString(searchQuery);
 
@@ -165,17 +179,17 @@
     } else {
       filteredAlbums = albums;
     }
-  }
+  });
 
   // Step 3: Group albums.
-  $: {
+  run(() => {
     albumGroupOption = getSelectedAlbumGroupOption(userSettings);
     const groupFunc = groupOptions[albumGroupOption] ?? groupOptions[AlbumGroupBy.None];
     groupedAlbums = groupFunc(stringToSortOrder(userSettings.groupOrder), filteredAlbums);
-  }
+  });
 
   // Step 4: Sort albums amongst each group.
-  $: {
+  run(() => {
     groupedAlbums = groupedAlbums.map((group) => ({
       id: group.id,
       name: group.name,
@@ -183,9 +197,11 @@
     }));
 
     albumGroupIds = groupedAlbums.map(({ id }) => id);
-  }
+  });
 
-  $: showFullContextMenu = allowEdit && contextMenuTargetAlbum && contextMenuTargetAlbum.ownerId === $user.id;
+  let showFullContextMenu = $derived(
+    allowEdit && contextMenuTargetAlbum && contextMenuTargetAlbum.ownerId === $user.id,
+  );
 
   onMount(async () => {
     if (allowEdit) {
@@ -320,6 +336,10 @@
   };
 
   const openShareModal = () => {
+    if (!contextMenuTargetAlbum) {
+      return;
+    }
+
     albumToShare = contextMenuTargetAlbum;
     closeAlbumContextMenu();
   };
@@ -359,7 +379,7 @@
   {/if}
 {:else}
   <!-- Empty Message -->
-  <slot name="empty" />
+  {@render empty?.()}
 {/if}
 
 <!-- Context Menu -->

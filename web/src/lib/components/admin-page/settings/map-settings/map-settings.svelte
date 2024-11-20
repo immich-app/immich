@@ -6,23 +6,30 @@
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="flex flex-col gap-4">
         <SettingAccordion key="map" title={$t('admin.map_settings')} subtitle={$t('admin.map_settings_description')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
@@ -38,7 +45,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_light_style')}
-              desc={$t('admin.map_style_description')}
+              description={$t('admin.map_style_description')}
               bind:value={config.map.lightStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.lightStyle !== savedConfig.map.lightStyle}
@@ -46,7 +53,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.map_dark_style')}
-              desc={$t('admin.map_style_description')}
+              description={$t('admin.map_style_description')}
               bind:value={config.map.darkStyle}
               disabled={disabled || !config.map.enabled}
               isEdited={config.map.darkStyle !== savedConfig.map.darkStyle}
@@ -55,20 +62,22 @@
         >
 
         <SettingAccordion key="reverse-geocoding" title={$t('admin.map_reverse_geocoding_settings')}>
-          <svelte:fragment slot="subtitle">
+          {#snippet subtitleSnippet()}
             <p class="text-sm dark:text-immich-dark-fg">
-              <FormatMessage key="admin.map_manage_reverse_geocoding_settings" let:message>
-                <a
-                  href="https://immich.app/docs/features/reverse-geocoding"
-                  class="underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {message}
-                </a>
+              <FormatMessage key="admin.map_manage_reverse_geocoding_settings">
+                {#snippet children({ message })}
+                  <a
+                    href="https://immich.app/docs/features/reverse-geocoding"
+                    class="underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {message}
+                  </a>
+                {/snippet}
               </FormatMessage>
             </p>
-          </svelte:fragment>
+          {/snippet}
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingSwitch
               title={$t('admin.map_reverse_geocoding_enable_description')}

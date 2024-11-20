@@ -3,9 +3,13 @@
   import { generateId } from '$lib/utils/generate-id';
   import { t } from 'svelte-i18n';
 
-  export let lat: number | null | undefined = undefined;
-  export let lng: number | null | undefined = undefined;
-  export let onUpdate: (lat: number, lng: number) => void;
+  interface Props {
+    lat?: number;
+    lng?: number;
+    onUpdate: (lat: number, lng: number) => void;
+  }
+
+  let { lat = $bindable(), lng = $bindable(), onUpdate }: Props = $props();
 
   const id = generateId();
 
@@ -31,6 +35,7 @@
 
     event.preventDefault();
     [lat, lng] = [latitude, longitude];
+    onInput();
   };
 </script>
 

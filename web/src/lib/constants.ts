@@ -338,3 +338,47 @@ export enum ImmichProduct {
   Client = 'immich-client',
   Server = 'immich-server',
 }
+
+export enum SettingInputFieldType {
+  EMAIL = 'email',
+  TEXT = 'text',
+  NUMBER = 'number',
+  PASSWORD = 'password',
+  COLOR = 'color',
+}
+
+export enum AlbumPageViewMode {
+  LINK_SHARING = 'link-sharing',
+  SELECT_USERS = 'select-users',
+  SELECT_THUMBNAIL = 'select-thumbnail',
+  SELECT_ASSETS = 'select-assets',
+  VIEW_USERS = 'view-users',
+  VIEW = 'view',
+  OPTIONS = 'options',
+}
+
+export enum PersonPageViewMode {
+  VIEW_ASSETS = 'view-assets',
+  SELECT_PERSON = 'select-person',
+  MERGE_PEOPLE = 'merge-people',
+  SUGGEST_MERGE = 'suggest-merge',
+  BIRTH_DATE = 'birth-date',
+  UNASSIGN_ASSETS = 'unassign-faces',
+}
+
+export enum MediaType {
+  All = 'all',
+  Image = 'image',
+  Video = 'video',
+}
+
+export enum ProgressBarStatus {
+  Playing = 'playing',
+  Paused = 'paused',
+}
+
+export enum ToggleVisibility {
+  HIDE_ALL = 'hide-all',
+  HIDE_UNNANEMD = 'hide-unnamed',
+  SHOW_ALL = 'show-all',
+}

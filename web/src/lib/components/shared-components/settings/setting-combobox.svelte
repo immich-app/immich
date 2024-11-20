@@ -3,14 +3,29 @@
   import { fly } from 'svelte/transition';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
-  export let title: string;
-  export let comboboxPlaceholder: string;
-  export let subtitle = '';
-  export let isEdited = false;
-  export let options: ComboBoxOption[];
-  export let selectedOption: ComboBoxOption;
-  export let onSelect: (combobox: ComboBoxOption | undefined) => void;
+  interface Props {
+    title: string;
+    comboboxPlaceholder: string;
+    subtitle?: string;
+    isEdited?: boolean;
+    options: ComboBoxOption[];
+    selectedOption: ComboBoxOption;
+    onSelect: (combobox: ComboBoxOption | undefined) => void;
+    children?: Snippet;
+  }
+
+  let {
+    title,
+    comboboxPlaceholder,
+    subtitle = '',
+    isEdited = false,
+    options,
+    selectedOption,
+    onSelect,
+    children,
+  }: Props = $props();
 </script>
 
 <div class="grid grid-cols-2">
@@ -33,6 +48,6 @@
   </div>
   <div class="flex items-center">
     <Combobox label={title} hideLabel={true} {selectedOption} {options} placeholder={comboboxPlaceholder} {onSelect} />
-    <slot />
+    {@render children?.()}
   </div>
 </div>

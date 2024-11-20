@@ -9,13 +9,18 @@
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
+  import type { SvelteSet } from 'svelte/reactivity';
 
-  export let selectedPeople: Set<string>;
+  interface Props {
+    selectedPeople: SvelteSet<string>;
+  }
+
+  let { selectedPeople = $bindable() }: Props = $props();
 
   let peoplePromise = getPeople();
-  let showAllPeople = false;
-  let name = '';
-  let numberOfPeople = 1;
+  let showAllPeople = $state(false);
+  let name = $state('');
+  let numberOfPeople = $state(1);
 
   function orderBySelectedPeopleFirst(people: PersonResponseDto[]) {
     return [
@@ -39,7 +44,6 @@
     } else {
       selectedPeople.add(id);
     }
-    selectedPeople = selectedPeople;
   }
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
@@ -72,7 +76,7 @@
             )
               ? 'dark:border-slate-500 border-slate-400 bg-slate-200 dark:bg-slate-800 dark:text-white'
               : 'border-transparent'}"
-            on:click={() => togglePersonSelection(person.id)}
+            onclick={() => togglePersonSelection(person.id)}
           >
             <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
             <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
@@ -86,7 +90,7 @@
             shadow={false}
             color="text-primary"
             class="flex gap-2 place-items-center"
-            on:click={() => (showAllPeople = !showAllPeople)}
+            onclick={() => (showAllPeople = !showAllPeople)}
           >
             {#if showAllPeople}
               <span><Icon path={mdiClose} ariaHidden /></span>

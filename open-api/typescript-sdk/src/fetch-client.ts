@@ -969,6 +969,8 @@ export type UsageByUserDto = {
     photos: number;
     quotaSizeInBytes: number | null;
     usage: number;
+    usagePhotos: number;
+    usageVideos: number;
     userId: string;
     userName: string;
     videos: number;
@@ -977,6 +979,8 @@ export type ServerStatsResponseDto = {
     photos: number;
     usage: number;
     usageByUser: UsageByUserDto[];
+    usagePhotos: number;
+    usageVideos: number;
     videos: number;
 };
 export type ServerStorageResponseDto = {

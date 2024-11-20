@@ -15,44 +15,53 @@
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          <FormatMessage key="admin.transcoding_codecs_learn_more" let:tag let:message>
-            {#if tag === 'h264-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {:else if tag === 'hevc-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {:else if tag === 'vp9-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {/if}
+          <FormatMessage key="admin.transcoding_codecs_learn_more">
+            {#snippet children({ tag, message })}
+              {#if tag === 'h264-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {:else if tag === 'hevc-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {:else if tag === 'vp9-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {/if}
+            {/snippet}
           </FormatMessage>
         </p>
 
@@ -60,7 +69,7 @@
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
           label={$t('admin.transcoding_constant_rate_factor')}
-          desc={$t('admin.transcoding_constant_rate_factor_description')}
+          description={$t('admin.transcoding_constant_rate_factor_description')}
           bind:value={config.ffmpeg.crf}
           required={true}
           isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
@@ -186,7 +195,7 @@
           inputType={SettingInputFieldType.TEXT}
           {disabled}
           label={$t('admin.transcoding_max_bitrate')}
-          desc={$t('admin.transcoding_max_bitrate_description')}
+          description={$t('admin.transcoding_max_bitrate_description')}
           bind:value={config.ffmpeg.maxBitrate}
           isEdited={config.ffmpeg.maxBitrate !== savedConfig.ffmpeg.maxBitrate}
         />
@@ -195,7 +204,7 @@
           inputType={SettingInputFieldType.NUMBER}
           {disabled}
           label={$t('admin.transcoding_threads')}
-          desc={$t('admin.transcoding_threads_description')}
+          description={$t('admin.transcoding_threads_description')}
           bind:value={config.ffmpeg.threads}
           isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
         />
@@ -329,7 +338,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.transcoding_preferred_hardware_device')}
-              desc={$t('admin.transcoding_preferred_hardware_device_description')}
+              description={$t('admin.transcoding_preferred_hardware_device_description')}
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
               {disabled}
@@ -346,7 +355,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_b_frames')}
-              desc={$t('admin.transcoding_max_b_frames_description')}
+              description={$t('admin.transcoding_max_b_frames_description')}
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
               {disabled}
@@ -355,7 +364,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_reference_frames')}
-              desc={$t('admin.transcoding_reference_frames_description')}
+              description={$t('admin.transcoding_reference_frames_description')}
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
               {disabled}
@@ -364,7 +373,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_keyframe_interval')}
-              desc={$t('admin.transcoding_max_keyframe_interval_description')}
+              description={$t('admin.transcoding_max_keyframe_interval_description')}
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
               {disabled}

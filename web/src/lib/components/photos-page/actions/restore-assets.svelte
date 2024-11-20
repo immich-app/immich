@@ -12,11 +12,15 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-  export let onRestore: OnRestore | undefined;
+  interface Props {
+    onRestore: OnRestore | undefined;
+  }
+
+  let { onRestore }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
-  let loading = false;
+  let loading = $state(false);
 
   const handleRestore = async () => {
     loading = true;
@@ -40,7 +44,7 @@
   };
 </script>
 
-<Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" on:click={handleRestore}>
+<Button disabled={loading} size="sm" color="transparent-gray" shadow={false} rounded="lg" onclick={handleRestore}>
   <Icon path={mdiHistory} size="24" />
   <span class="ml-2">{$t('restore')}</span>
 </Button>
