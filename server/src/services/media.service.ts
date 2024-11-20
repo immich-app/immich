@@ -255,7 +255,7 @@ export class MediaService extends BaseService {
       mainAudioStream,
       format,
     );
-    this.logger.error(format.formatName);
+
     await this.mediaRepository.transcode(asset.originalPath, previewPath, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailPath, thumbnailOptions);
 
