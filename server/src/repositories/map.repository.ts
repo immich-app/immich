@@ -54,14 +54,13 @@ export class MapRepository implements IMapRepository {
     }
 
     await Promise.all([this.importGeodata(), this.importNaturalEarthCountries()]);
-    this.logger.log('Geodata import completed');
 
     await this.metadataRepository.set(SystemMetadataKey.REVERSE_GEOCODING_STATE, {
       lastUpdate: geodataDate,
       lastImportFileName: citiesFile,
     });
 
-    this.logger.log('Set reverse geocoding metadata');
+    this.logger.log('Geodata import completed');
   }
 
   async getMapMarkers(
