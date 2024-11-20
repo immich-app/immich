@@ -128,7 +128,6 @@ export class FileUploadInterceptor implements NestInterceptor {
     request.on('error', (error) => {
       this.logger.warn('Request error while uploading file, cleaning up', error);
       this.assetService.onUploadError(request, file).catch(this.logger.error);
-      return;
     });
 
     if (!this.isAssetUploadFile(file)) {
