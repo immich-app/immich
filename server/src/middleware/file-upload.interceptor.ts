@@ -11,6 +11,7 @@ import { RouteKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
+import { StorageService } from 'src/services/storage.service';
 
 export interface UploadFiles {
   assetData: ImmichFile[];
@@ -81,6 +82,7 @@ export class FileUploadInterceptor implements NestInterceptor {
   constructor(
     private reflect: Reflector,
     private assetService: AssetMediaService,
+    private storageService: StorageService,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
@@ -141,6 +143,14 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
     (file as ImmichMulterFile).uuid = randomUUID();
+
+    request.on('error', (error) => {
+      if (error.message === 'aborted') {
+        this.handleAbortedRequest(request, file);
+        return;
+      }
+    });
+
     if (!this.isAssetUploadFile(file)) {
       this.defaultStorage._handleFile(request, file, callback);
       return;
@@ -155,6 +165,16 @@ export class FileUploadInterceptor implements NestInterceptor {
       } else {
         callback(null, { ...info, checksum: hash.digest() });
       }
+    });
+  }
+
+  private handleAbortedRequest(request: AuthRequest, file: Express.Multer.File) {
+    const uploadFilename = this.assetService.getUploadFilename(asRequest(request, file));
+    const uploadFolder = this.assetService.getUploadFolder(asRequest(request, file));
+    const uploadPath = `${uploadFolder}/${uploadFilename}`;
+
+    this.storageService.deleteFiles([uploadPath]).catch((error) => {
+      this.logger.warn(`Failed to delete aborted file: ${uploadPath}`, error);
     });
   }
 
