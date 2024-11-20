@@ -11,6 +11,7 @@ import { RouteKey } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
+import { asRequest, mapToUploadFile } from 'src/utils/asset.util';
 
 export interface UploadFiles {
   assetData: ImmichFile[];
@@ -35,16 +36,6 @@ export interface ImmichFile extends Express.Multer.File {
   checksum: Buffer;
 }
 
-export function mapToUploadFile(file: ImmichFile): UploadFile {
-  return {
-    uuid: file.uuid,
-    checksum: file.checksum,
-    originalPath: file.path,
-    originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
-    size: file.size,
-  };
-}
-
 type DiskStorageCallback = (error: Error | null, result: string) => void;
 
 type ImmichMulterFile = Express.Multer.File & { uuid: string };
@@ -60,14 +51,6 @@ const callbackify = <T>(target: (...arguments_: any[]) => T, callback: Callback<
   } catch (error: Error | any) {
     return callback(error);
   }
-};
-
-const asRequest = (request: AuthRequest, file: Express.Multer.File) => {
-  return {
-    auth: request.user || null,
-    fieldName: file.fieldname as UploadFieldName,
-    file: mapToUploadFile(file as ImmichFile),
-  };
 };
 
 @Injectable()
@@ -141,6 +124,12 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
     (file as ImmichMulterFile).uuid = randomUUID();
+
+    request.on('error', (error) => {
+      this.logger.warn('Request error while uploading file, cleaning up', error);
+      this.assetService.onUploadError(request, file).catch(this.logger.error);
+    });
+
     if (!this.isAssetUploadFile(file)) {
       this.defaultStorage._handleFile(request, file, callback);
       return;
