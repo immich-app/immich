@@ -500,9 +500,11 @@
             {#if album.assetCount > 0}
               <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
               <CircleIconButton title={$t('download')} onclick={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+            {/if}
 
-              {#if isOwned}
-                <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+            {#if isOwned}
+              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+                {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
@@ -513,9 +515,10 @@
                     text={$t('options')}
                     onClick={() => (viewMode = AlbumPageViewMode.OPTIONS)}
                   />
-                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
-                </ButtonContextMenu>
-              {/if}
+                {/if}
+
+                <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+              </ButtonContextMenu>
             {/if}
 
             {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
@@ -594,6 +597,7 @@
             {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-8 md:pt-24">
+                {viewMode}
                 <AlbumTitle
                   id={album.id}
                   albumName={album.albumName}
