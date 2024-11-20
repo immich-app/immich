@@ -218,8 +218,26 @@ export class MapRepository implements IMapRepository {
     await this.dataSource.query(
       'CREATE UNLOGGED TABLE geodata_places_tmp (LIKE geodata_places INCLUDING ALL EXCLUDING INDEXES)',
     );
+    await this.dataSource.query(`
+      CREATE INDEX IDX_geodata_gist_earthcoord_${randomUUID().replaceAll('-', '_')}
+        ON geodata_places_tmp
+        USING gist (ll_to_earth_public(latitude, longitude))`);
     await this.loadCities500(admin1, admin2);
-    await this.createGeodataIndices();
+    await Promise.all([
+      this.dataSource.query('ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)'),
+      this.dataSource.query(`
+          CREATE INDEX idx_geodata_places_name_${randomUUID().replaceAll('-', '_')}
+            ON geodata_places_tmp
+            USING gin (f_unaccent(name) gin_trgm_ops)`),
+      this.dataSource.query(`
+          CREATE INDEX idx_geodata_places_admin1_name_${randomUUID().replaceAll('-', '_')}
+            ON geodata_places_tmp
+            USING gin (f_unaccent("admin1Name") gin_trgm_ops)`),
+      this.dataSource.query(`
+          CREATE INDEX idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}
+            ON geodata_places_tmp
+            USING gin (f_unaccent("admin2Name") gin_trgm_ops)`),
+    ]);
 
     await this.dataSource.transaction(async (manager) => {
       await manager.query('ALTER TABLE geodata_places RENAME TO geodata_places_old');
@@ -299,28 +317,5 @@ export class MapRepository implements IMapRepository {
     }
 
     return adminMap;
-  }
-
-  private createGeodataIndices() {
-    return Promise.all([
-      this.dataSource.query(`ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`),
-      this.dataSource.query(`
-        CREATE INDEX IDX_geodata_gist_earthcoord_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gist (ll_to_earth_public(latitude, longitude))
-          WITH (fillfactor = 100)`),
-      this.dataSource.query(`
-        CREATE INDEX idx_geodata_places_name_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gin (f_unaccent(name) gin_trgm_ops)`),
-      this.dataSource.query(`
-        CREATE INDEX idx_geodata_places_admin1_name_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gin (f_unaccent("admin1Name") gin_trgm_ops)`),
-      this.dataSource.query(`
-        CREATE INDEX idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gin (f_unaccent("admin2Name") gin_trgm_ops)`),
-    ]);
   }
 }
