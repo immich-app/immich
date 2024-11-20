@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
@@ -10,7 +11,6 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { foldersStore } from '$lib/stores/folders.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { type AssetResponseDto } from '@immich/sdk';
   import { mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -24,13 +24,14 @@
 
   let { data }: Props = $props();
 
-  let selectedAssets: Set<AssetResponseDto> = $state(new Set());
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
   let tree = $derived(buildTree($foldersStore?.uniquePaths || []));
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
   let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
+
+  const assetInteractionStore = createAssetInteractionStore();
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -79,7 +80,7 @@
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
           assets={data.pathAssets}
-          bind:selectedAssets
+          {assetInteractionStore}
           {viewport}
           disableAssetSelect={true}
           showAssetName={true}
