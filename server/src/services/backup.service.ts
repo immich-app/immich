@@ -14,16 +14,12 @@ import { handlePromiseError } from 'src/utils/misc';
 export class BackupService extends BaseService {
   private backupLock = false;
 
-  @OnEvent({ name: 'config.init' })
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
   async onConfigInit({
     newConfig: {
       backup: { database },
     },
   }: ArgOf<'config.init'>) {
-    if (this.worker !== ImmichWorker.API) {
-      return;
-    }
-
     this.backupLock = await this.databaseRepository.tryLock(DatabaseLock.BackupDatabase);
 
     if (this.backupLock) {

@@ -4409,7 +4409,7 @@
     },
     "/search/metadata": {
       "post": {
-        "operationId": "searchMetadata",
+        "operationId": "searchAssets",
         "parameters": [],
         "requestBody": {
           "content": {

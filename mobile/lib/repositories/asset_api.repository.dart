@@ -34,7 +34,7 @@ class AssetApiRepository extends ApiRepository implements IAssetApiRepository {
     int currentPage = 1;
     while (hasNext) {
       final response = await checkNull(
-        _searchApi.searchMetadata(
+        _searchApi.searchAssets(
           MetadataSearchDto(
             personIds: personIds,
             page: currentPage,

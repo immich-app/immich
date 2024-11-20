@@ -27,7 +27,7 @@ import {
   getAssetInfo,
   getConfigDefaults,
   login,
-  searchMetadata,
+  searchAssets,
   setBaseUrl,
   signUpAdmin,
   tagAssets,
@@ -405,8 +405,8 @@ export const utils = {
   checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
     checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
-  metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
-    return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
+  searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
+    return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>

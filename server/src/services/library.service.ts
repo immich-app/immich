@@ -31,16 +31,12 @@ export class LibraryService extends BaseService {
   private lock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
-  @OnEvent({ name: 'config.init' })
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
   async onConfigInit({
     newConfig: {
       library: { watch, scan },
     },
   }: ArgOf<'config.init'>) {
-    if (this.worker !== ImmichWorker.MICROSERVICES) {
-      return;
-    }
-
     // This ensures that library watching only occurs in one microservice
     this.lock = await this.databaseRepository.tryLock(DatabaseLock.Library);
 
