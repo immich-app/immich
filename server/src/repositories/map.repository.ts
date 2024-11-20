@@ -272,7 +272,8 @@ export class MapRepository implements IMapRepository {
           }),
         );
         bufferGeodata = [];
-        if (futures.length >= 10) {
+        // leave spare connection for other queries
+        if (futures.length >= 9) {
           await Promise.all(futures);
           futures = [];
         }
