@@ -883,8 +883,8 @@ describe(AssetMediaService.name, () => {
 
   describe('onUploadError', () => {
     it('should queue a job to delete the uploaded file', async () => {
-      const request = { user: authStub.user1 } as unknown as AuthRequest;
-      console.log('request', request);
+      const request = { user: authStub.user1 } as AuthRequest;
+
       const file = {
         fieldname: UploadFieldName.ASSET_DATA,
         originalname: 'image.jpg',
