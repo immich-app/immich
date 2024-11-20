@@ -24,8 +24,8 @@
   import { shortcut } from '$lib/actions/shortcut';
   import {
     type AssetResponseDto,
+    searchAssets,
     searchSmart,
-    searchMetadata,
     getPerson,
     type SmartSearchDto,
     type MetadataSearchDto,
@@ -156,7 +156,7 @@
       const { albums, assets } =
         'query' in searchDto && $featureFlags.smartSearch
           ? await searchSmart({ smartSearchDto: searchDto })
-          : await searchMetadata({ metadataSearchDto: searchDto });
+          : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
