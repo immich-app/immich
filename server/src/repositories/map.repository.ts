@@ -119,8 +119,11 @@ export class MapRepository implements IMapRepository {
 
     const response = await this.geodataPlacesRepository
       .createQueryBuilder('geoplaces')
-      .where('earth_box(ll_to_earth(:latitude, :longitude), 25000) @> "earthCoord"', point)
-      .orderBy('earth_distance(ll_to_earth(:latitude, :longitude), "earthCoord")')
+      .where(
+        'earth_box(ll_to_earth_public(:latitude, :longitude), 25000) @> ll_to_earth_public(latitude, longitude)',
+        point,
+      )
+      .orderBy('earth_distance(ll_to_earth_public(:latitude, :longitude), ll_to_earth_public(latitude, longitude))')
       .limit(1)
       .getOne();
 
@@ -175,7 +178,7 @@ export class MapRepository implements IMapRepository {
 
     await this.dataSource.query('DROP TABLE IF EXISTS naturalearth_countries_tmp');
     await this.dataSource.query(
-      'CREATE UNLOGGED TABLE naturalearth_countries_tmp (LIKE naturalearth_countries INCLUDING ALL)',
+      'CREATE UNLOGGED TABLE naturalearth_countries_tmp (LIKE naturalearth_countries INCLUDING ALL EXCLUDING INDEXES)',
     );
     const entities: Omit<NaturalEarthCountriesTempEntity, 'id'>[] = [];
     for (const feature of geoJSONData.features) {
@@ -195,6 +198,8 @@ export class MapRepository implements IMapRepository {
     }
     await this.dataSource.manager.insert(NaturalEarthCountriesTempEntity, entities);
 
+    await this.dataSource.query(`ALTER TABLE naturalearth_countries_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`);
+
     await this.dataSource.transaction(async (manager) => {
       await manager.query('ALTER TABLE naturalearth_countries RENAME TO naturalearth_countries_old');
       await manager.query('ALTER TABLE naturalearth_countries_tmp RENAME TO naturalearth_countries');
@@ -213,12 +218,8 @@ export class MapRepository implements IMapRepository {
     await this.dataSource.query(
       'CREATE UNLOGGED TABLE geodata_places_tmp (LIKE geodata_places INCLUDING ALL EXCLUDING INDEXES)',
     );
-    await this.dataSource.query(`ALTER TABLE geodata_places_tmp DROP "earthCoord", ADD PRIMARY KEY ("id")`);
     await this.loadCities500(admin1, admin2);
-    await this.dataSource.query(
-      `ALTER TABLE geodata_places_tmp
-          ADD "earthCoord" earth GENERATED ALWAYS AS (ll_to_earth(latitude, longitude)) STORED`,
-    );
+    await this.dataSource.query(`ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`);
     await this.createIndices();
 
     await this.dataSource.transaction(async (manager) => {
@@ -306,7 +307,8 @@ export class MapRepository implements IMapRepository {
       this.dataSource.query(`
         CREATE INDEX IDX_geodata_gist_earthcoord_${randomUUID().replaceAll('-', '_')}
           ON geodata_places_tmp
-          USING gist ("earthCoord")`),
+          USING gist (ll_to_earth_public(latitude, longitude))
+          WITH (fillfactor = 100)`),
       this.dataSource.query(`
         CREATE INDEX idx_geodata_places_name_${randomUUID().replaceAll('-', '_')}
           ON geodata_places_tmp
