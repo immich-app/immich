@@ -136,6 +136,7 @@ export class FileUploadInterceptor implements NestInterceptor {
     }
 
     const hash = createHash('sha1');
+    file.stream.on('data', (chunk) => hash.update(chunk));
     this.defaultStorage._handleFile(request, file, (error, info) => {
       if (error) {
         hash.destroy();
