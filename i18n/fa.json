@@ -1349,6 +1349,7 @@
   "permanent_deletion_warning": "هشدار حذف دائمی",
   "permanent_deletion_warning_setting_description": "نمایش هشدار هنگام حذف دائمی محتواها",
   "permanently_delete": "حذف دائمی",
+  "permanently_delete_assets_count": "",
   "permanently_delete_assets_prompt": "",
   "permanently_deleted_asset": "محتوای حذف شده دائمی",
   "permanently_deleted_assets_count": "",
