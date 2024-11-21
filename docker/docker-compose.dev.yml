@@ -57,6 +57,8 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
+    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
+    # user: 0:0
     build:
       context: ../web
     command: ['/usr/src/app/bin/immich-web']

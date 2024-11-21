@@ -45,7 +45,10 @@ All the services will be started with hot-reloading enabled for a quick feedback
 
 You can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000/api`
 
-**Note:** the "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
+**Notes:**
+
+- The "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
+- In case of rootless docker setup, you need to use root within the container, otherwise you will encounter read/write permission related errors, see comments in `docker/docker-compose.dev.yml`.
 
 #### Connect web to a remote backend
 
