@@ -9,9 +9,10 @@
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
+  import type { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
-    selectedPeople: Set<string>;
+    selectedPeople: SvelteSet<string>;
   }
 
   let { selectedPeople = $bindable() }: Props = $props();
@@ -43,7 +44,6 @@
     } else {
       selectedPeople.add(id);
     }
-    selectedPeople = selectedPeople;
   }
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {

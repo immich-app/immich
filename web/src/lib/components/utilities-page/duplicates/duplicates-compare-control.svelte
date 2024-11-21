@@ -35,7 +35,6 @@
     }
 
     selectedAssetIds.add(suggestedAsset.id);
-    selectedAssetIds = selectedAssetIds;
   });
 
   onDestroy(() => {
@@ -48,13 +47,10 @@
     } else {
       selectedAssetIds.add(asset.id);
     }
-
-    selectedAssetIds = selectedAssetIds;
   };
 
   const onSelectNone = () => {
     selectedAssetIds.clear();
-    selectedAssetIds = selectedAssetIds;
   };
 
   const onSelectAll = () => {
