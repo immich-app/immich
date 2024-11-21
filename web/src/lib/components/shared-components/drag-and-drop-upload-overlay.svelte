@@ -101,7 +101,15 @@
   ): Promise<FileSystemEntry[]> => {
     return new Promise((resolve, reject) => {
       const reader = fileSystemDirectoryEntry.createReader();
-      reader.readEntries(resolve, reject);
+      const files: FileSystemEntry[] = [];
+      reader.readEntries((entries) => {
+        if (entries.length === 0) {
+          resolve(files);
+        } else {
+          files.push(...entries);
+          resolve(files);
+        }
+      }, reject);
     });
   };
 
