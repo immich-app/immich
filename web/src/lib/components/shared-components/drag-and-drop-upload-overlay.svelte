@@ -102,14 +102,19 @@
     return new Promise((resolve, reject) => {
       const reader = fileSystemDirectoryEntry.createReader();
       const files: FileSystemEntry[] = [];
-      reader.readEntries((entries) => {
-        if (entries.length === 0) {
-          resolve(files);
-        } else {
-          files.push(...entries);
-          resolve(files);
-        }
-      }, reject);
+
+      function readNextBatch() {
+        reader.readEntries((entries) => {
+          if (entries.length === 0) {
+            resolve(files);
+          } else {
+            files.push(...entries);
+            readNextBatch();
+          }
+        }, reject);
+      }
+
+      readNextBatch();
     });
   };
 
