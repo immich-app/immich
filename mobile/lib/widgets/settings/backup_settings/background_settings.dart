@@ -33,7 +33,7 @@ class BackgroundBackupSettings extends ConsumerWidget {
         ),
         backgroundColor: Colors.red,
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      context.scaffoldMessenger.showSnackBar(snackBar);
     }
 
     void showBatteryOptimizationInfoToUser() {

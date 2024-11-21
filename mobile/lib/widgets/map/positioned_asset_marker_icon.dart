@@ -26,7 +26,7 @@ class PositionedAssetMarkerIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ratio = Platform.isIOS ? 1.0 : MediaQuery.devicePixelRatioOf(context);
+    final ratio = Platform.isIOS ? 1.0 : context.devicePixelRatio;
     return AnimatedPositioned(
       left: point.x / ratio - size / 2,
       top: point.y / ratio - size,

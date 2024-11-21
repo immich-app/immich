@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controller_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_controls_provider.dart';
@@ -120,8 +121,6 @@ class VideoViewerPage extends HookConsumerWidget {
       [controller],
     );
 
-    final size = MediaQuery.sizeOf(context);
-
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         ref.read(videoPlaybackValueProvider.notifier).value =
@@ -148,8 +147,8 @@ class VideoViewerPage extends HookConsumerWidget {
             ),
             if (controller != null)
               SizedBox(
-                height: size.height,
-                width: size.width,
+                height: context.height,
+                width: context.width,
                 child: VideoPlayerViewer(
                   controller: controller,
                   isMotionVideo: isMotionVideo,

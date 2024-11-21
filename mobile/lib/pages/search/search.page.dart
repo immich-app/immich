@@ -196,7 +196,7 @@ class SearchPage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Container(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+                bottom: context.viewInsets.bottom,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),

@@ -141,7 +141,7 @@ class GalleryViewerPage extends HookConsumerWidget {
             heightFactor: 0.75,
             child: Padding(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.viewInsetsOf(context).bottom,
+                bottom: context.viewInsets.bottom,
               ),
               child: ref
                       .watch(appSettingsServiceProvider)
