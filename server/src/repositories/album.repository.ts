@@ -7,7 +7,6 @@ import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfa
 import {
   DataSource,
   EntityManager,
-  FindManyOptions,
   FindOptionsOrder,
   FindOptionsRelations,
   In,
@@ -58,16 +57,14 @@ export class AlbumRepository implements IAlbumRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
-    const queryOptions: FindManyOptions<AlbumEntity> = {
+    const albums = await this.repository.find({
       where: [
         { ownerId, assets: { id: assetId } },
         { albumUsers: { userId: ownerId }, assets: { id: assetId } },
       ],
       relations: { owner: true, albumUsers: { user: true } },
       order: { createdAt: 'DESC' },
-    };
-
-    const albums = await this.repository.find(queryOptions);
+    });
 
     return albums.map((album) => withoutDeletedUsers(album));
   }
@@ -102,18 +99,12 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getOwned(ownerId: string, take?: number): Promise<AlbumEntity[]> {
-    const queryOptions: FindManyOptions<AlbumEntity> = {
+  async getOwned(ownerId: string): Promise<AlbumEntity[]> {
+    const albums = await this.repository.find({
       relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
       where: { ownerId },
       order: { createdAt: 'DESC' },
-    };
-
-    if (typeof take === 'number') {
-      queryOptions.take = take;
-    }
-
-    const albums = await this.repository.find(queryOptions);
+    });
 
     return albums.map((album) => withoutDeletedUsers(album));
   }
@@ -123,7 +114,7 @@ export class AlbumRepository implements IAlbumRepository {
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   async getShared(ownerId: string): Promise<AlbumEntity[]> {
-    const queryOptions: FindManyOptions<AlbumEntity> = {
+    const albums = await this.repository.find({
       relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
       where: [
         { albumUsers: { userId: ownerId } },
@@ -131,9 +122,7 @@ export class AlbumRepository implements IAlbumRepository {
         { ownerId, albumUsers: { user: Not(IsNull()) } },
       ],
       order: { createdAt: 'DESC' },
-    };
-
-    const albums = await this.repository.find(queryOptions);
+    });
 
     return albums.map((album) => withoutDeletedUsers(album));
   }
@@ -143,13 +132,11 @@ export class AlbumRepository implements IAlbumRepository {
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   async getNotShared(ownerId: string): Promise<AlbumEntity[]> {
-    const queryOptions: FindManyOptions<AlbumEntity> = {
+    const albums = await this.repository.find({
       relations: { albumUsers: true, sharedLinks: true, owner: true },
       where: { ownerId, albumUsers: { user: IsNull() }, sharedLinks: { id: IsNull() } },
       order: { createdAt: 'DESC' },
-    };
-
-    const albums = await this.repository.find(queryOptions);
+    });
 
     return albums.map((album) => withoutDeletedUsers(album));
   }
