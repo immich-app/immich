@@ -117,7 +117,6 @@
       await updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
 
       partner.inTimeline = inTimeline;
-      partners = partners;
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }

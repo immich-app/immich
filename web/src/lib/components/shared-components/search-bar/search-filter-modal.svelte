@@ -7,7 +7,7 @@
   export type SearchFilter = {
     query: string;
     queryType: 'smart' | 'metadata';
-    personIds: Set<string>;
+    personIds: SvelteSet<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
     date: SearchDateFilter;

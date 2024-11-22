@@ -46,6 +46,7 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.locale;
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -129,6 +130,7 @@ class SettingsSubPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.locale;
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,

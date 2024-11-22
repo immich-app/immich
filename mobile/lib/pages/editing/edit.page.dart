@@ -70,7 +70,7 @@ class EditImagePage extends ConsumerWidget {
             title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
           );
       await ref.read(albumProvider.notifier).refreshDeviceAlbums();
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      context.navigator.popUntil((route) => route.isFirst);
       ImmichToast.show(
         durationInSecond: 3,
         context: context,
@@ -99,8 +99,7 @@ class EditImagePage extends ConsumerWidget {
             color: context.primaryColor,
             size: 24,
           ),
-          onPressed: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+          onPressed: () => context.navigator.popUntil((route) => route.isFirst),
         ),
         actions: <Widget>[
           TextButton(
@@ -120,8 +119,8 @@ class EditImagePage extends ConsumerWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.7,
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: context.height * 0.7,
+            maxWidth: context.width * 0.9,
           ),
           child: Container(
             decoration: BoxDecoration(
@@ -161,7 +160,7 @@ class EditImagePage extends ConsumerWidget {
                 IconButton(
                   icon: Icon(
                     Icons.crop_rotate_rounded,
-                    color: Theme.of(context).iconTheme.color,
+                    color: context.themeData.iconTheme.color,
                     size: 25,
                   ),
                   onPressed: () {
@@ -179,7 +178,7 @@ class EditImagePage extends ConsumerWidget {
                 IconButton(
                   icon: Icon(
                     Icons.filter,
-                    color: Theme.of(context).iconTheme.color,
+                    color: context.themeData.iconTheme.color,
                     size: 25,
                   ),
                   onPressed: () {

@@ -122,13 +122,6 @@ describe(LibraryService.name, () => {
 
       expect(cronMock.create).not.toHaveBeenCalled();
     });
-
-    it('should not initialize watcher or library scan job when running on api', async () => {
-      configMock.getWorker.mockReturnValue(ImmichWorker.API);
-      await sut.onConfigInit({ newConfig: systemConfigStub.libraryScan as SystemConfig });
-
-      expect(cronMock.create).not.toHaveBeenCalled();
-    });
   });
 
   describe('onConfigUpdateEvent', () => {

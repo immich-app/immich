@@ -90,7 +90,6 @@
       for (const person of people) {
         person.isHidden = personIsHidden[person.id];
       }
-      people = people;
 
       onClose();
     } catch (error) {

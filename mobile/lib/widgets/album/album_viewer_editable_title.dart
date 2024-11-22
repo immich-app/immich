@@ -49,7 +49,7 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
         style: context.textTheme.headlineMedium,
         controller: titleTextEditController,
         onTap: () {
-          FocusScope.of(context).requestFocus(titleFocusNode);
+          context.focusScope.requestFocus(titleFocusNode);
 
           ref.watch(albumViewerProvider.notifier).setEditTitleText(album.name);
           ref.watch(albumViewerProvider.notifier).enableEditAlbum();

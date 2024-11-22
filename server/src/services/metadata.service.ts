@@ -68,11 +68,8 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 
 @Injectable()
 export class MetadataService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
+  @OnEvent({ name: 'app.bootstrap', workers: [ImmichWorker.MICROSERVICES] })
   async onBootstrap() {
-    if (this.worker !== ImmichWorker.MICROSERVICES) {
-      return;
-    }
     this.logger.log('Bootstrapping metadata service');
     await this.init();
   }

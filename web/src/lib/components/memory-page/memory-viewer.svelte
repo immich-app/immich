@@ -17,6 +17,8 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type Viewport } from '$lib/stores/assets.store';
@@ -44,7 +46,6 @@
   import { tweened } from 'svelte/motion';
   import { derived as storeDerived } from 'svelte/store';
   import { fade } from 'svelte/transition';
-  import { SvelteSet } from 'svelte/reactivity';
 
   type MemoryIndex = {
     memoryIndex: number;
@@ -64,13 +65,14 @@
   let memoryWrapper: HTMLElement | undefined = $state();
   let galleryInView = $state(false);
   let paused = $state(false);
-  let selectedAssets: SvelteSet<AssetResponseDto> = $state(new SvelteSet());
   let current: MemoryAsset | undefined = $state(undefined);
   // let memories: MemoryAsset[] = [];
   let resetPromise = $state(Promise.resolve());
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
+  const assetInteractionStore = createAssetInteractionStore();
+  const { selectedAssets } = assetInteractionStore;
   const progressBarController = tweened<number>(0, {
     duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
   });
@@ -126,7 +128,7 @@
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
   const handleEscape = async () => goto(AppRoute.PHOTOS);
-  const handleSelectAll = () => (selectedAssets = new SvelteSet(current?.memory.assets || []));
+  const handleSelectAll = () => assetInteractionStore.selectAssets(current?.memory.assets || []);
   const handleAction = async (action: 'reset' | 'pause' | 'play') => {
     switch (action) {
       case 'play': {
@@ -207,13 +209,10 @@
 
     current = loadFromParams($memories, target);
   });
-  $effect(() => {
-    selectedAssets = galleryInView ? selectedAssets : new SvelteSet();
-  });
 
-  let isMultiSelectionMode = $derived(selectedAssets.size > 0);
-  let isAllArchived = $derived([...selectedAssets].every((asset) => asset.isArchived));
-  let isAllFavorite = $derived([...selectedAssets].every((asset) => asset.isFavorite));
+  let isMultiSelectionMode = $derived($selectedAssets.size > 0);
+  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
 
   $effect(() => {
     handlePromiseError(handleProgress($progressBarController));
@@ -238,7 +237,7 @@
 
 {#if isMultiSelectionMode}
   <div class="sticky top-0 z-[90]">
-    <AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new SvelteSet())}>
+    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => cancelMultiselect(assetInteractionStore)}>
       <CreateSharedLink />
       <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
 
@@ -485,7 +484,7 @@
           onPrevious={handlePreviousAsset}
           assets={current.memory.assets}
           {viewport}
-          bind:selectedAssets
+          {assetInteractionStore}
         />
       </div>
     </section>

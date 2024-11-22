@@ -197,7 +197,7 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [MetadataSearchDto] metadataSearchDto (required):
-  Future<Response> searchMetadataWithHttpInfo(MetadataSearchDto metadataSearchDto,) async {
+  Future<Response> searchAssetsWithHttpInfo(MetadataSearchDto metadataSearchDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/search/metadata';
 
@@ -225,8 +225,8 @@ class SearchApi {
   /// Parameters:
   ///
   /// * [MetadataSearchDto] metadataSearchDto (required):
-  Future<SearchResponseDto?> searchMetadata(MetadataSearchDto metadataSearchDto,) async {
-    final response = await searchMetadataWithHttpInfo(metadataSearchDto,);
+  Future<SearchResponseDto?> searchAssets(MetadataSearchDto metadataSearchDto,) async {
+    final response = await searchAssetsWithHttpInfo(metadataSearchDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

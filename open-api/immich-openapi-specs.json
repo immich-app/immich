@@ -4417,7 +4417,7 @@
     },
     "/search/metadata": {
       "post": {
-        "operationId": "searchMetadata",
+        "operationId": "searchAssets",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -7393,7 +7393,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.120.2",
+    "version": "1.121.0",
     "contact": {}
   },
   "tags": [],
@@ -10974,7 +10974,9 @@
               {
                 "photos": 1,
                 "videos": 1,
-                "diskUsageRaw": 1
+                "diskUsageRaw": 2,
+                "usagePhotos": 1,
+                "usageVideos": 1
               }
             ],
             "items": {
@@ -10982,6 +10984,16 @@
             },
             "title": "Array of usage for each user",
             "type": "array"
+          },
+          "usagePhotos": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "usageVideos": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
           },
           "videos": {
             "default": 0,
@@ -10992,6 +11004,8 @@
           "photos",
           "usage",
           "usageByUser",
+          "usagePhotos",
+          "usageVideos",
           "videos"
         ],
         "type": "object"
@@ -12511,6 +12525,14 @@
             "format": "int64",
             "type": "integer"
           },
+          "usagePhotos": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "usageVideos": {
+            "format": "int64",
+            "type": "integer"
+          },
           "userId": {
             "type": "string"
           },
@@ -12525,6 +12547,8 @@
           "photos",
           "quotaSizeInBytes",
           "usage",
+          "usagePhotos",
+          "usageVideos",
           "userId",
           "userName",
           "videos"
