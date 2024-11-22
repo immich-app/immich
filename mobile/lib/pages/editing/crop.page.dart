@@ -92,7 +92,7 @@ class CropImagePage extends HookWidget {
                                 IconButton(
                                   icon: Icon(
                                     Icons.rotate_left,
-                                    color: Theme.of(context).iconTheme.color,
+                                    color: context.themeData.iconTheme.color,
                                   ),
                                   onPressed: () {
                                     cropController.rotateLeft();
@@ -101,7 +101,7 @@ class CropImagePage extends HookWidget {
                                 IconButton(
                                   icon: Icon(
                                     Icons.rotate_right,
-                                    color: Theme.of(context).iconTheme.color,
+                                    color: context.themeData.iconTheme.color,
                                   ),
                                   onPressed: () {
                                     cropController.rotateRight();
@@ -203,7 +203,7 @@ class _AspectRatioButton extends StatelessWidget {
             iconData,
             color: aspectRatio.value == ratio
                 ? context.primaryColor
-                : Theme.of(context).iconTheme.color,
+                : context.themeData.iconTheme.color,
           ),
           onPressed: () {
             cropController.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);

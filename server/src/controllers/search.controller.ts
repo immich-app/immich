@@ -25,7 +25,7 @@ export class SearchController {
   @Post('metadata')
   @HttpCode(HttpStatus.OK)
   @Authenticated()
-  searchMetadata(@Auth() auth: AuthDto, @Body() dto: MetadataSearchDto): Promise<SearchResponseDto> {
+  searchAssets(@Auth() auth: AuthDto, @Body() dto: MetadataSearchDto): Promise<SearchResponseDto> {
     return this.service.searchMetadata(auth, dto);
   }
 

@@ -14,6 +14,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
+  deleteAssets,
   deleteStacks,
   getAssetInfo,
   getBaseUrl,
@@ -27,6 +28,7 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -435,6 +437,26 @@ export const deleteStack = async (stackIds: string[]) => {
     return assets;
   } catch (error) {
     handleError(error, $t('errors.failed_to_unstack_assets'));
+  }
+};
+
+export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
+  const $t = get(t);
+
+  try {
+    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
+    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
+    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
+    });
+
+    keepAsset.stack = null;
+    return keepAsset;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
   }
 };
 

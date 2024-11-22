@@ -74,9 +74,6 @@
           person.updatedAt = new Date().toISOString();
         }
       }
-
-      // trigger reactivity
-      people = people;
     });
   });
 
@@ -146,9 +143,6 @@
           message: $t('change_name_successfully'),
           type: NotificationType.Info,
         });
-
-        // trigger reactivity
-        people = people;
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }

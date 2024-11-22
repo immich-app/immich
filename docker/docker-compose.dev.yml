@@ -47,6 +47,7 @@ services:
     ports:
       - 9230:9230
       - 9231:9231
+      - 2283:2283
     depends_on:
       - redis
       - database
@@ -56,13 +57,15 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
+    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
+    # user: 0:0
     build:
       context: ../web
     command: ['/usr/src/app/bin/immich-web']
     env_file:
       - .env
     ports:
-      - 2283:3000
+      - 3000:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app

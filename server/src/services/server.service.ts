@@ -126,11 +126,16 @@ export class ServerService extends BaseService {
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;
+      usage.usagePhotos = user.usagePhotos;
+      usage.usageVideos = user.usageVideos;
       usage.quotaSizeInBytes = user.quotaSizeInBytes;
 
       serverStats.photos += usage.photos;
       serverStats.videos += usage.videos;
       serverStats.usage += usage.usage;
+      serverStats.usagePhotos += usage.usagePhotos;
+      serverStats.usageVideos += usage.usageVideos;
+
       serverStats.usageByUser.push(usage);
     }
 

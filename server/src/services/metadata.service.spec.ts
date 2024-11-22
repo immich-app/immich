@@ -94,15 +94,6 @@ describe(MetadataService.name, () => {
       expect(mapMock.init).toHaveBeenCalledTimes(1);
       expect(jobMock.resume).toHaveBeenCalledTimes(1);
     });
-
-    it('should return if running on api', async () => {
-      configMock.getWorker.mockReturnValue(ImmichWorker.API);
-      await sut.onBootstrap();
-
-      expect(jobMock.pause).not.toHaveBeenCalled();
-      expect(mapMock.init).not.toHaveBeenCalled();
-      expect(jobMock.resume).not.toHaveBeenCalled();
-    });
   });
 
   describe('handleLivePhotoLinking', () => {
