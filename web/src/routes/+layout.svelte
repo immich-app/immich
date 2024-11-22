@@ -25,6 +25,9 @@
   import { t } from 'svelte-i18n';
   import Error from '$lib/components/error.svelte';
   import { shortcut } from '$lib/actions/shortcut';
+  import { get } from 'svelte/store';
+  import { themeConfig } from '$lib/stores/theme-config.store';
+  import { hexToRgb } from '$lib/utils/colors';
   interface Props {
     children?: Snippet;
   }
@@ -32,6 +35,8 @@
   let { children }: Props = $props();
 
   let showNavigationLoadingBar = $state(false);
+
+  let { themes } = get(themeConfig);
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
@@ -55,11 +60,20 @@
     return new URL($page.url.pathname + $page.url.search, 'https://my.immich.app');
   };
 
+  const loadCustomThemeStyles = () => {
+    const root = document.querySelector(':root') as HTMLElement;
+    if (root) {
+      root.style.setProperty('--immich-primary', hexToRgb(themes.light.primary));
+    }
+  };
+
   onMount(() => {
     const element = document.querySelector('#stencil');
     element?.remove();
     // if the browser theme changes, changes the Immich theme too
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
+
+    loadCustomThemeStyles();
   });
 
   onDestroy(() => {

@@ -10,6 +10,7 @@
   import { onMount } from 'svelte';
   import type { SettingsResetOptions } from './admin-settings';
   import { t } from 'svelte-i18n';
+  import { retrieveThemeConfig } from '$lib/stores/theme-config.store';
 
   interface Props {
     config: SystemConfigDto;
@@ -44,6 +45,7 @@
       notificationController.show({ message: $t('settings_saved'), type: NotificationType.Info });
 
       await retrieveServerConfig();
+      await retrieveThemeConfig();
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_settings'));
     }

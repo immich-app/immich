@@ -479,6 +479,30 @@ export class SystemConfigTemplateStorageOptionDto {
 export class SystemConfigThemeDto {
   @IsString()
   customCss!: string;
+
+  themes!: SystemConfigThemeThemesDto;
+}
+
+export class SystemConfigThemeThemesDto {
+  light!: SystemConfigThemeCustomDto;
+  dark!: SystemConfigThemeCustomDto;
+}
+
+export class SystemConfigThemeCustomDto {
+  @IsString()
+  primary!: string;
+  @IsString()
+  bg!: string;
+  @IsString()
+  fg!: string;
+  @IsString()
+  gray!: string;
+  @IsString()
+  error!: string;
+  @IsString()
+  success!: string;
+  @IsString()
+  warning!: string;
 }
 
 class SystemConfigGeneratedImageDto {

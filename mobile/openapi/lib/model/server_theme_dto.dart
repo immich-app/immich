@@ -14,25 +14,31 @@ class ServerThemeDto {
   /// Returns a new [ServerThemeDto] instance.
   ServerThemeDto({
     required this.customCss,
+    required this.themes,
   });
 
   String customCss;
 
+  SystemConfigThemeThemesDto themes;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerThemeDto &&
-    other.customCss == customCss;
+    other.customCss == customCss &&
+    other.themes == themes;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (customCss.hashCode);
+    (customCss.hashCode) +
+    (themes.hashCode);
 
   @override
-  String toString() => 'ServerThemeDto[customCss=$customCss]';
+  String toString() => 'ServerThemeDto[customCss=$customCss, themes=$themes]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'customCss'] = this.customCss;
+      json[r'themes'] = this.themes;
     return json;
   }
 
@@ -46,6 +52,7 @@ class ServerThemeDto {
 
       return ServerThemeDto(
         customCss: mapValueOfType<String>(json, r'customCss')!,
+        themes: SystemConfigThemeThemesDto.fromJson(json[r'themes'])!,
       );
     }
     return null;
@@ -94,6 +101,7 @@ class ServerThemeDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'customCss',
+    'themes',
   };
 }
 

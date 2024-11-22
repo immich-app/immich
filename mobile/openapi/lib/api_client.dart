@@ -556,8 +556,12 @@ class ApiClient {
           return SystemConfigStorageTemplateDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
+        case 'SystemConfigThemeCustomDto':
+          return SystemConfigThemeCustomDto.fromJson(value);
         case 'SystemConfigThemeDto':
           return SystemConfigThemeDto.fromJson(value);
+        case 'SystemConfigThemeThemesDto':
+          return SystemConfigThemeThemesDto.fromJson(value);
         case 'SystemConfigTrashDto':
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':

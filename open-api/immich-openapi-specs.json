@@ -11045,10 +11045,14 @@
         "properties": {
           "customCss": {
             "type": "string"
+          },
+          "themes": {
+            "$ref": "#/components/schemas/SystemConfigThemeThemesDto"
           }
         },
         "required": [
-          "customCss"
+          "customCss",
+          "themes"
         ],
         "type": "object"
       },
@@ -12156,14 +12160,68 @@
         ],
         "type": "object"
       },
-      "SystemConfigThemeDto": {
+      "SystemConfigThemeCustomDto": {
         "properties": {
-          "customCss": {
+          "bg": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "fg": {
+            "type": "string"
+          },
+          "gray": {
+            "type": "string"
+          },
+          "primary": {
+            "type": "string"
+          },
+          "success": {
+            "type": "string"
+          },
+          "warning": {
             "type": "string"
           }
         },
         "required": [
-          "customCss"
+          "bg",
+          "error",
+          "fg",
+          "gray",
+          "primary",
+          "success",
+          "warning"
+        ],
+        "type": "object"
+      },
+      "SystemConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "type": "string"
+          },
+          "themes": {
+            "$ref": "#/components/schemas/SystemConfigThemeThemesDto"
+          }
+        },
+        "required": [
+          "customCss",
+          "themes"
+        ],
+        "type": "object"
+      },
+      "SystemConfigThemeThemesDto": {
+        "properties": {
+          "dark": {
+            "$ref": "#/components/schemas/SystemConfigThemeCustomDto"
+          },
+          "light": {
+            "$ref": "#/components/schemas/SystemConfigThemeCustomDto"
+          }
+        },
+        "required": [
+          "dark",
+          "light"
         ],
         "type": "object"
       },

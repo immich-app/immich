@@ -1,4 +1,5 @@
 import { CronExpression } from '@nestjs/schedule';
+import { SystemConfigThemeThemesDto } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
@@ -122,6 +123,7 @@ export interface SystemConfig {
   };
   theme: {
     customCss: string;
+    themes: SystemConfigThemeThemesDto;
   };
   library: {
     scan: {
@@ -283,6 +285,18 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   theme: {
     customCss: '',
+    themes: {
+      light: {
+        primary: '#4250af',
+        bg: '',
+        fg: '',
+        gray: '',
+        warning: '',
+        error: '',
+        success: '',
+      },
+      dark: { primary: '', bg: '', fg: '', gray: '', warning: '', error: '', success: '' },
+    },
   },
   library: {
     scan: {

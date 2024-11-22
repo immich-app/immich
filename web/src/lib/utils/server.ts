@@ -1,4 +1,5 @@
 import { retrieveServerConfig } from '$lib/stores/server-config.store';
+import { retrieveThemeConfig } from '$lib/stores/theme-config.store';
 import { initLanguage } from '$lib/utils';
 import { defaults } from '@immich/sdk';
 import { memoize } from 'lodash-es';
@@ -12,6 +13,7 @@ async function _init(fetch: Fetch) {
   defaults.fetch = fetch;
   await initLanguage();
   await retrieveServerConfig();
+  await retrieveThemeConfig();
 }
 
 export const init = memoize(_init, () => 'singlevalue');
