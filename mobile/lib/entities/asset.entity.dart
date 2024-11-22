@@ -93,6 +93,7 @@ class Asset {
   @ignore
   bool _didUpdateLocal = false;
 
+  @ignore
   Future<AssetEntity> get localAsync async {
     final local = this.local;
     if (local == null) {

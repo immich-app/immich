@@ -1085,7 +1085,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
   NativeVideoViewerRoute({
     Key? key,
     required Asset asset,
-    required Widget placeholder,
+    required Widget image,
     bool showControls = true,
     List<PageRouteInfo>? children,
   }) : super(
@@ -1093,7 +1093,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
           args: NativeVideoViewerRouteArgs(
             key: key,
             asset: asset,
-            placeholder: placeholder,
+            image: image,
             showControls: showControls,
           ),
           initialChildren: children,
@@ -1108,7 +1108,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
       return NativeVideoViewerPage(
         key: args.key,
         asset: args.asset,
-        image: args.placeholder,
+        image: args.image,
         showControls: args.showControls,
       );
     },
@@ -1119,7 +1119,7 @@ class NativeVideoViewerRouteArgs {
   const NativeVideoViewerRouteArgs({
     this.key,
     required this.asset,
-    required this.placeholder,
+    required this.image,
     this.showControls = true,
   });
 
@@ -1127,13 +1127,13 @@ class NativeVideoViewerRouteArgs {
 
   final Asset asset;
 
-  final Widget placeholder;
+  final Widget image;
 
   final bool showControls;
 
   @override
   String toString() {
-    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, placeholder: $placeholder, showControls: $showControls}';
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls}';
   }
 }
 
