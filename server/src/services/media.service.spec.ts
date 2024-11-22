@@ -2227,9 +2227,7 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([
-            expect.stringContaining(
-              'scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',
-            ),
+            expect.stringContaining('scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4'),
           ]),
           twoPass: false,
         }),

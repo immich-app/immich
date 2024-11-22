@@ -59,8 +59,8 @@ export class BaseConfig implements VideoCodecSWConfig {
       }
       case TranscodeHWAccel.RKMPP: {
         handler = config.accelDecode
-            ? new RkmppHwDecodeConfig(config, devices, hasMaliOpenCL)
-            : new RkmppSwDecodeConfig(config, devices);
+          ? new RkmppHwDecodeConfig(config, devices, hasMaliOpenCL)
+          : new RkmppSwDecodeConfig(config, devices);
         break;
       }
       default: {
@@ -989,7 +989,8 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
     if (this.shouldToneMap(videoStream)) {
       const { primaries, transfer, matrix } = this.getColors();
       if (this.hasMaliOpenCL) {
-        return [ // use RKMPP for scaling, OpenCL for tone mapping
+        return [
+          // use RKMPP for scaling, OpenCL for tone mapping
           `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1:async_depth=4`,
           'hwmap=derive_device=opencl:mode=read',
           `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
@@ -997,7 +998,8 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
           'format=drm_prime',
         ];
       }
-      return [ // use RKMPP for scaling, CPU for tone mapping (only works on RK3588 which support 10bit output)
+      return [
+        // use RKMPP for scaling, CPU for tone mapping (only works on RK3588, which supports 10-bit output)
         `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1:async_depth=4`,
         'hwdownload',
         'format=p010',
