@@ -11,7 +11,7 @@
 
   onMount(async () => {
     try {
-      albums = await getAllAlbums({ top: 3 });
+      albums = await getAllAlbums({});
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
     }

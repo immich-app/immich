@@ -587,14 +587,6 @@
             "schema": {
               "type": "boolean"
             }
-          },
-          {
-            "name": "top",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "number"
-            }
           }
         ],
         "responses": {

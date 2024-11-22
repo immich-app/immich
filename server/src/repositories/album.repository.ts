@@ -57,7 +57,7 @@ export class AlbumRepository implements IAlbumRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
-  async getByAssetId(ownerId: string, assetId: string, take?: number): Promise<AlbumEntity[]> {
+  async getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
     const queryOptions: FindManyOptions<AlbumEntity> = {
       where: [
         { ownerId, assets: { id: assetId } },
@@ -66,10 +66,6 @@ export class AlbumRepository implements IAlbumRepository {
       relations: { owner: true, albumUsers: { user: true } },
       order: { createdAt: 'DESC' },
     };
-
-    if (typeof take === 'number') {
-      queryOptions.take = take;
-    }
 
     const albums = await this.repository.find(queryOptions);
 
@@ -126,7 +122,7 @@ export class AlbumRepository implements IAlbumRepository {
    * Get albums shared with and shared by owner.
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getShared(ownerId: string, take?: number): Promise<AlbumEntity[]> {
+  async getShared(ownerId: string): Promise<AlbumEntity[]> {
     const queryOptions: FindManyOptions<AlbumEntity> = {
       relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
       where: [
@@ -137,9 +133,6 @@ export class AlbumRepository implements IAlbumRepository {
       order: { createdAt: 'DESC' },
     };
 
-    if (typeof take === 'number') {
-      queryOptions.take = take;
-    }
     const albums = await this.repository.find(queryOptions);
 
     return albums.map((album) => withoutDeletedUsers(album));
@@ -149,16 +142,12 @@ export class AlbumRepository implements IAlbumRepository {
    * Get albums of owner that are _not_ shared
    */
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getNotShared(ownerId: string, take?: number): Promise<AlbumEntity[]> {
+  async getNotShared(ownerId: string): Promise<AlbumEntity[]> {
     const queryOptions: FindManyOptions<AlbumEntity> = {
       relations: { albumUsers: true, sharedLinks: true, owner: true },
       where: { ownerId, albumUsers: { user: IsNull() }, sharedLinks: { id: IsNull() } },
       order: { createdAt: 'DESC' },
     };
-
-    if (typeof take === 'number') {
-      queryOptions.take = take;
-    }
 
     const albums = await this.repository.find(queryOptions);
 
