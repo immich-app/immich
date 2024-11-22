@@ -25,7 +25,7 @@ Immich requires the command `docker compose` - the similarly named `docker-compo
 - **Storage**: Recommended Unix-compatible filesystem (EXT4, ZFS, APFS, etc.) with support for user/group ownership and permissions.
   - The generation of thumbnails and transcoded video can increase the size of the photo library by 10-20% on average.
 
-::tip
+:::tip
 Good performance and a stable connection to the Postgres database is critical to a smooth Immich experience.
 The Postgres database files are typically between 1-3 GB in size.
 For this reason, the Postgres database (`DB_DATA_LOCATION`) should use local SSD storage, never a network share of any kind.
