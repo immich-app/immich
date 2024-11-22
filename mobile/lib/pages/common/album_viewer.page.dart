@@ -243,7 +243,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           AnimatedPositioned(
             duration: const Duration(milliseconds: 300),
             top: ref.watch(multiselectProvider)
-                ? -(kToolbarHeight + MediaQuery.of(context).padding.top)
+                ? -(kToolbarHeight + context.padding.top)
                 : 0,
             left: 0,
             right: 0,

@@ -196,7 +196,7 @@ class SearchPage extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: Container(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+                bottom: context.viewInsets.bottom,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -661,29 +661,31 @@ class SearchEmptyContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      children: [
-        SizedBox(height: 40),
-        Center(
-          child: Image.asset(
-            context.isDarkTheme
-                ? 'assets/polaroid-dark.png'
-                : 'assets/polaroid-light.png',
-            height: 125,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (_) => true,
+      child: ListView(
+        shrinkWrap: false,
+        children: [
+          SizedBox(height: 40),
+          Center(
+            child: Image.asset(
+              context.isDarkTheme
+                  ? 'assets/polaroid-dark.png'
+                  : 'assets/polaroid-light.png',
+              height: 125,
+            ),
           ),
-        ),
-        SizedBox(height: 16),
-        Center(
-          child: Text(
-            "Search for your photos and videos",
-            style: context.textTheme.labelLarge,
+          SizedBox(height: 16),
+          Center(
+            child: Text(
+              "Search for your photos and videos",
+              style: context.textTheme.labelLarge,
+            ),
           ),
-        ),
-        SizedBox(height: 32),
-        QuickLinkList(),
-      ],
+          SizedBox(height: 32),
+          QuickLinkList(),
+        ],
+      ),
     );
   }
 }

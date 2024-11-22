@@ -305,7 +305,7 @@ class MapPage extends HookConsumerWidget {
                         ),
                         Positioned(
                           right: 0,
-                          bottom: MediaQuery.paddingOf(context).bottom + 16,
+                          bottom: context.padding.bottom + 16,
                           child: ElevatedButton(
                             onPressed: onZoomToLocation,
                             style: ElevatedButton.styleFrom(

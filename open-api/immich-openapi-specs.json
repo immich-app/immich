@@ -4460,7 +4460,7 @@
     },
     "/search/metadata": {
       "post": {
-        "operationId": "searchMetadata",
+        "operationId": "searchAssets",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -7436,7 +7436,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.120.2",
+    "version": "1.121.0",
     "contact": {}
   },
   "tags": [],

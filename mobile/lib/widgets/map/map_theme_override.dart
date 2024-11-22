@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/utils/immich_app_theme.dart';
 
@@ -71,6 +72,7 @@ class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
     _theme = widget.themeMode ??
         ref.watch(mapStateNotifierProvider.select((v) => v.themeMode));
     var appTheme = ref.watch(immichThemeProvider);
+    final locale = ref.watch(localeProvider);
 
     useValueChanged<ThemeMode, void>(_theme, (_, __) {
       if (_theme == ThemeMode.system) {
@@ -85,8 +87,8 @@ class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
 
     return Theme(
       data: _isDarkTheme
-          ? getThemeData(colorScheme: appTheme.dark)
-          : getThemeData(colorScheme: appTheme.light),
+          ? getThemeData(colorScheme: appTheme.dark, locale: locale)
+          : getThemeData(colorScheme: appTheme.light, locale: locale),
       child: widget.mapBuilder.call(
         ref.watch(
           mapStateNotifierProvider.select(
