@@ -1462,18 +1462,16 @@ export function restoreUserAdmin({ id }: {
         method: "POST"
     }));
 }
-export function getAllAlbums({ assetId, shared, top }: {
+export function getAllAlbums({ assetId, shared }: {
     assetId?: string;
     shared?: boolean;
-    top?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AlbumResponseDto[];
     }>(`/albums${QS.query(QS.explode({
         assetId,
-        shared,
-        top
+        shared
     }))}`, {
         ...opts
     }));
