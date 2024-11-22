@@ -1,9 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-  import { mdiArrowRight, mdiImageAlbum } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
 
