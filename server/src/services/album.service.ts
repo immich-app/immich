@@ -41,7 +41,6 @@ export class AlbumService extends BaseService {
     await this.albumRepository.updateThumbnails();
 
     let albums: AlbumEntity[];
-
     if (assetId) {
       albums = await this.albumRepository.getByAssetId(ownerId, assetId);
     } else if (shared === true) {
