@@ -27,7 +27,7 @@
     preloadData = true,
     moreInformation,
     hasDropdown,
-    dropdownOpen = false,
+    dropdownOpen = $bindable(false),
   }: Props = $props();
 
   let showMoreInformation = $state(false);

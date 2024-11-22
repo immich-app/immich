@@ -29,6 +29,7 @@
   import { t } from 'svelte-i18n';
   import BottomInfo from '$lib/components/shared-components/side-bar/bottom-info.svelte';
   import { preferences } from '$lib/stores/user.store';
+  import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
 
   let isArchiveSelected: boolean = $state(false);
@@ -103,7 +104,13 @@
       {/snippet}
     </SideBarLink>
 
-    <SideBarLink title={$t('albums')} routeId="/(user)/albums" icon={mdiImageAlbum} flippedLogo dropdownOpen>
+    <SideBarLink
+      title={$t('albums')}
+      routeId="/(user)/albums"
+      icon={mdiImageAlbum}
+      flippedLogo
+      bind:dropdownOpen={$recentAlbumsDropdown}
+    >
       {#snippet moreInformation()}
         <MoreInformationAlbums albumType="owned" />
       {/snippet}
