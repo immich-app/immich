@@ -1,7 +1,4 @@
 import { CronExpression } from '@nestjs/schedule';
-import { albumInviteTemplate } from 'src/emails/templates/album-invite';
-import { albumUpdateTemplate } from 'src/emails/templates/album-update';
-import { welcomeTemplate } from 'src/emails/templates/welcome';
 import {
   AudioCodec,
   Colorspace,
@@ -323,9 +320,9 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   templates: {
     email: {
-      welcomeTemplate,
-      albumInviteTemplate,
-      albumUpdateTemplate,
+      welcomeTemplate: '',
+      albumInviteTemplate: '',
+      albumUpdateTemplate: '',
     },
   },
   user: {

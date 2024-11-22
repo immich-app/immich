@@ -16,7 +16,7 @@
   import { mdiEyeOutline } from '@mdi/js';
   import { handleError } from '$lib/utils/handle-error';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import SettingTextareaWysiwyg from '$lib/components/shared-components/settings/setting-textarea-wysiwyg.svelte';
+  import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -94,7 +94,7 @@
             {/if}
 
             {#each templateConfigs as { label, templateKey, descriptionTags, templateName }}
-              <SettingTextareaWysiwyg
+              <SettingTextarea
                 {label}
                 description={$t('admin.template_email_available_tags', { values: { tags: descriptionTags } })}
                 bind:value={config.templates.email[templateKey]}
