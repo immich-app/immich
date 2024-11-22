@@ -473,10 +473,7 @@ describe('/search', () => {
         .get('/search/explore')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toEqual([
-        { fieldName: 'exifInfo.city', items: [] },
-        { fieldName: 'smartInfo.tags', items: [] },
-      ]);
+      expect(body).toEqual([{ fieldName: 'exifInfo.city', items: [] }]);
     });
   });
 

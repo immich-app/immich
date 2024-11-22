@@ -1,0 +1,20 @@
+{
+	"name": "Immich devcontainers",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			"BASEIMAGE": "mcr.microsoft.com/devcontainers/typescript-node:22"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"svelte.svelte-vscode"
+			]
+		}
+	},
+	"forwardPorts": [],
+	"postCreateCommand": "make install-all",
+	"remoteUser": "node"
+}
+

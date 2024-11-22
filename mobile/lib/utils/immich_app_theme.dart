@@ -2,15 +2,16 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 
 class ImmichTheme {
-  ColorScheme light;
-  ColorScheme dark;
+  final ColorScheme light;
+  final ColorScheme dark;
 
-  ImmichTheme({required this.light, required this.dark});
+  const ImmichTheme({required this.light, required this.dark});
 }
 
 ImmichTheme? _immichDynamicTheme;
@@ -145,13 +146,24 @@ ImmichTheme _decolorizeSurfaces({
   );
 }
 
-ThemeData getThemeData({required ColorScheme colorScheme}) {
+String? getFontFamilyFromLocale(Locale locale) {
+  if (localesNotSupportedByOverpass.contains(locale)) {
+    // Let Flutter use the default font
+    return null;
+  }
+  return 'Overpass';
+}
+
+ThemeData getThemeData({
+  required ColorScheme colorScheme,
+  required Locale locale,
+}) {
   var isDark = colorScheme.brightness == Brightness.dark;
   var primaryColor = colorScheme.primary;
 
   return ThemeData(
     useMaterial3: true,
-    brightness: isDark ? Brightness.dark : Brightness.light,
+    brightness: colorScheme.brightness,
     colorScheme: colorScheme,
     primaryColor: primaryColor,
     hintColor: colorScheme.onSurfaceSecondary,
@@ -163,10 +175,10 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: colorScheme.surfaceContainer,
     ),
-    fontFamily: 'Overpass',
+    fontFamily: getFontFamilyFromLocale(locale),
     snackBarTheme: SnackBarThemeData(
       contentTextStyle: TextStyle(
-        fontFamily: 'Overpass',
+        fontFamily: getFontFamilyFromLocale(locale),
         color: primaryColor,
         fontWeight: FontWeight.bold,
       ),
@@ -175,7 +187,7 @@ ThemeData getThemeData({required ColorScheme colorScheme}) {
     appBarTheme: AppBarTheme(
       titleTextStyle: TextStyle(
         color: primaryColor,
-        fontFamily: 'Overpass',
+        fontFamily: getFontFamilyFromLocale(locale),
         fontWeight: FontWeight.bold,
         fontSize: 18,
       ),

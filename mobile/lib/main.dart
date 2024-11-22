@@ -10,7 +10,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/utils/download.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -56,6 +58,7 @@ void main() async {
 
 Future<void> initApp() async {
   await EasyLocalization.ensureInitialized();
+  await initializeDateFormatting();
 
   if (kReleaseMode && Platform.isAndroid) {
     try {
@@ -190,6 +193,12 @@ class ImmichAppState extends ConsumerState<ImmichApp>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Intl.defaultLocale = context.locale.toLanguageTag();
+  }
+
+  @override
   initState() {
     super.initState();
     initApp().then((_) => debugPrint("App Init Completed"));
@@ -210,20 +219,31 @@ class ImmichAppState extends ConsumerState<ImmichApp>
     final router = ref.watch(appRouterProvider);
     final immichTheme = ref.watch(immichThemeProvider);
 
-    return MaterialApp(
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      debugShowCheckedModeBanner: true,
-      home: MaterialApp.router(
-        title: 'Immich',
-        debugShowCheckedModeBanner: false,
-        themeMode: ref.watch(immichThemeModeProvider),
-        darkTheme: getThemeData(colorScheme: immichTheme.dark),
-        theme: getThemeData(colorScheme: immichTheme.light),
-        routeInformationParser: router.defaultRouteParser(),
-        routerDelegate: router.delegate(
-          navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+    return ProviderScope(
+      overrides: [
+        localeProvider.overrideWithValue(context.locale),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        debugShowCheckedModeBanner: true,
+        home: MaterialApp.router(
+          title: 'Immich',
+          debugShowCheckedModeBanner: false,
+          themeMode: ref.watch(immichThemeModeProvider),
+          darkTheme: getThemeData(
+            colorScheme: immichTheme.dark,
+            locale: context.locale,
+          ),
+          theme: getThemeData(
+            colorScheme: immichTheme.light,
+            locale: context.locale,
+          ),
+          routeInformationParser: router.defaultRouteParser(),
+          routerDelegate: router.delegate(
+            navigatorObservers: () => [TabNavigationObserver(ref: ref)],
+          ),
         ),
       ),
     );

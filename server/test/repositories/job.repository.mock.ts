@@ -6,8 +6,6 @@ export const newJobRepositoryMock = (): Mocked<IJobRepository> => {
     setup: vitest.fn(),
     startWorkers: vitest.fn(),
     run: vitest.fn(),
-    addCronJob: vitest.fn(),
-    updateCronJob: vitest.fn(),
     setConcurrency: vitest.fn(),
     empty: vitest.fn(),
     pause: vitest.fn(),

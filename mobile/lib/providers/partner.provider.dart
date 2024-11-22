@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/services/partner.service.dart';
@@ -9,9 +10,19 @@ import 'package:isar/isar.dart';
 
 class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
   PartnerSharedWithNotifier(Isar db, this._ps) : super([]) {
-    final query = db.users.filter().isPartnerSharedWithEqualTo(true);
-    query.findAll().then((partners) => state = partners);
-    query.watch().listen((partners) => state = partners);
+    Function eq = const ListEquality<User>().equals;
+    final query = db.users.filter().isPartnerSharedWithEqualTo(true).sortById();
+    query.findAll().then((partners) {
+      if (!eq(state, partners)) {
+        state = partners;
+      }
+    }).then((_) {
+      query.watch().listen((partners) {
+        if (!eq(state, partners)) {
+          state = partners;
+        }
+      });
+    });
   }
 
   Future<bool> updatePartner(User partner, {required bool inTimeline}) {
@@ -31,9 +42,19 @@ final partnerSharedWithProvider =
 
 class PartnerSharedByNotifier extends StateNotifier<List<User>> {
   PartnerSharedByNotifier(Isar db) : super([]) {
-    final query = db.users.filter().isPartnerSharedByEqualTo(true);
-    query.findAll().then((partners) => state = partners);
-    streamSub = query.watch().listen((partners) => state = partners);
+    Function eq = const ListEquality<User>().equals;
+    final query = db.users.filter().isPartnerSharedByEqualTo(true).sortById();
+    query.findAll().then((partners) {
+      if (!eq(state, partners)) {
+        state = partners;
+      }
+    }).then((_) {
+      streamSub = query.watch().listen((partners) {
+        if (!eq(state, partners)) {
+          state = partners;
+        }
+      });
+    });
   }
 
   late final StreamSubscription<List<User>> streamSub;

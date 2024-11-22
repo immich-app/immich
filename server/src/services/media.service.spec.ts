@@ -487,6 +487,22 @@ describe(MediaService.name, () => {
         }),
       );
     });
+    it('should not skip intra frames for MTS file', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamMTS);
+      assetMock.getById.mockResolvedValue(assetStub.video);
+      await sut.handleGenerateThumbnails({ id: assetStub.video.id });
+
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+        expect.objectContaining({
+          inputOptions: ['-sws_flags accurate_rnd+full_chroma_int'],
+          outputOptions: expect.any(Array),
+          progress: expect.any(Object),
+          twoPass: false,
+        }),
+      );
+    });
 
     it('should use scaling divisible by 2 even when using quick sync', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStream2160p);

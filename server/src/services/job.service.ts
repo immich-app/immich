@@ -38,12 +38,8 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
 @Injectable()
 export class JobService extends BaseService {
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
-    if (this.worker !== ImmichWorker.MICROSERVICES) {
-      return;
-    }
-
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  onConfigInit({ newConfig: config }: ArgOf<'config.init'>) {
     this.logger.debug(`Updating queue concurrency settings`);
     for (const queueName of Object.values(QueueName)) {
       let concurrency = 1;
@@ -53,6 +49,11 @@ export class JobService extends BaseService {
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
     }
+  }
+
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
+    this.onConfigInit({ newConfig: config });
   }
 
   async create(dto: JobCreateDto): Promise<void> {
@@ -161,6 +162,10 @@ export class JobService extends BaseService {
 
       case QueueName.LIBRARY: {
         return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, data: { force } });
+      }
+
+      case QueueName.BACKUP_DATABASE: {
+        return this.jobRepository.queue({ name: JobName.BACKUP_DATABASE, data: { force } });
       }
 
       default: {

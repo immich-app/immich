@@ -49,7 +49,7 @@ export function Timeline({ items }: Props): JSX.Element {
               <div className="flex flex-col flex-grow justify-between gap-2">
                 <div className="flex gap-2 items-center">
                   {cardIcon === 'immich' ? (
-                    <img src="img/immich-logo.svg" height="30" className="rounded-none" />
+                    <img src="/img/immich-logo.svg" height="30" className="rounded-none" />
                   ) : (
                     <Icon path={cardIcon} size={1} color={item.iconColor} />
                   )}

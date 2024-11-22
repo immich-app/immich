@@ -38,34 +38,35 @@
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  $: people = data.people.people;
-  $: visiblePeople = people.filter((people) => !people.isHidden);
-  $: countVisiblePeople = searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden;
-  $: showPeople = searchName ? searchedPeopleLocal : visiblePeople;
+  let { data }: Props = $props();
 
-  let selectHidden = false;
-  let searchName = '';
-  let showChangeNameModal = false;
-  let showSetBirthDateModal = false;
-  let showMergeModal = false;
-  let personName = '';
-  let nextPage = data.people.hasNextPage ? 2 : null;
-  let personMerge1: PersonResponseDto;
-  let personMerge2: PersonResponseDto;
-  let potentialMergePeople: PersonResponseDto[] = [];
-  let edittingPerson: PersonResponseDto | null = null;
-  let searchedPeopleLocal: PersonResponseDto[] = [];
-  let handleSearchPeople: (force?: boolean, name?: string) => Promise<void>;
-  let changeNameInputEl: HTMLInputElement | null;
-  let innerHeight: number;
-
+  let selectHidden = $state(false);
+  let searchName = $state('');
+  let showChangeNameModal = $state(false);
+  let showSetBirthDateModal = $state(false);
+  let showMergeModal = $state(false);
+  let personName = $state('');
+  let nextPage = $state(data.people.hasNextPage ? 2 : null);
+  let personMerge1 = $state<PersonResponseDto>();
+  let personMerge2 = $state<PersonResponseDto>();
+  let potentialMergePeople: PersonResponseDto[] = $state([]);
+  let edittingPerson: PersonResponseDto | null = $state(null);
+  let searchedPeopleLocal: PersonResponseDto[] = $state([]);
+  // let handleSearchPeople: (force?: boolean, name?: string) => Promise<void> = $state();
+  let changeNameInputEl = $state<HTMLInputElement>();
+  let innerHeight = $state(0);
+  let searchPeopleElement = $state<ReturnType<typeof SearchPeople>>();
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
       searchName = getSearchedPeople;
-      handlePromiseError(handleSearchPeople(true, searchName));
+      if (searchPeopleElement) {
+        handlePromiseError(searchPeopleElement.searchPeople(true, searchName));
+      }
     }
     return websocketEvents.on('on_person_thumbnail', (personId: string) => {
       for (const person of people) {
@@ -73,9 +74,6 @@
           person.updatedAt = new Date().toISOString();
         }
       }
-
-      // trigger reactivity
-      people = people;
     });
   });
 
@@ -145,9 +143,6 @@
           message: $t('change_name_successfully'),
           type: NotificationType.Info,
         });
-
-        // trigger reactivity
-        people = people;
       } catch (error) {
         handleError(error, $t('errors.unable_to_save_name'));
       }
@@ -198,7 +193,9 @@
     );
   };
 
-  const submitNameChange = async () => {
+  const submitNameChange = async (event: Event) => {
+    event.preventDefault();
+
     potentialMergePeople = [];
     showChangeNameModal = false;
     if (!edittingPerson || personName === edittingPerson.name) {
@@ -225,9 +222,9 @@
       potentialMergePeople = people
         .filter(
           (person: PersonResponseDto) =>
-            personMerge2.name.toLowerCase() === person.name.toLowerCase() &&
+            personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
             person.id !== personMerge2.id &&
-            person.id !== personMerge1.id &&
+            person.id !== personMerge1?.id &&
             !person.isHidden,
         )
         .slice(0, 3);
@@ -293,11 +290,26 @@
   const onResetSearchBar = async () => {
     await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
   };
+
+  let people = $state(data.people.people);
+  $effect(() => {
+    people = data.people.people;
+  });
+  let visiblePeople = $derived(people.filter((people) => !people.isHidden));
+  let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
+  let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
+
+  // const submitNameChange = (event: Event) => {
+  //   event.preventDefault();
+  //   if (searchPeopleElement) {
+  //     handlePromiseError(searchPeopleElement.searchPeople(true, searchName));
+  //   }
+  // };
 </script>
 
 <svelte:window bind:innerHeight />
 
-{#if showMergeModal}
+{#if showMergeModal && personMerge1 && personMerge2}
   <MergeSuggestionModal
     {personMerge1}
     {personMerge2}
@@ -312,23 +324,23 @@
   title={$t('people')}
   description={countVisiblePeople === 0 && !searchName ? undefined : `(${countVisiblePeople.toLocaleString($locale)})`}
 >
-  <svelte:fragment slot="buttons">
+  {#snippet buttons()}
     {#if people.length > 0}
       <div class="flex gap-2 items-center justify-center">
         <div class="hidden sm:block">
           <div class="w-40 lg:w-80 h-10">
             <SearchPeople
+              bind:this={searchPeopleElement}
               type="searchBar"
               placeholder={$t('search_people')}
               onReset={onResetSearchBar}
               onSearch={handleSearch}
               bind:searchName
               bind:searchedPeopleLocal
-              bind:handleSearch={handleSearchPeople}
             />
           </div>
         </div>
-        <LinkButton on:click={() => (selectHidden = !selectHidden)}>
+        <LinkButton onclick={() => (selectHidden = !selectHidden)}>
           <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
             <Icon path={mdiEyeOutline} size="18" />
             <p class="ml-2">{$t('show_and_hide_people')}</p>
@@ -336,24 +348,20 @@
         </LinkButton>
       </div>
     {/if}
-  </svelte:fragment>
+  {/snippet}
 
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
-    <PeopleInfiniteScroll
-      people={showPeople}
-      hasNextPage={!!nextPage && !searchName}
-      {loadNextPage}
-      let:person
-      let:index
-    >
-      <PeopleCard
-        {person}
-        preload={index < 20}
-        onChangeName={() => handleChangeName(person)}
-        onSetBirthDate={() => handleSetBirthDate(person)}
-        onMergePeople={() => handleMergePeople(person)}
-        onHidePerson={() => handleHidePerson(person)}
-      />
+    <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
+      {#snippet children({ person, index })}
+        <PeopleCard
+          {person}
+          preload={index < 20}
+          onChangeName={() => handleChangeName(person)}
+          onSetBirthDate={() => handleSetBirthDate(person)}
+          onMergePeople={() => handleMergePeople(person)}
+          onHidePerson={() => handleHidePerson(person)}
+        />
+      {/snippet}
     </PeopleInfiniteScroll>
   {:else}
     <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
@@ -368,7 +376,7 @@
 
   {#if showChangeNameModal}
     <FullScreenModal title={$t('change_name')} onClose={() => (showChangeNameModal = false)}>
-      <form on:submit|preventDefault={submitNameChange} autocomplete="off" id="change-name-form">
+      <form onsubmit={submitNameChange} autocomplete="off" id="change-name-form">
         <div class="flex flex-col gap-2">
           <label class="immich-form-label" for="name">{$t('name')}</label>
           <input
@@ -381,16 +389,17 @@
           />
         </div>
       </form>
-      <svelte:fragment slot="sticky-bottom">
+
+      {#snippet stickyBottom()}
         <Button
           color="gray"
           fullwidth
-          on:click={() => {
+          onclick={() => {
             showChangeNameModal = false;
           }}>{$t('cancel')}</Button
         >
         <Button type="submit" fullwidth form="change-name-form">{$t('ok')}</Button>
-      </svelte:fragment>
+      {/snippet}
     </FullScreenModal>
   {/if}
 

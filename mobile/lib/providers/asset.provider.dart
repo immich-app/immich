@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
@@ -328,24 +329,31 @@ final assetWatcher =
   return db.assets.watchObject(asset.id, fireImmediately: true);
 });
 
-final assetsProvider = StreamProvider.family<RenderList, int?>((ref, userId) {
-  if (userId == null) return const Stream.empty();
-  final query = _commonFilterAndSort(
-    _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
-  );
-  return renderListGenerator(query, ref);
-});
+final assetsProvider = StreamProvider.family<RenderList, int?>(
+  (ref, userId) {
+    if (userId == null) return const Stream.empty();
+    ref.watch(localeProvider);
+    final query = _commonFilterAndSort(
+      _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
+    );
+    return renderListGenerator(query, ref);
+  },
+  dependencies: [localeProvider],
+);
 
-final multiUserAssetsProvider =
-    StreamProvider.family<RenderList, List<int>>((ref, userIds) {
-  if (userIds.isEmpty) return const Stream.empty();
-  final query = _commonFilterAndSort(
-    _assets(ref)
-        .where()
-        .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
-  );
-  return renderListGenerator(query, ref);
-});
+final multiUserAssetsProvider = StreamProvider.family<RenderList, List<int>>(
+  (ref, userIds) {
+    if (userIds.isEmpty) return const Stream.empty();
+    ref.watch(localeProvider);
+    final query = _commonFilterAndSort(
+      _assets(ref)
+          .where()
+          .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
+    );
+    return renderListGenerator(query, ref);
+  },
+  dependencies: [localeProvider],
+);
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
   final userId = ref.watch(currentUserProvider)?.isarId;

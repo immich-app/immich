@@ -22,7 +22,7 @@
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
   import { throttle } from 'lodash-es';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -38,80 +38,70 @@
   import { generateId } from '$lib/utils/generate-id';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
 
-  export let isSelectionMode = false;
-  export let singleSelect = false;
-
-  /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
+  interface Props {
+    isSelectionMode?: boolean;
+    singleSelect?: boolean;
+    /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
    `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
    additionally, update the page location/url with the asset as the asset-grid is scrolled */
-  export let enableRouting: boolean;
+    enableRouting: boolean;
+    assetStore: AssetStore;
+    assetInteractionStore: AssetInteractionStore;
+    removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
+    withStacked?: boolean;
+    showArchiveIcon?: boolean;
+    isShared?: boolean;
+    album?: AlbumResponseDto | null;
+    isShowDeleteConfirmation?: boolean;
+    onSelect?: (asset: AssetResponseDto) => void;
+    onEscape?: () => void;
+    children?: Snippet;
+    empty?: Snippet;
+  }
 
-  export let assetStore: AssetStore;
-  export let assetInteractionStore: AssetInteractionStore;
-  export let removeAction:
-    | AssetAction.UNARCHIVE
-    | AssetAction.ARCHIVE
-    | AssetAction.FAVORITE
-    | AssetAction.UNFAVORITE
-    | null = null;
-  export let withStacked = false;
-  export let showArchiveIcon = false;
-  export let isShared = false;
-  export let album: AlbumResponseDto | null = null;
-  export let isShowDeleteConfirmation = false;
-  export let onSelect: (asset: AssetResponseDto) => void = () => {};
-  export let onEscape: () => void = () => {};
+  let {
+    isSelectionMode = false,
+    singleSelect = false,
+    enableRouting,
+    assetStore = $bindable(),
+    assetInteractionStore,
+    removeAction = null,
+    withStacked = false,
+    showArchiveIcon = false,
+    isShared = false,
+    album = null,
+    isShowDeleteConfirmation = $bindable(false),
+    onSelect = () => {},
+    onEscape = () => {},
+    children,
+    empty,
+  }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
   const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
     assetInteractionStore;
 
-  const viewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
-  const safeViewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
+  const viewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
+  const safeViewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
 
   const componentId = generateId();
-  let element: HTMLElement;
-  let timelineElement: HTMLElement;
-  let showShortcuts = false;
-  let showSkeleton = true;
+  let element: HTMLElement | undefined = $state();
+  let timelineElement: HTMLElement | undefined = $state();
+  let showShortcuts = $state(false);
+  let showSkeleton = $state(true);
   let internalScroll = false;
   let navigating = false;
-  let preMeasure: AssetBucket[] = [];
+  let preMeasure: AssetBucket[] = $state([]);
   let lastIntersectedBucketDate: string | undefined;
-  let scrubBucketPercent = 0;
-  let scrubBucket: { bucketDate: string | undefined } | undefined;
-  let scrubOverallPercent: number = 0;
-  let topSectionHeight = 0;
-  let topSectionOffset = 0;
+  let scrubBucketPercent = $state(0);
+  let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
+  let scrubOverallPercent: number = $state(0);
+  let topSectionHeight = $state(0);
+  let topSectionOffset = $state(0);
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
-  let leadout = false;
+  let leadout = $state(false);
 
-  $: isTrashEnabled = $featureFlags.loaded && $featureFlags.trash;
-  $: isEmpty = $assetStore.initialized && $assetStore.buckets.length === 0;
-  $: idsSelectedAssets = [...$selectedAssets].map(({ id }) => id);
-  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
-  $: {
-    if (isEmpty) {
-      assetInteractionStore.clearMultiselect();
-    }
-  }
-  $: {
-    if (element && isViewportOrigin()) {
-      const rect = element.getBoundingClientRect();
-      viewport.height = rect.height;
-      viewport.width = rect.width;
-      viewport.x = rect.x;
-      viewport.y = rect.y;
-    }
-    if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
-      safeViewport.height = viewport.height;
-      safeViewport.width = viewport.width;
-      safeViewport.x = viewport.x;
-      safeViewport.y = viewport.y;
-      updateViewport();
-    }
-  }
   const {
     ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW },
     BUCKET: {
@@ -141,11 +131,11 @@
 
     if ($gridScrollTarget?.at) {
       void $assetStore.scheduleScrollToAssetId($gridScrollTarget, () => {
-        element.scrollTo({ top: 0 });
+        element?.scrollTo({ top: 0 });
         showSkeleton = false;
       });
     } else {
-      element.scrollTo({ top: 0 });
+      element?.scrollTo({ top: 0 });
       showSkeleton = false;
     }
   };
@@ -185,7 +175,7 @@
                 { replaceState: true, forceNavigate: true },
               );
             } else {
-              element.scrollTo({ top: 0 });
+              element?.scrollTo({ top: 0 });
               showSkeleton = false;
             }
           }, 500);
@@ -276,14 +266,24 @@
     ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - safeViewport.height) /
     ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight);
 
-  const getMaxScroll = () =>
-    topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+  const getMaxScroll = () => {
+    if (!element || !timelineElement) {
+      return 0;
+    }
+
+    return topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+  };
 
   const scrollToBucketAndOffset = (bucket: AssetBucket, bucketScrollPercent: number) => {
     const topOffset = getOffset(bucket.bucketDate) + topSectionHeight + topSectionOffset;
     const maxScrollPercent = getMaxScrollPercent();
     const delta = bucket.bucketHeight * bucketScrollPercent;
     const scrollTop = (topOffset + delta) * maxScrollPercent;
+
+    if (!element) {
+      return;
+    }
+
     element.scrollTop = scrollTop;
   };
 
@@ -297,6 +297,11 @@
 
       const maxScroll = getMaxScroll();
       const offset = maxScroll * scrollPercent;
+
+      if (!element) {
+        return;
+      }
+
       element.scrollTop = offset;
     } else {
       const bucket = assetStore.buckets.find((b) => b.bucketDate === bucketDate);
@@ -344,6 +349,11 @@
     }, 1000);
 
     leadout = false;
+
+    if (!element) {
+      return;
+    }
+
     if ($assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
@@ -409,7 +419,7 @@
     : () => void 0;
 
   const onScrollTarget: ScrollTargetListener = ({ bucket, offset }) => {
-    element.scrollTo({ top: offset });
+    element?.scrollTo({ top: offset });
     if (!bucket.measured) {
       preMeasure.push(bucket);
     }
@@ -466,36 +476,9 @@
 
   const focusElement = () => {
     if (document.activeElement === document.body) {
-      element.focus();
+      element?.focus();
     }
   };
-
-  $: shortcutList = (() => {
-    if ($isSearchEnabled || $showAssetViewer) {
-      return [];
-    }
-
-    const shortcuts: ShortcutOptions[] = [
-      { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-      { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
-      { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-      { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
-      { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
-      { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-    ];
-
-    if ($isMultiSelectState) {
-      shortcuts.push(
-        { shortcut: { key: 'Delete' }, onShortcut: onDelete },
-        { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
-        { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
-        { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-        { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
-      );
-    }
-
-    return shortcuts;
-  })();
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!$assetStore.albumAssets.has(asset.id)) {
@@ -585,13 +568,9 @@
     }
   };
 
-  let lastAssetMouseEvent: AssetResponseDto | null = null;
+  let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
 
-  $: if (!lastAssetMouseEvent) {
-    assetInteractionStore.clearAssetSelectionCandidates();
-  }
-
-  let shiftKeyIsDown = false;
+  let shiftKeyIsDown = $state(false);
 
   const deselectAllAssets = () => {
     cancelMultiselect(assetInteractionStore);
@@ -618,14 +597,6 @@
       shiftKeyIsDown = false;
     }
   };
-
-  $: if (!shiftKeyIsDown) {
-    assetInteractionStore.clearAssetSelectionCandidates();
-  }
-
-  $: if (shiftKeyIsDown && lastAssetMouseEvent) {
-    selectAssetCandidates(lastAssetMouseEvent);
-  }
 
   const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
     if (asset) {
@@ -655,7 +626,7 @@
 
     onSelect(asset);
 
-    if (singleSelect) {
+    if (singleSelect && element) {
       element.scrollTop = 0;
       return;
     }
@@ -723,18 +694,18 @@
     assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
   };
 
-  const selectAssetCandidates = (asset: AssetResponseDto) => {
+  const selectAssetCandidates = (endAsset: AssetResponseDto) => {
     if (!shiftKeyIsDown) {
       return;
     }
 
-    const rangeStart = $assetSelectionStart;
-    if (!rangeStart) {
+    const startAsset = $assetSelectionStart;
+    if (!startAsset) {
       return;
     }
 
-    let start = $assetStore.assets.indexOf(rangeStart);
-    let end = $assetStore.assets.indexOf(asset);
+    let start = $assetStore.assets.findIndex((a) => a.id === startAsset.id);
+    let end = $assetStore.assets.findIndex((a) => a.id === endAsset.id);
 
     if (start > end) {
       [start, end] = [end, start];
@@ -751,9 +722,83 @@
   onDestroy(() => {
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
+  let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
+  let isEmpty = $derived($assetStore.initialized && $assetStore.buckets.length === 0);
+  let idsSelectedAssets = $derived([...$selectedAssets].map(({ id }) => id));
+  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+
+  $effect(() => {
+    if (isEmpty) {
+      assetInteractionStore.clearMultiselect();
+    }
+  });
+
+  $effect(() => {
+    if (element && isViewportOrigin()) {
+      const rect = element.getBoundingClientRect();
+      viewport.height = rect.height;
+      viewport.width = rect.width;
+      viewport.x = rect.x;
+      viewport.y = rect.y;
+    }
+    if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
+      safeViewport.height = viewport.height;
+      safeViewport.width = viewport.width;
+      safeViewport.x = viewport.x;
+      safeViewport.y = viewport.y;
+      updateViewport();
+    }
+  });
+
+  let shortcutList = $derived(
+    (() => {
+      if ($isSearchEnabled || $showAssetViewer) {
+        return [];
+      }
+
+      const shortcuts: ShortcutOptions[] = [
+        { shortcut: { key: 'Escape' }, onShortcut: onEscape },
+        { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
+        { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
+        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
+        { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
+        { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
+      ];
+
+      if ($isMultiSelectState) {
+        shortcuts.push(
+          { shortcut: { key: 'Delete' }, onShortcut: onDelete },
+          { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
+          { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
+          { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+          { shortcut: { key: 'a', shift: true }, onShortcut: toggleArchive },
+        );
+      }
+
+      return shortcuts;
+    })(),
+  );
+
+  $effect(() => {
+    if (!lastAssetMouseEvent) {
+      assetInteractionStore.clearAssetSelectionCandidates();
+    }
+  });
+
+  $effect(() => {
+    if (!shiftKeyIsDown) {
+      assetInteractionStore.clearAssetSelectionCandidates();
+    }
+  });
+
+  $effect(() => {
+    if (shiftKeyIsDown && lastAssetMouseEvent) {
+      selectAssetCandidates(lastAssetMouseEvent);
+    }
+  });
 </script>
 
-<svelte:window on:keydown={onKeyDown} on:keyup={onKeyUp} on:selectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -789,16 +834,16 @@
   tabindex="-1"
   use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
   bind:this={element}
-  on:scroll={() => ((assetStore.lastScrollTime = Date.now()), handleTimelineScroll())}
+  onscroll={() => ((assetStore.lastScrollTime = Date.now()), handleTimelineScroll())}
 >
   <section
     use:resizeObserver={({ target, height }) => ((topSectionHeight = height), (topSectionOffset = target.offsetTop))}
     class:invisible={showSkeleton}
   >
-    <slot />
+    {@render children?.()}
     {#if isEmpty}
       <!-- (optional) empty placeholder -->
-      <slot name="empty" />
+      {@render empty?.()}
     {/if}
   </section>
 
@@ -812,7 +857,7 @@
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
       <div
-        id="bucket"
+        class="bucket"
         use:intersectionObserver={{
           key: bucket.viewId,
           onIntersect: () => handleIntersect(bucket),
@@ -885,5 +930,10 @@
   #asset-grid {
     contain: strict;
     scrollbar-width: none;
+  }
+
+  .bucket {
+    contain: layout size;
+    transition: height 0.2s ease-out;
   }
 </style>

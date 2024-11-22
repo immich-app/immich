@@ -11,6 +11,7 @@ import {
   PersonCreateDto,
   SharedLinkCreateDto,
   UserAdminCreateDto,
+  UserPreferencesUpdateDto,
   ValidateLibraryDto,
   checkExistingAssets,
   createAlbum,
@@ -19,19 +20,23 @@ import {
   createPartner,
   createPerson,
   createSharedLink,
+  createStack,
   createUserAdmin,
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
   getConfigDefaults,
   login,
-  searchMetadata,
+  searchAssets,
   setBaseUrl,
   signUpAdmin,
+  tagAssets,
   updateAdminOnboarding,
   updateAlbumUser,
   updateAssets,
   updateConfig,
+  updateMyPreferences,
+  upsertTags,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
@@ -400,8 +405,8 @@ export const utils = {
   checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
     checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
-  metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
-    return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
+  searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
+    return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>
@@ -443,6 +448,18 @@ export const utils = {
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
   createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
+
+  updateMyPreferences: (accessToken: string, userPreferencesUpdateDto: UserPreferencesUpdateDto) =>
+    updateMyPreferences({ userPreferencesUpdateDto }, { headers: asBearerAuth(accessToken) }),
+
+  createStack: (accessToken: string, assetIds: string[]) =>
+    createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
+
+  upsertTags: (accessToken: string, tags: string[]) =>
+    upsertTags({ tagUpsertDto: { tags } }, { headers: asBearerAuth(accessToken) }),
+
+  tagAssets: (accessToken: string, tagId: string, assetIds: string[]) =>
+    tagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([

@@ -1,22 +1,25 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type Color = 'transparent-primary' | 'transparent-gray';
-
-  type BaseProps = {
-    color?: Color;
-  };
-
-  export type Props = (LinkProps & BaseProps) | (ButtonProps & BaseProps);
 </script>
 
 <script lang="ts">
-  import Button, { type ButtonProps, type LinkProps } from '$lib/components/elements/buttons/button.svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import type { Snippet } from 'svelte';
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  type $$Props = Props;
+  interface Props {
+    href?: string;
+    color?: Color;
+    children?: Snippet;
+    onclick?: (e: MouseEvent) => void;
+    title?: string;
+    disabled?: boolean;
+    fullwidth?: boolean;
+    class?: string;
+  }
 
-  export let color: Color = 'transparent-gray';
+  let { color = 'transparent-gray', children, ...rest }: Props = $props();
 </script>
 
-<Button size="link" {color} shadow={false} rounded="lg" on:click {...$$restProps}>
-  <slot />
+<Button size="link" {color} shadow={false} rounded="lg" {...rest}>
+  {@render children?.()}
 </Button>

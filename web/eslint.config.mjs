@@ -33,6 +33,7 @@ export default [
       'eslint.config.mjs',
       'postcss.config.cjs',
       'tailwind.config.js',
+      'coverage',
     ],
   },
   ...compat.extends(

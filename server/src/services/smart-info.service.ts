@@ -13,17 +13,12 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SmartInfoService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== ImmichWorker.MICROSERVICES) {
-      return;
-    }
-
-    const config = await this.getConfig({ withCache: false });
-    await this.init(config);
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  async onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    await this.init(newConfig);
   }
 
-  @OnEvent({ name: 'config.update' })
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
   async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig, oldConfig);
   }
