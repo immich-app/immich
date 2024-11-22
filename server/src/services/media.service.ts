@@ -329,9 +329,11 @@ export class MediaService extends BaseService {
     }
 
     if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
-      this.logger.log(`Encoding video ${asset.id} without hardware acceleration`);
+      this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
     } else {
-      this.logger.log(`Encoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()} acceleration`);
+      this.logger.log(
+        `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
+      );
     }
 
     try {
@@ -345,8 +347,8 @@ export class MediaService extends BaseService {
       let partialFallbackSuccess = false;
       if (ffmpeg.accelDecode) {
         try {
-          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration but software decoding`);
-          const config = BaseConfig.create({...ffmpeg, accelDecode: false});
+          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
+          const config = BaseConfig.create({ ...ffmpeg, accelDecode: false });
           command = config.getCommand(target, mainVideoStream, mainAudioStream);
           await this.mediaRepository.transcode(input, output, command);
           partialFallbackSuccess = true;
@@ -357,7 +359,7 @@ export class MediaService extends BaseService {
 
       if (!partialFallbackSuccess) {
         this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-        const config = BaseConfig.create({...ffmpeg, accel: TranscodeHWAccel.DISABLED});
+        const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
         command = config.getCommand(target, mainVideoStream, mainAudioStream);
         await this.mediaRepository.transcode(input, output, command);
       }

@@ -2133,7 +2133,7 @@ describe(MediaService.name, () => {
             '-map 0:1',
             '-g 256',
             '-v verbose',
-            '-vf scale_rkrga=-2:720:format=nv12:afbc=1',
+            '-vf scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',
             '-level 51',
             '-rc_mode CQP',
             '-qp_init 23',
@@ -2204,7 +2204,7 @@ describe(MediaService.name, () => {
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'scale_rkrga=-2:720:format=p010:afbc=1,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0:tonemap_mode=lum:peak=100,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
+              'scale_rkrga=-2:720:format=p010:afbc=1:async_depth=4,hwmap=derive_device=opencl:mode=read,tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:tonemap=hable:desat=0:tonemap_mode=lum:peak=100,hwmap=derive_device=rkmpp:mode=write:reverse=1,format=drm_prime',
             ),
           ]),
           twoPass: false,
@@ -2228,7 +2228,7 @@ describe(MediaService.name, () => {
           inputOptions: expect.arrayContaining(['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga']),
           outputOptions: expect.arrayContaining([
             expect.stringContaining(
-              'scale_rkrga=-2:720:format=nv12:afbc=1',
+              'scale_rkrga=-2:720:format=nv12:afbc=1:async_depth=4',
             ),
           ]),
           twoPass: false,
