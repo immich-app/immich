@@ -335,9 +335,11 @@ export class MediaService extends BaseService {
     }
 
     if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
-      this.logger.log(`Encoding video ${asset.id} without hardware acceleration`);
+      this.logger.log(`Transcoding video ${asset.id} without hardware acceleration`);
     } else {
-      this.logger.log(`Encoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()} acceleration`);
+      this.logger.log(
+        `Transcoding video ${asset.id} with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and${ffmpeg.accelDecode ? '' : ' software'} decoding`,
+      );
     }
 
     try {
@@ -347,10 +349,26 @@ export class MediaService extends BaseService {
       if (ffmpeg.accel === TranscodeHWAccel.DISABLED) {
         return JobStatus.FAILED;
       }
-      this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
-      const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
-      command = config.getCommand(target, mainVideoStream, mainAudioStream);
-      await this.mediaRepository.transcode(input, output, command);
+
+      let partialFallbackSuccess = false;
+      if (ffmpeg.accelDecode) {
+        try {
+          this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
+          const config = BaseConfig.create({ ...ffmpeg, accelDecode: false });
+          command = config.getCommand(target, mainVideoStream, mainAudioStream);
+          await this.mediaRepository.transcode(input, output, command);
+          partialFallbackSuccess = true;
+        } catch (error: any) {
+          this.logger.error(`Error occurred during transcoding: ${error.message}`);
+        }
+      }
+
+      if (!partialFallbackSuccess) {
+        this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
+        const config = BaseConfig.create({ ...ffmpeg, accel: TranscodeHWAccel.DISABLED });
+        command = config.getCommand(target, mainVideoStream, mainAudioStream);
+        await this.mediaRepository.transcode(input, output, command);
+      }
     }
 
     this.logger.log(`Successfully encoded ${asset.id}`);
@@ -508,7 +526,7 @@ export class MediaService extends BaseService {
         const maliDeviceStat = await this.storageRepository.stat('/dev/mali0');
         this.maliOpenCL = maliIcdStat.isFile() && maliDeviceStat.isCharacterDevice();
       } catch {
-        this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU decoding');
+        this.logger.debug('OpenCL not available for transcoding, so RKMPP acceleration will use CPU tonemapping');
         this.maliOpenCL = false;
       }
     }
