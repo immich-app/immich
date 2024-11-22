@@ -10,7 +10,6 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { retrieveServerConfig } from '$lib/stores/server-config.store';
   import { updateAdminOnboarding } from '@immich/sdk';
-  import { retrieveThemeConfig } from '$lib/stores/theme-config.store';
 
   let index = $state(0);
 
@@ -40,7 +39,6 @@
     if (index >= onboardingSteps.length - 1) {
       await updateAdminOnboarding({ adminOnboardingUpdateDto: { isOnboarded: true } });
       await retrieveServerConfig();
-      await retrieveThemeConfig();
       await goto(AppRoute.PHOTOS);
     } else {
       index++;

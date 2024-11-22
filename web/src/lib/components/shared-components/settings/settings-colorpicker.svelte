@@ -27,8 +27,8 @@
   }: Props = $props();
 
   const handleInput = (e: Event) => {
-    value = (e.target as HTMLInputElement).value;
-    onChange!(value);
+    let _value = (e.target as HTMLInputElement).value;
+    onChange!(_value);
   };
 </script>
 

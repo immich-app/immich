@@ -46,6 +46,10 @@
       root.style.setProperty(cssTag, hexToRgb(color));
     }
   };
+
+  const setThemeColor = (color: string, key: ThemeColorKeys, theme: ThemeKeys) => {
+    config.theme.themes[theme][key] = color;
+  };
 </script>
 
 <div>
@@ -71,18 +75,24 @@
               <SettingsColorpicker
                 {disabled}
                 label={$t(`admin.theme_${key}_color`, { values: { theme: theme } })}
-                bind:value={config.theme.themes[theme][key]}
+                value={config.theme.themes[theme][key]}
                 required={true}
                 isEdited={config.theme.themes[theme][key] !== savedConfig.theme.themes[theme][key]}
-                onChange={(color) =>
-                  colorLivePreview(color, theme === 'light' ? `--immich-${key}` : `--immich-${theme}-${key}`)}
+                onChange={(color) => {
+                  colorLivePreview(color, theme === 'light' ? `--immich-${key}` : `--immich-${theme}-${key}`);
+                  setThemeColor(color, key, theme);
+                }}
               />
             {/each}</SettingAccordion
           >{/each}
 
+        {config.theme.themes.light.primary}
+
         <SettingButtonsRow
           onReset={(options) => onReset({ ...options, configKeys: ['theme'] })}
-          onSave={() => onSave({ theme: config.theme })}
+          onSave={() => {
+            onSave({ theme: { customCss: config.theme.customCss, themes: config.theme.themes } });
+          }}
           showResetToDefault={!isEqual(savedConfig, defaultConfig)}
           {disabled}
         />
