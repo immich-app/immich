@@ -32,7 +32,6 @@
           label={$t('admin.theme_custom_css_settings')}
           description={$t('admin.theme_custom_css_settings_description')}
           bind:value={config.theme.customCss}
-          required={true}
           isEdited={config.theme.customCss !== savedConfig.theme.customCss}
         />
 
