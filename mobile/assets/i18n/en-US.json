@@ -1,4 +1,6 @@
 {
+  "networking_settings": "Networking",
+  "networking_subtitle": "Manage the server endpoint settings",
   "advanced_settings_tile_subtitle": "Manage advanced settings",
   "asset_viewer_settings_subtitle": "Manage your detail viewer settings",
   "backup_setting_subtitle": "Manage background and foreground upload settings",

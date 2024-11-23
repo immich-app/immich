@@ -8,6 +8,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
+import 'package:immich_mobile/widgets/settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -32,6 +33,11 @@ enum SettingSection {
     'setting_languages_title',
     Icons.language,
     "setting_languages_subtitle",
+  ),
+  networking(
+    'networking_settings',
+    Icons.dns_outlined,
+    "networking_subtitle",
   ),
   notifications(
     'setting_notifications_title',
@@ -58,6 +64,7 @@ enum SettingSection {
         SettingSection.assetViewer => const AssetViewerSettings(),
         SettingSection.backup => const BackupSettings(),
         SettingSection.languages => const LanguageSettings(),
+        SettingSection.networking => const NetworkingSettings(),
         SettingSection.notifications => const NotificationSetting(),
         SettingSection.preferences => const PreferenceSetting(),
         SettingSection.timeline => const AssetListSettings(),
@@ -92,18 +99,14 @@ class _MobileLayout extends StatelessWidget {
           .map(
             (setting) => Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
+                horizontal: 16.0,
               ),
               child: Card(
                 elevation: 0,
                 clipBehavior: Clip.antiAlias,
+                color: context.colorScheme.surfaceContainer,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.0),
-                  side: BorderSide(
-                    color: context.isDarkTheme
-                        ? context.colorScheme.surfaceBright
-                        : context.colorScheme.surfaceContainer,
-                  ),
                 ),
                 margin: const EdgeInsets.symmetric(vertical: 4.0),
                 child: ListTile(
@@ -114,7 +117,7 @@ class _MobileLayout extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16.0),
                       color: context.isDarkTheme
-                          ? Colors.black45
+                          ? Colors.black26
                           : Colors.white.withAlpha(100),
                     ),
                     padding: const EdgeInsets.all(16.0),
