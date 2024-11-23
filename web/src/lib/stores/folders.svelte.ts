@@ -12,15 +12,15 @@ type AssetCache = {
 };
 
 class FoldersStore {
-  #initialized = false;
+  private initialized = false;
   uniquePaths = $state<string[]>([]);
   assets = $state<AssetCache>({});
 
   async fetchUniquePaths() {
-    if (this.#initialized) {
+    if (this.initialized) {
       return;
     }
-    this.#initialized = true;
+    this.initialized = true;
 
     const uniquePaths = await getUniqueOriginalPaths();
     this.uniquePaths.push(...uniquePaths);
@@ -36,7 +36,7 @@ class FoldersStore {
   }
 
   clearCache() {
-    this.#initialized = false;
+    this.initialized = false;
     this.uniquePaths = [];
     this.assets = {};
   }
