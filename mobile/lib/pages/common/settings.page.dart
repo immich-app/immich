@@ -13,31 +13,57 @@ import 'package:immich_mobile/widgets/settings/preference_settings/preference_se
 import 'package:immich_mobile/routing/router.dart';
 
 enum SettingSection {
+  advanced(
+    'advanced_settings_tile_title',
+    Icons.build_outlined,
+    "advanced_settings_tile_subtitle",
+  ),
+  assetViewer(
+    'asset_viewer_settings_title',
+    Icons.image_outlined,
+    "asset_viewer_settings_subtitle",
+  ),
+  backup(
+    'backup_controller_page_backup',
+    Icons.cloud_upload_outlined,
+    "backup_setting_subtitle",
+  ),
+  languages(
+    'setting_languages_title',
+    Icons.language,
+    "setting_languages_subtitle",
+  ),
   notifications(
     'setting_notifications_title',
     Icons.notifications_none_rounded,
+    "setting_notifications_subtitle",
   ),
-  languages('setting_languages_title', Icons.language),
-  preferences('preferences_settings_title', Icons.interests_outlined),
-  backup('backup_controller_page_backup', Icons.cloud_upload_outlined),
-  timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined),
-  viewer('asset_viewer_settings_title', Icons.image_outlined),
-  advanced('advanced_settings_tile_title', Icons.build_outlined);
+  preferences(
+    'preferences_settings_title',
+    Icons.interests_outlined,
+    "preferences_settings_subtitle",
+  ),
+  timeline(
+    'asset_list_settings_title',
+    Icons.auto_awesome_mosaic_outlined,
+    "asset_list_settings_subtitle",
+  );
 
   final String title;
+  final String subtitle;
   final IconData icon;
 
   Widget get widget => switch (this) {
-        SettingSection.notifications => const NotificationSetting(),
-        SettingSection.languages => const LanguageSettings(),
-        SettingSection.preferences => const PreferenceSetting(),
-        SettingSection.backup => const BackupSettings(),
-        SettingSection.timeline => const AssetListSettings(),
-        SettingSection.viewer => const AssetViewerSettings(),
         SettingSection.advanced => const AdvancedSettings(),
+        SettingSection.assetViewer => const AssetViewerSettings(),
+        SettingSection.backup => const BackupSettings(),
+        SettingSection.languages => const LanguageSettings(),
+        SettingSection.notifications => const NotificationSetting(),
+        SettingSection.preferences => const PreferenceSetting(),
+        SettingSection.timeline => const AssetListSettings(),
       };
 
-  const SettingSection(this.title, this.icon);
+  const SettingSection(this.title, this.icon, this.subtitle);
 }
 
 @RoutePage()
@@ -61,22 +87,50 @@ class _MobileLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 10.0),
       children: SettingSection.values
           .map(
-            (s) => ListTile(
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 2.0, horizontal: 16.0),
-              leading: Icon(s.icon),
-              title: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  s.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ).tr(),
+            (setting) => Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
               ),
-              onTap: () => context.pushRoute(SettingsSubRoute(section: s)),
+              child: Card(
+                elevation: 0,
+                clipBehavior: Clip.antiAlias,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                  side: BorderSide(
+                    color: context.isDarkTheme
+                        ? context.colorScheme.surfaceBright
+                        : context.colorScheme.surfaceContainer,
+                  ),
+                ),
+                margin: const EdgeInsets.symmetric(vertical: 4.0),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                  ),
+                  leading: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16.0),
+                      color: context.isDarkTheme
+                          ? Colors.black45
+                          : Colors.white.withAlpha(100),
+                    ),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Icon(setting.icon, color: context.primaryColor),
+                  ),
+                  title: Text(
+                    setting.title,
+                    style: context.textTheme.titleMedium!.copyWith(
+                      color: context.primaryColor,
+                    ),
+                  ).tr(),
+                  subtitle: Text(setting.subtitle).tr(),
+                  onTap: () =>
+                      context.pushRoute(SettingsSubRoute(section: setting)),
+                ),
+              ),
             ),
           )
           .toList(),
