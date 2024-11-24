@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
-import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/hash.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   final AuthService _authService;
   final ApiService _apiService;
-  final Isar _db;
-  final StateNotifierProviderRef<AuthenticationNotifier, AuthenticationState>
-      _ref;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -29,8 +21,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
     this._authService,
     this._apiService,
-    this._db,
-    this._ref,
   ) : super(
           AuthenticationState(
             deviceId: "",
@@ -62,16 +52,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 
   Future<void> _cleanUp() async {
-    await Future.wait([
-      clearAssetsAndAlbums(_db),
-      Store.delete(StoreKey.currentUser),
-      Store.delete(StoreKey.accessToken),
-    ]);
-
-    _ref.read(assetProvider.notifier).clearAllAsset();
-    _ref.invalidate(albumProvider);
-
-    state = state.copyWith(
+    state = AuthenticationState(
       deviceId: "",
       userId: "",
       userEmail: "",
@@ -82,21 +63,15 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     );
   }
 
-  updateUserProfileImagePath(String path) {
+  void updateUserProfileImagePath(String path) {
     state = state.copyWith(profileImagePath: path);
   }
 
   Future<bool> changePassword(String newPassword) async {
     try {
-      await _apiService.usersApi.updateMyUser(
-        UserUpdateMeDto(
-          password: newPassword,
-        ),
-      );
-
+      await _authService.changePassword(newPassword);
       return true;
-    } catch (e) {
-      debugPrint("Error changing password $e");
+    } catch (_) {
       return false;
     }
   }
@@ -182,7 +157,5 @@ final authProvider =
   return AuthenticationNotifier(
     ref.watch(authServiceProvider),
     ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
-    ref,
   );
 });

@@ -14,9 +14,14 @@ class AuthApiRepository extends ApiRepository implements IAuthApiRepository {
   AuthApiRepository(this._apiService);
 
   @override
-  Future<void> changePassword(String oldPassword, String newPassword) {
-    // TODO: implement changePassword
-    throw UnimplementedError();
+  Future<UserAdminResponseDto> changePassword(String newPassword) {
+    return checkNull(
+      _apiService.usersApi.updateMyUser(
+        UserUpdateMeDto(
+          password: newPassword,
+        ),
+      ),
+    );
   }
 
   @override

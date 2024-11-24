@@ -5,5 +5,5 @@ abstract interface class IAuthApiRepository {
 
   Future<LogoutResponseDto> logout();
 
-  Future<void> changePassword(String oldPassword, String newPassword);
+  Future<UserAdminResponseDto> changePassword(String newPassword);
 }
