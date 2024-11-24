@@ -11,13 +11,8 @@ class UserApiRepository with LogMixin implements IUserApiRepository {
   @override
   Future<model.User?> getMyUser() async {
     try {
-      final [
-        userDto as UserAdminResponseDto?,
-        preferencesDto as UserPreferencesResponseDto?
-      ] = await Future.wait([
-        _usersApi.getMyUser(),
-        _usersApi.getMyPreferences(),
-      ]);
+      final (userDto, preferencesDto) =
+          await (_usersApi.getMyUser(), _usersApi.getMyPreferences()).wait;
 
       if (userDto == null) {
         log.e("Cannot fetch my user.");

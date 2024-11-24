@@ -1,8 +1,6 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/interfaces/album.interface.dart';
@@ -22,6 +20,7 @@ import 'package:immich_mobile/presentation/states/gallery_permission.state.dart'
 import 'package:immich_mobile/presentation/states/server_info.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/immich_api_client.dart';
+import 'package:immich_mobile/utils/isolate_helper.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
 // Cannot add dependency repos to constructor as this requires the newly registered API client from login
@@ -59,7 +58,7 @@ class LoginService with LogMixin {
       );
 
       if (res.statusCode == HttpStatus.ok) {
-        final data = await compute(jsonDecode, res.body);
+        final data = await IsolateHelper.decodeJson(res.bodyBytes);
         final endpoint = data['api']['endpoint'].toString();
 
         // Full URL is relative to base

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:isolate';
 import 'dart:ui';
 
@@ -81,5 +82,12 @@ class IsolateHelper {
         await di<DriftDatabaseRepository>().close();
       }
     });
+  }
+
+  static Future<Map<String, dynamic>> decodeJson(Uint8List json) async {
+    return await Isolate.run(
+      () => const Utf8Decoder().fuse(const JsonDecoder()).convert(json)
+          as Map<String, dynamic>,
+    );
   }
 }

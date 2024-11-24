@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/interfaces/api/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/asset.interface.dart';
@@ -13,20 +14,24 @@ import 'package:immich_mobile/utils/isolate_helper.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
 class AssetSyncService with LogMixin {
-  const AssetSyncService();
+  AssetSyncService();
+
+  final _fullRemoteSyncCache = AsyncCache<bool>.ephemeral();
 
   Future<bool> performFullRemoteSyncIsolate(
     User user, {
     DateTime? updatedUtil,
     int? limit,
   }) async {
-    return await IsolateHelper.run(() async {
-      return await performFullRemoteSync(
-        user,
-        updatedUtil: updatedUtil,
-        limit: limit,
-      );
-    });
+    return await _fullRemoteSyncCache.fetch(
+      () async => await IsolateHelper.run(() async {
+        return await performFullRemoteSync(
+          user,
+          updatedUtil: updatedUtil,
+          limit: limit,
+        );
+      }),
+    );
   }
 
   Future<bool> performFullRemoteSync(

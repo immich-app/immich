@@ -138,8 +138,8 @@ abstract final class ServiceLocator {
   static void _registerServices() {
     /// Special services. So they are initiated as singletons
     _registerSingleton(ImHostService());
-    _registerSingleton(const AlbumSyncService());
-    _registerSingleton(const AssetSyncService());
+    _registerSingleton(AlbumSyncService());
+    _registerSingleton(AssetSyncService());
 
     ///
     _registerFactory<LoginService>(() => const LoginService());

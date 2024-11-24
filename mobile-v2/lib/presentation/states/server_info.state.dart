@@ -12,7 +12,7 @@ class ServerInfoProvider extends ValueNotifier<ServerInfo> {
         super(const ServerInfo.initial());
 
   Future<void> fetchFeatures() async =>
-      await Future.wait([_getFeatures(), _getConfig(), _getVersion()]);
+      await (_getFeatures(), _getConfig(), _getVersion()).wait;
 
   Future<void> _getFeatures() async {
     final features = await _serverApiRepository.getServerFeatures();

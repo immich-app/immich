@@ -1,3 +1,4 @@
+import 'package:async/async.dart';
 import 'package:immich_mobile/domain/interfaces/album.interface.dart';
 import 'package:immich_mobile/domain/interfaces/album_asset.interface.dart';
 import 'package:immich_mobile/domain/interfaces/album_etag.interface.dart';
@@ -14,10 +15,13 @@ import 'package:immich_mobile/utils/isolate_helper.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
 class AlbumSyncService with LogMixin {
-  const AlbumSyncService();
+  AlbumSyncService();
+
+  final _fullDeviceSyncCache = AsyncCache<bool>.ephemeral();
 
   Future<bool> performFullDeviceSyncIsolate() async {
-    return await IsolateHelper.run(performFullDeviceSync);
+    return await _fullDeviceSyncCache
+        .fetch(() async => await IsolateHelper.run(performFullDeviceSync));
   }
 
   Future<bool> performFullDeviceSync() async {

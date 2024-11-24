@@ -36,6 +36,7 @@ dependencies:
   logging: ^1.3.0
   # Collection Utils
   collection: ^1.18.0
+  async: ^2.12.0
   # service_locator
   get_it: ^8.0.0
   # Photo Manager
