@@ -29,7 +29,8 @@ alt="Dot Env Example"
 />
 
 9. Copy the content of the `example.env` file from the [GitHub repository](https://github.com/immich-app/immich/releases/latest/download/example.env) and paste into the editor.
-10. Switch back to "**Simple Mode**".
+10. Replace all references to .env with stack.env in the content you copied. This ensures compatibility with Portainer, as it requires the .env file to be named stack.env.
+11. Switch back to "**Simple Mode**".
 
 <img
 src={require('./img/env-2.png').default}
