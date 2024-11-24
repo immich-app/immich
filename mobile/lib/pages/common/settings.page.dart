@@ -36,7 +36,7 @@ enum SettingSection {
   ),
   networking(
     'networking_settings',
-    Icons.dns_outlined,
+    Icons.wifi,
     "networking_subtitle",
   ),
   notifications(
