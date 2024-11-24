@@ -49,9 +49,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     return _authService.validateServerUrl(url);
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<LoginResponseDto> login(String email, String password) async {
     final response = await _authService.login(email, password);
-    return setSuccessLoginInfo(accessToken: response.accessToken);
+    await setSuccessLoginInfo(accessToken: response.accessToken);
+    return response;
   }
 
   Future<void> logout() async {
@@ -69,11 +70,11 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     } catch (e, stack) {
       _log.severe('Logout failed', e, stack);
     } finally {
-      await cleanUpState();
+      await _cleanUp();
     }
   }
 
-  Future<void> cleanUpState() async {
+  Future<void> _cleanUp() async {
     await Future.wait([
       clearAssetsAndAlbums(_db),
       Store.delete(StoreKey.currentUser),

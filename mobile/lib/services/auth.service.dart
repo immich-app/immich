@@ -19,8 +19,16 @@ class AuthService {
 
   AuthService(this._authApiRepository, this._apiService);
 
-  Future<String> validateServerUrl(String endpoint) async {
-    final validUrl = await _apiService.resolveAndSetEndpoint(endpoint);
+  /// Validates the provided server URL by resolving and setting the endpoint.
+  /// Also sets the device info header and stores the valid URL.
+  ///
+  /// [url] - The server URL to be validated.
+  ///
+  /// Returns the validated and resolved server URL as a [String].
+  ///
+  /// Throws an exception if the URL cannot be resolved or set.
+  Future<String> validateServerUrl(String url) async {
+    final validUrl = await _apiService.resolveAndSetEndpoint(url);
     await _apiService.setDeviceInfoHeader();
     Store.put(StoreKey.serverUrl, validUrl);
 

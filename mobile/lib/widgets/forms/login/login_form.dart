@@ -11,7 +11,6 @@ import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -39,7 +38,7 @@ class LoginForm extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usernameController =
+    final emailController =
         useTextEditingController.fromValue(TextEditingValue.empty);
     final passwordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
@@ -161,13 +160,13 @@ class LoginForm extends HookConsumerWidget {
     );
 
     populateTestLoginInfo() {
-      usernameController.text = 'demo@immich.app';
+      emailController.text = 'demo@immich.app';
       passwordController.text = 'demo';
       serverEndpointController.text = 'https://demo.immich.app';
     }
 
     populateTestLoginInfo1() {
-      usernameController.text = 'testuser@email.com';
+      emailController.text = 'testuser@email.com';
       passwordController.text = 'password';
       serverEndpointController.text = 'http://10.1.15.216:3000/api';
     }
@@ -181,15 +180,12 @@ class LoginForm extends HookConsumerWidget {
       invalidateAllApiRepositoryProviders(ref);
 
       try {
-        await ref.read(authProvider.notifier).login(
-              usernameController.text,
+        final res = await ref.read(authProvider.notifier).login(
+              emailController.text,
               passwordController.text,
             );
-        final shouldChangePassword =
-            ref.read(authProvider).shouldChangePassword;
-        final isAdmin = ref.read(authProvider).isAdmin;
 
-        if (shouldChangePassword && !isAdmin) {
+        if (res.shouldChangePassword && !res.isAdmin) {
           context.pushRoute(const ChangePasswordRoute());
         } else {
           context.replaceRoute(const TabControllerRoute());
@@ -208,7 +204,6 @@ class LoginForm extends HookConsumerWidget {
 
     oAuthLogin() async {
       var oAuthService = ref.watch(oAuthServiceProvider);
-      ref.watch(assetProvider.notifier).clearAllAsset();
       String? oAuthServerUrl;
 
       try {
@@ -380,7 +375,7 @@ class LoginForm extends HookConsumerWidget {
             if (isPasswordLoginEnable.value) ...[
               const SizedBox(height: 18),
               EmailInput(
-                controller: usernameController,
+                controller: emailController,
                 focusNode: emailFocusNode,
                 onSubmit: passwordFocusNode.requestFocus,
               ),
