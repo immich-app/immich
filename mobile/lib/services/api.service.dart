@@ -149,12 +149,12 @@ class ApiService implements Authentication {
     return "";
   }
 
-  setAccessToken(String accessToken) {
+  void setAccessToken(String accessToken) {
     _accessToken = accessToken;
     Store.put(StoreKey.accessToken, accessToken);
   }
 
-  setDeviceInfoHeader() async {
+  Future<void> setDeviceInfoHeader() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
     if (Platform.isIOS) {
