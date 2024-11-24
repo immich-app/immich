@@ -4,6 +4,7 @@ import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 final authServiceProvider = Provider(
@@ -16,6 +17,8 @@ final authServiceProvider = Provider(
 class AuthService {
   final IAuthApiRepository _authApiRepository;
   final ApiService _apiService;
+
+  final _log = Logger("AuthService");
 
   AuthService(this._authApiRepository, this._apiService);
 
@@ -39,8 +42,12 @@ class AuthService {
     return _authApiRepository.login(email, password);
   }
 
-  Future<void> logout() {
-    return Future.delayed(Duration(seconds: 1));
+  Future<void> logout() async {
+    try {
+      await _authApiRepository.logout();
+    } catch (error, stackTrace) {
+      _log.severe("Error logging out", error, stackTrace);
+    }
   }
 
   Future<void> changePassword({

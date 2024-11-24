@@ -32,8 +32,11 @@ class AuthApiRepository extends ApiRepository implements IAuthApiRepository {
   }
 
   @override
-  Future<void> logout() {
-    // TODO: implement logout
-    throw UnimplementedError();
+  Future<LogoutResponseDto> logout() async {
+    return checkNull(
+      _apiService.authenticationApi.logout().timeout(
+            Duration(seconds: 7),
+          ),
+    );
   }
 }

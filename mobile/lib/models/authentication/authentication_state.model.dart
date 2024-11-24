@@ -5,8 +5,8 @@ class AuthenticationState {
   final bool isAuthenticated;
   final String name;
   final bool isAdmin;
-  final bool shouldChangePassword;
   final String profileImagePath;
+
   AuthenticationState({
     required this.deviceId,
     required this.userId,
@@ -14,7 +14,6 @@ class AuthenticationState {
     required this.isAuthenticated,
     required this.name,
     required this.isAdmin,
-    required this.shouldChangePassword,
     required this.profileImagePath,
   });
 
@@ -25,7 +24,6 @@ class AuthenticationState {
     bool? isAuthenticated,
     String? name,
     bool? isAdmin,
-    bool? shouldChangePassword,
     String? profileImagePath,
   }) {
     return AuthenticationState(
@@ -35,14 +33,13 @@ class AuthenticationState {
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       name: name ?? this.name,
       isAdmin: isAdmin ?? this.isAdmin,
-      shouldChangePassword: shouldChangePassword ?? this.shouldChangePassword,
       profileImagePath: profileImagePath ?? this.profileImagePath,
     );
   }
 
   @override
   String toString() {
-    return 'AuthenticationState(deviceId: $deviceId, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, name: $name, isAdmin: $isAdmin, shouldChangePassword: $shouldChangePassword, profileImagePath: $profileImagePath)';
+    return 'AuthenticationState(deviceId: $deviceId, userId: $userId, userEmail: $userEmail, isAuthenticated: $isAuthenticated, name: $name, isAdmin: $isAdmin, profileImagePath: $profileImagePath)';
   }
 
   @override
@@ -56,7 +53,6 @@ class AuthenticationState {
         other.isAuthenticated == isAuthenticated &&
         other.name == name &&
         other.isAdmin == isAdmin &&
-        other.shouldChangePassword == shouldChangePassword &&
         other.profileImagePath == profileImagePath;
   }
 
@@ -68,7 +64,6 @@ class AuthenticationState {
         isAuthenticated.hashCode ^
         name.hashCode ^
         isAdmin.hashCode ^
-        shouldChangePassword.hashCode ^
         profileImagePath.hashCode;
   }
 }

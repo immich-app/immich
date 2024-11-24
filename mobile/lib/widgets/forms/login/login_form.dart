@@ -180,12 +180,12 @@ class LoginForm extends HookConsumerWidget {
       invalidateAllApiRepositoryProviders(ref);
 
       try {
-        final res = await ref.read(authProvider.notifier).login(
+        final result = await ref.read(authProvider.notifier).login(
               emailController.text,
               passwordController.text,
             );
 
-        if (res.shouldChangePassword && !res.isAdmin) {
+        if (result.shouldChangePassword && !result.isAdmin) {
           context.pushRoute(const ChangePasswordRoute());
         } else {
           context.replaceRoute(const TabControllerRoute());

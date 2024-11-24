@@ -17,6 +17,15 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
+  final AuthService _authService;
+  final ApiService _apiService;
+  final Isar _db;
+  final StateNotifierProviderRef<AuthenticationNotifier, AuthenticationState>
+      _ref;
+  final _log = Logger("AuthenticationNotifier");
+
+  static const Duration _timeoutDuration = Duration(seconds: 7);
+
   AuthenticationNotifier(
     this._authService,
     this._apiService,
@@ -30,21 +39,10 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
             name: '',
             profileImagePath: '',
             isAdmin: false,
-            shouldChangePassword: false,
             isAuthenticated: false,
           ),
         );
 
-  final AuthService _authService;
-  final ApiService _apiService;
-  final Isar _db;
-  final StateNotifierProviderRef<AuthenticationNotifier, AuthenticationState>
-      _ref;
-  final _log = Logger("AuthenticationNotifier");
-
-  static const Duration _timeoutDuration = Duration(seconds: 7);
-
-  /// Validates the server URL and if valid, set the url in the local database
   Future<String> validateServerUrl(String url) {
     return _authService.validateServerUrl(url);
   }
@@ -57,18 +55,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<void> logout() async {
     try {
-      String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
-
-      await _apiService.authenticationApi
-          .logout()
-          .timeout(_timeoutDuration)
-          .then((_) => _log.info("Logout was successful for $userEmail"))
-          .onError(
-            (error, stackTrace) =>
-                _log.severe("Logout failed for $userEmail", error, stackTrace),
-          );
-    } catch (e, stack) {
-      _log.severe('Logout failed', e, stack);
+      await _authService.logout();
     } finally {
       await _cleanUp();
     }
@@ -91,7 +78,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       name: '',
       profileImagePath: '',
       isAdmin: false,
-      shouldChangePassword: false,
       isAuthenticated: false,
     );
   }
@@ -107,8 +93,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           password: newPassword,
         ),
       );
-
-      state = state.copyWith(shouldChangePassword: false);
 
       return true;
     } catch (e) {
@@ -126,7 +110,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     String deviceId =
         Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
-    bool shouldChangePassword = false;
     User? user = Store.tryGet(StoreKey.currentUser);
 
     UserAdminResponseDto? userResponse;
@@ -169,7 +152,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       );
       Store.put(StoreKey.accessToken, accessToken);
 
-      shouldChangePassword = userResponse.shouldChangePassword;
       user = User.fromUserDto(userResponse, userPreferences);
     } else {
       _log.severe("Unable to get user information from the server.");
@@ -188,7 +170,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
       name: user.name,
       profileImagePath: user.profileImagePath,
       isAdmin: user.isAdmin,
-      shouldChangePassword: shouldChangePassword,
       deviceId: deviceId,
     );
 
