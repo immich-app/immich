@@ -97,9 +97,8 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         isLoadingServer.value = true;
-        final endpoint = await ref
-            .read(authProvider.notifier)
-            .resolveAndSetEndpoint(serverUrl);
+        final endpoint =
+            await ref.read(authProvider.notifier).validateServerUrl(serverUrl);
 
         // Fetch and load server config and features
         await ref.read(serverInfoProvider.notifier).getServerInfo();
@@ -182,33 +181,26 @@ class LoginForm extends HookConsumerWidget {
       invalidateAllApiRepositoryProviders(ref);
 
       try {
-        final success = await ref.read(authProvider.notifier).login(
+        await ref.read(authProvider.notifier).login(
               usernameController.text,
               passwordController.text,
             );
-
         final shouldChangePassword =
             ref.read(authProvider).shouldChangePassword;
         final isAdmin = ref.read(authProvider).isAdmin;
-
-        if (!success) {
-          ImmichToast.show(
-            context: context,
-            msg: "login_form_failed_login".tr(),
-            toastType: ToastType.error,
-            gravity: ToastGravity.TOP,
-          );
-
-          isLoading.value = false;
-
-          return;
-        }
 
         if (shouldChangePassword && !isAdmin) {
           context.pushRoute(const ChangePasswordRoute());
         } else {
           context.replaceRoute(const TabControllerRoute());
         }
+      } catch (error) {
+        ImmichToast.show(
+          context: context,
+          msg: "login_form_failed_login".tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.TOP,
+        );
       } finally {
         isLoading.value = false;
       }

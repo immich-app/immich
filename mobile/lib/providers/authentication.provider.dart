@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,6 +9,7 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
@@ -20,6 +18,7 @@ import 'package:openapi/api.dart';
 
 class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   AuthenticationNotifier(
+    this._authService,
     this._apiService,
     this._db,
     this._ref,
@@ -36,6 +35,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
           ),
         );
 
+  final AuthService _authService;
   final ApiService _apiService;
   final Isar _db;
   final StateNotifierProviderRef<AuthenticationNotifier, AuthenticationState>
@@ -44,93 +44,55 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
 
-  Future<String> resolveAndSetEndpoint(String url) async {
-    final validUrl = await _apiService.resolveAndSetEndpoint(url);
-    await _apiService.serverInfoApi.pingServer();
-    Store.put(StoreKey.serverUrl, validUrl);
-
-    return validUrl;
+  /// Validates the server URL and if valid, set the url in the local database
+  Future<String> validateServerUrl(String url) {
+    return _authService.validateServerUrl(url);
   }
 
-  Future<bool> login(
-    String email,
-    String password,
-  ) async {
-    // Make sign-in request
-    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
-
-    if (Platform.isIOS) {
-      var iosInfo = await deviceInfoPlugin.iosInfo;
-      _apiService.authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
-      _apiService.authenticationApi.apiClient
-          .addDefaultHeader('deviceType', 'iOS');
-    } else {
-      var androidInfo = await deviceInfoPlugin.androidInfo;
-      _apiService.authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', androidInfo.model);
-      _apiService.authenticationApi.apiClient
-          .addDefaultHeader('deviceType', 'Android');
-    }
-
-    try {
-      var loginResponse = await _apiService.authenticationApi.login(
-        LoginCredentialDto(
-          email: email,
-          password: password,
-        ),
-      );
-
-      if (loginResponse == null) {
-        debugPrint('Login Response is null');
-        return false;
-      }
-
-      return setSuccessLoginInfo(
-        accessToken: loginResponse.accessToken,
-      );
-    } catch (e) {
-      debugPrint("Error logging in $e");
-      return false;
-    }
+  Future<bool> login(String email, String password) async {
+    final response = await _authService.login(email, password);
+    return setSuccessLoginInfo(accessToken: response.accessToken);
   }
 
   Future<void> logout() async {
-    var log = Logger('AuthenticationNotifier');
     try {
       String? userEmail = Store.tryGet(StoreKey.currentUser)?.email;
 
       await _apiService.authenticationApi
           .logout()
           .timeout(_timeoutDuration)
-          .then((_) => log.info("Logout was successful for $userEmail"))
+          .then((_) => _log.info("Logout was successful for $userEmail"))
           .onError(
             (error, stackTrace) =>
-                log.severe("Logout failed for $userEmail", error, stackTrace),
+                _log.severe("Logout failed for $userEmail", error, stackTrace),
           );
     } catch (e, stack) {
-      log.severe('Logout failed', e, stack);
+      _log.severe('Logout failed', e, stack);
     } finally {
-      await Future.wait([
-        clearAssetsAndAlbums(_db),
-        Store.delete(StoreKey.currentUser),
-        Store.delete(StoreKey.accessToken),
-      ]);
-
-      _ref.read(assetProvider.notifier).clearAllAsset();
-      _ref.invalidate(albumProvider);
-
-      state = state.copyWith(
-        deviceId: "",
-        userId: "",
-        userEmail: "",
-        name: '',
-        profileImagePath: '',
-        isAdmin: false,
-        shouldChangePassword: false,
-        isAuthenticated: false,
-      );
+      await cleanUpState();
     }
+  }
+
+  Future<void> cleanUpState() async {
+    await Future.wait([
+      clearAssetsAndAlbums(_db),
+      Store.delete(StoreKey.currentUser),
+      Store.delete(StoreKey.accessToken),
+    ]);
+
+    _ref.read(assetProvider.notifier).clearAllAsset();
+    _ref.invalidate(albumProvider);
+
+    state = state.copyWith(
+      deviceId: "",
+      userId: "",
+      userEmail: "",
+      name: '',
+      profileImagePath: '',
+      isAdmin: false,
+      shouldChangePassword: false,
+      isAuthenticated: false,
+    );
   }
 
   updateUserProfileImagePath(String path) {
@@ -236,6 +198,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 final authProvider =
     StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
   return AuthenticationNotifier(
+    ref.watch(authServiceProvider),
     ref.watch(apiServiceProvider),
     ref.watch(dbProvider),
     ref,

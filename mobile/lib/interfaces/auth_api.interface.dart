@@ -1,5 +1,7 @@
+import 'package:openapi/api.dart';
+
 abstract interface class IAuthApiRepository {
-  Future<void> login(String email, String password);
+  Future<LoginResponseDto> login(String email, String password);
 
   Future<void> logout();
 
