@@ -765,7 +765,7 @@ final backupProvider =
   return BackupNotifier(
     ref.watch(backupServiceProvider),
     ref.watch(serverInfoServiceProvider),
-    ref.watch(authenticationProvider),
+    ref.watch(authProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(dbProvider),

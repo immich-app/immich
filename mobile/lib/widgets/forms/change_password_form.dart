@@ -21,7 +21,7 @@ class ChangePasswordForm extends HookConsumerWidget {
         useTextEditingController.fromValue(TextEditingValue.empty);
     final confirmPasswordController =
         useTextEditingController.fromValue(TextEditingValue.empty);
-    final authState = ref.watch(authenticationProvider);
+    final authState = ref.watch(authProvider);
     final formKey = GlobalKey<FormState>();
 
     return Center(
@@ -73,13 +73,11 @@ class ChangePasswordForm extends HookConsumerWidget {
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
                           var isSuccess = await ref
-                              .read(authenticationProvider.notifier)
+                              .read(authProvider.notifier)
                               .changePassword(passwordController.value.text);
 
                           if (isSuccess) {
-                            await ref
-                                .read(authenticationProvider.notifier)
-                                .logout();
+                            await ref.read(authProvider.notifier).logout();
 
                             ref
                                 .read(manualUploadProvider.notifier)

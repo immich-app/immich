@@ -18,7 +18,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AuthenticationState authState = ref.watch(authenticationProvider);
+    AuthenticationState authState = ref.watch(authProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     final user = Store.tryGet(StoreKey.currentUser);
@@ -63,7 +63,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
         if (success) {
           final profileImagePath =
               ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
+          ref.watch(authProvider.notifier).updateUserProfileImagePath(
                 profileImagePath,
               );
           if (user != null) {

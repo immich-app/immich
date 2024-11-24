@@ -42,7 +42,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         () => ref.read(currentAlbumProvider.notifier).set(value),
       ),
     );
-    final userId = ref.watch(authenticationProvider).userId;
+    final userId = ref.watch(authProvider).userId;
     final isProcessing = useProcessingOverlay();
 
     Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {

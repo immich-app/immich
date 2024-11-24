@@ -9,6 +9,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/db.dart';
@@ -43,20 +44,18 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
 
+  Future<String> resolveAndSetEndpoint(String url) async {
+    final validUrl = await _apiService.resolveAndSetEndpoint(url);
+    await _apiService.serverInfoApi.pingServer();
+    Store.put(StoreKey.serverUrl, validUrl);
+
+    return validUrl;
+  }
+
   Future<bool> login(
     String email,
     String password,
-    String serverUrl,
   ) async {
-    try {
-      // Resolve API server endpoint from user provided serverUrl
-      await _apiService.resolveAndSetEndpoint(serverUrl);
-      await _apiService.serverInfoApi.pingServer();
-    } catch (e) {
-      debugPrint('Invalid Server Endpoint Url $e');
-      return false;
-    }
-
     // Make sign-in request
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
@@ -89,7 +88,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
       return setSuccessLoginInfo(
         accessToken: loginResponse.accessToken,
-        serverUrl: serverUrl,
       );
     } catch (e) {
       debugPrint("Error logging in $e");
@@ -118,6 +116,8 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         Store.delete(StoreKey.currentUser),
         Store.delete(StoreKey.accessToken),
       ]);
+
+      _ref.read(assetProvider.notifier).clearAllAsset();
       _ref.invalidate(albumProvider);
 
       state = state.copyWith(
@@ -156,7 +156,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<bool> setSuccessLoginInfo({
     required String accessToken,
-    required String serverUrl,
   }) async {
     _apiService.setAccessToken(accessToken);
 
@@ -205,7 +204,6 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
         StoreKey.currentUser,
         User.fromUserDto(userResponse, userPreferences),
       );
-      Store.put(StoreKey.serverUrl, serverUrl);
       Store.put(StoreKey.accessToken, accessToken);
 
       shouldChangePassword = userResponse.shouldChangePassword;
@@ -235,7 +233,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 }
 
-final authenticationProvider =
+final authProvider =
     StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
   return AuthenticationNotifier(
     ref.watch(apiServiceProvider),

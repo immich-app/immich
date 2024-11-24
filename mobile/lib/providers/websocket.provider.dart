@@ -103,7 +103,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   /// Connects websocket to server unless already connected
   void connect() {
     if (state.isConnected) return;
-    final authenticationState = _ref.read(authenticationProvider);
+    final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
       try {

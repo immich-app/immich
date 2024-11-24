@@ -25,7 +25,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
-    final userId = ref.watch(authenticationProvider).userId;
+    final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.activityEnabled);
     final isProcessing = useProcessingOverlay();
     final isOwner = owner?.id == userId;

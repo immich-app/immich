@@ -69,7 +69,7 @@ class ApiService implements Authentication {
     final endpoint = await _resolveEndpoint(serverUrl);
     setEndpoint(endpoint);
 
-    // Save in hivebox for next startup
+    // Save in local database for next startup
     Store.put(StoreKey.serverEndpoint, endpoint);
     return endpoint;
   }

@@ -42,7 +42,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (!_wasPaused) return;
     _wasPaused = false;
 
-    final isAuthenticated = _ref.read(authenticationProvider).isAuthenticated;
+    final isAuthenticated = _ref.read(authProvider).isAuthenticated;
 
     // Needs to be logged in
     if (isAuthenticated) {
@@ -85,7 +85,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
 
-    if (_ref.read(authenticationProvider).isAuthenticated) {
+    if (_ref.read(authProvider).isAuthenticated) {
       // Do not cancel backup if manual upload is in progress
       if (_ref.read(backupProvider.notifier).backupProgress !=
           BackUpProgressEnum.manualInProgress) {
