@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:openapi/api.dart';
 import '../repository.mocks.dart';
+import '../service.mocks.dart';
 import '../test_utils.dart';
 
 void main() {
@@ -16,7 +18,6 @@ void main() {
     authApiRepository = MockAuthApiRepository();
     authRepository = MockAuthRepository();
     apiService = MockApiService();
-
     sut = AuthService(authApiRepository, authRepository, apiService);
   });
 
@@ -88,6 +89,36 @@ void main() {
 
       verify(() => apiService.resolveAndSetEndpoint(testUrl)).called(1);
       verifyNever(() => apiService.setDeviceInfoHeader());
+    });
+  });
+
+  group('logout', () {
+    test('Should logout user', () async {
+      when(() => authApiRepository.logout()).thenAnswer(
+        (_) async => LogoutResponseDto(
+          redirectUri: '',
+          successful: true,
+        ),
+      );
+      when(() => authRepository.clearLocalData())
+          .thenAnswer((_) => Future.value(null));
+
+      await sut.logout();
+
+      verify(() => authApiRepository.logout()).called(1);
+      verify(() => authRepository.clearLocalData()).called(1);
+    });
+
+    test('Should clear local data even on server error', () async {
+      when(() => authApiRepository.logout())
+          .thenThrow(Exception('Server error'));
+      when(() => authRepository.clearLocalData())
+          .thenAnswer((_) => Future.value(null));
+
+      await sut.logout();
+
+      verify(() => authApiRepository.logout()).called(1);
+      verify(() => authRepository.clearLocalData()).called(1);
     });
   });
 }

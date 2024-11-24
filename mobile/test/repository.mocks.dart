@@ -10,7 +10,6 @@ import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAlbumRepository extends Mock implements IAlbumRepository {}
@@ -36,5 +35,3 @@ class MockAlbumApiRepository extends Mock implements IAlbumApiRepository {}
 class MockAuthApiRepository extends Mock implements IAuthApiRepository {}
 
 class MockAuthRepository extends Mock implements IAuthRepository {}
-
-class MockApiService extends Mock implements ApiService {}

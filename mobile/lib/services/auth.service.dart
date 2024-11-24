@@ -59,7 +59,7 @@ class AuthService {
     } catch (error, stackTrace) {
       _log.severe("Error logging out", error, stackTrace);
     } finally {
-      await _clearLocalData();
+      await clearLocalData();
     }
   }
 
@@ -72,7 +72,7 @@ class AuthService {
   /// - Asset ETag
   ///
   /// All deletions are executed in parallel using [Future.wait].
-  Future<void> _clearLocalData() async {
+  Future<void> clearLocalData() async {
     await Future.wait([
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
