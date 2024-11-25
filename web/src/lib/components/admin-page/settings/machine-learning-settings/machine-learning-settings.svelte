@@ -72,7 +72,7 @@
           />
         {/each}
 
-        <Button class="mb-2" type="button" size="sm" onclick={() => config.machineLearning.url.push('')}
+        <Button class="mb-2" type="button" size="sm" onclick={() => config.machineLearning.url.splice(0, 0, '')}
           >{$t('add_url')}</Button
         >
       </div>
