@@ -25,7 +25,7 @@
   >
     <div>
       <div
-        class="h-6 w-6 bg-cover rounded"
+        class="h-6 w-6 bg-cover rounded bg-gray-200 dark:bg-gray-600"
         style={album.albumThumbnailAssetId
           ? `background-image:url('${getAssetThumbnailUrl({ id: album.albumThumbnailAssetId })}')`
           : ''}
