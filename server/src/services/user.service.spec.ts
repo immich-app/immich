@@ -60,10 +60,15 @@ describe(UserService.name, () => {
       expect(userMock.getList).toHaveBeenCalledWith({ withDeleted: false });
     });
 
-    it('non-admin should NOT get users when publicUsers is disabled', async () => {
+    it('non-admin user should only receive itself when publicUsers is disabled', async () => {
       userMock.getList.mockResolvedValue([userStub.user1]);
       systemMock.get.mockResolvedValue(systemConfigStub.publicUsersDisabled);
-      await expect(sut.search(authStub.user1)).resolves.toEqual([]);
+      await expect(sut.search(authStub.user1)).resolves.toEqual([
+        expect.objectContaining({
+          id: authStub.user1.user.id,
+          email: authStub.user1.user.email,
+        }),
+      ]);
       expect(userMock.getList).not.toHaveBeenCalledWith({ withDeleted: false });
     });
   });
