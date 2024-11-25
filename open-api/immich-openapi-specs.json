@@ -10825,6 +10825,9 @@
           "oauthButtonText": {
             "type": "string"
           },
+          "publicUsers": {
+            "type": "boolean"
+          },
           "trashDays": {
             "type": "integer"
           },
@@ -10840,6 +10843,7 @@
           "mapDarkStyleUrl",
           "mapLightStyleUrl",
           "oauthButtonText",
+          "publicUsers",
           "trashDays",
           "userDeleteDelay"
         ],
@@ -12014,11 +12018,15 @@
           },
           "loginPageMessage": {
             "type": "string"
+          },
+          "publicUsers": {
+            "type": "boolean"
           }
         },
         "required": [
           "externalDomain",
-          "loginPageMessage"
+          "loginPageMessage",
+          "publicUsers"
         ],
         "type": "object"
       },

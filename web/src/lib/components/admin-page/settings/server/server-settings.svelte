@@ -5,6 +5,7 @@
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
   import { SettingInputFieldType } from '$lib/constants';
 
@@ -42,6 +43,13 @@
           description={$t('admin.server_welcome_message_description')}
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}
+        />
+
+        <SettingSwitch
+          title={$t('admin.server_public_users')}
+          subtitle={$t('admin.server_public_users_description')}
+          {disabled}
+          bind:checked={config.server.publicUsers}
         />
 
         <div class="ml-4">

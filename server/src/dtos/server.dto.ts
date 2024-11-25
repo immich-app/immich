@@ -144,6 +144,7 @@ export class ServerConfigDto {
   isInitialized!: boolean;
   isOnboarded!: boolean;
   externalDomain!: string;
+  publicUsers!: boolean;
   mapDarkStyleUrl!: string;
   mapLightStyleUrl!: string;
 }
