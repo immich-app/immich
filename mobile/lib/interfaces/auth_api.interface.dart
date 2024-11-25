@@ -1,9 +1,9 @@
-import 'package:openapi/api.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 
 abstract interface class IAuthApiRepository {
-  Future<LoginResponseDto> login(String email, String password);
+  Future<LoginResponse> login(String email, String password);
 
-  Future<LogoutResponseDto> logout();
+  Future<void> logout();
 
-  Future<UserAdminResponseDto> changePassword(String newPassword);
+  Future<void> changePassword(String newPassword);
 }

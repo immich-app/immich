@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -37,7 +38,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     return _authService.validateServerUrl(url);
   }
 
-  Future<LoginResponseDto> login(String email, String password) async {
+  Future<LoginResponse> login(String email, String password) async {
     final response = await _authService.login(email, password);
     await setSuccessLoginInfo(accessToken: response.accessToken);
     return response;

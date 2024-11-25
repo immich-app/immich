@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:openapi/api.dart';
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 import '../test_utils.dart';
@@ -94,12 +93,7 @@ void main() {
 
   group('logout', () {
     test('Should logout user', () async {
-      when(() => authApiRepository.logout()).thenAnswer(
-        (_) async => LogoutResponseDto(
-          redirectUri: '',
-          successful: true,
-        ),
-      );
+      when(() => authApiRepository.logout()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
 

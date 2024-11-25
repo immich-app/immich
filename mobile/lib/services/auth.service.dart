@@ -2,12 +2,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final authServiceProvider = Provider(
   (ref) => AuthService(
@@ -42,7 +42,7 @@ class AuthService {
     return validUrl;
   }
 
-  Future<LoginResponseDto> login(String email, String password) {
+  Future<LoginResponse> login(String email, String password) {
     return _authApiRepository.login(email, password);
   }
 
@@ -81,7 +81,7 @@ class AuthService {
     ]);
   }
 
-  Future<UserAdminResponseDto> changePassword(String newPassword) {
+  Future<void> changePassword(String newPassword) {
     try {
       return _authApiRepository.changePassword(newPassword);
     } catch (error, stackTrace) {
