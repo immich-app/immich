@@ -7,7 +7,7 @@ import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 class AppBarProfileInfoBox extends HookConsumerWidget {
