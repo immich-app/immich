@@ -1,4 +1,6 @@
 {
+  "user_usage_stats": "Account usage statistics",
+  "user_usage_stats_description": "View account usage statistics",
   "about": "Refresh",
   "account": "Account",
   "account_settings": "Account Settings",
