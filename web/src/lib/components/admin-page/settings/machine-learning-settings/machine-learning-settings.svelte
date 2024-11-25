@@ -45,23 +45,12 @@
 
         <hr />
 
-        {#each config.machineLearning.url as url, i}
-          <div
-            class="flex place-content-center place-items-center vertical-align align-items justify-center items-center gap-2"
-          >
-            <SettingInputField
-              inputType={SettingInputFieldType.TEXT}
-              label={i === 0 ? $t('url') : undefined}
-              description={i === 0 ? $t('admin.machine_learning_url_description') : undefined}
-              bind:value={config.machineLearning.url[i]}
-              required={i === 0}
-              disabled={disabled || !config.machineLearning.enabled}
-              isEdited={url !== savedConfig.machineLearning.url[i]}
-            />
-
+        {#each config.machineLearning.url as _, i}
+          {#snippet buttonSnippet()}
             {#if config.machineLearning.url.length > 1}
               <CircleIconButton
                 size="24"
+                class="ml-2"
                 padding="2"
                 color="red"
                 title=""
@@ -69,10 +58,23 @@
                 icon={mdiMinusCircle}
               />
             {/if}
-          </div>
+          {/snippet}
+
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={i === 0 ? $t('url') : undefined}
+            description={i === 0 ? $t('admin.machine_learning_url_description') : undefined}
+            bind:value={config.machineLearning.url[i]}
+            required={i === 0}
+            disabled={disabled || !config.machineLearning.enabled}
+            isEdited={i === 0 && !isEqual(config.machineLearning.url, savedConfig.machineLearning.url)}
+            {buttonSnippet}
+          />
         {/each}
 
-        <Button type="button" size="sm" onclick={() => config.machineLearning.url.push('')}>{$t('add_url')}</Button>
+        <Button class="mb-2" type="button" size="sm" onclick={() => config.machineLearning.url.push('')}
+          >{$t('add_url')}</Button
+        >
       </div>
 
       <SettingAccordion
