@@ -85,7 +85,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   machineLearning: {
     enabled: true,
-    url: 'http://immich-machine-learning:3003',
+    url: ['http://immich-machine-learning:3003'],
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -329,11 +329,11 @@ describe(SystemConfigService.name, () => {
 
     it('should allow underscores in the machine learning url', async () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
-      const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
+      const partialConfig = { machineLearning: { url: ['immich_machine_learning'] } };
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       const config = await sut.getSystemConfig();
-      expect(config.machineLearning.url).toEqual('immich_machine_learning');
+      expect(config.machineLearning.url).toEqual(['immich_machine_learning']);
     });
 
     const externalDomainTests = [

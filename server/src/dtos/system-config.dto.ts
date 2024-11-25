@@ -272,7 +272,7 @@ class SystemConfigMachineLearningDto {
 
   @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
   @ArrayMinSize(1)
-  @Transform(({ value }) => (value instanceof Array ? value : [value]))
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
   @ValidateIf((dto) => dto.enabled)
   @ApiProperty({ type: 'array', items: { type: 'string', format: 'uri' }, minItems: 1 })
   url!: string[];
