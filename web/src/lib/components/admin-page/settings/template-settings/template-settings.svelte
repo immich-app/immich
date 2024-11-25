@@ -29,14 +29,14 @@
 
   let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
-  let _htmlPreview = $state('');
+  let htmlPreview = $state('');
   let loadingPreview = $state(false);
 
   const getTemplate = async (name: string, template: string) => {
     try {
       loadingPreview = true;
       const result = await getNotificationTemplate({ name, templateDto: { tempTemplate: template } });
-      _htmlPreview = result.html;
+      htmlPreview = result.html;
     } catch (error) {
       handleError(error, 'Could not load template.');
     } finally {
@@ -45,7 +45,7 @@
   };
 
   const closePreviewModal = () => {
-    _htmlPreview = '';
+    htmlPreview = '';
   };
 
   const templateConfigs = [
@@ -116,12 +116,12 @@
         </SettingAccordion>
       </div>
 
-      {#if _htmlPreview}
+      {#if htmlPreview}
         <FullScreenModal title={$t('admin.template_email_preview')} onClose={closePreviewModal} width="wide">
           <div style="position:relative; width:100%; height:90vh; overflow: hidden">
             <iframe
               title={$t('admin.template_email_preview')}
-              srcdoc={_htmlPreview}
+              srcdoc={htmlPreview}
               style="width: 100%; height: 100%; border: none; overflow:hidden; position: absolute; top: 0; left: 0;"
             ></iframe>
           </div>
