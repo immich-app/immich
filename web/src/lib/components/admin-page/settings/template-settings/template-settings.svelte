@@ -3,10 +3,8 @@
 
   const bubble = createBubbler();
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplate } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
@@ -127,13 +125,6 @@
           </div>
         </FullScreenModal>
       {/if}
-
-      <SettingButtonsRow
-        onReset={(options) => onReset({ ...options, configKeys: ['templates'] })}
-        onSave={() => onSave({ templates: config.templates })}
-        showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-        {disabled}
-      />
     </form>
   </div>
 </div>

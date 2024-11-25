@@ -32,7 +32,6 @@
     mdiAlert,
     mdiBackupRestore,
     mdiBellOutline,
-    mdiBellCogOutline,
     mdiBookshelf,
     mdiContentCopy,
     mdiDatabaseOutline,
@@ -56,7 +55,6 @@
   import type { Component } from 'svelte';
   import type { SettingsComponentProps } from '$lib/components/admin-page/settings/admin-settings';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
-  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
 
   interface Props {
     data: PageData;
@@ -181,13 +179,6 @@
       subtitle: $t('admin.notification_settings_description'),
       key: 'notifications',
       icon: mdiBellOutline,
-    },
-    {
-      component: TemplateSettings,
-      title: $t('admin.template_settings'),
-      subtitle: $t('admin.template_settings_description'),
-      key: 'templates',
-      icon: mdiBellCogOutline,
     },
     {
       component: ServerSettings,
