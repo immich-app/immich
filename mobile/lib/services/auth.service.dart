@@ -24,7 +24,11 @@ class AuthService {
 
   final _log = Logger("AuthService");
 
-  AuthService(this._authApiRepository, this._authRepository, this._apiService);
+  AuthService(
+    this._authApiRepository,
+    this._authRepository,
+    this._apiService,
+  );
 
   /// Validates the provided server URL by resolving and setting the endpoint.
   /// Also sets the device info header and stores the valid URL.

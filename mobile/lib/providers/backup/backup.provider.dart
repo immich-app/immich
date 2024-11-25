@@ -22,7 +22,7 @@ import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
-import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
+import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/providers/authentication.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
@@ -92,7 +92,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
   final ServerInfoService _serverInfoService;
-  final AuthenticationState _authState;
+  final AuthState _authState;
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final Isar _db;

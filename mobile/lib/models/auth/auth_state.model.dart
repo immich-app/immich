@@ -1,4 +1,4 @@
-class AuthenticationState {
+class AuthState {
   final String deviceId;
   final String userId;
   final String userEmail;
@@ -7,7 +7,7 @@ class AuthenticationState {
   final bool isAdmin;
   final String profileImagePath;
 
-  AuthenticationState({
+  AuthState({
     required this.deviceId,
     required this.userId,
     required this.userEmail,
@@ -17,7 +17,7 @@ class AuthenticationState {
     required this.profileImagePath,
   });
 
-  AuthenticationState copyWith({
+  AuthState copyWith({
     String? deviceId,
     String? userId,
     String? userEmail,
@@ -26,7 +26,7 @@ class AuthenticationState {
     bool? isAdmin,
     String? profileImagePath,
   }) {
-    return AuthenticationState(
+    return AuthState(
       deviceId: deviceId ?? this.deviceId,
       userId: userId ?? this.userId,
       userEmail: userEmail ?? this.userEmail,
@@ -46,7 +46,7 @@ class AuthenticationState {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is AuthenticationState &&
+    return other is AuthState &&
         other.deviceId == deviceId &&
         other.userId == userId &&
         other.userEmail == userEmail &&

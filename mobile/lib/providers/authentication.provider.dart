@@ -3,7 +3,7 @@ import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
-import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
+import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -12,18 +12,25 @@ import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  return AuthNotifier(
+    ref.watch(authServiceProvider),
+    ref.watch(apiServiceProvider),
+  );
+});
+
+class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
 
-  AuthenticationNotifier(
+  AuthNotifier(
     this._authService,
     this._apiService,
   ) : super(
-          AuthenticationState(
+          AuthState(
             deviceId: "",
             userId: "",
             userEmail: "",
@@ -40,7 +47,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
 
   Future<LoginResponse> login(String email, String password) async {
     final response = await _authService.login(email, password);
-    await setSuccessLoginInfo(accessToken: response.accessToken);
+    await saveAuthInfo(accessToken: response.accessToken);
     return response;
   }
 
@@ -53,7 +60,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
   }
 
   Future<void> _cleanUp() async {
-    state = AuthenticationState(
+    state = AuthState(
       deviceId: "",
       userId: "",
       userEmail: "",
@@ -77,7 +84,7 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     }
   }
 
-  Future<bool> setSuccessLoginInfo({
+  Future<bool> saveAuthInfo({
     required String accessToken,
   }) async {
     _apiService.setAccessToken(accessToken);
@@ -152,11 +159,3 @@ class AuthenticationNotifier extends StateNotifier<AuthenticationState> {
     return true;
   }
 }
-
-final authProvider =
-    StateNotifierProvider<AuthenticationNotifier, AuthenticationState>((ref) {
-  return AuthenticationNotifier(
-    ref.watch(authServiceProvider),
-    ref.watch(apiServiceProvider),
-  );
-});

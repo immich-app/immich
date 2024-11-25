@@ -237,10 +237,9 @@ class LoginForm extends HookConsumerWidget {
             "Finished OAuth login with response: ${loginResponseDto.userEmail}",
           );
 
-          final isSuccess =
-              await ref.watch(authProvider.notifier).setSuccessLoginInfo(
-                    accessToken: loginResponseDto.accessToken,
-                  );
+          final isSuccess = await ref.watch(authProvider.notifier).saveAuthInfo(
+                accessToken: loginResponseDto.accessToken,
+              );
 
           if (isSuccess) {
             isLoading.value = false;

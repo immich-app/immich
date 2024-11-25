@@ -25,10 +25,9 @@ class SplashScreenPage extends HookConsumerWidget {
 
       if (accessToken != null && serverUrl != null && endpoint != null) {
         try {
-          isAuthSuccess =
-              await ref.read(authProvider.notifier).setSuccessLoginInfo(
-                    accessToken: accessToken,
-                  );
+          isAuthSuccess = await ref.read(authProvider.notifier).saveAuthInfo(
+                accessToken: accessToken,
+              );
         } catch (error, stackTrace) {
           log.severe(
             'Cannot set success login info',
