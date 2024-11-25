@@ -394,6 +394,7 @@
   let isFullScreen = $derived(fullscreenElement !== null);
   $effect(() => {
     if (asset) {
+      previewStackedAsset = undefined;
       handlePromiseError(refreshStack());
     }
   });
