@@ -5,6 +5,7 @@
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     title: string;
@@ -39,6 +40,24 @@
 </script>
 
 <span class="relative">
+  {#if hasDropdown}
+    <span class="hidden md:block absolute left-1 z-50 h-full">
+      <button
+        type="button"
+        aria-label={$t('recent-albums')}
+        class="relative flex cursor-default pt-4 pb-4 select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:fill-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded h-fill"
+        onclick={() => (dropdownOpen = !dropdownOpen)}
+      >
+        <Icon
+          path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
+          size="1em"
+          class="shrink-0 delay-100 duration-100 "
+          flipped={flippedLogo}
+          ariaHidden
+        />
+      </button>
+    </span>
+  {/if}
   <a
     href={routePath}
     data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
@@ -85,23 +104,6 @@
       {/if}
     </div>
   </a>
-  {#if hasDropdown}
-    <span class="hidden md:block absolute top-4 left-1">
-      <button
-        type="button"
-        class="relative flex cursor-default select-none justify-center hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary rounded"
-        onclick={() => (dropdownOpen = !dropdownOpen)}
-      >
-        <Icon
-          path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
-          size="1em"
-          class="shrink-0 delay-100 duration-100 "
-          flipped={flippedLogo}
-          ariaHidden
-        />
-      </button>
-    </span>
-  {/if}
 </span>
 {#if hasDropdown && dropdownOpen}
   {@render hasDropdown?.()}
