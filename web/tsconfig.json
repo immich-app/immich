@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es2020",
+    "target": "es2022",
     "types": ["vitest/globals"]
   },
   "extends": "./.svelte-kit/tsconfig.json"

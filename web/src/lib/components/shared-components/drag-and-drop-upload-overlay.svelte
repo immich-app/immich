@@ -96,13 +96,25 @@
     });
   };
 
+  const readEntriesAsync = (reader: FileSystemDirectoryReader) => {
+    return new Promise<FileSystemEntry[]>((resolve, reject) => {
+      reader.readEntries(resolve, reject);
+    });
+  };
+
   const getContentsFromFileSystemDirectoryEntry = async (
     fileSystemDirectoryEntry: FileSystemDirectoryEntry,
   ): Promise<FileSystemEntry[]> => {
-    return new Promise((resolve, reject) => {
-      const reader = fileSystemDirectoryEntry.createReader();
-      reader.readEntries(resolve, reject);
-    });
+    const reader = fileSystemDirectoryEntry.createReader();
+    const files: FileSystemEntry[] = [];
+    let entries: FileSystemEntry[];
+
+    do {
+      entries = await readEntriesAsync(reader);
+      files.push(...entries);
+    } while (entries.length > 0);
+
+    return files;
   };
 
   const handleFiles = async (files?: FileList | File[]) => {
