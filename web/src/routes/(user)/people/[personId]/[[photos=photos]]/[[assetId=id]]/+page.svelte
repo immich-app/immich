@@ -1,6 +1,7 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
   import MergeFaceSelector from '$lib/components/faces-page/merge-face-selector.svelte';
@@ -25,7 +26,7 @@
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { AppRoute, PersonPageViewMode, QueryParameter } from '$lib/constants';
+  import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -164,7 +165,7 @@
         type: NotificationType.Info,
       });
 
-      await goto(previousRoute, { replaceState: true });
+      await goto(previousRoute);
     } catch (error) {
       handleError(error, $t('errors.unable_to_hide_person'));
     }
@@ -431,7 +432,15 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  use:scrollMemoryClearer={{
+    routeStartsWith: AppRoute.PEOPLE,
+    beforeClear: () => {
+      sessionStorage.removeItem(SessionStorageKey.INFINITE_SCROLL_PAGE);
+    },
+  }}
+>
   {#key person.id}
     <AssetGrid
       enableRouting={true}
