@@ -173,6 +173,30 @@ class SSLClientCertStoreVal {
   }
 }
 
+class SSLServerCertStoreVal {
+  final Uint8List data;
+
+  SSLServerCertStoreVal(this.data);
+
+  void save() {
+    final b64Str = base64Encode(data);
+    Store.put(StoreKey.sslServerCertData, b64Str);
+  }
+
+  static SSLServerCertStoreVal? load() {
+    final b64Str = Store.tryGet<String>(StoreKey.sslServerCertData);
+    if (b64Str == null) {
+      return null;
+    }
+    final Uint8List certData = base64Decode(b64Str);
+    return SSLServerCertStoreVal(certData);
+  }
+
+  static void delete() {
+    Store.delete(StoreKey.sslServerCertData);
+  }
+}
+
 class StoreKeyNotFoundException implements Exception {
   final StoreKey key;
   StoreKeyNotFoundException(this.key);
@@ -199,6 +223,7 @@ enum StoreKey<T> {
   backgroundBackup<bool>(14, type: bool),
   sslClientCertData<String>(15, type: String),
   sslClientPasswd<String>(16, type: String),
+  sslServerCertData<String>(17, type: String),
   // user settings from [AppSettingsEnum] below:
   loadPreview<bool>(100, type: bool),
   loadOriginal<bool>(101, type: bool),
