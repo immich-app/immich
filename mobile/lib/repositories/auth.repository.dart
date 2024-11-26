@@ -16,8 +16,8 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
   AuthRepository(super.db);
 
   @override
-  Future<void> clearLocalData() async {
-    await db.writeTxn(() async {
+  Future<void> clearLocalData() {
+    return db.writeTxn(() async {
       await db.assets.clear();
       await db.exifInfos.clear();
       await db.albums.clear();

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -119,9 +119,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         error,
         stackTrace,
       );
-      debugPrint(
-        "Error getting user information from the server [CATCH ALL] $error $stackTrace",
-      );
+
+      if (kDebugMode) {
+        debugPrint(
+          "Error getting user information from the server [CATCH ALL] $error $stackTrace",
+        );
+      }
     }
 
     // If the user information is successfully retrieved, update the store
