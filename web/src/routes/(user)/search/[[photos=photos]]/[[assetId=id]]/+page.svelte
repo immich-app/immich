@@ -44,6 +44,8 @@
   import { t } from 'svelte-i18n';
   import { onMount, tick } from 'svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
+  import { preferences, user } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -229,6 +231,8 @@
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
+  let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
+
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
@@ -250,6 +254,9 @@
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={isAllArchived} onArchive={triggerAssetUpdate} />
+          {#if $preferences.tags.enabled && isAllUserOwned}
+            <TagAction menuItem />
+          {/if}
           <DeleteAssets menuItem {onAssetDelete} />
           <hr />
           <AssetJobActions />
