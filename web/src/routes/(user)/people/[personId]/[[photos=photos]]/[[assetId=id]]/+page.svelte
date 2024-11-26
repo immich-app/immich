@@ -58,6 +58,8 @@
   import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { preferences, user } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   interface Props {
     data: PageData;
@@ -337,6 +339,8 @@
 
   let isAllArchive = $derived([...$selectedAssets].every((asset) => asset.isArchived));
   let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
+  let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
+
 </script>
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
@@ -391,6 +395,9 @@
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        {#if $preferences.tags.enabled && isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
         <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
