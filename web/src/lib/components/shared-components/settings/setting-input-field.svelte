@@ -22,7 +22,7 @@
     autofocus?: boolean;
     passwordAutocomplete?: AutoFill;
     descriptionSnippet?: Snippet;
-    buttonSnippet?: Snippet;
+    trailingSnippet?: Snippet;
   }
 
   let {
@@ -40,7 +40,7 @@
     autofocus = false,
     passwordAutocomplete = 'current-password',
     descriptionSnippet,
-    buttonSnippet,
+    trailingSnippet,
   }: Props = $props();
 
   let input: HTMLInputElement | undefined = $state();
@@ -135,9 +135,7 @@
         {title}
       />
 
-      {#if buttonSnippet}
-        {@render buttonSnippet()}
-      {/if}
+      {@render trailingSnippet?.()}
     </div>
   {:else}
     <PasswordField
