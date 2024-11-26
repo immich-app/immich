@@ -39,14 +39,13 @@
   });
 
   const getUsage = async () => {
-    [timelineStats, favoriteStats, archiveStats, trashStats] = await Promise.all([
+    [timelineStats, favoriteStats, archiveStats, trashStats, albumStats] = await Promise.all([
       getAssetStatistics({ isArchived: false }),
       getAssetStatistics({ isFavorite: true }),
       getAssetStatistics({ isArchived: true }),
       getAssetStatistics({ isTrashed: true }),
+      getAlbumStatistics(),
     ]);
-
-    albumStats = await getAlbumStatistics();
   };
 
   onMount(async () => {
