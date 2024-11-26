@@ -63,14 +63,17 @@
     data: PageData;
   }
 
-  let { data = $bindable() }: Props = $props();
+  let { data }: Props = $props();
 
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  let assetStore = new AssetStore({
-    isArchived: false,
-    personId: data.person.id,
+  const assetStoreOptions = { isArchived: false, personId: data.person.id };
+  const assetStore = new AssetStore(assetStoreOptions);
+
+  $effect(() => {
+    assetStoreOptions.personId = data.person.id;
+    handlePromiseError(assetStore.updateOptions(assetStoreOptions));
   });
 
   const assetInteractionStore = createAssetInteractionStore();
@@ -329,7 +332,6 @@
   $effect(() => {
     if (person) {
       handlePromiseError(updateAssetCount());
-      handlePromiseError(assetStore.updateOptions({ personId: person.id }));
     }
   });
 
