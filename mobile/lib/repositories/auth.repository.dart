@@ -17,12 +17,14 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
 
   @override
   Future<void> clearLocalData() {
-    return db.writeTxn(() async {
-      await db.assets.clear();
-      await db.exifInfos.clear();
-      await db.albums.clear();
-      await db.eTags.clear();
-      await db.users.clear();
+    return db.writeTxn(() {
+      return Future.wait([
+        db.assets.clear(),
+        db.exifInfos.clear(),
+        db.albums.clear(),
+        db.eTags.clear(),
+        db.users.clear(),
+      ]);
     });
   }
 }

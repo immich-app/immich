@@ -63,7 +63,9 @@ class AuthService {
     } catch (error, stackTrace) {
       _log.severe("Error logging out", error, stackTrace);
     } finally {
-      await clearLocalData();
+      await clearLocalData().catchError((error, stackTrace) {
+        _log.severe("Error clearing local data", error, stackTrace);
+      });
     }
   }
 
