@@ -117,4 +117,9 @@ export const systemConfigStub = {
       },
     },
   },
+  publicUsersDisabled: {
+    server: {
+      publicUsers: false,
+    },
+  },
 } satisfies Record<string, DeepPartial<SystemConfig>>;

@@ -7,6 +7,7 @@
   import NavigationBar from '../shared-components/navigation-bar/navigation-bar.svelte';
   import SideBar from '../shared-components/side-bar/side-bar.svelte';
   import AdminSideBar from '../shared-components/side-bar/admin-side-bar.svelte';
+  import { useActions, type ActionArray } from '$lib/actions/use-actions';
   import type { Snippet } from 'svelte';
 
   interface Props {
@@ -16,6 +17,7 @@
     description?: string | undefined;
     scrollbar?: boolean;
     admin?: boolean;
+    use?: ActionArray;
     header?: Snippet;
     sidebar?: Snippet;
     buttons?: Snippet;
@@ -29,6 +31,7 @@
     description = undefined,
     scrollbar = true,
     admin = false,
+    use = [],
     header,
     sidebar,
     buttons,
@@ -73,7 +76,7 @@
       </div>
     {/if}
 
-    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto">
+    <div class="{scrollbarClass} scrollbar-stable absolute {hasTitleClass} w-full overflow-y-auto" use:useActions={use}>
       {@render children?.()}
     </div>
   </section>
