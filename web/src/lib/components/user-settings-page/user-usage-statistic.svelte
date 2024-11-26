@@ -68,7 +68,7 @@
     </thead>
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       <tr
-        class={'flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50'}
+        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
       >
         <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('timeline')}</td>
         <td class="w-1/4 text-ellipsis px-4 text-sm">{timelineStats.images}</td>
@@ -77,7 +77,7 @@
       </tr>
 
       <tr
-        class={'flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75'}
+        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75"
       >
         <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('favorites')}</td>
         <td class="w-1/4 text-ellipsis px-4 text-sm">{favoriteStats.images}</td>
@@ -86,7 +86,7 @@
       </tr>
 
       <tr
-        class={'flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50'}
+        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
       >
         <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('archive')}</td>
         <td class="w-1/4 text-ellipsis px-4 text-sm">{archiveStats.images}</td>
@@ -95,7 +95,7 @@
       </tr>
 
       <tr
-        class={'flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75'}
+        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75"
       >
         <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('trash')}</td>
         <td class="w-1/4 text-ellipsis px-4 text-sm">{trashStats.images}</td>
@@ -119,7 +119,7 @@
     </thead>
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       <tr
-        class={'flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50'}
+        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
       >
         <td class="w-1/2 text-ellipsis px-4 text-sm"> {albumStats.owned}</td>
         <td class="w-1/2 text-ellipsis px-4 text-sm">{albumStats.shared}</td>
