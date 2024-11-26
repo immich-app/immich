@@ -110,6 +110,7 @@ export class ServerService extends BaseService {
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
+      publicUsers: config.server.publicUsers,
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
     };

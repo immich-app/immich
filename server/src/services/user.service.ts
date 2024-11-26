@@ -19,8 +19,14 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 
 @Injectable()
 export class UserService extends BaseService {
-  async search(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: false });
+  async search(auth: AuthDto): Promise<UserResponseDto[]> {
+    const config = await this.getConfig({ withCache: false });
+
+    let users: UserEntity[] = [auth.user];
+    if (auth.user.isAdmin || config.server.publicUsers) {
+      users = await this.userRepository.getList({ withDeleted: false });
+    }
+
     return users.map((user) => mapUser(user));
   }
 

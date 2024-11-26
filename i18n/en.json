@@ -224,6 +224,8 @@
     "send_welcome_email": "Send welcome email",
     "server_external_domain_settings": "External domain",
     "server_external_domain_settings_description": "Domain for public shared links, including http(s)://",
+    "server_public_users": "Public Users",
+    "server_public_users_description": "All users (name and email) are listed when adding a user to shared albums. When disabled, the user list will only be available to admin users.",
     "server_settings": "Server Settings",
     "server_settings_description": "Manage server settings",
     "server_welcome_message": "Welcome message",
