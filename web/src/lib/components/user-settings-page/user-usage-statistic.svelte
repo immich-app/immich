@@ -53,54 +53,49 @@
   });
 </script>
 
+{#snippet row(viewName: string, imageCount: number, videoCount: number, totalCount: number)}
+  <td class="w-1/4 text-ellipsis px-4 text-sm">{viewName}</td>
+  <td class="w-1/4 text-ellipsis px-4 text-sm">{imageCount}</td>
+  <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {videoCount}</td>
+  <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {totalCount}</td>
+{/snippet}
+
 <section class="my-6">
-  <p class="text-xs dark:text-white uppercase">{$t('photo_and_video')}</p>
+  <p class="text-xs dark:text-white uppercase">{$t('photos_and_videos')}</p>
   <table class="w-full text-left mt-4">
     <thead
       class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="w-1/4 text-center text-sm font-medium">{$t('view')}</th>
-        <th class="w-1/4 text-center text-sm font-medium">{$t('photo')}</th>
-        <th class="w-1/4 text-center text-sm font-medium">{$t('video')}</th>
-        <th class="w-1/4 text-center text-sm font-medium">{$t('total')}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('view').toLocaleString()}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('photos').toLocaleString()}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('videos').toLocaleString()}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('total').toLocaleString()}</th>
       </tr>
     </thead>
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       <tr
         class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
       >
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('timeline')}</td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{timelineStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {timelineStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {timelineStats.total}</td>
+        {@render row($t('timeline'), timelineStats.images, timelineStats.videos, timelineStats.total)}
       </tr>
 
       <tr
         class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75"
       >
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('favorites')}</td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{favoriteStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {favoriteStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {favoriteStats.total}</td>
+        {@render row($t('favorites'), favoriteStats.images, favoriteStats.videos, favoriteStats.total)}
       </tr>
 
       <tr
         class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
       >
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('archive')}</td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{archiveStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {archiveStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {archiveStats.total}</td>
+        {@render row($t('archive'), archiveStats.images, archiveStats.videos, archiveStats.total)}
       </tr>
 
       <tr
         class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75"
       >
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('trash')}</td>
-        <td class="w-1/4 text-ellipsis px-4 text-sm">{trashStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {trashStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {trashStats.total}</td>
+        {@render row($t('trash'), trashStats.images, trashStats.videos, trashStats.total)}
       </tr>
     </tbody>
   </table>
@@ -121,8 +116,8 @@
       <tr
         class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
       >
-        <td class="w-1/2 text-ellipsis px-4 text-sm"> {albumStats.owned}</td>
-        <td class="w-1/2 text-ellipsis px-4 text-sm">{albumStats.shared}</td>
+        <td class="w-1/2 text-ellipsis px-4 text-sm"> {albumStats.owned.toLocaleString()}</td>
+        <td class="w-1/2 text-ellipsis px-4 text-sm">{albumStats.shared.toLocaleString()}</td>
       </tr>
     </tbody>
   </table>
