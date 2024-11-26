@@ -6,6 +6,7 @@
     type AssetStatsResponseDto,
   } from '@immich/sdk';
   import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   let timelineStats: AssetStatsResponseDto = $state({
     videos: 0,
@@ -59,77 +60,75 @@
 </script>
 
 <section class="my-6">
-  <p class="text-xs dark:text-white">PHOTOS AND VIDEOS</p>
+  <p class="text-xs dark:text-white uppercase">{$t('photo_and_video')}</p>
   <table class="w-full text-left mt-4">
     <thead
       class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="w-1/3 text-center text-sm font-medium">View</th>
-        <th class="w-1/3 text-center text-sm font-medium">Photos</th>
-        <th class="w-1/3 text-center text-sm font-medium">Video</th>
-        <th class="w-1/3 text-center text-sm font-medium">Total</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('view')}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('photo')}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('video')}</th>
+        <th class="w-1/4 text-center text-sm font-medium">{$t('total')}</th>
       </tr>
     </thead>
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       <tr
         class={`flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50`}
       >
-        <td class="w-1/3 text-ellipsis px-4 text-sm">Timeline</td>
-        <td class="w-1/3 text-ellipsis px-4 text-sm">{timelineStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {timelineStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {timelineStats.total}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('timeline')}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{timelineStats.images}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {timelineStats.videos}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {timelineStats.total}</td>
       </tr>
 
       <tr
         class={`flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75`}
       >
-        <td class="w-1/3 text-ellipsis px-4 text-sm">Favorites</td>
-        <td class="w-1/3 text-ellipsis px-4 text-sm">{favoriteStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {favoriteStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {favoriteStats.total}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('favorites')}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{favoriteStats.images}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {favoriteStats.videos}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {favoriteStats.total}</td>
       </tr>
 
       <tr
         class={`flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50`}
       >
-        <td class="w-1/3 text-ellipsis px-4 text-sm">Archives</td>
-        <td class="w-1/3 text-ellipsis px-4 text-sm">{archiveStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {archiveStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {archiveStats.total}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('archive')}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{archiveStats.images}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {archiveStats.videos}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {archiveStats.total}</td>
       </tr>
 
       <tr
         class={`flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75`}
       >
-        <td class="w-1/3 text-ellipsis px-4 text-sm">Trash</td>
-        <td class="w-1/3 text-ellipsis px-4 text-sm">{trashStats.images}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {trashStats.videos}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {trashStats.total}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{$t('trash')}</td>
+        <td class="w-1/4 text-ellipsis px-4 text-sm">{trashStats.images}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {trashStats.videos}</td>
+        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {trashStats.total}</td>
       </tr>
     </tbody>
   </table>
 
   <div class="mt-6">
-    <p class="text-xs dark:text-white">ALBUMS</p>
+    <p class="text-xs dark:text-white uppercase">{$t('albums')}</p>
   </div>
   <table class="w-full text-left mt-4">
     <thead
       class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
     >
       <tr class="flex w-full place-items-center">
-        <th class="w-1/3 text-center text-sm font-medium">Owned</th>
-        <th class="w-1/3 text-center text-sm font-medium">Shared</th>
-        <th class="w-1/3 text-center text-sm font-medium">Not Shared</th>
+        <th class="w-1/2 text-center text-sm font-medium">{$t('owned')}</th>
+        <th class="w-1/2 text-center text-sm font-medium">{$t('shared')}</th>
       </tr>
     </thead>
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       <tr
         class={`flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50`}
       >
-        <td class="w-1/3 text-ellipsis px-4 text-sm"> {albumStats.owned}</td>
-        <td class="w-1/3 text-ellipsis px-4 text-sm">{albumStats.shared}</td>
-        <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3"> {albumStats.notShared}</td>
+        <td class="w-1/2 text-ellipsis px-4 text-sm"> {albumStats.owned}</td>
+        <td class="w-1/2 text-ellipsis px-4 text-sm">{albumStats.shared}</td>
       </tr>
     </tbody>
   </table>
