@@ -232,7 +232,6 @@
     return Object.keys(obj) as (keyof T)[];
   }
   let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
-
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />

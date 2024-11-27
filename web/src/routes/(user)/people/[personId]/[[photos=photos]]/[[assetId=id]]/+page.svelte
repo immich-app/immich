@@ -340,7 +340,6 @@
   let isAllArchive = $derived([...$selectedAssets].every((asset) => asset.isArchived));
   let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
   let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
-
 </script>
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
