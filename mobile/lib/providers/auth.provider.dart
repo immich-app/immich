@@ -45,6 +45,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return _authService.validateServerUrl(url);
   }
 
+  Future<bool> validateAuxilaryServerUrl(String url) async {
+    try {
+      final validEndpoint = await _apiService.resolveEndpoint(url);
+      return await _authService.validateAuxilaryServerUrl(validEndpoint);
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<LoginResponse> login(String email, String password) async {
     final response = await _authService.login(email, password);
     await saveAuthInfo(accessToken: response.accessToken);

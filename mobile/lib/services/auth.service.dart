@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
@@ -44,6 +46,28 @@ class AuthService {
     Store.put(StoreKey.serverUrl, validUrl);
 
     return validUrl;
+  }
+
+  Future<bool> validateAuxilaryServerUrl(String url) async {
+    final httpclient = HttpClient();
+    final accessToken = _authRepository.getAccessToken();
+    bool isValid = false;
+
+    try {
+      final uri = Uri.parse('$url/users/me');
+      final request = await httpclient.getUrl(uri);
+      request.headers.add('x-immich-user-token', accessToken);
+      final response = await request.close();
+      if (response.statusCode == 200) {
+        isValid = true;
+      }
+    } catch (error) {
+      _log.severe("Error validating auxilary endpoint", error);
+    } finally {
+      httpclient.close();
+    }
+
+    return isValid;
   }
 
   Future<LoginResponse> login(String email, String password) {

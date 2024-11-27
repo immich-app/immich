@@ -3,6 +3,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -26,5 +27,10 @@ class AuthRepository extends DatabaseRepository implements IAuthRepository {
         db.users.clear(),
       ]);
     });
+  }
+
+  @override
+  String getAccessToken() {
+    return Store.get(StoreKey.accessToken);
   }
 }
