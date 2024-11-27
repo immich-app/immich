@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { locale } from '$lib/stores/preferences.store';
   import {
     getAlbumStatistics,
     getAssetStatistics,
@@ -53,72 +54,61 @@
   });
 </script>
 
-{#snippet row(viewName: string, imageCount: number, videoCount: number, totalCount: number)}
-  <td class="w-1/4 text-ellipsis px-4 text-sm">{viewName}</td>
-  <td class="w-1/4 text-ellipsis px-4 text-sm">{imageCount}</td>
-  <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {videoCount}</td>
-  <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/4"> {totalCount}</td>
+{#snippet row(viewName: string, stats: AssetStatsResponseDto)}
+  <tr
+    class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg odd:bg-immich-bg even:bg-immich-gray odd:dark:bg-immich-dark-gray/50 even:dark:bg-immich-dark-gray/75"
+  >
+    <td class="w-1/4 px-4 text-sm">{viewName}</td>
+    <td class="w-1/4 px-4 text-sm">{stats.images.toLocaleString($locale)}</td>
+    <td class="w-1/4 px-4 text-sm">{stats.videos.toLocaleString($locale)}</td>
+    <td class="w-1/4 px-4">{stats.total.toLocaleString($locale)}</td>
+  </tr>
 {/snippet}
 
 <section class="my-6">
   <p class="text-xs dark:text-white uppercase">{$t('photos_and_videos')}</p>
-  <table class="w-full text-left mt-4">
-    <thead
-      class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
-    >
-      <tr class="flex w-full place-items-center">
-        <th class="w-1/4 text-center text-sm font-medium">{$t('view').toLocaleString()}</th>
-        <th class="w-1/4 text-center text-sm font-medium">{$t('photos').toLocaleString()}</th>
-        <th class="w-1/4 text-center text-sm font-medium">{$t('videos').toLocaleString()}</th>
-        <th class="w-1/4 text-center text-sm font-medium">{$t('total').toLocaleString()}</th>
-      </tr>
-    </thead>
-    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      <tr
-        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
+  <div class="overflow-x-auto">
+    <table class="w-full text-left mt-4">
+      <thead
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        {@render row($t('timeline'), timelineStats.images, timelineStats.videos, timelineStats.total)}
-      </tr>
-
-      <tr
-        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75"
-      >
-        {@render row($t('favorites'), favoriteStats.images, favoriteStats.videos, favoriteStats.total)}
-      </tr>
-
-      <tr
-        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
-      >
-        {@render row($t('archive'), archiveStats.images, archiveStats.videos, archiveStats.total)}
-      </tr>
-
-      <tr
-        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-gray dark:bg-immich-dark-gray/75"
-      >
-        {@render row($t('trash'), trashStats.images, trashStats.videos, trashStats.total)}
-      </tr>
-    </tbody>
-  </table>
+        <tr class="flex w-full place-items-center text-sm font-medium text-center">
+          <th class="w-1/4">{$t('view_name')}</th>
+          <th class="w-1/4">{$t('photos')}</th>
+          <th class="w-1/4">{$t('videos')}</th>
+          <th class="w-1/4">{$t('total')}</th>
+        </tr>
+      </thead>
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        {@render row($t('timeline'), timelineStats)}
+        {@render row($t('favorites'), favoriteStats)}
+        {@render row($t('archive'), archiveStats)}
+        {@render row($t('trash'), trashStats)}
+      </tbody>
+    </table>
+  </div>
 
   <div class="mt-6">
     <p class="text-xs dark:text-white uppercase">{$t('albums')}</p>
   </div>
-  <table class="w-full text-left mt-4">
-    <thead
-      class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
-    >
-      <tr class="flex w-full place-items-center">
-        <th class="w-1/2 text-center text-sm font-medium">{$t('owned')}</th>
-        <th class="w-1/2 text-center text-sm font-medium">{$t('shared')}</th>
-      </tr>
-    </thead>
-    <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      <tr
-        class="flex h-[60px] w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
+  <div class="overflow-x-auto">
+    <table class="w-full text-left mt-4">
+      <thead
+        class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
-        <td class="w-1/2 text-ellipsis px-4 text-sm"> {albumStats.owned.toLocaleString()}</td>
-        <td class="w-1/2 text-ellipsis px-4 text-sm">{albumStats.shared.toLocaleString()}</td>
-      </tr>
-    </tbody>
-  </table>
+        <tr class="flex w-full place-items-center text-sm font-medium text-center">
+          <th class="w-1/2">{$t('owned')}</th>
+          <th class="w-1/2">{$t('shared')}</th>
+        </tr>
+      </thead>
+      <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+        <tr
+          class="flex h-14 w-full place-items-center text-center dark:text-immich-dark-fg bg-immich-bg dark:bg-immich-dark-gray/50"
+        >
+          <td class="w-1/2 px-4 text-sm">{albumStats.owned.toLocaleString($locale)}</td>
+          <td class="w-1/2 px-4 text-sm">{albumStats.shared.toLocaleString($locale)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </section>
