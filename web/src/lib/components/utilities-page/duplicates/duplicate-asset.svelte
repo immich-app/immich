@@ -4,42 +4,61 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
+  import { getAllAlbums, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
   import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline, mdiArchiveArrowDownOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import { locale } from '$lib/stores/preferences.store';
+  import type { SelectedSyncData } from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { DateTime } from 'luxon';
 
   interface Props {
     asset: AssetResponseDto;
+    descriptionHeight: number;
     isSelected: boolean;
+    isSynchronizeAlbumsActive: boolean;
+    isSynchronizeFavoritesActive: boolean;
+    isSynchronizeArchivesActive: boolean;
+    locationHeight: number;
+    selectedSyncData: SelectedSyncData;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
+    onSelectDate: (dateTime: DateTime) => void;
+    onSelectDescription: (description: string) => void;
+    onSelectLocation: (location: SelectedSyncData['location']) => void;
+    setAlbums: (albums: AlbumResponseDto[]) => void;
+    setDescriptionHeight: (height: number) => void;
+    setLocationHeight: (height: number) => void;
   }
-  let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+
+  let {
+    asset,
+    descriptionHeight,
+    isSelected,
+    isSynchronizeAlbumsActive,
+    isSynchronizeFavoritesActive,
+    isSynchronizeArchivesActive,
+    locationHeight,
+    selectedSyncData,
+    onSelectAsset,
+    onViewAsset,
+    onSelectDate,
+    onSelectDescription,
+    onSelectLocation,
+    setAlbums,
+    setDescriptionHeight,
+    setLocationHeight,
+  }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
 
-  export let selectedSyncData;
-  export let onSelectDate: (dateTime) => void;
-  export let onSelectDescription: (description) => void;
-  export let onSelectLocation: (location) => void;
-  export let descriptionHeight;
-  export let setDescriptionHeight: (height) => void;
-  export let locationHeight;
-  export let setLocationHeight: (height) => void;
-  export let isSynchronizeAlbumsActive: boolean;
-  export let isSynchronizeFavoritesActive: boolean;
-  export let isSynchronizeArchivesActive: boolean;
-  export let setAlbums: (albums) => void;
-
   selectedSyncData.isFavorite = selectedSyncData.isFavorite || asset.isFavorite;
   selectedSyncData.isArchived = selectedSyncData.isArchived || asset.isArchived;
 
-  let descriptionItem;
-  let locationItem;
-  let albums = [];
+  let descriptionItem = $state<HTMLButtonElement>();
+  let locationItem = $state<HTMLButtonElement>();
+  let albums: AlbumResponseDto[] = $state([]);
   onMount(async () => {
     setDescriptionHeight(descriptionItem.getBoundingClientRect().height);
     setLocationHeight(locationItem.getBoundingClientRect().height);
@@ -47,7 +66,7 @@
     setAlbums(albums);
   });
 
-  const getBackgroundColor = (isSelected, syncDataExist, syncIsAssetData) => {
+  const getBackgroundColor = (isSelected: boolean, syncDataExist: boolean, syncIsAssetData: boolean) => {
     let color = 'rounded-xl dark:hover:bg-gray-300';
     color += isSelected ? ' hover:bg-gray-300' : ' hover:bg-gray-500';
     if (isSelected) {
@@ -62,33 +81,39 @@
     return color;
   };
 
-  $: timeZone = asset.exifInfo?.timeZone;
-  $: dateTime =
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime);
-  $: description = asset.exifInfo?.description;
-  $: location = {
+      : fromLocalDateTime(asset.localDateTime),
+  );
+  let description = $derived(asset.exifInfo?.description);
+  let location = $derived({
     latitude: asset.exifInfo?.latitude,
     longitude: asset.exifInfo?.longitude,
     city: asset.exifInfo?.city,
     state: asset.exifInfo?.state,
     country: asset.exifInfo?.country,
-  };
-  $: displayedDateTime = isSelected && selectedSyncData?.dateTime ? selectedSyncData.dateTime : dateTime;
-  $: displayedTimeZone = isSelected && selectedSyncData?.timeZone ? selectedSyncData.timeZone : timeZone;
-  $: displayedLocation = isSelected && selectedSyncData?.location ? selectedSyncData.location : location;
-  $: displayedDescription = isSelected && selectedSyncData?.description ? selectedSyncData.description : description;
-  $: displayedFavorite =
+  });
+  let displayedDateTime = $derived(isSelected && selectedSyncData?.dateTime ? selectedSyncData.dateTime : dateTime);
+  let displayedTimeZone = $derived(isSelected && selectedSyncData?.timeZone ? selectedSyncData.timeZone : timeZone);
+  let displayedLocation = $derived(isSelected && selectedSyncData?.location ? selectedSyncData.location : location);
+  let displayedDescription = $derived(
+    isSelected && selectedSyncData?.description ? selectedSyncData.description : description,
+  );
+  let displayedFavorite = $derived(
     isSelected && isSynchronizeFavoritesActive && selectedSyncData?.isFavorite
       ? selectedSyncData.isFavorite
-      : asset.isFavorite;
-  $: displayedArchived =
+      : asset.isFavorite,
+  );
+  let displayedArchived = $derived(
     isSelected && isSynchronizeArchivesActive && selectedSyncData?.isArchived
       ? selectedSyncData.isArchived
-      : asset.isArchived;
-  $: displayedAlbums =
-    isSelected && isSynchronizeAlbumsActive && selectedSyncData?.albums ? selectedSyncData.albums : albums;
+      : asset.isArchived,
+  );
+  let displayedAlbums = $derived(
+    isSelected && isSynchronizeAlbumsActive && selectedSyncData?.albums ? selectedSyncData.albums : albums,
+  );
 </script>
 
 <div
@@ -196,7 +221,7 @@
       type="button"
       style="padding: 3px;"
       class={getBackgroundColor(isSelected, selectedSyncData?.dateTime, selectedSyncData.dateTime?.ts === dateTime?.ts)}
-      on:click={() => onSelectDate(displayedDateTime)}
+      onclick={() => onSelectDate(displayedDateTime)}
     >
       {displayedDateTime.toLocaleString(
         {
@@ -222,11 +247,11 @@
       style="padding: 3px; {locationHeight ? 'height: ' + locationHeight + 'px' : ''}"
       class={getBackgroundColor(
         isSelected,
-        selectedSyncData?.location,
+        selectedSyncData?.location !== null,
         selectedSyncData?.location?.latitude === location.latitude &&
           selectedSyncData?.location?.longitude === location.longitude,
       )}
-      on:click={() => onSelectLocation(displayedLocation)}
+      onclick={() => onSelectLocation(displayedLocation)}
     >
       {#if displayedLocation?.city}
         <div class="text-sm">
@@ -246,10 +271,10 @@
       style="padding: 3px; {descriptionHeight ? 'height: ' + descriptionHeight + 'px' : ''}"
       class={getBackgroundColor(
         isSelected,
-        selectedSyncData?.description,
+        selectedSyncData?.description !== null,
         selectedSyncData?.description === description,
       )}
-      on:click={() => onSelectDescription(displayedDescription)}
+      onclick={() => onSelectDescription(displayedDescription)}
     >
       {displayedDescription}
     </button>

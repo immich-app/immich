@@ -3,13 +3,24 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
 
-  export let synchronizeAlbums: boolean;
-  export let synchronizeFavorites: boolean;
-  export let synchronizeArchives: boolean;
-  export let onClose: () => void;
-  export let onToggleSyncAlbum: () => void;
-  export let onToggleSyncFavorites: () => void;
-  export let onToggleSyncArchives: () => void;
+  interface Props {
+    synchronizeAlbums: boolean;
+    synchronizeArchives: boolean;
+    synchronizeFavorites: boolean;
+    onClose: () => void;
+    onToggleSyncAlbum: () => void;
+    onToggleSyncArchives: () => void;
+    onToggleSyncFavorites: () => void;
+  }
+  let {
+    synchronizeAlbums,
+    synchronizeArchives,
+    synchronizeFavorites,
+    onClose,
+    onToggleSyncAlbum,
+    onToggleSyncArchives,
+    onToggleSyncFavorites,
+  }: Props = $props();
 </script>
 
 <FullScreenModal title={$t('options')} width="auto" {onClose}>

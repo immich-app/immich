@@ -21,17 +21,18 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import DuplicateOptions from '$lib/components/utilities-page/duplicates/duplicate-options.svelte';
   import { locale } from '$lib/stores/preferences.store';
+  import type { SelectedSyncData } from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
 
   interface Props {
     data: PageData;
     isShowKeyboardShortcut?: boolean;
+    isShowOptions?: boolean;
   }
 
-  let { data = $bindable(), isShowKeyboardShortcut = $bindable(false) }: Props = $props();
-  export let isShowOptions = false;
-  let isSynchronizeAlbumsActive = true;
-  let isSynchronizeFavoritesActive = true;
-  let isSynchronizeArchivesActive = true;
+  let { data = $bindable(), isShowKeyboardShortcut = $bindable(false), isShowOptions }: Props = $props();
+  let isSynchronizeAlbumsActive = $state(true);
+  let isSynchronizeFavoritesActive = $state(true);
+  let isSynchronizeArchivesActive = $state(true);
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -88,7 +89,7 @@
     duplicateId: string,
     duplicateAssetIds: string[],
     trashIds: string[],
-    selectedDataToSync,
+    selectedDataToSync: SelectedSyncData,
   ) => {
     return withConfirmation(
       async () => {
@@ -112,8 +113,8 @@
           assetBulkUpdate.dateTimeOriginal = selectedDataToSync.dateTime;
         }
         if (selectedDataToSync.location !== null) {
-          assetBulkUpdate.latitude = selectedDataToSync.location.latitude;
-          assetBulkUpdate.longitude = selectedDataToSync.location.longitude;
+          assetBulkUpdate.latitude = selectedDataToSync?.location.latitude;
+          assetBulkUpdate.longitude = selectedDataToSync?.location.longitude;
         }
 
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
@@ -235,7 +236,7 @@
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
       />
-    <CircleIconButton icon={mdiCogOutline} title={$t('options')} on:click={() => (isShowOptions = !isShowOptions)} />
+      <CircleIconButton icon={mdiCogOutline} title={$t('options')} onclick={() => (isShowOptions = !isShowOptions)} />
     </div>
   {/snippet}
 

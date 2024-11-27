@@ -12,31 +12,57 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import { DateTime } from 'luxon';
 
   interface Props {
     assets: AssetResponseDto[];
-    onResolve: (duplicateAssetIds: string[], trashIds: string[], selectedDataToSync) => void;
+    isSynchronizeAlbumsActive: boolean;
+    isSynchronizeArchivesActive: boolean;
+    isSynchronizeFavoritesActive: boolean;
+    onResolve: (duplicateAssetIds: string[], trashIds: string[], selectedDataToSync: SelectedSyncData) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
-  export let isSynchronizeAlbumsActive: boolean;
-  export let isSynchronizeFavoritesActive: boolean;
-  export let isSynchronizeArchivesActive: boolean;
+  let {
+    assets,
+    isSynchronizeAlbumsActive,
+    isSynchronizeArchivesActive,
+    isSynchronizeFavoritesActive,
+    onResolve,
+    onStack,
+  }: Props = $props();
 
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
-  let descriptionHeight = 0;
-  let locationHeight = 0;
+  let descriptionHeight = $state(0);
+  let locationHeight = $state(0);
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
-  let selectedSyncData = {
+  export interface SelectedSyncData {
+    dateTime: DateTime | null;
+    timeZone: string | null;
+    description: string | null;
+    location: {
+      latitude: number;
+      longitude: number;
+      city: string;
+      state: string;
+      country: string;
+    } | null;
+    albums: AssetResponseDto[];
+    isArchived: boolean | null;
+    isFavorite: boolean | null;
+  }
+  let selectedSyncData: SelectedSyncData = $state({
     dateTime: null,
+    timeZone: null,
     description: null,
     location: null,
     albums: [],
-  };
+    isArchived: null,
+    isFavorite: null,
+  });
 
   onMount(() => {
     const suggestedAsset = suggestDuplicateByFileSize(assets);
@@ -61,37 +87,18 @@
     }
   };
 
-  const onSelectDate = (dateTime) => {
+  const onSelectDate = (dateTime: DateTime) => {
     selectedSyncData.dateTime = selectedSyncData.dateTime?.ts === dateTime.ts ? null : dateTime;
   };
 
-  const onSelectDescription = (description) => {
+  const onSelectDescription = (description: string) => {
     selectedSyncData.description = selectedSyncData.description === description ? null : description;
   };
 
-  const onSelectLocation = (location) => {
+  const onSelectLocation = (location: SelectedSyncData['location']) => {
     if (
-      selectedSyncData.location?.longitude === location.longitude &&
-      selectedSyncData.location?.latitude === location.latitude
-    ) {
-      selectedSyncData.location = null;
-    } else {
-      selectedSyncData.location = location;
-    }
-  };
-
-  const onSelectDate = (dateTime) => {
-    selectedSyncData.dateTime = selectedSyncData.dateTime?.ts === dateTime.ts ? null : dateTime;
-  };
-
-  const onSelectDescription = (description) => {
-    selectedSyncData.description = selectedSyncData.description === description ? null : description;
-  };
-
-  const onSelectLocation = (location) => {
-    if (
-      selectedSyncData.location?.longitude === location.longitude &&
-      selectedSyncData.location?.latitude === location.latitude
+      selectedSyncData.location?.longitude === location?.longitude &&
+      selectedSyncData.location?.latitude === location?.latitude
     ) {
       selectedSyncData.location = null;
     } else {
