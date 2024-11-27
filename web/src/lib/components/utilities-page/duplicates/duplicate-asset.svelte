@@ -11,6 +11,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import type { SelectedSyncData } from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
   import { DateTime } from 'luxon';
+  import DuplicateAssetSelection from '$lib/components/utilities-page/duplicates/duplicate-asset-selection.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -56,30 +57,15 @@
   selectedSyncData.isFavorite = selectedSyncData.isFavorite || asset.isFavorite;
   selectedSyncData.isArchived = selectedSyncData.isArchived || asset.isArchived;
 
-  let descriptionItem = $state<HTMLButtonElement>();
-  let locationItem = $state<HTMLButtonElement>();
+  let descriptionItem = $state<DuplicateAssetSelection>();
+  let locationItem = $state<DuplicateAssetSelection>();
   let albums: AlbumResponseDto[] = $state([]);
   onMount(async () => {
-    setDescriptionHeight(descriptionItem.getBoundingClientRect().height);
-    setLocationHeight(locationItem.getBoundingClientRect().height);
+    setDescriptionHeight(descriptionItem.getHeight());
+    setLocationHeight(locationItem.getHeight());
     albums = await getAllAlbums({ assetId: asset.id });
     setAlbums(albums);
   });
-
-  const getBackgroundColor = (isSelected: boolean, syncDataExist: boolean, syncIsAssetData: boolean) => {
-    let color = 'rounded-xl dark:hover:bg-gray-300';
-    color += isSelected ? ' hover:bg-gray-300' : ' hover:bg-gray-500';
-    if (isSelected) {
-      if (syncDataExist && !syncIsAssetData) {
-        color += ' bg-red-300/90';
-      }
-    } else {
-      if (syncIsAssetData) {
-        color += ' bg-green-400/90';
-      }
-    }
-    return color;
-  };
 
   let timeZone = $derived(asset.exifInfo?.timeZone);
   let dateTime = $derived(
@@ -217,11 +203,12 @@
         {$t('in_albums', { values: { count: displayedAlbums.length } })}
       {/if}
     </span>
-    <button
-      type="button"
-      style="padding: 3px;"
-      class={getBackgroundColor(isSelected, selectedSyncData?.dateTime, selectedSyncData.dateTime?.ts === dateTime?.ts)}
-      onclick={() => onSelectDate(displayedDateTime)}
+    <DuplicateAssetSelection
+      {isSelected}
+      selectedData={selectedSyncData.dateTime}
+      displayedData={displayedDateTime}
+      isSelectedEqualOriginal={selectedSyncData.dateTime?.ts === dateTime?.ts}
+      onClick={() => onSelectDate(displayedDateTime)}
     >
       {displayedDateTime.toLocaleString(
         {
@@ -240,18 +227,16 @@
         },
         { locale: $locale },
       )}
-    </button>
-    <button
-      type="button"
+    </DuplicateAssetSelection>
+    <DuplicateAssetSelection
       bind:this={locationItem}
-      style="padding: 3px; {locationHeight ? 'height: ' + locationHeight + 'px' : ''}"
-      class={getBackgroundColor(
-        isSelected,
-        selectedSyncData?.location !== null,
-        selectedSyncData?.location?.latitude === location.latitude &&
-          selectedSyncData?.location?.longitude === location.longitude,
-      )}
-      onclick={() => onSelectLocation(displayedLocation)}
+      {isSelected}
+      slotHeight={locationHeight}
+      selectedData={selectedSyncData?.location}
+      displayedData={displayedLocation?.city && displayedLocation?.state && displayedLocation?.country}
+      isSelectedEqualOriginal={selectedSyncData?.location?.latitude === location.latitude &&
+        selectedSyncData?.location?.longitude === location.longitude}
+      onClick={() => onSelectLocation(displayedLocation)}
     >
       {#if displayedLocation?.city}
         <div class="text-sm">
@@ -264,19 +249,17 @@
       {#if displayedLocation?.country}
         <p>{displayedLocation.country}</p>
       {/if}
-    </button>
-    <button
-      type="button"
+    </DuplicateAssetSelection>
+    <DuplicateAssetSelection
       bind:this={descriptionItem}
-      style="padding: 3px; {descriptionHeight ? 'height: ' + descriptionHeight + 'px' : ''}"
-      class={getBackgroundColor(
-        isSelected,
-        selectedSyncData?.description !== null,
-        selectedSyncData?.description === description,
-      )}
-      onclick={() => onSelectDescription(displayedDescription)}
+      {isSelected}
+      slotHeight={descriptionHeight}
+      selectedData={selectedSyncData.description}
+      displayedData={displayedDescription}
+      isSelectedEqualOriginal={selectedSyncData?.description === description}
+      onClick={() => onSelectDescription(displayedDescription)}
     >
       {displayedDescription}
-    </button>
+    </DuplicateAssetSelection>
   </div>
 </div>
