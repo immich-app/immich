@@ -115,7 +115,7 @@ export class SearchRepository implements ISearchRepository {
       {
         takenAfter: DummyValue.DATE,
         embedding: Array.from({ length: 512 }, Math.random),
-        query: "beach vacation",
+        query: 'beach vacation',
         lensModel: DummyValue.STRING,
         withStacked: true,
         isFavorite: true,
@@ -130,17 +130,14 @@ export class SearchRepository implements ISearchRepository {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
-      let builder = manager.createQueryBuilder(AssetEntity, 'asset')
-        .leftJoinAndSelect('asset.exifInfo', 'exif');
+      let builder = manager.createQueryBuilder(AssetEntity, 'asset').leftJoinAndSelect('asset.exifInfo', 'exif');
       builder = searchAssetBuilder(builder, options);
       builder.andWhere('asset.ownerId IN (:...userIds)');
 
       const parameters: Record<string, any> = { userIds };
 
       if (embedding) {
-        builder
-          .innerJoin('asset.smartSearch', 'search')
-          .addSelect('search.embedding <=> :embedding', 'similarity');
+        builder.innerJoin('asset.smartSearch', 'search').addSelect('search.embedding <=> :embedding', 'similarity');
         parameters.embedding = asVector(embedding);
       }
 
@@ -149,7 +146,8 @@ export class SearchRepository implements ISearchRepository {
       }
 
       if (query && embedding) {
-        builder.orderBy(`
+        builder.orderBy(
+          `
           CASE WHEN to_tsvector('english', COALESCE(exif.description, '')) @@ plainto_tsquery('english', :query)
           THEN
             ts_rank(
@@ -158,7 +156,9 @@ export class SearchRepository implements ISearchRepository {
             )
           ELSE 0 END * 0.7 +
           COALESCE((1 - (search.embedding <=> :embedding)), 0) * 0.3
-        `, 'DESC');
+        `,
+          'DESC',
+        );
       } else if (embedding) {
         builder.orderBy('search.embedding <=> :embedding', 'ASC');
       }
