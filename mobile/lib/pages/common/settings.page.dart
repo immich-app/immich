@@ -129,7 +129,14 @@ class _MobileLayout extends StatelessWidget {
                       color: context.primaryColor,
                     ),
                   ).tr(),
-                  subtitle: Text(setting.subtitle).tr(),
+                  subtitle: Text(
+                    setting.subtitle,
+                    style: TextStyle(
+                      color: context.isDarkTheme
+                          ? Colors.white
+                          : context.colorScheme.onSurface,
+                    ),
+                  ).tr(),
                   onTap: () =>
                       context.pushRoute(SettingsSubRoute(section: setting)),
                 ),

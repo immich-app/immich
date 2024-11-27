@@ -120,5 +120,11 @@
 	<true/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+  <key>NSLocationUsageDescription</key>
+  <string>We require this permission to access the WIFI information</string>
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>We require this permission to access the WIFI information</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>We require this permission to access the WIFI information</string>
 </dict>
 </plist>

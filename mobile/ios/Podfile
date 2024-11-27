@@ -102,6 +102,14 @@ post_install do |installer|
 
         ## dart: PermissionGroup.criticalAlerts
         # 'PERMISSION_CRITICAL_ALERTS=1'
+
+        ## The 'PERMISSION_LOCATION' macro enables the `locationWhenInUse` and `locationAlways` permission. If
+        ## the application only requires `locationWhenInUse`, only specify the `PERMISSION_LOCATION_WHENINUSE`
+        ## macro.
+        ##
+        ## dart: [PermissionGroup.location, PermissionGroup.locationAlways, PermissionGroup.locationWhenInUse]
+        'PERMISSION_LOCATION=1',
+        'PERMISSION_LOCATION_WHENINUSE=0',
       ]
 
     end
