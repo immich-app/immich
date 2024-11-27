@@ -1,5 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
+import 'dart:ui';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -92,6 +91,40 @@ class NetworkingSettings extends HookConsumerWidget {
           entries.value.every((e) => e.status == AuxCheckStatus.valid);
     }
 
+    handleReorder(int oldIndex, int newIndex) {
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+
+      final entry = entries.value.removeAt(oldIndex);
+      entries.value.insert(newIndex, entry);
+      entries.value = [...entries.value];
+    }
+
+    handleDismiss(int index) {
+      entries.value = [
+        ...entries.value..removeAt(index),
+      ];
+    }
+
+    Widget proxyDecorator(
+      Widget child,
+      int index,
+      Animation<double> animation,
+    ) {
+      return AnimatedBuilder(
+        animation: animation,
+        builder: (BuildContext context, Widget? child) {
+          return Material(
+            color: context.colorScheme.surfaceContainerHighest,
+            shadowColor: context.colorScheme.primary.withOpacity(0.2),
+            child: child,
+          );
+        },
+        child: child,
+      );
+    }
+
     return ListView(
       children: [
         const SizedBox(height: 16),
@@ -129,16 +162,20 @@ class NetworkingSettings extends HookConsumerWidget {
         const SizedBox(height: 16),
         Form(
           key: GlobalKey<FormState>(),
-          child: ListView.builder(
+          child: ReorderableListView.builder(
+            buildDefaultDragHandles: false,
+            proxyDecorator: proxyDecorator,
             shrinkWrap: true,
             physics: NeverScrollableScrollPhysics(),
             itemCount: entries.value.length,
+            onReorder: handleReorder,
             itemBuilder: (context, index) {
               return EndpointInput(
                 key: Key(index.toString()),
+                index: index,
                 endpoint: entries.value[index],
                 onValidated: updateValidationStatus,
-                index: index,
+                onDismissed: handleDismiss,
               );
             },
           ),
@@ -182,11 +219,13 @@ class EndpointInput extends StatefulHookConsumerWidget {
     required this.endpoint,
     required this.index,
     required this.onValidated,
+    required this.onDismissed,
   });
 
   final AuxilaryEndpoint endpoint;
   final int index;
   final Function(String url, int index, AuxCheckStatus status) onValidated;
+  final Function(int index) onDismissed;
 
   @override
   EndpointInputState createState() => EndpointInputState();
@@ -197,6 +236,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
   late final FocusNode focusNode;
   late AuxCheckStatus auxCheckStatus;
   bool isInputValid = false;
+  bool enable = false;
 
   @override
   void initState() {
@@ -206,6 +246,8 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
 
     setState(() {
       auxCheckStatus = widget.endpoint.status;
+      enable = controller.text !=
+          db_store.Store.get(db_store.StoreKey.serverEndpoint);
     });
   }
 
@@ -257,41 +299,69 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.only(left: 24, right: 24),
-      leading: StatusIcon(
-        key: ValueKey('status_$auxCheckStatus'),
-        status: auxCheckStatus,
+    return Dismissible(
+      key: ValueKey(widget.index.toString()),
+      direction: enable ? DismissDirection.endToStart : DismissDirection.none,
+      onDismissed: (_) => widget.onDismissed(widget.index),
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 16),
+        child: const Icon(
+          Icons.delete,
+          color: Colors.white,
+        ),
       ),
-      subtitle: TextFormField(
-        onTapOutside: (_) => focusNode.unfocus(),
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        validator: validateUrl,
-        keyboardType: TextInputType.url,
-        style: TextStyle(
-          fontSize: 16,
-          fontFamily: 'Inconsolata',
-          fontWeight: FontWeight.w600,
-          color: context.colorScheme.onSurface,
+      child: ListTile(
+        contentPadding: EdgeInsets.only(left: 24, right: 24),
+        trailing: ReorderableDragStartListener(
+          index: widget.index,
+          child: Icon(Icons.drag_handle_rounded),
         ),
-        decoration: InputDecoration(
-          hintText: 'http(s)://immich.domain.com',
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16.0,
-          ),
-          filled: true,
-          fillColor: context.colorScheme.surfaceContainer,
-          border: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.red[300]!),
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
+        leading: StatusIcon(
+          key: ValueKey('status_$auxCheckStatus'),
+          status: auxCheckStatus,
         ),
-        controller: controller,
-        focusNode: focusNode,
+        subtitle: TextFormField(
+          onTapOutside: (_) => focusNode.unfocus(),
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: validateUrl,
+          keyboardType: TextInputType.url,
+          style: TextStyle(
+            fontSize: 16,
+            fontFamily: 'Inconsolata',
+            fontWeight: FontWeight.w600,
+            color: enable
+                ? context.colorScheme.onSurface
+                : context.colorScheme.onSurface.withOpacity(0.6),
+          ),
+          decoration: InputDecoration(
+            hintText: 'http(s)://immich.domain.com',
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16.0,
+            ),
+            filled: true,
+            fillColor: context.colorScheme.surfaceContainer,
+            border: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.red[300]!),
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(
+                color:
+                    context.isDarkTheme ? Colors.grey[900]! : Colors.grey[300]!,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(16)),
+            ),
+          ),
+          controller: controller,
+          focusNode: focusNode,
+          enabled: enable,
+        ),
       ),
     );
   }
