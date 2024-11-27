@@ -1,4 +1,5 @@
-import 'dart:ui';
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,25 @@ class AuxilaryEndpoint {
 
   @override
   int get hashCode => url.hashCode ^ status.hashCode;
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'url': url,
+      'status': status.toMap(),
+    };
+  }
+
+  factory AuxilaryEndpoint.fromMap(Map<String, dynamic> map) {
+    return AuxilaryEndpoint(
+      map['url'] as String,
+      AuxCheckStatus.fromMap(map['status'] as Map<String, dynamic>),
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory AuxilaryEndpoint.fromJson(String source) =>
+      AuxilaryEndpoint.fromMap(json.decode(source) as Map<String, dynamic>);
 }
 
 class NetworkingSettings extends HookConsumerWidget {
@@ -53,13 +73,50 @@ class NetworkingSettings extends HookConsumerWidget {
         db_store.Store.get(db_store.StoreKey.serverEndpoint);
     final entries = useState<List<AuxilaryEndpoint>>(
       [
-        AuxilaryEndpoint(currentEndpoint, AuxCheckStatus.valid),
         AuxilaryEndpoint('', AuxCheckStatus.unknown),
       ],
     );
 
+    useEffect(
+      () {
+        final jsonString =
+            db_store.Store.tryGet(db_store.StoreKey.endpointLists);
+
+        if (jsonString == null) {
+          return null;
+        }
+
+        final List<dynamic> jsonList = jsonDecode(jsonString);
+        entries.value =
+            jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+        return null;
+      },
+      [],
+    );
+
     final canSave =
         useState(entries.value.every((e) => e.status == AuxCheckStatus.valid));
+
+    saveEndpointList() {
+      canSave.value =
+          entries.value.every((e) => e.status == AuxCheckStatus.valid);
+
+      final endpointList = entries.value
+          .where((url) => url.status == AuxCheckStatus.valid)
+          .toList();
+
+      if (endpointList.length == 1) {
+        db_store.Store.delete(db_store.StoreKey.endpointLists);
+        return;
+      }
+
+      final jsonString = jsonEncode(endpointList);
+
+      db_store.Store.put(
+        db_store.StoreKey.endpointLists,
+        jsonString,
+      );
+    }
 
     checkNetwork() async {
       final connectivityResult = await Connectivity().checkConnectivity();
@@ -87,8 +144,7 @@ class NetworkingSettings extends HookConsumerWidget {
       entries.value[index] =
           entries.value[index].copyWith(url: url, status: status);
 
-      canSave.value =
-          entries.value.every((e) => e.status == AuxCheckStatus.valid);
+      saveEndpointList();
     }
 
     handleReorder(int oldIndex, int newIndex) {
@@ -99,12 +155,14 @@ class NetworkingSettings extends HookConsumerWidget {
       final entry = entries.value.removeAt(oldIndex);
       entries.value.insert(newIndex, entry);
       entries.value = [...entries.value];
+
+      saveEndpointList();
     }
 
     handleDismiss(int index) {
-      entries.value = [
-        ...entries.value..removeAt(index),
-      ];
+      entries.value = [...entries.value..removeAt(index)];
+
+      saveEndpointList();
     }
 
     Widget proxyDecorator(
@@ -126,6 +184,7 @@ class NetworkingSettings extends HookConsumerWidget {
     }
 
     return ListView(
+      physics: ClampingScrollPhysics(),
       children: [
         const SizedBox(height: 16),
         Padding(
@@ -134,8 +193,10 @@ class NetworkingSettings extends HookConsumerWidget {
             child: ListTile(
               leading: Icon(Icons.check_circle_rounded, color: Colors.green),
               title: Text(
-                "SERVER URL",
-                style: context.textTheme.labelMedium,
+                "YOU ARE CONNECTING TO",
+                style: context.textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               subtitle: Text(
                 currentEndpoint,
@@ -149,62 +210,174 @@ class NetworkingSettings extends HookConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text(
-            "The app will attempt to connect to the following endpoints, in descending order of priority.",
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.colorScheme.onSurface.withOpacity(0.8),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: context.colorScheme.surfaceContainerLow,
+              border: Border.all(
+                color: context.colorScheme.surfaceContainerHigh,
+                width: 1,
+              ),
+            ),
+            child: Stack(
+              children: [
+                ListView(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  physics: ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 24,
+                      ),
+                      child: Text(
+                        "LOCAL CONNECTION URL",
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.only(left: 24),
+                      leading: Icon(Icons.wifi_rounded),
+                      title: Text("WiFi Name"),
+                      subtitle: Text("immich"),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.only(left: 24),
+                      leading: Icon(Icons.lan_rounded),
+                      title: Text("Server Endpoint"),
+                      subtitle: Text("http://10.1.15.216:2283/api"),
+                    ),
+                    SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                      ),
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          icon: Icon(Icons.wifi_find_rounded),
+                          label: Text('DISCOVER'),
+                          onPressed: () {
+                            checkNetwork();
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // SizedBox(height: 250),
+                Positioned(
+                  bottom: -36,
+                  right: -36,
+                  child: Icon(
+                    Icons.home_outlined,
+                    size: 120,
+                    color: context.primaryColor.withOpacity(0.05),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
         const SizedBox(height: 16),
-        Form(
-          key: GlobalKey<FormState>(),
-          child: ReorderableListView.builder(
-            buildDefaultDragHandles: false,
-            proxyDecorator: proxyDecorator,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: entries.value.length,
-            onReorder: handleReorder,
-            itemBuilder: (context, index) {
-              return EndpointInput(
-                key: Key(index.toString()),
-                index: index,
-                endpoint: entries.value[index],
-                onValidated: updateValidationStatus,
-                onDismissed: handleDismiss,
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 16),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: SizedBox(
-            height: 48,
-            child: OutlinedButton.icon(
-              icon: Icon(Icons.add),
-              label: Text('Add Endpoint'),
-              onPressed: () {
-                entries.value = [
-                  ...entries.value,
-                  AuxilaryEndpoint('', AuxCheckStatus.unknown),
-                ];
-              },
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              color: context.colorScheme.surfaceContainerLow,
+              border: Border.all(
+                color: context.colorScheme.surfaceContainerHighest,
+                width: 1,
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              onPressed: canSave.value ? checkNetwork : null,
-              child: Text('Save'),
+            child: Stack(
+              children: [
+                ListView(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  physics: ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 24,
+                      ),
+                      child: Text(
+                        "EXTERNAL CONNECTION URL",
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8.0,
+                        horizontal: 24,
+                      ),
+                      child: Text(
+                        "When not connected to Wi-Fi, the app will attempt to connect to the following endpoints, in order.",
+                        style: context.textTheme.bodyLarge,
+                      ),
+                    ),
+                    Form(
+                      key: GlobalKey<FormState>(),
+                      child: ReorderableListView.builder(
+                        buildDefaultDragHandles: false,
+                        proxyDecorator: proxyDecorator,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: entries.value.length,
+                        onReorder: handleReorder,
+                        itemBuilder: (context, index) {
+                          return EndpointInput(
+                            key: Key(index.toString()),
+                            index: index,
+                            initialValue: entries.value[index],
+                            onValidated: updateValidationStatus,
+                            onDismissed: handleDismiss,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          icon: Icon(Icons.add),
+                          label: Text('ADD ENDPOINT'),
+                          onPressed: () {
+                            entries.value = [
+                              ...entries.value,
+                              AuxilaryEndpoint('', AuxCheckStatus.unknown),
+                            ];
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // SizedBox(height: 250),
+                Positioned(
+                  bottom: -36,
+                  right: -36,
+                  child: Icon(
+                    Icons.dns_rounded,
+                    size: 120,
+                    color: context.primaryColor.withOpacity(0.05),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -216,16 +389,16 @@ class NetworkingSettings extends HookConsumerWidget {
 class EndpointInput extends StatefulHookConsumerWidget {
   const EndpointInput({
     super.key,
-    required this.endpoint,
+    required this.initialValue,
     required this.index,
     required this.onValidated,
-    required this.onDismissed,
+    this.onDismissed,
   });
 
-  final AuxilaryEndpoint endpoint;
+  final AuxilaryEndpoint initialValue;
   final int index;
   final Function(String url, int index, AuxCheckStatus status) onValidated;
-  final Function(int index) onDismissed;
+  final Function(int index)? onDismissed;
 
   @override
   EndpointInputState createState() => EndpointInputState();
@@ -241,11 +414,11 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
   @override
   void initState() {
     super.initState();
-    controller = TextEditingController(text: widget.endpoint.url);
+    controller = TextEditingController(text: widget.initialValue.url);
     focusNode = FocusNode()..addListener(_onOutFocus);
 
     setState(() {
-      auxCheckStatus = widget.endpoint.status;
+      auxCheckStatus = widget.initialValue.status;
       enable = controller.text !=
           db_store.Store.get(db_store.StoreKey.serverEndpoint);
     });
@@ -301,8 +474,11 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
   Widget build(BuildContext context) {
     return Dismissible(
       key: ValueKey(widget.index.toString()),
-      direction: enable ? DismissDirection.endToStart : DismissDirection.none,
-      onDismissed: (_) => widget.onDismissed(widget.index),
+      direction: (enable || widget.onDismissed != null)
+          ? DismissDirection.endToStart
+          : DismissDirection.none,
+      onDismissed: (_) =>
+          widget.onDismissed != null ? widget.onDismissed!(widget.index) : null,
       background: Container(
         color: Colors.red,
         alignment: Alignment.centerRight,
@@ -369,6 +545,9 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
 
 class AuxCheckStatus {
   final String name;
+  AuxCheckStatus({
+    required this.name,
+  });
   const AuxCheckStatus._(this.name);
 
   static const loading = AuxCheckStatus._('loading');
@@ -377,13 +556,42 @@ class AuxCheckStatus {
   static const unknown = AuxCheckStatus._('unknown');
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant AuxCheckStatus other) {
     if (identical(this, other)) return true;
-    return other is AuxCheckStatus && other.name == name;
+
+    return other.name == name;
   }
 
   @override
   int get hashCode => name.hashCode;
+
+  AuxCheckStatus copyWith({
+    String? name,
+  }) {
+    return AuxCheckStatus(
+      name: name ?? this.name,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'name': name,
+    };
+  }
+
+  factory AuxCheckStatus.fromMap(Map<String, dynamic> map) {
+    return AuxCheckStatus(
+      name: map['name'] as String,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory AuxCheckStatus.fromJson(String source) =>
+      AuxCheckStatus.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() => 'AuxCheckStatus(name: $name)';
 }
 
 class StatusIcon extends StatelessWidget {

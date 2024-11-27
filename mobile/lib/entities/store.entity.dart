@@ -236,6 +236,8 @@ enum StoreKey<T> {
   colorfulInterface<bool>(130, type: bool),
 
   syncAlbums<bool>(131, type: bool),
+
+  endpointLists<String>(132, type: String),
   ;
 
   const StoreKey(
