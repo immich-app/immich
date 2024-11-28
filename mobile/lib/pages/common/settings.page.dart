@@ -8,7 +8,7 @@ import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_se
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/asset_viewer_settings.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/backup_settings.dart';
 import 'package:immich_mobile/widgets/settings/language_settings.dart';
-import 'package:immich_mobile/widgets/settings/networking_settings.dart';
+import 'package:immich_mobile/widgets/settings/networking_settings/networking_settings.dart';
 import 'package:immich_mobile/widgets/settings/notification_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/preference_setting.dart';
 import 'package:immich_mobile/routing/router.dart';
