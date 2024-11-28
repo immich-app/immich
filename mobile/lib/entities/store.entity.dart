@@ -238,6 +238,7 @@ enum StoreKey<T> {
   syncAlbums<bool>(131, type: bool),
 
   endpointLists<String>(132, type: String),
+  autoEndpointSwitching<bool>(133, type: bool),
   ;
 
   const StoreKey(

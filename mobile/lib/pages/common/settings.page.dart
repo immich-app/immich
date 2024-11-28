@@ -94,6 +94,7 @@ class _MobileLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.symmetric(vertical: 10.0),
       children: SettingSection.values
           .map(

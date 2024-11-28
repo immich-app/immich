@@ -5,6 +5,9 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -71,6 +74,8 @@ class NetworkingSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEndpoint =
         db_store.Store.get(db_store.StoreKey.serverEndpoint);
+    final featureEnabled =
+        useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
     final entries = useState<List<AuxilaryEndpoint>>(
       [
         AuxilaryEndpoint('', AuxCheckStatus.unknown),
@@ -184,11 +189,12 @@ class NetworkingSettings extends HookConsumerWidget {
     }
 
     return ListView(
+      padding: EdgeInsets.only(bottom: 96),
       physics: ClampingScrollPhysics(),
       children: [
         const SizedBox(height: 16),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Card(
             child: ListTile(
               leading: Icon(Icons.check_circle_rounded, color: Colors.green),
@@ -210,13 +216,44 @@ class NetworkingSettings extends HookConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        Padding(
+          padding: const EdgeInsets.only(top: 10.0),
+          child: Divider(
+            color: context.colorScheme.surfaceContainerHighest,
+          ),
+        ),
+        SettingsSwitchListTile(
+          enabled: true,
+          valueNotifier: featureEnabled,
+          title: "Automatic endpoint switching",
+          subtitle:
+              "Switch between endpoints automatically when on or off designated Wi-Fi networks",
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.home_outlined,
+                color: context.colorScheme.onSurface.withAlpha(175),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "LOCAL NETWORK",
+                style: context.textTheme.displaySmall?.copyWith(
+                  color: context.colorScheme.onSurface.withAlpha(150),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(16),
               color: context.colorScheme.surfaceContainerLow,
               border: Border.all(
                 color: context.colorScheme.surfaceContainerHigh,
@@ -232,15 +269,17 @@ class NetworkingSettings extends HookConsumerWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 8.0,
+                        vertical: 4.0,
                         horizontal: 24,
                       ),
                       child: Text(
-                        "LOCAL CONNECTION URL",
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        "When connect to the following Wi-Fi network, the app will always prioritize connecting to the server at the following endpoint",
+                        style: context.textTheme.bodyMedium,
                       ),
+                    ),
+                    SizedBox(height: 4),
+                    Divider(
+                      color: context.colorScheme.surfaceContainerHighest,
                     ),
                     ListTile(
                       contentPadding: EdgeInsets.only(left: 24),
@@ -272,7 +311,6 @@ class NetworkingSettings extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                // SizedBox(height: 250),
                 Positioned(
                   bottom: -36,
                   right: -36,
@@ -286,13 +324,31 @@ class NetworkingSettings extends HookConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.dns_rounded,
+                color: context.colorScheme.onSurface.withAlpha(150),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "EXTERNAL NETWORK",
+                style: context.textTheme.displaySmall?.copyWith(
+                  color: context.colorScheme.onSurface.withAlpha(175),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(16),
               color: context.colorScheme.surfaceContainerLow,
               border: Border.all(
                 color: context.colorScheme.surfaceContainerHighest,
@@ -308,26 +364,16 @@ class NetworkingSettings extends HookConsumerWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        vertical: 8.0,
+                        vertical: 4.0,
                         horizontal: 24,
                       ),
                       child: Text(
-                        "EXTERNAL CONNECTION URL",
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        "When not connected to Wi-Fi, the app will attempt to connect to the following endpoints from top to bottom",
+                        style: context.textTheme.bodyMedium,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8.0,
-                        horizontal: 24,
-                      ),
-                      child: Text(
-                        "When not connected to Wi-Fi, the app will attempt to connect to the following endpoints, in order.",
-                        style: context.textTheme.bodyLarge,
-                      ),
-                    ),
+                    SizedBox(height: 4),
+                    Divider(color: context.colorScheme.surfaceContainerHighest),
                     Form(
                       key: GlobalKey<FormState>(),
                       child: ReorderableListView.builder(
@@ -367,7 +413,6 @@ class NetworkingSettings extends HookConsumerWidget {
                     ),
                   ],
                 ),
-                // SizedBox(height: 250),
                 Positioned(
                   bottom: -36,
                   right: -36,
