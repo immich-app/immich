@@ -1,6 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -96,7 +93,9 @@ class NetworkingSettings extends HookConsumerWidget {
             icon: Icons.home_outlined,
           ),
         ),
-        LocalNetworkPreference(),
+        LocalNetworkPreference(
+          enabled: featureEnabled.value,
+        ),
         Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
@@ -104,7 +103,9 @@ class NetworkingSettings extends HookConsumerWidget {
             icon: Icons.dns,
           ),
         ),
-        ExternalNetworkPreference(),
+        ExternalNetworkPreference(
+          enabled: featureEnabled.value,
+        ),
       ],
     );
   }

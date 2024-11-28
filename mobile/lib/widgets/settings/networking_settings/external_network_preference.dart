@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -9,16 +10,13 @@ import 'package:immich_mobile/entities/store.entity.dart' as db_store;
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
 class ExternalNetworkPreference extends HookConsumerWidget {
-  const ExternalNetworkPreference({super.key});
+  const ExternalNetworkPreference({super.key, required this.enabled});
+
+  final bool enabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final entries = useState<List<AuxilaryEndpoint>>(
-      [
-        AuxilaryEndpoint('', AuxCheckStatus.unknown),
-      ],
-    );
-
+    final entries = useState([AuxilaryEndpoint('', AuxCheckStatus.unknown)]);
     final canSave =
         useState(entries.value.every((e) => e.status == AuxCheckStatus.valid));
 
@@ -177,6 +175,18 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                 color: context.primaryColor.withOpacity(0.05),
               ),
             ),
+            if (!enabled)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+                    child: Container(
+                      color: context.colorScheme.surface.withOpacity(0.5),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
