@@ -282,16 +282,24 @@ class NetworkingSettings extends HookConsumerWidget {
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                     ListTile(
-                      contentPadding: EdgeInsets.only(left: 24),
+                      contentPadding: EdgeInsets.only(left: 24, right: 8),
                       leading: Icon(Icons.wifi_rounded),
                       title: Text("WiFi Name"),
                       subtitle: Text("immich"),
+                      trailing: IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.edit_rounded),
+                      ),
                     ),
                     ListTile(
-                      contentPadding: EdgeInsets.only(left: 24),
+                      contentPadding: EdgeInsets.only(left: 24, right: 8),
                       leading: Icon(Icons.lan_rounded),
                       title: Text("Server Endpoint"),
                       subtitle: Text("http://10.1.15.216:2283/api"),
+                      trailing: IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.edit_rounded),
+                      ),
                     ),
                     SizedBox(height: 16),
                     Padding(
