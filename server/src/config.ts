@@ -156,6 +156,7 @@ export interface SystemConfig {
   server: {
     externalDomain: string;
     loginPageMessage: string;
+    publicUsers: boolean;
   };
   user: {
     deleteDelay: number;
@@ -303,6 +304,7 @@ export const defaults = Object.freeze<SystemConfig>({
   server: {
     externalDomain: '',
     loginPageMessage: '',
+    publicUsers: true,
   },
   notifications: {
     smtp: {

@@ -93,7 +93,7 @@ custom_lint:
         - lib/models/server_info/server_{config,disk_info,features,version}.model.dart
         - lib/models/shared_link/shared_link.model.dart
         - lib/providers/asset_viewer/asset_people.provider.dart
-        - lib/providers/authentication.provider.dart
+        - lib/providers/auth.provider.dart
         - lib/providers/image/immich_remote_{image,thumbnail}_provider.dart
         - lib/providers/map/map_state.provider.dart
         - lib/providers/search/{search,search_filter}.provider.dart

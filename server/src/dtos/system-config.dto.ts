@@ -404,6 +404,9 @@ class SystemConfigServerDto {
 
   @IsString()
   loginPageMessage!: string;
+
+  @IsBoolean()
+  publicUsers!: boolean;
 }
 
 class SystemConfigSmtpTransportDto {
