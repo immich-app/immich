@@ -3,9 +3,9 @@ name: Docker
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [rknn-toolkit2]
   pull_request:
-    branches: [main]
+    branches: [rknn-toolkit2]
   release:
     types: [published]
 
