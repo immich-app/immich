@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<network-security-config>
+    <base-config>
+        <!--
+        Starting with Android N, user-added CAs are not trusted by default.
+        We need this configuration to trust the user-added CAs.
+        -->
+        <trust-anchors>
+            <certificates src="user"/>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>
