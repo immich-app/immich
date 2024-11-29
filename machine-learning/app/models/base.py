@@ -9,6 +9,7 @@ from huggingface_hub import snapshot_download
 
 import ann.ann
 from app.sessions.ort import OrtSession
+from app.sessions.rknn import RknnSession
 
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
@@ -108,6 +109,8 @@ class InferenceModel(ABC):
                 session: ModelSession = AnnSession(model_path)
             case ".onnx":
                 session = OrtSession(model_path)
+            case ".rknn":
+                session = RknnSession(model_path)
             case _:
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
@@ -155,4 +158,9 @@ class InferenceModel(ABC):
 
     @property
     def _model_format_default(self) -> ModelFormat:
-        return ModelFormat.ARMNN if ann.ann.is_available and settings.ann else ModelFormat.ONNX
+        if settings.rknn:
+            return ModelFormat.RKNN
+        elif ann.ann.is_available and settings.ann :
+            return ModelFormat.ARMNN
+        else:
+            return ModelFormat.ONNX
