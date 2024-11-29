@@ -140,7 +140,7 @@ export class NotificationService extends BaseService {
     setTimeout(() => this.eventRepository.clientSend('on_session_delete', sessionId, sessionId), 500);
   }
 
-  async sendTestEmail(id: string, dto: SystemConfigSmtpDto) {
+  async sendTestEmail(id: string, dto: SystemConfigSmtpDto, tempTemplate?: string) {
     const user = await this.userRepository.get(id, { withDeleted: false });
     if (!user) {
       throw new Error('User not found');
@@ -160,6 +160,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server, port),
         displayName: user.name,
       },
+      customTemplate: tempTemplate!,
     });
     const { messageId } = await this.notificationRepository.sendEmail({
       to: user.email,
@@ -174,7 +175,7 @@ export class NotificationService extends BaseService {
     return { messageId };
   }
 
-  async getTemplate(name: EmailTemplate, tempTemplate: string) {
+  async getTemplate(name: EmailTemplate, customTemplate: string) {
     const { server, templates } = await this.getConfig({ withCache: false });
     const { port } = this.configRepository.getEnv();
 
@@ -190,7 +191,7 @@ export class NotificationService extends BaseService {
             username: 'john@doe.com',
             password: 'thisIsAPassword123',
           },
-          customTemplate: tempTemplate || templates.email.welcomeTemplate,
+          customTemplate: customTemplate || templates.email.welcomeTemplate,
         });
 
         templateResponse = _welcomeHtml;
@@ -206,7 +207,7 @@ export class NotificationService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: tempTemplate || templates.email.albumInviteTemplate,
+          customTemplate: customTemplate || templates.email.albumInviteTemplate,
         });
         templateResponse = _updateAlbumHtml;
         break;
@@ -223,7 +224,7 @@ export class NotificationService extends BaseService {
             recipientName: 'Jane Doe',
             cid: undefined,
           },
-          customTemplate: tempTemplate || templates.email.albumInviteTemplate,
+          customTemplate: customTemplate || templates.email.albumInviteTemplate,
         });
         templateResponse = html;
         break;

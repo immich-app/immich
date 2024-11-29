@@ -71,7 +71,7 @@ export type EmailRenderRequest =
   | {
       template: EmailTemplate.TEST_EMAIL;
       data: TestEmailProps;
-      customTemplate?: string;
+      customTemplate: string;
     }
   | {
       template: EmailTemplate.WELCOME;

@@ -21,6 +21,7 @@ describe(NotificationRepository.name, () => {
       const request: EmailRenderRequest = {
         template: EmailTemplate.TEST_EMAIL,
         data: { displayName: 'Alen Turing', baseUrl: 'http://localhost' },
+        customTemplate: '',
       };
 
       const result = await sut.renderEmail(request);
