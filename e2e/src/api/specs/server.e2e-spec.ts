@@ -133,6 +133,7 @@ describe('/server', () => {
         userDeleteDelay: 7,
         isInitialized: true,
         externalDomain: '',
+        publicUsers: true,
         isOnboarded: false,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',

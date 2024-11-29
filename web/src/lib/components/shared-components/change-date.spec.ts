@@ -1,4 +1,5 @@
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
+import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { DateTime } from 'luxon';
 import ChangeDate from './change-date.svelte';
@@ -16,16 +17,7 @@ describe('ChangeDate component', () => {
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
-
-    vi.stubGlobal('visualViewport', {
-      height: window.innerHeight,
-      width: window.innerWidth,
-      scale: 1,
-      offsetLeft: 0,
-      offsetTop: 0,
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-    });
+    vi.stubGlobal('visualViewport', getVisualViewportMock());
   });
 
   afterEach(() => {

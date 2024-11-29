@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
@@ -69,7 +70,7 @@ class ApiService implements Authentication {
     final endpoint = await _resolveEndpoint(serverUrl);
     setEndpoint(endpoint);
 
-    // Save in hivebox for next startup
+    // Save in local database for next startup
     Store.put(StoreKey.serverEndpoint, endpoint);
     return endpoint;
   }
@@ -148,9 +149,25 @@ class ApiService implements Authentication {
     return "";
   }
 
-  setAccessToken(String accessToken) {
+  void setAccessToken(String accessToken) {
     _accessToken = accessToken;
     Store.put(StoreKey.accessToken, accessToken);
+  }
+
+  Future<void> setDeviceInfoHeader() async {
+    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+
+    if (Platform.isIOS) {
+      final iosInfo = await deviceInfoPlugin.iosInfo;
+      authenticationApi.apiClient
+          .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
+      authenticationApi.apiClient.addDefaultHeader('deviceType', 'iOS');
+    } else {
+      final androidInfo = await deviceInfoPlugin.androidInfo;
+      authenticationApi.apiClient
+          .addDefaultHeader('deviceModel', androidInfo.model);
+      authenticationApi.apiClient.addDefaultHeader('deviceType', 'Android');
+    }
   }
 
   static Map<String, String> getRequestHeaders() {

@@ -5,7 +5,7 @@ import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
@@ -42,7 +42,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     if (!_wasPaused) return;
     _wasPaused = false;
 
-    final isAuthenticated = _ref.read(authenticationProvider).isAuthenticated;
+    final isAuthenticated = _ref.read(authProvider).isAuthenticated;
 
     // Needs to be logged in
     if (isAuthenticated) {
@@ -85,7 +85,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
 
-    if (_ref.read(authenticationProvider).isAuthenticated) {
+    if (_ref.read(authProvider).isAuthenticated) {
       // Do not cancel backup if manual upload is in progress
       if (_ref.read(backupProvider.notifier).backupProgress !=
           BackUpProgressEnum.manualInProgress) {

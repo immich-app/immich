@@ -1,4 +1,6 @@
 {
+  "user_usage_stats": "Account usage statistics",
+  "user_usage_stats_description": "View account usage statistics",
   "about": "Refresh",
   "account": "Account",
   "account_settings": "Account Settings",
@@ -222,6 +224,8 @@
     "send_welcome_email": "Send welcome email",
     "server_external_domain_settings": "External domain",
     "server_external_domain_settings_description": "Domain for public shared links, including http(s)://",
+    "server_public_users": "Public Users",
+    "server_public_users_description": "All users (name and email) are listed when adding a user to shared albums. When disabled, the user list will only be available to admin users.",
     "server_settings": "Server Settings",
     "server_settings_description": "Manage server settings",
     "server_welcome_message": "Welcome message",
@@ -1311,6 +1315,7 @@
   "view_all_users": "View all users",
   "view_in_timeline": "View in timeline",
   "view_links": "View links",
+  "view_name": "View",
   "view_next_asset": "View next asset",
   "view_previous_asset": "View previous asset",
   "view_stack": "View Stack",
@@ -1324,5 +1329,7 @@
   "years_ago": "{years, plural, one {# year} other {# years}} ago",
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
-  "zoom_image": "Zoom Image"
+  "zoom_image": "Zoom Image",
+  "timeline": "Timeline",
+  "total": "Total"
 }

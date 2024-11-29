@@ -1,6 +1,6 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
-import { foldersStore } from '$lib/stores/folders.store';
+import { foldersStore } from '$lib/stores/folders.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { serverInfo } from '$lib/stores/server-info.store';
 import { preferences as preferences$, resetSavedUser, user as user$ } from '$lib/stores/user.store';
