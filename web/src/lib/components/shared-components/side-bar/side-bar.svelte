@@ -97,9 +97,6 @@
       flippedLogo
       bind:dropdownOpen={$recentAlbumsDropdown}
     >
-      {#snippet moreInformation()}
-        <MoreInformationAlbums albumType="owned" />
-      {/snippet}
       {#snippet hasDropdown()}
         <span class="hidden md:block">
           <RecentAlbums />
