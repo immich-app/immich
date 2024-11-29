@@ -25,7 +25,6 @@
     flippedLogo = false,
     isSelected = $bindable(false),
     preloadData = true,
-    moreInformation,
     hasDropdown,
     dropdownOpen = $bindable(false),
   }: Props = $props();
