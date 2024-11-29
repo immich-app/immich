@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiArrowDownDropCircleOutline, mdiInformationOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
@@ -31,13 +30,13 @@
     dropdownOpen = $bindable(false),
   }: Props = $props();
 
-  let showMoreInformation = $state(false);
   let routePath = $derived(resolveRoute(routeId, {}));
 
   $effect(() => {
     isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
   });
 </script>
+
 
 <span class="relative">
   {#if hasDropdown}
@@ -58,12 +57,12 @@
       </button>
     </span>
   {/if}
-  <a
-    href={routePath}
-    data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
-    draggable="false"
-    aria-current={isSelected ? 'page' : undefined}
-    class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
+<a
+  href={routePath}
+  data-sveltekit-preload-data={preloadData ? 'hover' : 'off'}
+  draggable="false"
+  aria-current={isSelected ? 'page' : undefined}
+  class="flex w-full place-items-center gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary
     {isSelected
       ? 'bg-immich-primary/10 text-immich-primary hover:bg-immich-primary/10 dark:bg-immich-dark-primary/10 dark:text-immich-dark-primary'
       : ''}
