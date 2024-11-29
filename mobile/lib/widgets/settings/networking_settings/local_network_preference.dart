@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/network.provider.dart';
 
 class LocalNetworkPreference extends HookConsumerWidget {
   const LocalNetworkPreference({
@@ -12,8 +13,73 @@ class LocalNetworkPreference extends HookConsumerWidget {
 
   final bool enabled;
 
+  Future<String?> _showEditDialog(
+    BuildContext context,
+    String title,
+    String hintText,
+    String initialValue,
+  ) {
+    final controller = TextEditingController(text: initialValue);
+
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: hintText,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('SAVE'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    handleEditWifiName() async {
+      final result = await _showEditDialog(
+        context,
+        "WiFi Name",
+        "Your Wi-Fi name",
+        "enter-WiFi-name",
+      );
+
+      if (result != null) {
+        // await networkNotifier.setWifiSSID(result);
+      }
+    }
+
+    handleEditServerEndpoint() async {
+      final result = await _showEditDialog(
+        context,
+        "Server Endpoint",
+        "http://local-ip:2283/api",
+        "enter-server-endpoint",
+      );
+
+      if (result != null) {
+        // await networkNotifier.setServerEndpoint(result);
+      }
+    }
+
+    handleDiscoverNetwork() async {
+      final wifiName = await ref.read(networkProvider.notifier).getWifiName();
+      print("WiFi Name: $wifiName");
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Stack(
@@ -53,9 +119,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       contentPadding: EdgeInsets.only(left: 24, right: 8),
                       leading: Icon(Icons.wifi_rounded),
                       title: Text("WiFi Name"),
-                      subtitle: Text("immich"),
+                      subtitle: Text("enter-WiFi-name"),
                       trailing: IconButton(
-                        onPressed: () {},
+                        onPressed: enabled ? handleEditWifiName : null,
                         icon: Icon(Icons.edit_rounded),
                       ),
                     ),
@@ -63,9 +129,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       contentPadding: EdgeInsets.only(left: 24, right: 8),
                       leading: Icon(Icons.lan_rounded),
                       title: Text("Server Endpoint"),
-                      subtitle: Text("http://10.1.15.216:2283/api"),
+                      subtitle: Text("enter-server-endpoint"),
                       trailing: IconButton(
-                        onPressed: () {},
+                        onPressed: enabled ? handleEditServerEndpoint : null,
                         icon: Icon(Icons.edit_rounded),
                       ),
                     ),
@@ -79,9 +145,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                         child: OutlinedButton.icon(
                           icon: Icon(Icons.wifi_find_rounded),
                           label: Text('DISCOVER'),
-                          onPressed: () {
-                            // checkNetwork();
-                          },
+                          onPressed: enabled ? handleDiscoverNetwork : null,
                         ),
                       ),
                     ),
