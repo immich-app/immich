@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/constants/locales.dart';
 
+import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 class ImmichTheme {
