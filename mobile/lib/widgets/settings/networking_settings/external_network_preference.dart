@@ -16,7 +16,8 @@ class ExternalNetworkPreference extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final entries = useState([AuxilaryEndpoint('', AuxCheckStatus.unknown)]);
+    final entries =
+        useState([AuxilaryEndpoint(url: '', status: AuxCheckStatus.unknown)]);
     final canSave =
         useState(entries.value.every((e) => e.status == AuxCheckStatus.valid));
 
@@ -31,7 +32,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       final jsonString = jsonEncode(endpointList);
 
       db_store.Store.put(
-        db_store.StoreKey.endpointLists,
+        db_store.StoreKey.externalEndpointList,
         jsonString,
       );
     }
@@ -82,7 +83,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     useEffect(
       () {
         final jsonString =
-            db_store.Store.tryGet(db_store.StoreKey.endpointLists);
+            db_store.Store.tryGet(db_store.StoreKey.externalEndpointList);
 
         if (jsonString == null) {
           return null;
@@ -158,7 +159,10 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                       onPressed: () {
                         entries.value = [
                           ...entries.value,
-                          AuxilaryEndpoint('', AuxCheckStatus.unknown),
+                          AuxilaryEndpoint(
+                            url: '',
+                            status: AuxCheckStatus.unknown,
+                          ),
                         ];
                       },
                     ),

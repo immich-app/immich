@@ -237,8 +237,11 @@ enum StoreKey<T> {
 
   syncAlbums<bool>(131, type: bool),
 
-  endpointLists<String>(132, type: String),
-  autoEndpointSwitching<bool>(133, type: bool),
+  // Auto endpoint switching
+  autoEndpointSwitching<bool>(132, type: bool),
+  WifiName<String>(133, type: String),
+  localEndpoint<String>(134, type: String),
+  externalEndpointList<String>(135, type: String),
   ;
 
   const StoreKey(

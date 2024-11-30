@@ -1,21 +1,22 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 class AuxilaryEndpoint {
   final String url;
   final AuxCheckStatus status;
 
-  AuxilaryEndpoint(
-    this.url,
-    this.status,
-  );
+  AuxilaryEndpoint({
+    required this.url,
+    required this.status,
+  });
 
   AuxilaryEndpoint copyWith({
     String? url,
     AuxCheckStatus? status,
   }) {
     return AuxilaryEndpoint(
-      url ?? this.url,
-      status ?? this.status,
+      url: url ?? this.url,
+      status: status ?? this.status,
     );
   }
 
@@ -41,8 +42,8 @@ class AuxilaryEndpoint {
 
   factory AuxilaryEndpoint.fromMap(Map<String, dynamic> map) {
     return AuxilaryEndpoint(
-      map['url'] as String,
-      AuxCheckStatus.fromMap(map['status'] as Map<String, dynamic>),
+      url: map['url'] as String,
+      status: AuxCheckStatus.fromMap(map['status'] as Map<String, dynamic>),
     );
   }
 

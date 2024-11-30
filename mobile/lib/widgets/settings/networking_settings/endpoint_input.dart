@@ -114,7 +114,6 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
           validator: validateUrl,
           keyboardType: TextInputType.url,
           style: TextStyle(
-            fontSize: 16,
             fontFamily: 'Inconsolata',
             fontWeight: FontWeight.w600,
             color: context.colorScheme.onSurface,

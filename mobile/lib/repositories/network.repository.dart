@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/network.interface.dart';
@@ -18,6 +20,16 @@ class NetworkRepository implements INetworkRepository {
 
   @override
   Future<String?> getWifiName() {
+    if (Platform.isAndroid) {
+      // remove quote around the return value on Android
+      // https://github.com/fluttercommunity/plus_plugins/tree/main/packages/network_info_plus/network_info_plus#android
+      return _networkInfo.getWifiName().then((value) {
+        if (value != null) {
+          return value.replaceAll(RegExp(r'"'), '');
+        }
+        return value;
+      });
+    }
     return _networkInfo.getWifiName();
   }
 
