@@ -58,7 +58,7 @@ class MapLocationPickerPage extends HookConsumerWidget {
       controller.value?.animateCamera(CameraUpdate.newLatLng(currentLatLng));
     }
 
-    return MapThemeOveride(
+    return MapThemeOverride(
       mapBuilder: (style) => Builder(
         builder: (ctx) => Scaffold(
           backgroundColor: ctx.themeData.cardColor,
