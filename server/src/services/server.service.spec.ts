@@ -220,21 +220,17 @@ describe(ServerService.name, () => {
           usagePhotos: 900,
           usageVideos: 87_654,
           quotaSizeInBytes: 0,
-          encodedVideoPaths: [
-            'upload/encoded-video/video4.mp4',
-            'upload/encoded-video/video5.mp4',
-            'upload/encoded-video/video6.mp4',
-          ],
+          encodedVideoPaths: [''],
         },
       ]);
 
       await expect(sut.getStatistics()).resolves.toEqual({
         photos: 120,
         videos: 31,
-        usage: 1_126_455,
+        usage: 1_124_955,
         usagePhotos: 1001,
         usageVideos: 122_455,
-        usageTranscode: 3000,
+        usageTranscode: 1500,
         usageByUser: [
           {
             photos: 10,
@@ -267,7 +263,7 @@ describe(ServerService.name, () => {
             userName: '3 User',
             userId: 'user3',
             videos: 0,
-            usageTranscode: 1500,
+            usageTranscode: 0,
           },
         ],
       });

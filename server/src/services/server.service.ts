@@ -133,8 +133,16 @@ export class ServerService extends BaseService {
       usage.quotaSizeInBytes = user.quotaSizeInBytes;
 
       for (const path of user.encodedVideoPaths) {
-        const stats = fs.statSync(path);
-        usage.usageTranscode += stats.size;
+        if (path.trim() === '') {
+          continue;
+        }
+
+        try {
+          const stats = fs.statSync(path);
+          usage.usageTranscode += stats.size;
+        } catch (error) {
+          console.error(`Error accessing file at path "${path}":`, (error as Error).message);
+        }
       }
 
       serverStats.photos += usage.photos;
