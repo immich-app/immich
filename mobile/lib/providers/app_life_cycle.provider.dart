@@ -46,12 +46,17 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
     // Needs to be logged in
     if (isAuthenticated) {
+      // switch endpoint if needed
+      _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
+
       final permission = _ref.watch(galleryPermissionNotifier);
       if (permission.isGranted || permission.isLimited) {
         _ref.read(backupProvider.notifier).resumeBackup();
         _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
       }
+
       _ref.read(serverInfoProvider.notifier).getServerVersion();
+
       switch (_ref.read(tabProvider)) {
         case TabEnum.home:
           _ref.read(assetProvider.notifier).getAllAsset();

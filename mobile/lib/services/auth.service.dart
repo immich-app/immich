@@ -1,14 +1,18 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
+import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/network.service.dart';
 import 'package:logging/logging.dart';
 
 final authServiceProvider = Provider(
@@ -16,6 +20,7 @@ final authServiceProvider = Provider(
     ref.watch(authApiRepositoryProvider),
     ref.watch(authRepositoryProvider),
     ref.watch(apiServiceProvider),
+    ref.watch(networkServiceProvider),
   ),
 );
 
@@ -23,6 +28,7 @@ class AuthService {
   final IAuthApiRepository _authApiRepository;
   final IAuthRepository _authRepository;
   final ApiService _apiService;
+  final NetworkService _networkService;
 
   final _log = Logger("AuthService");
 
@@ -30,6 +36,7 @@ class AuthService {
     this._authApiRepository,
     this._authRepository,
     this._apiService,
+    this._networkService,
   );
 
   /// Validates the provided server URL by resolving and setting the endpoint.
@@ -117,6 +124,71 @@ class AuthService {
     } catch (error, stackTrace) {
       _log.severe("Error changing password", error, stackTrace);
       rethrow;
+    }
+  }
+
+  Future<void> setOpenApiServiceEndpoint() async {
+    debugPrint("[setOpenApiServiceEndpoint]");
+    final enable = Store.tryGet(StoreKey.autoEndpointSwitching);
+    if (enable == null || !enable) {
+      return;
+    }
+
+    final wifiName = await _networkService.getWifiName();
+    final savedWifiName = Store.tryGet(StoreKey.WifiName);
+    bool success = false;
+
+    if (wifiName != null &&
+        savedWifiName != null &&
+        wifiName == savedWifiName) {
+      success = await _setLocalConnection();
+    }
+
+    if (!success) {
+      await _setRemoteConnection();
+    }
+  }
+
+  Future<bool> _setLocalConnection() async {
+    debugPrint("set local endpoint ");
+
+    try {
+      final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
+      if (localEndpoint != null) {
+        await _apiService.resolveAndSetEndpoint(localEndpoint);
+      }
+
+      return true;
+    } catch (error, stackTrace) {
+      _log.severe("Cannot set local endpoint", error, stackTrace);
+      return false;
+    }
+  }
+
+  Future<bool> _setRemoteConnection() async {
+    try {
+      final jsonString = Store.tryGet(StoreKey.externalEndpointList);
+      if (jsonString == null) {
+        return false;
+      }
+
+      final List<dynamic> jsonList = jsonDecode(jsonString);
+      final endpointList =
+          jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+
+      for (final endpoint in endpointList) {
+        final validUrl = await _apiService.resolveEndpoint(endpoint.url);
+        final isValid = await validateAuxilaryServerUrl(validUrl);
+        if (isValid) {
+          await _apiService.resolveAndSetEndpoint(validUrl);
+          break;
+        }
+      }
+
+      return true;
+    } catch (error, stackTrace) {
+      _log.severe("Cannot set external endpoint", error, stackTrace);
+      return false;
     }
   }
 }
