@@ -1,3 +1,4 @@
+import * as fs from 'node:fs';
 import { SystemMetadataKey } from 'src/enum';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -177,8 +178,16 @@ describe(ServerService.name, () => {
     });
   });
 
+  vi.mock('fs', async () => {
+    const actual = (await vi.importActual<typeof fs>('fs'))!;
+    return {
+      ...actual,
+      statSync: vi.fn().mockReturnValue({ size: 500 }),
+    };
+  });
+
   describe('getStats', () => {
-    it('should total up usage by user', async () => {
+    it('should total up usage by user and server', async () => {
       userMock.getUserStats.mockResolvedValue([
         {
           userId: 'user1',
@@ -189,6 +198,7 @@ describe(ServerService.name, () => {
           usagePhotos: 1,
           usageVideos: 11_345,
           quotaSizeInBytes: 0,
+          encodedVideoPaths: ['upload/encoded-video/video1.mp4'],
         },
         {
           userId: 'user2',
@@ -199,6 +209,7 @@ describe(ServerService.name, () => {
           usagePhotos: 100,
           usageVideos: 23_456,
           quotaSizeInBytes: 0,
+          encodedVideoPaths: ['upload/encoded-video/video2.mp4', 'upload/encoded-video/video3.mp4'],
         },
         {
           userId: 'user3',
@@ -209,15 +220,21 @@ describe(ServerService.name, () => {
           usagePhotos: 900,
           usageVideos: 87_654,
           quotaSizeInBytes: 0,
+          encodedVideoPaths: [
+            'upload/encoded-video/video4.mp4',
+            'upload/encoded-video/video5.mp4',
+            'upload/encoded-video/video6.mp4',
+          ],
         },
       ]);
 
       await expect(sut.getStatistics()).resolves.toEqual({
         photos: 120,
         videos: 31,
-        usage: 1_123_455,
+        usage: 1_126_455,
         usagePhotos: 1001,
         usageVideos: 122_455,
+        usageTranscode: 3000,
         usageByUser: [
           {
             photos: 10,
@@ -228,6 +245,7 @@ describe(ServerService.name, () => {
             userName: '1 User',
             userId: 'user1',
             videos: 11,
+            usageTranscode: 500,
           },
           {
             photos: 10,
@@ -238,6 +256,7 @@ describe(ServerService.name, () => {
             userName: '2 User',
             userId: 'user2',
             videos: 20,
+            usageTranscode: 1000,
           },
           {
             photos: 100,
@@ -248,6 +267,7 @@ describe(ServerService.name, () => {
             userName: '3 User',
             userId: 'user3',
             videos: 0,
+            usageTranscode: 1500,
           },
         ],
       });
