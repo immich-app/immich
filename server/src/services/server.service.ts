@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import * as fs from 'node:fs';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
@@ -131,11 +132,18 @@ export class ServerService extends BaseService {
       usage.usageVideos = user.usageVideos;
       usage.quotaSizeInBytes = user.quotaSizeInBytes;
 
+      for (const path of user.encodedVideoPaths) {
+        const stats = fs.statSync(path);
+        usage.usageTranscode += stats.size;
+      }
+
       serverStats.photos += usage.photos;
       serverStats.videos += usage.videos;
       serverStats.usage += usage.usage;
+      serverStats.usage += usage.usageTranscode; // Necessary because transcoded videos don't count toward quota
       serverStats.usagePhotos += usage.usagePhotos;
       serverStats.usageVideos += usage.usageVideos;
+      serverStats.usageTranscode += usage.usageTranscode;
 
       serverStats.usageByUser.push(usage);
     }

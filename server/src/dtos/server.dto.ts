@@ -90,6 +90,8 @@ export class UsageByUserDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   usageVideos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
+  usageTranscode: number = 0;
+  @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;
 }
 
@@ -109,6 +111,9 @@ export class ServerStatsResponseDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   usageVideos = 0;
 
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  usageTranscode = 0;
+
   @ApiProperty({
     isArray: true,
     type: UsageByUserDto,
@@ -120,6 +125,7 @@ export class ServerStatsResponseDto {
         diskUsageRaw: 2,
         usagePhotos: 1,
         usageVideos: 1,
+        usageTranscode: 1,
       },
     ],
   })
