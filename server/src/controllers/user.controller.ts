@@ -39,8 +39,8 @@ export class UserController {
 
   @Get()
   @Authenticated()
-  searchUsers(): Promise<UserResponseDto[]> {
-    return this.service.search();
+  searchUsers(@Auth() auth: AuthDto): Promise<UserResponseDto[]> {
+    return this.service.search(auth);
   }
 
   @Get('me')

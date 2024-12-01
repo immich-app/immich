@@ -30,8 +30,10 @@
     mdiFeatureSearchOutline,
     mdiKeyOutline,
     mdiOnepassword,
+    mdiServerOutline,
     mdiTwoFactorAuthentication,
   } from '@mdi/js';
+  import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
 
   interface Props {
     keys?: ApiKeyResponseDto[];
@@ -57,6 +59,15 @@
 
   <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
     <UserProfileSettings />
+  </SettingAccordion>
+
+  <SettingAccordion
+    icon={mdiServerOutline}
+    key="user-usage-info"
+    title={$t('user_usage_stats')}
+    subtitle={$t('user_usage_stats_description')}
+  >
+    <UserUsageStatistic />
   </SettingAccordion>
 
   <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
