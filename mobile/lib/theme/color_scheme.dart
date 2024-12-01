@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 
-final Map<ImmichColorPreset, ImmichTheme> _themePresetsMap = {
+final Map<ImmichColorPreset, ImmichTheme> _themePresets = {
   ImmichColorPreset.indigo: ImmichTheme(
     light: ColorScheme.fromSeed(
       seedColor: immichBrandColorLight,
@@ -89,5 +89,5 @@ final Map<ImmichColorPreset, ImmichTheme> _themePresetsMap = {
 };
 
 extension ImmichColorModeExtension on ImmichColorPreset {
-  ImmichTheme get themeOfPreset => _themePresetsMap[this]!;
+  ImmichTheme get themeOfPreset => _themePresets[this]!;
 }
