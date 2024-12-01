@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +55,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final isCurrent = currentAsset.value == asset;
 
     // Used to show the placeholder during hero animations for remote videos to avoid a stutter
-    final isVisible = useState(asset.isLocal || asset.isMotionPhoto);
+    final isVisible =
+        useState((Platform.isIOS && asset.isLocal) || asset.isMotionPhoto);
 
     final log = Logger('NativeVideoViewerPage');
 
@@ -306,13 +308,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      if (loopVideo) {
-        try {
-          videoController.play();
-        } catch (error) {
-          log.severe('Error looping video: $error');
-        }
-      } else {
+      if (!loopVideo) {
         WakelockPlus.disable();
       }
     }
@@ -343,6 +339,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       nc.onPlaybackReady.addListener(onPlaybackReady);
       nc.onPlaybackEnded.addListener(onPlaybackEnded);
 
+      nc.setLoop(loopVideo);
       nc.loadVideoSource(source);
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
