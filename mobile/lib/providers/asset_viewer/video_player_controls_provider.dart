@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 
 class VideoPlaybackControls {
   const VideoPlaybackControls({
@@ -40,6 +41,7 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
 
   double get position => state.position;
   bool get mute => state.mute;
+  bool get paused => state.pause;
 
   set position(double value) {
     if (state.position == value) {
@@ -111,5 +113,6 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
       mute: state.mute,
       pause: false,
     );
+    ref.read(videoPlaybackValueProvider.notifier).position = Duration.zero;
   }
 }

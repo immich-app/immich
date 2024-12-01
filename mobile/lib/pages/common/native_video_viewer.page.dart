@@ -37,11 +37,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final loopVideo = ref.watch(
-      appSettingsServiceProvider.select(
-        (settings) => settings.getSetting<bool>(AppSettingsEnum.loopVideo),
-      ),
-    );
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
@@ -186,28 +181,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       interval: const Duration(milliseconds: 100),
       maxWaitTime: const Duration(milliseconds: 200),
     );
-    ref.listen(videoPlayerControlsProvider.select((value) => value.position),
-        (_, position) async {
-      final playerController = controller.value;
-      if (playerController == null) {
-        return;
-      }
-
-      final playbackInfo = playerController.playbackInfo;
-      if (playbackInfo == null) {
-        return;
-      }
-
-      // Find the position to seek to
-      final seek = position ~/ 1;
-      if (seek != playbackInfo.position) {
-        seekDebouncer.run(() => playerController.seekTo(seek));
-      }
-    });
-
-    // // When the custom video controls pause or play
-    ref.listen(videoPlayerControlsProvider.select((value) => value.pause),
-        (_, pause) async {
+    Future<void> onPlayerControlsPlayChange(bool? _, bool pause) async {
       final videoController = controller.value;
       if (videoController == null || !context.mounted) {
         return;
@@ -228,7 +202,38 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       } catch (error) {
         log.severe('Error pausing or playing video: $error');
       }
+    }
+
+    ref.listen(videoPlayerControlsProvider.select((value) => value.position),
+        (_, position) {
+      final playerController = controller.value;
+      if (playerController == null) {
+        return;
+      }
+
+      final playbackInfo = playerController.playbackInfo;
+      if (playbackInfo == null) {
+        return;
+      }
+
+      // Find the position to seek to
+      final seek = position ~/ 1;
+      if (seek != playbackInfo.position) {
+        seekDebouncer.run(() => playerController.seekTo(seek));
+      }
+
+      if (Platform.isIOS &&
+          seek == 0 &&
+          !ref.read(videoPlayerControlsProvider.notifier).paused) {
+        onPlayerControlsPlayChange(null, false);
+      }
     });
+
+    // // When the custom video controls pause or play
+    ref.listen(
+      videoPlayerControlsProvider.select((value) => value.pause),
+      onPlayerControlsPlayChange,
+    );
 
     void onPlaybackReady() async {
       final videoController = controller.value;
@@ -258,12 +263,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       final videoPlayback =
           VideoPlaybackValue.fromNativeController(videoController);
-      // No need to update the UI when it's about to loop
-      if (videoPlayback.state == VideoPlaybackState.completed && loopVideo) {
-        return;
-      }
-      ref.read(videoPlaybackValueProvider.notifier).status =
-          videoPlayback.state;
       if (videoPlayback.state == VideoPlaybackState.playing) {
         // Sync with the controls playing
         WakelockPlus.enable();
@@ -271,6 +270,9 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         // Sync with the controls pause
         WakelockPlus.disable();
       }
+
+      ref.read(videoPlaybackValueProvider.notifier).status =
+          videoPlayback.state;
     }
 
     void onPlaybackPositionChanged() {
@@ -302,28 +304,16 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     }
 
-    void onPlaybackEnded() {
-      final videoController = controller.value;
-      if (videoController == null || !context.mounted) {
-        return;
-      }
-
-      if (!loopVideo) {
-        WakelockPlus.disable();
-      }
-    }
-
     void removeListeners(NativeVideoPlayerController controller) {
       controller.onPlaybackPositionChanged
           .removeListener(onPlaybackPositionChanged);
       controller.onPlaybackStatusChanged
           .removeListener(onPlaybackStatusChanged);
       controller.onPlaybackReady.removeListener(onPlaybackReady);
-      controller.onPlaybackEnded.removeListener(onPlaybackEnded);
     }
 
     void initController(NativeVideoPlayerController nc) async {
-      if (controller.value != null) {
+      if (controller.value != null || !context.mounted) {
         return;
       }
       ref.read(videoPlayerControlsProvider.notifier).reset();
@@ -337,10 +327,15 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       nc.onPlaybackPositionChanged.addListener(onPlaybackPositionChanged);
       nc.onPlaybackStatusChanged.addListener(onPlaybackStatusChanged);
       nc.onPlaybackReady.addListener(onPlaybackReady);
-      nc.onPlaybackEnded.addListener(onPlaybackEnded);
 
+      nc.loadVideoSource(source).catchError((error) {
+        log.severe('Error loading video source: $error');
+      });
+      final loopVideo = ref
+          .read(appSettingsServiceProvider)
+          .getSetting<bool>(AppSettingsEnum.loopVideo);
       nc.setLoop(loopVideo);
-      nc.loadVideoSource(source);
+
       controller.value = nc;
       Timer(const Duration(milliseconds: 200), checkIfBuffering);
     }

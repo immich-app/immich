@@ -1028,8 +1028,8 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: "feat/exoplayer"
-      resolved-ref: "2139230b334b22b87de1dba47cc5632e5d172840"
+      ref: "68ea203"
+      resolved-ref: "68ea2030ba7aceb1bc44b683ff0b742fd1a52d2f"
       url: "https://github.com/immich-app/native_video_player"
     source: git
     version: "1.3.1"
