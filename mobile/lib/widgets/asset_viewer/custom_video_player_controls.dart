@@ -34,7 +34,9 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
         }
 
         // Do not hide on paused
-        if (state != VideoPlaybackState.paused && assetIsVideo) {
+        if (state != VideoPlaybackState.paused &&
+            state != VideoPlaybackState.completed &&
+            assetIsVideo) {
           ref.read(showControlsProvider.notifier).show = false;
         }
       },
