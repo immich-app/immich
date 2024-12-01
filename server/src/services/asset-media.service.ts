@@ -27,7 +27,7 @@ import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
 import { requireUploadAccess } from 'src/utils/access';
 import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
-import { ImmichFileResponse } from 'src/utils/file';
+import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
 import { QueryFailedError } from 'typeorm';
@@ -217,8 +217,12 @@ export class AssetMediaService extends BaseService {
     if (!filepath) {
       throw new NotFoundException('Asset media not found');
     }
+    let fileName = getFileNameWithoutExtension(asset.originalFileName);
+    fileName += `_${size}`;
+    fileName += getFilenameExtension(filepath);
 
     return new ImmichFileResponse({
+      fileName,
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PRIVATE_WITH_CACHE,
