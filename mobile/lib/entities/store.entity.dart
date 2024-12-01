@@ -239,7 +239,7 @@ enum StoreKey<T> {
 
   // Auto endpoint switching
   autoEndpointSwitching<bool>(132, type: bool),
-  WifiName<String>(133, type: String),
+  preferredWifiName<String>(133, type: String),
   localEndpoint<String>(134, type: String),
   externalEndpointList<String>(135, type: String),
   ;

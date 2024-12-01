@@ -174,7 +174,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> saveWifiName(String wifiName) {
-    return Store.put(StoreKey.WifiName, wifiName);
+    return Store.put(StoreKey.preferredWifiName, wifiName);
   }
 
   Future<void> saveLocalEndpoint(String url) {
@@ -182,7 +182,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   String? getSavedWifiName() {
-    return Store.tryGet(StoreKey.WifiName);
+    return Store.tryGet(StoreKey.preferredWifiName);
   }
 
   String? getSavedLocalEndpoint() {

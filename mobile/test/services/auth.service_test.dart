@@ -12,12 +12,20 @@ void main() {
   late MockAuthApiRepository authApiRepository;
   late MockAuthRepository authRepository;
   late MockApiService apiService;
+  late MockNetworkService networkService;
 
   setUp(() async {
     authApiRepository = MockAuthApiRepository();
     authRepository = MockAuthRepository();
     apiService = MockApiService();
-    sut = AuthService(authApiRepository, authRepository, apiService);
+    networkService = MockNetworkService();
+
+    sut = AuthService(
+      authApiRepository,
+      authRepository,
+      apiService,
+      networkService,
+    );
   });
 
   group('validateServerUrl', () {

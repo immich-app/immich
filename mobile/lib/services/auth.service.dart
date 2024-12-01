@@ -135,7 +135,7 @@ class AuthService {
     }
 
     final wifiName = await _networkService.getWifiName();
-    final savedWifiName = Store.tryGet(StoreKey.WifiName);
+    final savedWifiName = Store.tryGet(StoreKey.preferredWifiName);
     String? endpoint;
 
     if (wifiName == savedWifiName) {
