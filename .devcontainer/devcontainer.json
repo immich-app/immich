@@ -7,30 +7,6 @@
   ],
   "customizations": {
     "vscode": {
-      "settings": {
-        "dart.flutterSdkPath": "/flutter",
-        "editor.formatOnSave": true,
-        "[javascript][typescript][css]": {
-          "editor.defaultFormatter": "esbenp.prettier-vscode",
-          "editor.tabSize": 2,
-          "editor.formatOnSave": true
-        },
-        "[svelte]": {
-          "editor.defaultFormatter": "svelte.svelte-vscode",
-          "editor.tabSize": 2
-        },
-        "svelte.enable-ts-plugin": true,
-        "eslint.validate": ["javascript", "svelte"],
-        "[dart]": {
-          "editor.formatOnSave": true,
-          "editor.selectionHighlight": false,
-          "editor.suggest.snippetsPreventQuickSuggestions": false,
-          "editor.suggestSelection": "first",
-          "editor.tabCompletion": "onlySnippets",
-          "editor.wordBasedSuggestions": "off",
-          "editor.defaultFormatter": "Dart-Code.dart-code"
-        }
-      },
       "extensions": [
         "Dart-Code.dart-code",
         "Dart-Code.flutter",
