@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     ann: bool = True
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2
-    rknn: bool = True
+    rknn: bool = False
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
 

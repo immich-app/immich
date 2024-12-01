@@ -17,15 +17,20 @@ class RknnSession:
     def __init__(self, model_path: Path | str):
         self.model_path = Path(model_path)
         self.rknn = RKNN()  # Initialize RKNN object
-
+        self.rknn.config(target_platform='rk3566')
         # Load the RKNN model
         log.info(f"Loading RKNN model from {self.model_path}")
         self._load_model()
 
     def _load_model(self) -> None:
-        ret = self.rknn.load_rknn(self.model_path.as_posix())
+        ret = self.rknn.load_onnx(self.model_path.as_posix())
         if ret != 0:
             raise RuntimeError("Failed to load RKNN model")
+        print('--> Building model')
+        ret = self.rknn.build(do_quantization=False)
+        if ret != 0:
+            print('Build model failed!')
+            exit(ret)
 
         ret = self.rknn.init_runtime()
         if ret != 0:
@@ -41,15 +46,16 @@ class RknnSession:
 
     def run(
         self,
-        input_feed: dict[str, NDArray[np.float32] | NDArray[np.int32]],
+        output_names: list[str] | None,
+        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+	    run_options: Any = None,
     ) -> List[NDArray[np.float32]]:
+        print(input_feed)
         inputs = [v for v in input_feed.values()]
 
         # Run inference
         log.debug(f"Running inference on RKNN model")
-        ret, outputs = self.rknn.inference(inputs=inputs)
-        if ret != 0:
-            raise RuntimeError("Inference failed")
+        outputs = self.rknn.inference(inputs=inputs)
         return outputs
 
     def release(self) -> None:
