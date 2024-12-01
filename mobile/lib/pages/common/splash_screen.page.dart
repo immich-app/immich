@@ -1,7 +1,8 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -10,65 +11,89 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:logging/logging.dart';
 
 @RoutePage()
-class SplashScreenPage extends HookConsumerWidget {
+class SplashScreenPage extends StatefulHookConsumerWidget {
   const SplashScreenPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  SplashScreenPageState createState() => SplashScreenPageState();
+}
+
+class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
+  final log = Logger("SplashScreenPage");
+  @override
+  void initState() {
+    super.initState();
+    ref
+        .read(authProvider.notifier)
+        .setOpenApiServiceEndpoint()
+        .then(showConnectionInfo)
+        .whenComplete(() => resumeSession());
+  }
+
+  void showConnectionInfo(String? endpoint) {
+    if (endpoint == null) {
+      return;
+    }
+
+    context.showSnackBar(
+      SnackBar(
+        backgroundColor: context.colorScheme.surfaceContainerLow,
+        content: Text(
+          'Resuming session at $endpoint',
+          style: context.textTheme.labelLarge,
+        ),
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> resumeSession() async {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
-    final log = Logger("SplashScreenPage");
 
-    void performLoggingIn() async {
-      bool isAuthSuccess = false;
+    bool isAuthSuccess = false;
 
-      if (accessToken != null && serverUrl != null && endpoint != null) {
-        try {
-          isAuthSuccess = await ref.read(authProvider.notifier).saveAuthInfo(
-                accessToken: accessToken,
-              );
-        } catch (error, stackTrace) {
-          log.severe(
-            'Cannot set success login info',
-            error,
-            stackTrace,
-          );
-        }
-      } else {
-        isAuthSuccess = false;
+    if (accessToken != null && serverUrl != null && endpoint != null) {
+      try {
+        isAuthSuccess = await ref.read(authProvider.notifier).saveAuthInfo(
+              accessToken: accessToken,
+            );
+      } catch (error, stackTrace) {
         log.severe(
-          'Missing authentication, server, or endpoint info from the local store',
+          'Cannot set success login info',
+          error,
+          stackTrace,
         );
       }
-
-      if (!isAuthSuccess) {
-        log.severe(
-          'Unable to login using offline or online methods - Logging out completely',
-        );
-        ref.read(authProvider.notifier).logout();
-        context.replaceRoute(const LoginRoute());
-        return;
-      }
-
-      context.replaceRoute(const TabControllerRoute());
-
-      final hasPermission =
-          await ref.read(galleryPermissionNotifier.notifier).hasPermission;
-      if (hasPermission) {
-        // Resume backup (if enable) then navigate
-        ref.watch(backupProvider.notifier).resumeBackup();
-      }
+    } else {
+      isAuthSuccess = false;
+      log.severe(
+        'Missing authentication, server, or endpoint info from the local store',
+      );
     }
 
-    useEffect(
-      () {
-        performLoggingIn();
-        return null;
-      },
-      [],
-    );
+    if (!isAuthSuccess) {
+      log.severe(
+        'Unable to login using offline or online methods - Logging out completely',
+      );
+      ref.read(authProvider.notifier).logout();
+      context.replaceRoute(const LoginRoute());
+      return;
+    }
 
+    context.replaceRoute(const TabControllerRoute());
+
+    final hasPermission =
+        await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+    if (hasPermission) {
+      // Resume backup (if enable) then navigate
+      ref.watch(backupProvider.notifier).resumeBackup();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
         child: Image(

@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
@@ -14,6 +14,7 @@ import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 
 final authServiceProvider = Provider(
   (ref) => AuthService(
@@ -127,57 +128,60 @@ class AuthService {
     }
   }
 
-  Future<void> setOpenApiServiceEndpoint() async {
-    debugPrint("[setOpenApiServiceEndpoint]");
+  Future<String?> setOpenApiServiceEndpoint() async {
     final enable = Store.tryGet(StoreKey.autoEndpointSwitching);
     if (enable == null || !enable) {
-      return;
+      return null;
     }
 
     final wifiName = await _networkService.getWifiName();
     final savedWifiName = Store.tryGet(StoreKey.WifiName);
-    bool success = false;
+    String? endpoint;
 
-    if (wifiName != null &&
-        savedWifiName != null &&
-        wifiName == savedWifiName) {
-      success = await _setLocalConnection();
+    if (wifiName == savedWifiName) {
+      endpoint = await _setLocalConnection();
     }
 
-    if (!success) {
-      await _setRemoteConnection();
-    }
+    endpoint ??= await _setRemoteConnection();
+
+    return endpoint;
   }
 
-  Future<bool> _setLocalConnection() async {
-    debugPrint("set local endpoint ");
-
+  Future<String?> _setLocalConnection() async {
     try {
       final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
       if (localEndpoint != null) {
         await _apiService.resolveAndSetEndpoint(localEndpoint);
+        return localEndpoint;
       }
-
-      return true;
     } catch (error, stackTrace) {
       _log.severe("Cannot set local endpoint", error, stackTrace);
-      return false;
     }
+
+    return null;
   }
 
-  Future<bool> _setRemoteConnection() async {
+  Future<String?> _setRemoteConnection() async {
     try {
       final jsonString = Store.tryGet(StoreKey.externalEndpointList);
       if (jsonString == null) {
-        return false;
+        return null;
       }
 
       final List<dynamic> jsonList = jsonDecode(jsonString);
       final endpointList =
           jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+      String? validUrl;
 
       for (final endpoint in endpointList) {
-        final validUrl = await _apiService.resolveEndpoint(endpoint.url);
+        // If endpoint or server is not online, try the next endpoint
+        try {
+          validUrl = await _apiService.resolveEndpoint(endpoint.url);
+        } on ApiException catch (error) {
+          _log.severe("Cannot resolve endpoint", error);
+          continue;
+        }
+
         final isValid = await validateAuxilaryServerUrl(validUrl);
         if (isValid) {
           await _apiService.resolveAndSetEndpoint(validUrl);
@@ -185,10 +189,11 @@ class AuthService {
         }
       }
 
-      return true;
+      return validUrl;
     } catch (error, stackTrace) {
       _log.severe("Cannot set external endpoint", error, stackTrace);
-      return false;
     }
+
+    return null;
   }
 }

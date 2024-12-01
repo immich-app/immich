@@ -199,7 +199,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return Store.tryGet(StoreKey.serverUrl);
   }
 
-  Future<void> setOpenApiServiceEndpoint() {
+  Future<String?> setOpenApiServiceEndpoint() {
     return _authService.setOpenApiServiceEndpoint();
   }
 }

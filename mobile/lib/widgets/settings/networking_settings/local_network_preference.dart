@@ -178,7 +178,14 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       title: Text("WiFi Name"),
                       subtitle: wifiNameText.value.isEmpty
                           ? Text("enter-WiFi-name")
-                          : Text(wifiNameText.value),
+                          : Text(
+                              wifiNameText.value,
+                              style: context.textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: context.primaryColor,
+                                fontFamily: 'Inconsolata',
+                              ),
+                            ),
                       trailing: IconButton(
                         onPressed: enabled ? handleEditWifiName : null,
                         icon: Icon(Icons.edit_rounded),
@@ -190,7 +197,14 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       title: Text("Server Endpoint"),
                       subtitle: localEndpointText.value.isEmpty
                           ? Text("http://local-ip:2283/api")
-                          : Text(localEndpointText.value),
+                          : Text(
+                              localEndpointText.value,
+                              style: context.textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: context.primaryColor,
+                                fontFamily: 'Inconsolata',
+                              ),
+                            ),
                       trailing: IconButton(
                         onPressed: enabled ? handleEditServerEndpoint : null,
                         icon: Icon(Icons.edit_rounded),
