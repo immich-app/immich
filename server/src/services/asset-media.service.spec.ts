@@ -571,6 +571,7 @@ describe(AssetMediaService.name, () => {
           path: '/path/to/preview.jpg',
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'image/jpeg',
+          fileName: 'asset-id_thumbnail.jpg',
         }),
       );
     });
@@ -585,6 +586,7 @@ describe(AssetMediaService.name, () => {
           path: assetStub.image.files[0].path,
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'image/jpeg',
+          fileName: 'asset-id_preview.jpg',
         }),
       );
     });
@@ -599,6 +601,7 @@ describe(AssetMediaService.name, () => {
           path: assetStub.image.files[1].path,
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'application/octet-stream',
+          fileName: 'asset-id_thumbnail.ext',
         }),
       );
     });
