@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
-import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
@@ -129,13 +127,13 @@ class AuthService {
   }
 
   Future<String?> setOpenApiServiceEndpoint() async {
-    final enable = Store.tryGet(StoreKey.autoEndpointSwitching);
-    if (enable == null || !enable) {
+    final enable = _authRepository.getEndpointSwitchingFeature();
+    if (!enable) {
       return null;
     }
 
     final wifiName = await _networkService.getWifiName();
-    final savedWifiName = Store.tryGet(StoreKey.preferredWifiName);
+    final savedWifiName = _authRepository.getPreferredWifiName();
     String? endpoint;
 
     if (wifiName == savedWifiName) {
@@ -149,7 +147,7 @@ class AuthService {
 
   Future<String?> _setLocalConnection() async {
     try {
-      final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
+      final localEndpoint = _authRepository.getLocalEndpoint();
       if (localEndpoint != null) {
         await _apiService.resolveAndSetEndpoint(localEndpoint);
         return localEndpoint;
@@ -163,14 +161,7 @@ class AuthService {
 
   Future<String?> _setRemoteConnection() async {
     try {
-      final jsonString = Store.tryGet(StoreKey.externalEndpointList);
-      if (jsonString == null) {
-        return null;
-      }
-
-      final List<dynamic> jsonList = jsonDecode(jsonString);
-      final endpointList =
-          jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
+      final endpointList = _authRepository.getExternalEndpointList();
       String? validUrl;
 
       for (final endpoint in endpointList) {
@@ -184,7 +175,8 @@ class AuthService {
 
         final isValid = await validateAuxilaryServerUrl(validUrl);
         if (isValid) {
-          await _apiService.resolveAndSetEndpoint(validUrl);
+          final abc = await _apiService.resolveAndSetEndpoint(validUrl);
+          print("[ABC] $abc");
           break;
         }
       }
