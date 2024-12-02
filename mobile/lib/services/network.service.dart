@@ -31,12 +31,6 @@ class NetworkService {
       return null;
     }
 
-    final isWifiConnected = await _repository.isWifiConnected();
-
-    if (!isWifiConnected) {
-      return null;
-    }
-
     return await _repository.getWifiName();
   }
 }

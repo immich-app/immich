@@ -12,7 +12,7 @@ class NetworkNotifier extends StateNotifier<String> {
 
   NetworkNotifier(this._networkService) : super('');
 
-  Future<String?> getWifiName() async {
+  Future<String?> getWifiName() {
     return _networkService.getWifiName();
   }
 

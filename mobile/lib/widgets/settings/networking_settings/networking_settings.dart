@@ -33,15 +33,16 @@ class NetworkingSettings extends HookConsumerWidget {
     );
 
     return ListView(
-      padding: EdgeInsets.only(bottom: 96),
-      physics: ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 96),
+      physics: const ClampingScrollPhysics(),
       children: <Widget>[
         const SizedBox(height: 16),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Card(
             child: ListTile(
-              leading: Icon(Icons.check_circle_rounded, color: Colors.green),
+              leading:
+                  const Icon(Icons.check_circle_rounded, color: Colors.green),
               title: Text(
                 "YOU ARE CONNECTING TO",
                 style: context.textTheme.labelMedium?.copyWith(
@@ -73,8 +74,8 @@ class NetworkingSettings extends HookConsumerWidget {
           subtitle:
               "Switch between endpoints automatically when on or off designated Wi-Fi networks",
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
+        const Padding(
+          padding: EdgeInsets.only(top: 8, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
             title: "LOCAL NETWORK",
             icon: Icons.home_outlined,
@@ -83,8 +84,8 @@ class NetworkingSettings extends HookConsumerWidget {
         LocalNetworkPreference(
           enabled: featureEnabled.value,
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
+        const Padding(
+          padding: EdgeInsets.only(top: 32, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
             title: "EXTERNAL NETWORK",
             icon: Icons.dns,
@@ -156,7 +157,7 @@ class NetworkStatusIcon extends StatelessWidget {
             child: CircularProgressIndicator(
               color: context.primaryColor,
               strokeWidth: 2,
-              key: ValueKey('loading'),
+              key: const ValueKey('loading'),
             ),
           ),
         );

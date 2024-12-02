@@ -31,7 +31,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
           controller: controller,
           autofocus: true,
           decoration: InputDecoration(
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
             hintText: hintText,
           ),
         ),
@@ -154,8 +154,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
             child: Stack(
               children: [
                 ListView(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  physics: ClampingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  physics: const ClampingScrollPhysics(),
                   shrinkWrap: true,
                   children: [
                     Padding(
@@ -168,16 +168,16 @@ class LocalNetworkPreference extends HookConsumerWidget {
                         style: context.textTheme.bodyMedium,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Divider(
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                     ListTile(
-                      contentPadding: EdgeInsets.only(left: 24, right: 8),
-                      leading: Icon(Icons.wifi_rounded),
-                      title: Text("WiFi Name"),
+                      contentPadding: const EdgeInsets.only(left: 24, right: 8),
+                      leading: const Icon(Icons.wifi_rounded),
+                      title: const Text("WiFi Name"),
                       subtitle: wifiNameText.value.isEmpty
-                          ? Text("enter-WiFi-name")
+                          ? const Text("enter-WiFi-name")
                           : Text(
                               wifiNameText.value,
                               style: context.textTheme.labelLarge?.copyWith(
@@ -188,15 +188,15 @@ class LocalNetworkPreference extends HookConsumerWidget {
                             ),
                       trailing: IconButton(
                         onPressed: enabled ? handleEditWifiName : null,
-                        icon: Icon(Icons.edit_rounded),
+                        icon: const Icon(Icons.edit_rounded),
                       ),
                     ),
                     ListTile(
-                      contentPadding: EdgeInsets.only(left: 24, right: 8),
-                      leading: Icon(Icons.lan_rounded),
-                      title: Text("Server Endpoint"),
+                      contentPadding: const EdgeInsets.only(left: 24, right: 8),
+                      leading: const Icon(Icons.lan_rounded),
+                      title: const Text("Server Endpoint"),
                       subtitle: localEndpointText.value.isEmpty
-                          ? Text("http://local-ip:2283/api")
+                          ? const Text("http://local-ip:2283/api")
                           : Text(
                               localEndpointText.value,
                               style: context.textTheme.labelLarge?.copyWith(
@@ -207,10 +207,10 @@ class LocalNetworkPreference extends HookConsumerWidget {
                             ),
                       trailing: IconButton(
                         onPressed: enabled ? handleEditServerEndpoint : null,
-                        icon: Icon(Icons.edit_rounded),
+                        icon: const Icon(Icons.edit_rounded),
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24.0,
@@ -218,8 +218,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       child: SizedBox(
                         height: 48,
                         child: OutlinedButton.icon(
-                          icon: Icon(Icons.wifi_find_rounded),
-                          label: Text('USE CURRENT CONNECTION'),
+                          icon: const Icon(Icons.wifi_find_rounded),
+                          label: const Text('USE CURRENT CONNECTION'),
                           onPressed: enabled ? autofillCurrentNetwork : null,
                         ),
                       ),

@@ -99,10 +99,10 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
         ),
       ),
       child: ListTile(
-        contentPadding: EdgeInsets.only(left: 24, right: 24),
+        contentPadding: const EdgeInsets.only(left: 24, right: 24),
         trailing: ReorderableDragStartListener(
           index: widget.index,
-          child: Icon(Icons.drag_handle_rounded),
+          child: const Icon(Icons.drag_handle_rounded),
         ),
         leading: NetworkStatusIcon(
           key: ValueKey('status_$auxCheckStatus'),
@@ -131,14 +131,14 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
             ),
             errorBorder: OutlineInputBorder(
               borderSide: BorderSide(color: Colors.red[300]!),
-              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),
             disabledBorder: OutlineInputBorder(
               borderSide: BorderSide(
                 color:
                     context.isDarkTheme ? Colors.grey[900]! : Colors.grey[300]!,
               ),
-              borderRadius: BorderRadius.all(Radius.circular(16)),
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),
           ),
           controller: controller,

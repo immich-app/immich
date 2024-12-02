@@ -28,6 +28,7 @@ linter:
     use_build_context_synchronously: false
     require_trailing_commas: true
     unrelated_type_equality_checks: true
+    prefer_const_constructors: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
@@ -42,6 +43,7 @@ analyzer:
 custom_lint:
   debug: true
   rules:
+    - prefer_const_constructors: true
     - avoid_build_context_in_providers: false
     - avoid_public_notifier_properties: false
     - avoid_manual_providers_as_generated_provider_dependency: false

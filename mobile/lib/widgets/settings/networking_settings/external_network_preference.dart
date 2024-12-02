@@ -94,7 +94,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
             jsonList.map((e) => AuxilaryEndpoint.fromJson(e)).toList();
         return null;
       },
-      [],
+      const [],
     );
 
     return Padding(
@@ -112,8 +112,8 @@ class ExternalNetworkPreference extends HookConsumerWidget {
         child: Stack(
           children: [
             ListView(
-              padding: EdgeInsets.symmetric(vertical: 16.0),
-              physics: ClampingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              physics: const ClampingScrollPhysics(),
               shrinkWrap: true,
               children: [
                 Padding(
@@ -126,7 +126,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     style: context.textTheme.bodyMedium,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Divider(color: context.colorScheme.surfaceContainerHighest),
                 Form(
                   key: GlobalKey<FormState>(),
@@ -134,7 +134,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     buildDefaultDragHandles: false,
                     proxyDecorator: proxyDecorator,
                     shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: entries.value.length,
                     onReorder: handleReorder,
                     itemBuilder: (context, index) {
@@ -154,8 +154,8 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                   child: SizedBox(
                     height: 48,
                     child: OutlinedButton.icon(
-                      icon: Icon(Icons.add),
-                      label: Text('ADD ENDPOINT'),
+                      icon: const Icon(Icons.add),
+                      label: const Text('ADD ENDPOINT'),
                       onPressed: () {
                         entries.value = [
                           ...entries.value,
