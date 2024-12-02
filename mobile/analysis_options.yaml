@@ -43,7 +43,6 @@ analyzer:
 custom_lint:
   debug: true
   rules:
-    - prefer_const_constructors: true
     - avoid_build_context_in_providers: false
     - avoid_public_notifier_properties: false
     - avoid_manual_providers_as_generated_provider_dependency: false
