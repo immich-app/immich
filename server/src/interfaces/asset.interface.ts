@@ -156,6 +156,7 @@ export interface IAssetRepository {
   update(asset: Updateable<Assets> & { id: string }): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | undefined>;
+  removeAssetFile(path: string): Promise<void>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;

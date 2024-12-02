@@ -43,6 +43,11 @@ export class MediaRepository {
 
   async extract(input: string, output: string): Promise<boolean> {
     try {
+      // remove existing output file if it exists
+      // as exiftool-vendord does not support overwriting via "-w!" flag
+      // and throws "1 files could not be read" error when the output file exists
+      await fs.unlink(output).catch(() => null);
+      this.logger.debug('Extracting JPEG from RAW image:', input);
       await exiftool.extractJpgFromRaw(input, output);
     } catch (error: any) {
       this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
@@ -97,6 +102,10 @@ export class MediaRepository {
       pipeline = pipeline.extract(options.crop);
     }
 
+    // Infinity is a special value that means no resizing
+    if (options.size === Infinity) {
+      return pipeline;
+    }
     return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
   }
 

@@ -8406,6 +8406,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "original",
           "preview",
           "thumbnail"
         ],
@@ -10187,6 +10188,7 @@
       "PathType": {
         "enum": [
           "original",
+          "extracted",
           "preview",
           "thumbnail",
           "encoded_video",
