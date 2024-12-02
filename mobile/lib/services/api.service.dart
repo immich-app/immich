@@ -104,7 +104,7 @@ class ApiService implements Authentication {
 
     try {
       await setEndpoint(serverUrl);
-      await serverInfoApi.pingServer().timeout(Duration(seconds: 5));
+      await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
     } on SocketException catch (_) {
