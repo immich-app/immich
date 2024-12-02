@@ -106,8 +106,8 @@ class _MobileLayout extends StatelessWidget {
                 elevation: 0,
                 clipBehavior: Clip.antiAlias,
                 color: context.colorScheme.surfaceContainer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16.0),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
                 ),
                 margin: const EdgeInsets.symmetric(vertical: 4.0),
                 child: ListTile(
@@ -116,7 +116,7 @@ class _MobileLayout extends StatelessWidget {
                   ),
                   leading: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.0),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
                       color: context.isDarkTheme
                           ? Colors.black26
                           : Colors.white.withAlpha(100),

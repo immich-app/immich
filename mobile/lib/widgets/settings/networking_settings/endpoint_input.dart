@@ -63,7 +63,9 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
         await ref.read(authProvider.notifier).validateAuxilaryServerUrl(url);
 
     setState(() {
-      auxCheckStatus = isValid ? AuxCheckStatus.valid : AuxCheckStatus.error;
+      if (mounted) {
+        auxCheckStatus = isValid ? AuxCheckStatus.valid : AuxCheckStatus.error;
+      }
     });
 
     widget.onValidated(url, widget.index, auxCheckStatus);
@@ -100,7 +102,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
         ),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.only(left: 24, right: 24),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         trailing: ReorderableDragStartListener(
           index: widget.index,
           child: const Icon(Icons.drag_handle_rounded),
@@ -121,10 +123,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
           ),
           decoration: InputDecoration(
             hintText: 'http(s)://immich.domain.com',
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16.0,
-            ),
+            contentPadding: const EdgeInsets.all(16),
             filled: true,
             fillColor: context.colorScheme.surfaceContainer,
             border: const OutlineInputBorder(

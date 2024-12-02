@@ -148,7 +148,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
           Container(
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
               color: context.colorScheme.surfaceContainerLow,
               border: Border.all(
                 color: context.colorScheme.surfaceContainerHighest,
@@ -243,7 +243,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                 if (!enabled)
                   Positioned.fill(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: const BorderRadius.all(Radius.circular(16)),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
                         child: Container(
