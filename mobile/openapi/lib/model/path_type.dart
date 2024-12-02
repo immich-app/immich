@@ -24,6 +24,7 @@ class PathType {
   String toJson() => value;
 
   static const original = PathType._(r'original');
+  static const extracted = PathType._(r'extracted');
   static const preview = PathType._(r'preview');
   static const thumbnail = PathType._(r'thumbnail');
   static const encodedVideo = PathType._(r'encoded_video');
@@ -34,6 +35,7 @@ class PathType {
   /// List of all possible values in this [enum][PathType].
   static const values = <PathType>[
     original,
+    extracted,
     preview,
     thumbnail,
     encodedVideo,
@@ -79,6 +81,7 @@ class PathTypeTypeTransformer {
     if (data != null) {
       switch (data) {
         case r'original': return PathType.original;
+        case r'extracted': return PathType.extracted;
         case r'preview': return PathType.preview;
         case r'thumbnail': return PathType.thumbnail;
         case r'encoded_video': return PathType.encodedVideo;

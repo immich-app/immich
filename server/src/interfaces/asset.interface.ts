@@ -180,6 +180,7 @@ export interface IAssetRepository {
   updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: AssetUpdateOptions): Promise<void>;
   remove(asset: AssetEntity): Promise<void>;
+  removeAssetFile(path: string): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | null>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;

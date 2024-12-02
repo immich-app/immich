@@ -270,7 +270,7 @@ describe(MediaService.name, () => {
       });
 
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
-      expect(moveMock.create).toHaveBeenCalledTimes(2);
+      expect(moveMock.create).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -635,8 +635,6 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
         size: 1440,
       });
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image is too small', async () => {
@@ -647,15 +645,19 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
+      const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        assetStub.imageDng.originalPath,
+        expect.objectContaining({ size: Infinity }),
+        extractedPath,
+      );
+      expect(extractedPath).toMatch(/-extracted\.jpeg$/);
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(extractedPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
       });
-      const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image not found', async () => {
@@ -665,7 +667,7 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith('upload/thumbs/user-id/as/se/asset-id-extracted.jpeg', {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -681,7 +683,7 @@ describe(MediaService.name, () => {
 
       expect(mediaMock.extract).not.toHaveBeenCalled();
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith('upload/thumbs/user-id/as/se/asset-id-extracted.jpeg', {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
@@ -698,11 +700,16 @@ describe(MediaService.name, () => {
 
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
       expect(mediaMock.decodeImage).toHaveBeenCalledWith(
-        assetStub.imageDng.originalPath,
+        'upload/thumbs/user-id/as/se/asset-id-extracted.jpeg',
         expect.objectContaining({ processInvalidImages: true }),
       );
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        assetStub.imageDng.originalPath,
+        expect.objectContaining({ processInvalidImages: true }),
+        'upload/thumbs/user-id/as/se/asset-id-extracted.jpeg',
+      );
       expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: true }),

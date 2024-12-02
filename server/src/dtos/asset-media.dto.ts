@@ -4,6 +4,11 @@ import { ArrayNotEmpty, IsArray, IsEnum, IsNotEmpty, IsString, ValidateNested } 
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
 export enum AssetMediaSize {
+  /**
+   * An original-sized JPG extracted from the RAW image,
+   * or otherwise the original non-RAW image itself.
+   */
+  ORIGINAL = 'original',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
 }
