@@ -25,25 +25,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     ref
         .read(authProvider.notifier)
         .setOpenApiServiceEndpoint()
-        .then(showConnectionInfo)
         .whenComplete(() => resumeSession());
-  }
-
-  void showConnectionInfo(String? endpoint) {
-    if (endpoint == null) {
-      return;
-    }
-
-    context.showSnackBar(
-      SnackBar(
-        backgroundColor: context.colorScheme.surfaceContainerLow,
-        content: Text(
-          'Resuming session at $endpoint',
-          style: context.textTheme.labelLarge,
-        ),
-        duration: Duration(seconds: 3),
-      ),
-    );
   }
 
   void resumeSession() async {
