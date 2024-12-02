@@ -138,7 +138,7 @@ ThemeData getThemeData({
       menuStyle: MenuStyle(
         shape: WidgetStatePropertyAll<OutlinedBorder>(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: const BorderRadius.all(Radius.circular(15)),
           ),
         ),
       ),
