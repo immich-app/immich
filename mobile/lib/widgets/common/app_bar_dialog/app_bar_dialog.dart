@@ -143,9 +143,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           );
         },
         trailing: isLoggingOut.value
-            ? SizedBox.square(
+            ? const SizedBox.square(
                 dimension: 20,
-                child: const CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
             : null,
       );

@@ -78,7 +78,7 @@ class AlbumsPage extends HookConsumerWidget {
         showUploadButton: false,
         actions: [
           IconButton(
-            icon: Icon(
+            icon: const Icon(
               Icons.add_rounded,
               size: 28,
             ),
@@ -112,13 +112,13 @@ class AlbumsPage extends HookConsumerWidget {
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  transform: GradientRotation(0.5 * pi),
+                  transform: const GradientRotation(0.5 * pi),
                 ),
               ),
               child: TextField(
                 autofocus: false,
                 decoration: InputDecoration(
-                  contentPadding: EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(25),
                     borderSide: BorderSide(
@@ -362,13 +362,13 @@ class SortButton extends ConsumerWidget {
 
     return MenuAnchor(
       style: MenuStyle(
-        elevation: WidgetStatePropertyAll(1),
+        elevation: const WidgetStatePropertyAll(1),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
         ),
-        padding: WidgetStatePropertyAll(
+        padding: const WidgetStatePropertyAll(
           EdgeInsets.all(4),
         ),
       ),

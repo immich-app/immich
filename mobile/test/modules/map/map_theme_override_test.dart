@@ -27,7 +27,7 @@ void main() {
     mapStateNotifier = MockMapStateNotifier(mapState);
     overrides = [
       mapStateNotifierProvider.overrideWith(() => mapStateNotifier),
-      localeProvider.overrideWithValue(Locale("en")),
+      localeProvider.overrideWithValue(const Locale("en")),
     ];
   });
 
