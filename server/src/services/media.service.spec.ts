@@ -1637,7 +1637,10 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device hw',
+          ]),
           outputOptions: expect.arrayContaining([
             `-c:v h264_qsv`,
             '-c:a copy',
@@ -1696,7 +1699,10 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device hw',
+          ]),
           outputOptions: expect.not.arrayContaining([expect.stringContaining('-preset')]),
           twoPass: false,
         }),
@@ -1713,7 +1719,10 @@ describe(MediaService.name, () => {
         '/original/path.ext',
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
-          inputOptions: expect.arrayContaining(['-init_hw_device qsv=hw', '-filter_hw_device hw']),
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD128',
+            '-filter_hw_device hw',
+          ]),
           outputOptions: expect.arrayContaining(['-low_power 1']),
           twoPass: false,
         }),
@@ -1728,6 +1737,26 @@ describe(MediaService.name, () => {
       await expect(sut.handleVideoConversion({ id: assetStub.video.id })).resolves.toBe(JobStatus.FAILED);
       expect(mediaMock.transcode).not.toHaveBeenCalled();
       expect(loggerMock.debug).toHaveBeenCalledWith('No devices found in /dev/dri.');
+    });
+
+    it('should prefer higher index renderD* device for qsv', async () => {
+      storageMock.readdir.mockResolvedValue(['card1', 'renderD129', 'card0', 'renderD128']);
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.QSV } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device qsv=hw,child_device=/dev/dri/renderD129',
+            '-filter_hw_device hw',
+          ]),
+          outputOptions: expect.arrayContaining([`-c:v h264_qsv`]),
+          twoPass: false,
+        }),
+      );
     });
 
     it('should use hardware decoding for qsv if enabled', async () => {
@@ -1750,6 +1779,7 @@ describe(MediaService.name, () => {
             '-async_depth 4',
             '-noautorotate',
             '-threads 1',
+            '-qsv_device /dev/dri/renderD128',
           ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
@@ -1939,8 +1969,8 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should prefer gpu for vaapi if available', async () => {
-      storageMock.readdir.mockResolvedValue(['renderD129', 'card1', 'card0', 'renderD128']);
+    it('should prefer higher index renderD* device for vaapi', async () => {
+      storageMock.readdir.mockResolvedValue(['card1', 'renderD129', 'card0', 'renderD128']);
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
@@ -1950,27 +1980,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/card1',
-            '-filter_hw_device accel',
-          ]),
-          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
-          twoPass: false,
-        }),
-      );
-    });
-
-    it('should prefer higher index gpu node', async () => {
-      storageMock.readdir.mockResolvedValue(['renderD129', 'renderD130', 'renderD128']);
-      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
-      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
-      assetMock.getByIds.mockResolvedValue([assetStub.video]);
-      await sut.handleVideoConversion({ id: assetStub.video.id });
-      expect(mediaMock.transcode).toHaveBeenCalledWith(
-        '/original/path.ext',
-        'upload/encoded-video/user-id/as/se/asset-id.mp4',
-        expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-init_hw_device vaapi=accel:/dev/dri/renderD130',
+            '-init_hw_device vaapi=accel:/dev/dri/renderD129',
             '-filter_hw_device accel',
           ]),
           outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
@@ -2020,6 +2030,7 @@ describe(MediaService.name, () => {
             '-hwaccel_output_format vaapi',
             '-noautorotate',
             '-threads 1',
+            '-hwaccel_device /dev/dri/renderD128',
           ]),
           outputOptions: expect.arrayContaining([
             expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12'),
