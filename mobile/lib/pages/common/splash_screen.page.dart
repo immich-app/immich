@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -25,7 +24,16 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     ref
         .read(authProvider.notifier)
         .setOpenApiServiceEndpoint()
+        .then(logConnectionInfo)
         .whenComplete(() => resumeSession());
+  }
+
+  void logConnectionInfo(String? endpoint) {
+    if (endpoint == null) {
+      return;
+    }
+
+    log.info("Resuming session at $endpoint");
   }
 
   void resumeSession() async {
