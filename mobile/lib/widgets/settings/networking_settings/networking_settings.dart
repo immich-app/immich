@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -44,7 +45,7 @@ class NetworkingSettings extends HookConsumerWidget {
               leading:
                   const Icon(Icons.check_circle_rounded, color: Colors.green),
               title: Text(
-                "YOU ARE CONNECTING TO",
+                "you_are_connecting_to".tr().toUpperCase(),
                 style: context.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
@@ -70,24 +71,23 @@ class NetworkingSettings extends HookConsumerWidget {
         SettingsSwitchListTile(
           enabled: true,
           valueNotifier: featureEnabled,
-          title: "Automatic endpoint switching",
-          subtitle:
-              "Switch between endpoints automatically when on or off designated Wi-Fi networks",
+          title: "automatic_endpoint_switching_title".tr(),
+          subtitle: "automatic_endpoint_switching_subtitle".tr(),
         ),
-        const Padding(
-          padding: EdgeInsets.only(top: 8, left: 16, bottom: 16),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
-            title: "LOCAL NETWORK",
+            title: "local_network".tr().toUpperCase(),
             icon: Icons.home_outlined,
           ),
         ),
         LocalNetworkPreference(
           enabled: featureEnabled.value,
         ),
-        const Padding(
-          padding: EdgeInsets.only(top: 32, left: 16, bottom: 16),
+        Padding(
+          padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
-            title: "EXTERNAL NETWORK",
+            title: "external_network".tr().toUpperCase(),
             icon: Icons.dns,
           ),
         ),

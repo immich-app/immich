@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -38,11 +39,14 @@ class LocalNetworkPreference extends HookConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'cancel'.tr().toUpperCase(),
+              style: const TextStyle(color: Colors.red),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text),
-            child: const Text('SAVE'),
+            child: Text('save'.tr().toUpperCase()),
           ),
         ],
       ),
@@ -86,8 +90,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
     handleEditWifiName() async {
       final wifiName = await _showEditDialog(
         context,
-        "WiFi Name",
-        "Your Wi-Fi name",
+        "wifi_name".tr(),
+        "your_wifi_name".tr(),
         wifiNameText.value,
       );
 
@@ -99,7 +103,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
     handleEditServerEndpoint() async {
       final localEndpoint = await _showEditDialog(
         context,
-        "Server Endpoint",
+        "server_endpoint".tr(),
         "http://local-ip:2283/api",
         localEndpointText.value,
       );
@@ -116,7 +120,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
         context.showSnackBar(
           SnackBar(
             content: Text(
-              "Cannot get Wi-Fi name, make sure you have granted the necessary permissions and connected to a Wi-Fi network",
+              "get_wifiname_error".tr(),
               style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
                 color: context.colorScheme.onSecondary,
@@ -164,7 +168,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                         horizontal: 24,
                       ),
                       child: Text(
-                        "When connect to the following Wi-Fi network, the app will prioritize connecting to the server at the following endpoint",
+                        "local_network_sheet_info".tr(),
                         style: context.textTheme.bodyMedium,
                       ),
                     ),
@@ -175,9 +179,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
                     ListTile(
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.wifi_rounded),
-                      title: const Text("WiFi Name"),
+                      title: Text("wifi_name".tr()),
                       subtitle: wifiNameText.value.isEmpty
-                          ? const Text("enter-WiFi-name")
+                          ? Text("enter_wifi_name".tr())
                           : Text(
                               wifiNameText.value,
                               style: context.textTheme.labelLarge?.copyWith(
@@ -194,7 +198,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                     ListTile(
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.lan_rounded),
-                      title: const Text("Server Endpoint"),
+                      title: Text("server_endpoint".tr()),
                       subtitle: localEndpointText.value.isEmpty
                           ? const Text("http://local-ip:2283/api")
                           : Text(
@@ -219,7 +223,8 @@ class LocalNetworkPreference extends HookConsumerWidget {
                         height: 48,
                         child: OutlinedButton.icon(
                           icon: const Icon(Icons.wifi_find_rounded),
-                          label: const Text('USE CURRENT CONNECTION'),
+                          label:
+                              Text('use_current_connection'.tr().toUpperCase()),
                           onPressed: enabled ? autofillCurrentNetwork : null,
                         ),
                       ),

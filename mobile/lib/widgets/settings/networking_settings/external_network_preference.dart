@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -122,7 +123,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     horizontal: 24,
                   ),
                   child: Text(
-                    "When not connected to Wi-Fi, the app will attempt to connect to the following endpoints from top to bottom",
+                    "external_network_sheet_info".tr(),
                     style: context.textTheme.bodyMedium,
                   ),
                 ),
@@ -155,7 +156,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     height: 48,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.add),
-                      label: const Text('ADD ENDPOINT'),
+                      label: Text('add_endpoint'.tr().toUpperCase()),
                       onPressed: () {
                         entries.value = [
                           ...entries.value,
