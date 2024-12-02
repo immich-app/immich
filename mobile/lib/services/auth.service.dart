@@ -162,26 +162,18 @@ class AuthService {
   Future<String?> _setRemoteConnection() async {
     try {
       final endpointList = _authRepository.getExternalEndpointList();
-      String? validUrl;
 
       for (final endpoint in endpointList) {
-        // If endpoint or server is not online, try the next endpoint
         try {
-          validUrl = await _apiService.resolveEndpoint(endpoint.url);
+          return await _apiService.resolveAndSetEndpoint(endpoint.url);
         } on ApiException catch (error) {
           _log.severe("Cannot resolve endpoint", error);
           continue;
-        }
-
-        final isValid = await validateAuxilaryServerUrl(validUrl);
-        if (isValid) {
-          final abc = await _apiService.resolveAndSetEndpoint(validUrl);
-          print("[ABC] $abc");
-          break;
+        } catch (_) {
+          _log.severe("Auxilary server is not valid");
+          continue;
         }
       }
-
-      return validUrl;
     } catch (error, stackTrace) {
       _log.severe("Cannot set external endpoint", error, stackTrace);
     }
