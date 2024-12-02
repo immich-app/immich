@@ -647,7 +647,9 @@ class SearchResultGrid extends StatelessWidget {
             stackEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: !isSearching ? const SearchEmptyContent() : const SizedBox.shrink(),
+              child: !isSearching
+                  ? const SearchEmptyContent()
+                  : const SizedBox.shrink(),
             ),
           ),
         ),
