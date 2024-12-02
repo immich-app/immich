@@ -7,8 +7,13 @@
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { isWebCompatibleImage, canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import {
+    isRawImage,
+    isWebCompatibleImage,
+    canCopyImageToClipboard,
+    copyImageToClipboard,
+  } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -66,23 +71,21 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
-    for (const preloadAsset of preloadAssets || []) {
-      if (preloadAsset.type === AssetTypeEnum.Image) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
-      }
-    }
-  };
-
-  const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+  const getAssetUrl = (id: string, targetSize: AssetMediaSize, checksum: string) => {
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
       return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
     }
 
-    return useOriginal
-      ? getAssetOriginalUrl({ id, checksum })
-      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+    return getAssetThumbnailUrl({ id, size: targetSize, checksum });
+  };
+
+  const preload = (targetSize: AssetMediaSize, preloadAssets?: AssetResponseDto[]) => {
+    for (const preloadAsset of preloadAssets || []) {
+      if (preloadAsset.type === AssetTypeEnum.Image) {
+        let img = new Image();
+        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.checksum);
+      }
+    }
   };
 
   copyImage = async () => {
@@ -144,21 +147,26 @@
       loader?.removeEventListener('error', onerror);
     };
   });
-  let isWebCompatible = $derived(isWebCompatibleImage(asset));
-  let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
-  // when true, will force loading of the original image
 
+  let isWebCompatible = $derived(isWebCompatibleImage(asset));
+  // RAW files may have corresponding extracted JPEGs
+  let isRaw = $derived(isRawImage(asset));
+  let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
+
+  // when true, will force loading of the original image
   let forceUseOriginal: boolean = $derived(
-    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible),
+    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && (isWebCompatible || isRaw)),
   );
 
-  let useOriginalImage = $derived(useOriginalByDefault || forceUseOriginal);
+  const targetImageSize = $derived(
+    useOriginalByDefault || forceUseOriginal ? AssetMediaSize.Original : AssetMediaSize.Preview,
+  );
 
   $effect(() => {
-    preload(useOriginalImage, preloadAssets);
+    preload(targetImageSize, preloadAssets);
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.checksum));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.checksum));
 </script>
 
 <svelte:window
