@@ -49,7 +49,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
         if (isSuccess) {
           context.navigateTo(
-            TabControllerRoute(children: [AlbumsRoute()]),
+            const TabControllerRoute(children: [AlbumsRoute()]),
           );
         } else {
           showErrorMessage();
