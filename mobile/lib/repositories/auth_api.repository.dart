@@ -39,7 +39,9 @@ class AuthApiRepository extends ApiRepository implements IAuthApiRepository {
 
   @override
   Future<void> logout() async {
-    await _apiService.authenticationApi.logout().timeout(Duration(seconds: 7));
+    await _apiService.authenticationApi
+        .logout()
+        .timeout(const Duration(seconds: 7));
   }
 
   _mapLoginReponse(LoginResponseDto dto) {

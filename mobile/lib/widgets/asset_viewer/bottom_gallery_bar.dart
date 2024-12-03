@@ -338,7 +338,7 @@ class BottomGalleryBar extends ConsumerWidget {
           ),
           position: DecorationPosition.background,
           child: Padding(
-            padding: EdgeInsets.only(top: 40.0),
+            padding: const EdgeInsets.only(top: 40.0),
             child: Column(
               children: [
                 if (showVideoPlayerControls) const VideoControls(),

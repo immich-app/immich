@@ -28,7 +28,7 @@ class LibraryPage extends ConsumerWidget {
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
 
     return Scaffold(
-      appBar: ImmichAppBar(),
+      appBar: const ImmichAppBar(),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: ListView(
@@ -81,7 +81,7 @@ class LibraryPage extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 12),
-            QuickAccessButtons(),
+            const QuickAccessButtons(),
             const SizedBox(
               height: 32,
             ),
@@ -122,8 +122,8 @@ class QuickAccessButtons extends ConsumerWidget {
           ListTile(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
                 bottomLeft: Radius.circular(partners.isEmpty ? 20 : 0),
                 bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
               ),
@@ -173,7 +173,7 @@ class PartnerList extends ConsumerWidget {
             right: 18.0,
           ),
           leading: userAvatar(context, partner, radius: 16),
-          title: Text(
+          title: const Text(
             "partner_list_user_photos",
             style: TextStyle(
               fontWeight: FontWeight.w500,
