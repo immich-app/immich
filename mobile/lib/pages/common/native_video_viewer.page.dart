@@ -266,12 +266,28 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     }
 
+    void onPlaybackEnded() {
+      final videoController = controller.value;
+      if (videoController == null || !context.mounted) {
+        return;
+      }
+
+      if (showMotionVideo.value &&
+          videoController.playbackInfo?.status == PlaybackStatus.stopped &&
+          !ref
+              .read(appSettingsServiceProvider)
+              .getSetting<bool>(AppSettingsEnum.loopVideo)) {
+        ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+      }
+    }
+
     void removeListeners(NativeVideoPlayerController controller) {
       controller.onPlaybackPositionChanged
           .removeListener(onPlaybackPositionChanged);
       controller.onPlaybackStatusChanged
           .removeListener(onPlaybackStatusChanged);
       controller.onPlaybackReady.removeListener(onPlaybackReady);
+      controller.onPlaybackEnded.removeListener(onPlaybackEnded);
     }
 
     void initController(NativeVideoPlayerController nc) async {
@@ -289,6 +305,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       nc.onPlaybackPositionChanged.addListener(onPlaybackPositionChanged);
       nc.onPlaybackStatusChanged.addListener(onPlaybackStatusChanged);
       nc.onPlaybackReady.addListener(onPlaybackReady);
+      nc.onPlaybackEnded.addListener(onPlaybackEnded);
 
       nc.loadVideoSource(source).catchError((error) {
         log.severe('Error loading video source: $error');
