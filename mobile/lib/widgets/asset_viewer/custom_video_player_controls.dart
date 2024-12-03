@@ -50,12 +50,6 @@ class CustomVideoPlayerControls extends HookConsumerWidget {
       ref.read(showControlsProvider.notifier).show = true;
     }
 
-    // When we mute, show the controls
-    ref.listen(videoPlayerControlsProvider.select((v) => v.mute),
-        (previous, next) {
-      showControlsAndStartHideTimer();
-    });
-
     // When we change position, show or hide timer
     ref.listen(videoPlayerControlsProvider.select((v) => v.position),
         (previous, next) {

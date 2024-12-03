@@ -4,13 +4,13 @@ import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider
 class VideoPlaybackControls {
   const VideoPlaybackControls({
     required this.position,
-    required this.mute,
     required this.pause,
+    this.restarted = false,
   });
 
   final double position;
-  final bool mute;
   final bool pause;
+  final bool restarted;
 }
 
 final videoPlayerControlsProvider =
@@ -18,11 +18,8 @@ final videoPlayerControlsProvider =
   return VideoPlayerControls(ref);
 });
 
-const videoPlayerControlsDefault = VideoPlaybackControls(
-  position: 0,
-  pause: false,
-  mute: false,
-);
+const videoPlayerControlsDefault =
+    VideoPlaybackControls(position: 0, pause: false);
 
 class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   VideoPlayerControls(this.ref) : super(videoPlayerControlsDefault);
@@ -40,7 +37,6 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   double get position => state.position;
-  bool get mute => state.mute;
   bool get paused => state.pause;
 
   set position(double value) {
@@ -48,31 +44,7 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
       return;
     }
 
-    state = VideoPlaybackControls(
-      position: value,
-      mute: state.mute,
-      pause: state.pause,
-    );
-  }
-
-  set mute(bool value) {
-    if (state.mute == value) {
-      return;
-    }
-
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: value,
-      pause: state.pause,
-    );
-  }
-
-  void toggleMute() {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: !state.mute,
-      pause: state.pause,
-    );
+    state = VideoPlaybackControls(position: value, pause: state.pause);
   }
 
   void pause() {
@@ -80,11 +52,7 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
       return;
     }
 
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: state.mute,
-      pause: true,
-    );
+    state = VideoPlaybackControls(position: state.position, pause: true);
   }
 
   void play() {
@@ -92,27 +60,20 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
       return;
     }
 
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: state.mute,
-      pause: false,
-    );
+    state = VideoPlaybackControls(position: state.position, pause: false);
   }
 
   void togglePlay() {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: state.mute,
-      pause: !state.pause,
-    );
+    state =
+        VideoPlaybackControls(position: state.position, pause: !state.pause);
   }
 
   void restart() {
-    state = VideoPlaybackControls(
-      position: 0,
-      mute: state.mute,
-      pause: false,
-    );
-    ref.read(videoPlaybackValueProvider.notifier).position = Duration.zero;
+    state = VideoPlaybackControls(position: 0, pause: false, restarted: true);
+    ref.read(videoPlaybackValueProvider.notifier).value =
+        ref.read(videoPlaybackValueProvider.notifier).value.copyWith(
+              state: VideoPlaybackState.playing,
+              position: Duration.zero,
+            );
   }
 }
