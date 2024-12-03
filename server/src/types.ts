@@ -69,7 +69,7 @@ interface DecodeImageOptions {
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
-  size: number;
+  size?: number;
   orientation?: ExifOrientation;
 }
 

@@ -392,10 +392,6 @@ export class AssetRepository implements IAssetRepository {
     await this.db.deleteFrom('assets').where('id', '=', asUuid(asset.id)).execute();
   }
 
-  async removeAssetFile(path: string): Promise<void> {
-    await this.fileRepository.delete({ path });
-  }
-
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID, libraryId: DummyValue.UUID, checksum: DummyValue.BUFFER }] })
   getByChecksum({ ownerId, libraryId, checksum }: AssetGetByChecksumOptions): Promise<AssetEntity | undefined> {
     return this.db
