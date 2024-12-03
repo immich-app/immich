@@ -41,7 +41,7 @@
     "@nestjs/platform-express": "^10.2.2",
     "@nestjs/platform-socket.io": "^10.2.2",
     "@nestjs/schedule": "^4.0.0",
-    "@nestjs/swagger": "^7.1.8",
+    "@nestjs/swagger": "^8.0.0",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
     "@opentelemetry/auto-instrumentations-node": "^0.52.0",

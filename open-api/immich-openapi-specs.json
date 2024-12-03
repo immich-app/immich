@@ -1424,7 +1424,6 @@
     },
     "/assets/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1460,6 +1459,7 @@
             "api_key": []
           }
         ],
+        "summary": "Checks if assets exist by checksums",
         "tags": [
           "Assets"
         ]
@@ -1467,7 +1467,6 @@
     },
     "/assets/device/{deviceId}": {
       "get": {
-        "description": "Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
         "parameters": [
           {
@@ -1505,6 +1504,7 @@
             "api_key": []
           }
         ],
+        "summary": "Get all asset of a device that are in the database, ID only.",
         "tags": [
           "Assets"
         ]
@@ -1512,7 +1512,6 @@
     },
     "/assets/exist": {
       "post": {
-        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
         "parameters": [],
         "requestBody": {
@@ -1548,6 +1547,7 @@
             "api_key": []
           }
         ],
+        "summary": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "tags": [
           "Assets"
         ]
@@ -1903,7 +1903,6 @@
         ]
       },
       "put": {
-        "description": "Replace the asset with new file, without changing its id",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -1957,6 +1956,7 @@
             "api_key": []
           }
         ],
+        "summary": "Replace the asset with new file, without changing its id",
         "tags": [
           "Assets"
         ],
@@ -7423,6 +7423,7 @@
             "items": {
               "$ref": "#/components/schemas/Permission"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -7562,6 +7563,7 @@
             "items": {
               "$ref": "#/components/schemas/AlbumUserAddDto"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -8636,6 +8638,7 @@
             "items": {
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           },
           "deviceId": {
@@ -8702,13 +8705,17 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "importPaths": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "name": {
             "type": "string"
@@ -9475,6 +9482,7 @@
         "properties": {
           "email": {
             "example": "testuser@email.com",
+            "format": "email",
             "type": "string"
           },
           "password": {
@@ -11281,6 +11289,7 @@
         "properties": {
           "email": {
             "example": "testuser@email.com",
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -11438,6 +11447,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 2,
             "type": "array"
           }
         },
@@ -11857,6 +11867,7 @@
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
+            "format": "uri",
             "type": "string"
           }
         },
@@ -11872,12 +11883,14 @@
       "SystemConfigMapDto": {
         "properties": {
           "darkStyle": {
+            "format": "uri",
             "type": "string"
           },
           "enabled": {
             "type": "boolean"
           },
           "lightStyle": {
+            "format": "uri",
             "type": "string"
           }
         },
@@ -11952,6 +11965,7 @@
             "type": "boolean"
           },
           "mobileRedirectUri": {
+            "format": "uri",
             "type": "string"
           },
           "profileSigningAlgorithm": {
@@ -12014,6 +12028,7 @@
       "SystemConfigServerDto": {
         "properties": {
           "externalDomain": {
+            "format": "uri",
             "type": "string"
           },
           "loginPageMessage": {
@@ -12240,6 +12255,7 @@
       "TagCreateDto": {
         "properties": {
           "color": {
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           },
           "name": {
@@ -12295,6 +12311,7 @@
         "properties": {
           "color": {
             "nullable": true,
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           }
         },
@@ -12486,13 +12503,17 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "importPaths": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "name": {
             "type": "string"
@@ -12558,6 +12579,7 @@
       "UserAdminCreateDto": {
         "properties": {
           "email": {
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -12691,6 +12713,7 @@
       "UserAdminUpdateDto": {
         "properties": {
           "email": {
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -12868,6 +12891,7 @@
       "UserUpdateMeDto": {
         "properties": {
           "email": {
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -12896,13 +12920,17 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "importPaths": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           }
         },
         "type": "object"
