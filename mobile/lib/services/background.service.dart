@@ -51,7 +51,6 @@ import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
-import 'package:permission_handler/permission_handler.dart' as Perm;
 
 final backgroundServiceProvider = Provider(
   (ref) => BackgroundService(),
@@ -444,7 +443,6 @@ class BackgroundService {
       networkService,
     );
 
-    Perm.Permission.locationAlways.request();
     final endpoint = await authService.setOpenApiServiceEndpoint();
     if (kDebugMode) {
       debugPrint("[BG UPLOAD] Using endpoint: $endpoint");
