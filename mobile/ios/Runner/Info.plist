@@ -121,10 +121,10 @@
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
   <key>NSLocationUsageDescription</key>
-  <string>We require this permission to access the WIFI information</string>
+  <string>We require this permission to access the local WiFi name</string>
   <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-  <string>We require this permission to access the WIFI information</string>
+  <string>We require this permission to access the local WiFi name for background upload mechanism</string>
   <key>NSLocationWhenInUseUsageDescription</key>
-  <string>We require this permission to access the WIFI information</string>
+  <string>We require this permission to access the local WiFi name</string>
 </dict>
 </plist>
