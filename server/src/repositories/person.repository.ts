@@ -237,7 +237,6 @@ export class PersonRepository implements IPersonRepository {
       .andWhere('asset.isArchived = false')
       .select('COUNT(DISTINCT(person.id))', 'total')
       .addSelect('COUNT(DISTINCT(person.id)) FILTER (WHERE person.isHidden = true)', 'hidden')
-      .having('COUNT(face.assetId) != 0')
       .getRawOne();
 
     if (items == undefined) {
