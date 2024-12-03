@@ -499,8 +499,8 @@ class SearchPage extends HookConsumerWidget {
             controller: textSearchController,
             decoration: InputDecoration(
               contentPadding: prefilter != null
-                  ? EdgeInsets.only(left: 24)
-                  : EdgeInsets.all(8),
+                  ? const EdgeInsets.only(left: 24)
+                  : const EdgeInsets.all(8),
               prefixIcon: prefilter != null
                   ? null
                   : Icon(
@@ -647,7 +647,9 @@ class SearchResultGrid extends StatelessWidget {
             stackEnabled: false,
             emptyIndicator: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: !isSearching ? SearchEmptyContent() : SizedBox.shrink(),
+              child: !isSearching
+                  ? const SearchEmptyContent()
+                  : const SizedBox.shrink(),
             ),
           ),
         ),
@@ -666,7 +668,7 @@ class SearchEmptyContent extends StatelessWidget {
       child: ListView(
         shrinkWrap: false,
         children: [
-          SizedBox(height: 40),
+          const SizedBox(height: 40),
           Center(
             child: Image.asset(
               context.isDarkTheme
@@ -675,15 +677,15 @@ class SearchEmptyContent extends StatelessWidget {
               height: 125,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Center(
             child: Text(
               "Search for your photos and videos",
               style: context.textTheme.labelLarge,
             ),
           ),
-          SizedBox(height: 32),
-          QuickLinkList(),
+          const SizedBox(height: 32),
+          const QuickLinkList(),
         ],
       ),
     );
@@ -725,13 +727,13 @@ class QuickLinkList extends StatelessWidget {
           QuickLink(
             title: 'videos'.tr(),
             icon: Icons.play_circle_outline_rounded,
-            onTap: () => context.pushRoute(AllVideosRoute()),
+            onTap: () => context.pushRoute(const AllVideosRoute()),
           ),
           QuickLink(
             title: 'favorites'.tr(),
             icon: Icons.favorite_border_rounded,
             isBottom: true,
-            onTap: () => context.pushRoute(FavoritesRoute()),
+            onTap: () => context.pushRoute(const FavoritesRoute()),
           ),
         ],
       ),

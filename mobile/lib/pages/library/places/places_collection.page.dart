@@ -60,7 +60,7 @@ class PlacesCollectionPage extends HookConsumerWidget {
               );
             },
             error: (error, stask) => const Text('Error getting places'),
-            loading: () => Center(child: const CircularProgressIndicator()),
+            loading: () => const Center(child: CircularProgressIndicator()),
           ),
         ],
       ),

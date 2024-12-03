@@ -3,7 +3,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 
 import 'package:immich_mobile/theme/theme_data.dart';
 
-class DynamicTheme {
+abstract final class DynamicTheme {
   DynamicTheme._();
 
   static ImmichTheme? _theme;

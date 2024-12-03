@@ -53,7 +53,7 @@ ThemeData getThemeData({
       scrolledUnderElevation: 0,
       centerTitle: true,
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       displayLarge: TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.bold,
@@ -66,15 +66,15 @@ ThemeData getThemeData({
         fontSize: 12,
         fontWeight: FontWeight.bold,
       ),
-      titleSmall: const TextStyle(
+      titleSmall: TextStyle(
         fontSize: 16.0,
         fontWeight: FontWeight.bold,
       ),
-      titleMedium: const TextStyle(
+      titleMedium: TextStyle(
         fontSize: 18.0,
         fontWeight: FontWeight.bold,
       ),
-      titleLarge: const TextStyle(
+      titleLarge: TextStyle(
         fontSize: 26.0,
         fontWeight: FontWeight.bold,
       ),
@@ -135,10 +135,10 @@ ThemeData getThemeData({
       cursorColor: colorScheme.primary,
     ),
     dropdownMenuTheme: DropdownMenuThemeData(
-      menuStyle: MenuStyle(
+      menuStyle: const MenuStyle(
         shape: WidgetStatePropertyAll<OutlinedBorder>(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.all(Radius.circular(15)),
           ),
         ),
       ),
