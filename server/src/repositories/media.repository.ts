@@ -103,8 +103,8 @@ export class MediaRepository implements IMediaRepository {
       pipeline = pipeline.extract(options.crop);
     }
 
-    // Infinity is a special value that means no resizing
-    if (options.size === Infinity) {
+    // No size, no resizing
+    if (options.size !== undefined) {
       return pipeline;
     }
     return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });

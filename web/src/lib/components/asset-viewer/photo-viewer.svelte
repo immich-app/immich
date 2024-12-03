@@ -149,7 +149,7 @@
   });
 
   let isWebCompatible = $derived(isWebCompatibleImage(asset));
-  // RAW files may have corresponding extracted JPEGs
+  // RAW files may have corresponding converted web-compatible original-sized files
   let isRaw = $derived(isRawImage(asset));
   let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
 

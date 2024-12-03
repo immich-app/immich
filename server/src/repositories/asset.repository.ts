@@ -281,10 +281,6 @@ export class AssetRepository implements IAssetRepository {
     await this.repository.remove(asset);
   }
 
-  async removeAssetFile(path: string): Promise<void> {
-    await this.fileRepository.delete({ path });
-  }
-
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID, libraryId: DummyValue.UUID, checksum: DummyValue.BUFFER }] })
   getByChecksum({
     ownerId,

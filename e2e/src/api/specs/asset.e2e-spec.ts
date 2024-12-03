@@ -1222,7 +1222,7 @@ describe('/asset', () => {
       },
     ];
 
-    it(`should upload and generate a thumbnail for different file types`, async () => {
+    it(`should upload and generate a thumbnail for different file types`, { timeout: 60_000 }, async () => {
       // upload in parallel
       const assets = await Promise.all(
         tests.map(async ({ input }) => {
@@ -1235,7 +1235,8 @@ describe('/asset', () => {
 
       for (const { id, status } of assets) {
         expect(status).toBe(AssetMediaStatus.Created);
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+        // longer timeout as the thumbnail generation from full-size raw files can take a while
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id, timeout: 60_000 });
       }
 
       for (const [i, { id }] of assets.entries()) {
