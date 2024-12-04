@@ -146,6 +146,13 @@ export interface SystemConfig {
       };
     };
   };
+  templates: {
+    email: {
+      welcomeTemplate: string;
+      albumInviteTemplate: string;
+      albumUpdateTemplate: string;
+    };
+  };
   server: {
     externalDomain: string;
     loginPageMessage: string;
@@ -311,6 +318,13 @@ export const defaults = Object.freeze<SystemConfig>({
         username: '',
         password: '',
       },
+    },
+  },
+  templates: {
+    email: {
+      welcomeTemplate: '',
+      albumInviteTemplate: '',
+      albumUpdateTemplate: '',
     },
   },
   user: {

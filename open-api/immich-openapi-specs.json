@@ -3430,6 +3430,57 @@
         ]
       }
     },
+    "/notifications/templates/{name}": {
+      "post": {
+        "operationId": "getNotificationTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/notifications/test-email": {
       "post": {
         "operationId": "sendTestEmail",
@@ -11538,6 +11589,9 @@
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
+          "templates": {
+            "$ref": "#/components/schemas/SystemConfigTemplatesDto"
+          },
           "theme": {
             "$ref": "#/components/schemas/SystemConfigThemeDto"
           },
@@ -11565,6 +11619,7 @@
           "reverseGeocoding",
           "server",
           "storageTemplate",
+          "templates",
           "theme",
           "trash",
           "user"
@@ -12111,6 +12166,25 @@
         ],
         "type": "object"
       },
+      "SystemConfigTemplateEmailsDto": {
+        "properties": {
+          "albumInviteTemplate": {
+            "type": "string"
+          },
+          "albumUpdateTemplate": {
+            "type": "string"
+          },
+          "welcomeTemplate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumInviteTemplate",
+          "albumUpdateTemplate",
+          "welcomeTemplate"
+        ],
+        "type": "object"
+      },
       "SystemConfigTemplateStorageOptionDto": {
         "properties": {
           "dayOptions": {
@@ -12171,6 +12245,17 @@
           "secondOptions",
           "weekOptions",
           "yearOptions"
+        ],
+        "type": "object"
+      },
+      "SystemConfigTemplatesDto": {
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/SystemConfigTemplateEmailsDto"
+          }
+        },
+        "required": [
+          "email"
         ],
         "type": "object"
       },
@@ -12350,6 +12435,32 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "TemplateDto": {
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ],
+        "type": "object"
+      },
+      "TemplateResponseDto": {
+        "properties": {
+          "html": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "html",
+          "name"
+        ],
         "type": "object"
       },
       "TestEmailResponseDto": {

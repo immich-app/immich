@@ -190,6 +190,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
       },
     },
   },
+  templates: {
+    email: {
+      albumInviteTemplate: '',
+      welcomeTemplate: '',
+      albumUpdateTemplate: '',
+    },
+  },
 });
 
 describe(SystemConfigService.name, () => {

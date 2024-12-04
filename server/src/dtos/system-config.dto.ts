@@ -465,6 +465,24 @@ class SystemConfigNotificationsDto {
   smtp!: SystemConfigSmtpDto;
 }
 
+class SystemConfigTemplateEmailsDto {
+  @IsString()
+  albumInviteTemplate!: string;
+
+  @IsString()
+  welcomeTemplate!: string;
+
+  @IsString()
+  albumUpdateTemplate!: string;
+}
+
+class SystemConfigTemplatesDto {
+  @Type(() => SystemConfigTemplateEmailsDto)
+  @ValidateNested()
+  @IsObject()
+  email!: SystemConfigTemplateEmailsDto;
+}
+
 class SystemConfigStorageTemplateDto {
   @ValidateBoolean()
   enabled!: boolean;
@@ -635,6 +653,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   notifications!: SystemConfigNotificationsDto;
+
+  @Type(() => SystemConfigTemplatesDto)
+  @ValidateNested()
+  @IsObject()
+  templates!: SystemConfigTemplatesDto;
 
   @Type(() => SystemConfigServerDto)
   @ValidateNested()
