@@ -46,7 +46,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
       final bool success;
       if (album.shared) {
         success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
-        context.navigateTo(TabControllerRoute(children: [AlbumsRoute()]));
+        context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
       } else {
         success = await ref.watch(albumProvider.notifier).deleteAlbum(album);
         context
@@ -113,7 +113,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
           await ref.watch(albumProvider.notifier).leaveAlbum(album);
 
       if (isSuccess) {
-        context.navigateTo(TabControllerRoute(children: [AlbumsRoute()]));
+        context.navigateTo(const TabControllerRoute(children: [AlbumsRoute()]));
       } else {
         context.pop();
         ImmichToast.show(
