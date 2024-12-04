@@ -69,7 +69,8 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void restart() {
-    state = VideoPlaybackControls(position: 0, pause: false, restarted: true);
+    state =
+        const VideoPlaybackControls(position: 0, pause: false, restarted: true);
     ref.read(videoPlaybackValueProvider.notifier).value =
         ref.read(videoPlaybackValueProvider.notifier).value.copyWith(
               state: VideoPlaybackState.playing,
