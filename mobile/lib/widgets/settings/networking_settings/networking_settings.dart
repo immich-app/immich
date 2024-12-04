@@ -23,10 +23,71 @@ class NetworkingSettings extends HookConsumerWidget {
     final featureEnabled =
         useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
 
+    Future<void> checkWifiReadPermission() async {
+      final hasLocationInUse =
+          await ref.read(networkProvider.notifier).getWifiReadPermission();
+      final hasLocationAlways = await ref
+          .read(networkProvider.notifier)
+          .getWifiReadBackgroundPermission();
+      bool? isGrantLocationAlwaysPermission;
+      if (!hasLocationInUse) {
+        await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("location_permission".tr()),
+              content: Text("location_permission_content".tr()),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    final isGrant = await ref
+                        .read(networkProvider.notifier)
+                        .requestWifiReadPermission();
+
+                    Navigator.pop(context, isGrant);
+                  },
+                  child: Text("grant_permission".tr()),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      if (!hasLocationAlways) {
+        isGrantLocationAlwaysPermission = await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text("background_location_permission".tr()),
+              content: Text("background_location_permission_content".tr()),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    final isGrant = await ref
+                        .read(networkProvider.notifier)
+                        .requestWifiReadBackgroundPermission();
+
+                    Navigator.pop(context, isGrant);
+                  },
+                  child: Text("grant_permission".tr()),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      if (isGrantLocationAlwaysPermission != null &&
+          !isGrantLocationAlwaysPermission) {
+        await ref.read(networkProvider.notifier).openSettings();
+      }
+    }
+
     useEffect(
       () {
         if (featureEnabled.value == true) {
-          ref.read(networkProvider.notifier).getWifiReadPermission();
+          checkWifiReadPermission();
         }
         return null;
       },
@@ -37,20 +98,30 @@ class NetworkingSettings extends HookConsumerWidget {
       padding: const EdgeInsets.only(bottom: 96),
       physics: const ClampingScrollPhysics(),
       children: <Widget>[
-        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
+          child: NetworkPreferenceTitle(
+            title: "current_server_address".tr().toUpperCase(),
+            icon: currentEndpoint.startsWith('https')
+                ? Icons.https_outlined
+                : Icons.http_outlined,
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Card(
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(
+                color: context.colorScheme.surfaceContainerHighest,
+                width: 1,
+              ),
+            ),
             child: ListTile(
               leading:
                   const Icon(Icons.check_circle_rounded, color: Colors.green),
               title: Text(
-                "you_are_connecting_to".tr().toUpperCase(),
-                style: context.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Text(
                 currentEndpoint,
                 style: TextStyle(
                   fontSize: 16,
@@ -88,7 +159,7 @@ class NetworkingSettings extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 32, left: 16, bottom: 16),
           child: NetworkPreferenceTitle(
             title: "external_network".tr().toUpperCase(),
-            icon: Icons.dns,
+            icon: Icons.dns_outlined,
           ),
         ),
         ExternalNetworkPreference(

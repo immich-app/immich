@@ -116,10 +116,10 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: validateUrl,
           keyboardType: TextInputType.url,
-          style: TextStyle(
+          style: const TextStyle(
             fontFamily: 'Inconsolata',
             fontWeight: FontWeight.w600,
-            color: context.colorScheme.onSurface,
+            fontSize: 14,
           ),
           decoration: InputDecoration(
             hintText: 'http(s)://immich.domain.com',

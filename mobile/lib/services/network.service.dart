@@ -16,21 +16,32 @@ class NetworkService {
 
   NetworkService(this._repository, this._permissionRepository);
 
-  Future<bool> getWifiReadPermission() async {
-    final isGranted = await _permissionRepository.hasWifiReadPermission();
-    if (!isGranted) {
-      return await _permissionRepository.requestWifiReadPermission();
-    }
+  Future<bool> getLocationWhenInUserPermission() {
+    return _permissionRepository.hasLocationWhenInUsePermission();
+  }
 
-    return isGranted;
+  Future<bool> requestLocationWhenInUsePermission() {
+    return _permissionRepository.requestLocationWhenInUsePermission();
+  }
+
+  Future<bool> getLocationAlwaysPermission() {
+    return _permissionRepository.hasLocationAlwaysPermission();
+  }
+
+  Future<bool> requestLocationAlwaysPermission() {
+    return _permissionRepository.requestLocationAlwaysPermission();
   }
 
   Future<String?> getWifiName() async {
-    final canRead = await getWifiReadPermission();
+    final canRead = await getLocationWhenInUserPermission();
     if (!canRead) {
       return null;
     }
 
     return await _repository.getWifiName();
+  }
+
+  Future<bool> openSettings() {
+    return _permissionRepository.openSettings();
   }
 }
