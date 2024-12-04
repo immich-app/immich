@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Exclude, Transform, Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -16,6 +17,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { SystemConfig } from 'src/config';
+import { PropertyLifecycle } from 'src/decorators';
 import { CLIPConfig, DuplicateDetectionConfig, FacialRecognitionConfig } from 'src/dtos/model-config.dto';
 import {
   AudioCodec,
@@ -269,9 +271,16 @@ class SystemConfigMachineLearningDto {
   @ValidateBoolean()
   enabled!: boolean;
 
-  @IsUrl({ require_tld: false, allow_underscores: true })
+  @PropertyLifecycle({ deprecatedAt: 'v1.122.0' })
+  @Exclude()
+  url?: string;
+
+  @IsUrl({ require_tld: false, allow_underscores: true }, { each: true })
+  @ArrayMinSize(1)
+  @Transform(({ obj, value }) => (obj.url ? [obj.url] : value))
   @ValidateIf((dto) => dto.enabled)
-  url!: string;
+  @ApiProperty({ type: 'array', items: { type: 'string', format: 'uri' }, minItems: 1 })
+  urls!: string[];
 
   @Type(() => CLIPConfig)
   @ValidateNested()
