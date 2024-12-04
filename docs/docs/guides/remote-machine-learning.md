@@ -47,7 +47,7 @@ Version mismatches between both hosts may cause bugs and instability, so remembe
 
 4. Navigate to the [Machine Learning Settings](https://my.immich.app/admin/system-settings?isOpen=machine-learning)
 5. Click _Add URL_
-6. Fill the new field with the URL to the remote machine learning container, e.g. http://ip:port
+6. Fill the new field with the URL to the remote machine learning container, e.g. `http://ip:port`
 
 ## Forcing remote processing
 
