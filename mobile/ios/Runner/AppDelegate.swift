@@ -1,15 +1,11 @@
 import BackgroundTasks
 import Flutter
 import network_info_plus
-import Flutter
-import UIKit
 import path_provider_ios
 import permission_handler_apple
 import photo_manager
 import shared_preferences_foundation
 import UIKit
-import photo_manager
-import shared_preferences_foundation
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -17,7 +13,6 @@ import shared_preferences_foundation
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-
     // Required for flutter_local_notification
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
