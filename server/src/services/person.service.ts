@@ -297,7 +297,7 @@ export class PersonService extends BaseService {
     }
 
     const { imageHeight, imageWidth, faces } = await this.machineLearningRepository.detectFaces(
-      machineLearning.url,
+      machineLearning.urls,
       previewFile.path,
       machineLearning.facialRecognition,
     );
