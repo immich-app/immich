@@ -47,7 +47,7 @@ Version mismatches between both hosts may cause bugs and instability, so remembe
 
 4. Navigate to the [Machine Learning Settings](https://my.immich.app/admin/system-settings?isOpen=machine-learning)
 5. Click _Add URL_
-6. Fill the new field with the URL to the remote machine learning container. In the simplest case where the server is on the same local network, this may use the server's private IP. For example, if the private IP of the remote server is 192.168.0.50, the resulting URL will be `http://192.168.0.50:3003`. More advanced configuration is left as an exercise to the reader
+6. Fill the new field with the URL to the remote machine learning container, e.g. http://ip:port
 
 ## Forcing remote processing
 
