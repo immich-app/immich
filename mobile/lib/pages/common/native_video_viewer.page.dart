@@ -168,10 +168,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
-      if (newControls.restarted) {
-        debugPrint('!!!!!!!!!!!!newControls.restarted!!!!!!!!!!!!!!');
-      }
-
       final oldSeek = (oldControls?.position ?? 0) ~/ 1;
       final newSeek = newControls.position ~/ 1;
       if (oldSeek != newSeek || newControls.restarted) {
@@ -338,7 +334,13 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
 
       // Delay the video playback to avoid a stutter in the swipe animation
-      Timer(const Duration(milliseconds: 300), () {
+      Timer(
+          Platform.isIOS
+              ? const Duration(milliseconds: 300)
+              // On Android, the placeholder of the first opened video
+              // can briefly be seen and cause a flicker effect unless the animation is delayed longer
+              // - probably a bug in PhotoViewGallery's animation handling
+              : const Duration(milliseconds: 500), () {
         if (!context.mounted) {
           return;
         }
