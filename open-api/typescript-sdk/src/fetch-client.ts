@@ -1177,7 +1177,9 @@ export type SystemConfigMachineLearningDto = {
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    url: string[];
+    /** This property was deprecated in v1.122.0 */
+    url?: string;
+    urls: string[];
 };
 export type SystemConfigMapDto = {
     darkStyle: string;

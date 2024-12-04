@@ -333,7 +333,7 @@ describe(SystemConfigService.name, () => {
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       const config = await sut.getSystemConfig();
-      expect(config.machineLearning.url).toEqual(['immich_machine_learning']);
+      expect(config.machineLearning.urls).toEqual(['immich_machine_learning']);
     });
 
     const externalDomainTests = [

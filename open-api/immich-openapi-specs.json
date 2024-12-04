@@ -11853,6 +11853,11 @@
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.122.0",
+            "type": "string"
+          },
+          "urls": {
             "items": {
               "format": "uri",
               "type": "string"
@@ -11866,7 +11871,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
-          "url"
+          "urls"
         ],
         "type": "object"
       },

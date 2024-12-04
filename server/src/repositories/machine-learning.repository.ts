@@ -42,14 +42,14 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
   }
 
-  async detectFaces(url: string[], imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
+  async detectFaces(urls: string[], imagePath: string, { modelName, minScore }: FaceDetectionOptions) {
     const request = {
       [ModelTask.FACIAL_RECOGNITION]: {
         [ModelType.DETECTION]: { modelName, options: { minScore } },
         [ModelType.RECOGNITION]: { modelName },
       },
     };
-    const response = await this.predict<FacialRecognitionResponse>(url, { imagePath }, request);
+    const response = await this.predict<FacialRecognitionResponse>(urls, { imagePath }, request);
     return {
       imageHeight: response.imageHeight,
       imageWidth: response.imageWidth,
@@ -57,15 +57,15 @@ export class MachineLearningRepository implements IMachineLearningRepository {
     };
   }
 
-  async encodeImage(url: string[], imagePath: string, { modelName }: CLIPConfig) {
+  async encodeImage(urls: string[], imagePath: string, { modelName }: CLIPConfig) {
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
-    const response = await this.predict<ClipVisualResponse>(url, { imagePath }, request);
+    const response = await this.predict<ClipVisualResponse>(urls, { imagePath }, request);
     return response[ModelTask.SEARCH];
   }
 
-  async encodeText(url: string[], text: string, { modelName }: CLIPConfig) {
+  async encodeText(urls: string[], text: string, { modelName }: CLIPConfig) {
     const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName } } };
-    const response = await this.predict<ClipTextualResponse>(url, { text }, request);
+    const response = await this.predict<ClipTextualResponse>(urls, { text }, request);
     return response[ModelTask.SEARCH];
   }
 
