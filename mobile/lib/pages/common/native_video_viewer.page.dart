@@ -337,10 +337,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       Timer(
           Platform.isIOS
               ? const Duration(milliseconds: 300)
-              // On Android, the placeholder of the first opened video
-              // can briefly be seen and cause a flicker effect unless the animation is delayed longer
-              // - probably a bug in PhotoViewGallery's animation handling
-              : const Duration(milliseconds: 500), () {
+              : const Duration(milliseconds: 400), () {
         if (!context.mounted) {
           return;
         }
