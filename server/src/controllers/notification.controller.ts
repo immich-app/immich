@@ -27,6 +27,6 @@ export class NotificationController {
     @Param('name') name: EmailTemplate,
     @Body() dto: TemplateDto,
   ): Promise<TemplateResponseDto> {
-    return this.service.getTemplate(name, dto.tempTemplate);
+    return this.service.getTemplate(name, dto.template);
   }
 }

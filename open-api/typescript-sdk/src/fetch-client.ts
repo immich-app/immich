@@ -635,7 +635,7 @@ export type MemoryUpdateDto = {
     seenAt?: string;
 };
 export type TemplateDto = {
-    tempTemplate: string;
+    template: string;
 };
 export type TemplateResponseDto = {
     html: string;

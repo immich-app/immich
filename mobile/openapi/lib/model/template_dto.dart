@@ -13,26 +13,26 @@ part of openapi.api;
 class TemplateDto {
   /// Returns a new [TemplateDto] instance.
   TemplateDto({
-    required this.tempTemplate,
+    required this.template,
   });
 
-  String tempTemplate;
+  String template;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TemplateDto &&
-    other.tempTemplate == tempTemplate;
+    other.template == template;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (tempTemplate.hashCode);
+    (template.hashCode);
 
   @override
-  String toString() => 'TemplateDto[tempTemplate=$tempTemplate]';
+  String toString() => 'TemplateDto[template=$template]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'tempTemplate'] = this.tempTemplate;
+      json[r'template'] = this.template;
     return json;
   }
 
@@ -45,7 +45,7 @@ class TemplateDto {
       final json = value.cast<String, dynamic>();
 
       return TemplateDto(
-        tempTemplate: mapValueOfType<String>(json, r'tempTemplate')!,
+        template: mapValueOfType<String>(json, r'template')!,
       );
     }
     return null;
@@ -93,7 +93,7 @@ class TemplateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'tempTemplate',
+    'template',
   };
 }
 

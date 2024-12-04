@@ -30,7 +30,7 @@
   const getTemplate = async (name: string, template: string) => {
     try {
       loadingPreview = true;
-      const result = await getNotificationTemplate({ name, templateDto: { tempTemplate: template } });
+      const result = await getNotificationTemplate({ name, templateDto: { template } });
       htmlPreview = result.html;
     } catch (error) {
       handleError(error, 'Could not load template.');

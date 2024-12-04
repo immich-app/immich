@@ -12429,12 +12429,12 @@
       },
       "TemplateDto": {
         "properties": {
-          "tempTemplate": {
+          "template": {
             "type": "string"
           }
         },
         "required": [
-          "tempTemplate"
+          "template"
         ],
         "type": "object"
       },

@@ -9,5 +9,5 @@ export class TemplateResponseDto {
 }
 export class TemplateDto {
   @IsString()
-  tempTemplate!: string;
+  template!: string;
 }
