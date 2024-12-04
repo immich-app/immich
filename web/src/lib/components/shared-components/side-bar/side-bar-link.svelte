@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowDownDropCircleOutline, mdiArrowLeftDropCircleOutline } from '@mdi/js';
+  import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
@@ -14,7 +14,7 @@
     isSelected?: boolean;
     preloadData?: boolean;
     moreInformation?: Snippet;
-    hasDropdown?: Snippet;
+    dropDownContent?: Snippet;
     dropdownOpen?: boolean;
   }
 
@@ -25,7 +25,7 @@
     flippedLogo = false,
     isSelected = $bindable(false),
     preloadData = true,
-    hasDropdown,
+    dropDownContent: hasDropdown,
     dropdownOpen = $bindable(false),
   }: Props = $props();
 
@@ -46,7 +46,7 @@
         onclick={() => (dropdownOpen = !dropdownOpen)}
       >
         <Icon
-          path={dropdownOpen ? mdiArrowDownDropCircleOutline : mdiArrowLeftDropCircleOutline}
+          path={dropdownOpen ? mdiChevronDown : mdiChevronLeft}
           size="1em"
           class="shrink-0 delay-100 duration-100 "
           flipped={flippedLogo}

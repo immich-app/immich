@@ -29,6 +29,7 @@
   import { preferences } from '$lib/stores/user.store';
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
+  import { fly } from 'svelte/transition';
 
   let isArchiveSelected: boolean = $state(false);
   let isFavoritesSelected: boolean = $state(false);
@@ -97,8 +98,8 @@
       flippedLogo
       bind:dropdownOpen={$recentAlbumsDropdown}
     >
-      {#snippet hasDropdown()}
-        <span class="hidden md:block">
+      {#snippet dropDownContent()}
+        <span in:fly={{ y: -20 }} class="hidden md:block">
           <RecentAlbums />
         </span>
       {/snippet}
