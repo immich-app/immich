@@ -371,7 +371,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
           }
           removeListeners(playerController);
           playerController.stop().catchError((error) {
-            log.severe('Error stopping video: $error');
+            log.fine('Error stopping video: $error');
           });
 
           WakelockPlus.disable();

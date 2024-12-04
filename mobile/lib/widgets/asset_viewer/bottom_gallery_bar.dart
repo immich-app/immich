@@ -28,7 +28,7 @@ import 'package:immich_mobile/pages/editing/edit.page.dart';
 class BottomGalleryBar extends ConsumerWidget {
   final ValueNotifier<int> assetIndex;
   final bool showStack;
-  final int stackIndex;
+  final ValueNotifier<int> stackIndex;
   final ValueNotifier<int> totalAssets;
   final PageController controller;
   final RenderList renderList;
@@ -66,10 +66,10 @@ class BottomGalleryBar extends ConsumerWidget {
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
 
     void removeAssetFromStack() {
-      if (stackIndex > 0 && showStack && stackId != null) {
+      if (stackIndex.value > 0 && showStack && stackId != null) {
         ref
             .read(assetStackStateProvider(stackId).notifier)
-            .removeChild(stackIndex - 1);
+            .removeChild(stackIndex.value - 1);
       }
     }
 
@@ -329,7 +329,7 @@ class BottomGalleryBar extends ConsumerWidget {
       ignoring: !showControls,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
-        opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
+        opacity: showControls ? 1.0 : 0.0,
         child: DecoratedBox(
           decoration: const BoxDecoration(
             gradient: LinearGradient(

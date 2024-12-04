@@ -173,11 +173,15 @@ class GalleryViewerPage extends HookConsumerWidget {
     }
 
     ref.listen(showControlsProvider, (_, show) {
-      if (show) {
+      if (show || Platform.isIOS) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+        return;
       }
+
+      // This prevents the bottom bar from "dropping" while the controls are being hidden
+      Timer(const Duration(milliseconds: 100), () {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      });
     });
 
     PhotoViewGalleryPageOptions buildImage(BuildContext context, Asset asset) {
@@ -359,7 +363,7 @@ class GalleryViewerPage extends HookConsumerWidget {
                     totalAssets: totalAssets,
                     controller: controller,
                     showStack: showStack,
-                    stackIndex: stackIndex.value,
+                    stackIndex: stackIndex,
                     assetIndex: currentIndex,
                   ),
                 ],
