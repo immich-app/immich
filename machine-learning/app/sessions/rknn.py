@@ -5,7 +5,7 @@ from typing import Any, List
 
 import numpy as np
 from numpy.typing import NDArray
-from rknn.api import RKNN  # Importing RKNN API
+from rknnlite.api import RKNNLite  # Importing RKNN API
 
 from app.models.constants import SUPPORTED_PROVIDERS
 from app.schemas import SessionNode
@@ -16,18 +16,20 @@ from ..config import log, settings
 class RknnSession:
     def __init__(self, model_path: Path | str):
         self.model_path = Path(model_path)
-        self.rknn = RKNN()  # Initialize RKNN object
-        self.rknn.config(target_platform='rk3566')
+        self.rknn = RKNNLite()  # Initialize RKNN object
+#        self.rknn.config(target_platform='rk3566')
         # Load the RKNN model
         log.info(f"Loading RKNN model from {self.model_path}")
         self._load_model()
 
     def _load_model(self) -> None:
-        ret = self.rknn.load_onnx(self.model_path.as_posix())
+#        ret = self.rknn.load_onnx(self.model_path.as_posix())
+        print('--> Load RKNN model')
+        ret = self.rknn.load_rknn(self.model_path.as_posix())
         if ret != 0:
             raise RuntimeError("Failed to load RKNN model")
-        print('--> Building model')
-        ret = self.rknn.build(do_quantization=False)
+ #       print('--> Building model')
+  #      ret = self.rknn.build(do_quantization=False)
         if ret != 0:
             print('Build model failed!')
             exit(ret)
@@ -50,7 +52,6 @@ class RknnSession:
         input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
 	    run_options: Any = None,
     ) -> List[NDArray[np.float32]]:
-        print(input_feed)
         inputs = [v for v in input_feed.values()]
 
         # Run inference

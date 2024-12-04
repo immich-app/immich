@@ -59,6 +59,10 @@ optional = true
 [tool.poetry.group.armnn.dependencies]
 onnxruntime = "^1.15.0"
 
+
+[tool.poetry.group.rknn.dependencies]
+rknn-toolkit-lite2 = "^2.3.0"
+
 [[tool.poetry.source]]
 name = "cuda12"
 url = "https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/"

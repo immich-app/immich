@@ -46,7 +46,6 @@ class OrtSession:
         input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
-        print(input_feed)
         outputs: list[NDArray[np.float32]] = self.session.run(output_names, input_feed, run_options)
         return outputs
 
