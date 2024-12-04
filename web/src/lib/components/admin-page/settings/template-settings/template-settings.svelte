@@ -1,7 +1,4 @@
 <script lang="ts">
-  import { createBubbler, preventDefault } from 'svelte/legacy';
-
-  const bubble = createBubbler();
   import { type SystemConfigDto, type SystemConfigTemplateEmailsDto, getNotificationTemplate } from '@immich/sdk';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
@@ -25,7 +22,7 @@
     onSave: SettingsSaveEvent;
   }
 
-  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+  let { savedConfig, config = $bindable() }: Props = $props();
 
   let htmlPreview = $state('');
   let loadingPreview = $state(false);
@@ -69,11 +66,15 @@
 
   const isEdited = (templateKey: keyof SystemConfigTemplateEmailsDto) =>
     config.templates.email[templateKey] !== savedConfig.templates.email[templateKey];
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" onsubmit={preventDefault(bubble('submit'))} class="mt-4">
+    <form autocomplete="off" {onsubmit} class="mt-4">
       <div class="flex flex-col gap-4">
         <SettingAccordion
           key="templates"
