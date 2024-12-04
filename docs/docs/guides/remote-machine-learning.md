@@ -60,5 +60,5 @@ Do note that this will mean that Smart Search and Face Detection jobs will fail 
 While several URLs can be provided in the settings, they are tried sequentially; there is no attempt to distribute load across multiple containers. It is recommended to use a dedicated load balancer for such use-cases and specify it as the only URL. Among other things, it may enable the use of different APIs on the same server by running multiple containers with different configurations. For example, one might run an OpenVINO container in addition to a CUDA container, or run a standard release container to maximize both CPU and GPU utilization.
 
 :::tip
-The machine learning container can be shared among several Immich instances, regardless of the models a particular instance uses. However, using different models will lead to higher peak memory usage.
+The machine learning container can be shared among several Immich instances regardless of the models a particular instance uses. However, using different models will lead to higher peak memory usage.
 :::
