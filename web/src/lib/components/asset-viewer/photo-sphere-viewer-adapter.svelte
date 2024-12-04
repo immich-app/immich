@@ -10,16 +10,24 @@
   import '@photo-sphere-viewer/core/index.css';
   import { onDestroy, onMount } from 'svelte';
 
-  export let panorama: string | { source: string };
-  export let originalImageUrl: string | null;
-  export let adapter: AdapterConstructor | [AdapterConstructor, unknown] = EquirectangularAdapter;
-  export let plugins: (PluginConstructor | [PluginConstructor, unknown])[] = [];
-  export let navbar = false;
+  interface Props {
+    panorama: string | { source: string };
+    originalImageUrl?: string;
+    adapter?: AdapterConstructor | [AdapterConstructor, unknown];
+    plugins?: (PluginConstructor | [PluginConstructor, unknown])[];
+    navbar?: boolean;
+  }
 
-  let container: HTMLDivElement;
+  let { panorama, originalImageUrl, adapter = EquirectangularAdapter, plugins = [], navbar = false }: Props = $props();
+
+  let container: HTMLDivElement | undefined = $state();
   let viewer: Viewer;
 
   onMount(() => {
+    if (!container) {
+      return;
+    }
+
     viewer = new Viewer({
       adapter,
       plugins,

@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -128,7 +128,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 onOk: () async {
                   isLoggingOut.value = true;
                   await ref
-                      .read(authenticationProvider.notifier)
+                      .read(authProvider.notifier)
                       .logout()
                       .whenComplete(() => isLoggingOut.value = false);
 
@@ -143,9 +143,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           );
         },
         trailing: isLoggingOut.value
-            ? SizedBox.square(
+            ? const SizedBox.square(
                 dimension: 20,
-                child: const CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(strokeWidth: 2),
               )
             : null,
       );
@@ -259,8 +259,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     }
 
     return Dismissible(
+      behavior: HitTestBehavior.translucent,
       direction: DismissDirection.down,
-      onDismissed: (_) => Navigator.of(context).pop(),
+      onDismissed: (_) => context.pop(),
       key: const Key('app_bar_dialog'),
       child: Dialog(
         clipBehavior: Clip.hardEdge,

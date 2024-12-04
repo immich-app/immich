@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
+import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
 import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 
@@ -24,7 +25,10 @@ void main() {
   setUp(() {
     mapState = MapState(themeMode: ThemeMode.dark);
     mapStateNotifier = MockMapStateNotifier(mapState);
-    overrides = [mapStateNotifierProvider.overrideWith(() => mapStateNotifier)];
+    overrides = [
+      mapStateNotifierProvider.overrideWith(() => mapStateNotifier),
+      localeProvider.overrideWithValue(const Locale("en")),
+    ];
   });
 
   testWidgets("Return dark theme style when theme mode is dark",

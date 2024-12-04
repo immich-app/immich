@@ -19,13 +19,17 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const assetStore = new AssetStore({ isArchived: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
+  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
 
   onDestroy(() => {
     assetStore.destroy();
@@ -51,6 +55,8 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
   <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
-    <EmptyPlaceholder text={$t('no_archived_assets_message')} slot="empty" />
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

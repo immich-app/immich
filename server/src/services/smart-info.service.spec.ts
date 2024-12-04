@@ -67,19 +67,6 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('onConfigInit', () => {
-    it('should return if not microservices', async () => {
-      configMock.getWorker.mockReturnValue(ImmichWorker.API);
-      await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningEnabled as SystemConfig });
-
-      expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
-      expect(searchMock.setDimensionSize).not.toHaveBeenCalled();
-      expect(searchMock.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
-      expect(jobMock.getQueueStatus).not.toHaveBeenCalled();
-      expect(jobMock.pause).not.toHaveBeenCalled();
-      expect(jobMock.waitForQueueCompletion).not.toHaveBeenCalled();
-      expect(jobMock.resume).not.toHaveBeenCalled();
-    });
-
     it('should return if machine learning is disabled', async () => {
       await sut.onConfigInit({ newConfig: systemConfigStub.machineLearningDisabled as SystemConfig });
 
@@ -136,22 +123,6 @@ describe(SmartInfoService.name, () => {
   });
 
   describe('onConfigUpdateEvent', () => {
-    it('should return if not microservices', async () => {
-      configMock.getWorker.mockReturnValue(ImmichWorker.API);
-      await sut.onConfigUpdate({
-        newConfig: systemConfigStub.machineLearningEnabled as SystemConfig,
-        oldConfig: systemConfigStub.machineLearningEnabled as SystemConfig,
-      });
-
-      expect(searchMock.getDimensionSize).not.toHaveBeenCalled();
-      expect(searchMock.setDimensionSize).not.toHaveBeenCalled();
-      expect(searchMock.deleteAllSearchEmbeddings).not.toHaveBeenCalled();
-      expect(jobMock.getQueueStatus).not.toHaveBeenCalled();
-      expect(jobMock.pause).not.toHaveBeenCalled();
-      expect(jobMock.waitForQueueCompletion).not.toHaveBeenCalled();
-      expect(jobMock.resume).not.toHaveBeenCalled();
-    });
-
     it('should return if machine learning is disabled', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
 

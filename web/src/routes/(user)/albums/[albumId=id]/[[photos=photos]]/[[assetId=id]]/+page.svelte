@@ -1,5 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto, onNavigate } from '$app/navigation';
+  import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumDescription from '$lib/components/album-page/album-description.svelte';
   import AlbumOptions from '$lib/components/album-page/album-options.svelte';
   import AlbumSummary from '$lib/components/album-page/album-summary.svelte';
@@ -32,7 +33,7 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-  import { AppRoute } from '$lib/constants';
+  import { AppRoute, AlbumPageViewMode } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -87,68 +88,30 @@
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data = $bindable() }: Props = $props();
 
   let { isViewing: showAssetViewer, setAsset, gridScrollTarget } = assetViewingStore;
   let { slideshowState, slideshowNavigation } = slideshowStore;
 
-  let oldAt: AssetGridRouteSearchParams | null | undefined;
+  let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
-  $: album = data.album;
-  $: albumId = album.id;
-  $: albumKey = `${albumId}_${albumOrder}`;
+  let backUrl: string = $state(AppRoute.ALBUMS);
+  let viewMode = $state(AlbumPageViewMode.VIEW);
+  let isCreatingSharedAlbum = $state(false);
+  let isShowActivity = $state(false);
+  let isLiked: ActivityResponseDto | null = $state(null);
+  let reactions: ActivityResponseDto[] = $state([]);
+  let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
-  $: {
-    if (!album.isActivityEnabled && $numberOfComments === 0) {
-      isShowActivity = false;
-    }
-  }
-
-  enum ViewMode {
-    LINK_SHARING = 'link-sharing',
-    SELECT_USERS = 'select-users',
-    SELECT_THUMBNAIL = 'select-thumbnail',
-    SELECT_ASSETS = 'select-assets',
-    VIEW_USERS = 'view-users',
-    VIEW = 'view',
-    OPTIONS = 'options',
-  }
-
-  let backUrl: string = AppRoute.ALBUMS;
-  let viewMode = ViewMode.VIEW;
-  let isCreatingSharedAlbum = false;
-  let isShowActivity = false;
-  let isLiked: ActivityResponseDto | null = null;
-  let reactions: ActivityResponseDto[] = [];
-  let globalWidth: number;
-  let assetGridWidth: number;
-  let albumOrder: AssetOrder | undefined = data.album.order;
-
-  $: assetStore = new AssetStore({ albumId, order: albumOrder });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: timelineStore = new AssetStore({ isArchived: false, withPartners: true }, albumId);
   const timelineInteractionStore = createAssetInteractionStore();
   const { selectedAssets: timelineSelected } = timelineInteractionStore;
-
-  $: isOwned = $user.id == album.ownerId;
-  $: isAllUserOwned = [...$selectedAssets].every((asset) => asset.ownerId === $user.id);
-  $: isAllFavorite = [...$selectedAssets].every((asset) => asset.isFavorite);
-  $: isAllArchived = [...$selectedAssets].every((asset) => asset.isArchived);
-  $: {
-    assetGridWidth = isShowActivity ? globalWidth - (globalWidth < 768 ? 360 : 460) : globalWidth;
-  }
-  $: showActivityStatus =
-    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0);
-
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: isEditor =
-    album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
-    album.ownerId === $user.id;
-
-  // svelte-ignore reactive_declaration_non_reactive_property
-  $: albumHasViewers = album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer);
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
@@ -166,17 +129,22 @@
 
     if (backUrl === AppRoute.SHARING && album.albumUsers.length === 0 && !album.hasSharedLink) {
       isCreatingSharedAlbum = true;
+    } else if (backUrl === AppRoute.SHARED_LINKS) {
+      backUrl = history.state?.backUrl || AppRoute.ALBUMS;
     }
   });
 
   const handleToggleEnableActivity = async () => {
     try {
-      await updateAlbumInfo({
+      const updateAlbum = await updateAlbumInfo({
         id: album.id,
         updateAlbumDto: {
           isActivityEnabled: !album.isActivityEnabled,
         },
       });
+
+      album = { ...album, isActivityEnabled: updateAlbum.isActivityEnabled };
+
       await refreshAlbum();
       notificationController.show({
         type: NotificationType.Info,
@@ -236,11 +204,6 @@
     isShowActivity = !isShowActivity;
   };
 
-  $: if (album.albumUsers.length > 0) {
-    handlePromiseError(getFavorite());
-    handlePromiseError(getNumberOfComments());
-  }
-
   const handleStartSlideshow = async () => {
     const asset =
       $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
@@ -251,21 +214,21 @@
   };
 
   const handleEscape = async () => {
-    if (viewMode === ViewMode.SELECT_USERS) {
-      viewMode = ViewMode.VIEW;
+    if (viewMode === AlbumPageViewMode.SELECT_USERS) {
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
 
-    if (viewMode === ViewMode.SELECT_ASSETS) {
+    if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       await handleCloseSelectAssets();
       return;
     }
-    if (viewMode === ViewMode.LINK_SHARING) {
-      viewMode = ViewMode.VIEW;
+    if (viewMode === AlbumPageViewMode.LINK_SHARING) {
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
-    if (viewMode === ViewMode.OPTIONS) {
-      viewMode = ViewMode.VIEW;
+    if (viewMode === AlbumPageViewMode.OPTIONS) {
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
     if ($showAssetViewer) {
@@ -280,7 +243,7 @@
   };
 
   const refreshAlbum = async () => {
-    data.album = await getAlbumInfo({ id: album.id, withoutAssets: true });
+    album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
 
   const handleAddAssets = async () => {
@@ -308,7 +271,7 @@
   };
 
   const setModeToView = async () => {
-    viewMode = ViewMode.VIEW;
+    viewMode = AlbumPageViewMode.VIEW;
     assetStore.destroy();
     assetStore = new AssetStore({ albumId, order: albumOrder });
     timelineStore.destroy();
@@ -341,13 +304,13 @@
       });
       await refreshAlbum();
 
-      viewMode = ViewMode.VIEW;
+      viewMode = AlbumPageViewMode.VIEW;
     } catch (error) {
       handleError(error, $t('errors.error_adding_users_to_album'));
     }
   };
 
-  const handleRemoveUser = async (userId: string, nextViewMode: ViewMode) => {
+  const handleRemoveUser = async (userId: string, nextViewMode: AlbumPageViewMode) => {
     if (userId == 'me' || userId === $user.id) {
       await goto(backUrl);
       return;
@@ -357,7 +320,7 @@
       await refreshAlbum();
 
       // Dynamically set the view mode based on the passed argument
-      viewMode = album.albumUsers.length > 0 ? nextViewMode : ViewMode.VIEW;
+      viewMode = album.albumUsers.length > 0 ? nextViewMode : AlbumPageViewMode.VIEW;
     } catch (error) {
       handleError(error, $t('errors.error_deleting_shared_user'));
     }
@@ -371,7 +334,7 @@
     const isConfirmed = await confirmAlbumDelete(album);
 
     if (!isConfirmed) {
-      viewMode = ViewMode.VIEW;
+      viewMode = AlbumPageViewMode.VIEW;
       return;
     }
 
@@ -381,7 +344,7 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_delete_album'));
     } finally {
-      viewMode = ViewMode.VIEW;
+      viewMode = AlbumPageViewMode.VIEW;
     }
   };
 
@@ -391,11 +354,11 @@
   };
 
   const handleUpdateThumbnail = async (assetId: string) => {
-    if (viewMode !== ViewMode.SELECT_THUMBNAIL) {
+    if (viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL) {
       return;
     }
 
-    viewMode = ViewMode.VIEW;
+    viewMode = AlbumPageViewMode.VIEW;
     assetInteractionStore.clearMultiselect();
 
     await updateThumbnail(assetId);
@@ -432,9 +395,43 @@
     assetStore.destroy();
     timelineStore.destroy();
   });
+
+  let album = $state(data.album);
+  let albumId = $derived(album.id);
+  let albumKey = $derived(`${albumId}_${albumOrder}`);
+
+  $effect(() => {
+    if (!album.isActivityEnabled && $numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  });
+
+  let assetStore = $derived(new AssetStore({ albumId, order: albumOrder }));
+  let timelineStore = $derived(new AssetStore({ isArchived: false, withPartners: true }, albumId));
+
+  let isOwned = $derived($user.id == album.ownerId);
+  let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
+  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
+  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+
+  let showActivityStatus = $derived(
+    album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0),
+  );
+  let isEditor = $derived(
+    album.albumUsers.find(({ user: { id } }) => id === $user.id)?.role === AlbumUserRole.Editor ||
+      album.ownerId === $user.id,
+  );
+
+  let albumHasViewers = $derived(album.albumUsers.some(({ role }) => role === AlbumUserRole.Viewer));
+  $effect(() => {
+    if (album.albumUsers.length > 0) {
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
+    }
+  });
 </script>
 
-<div class="flex overflow-hidden" bind:clientWidth={globalWidth}>
+<div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
     {#if $isMultiSelectState}
       <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
@@ -475,14 +472,14 @@
         </ButtonContextMenu>
       </AssetSelectControlBar>
     {:else}
-      {#if viewMode === ViewMode.VIEW}
+      {#if viewMode === AlbumPageViewMode.VIEW}
         <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
-          <svelte:fragment slot="trailing">
+          {#snippet trailing()}
             {#if isEditor}
               <CircleIconButton
                 title={$t('add_photos')}
-                on:click={async () => {
-                  viewMode = ViewMode.SELECT_ASSETS;
+                onclick={async () => {
+                  viewMode = AlbumPageViewMode.SELECT_ASSETS;
                   oldAt = { at: $gridScrollTarget?.at };
                   await navigate(
                     { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: null } },
@@ -496,26 +493,33 @@
             {#if isOwned}
               <CircleIconButton
                 title={$t('share')}
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                onclick={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
                 icon={mdiShareVariantOutline}
               />
             {/if}
 
             {#if album.assetCount > 0}
-              <CircleIconButton title={$t('slideshow')} on:click={handleStartSlideshow} icon={mdiPresentationPlay} />
-              <CircleIconButton title={$t('download')} on:click={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+              <CircleIconButton title={$t('slideshow')} onclick={handleStartSlideshow} icon={mdiPresentationPlay} />
+              <CircleIconButton title={$t('download')} onclick={handleDownloadAlbum} icon={mdiFolderDownloadOutline} />
+            {/if}
 
-              {#if isOwned}
-                <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+            {#if isOwned}
+              <ButtonContextMenu icon={mdiDotsVertical} title={$t('album_options')}>
+                {#if album.assetCount > 0}
                   <MenuOption
                     icon={mdiImageOutline}
                     text={$t('select_album_cover')}
-                    onClick={() => (viewMode = ViewMode.SELECT_THUMBNAIL)}
+                    onClick={() => (viewMode = AlbumPageViewMode.SELECT_THUMBNAIL)}
                   />
-                  <MenuOption icon={mdiCogOutline} text={$t('options')} onClick={() => (viewMode = ViewMode.OPTIONS)} />
-                  <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
-                </ButtonContextMenu>
-              {/if}
+                  <MenuOption
+                    icon={mdiCogOutline}
+                    text={$t('options')}
+                    onClick={() => (viewMode = AlbumPageViewMode.OPTIONS)}
+                  />
+                {/if}
+
+                <MenuOption icon={mdiDeleteOutline} text={$t('delete_album')} onClick={() => handleRemoveAlbum()} />
+              </ButtonContextMenu>
             {/if}
 
             {#if isCreatingSharedAlbum && album.albumUsers.length === 0}
@@ -523,18 +527,18 @@
                 size="sm"
                 rounded="lg"
                 disabled={album.assetCount === 0}
-                on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                onclick={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
               >
                 {$t('share')}
               </Button>
             {/if}
-          </svelte:fragment>
+          {/snippet}
         </ControlAppBar>
       {/if}
 
-      {#if viewMode === ViewMode.SELECT_ASSETS}
+      {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
         <ControlAppBar onClose={handleCloseSelectAssets}>
-          <svelte:fragment slot="leading">
+          {#snippet leading()}
             <p class="text-lg dark:text-immich-dark-fg">
               {#if $timelineSelected.size === 0}
                 {$t('add_to_album')}
@@ -542,37 +546,36 @@
                 {$t('selected_count', { values: { count: $timelineSelected.size } })}
               {/if}
             </p>
-          </svelte:fragment>
+          {/snippet}
 
-          <svelte:fragment slot="trailing">
+          {#snippet trailing()}
             <button
               type="button"
-              on:click={handleSelectFromComputer}
+              onclick={handleSelectFromComputer}
               class="rounded-lg px-6 py-2 text-sm font-medium text-immich-primary transition-all hover:bg-immich-primary/10 dark:text-immich-dark-primary dark:hover:bg-immich-dark-primary/25"
             >
               {$t('select_from_computer')}
             </button>
-            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} on:click={handleAddAssets}
+            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} onclick={handleAddAssets}
               >{$t('done')}</Button
             >
-          </svelte:fragment>
+          {/snippet}
         </ControlAppBar>
       {/if}
 
-      {#if viewMode === ViewMode.SELECT_THUMBNAIL}
-        <ControlAppBar onClose={() => (viewMode = ViewMode.VIEW)}>
-          <svelte:fragment slot="leading">{$t('select_album_cover')}</svelte:fragment>
+      {#if viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
+        <ControlAppBar onClose={() => (viewMode = AlbumPageViewMode.VIEW)}>
+          {#snippet leading()}
+            {$t('select_album_cover')}
+          {/snippet}
         </ControlAppBar>
       {/if}
     {/if}
 
-    <main
-      class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
-      style={`width:${assetGridWidth}px`}
-    >
+    <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
       <!-- Use key because AssetGrid can't deal with changing stores -->
       {#key albumKey}
-        {#if viewMode === ViewMode.SELECT_ASSETS}
+        {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
           <AssetGrid
             enableRouting={false}
             assetStore={timelineStore}
@@ -586,13 +589,13 @@
             {assetStore}
             {assetInteractionStore}
             isShared={album.albumUsers.length > 0}
-            isSelectionMode={viewMode === ViewMode.SELECT_THUMBNAIL}
-            singleSelect={viewMode === ViewMode.SELECT_THUMBNAIL}
+            isSelectionMode={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
+            singleSelect={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
             showArchiveIcon
             onSelect={({ id }) => handleUpdateThumbnail(id)}
             onEscape={handleEscape}
           >
-            {#if viewMode !== ViewMode.SELECT_THUMBNAIL}
+            {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
               <!-- ALBUM TITLE -->
               <section class="pt-8 md:pt-24">
                 <AlbumTitle
@@ -616,18 +619,18 @@
                         color="gray"
                         size="20"
                         icon={mdiLink}
-                        on:click={() => (viewMode = ViewMode.LINK_SHARING)}
+                        onclick={() => (viewMode = AlbumPageViewMode.LINK_SHARING)}
                       />
                     {/if}
 
                     <!-- owner -->
-                    <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                    <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
                       <UserAvatar user={album.owner} size="md" />
                     </button>
 
                     <!-- users with write access (collaborators) -->
                     {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor) as { user } (user.id)}
-                      <button type="button" on:click={() => (viewMode = ViewMode.VIEW_USERS)}>
+                      <button type="button" onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}>
                         <UserAvatar {user} size="md" />
                       </button>
                     {/each}
@@ -639,7 +642,7 @@
                         color="gray"
                         size="20"
                         icon={mdiDotsVertical}
-                        on:click={() => (viewMode = ViewMode.VIEW_USERS)}
+                        onclick={() => (viewMode = AlbumPageViewMode.VIEW_USERS)}
                       />
                     {/if}
 
@@ -648,7 +651,7 @@
                         color="gray"
                         size="20"
                         icon={mdiPlus}
-                        on:click={() => (viewMode = ViewMode.SELECT_USERS)}
+                        onclick={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
                         title={$t('add_more_users')}
                       />
                     {/if}
@@ -665,7 +668,7 @@
                   <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
                   <button
                     type="button"
-                    on:click={() => (viewMode = ViewMode.SELECT_ASSETS)}
+                    onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
                     class="mt-5 flex w-full place-items-center gap-6 rounded-md border bg-immich-bg px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:bg-immich-dark-gray dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
                   >
                     <span class="text-text-immich-primary dark:text-immich-dark-primary"
@@ -717,29 +720,29 @@
     </div>
   {/if}
 </div>
-{#if viewMode === ViewMode.SELECT_USERS}
+{#if viewMode === AlbumPageViewMode.SELECT_USERS}
   <UserSelectionModal
     {album}
     onSelect={handleAddUsers}
-    onShare={() => (viewMode = ViewMode.LINK_SHARING)}
-    onClose={() => (viewMode = ViewMode.VIEW)}
+    onShare={() => (viewMode = AlbumPageViewMode.LINK_SHARING)}
+    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
   />
 {/if}
 
-{#if viewMode === ViewMode.LINK_SHARING}
-  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = ViewMode.VIEW)} />
+{#if viewMode === AlbumPageViewMode.LINK_SHARING}
+  <CreateSharedLinkModal albumId={album.id} onClose={() => (viewMode = AlbumPageViewMode.VIEW)} />
 {/if}
 
-{#if viewMode === ViewMode.VIEW_USERS}
+{#if viewMode === AlbumPageViewMode.VIEW_USERS}
   <ShareInfoModal
-    onClose={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
     {album}
-    onRemove={(userId) => handleRemoveUser(userId, ViewMode.VIEW_USERS)}
+    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.VIEW_USERS)}
     onRefreshAlbum={refreshAlbum}
   />
 {/if}
 
-{#if viewMode === ViewMode.OPTIONS && $user}
+{#if viewMode === AlbumPageViewMode.OPTIONS && $user}
   <AlbumOptions
     {album}
     order={albumOrder}
@@ -748,11 +751,11 @@
       albumOrder = order;
       await setModeToView();
     }}
-    onRemove={(userId) => handleRemoveUser(userId, ViewMode.OPTIONS)}
+    onRemove={(userId) => handleRemoveUser(userId, AlbumPageViewMode.OPTIONS)}
     onRefreshAlbum={refreshAlbum}
-    onClose={() => (viewMode = ViewMode.VIEW)}
+    onClose={() => (viewMode = AlbumPageViewMode.VIEW)}
     onToggleEnabledActivity={handleToggleEnableActivity}
-    onShowSelectSharedUser={() => (viewMode = ViewMode.SELECT_USERS)}
+    onShowSelectSharedUser={() => (viewMode = AlbumPageViewMode.SELECT_USERS)}
   />
 {/if}
 

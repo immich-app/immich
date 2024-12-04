@@ -14,6 +14,7 @@ import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -570,6 +571,7 @@ describe(AssetMediaService.name, () => {
           path: '/path/to/preview.jpg',
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'image/jpeg',
+          fileName: 'asset-id_thumbnail.jpg',
         }),
       );
     });
@@ -584,6 +586,7 @@ describe(AssetMediaService.name, () => {
           path: assetStub.image.files[0].path,
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'image/jpeg',
+          fileName: 'asset-id_preview.jpg',
         }),
       );
     });
@@ -598,6 +601,7 @@ describe(AssetMediaService.name, () => {
           path: assetStub.image.files[1].path,
           cacheControl: CacheControl.PRIVATE_WITH_CACHE,
           contentType: 'application/octet-stream',
+          fileName: 'asset-id_thumbnail.ext',
         }),
       );
     });
@@ -877,6 +881,30 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(assetMock.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
+    });
+  });
+
+  describe('onUploadError', () => {
+    it('should queue a job to delete the uploaded file', async () => {
+      const request = { user: authStub.user1 } as AuthRequest;
+
+      const file = {
+        fieldname: UploadFieldName.ASSET_DATA,
+        originalname: 'image.jpg',
+        mimetype: 'image/jpeg',
+        buffer: Buffer.from(''),
+        size: 1000,
+        uuid: 'random-uuid',
+        checksum: Buffer.from('checksum', 'utf8'),
+        originalPath: 'upload/upload/user-id/ra/nd/random-uuid.jpg',
+      } as unknown as Express.Multer.File;
+
+      await sut.onUploadError(request, file);
+
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.DELETE_FILES,
+        data: { files: ['upload/upload/user-id/ra/nd/random-uuid.jpg'] },
+      });
     });
   });
 });

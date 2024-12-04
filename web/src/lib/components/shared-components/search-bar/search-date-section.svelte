@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface SearchDateFilter {
     takenBefore?: string;
     takenAfter?: string;
@@ -9,7 +9,11 @@
   import DateInput from '$lib/components/elements/date-input.svelte';
   import { t } from 'svelte-i18n';
 
-  export let filters: SearchDateFilter;
+  interface Props {
+    filters: SearchDateFilter;
+  }
+
+  let { filters = $bindable() }: Props = $props();
 </script>
 
 <div id="date-range-selection" class="grid grid-auto-fit-40 gap-5">

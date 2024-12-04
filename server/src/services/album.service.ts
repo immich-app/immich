@@ -74,7 +74,7 @@ export class AlbumService extends BaseService {
           startDate: albumMetadata[album.id].startDate,
           endDate: albumMetadata[album.id].endDate,
           assetCount: albumMetadata[album.id].assetCount,
-          lastModifiedAssetTimestamp: lastModifiedAsset?.fileModifiedAt,
+          lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
       }),
     );
@@ -86,12 +86,14 @@ export class AlbumService extends BaseService {
     const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
+    const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
 
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds.startDate,
       endDate: albumMetadataForIds.endDate,
       assetCount: albumMetadataForIds.assetCount,
+      lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
     };
   }
 

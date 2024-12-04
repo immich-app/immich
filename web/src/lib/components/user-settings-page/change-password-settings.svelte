@@ -8,14 +8,13 @@
 
   import Button from '$lib/components/elements/buttons/button.svelte';
   import type { HttpError } from '@sveltejs/kit';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  let password = '';
-  let newPassword = '';
-  let confirmPassword = '';
+  let password = $state('');
+  let newPassword = $state('');
+  let confirmPassword = $state('');
 
   const handleChangePassword = async () => {
     try {
@@ -37,11 +36,15 @@
       });
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <SettingInputField
           inputType={SettingInputFieldType.PASSWORD}
@@ -72,7 +75,7 @@
             type="submit"
             size="sm"
             disabled={!(password && newPassword && newPassword === confirmPassword)}
-            on:click={() => handleChangePassword()}>{$t('save')}</Button
+            onclick={() => handleChangePassword()}>{$t('save')}</Button
           >
         </div>
       </div>

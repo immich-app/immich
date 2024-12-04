@@ -188,7 +188,7 @@ class BottomGalleryBar extends ConsumerWidget {
     void handleEdit() async {
       final image = Image(image: ImmichImage.imageProvider(asset: asset));
 
-      Navigator.of(context).push(
+      context.navigator.push(
         MaterialPageRoute(
           builder: (context) => EditImagePage(
             asset: asset,
@@ -338,7 +338,7 @@ class BottomGalleryBar extends ConsumerWidget {
           ),
           position: DecorationPosition.background,
           child: Padding(
-            padding: EdgeInsets.only(top: 40.0),
+            padding: const EdgeInsets.only(top: 40.0),
             child: Column(
               children: [
                 if (showVideoPlayerControls) const VideoControls(),

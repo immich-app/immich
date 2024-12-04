@@ -2,11 +2,11 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.120.2+167
+version: 1.121.0+168
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.24.4
+  flutter: 3.24.5
 
 isar_version: &isar_version 3.1.8 # define the version to be used
 

@@ -6,8 +6,12 @@
   import { selectAllAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
 
-  export let assetStore: AssetStore;
-  export let assetInteractionStore: AssetInteractionStore;
+  interface Props {
+    assetStore: AssetStore;
+    assetInteractionStore: AssetInteractionStore;
+  }
+
+  let { assetStore, assetInteractionStore }: Props = $props();
 
   const handleSelectAll = async () => {
     await selectAllAssets(assetStore, assetInteractionStore);
@@ -19,7 +23,7 @@
 </script>
 
 {#if $isSelectingAllAssets}
-  <CircleIconButton title={$t('unselect_all')} icon={mdiSelectRemove} on:click={handleCancel} />
+  <CircleIconButton title={$t('unselect_all')} icon={mdiSelectRemove} onclick={handleCancel} />
 {:else}
-  <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} on:click={handleSelectAll} />
+  <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
 {/if}

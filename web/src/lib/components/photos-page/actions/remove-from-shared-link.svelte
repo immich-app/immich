@@ -9,7 +9,11 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let sharedLink: SharedLinkResponseDto;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+  }
+
+  let { sharedLink = $bindable() }: Props = $props();
 
   const { getAssets, clearSelect } = getAssetControlContext();
 
@@ -55,4 +59,4 @@
   };
 </script>
 
-<CircleIconButton title={$t('remove_from_shared_link')} on:click={handleRemove} icon={mdiDeleteOutline} />
+<CircleIconButton title={$t('remove_from_shared_link')} onclick={handleRemove} icon={mdiDeleteOutline} />

@@ -13,12 +13,12 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class SmartInfoService extends BaseService {
-  @OnEvent({ name: 'config.init' })
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
   async onConfigInit({ newConfig }: ArgOf<'config.init'>) {
     await this.init(newConfig);
   }
 
-  @OnEvent({ name: 'config.update', server: true })
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
   async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
     await this.init(newConfig, oldConfig);
   }
@@ -35,7 +35,7 @@ export class SmartInfoService extends BaseService {
   }
 
   private async init(newConfig: SystemConfig, oldConfig?: SystemConfig) {
-    if (this.worker !== ImmichWorker.MICROSERVICES || !isSmartSearchEnabled(newConfig.machineLearning)) {
+    if (!isSmartSearchEnabled(newConfig.machineLearning)) {
       return;
     }
 

@@ -7,8 +7,6 @@ export const normalizeTreePath = (path: string) => path.replace(/^\//, '').repla
 export function buildTree(paths: string[]) {
   const root: RecursiveObject = {};
 
-  paths.sort();
-
   for (const path of paths) {
     const parts = path.split('/');
     let current = root;

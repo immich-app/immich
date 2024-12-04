@@ -15,7 +15,7 @@ import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_editable_title.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -42,7 +42,7 @@ class AlbumViewerPage extends HookConsumerWidget {
         () => ref.read(currentAlbumProvider.notifier).set(value),
       ),
     );
-    final userId = ref.watch(authenticationProvider).userId;
+    final userId = ref.watch(authProvider).userId;
     final isProcessing = useProcessingOverlay();
 
     Future<bool> onRemoveFromAlbumPressed(Iterable<Asset> assets) async {
@@ -243,7 +243,7 @@ class AlbumViewerPage extends HookConsumerWidget {
           AnimatedPositioned(
             duration: const Duration(milliseconds: 300),
             top: ref.watch(multiselectProvider)
-                ? -(kToolbarHeight + MediaQuery.of(context).padding.top)
+                ? -(kToolbarHeight + context.padding.top)
                 : 0,
             left: 0,
             right: 0,

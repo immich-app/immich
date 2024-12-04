@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.120.2
+ * 1.121.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -928,6 +928,7 @@ export type ServerConfigDto = {
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;
+    publicUsers: boolean;
     trashDays: number;
     userDeleteDelay: number;
 };
@@ -969,6 +970,8 @@ export type UsageByUserDto = {
     photos: number;
     quotaSizeInBytes: number | null;
     usage: number;
+    usagePhotos: number;
+    usageVideos: number;
     userId: string;
     userName: string;
     videos: number;
@@ -977,6 +980,8 @@ export type ServerStatsResponseDto = {
     photos: number;
     usage: number;
     usageByUser: UsageByUserDto[];
+    usagePhotos: number;
+    usageVideos: number;
     videos: number;
 };
 export type ServerStorageResponseDto = {
@@ -1218,6 +1223,7 @@ export type SystemConfigReverseGeocodingDto = {
 export type SystemConfigServerDto = {
     externalDomain: string;
     loginPageMessage: string;
+    publicUsers: boolean;
 };
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
@@ -2479,7 +2485,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function searchMetadata({ metadataSearchDto }: {
+export function searchAssets({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
