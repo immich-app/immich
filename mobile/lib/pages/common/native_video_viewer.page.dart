@@ -326,8 +326,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         return;
       }
 
+      final imageToVideo = curAsset != null && !curAsset.isVideo;
+
       // No need to delay video playback when swiping from an image to a video
-      if (curAsset != null && !curAsset.isVideo) {
+      if (imageToVideo && Platform.isIOS) {
         currentAsset.value = value;
         onPlaybackReady();
         return;
@@ -337,7 +339,9 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       Timer(
           Platform.isIOS
               ? const Duration(milliseconds: 300)
-              : const Duration(milliseconds: 400), () {
+              : imageToVideo
+                  ? const Duration(milliseconds: 200)
+                  : const Duration(milliseconds: 400), () {
         if (!context.mounted) {
           return;
         }
