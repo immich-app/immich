@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -22,12 +23,8 @@ class Asset {
         durationInSeconds = remote.duration.toDuration()?.inSeconds ?? 0,
         type = remote.type.toAssetType(),
         fileName = remote.originalFileName,
-        height = isFlipped(remote)
-            ? remote.exifInfo?.exifImageWidth?.toInt()
-            : remote.exifInfo?.exifImageHeight?.toInt(),
-        width = isFlipped(remote)
-            ? remote.exifInfo?.exifImageHeight?.toInt()
-            : remote.exifInfo?.exifImageWidth?.toInt(),
+        height = remote.exifInfo?.exifImageHeight?.toInt(),
+        width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
         ownerId = fastHash(remote.ownerId),
         exifInfo =
@@ -93,6 +90,27 @@ class Asset {
 
   set local(AssetEntity? assetEntity) => _local = assetEntity;
 
+  @ignore
+  bool _didUpdateLocal = false;
+
+  @ignore
+  Future<AssetEntity> get localAsync async {
+    final local = this.local;
+    if (local == null) {
+      throw Exception('Asset $fileName has no local data');
+    }
+
+    final updatedLocal =
+        _didUpdateLocal ? local : await local.obtainForNewProperties();
+    if (updatedLocal == null) {
+      throw Exception('Could not fetch local data for $fileName');
+    }
+
+    this.local = updatedLocal;
+    _didUpdateLocal = true;
+    return updatedLocal;
+  }
+
   Id id = Isar.autoIncrement;
 
   /// stores the raw SHA1 bytes as a base64 String
@@ -150,10 +168,21 @@ class Asset {
 
   int stackCount;
 
-  /// Aspect ratio of the asset
+  /// Returns null if the asset has no sync access to the exif info
   @ignore
-  double? get aspectRatio =>
-      width == null || height == null ? 0 : width! / height!;
+  double? get aspectRatio {
+    final orientatedWidth = this.orientatedWidth;
+    final orientatedHeight = this.orientatedHeight;
+
+    if (orientatedWidth != null &&
+        orientatedHeight != null &&
+        orientatedWidth > 0 &&
+        orientatedHeight > 0) {
+      return orientatedWidth.toDouble() / orientatedHeight.toDouble();
+    }
+
+    return null;
+  }
 
   /// `true` if this [Asset] is present on the device
   @ignore
@@ -171,6 +200,12 @@ class Asset {
 
   @ignore
   bool get isImage => type == AssetType.image;
+
+  @ignore
+  bool get isVideo => type == AssetType.video;
+
+  @ignore
+  bool get isMotionPhoto => livePhotoVideoId != null;
 
   @ignore
   AssetState get storage {
@@ -191,6 +226,50 @@ class Asset {
   // ignore: invalid_annotation_target
   @ignore
   set byteHash(List<int> hash) => checksum = base64.encode(hash);
+
+  /// Returns null if the asset has no sync access to the exif info
+  @ignore
+  @pragma('vm:prefer-inline')
+  bool? get isFlipped {
+    final exifInfo = this.exifInfo;
+    if (exifInfo != null) {
+      return exifInfo.isFlipped;
+    }
+
+    if (_didUpdateLocal && Platform.isAndroid) {
+      final local = this.local;
+      if (local == null) {
+        throw Exception('Asset $fileName has no local data');
+      }
+      return local.orientation == 90 || local.orientation == 270;
+    }
+
+    return null;
+  }
+
+  /// Returns null if the asset has no sync access to the exif info
+  @ignore
+  @pragma('vm:prefer-inline')
+  int? get orientatedHeight {
+    final isFlipped = this.isFlipped;
+    if (isFlipped == null) {
+      return null;
+    }
+
+    return isFlipped ? width : height;
+  }
+
+  /// Returns null if the asset has no sync access to the exif info
+  @ignore
+  @pragma('vm:prefer-inline')
+  int? get orientatedWidth {
+    final isFlipped = this.isFlipped;
+    if (isFlipped == null) {
+      return null;
+    }
+
+    return isFlipped ? height : width;
+  }
 
   @override
   bool operator ==(other) {
@@ -510,22 +589,4 @@ extension AssetsHelper on IsarCollection<Asset> {
   ) {
     return where().anyOf(ids, (q, String e) => q.localIdEqualTo(e));
   }
-}
-
-/// Returns `true` if this [int] is flipped 90° clockwise
-bool isRotated90CW(int orientation) {
-  return [7, 8, -90].contains(orientation);
-}
-
-/// Returns `true` if this [int] is flipped 270° clockwise
-bool isRotated270CW(int orientation) {
-  return [5, 6, 90].contains(orientation);
-}
-
-/// Returns `true` if this [Asset] is flipped 90° or 270° clockwise
-bool isFlipped(AssetResponseDto response) {
-  final int orientation =
-      int.tryParse(response.exifInfo?.orientation ?? '0') ?? 0;
-  return orientation != 0 &&
-      (isRotated90CW(orientation) || isRotated270CW(orientation));
 }

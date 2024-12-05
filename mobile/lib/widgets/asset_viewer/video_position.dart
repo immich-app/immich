@@ -56,10 +56,16 @@ class VideoPosition extends HookConsumerWidget {
                           ref.read(videoPlayerControlsProvider.notifier).play();
                         }
                       },
-                      onChanged: (position) {
+                      onChanged: (value) {
+                        final inSeconds =
+                            (duration * (value / 100.0)).inSeconds;
+                        final position = inSeconds.toDouble();
                         ref
                             .read(videoPlayerControlsProvider.notifier)
                             .position = position;
+                        // This immediately updates the slider position without waiting for the video to update
+                        ref.read(videoPlaybackValueProvider.notifier).position =
+                            Duration(seconds: inSeconds);
                       },
                     ),
                   ),

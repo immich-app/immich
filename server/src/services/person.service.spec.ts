@@ -717,7 +717,7 @@ describe(PersonService.name, () => {
       assetMock.getByIds.mockResolvedValue([assetStub.image]);
       await sut.handleDetectFaces({ id: assetStub.image.id });
       expect(machineLearningMock.detectFaces).toHaveBeenCalledWith(
-        'http://immich-machine-learning:3003',
+        ['http://immich-machine-learning:3003'],
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ minScore: 0.7, modelName: 'buffalo_l' }),
       );
