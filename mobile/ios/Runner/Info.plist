@@ -82,8 +82,12 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>We need to access the camera to let you take beautiful video using this app</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We require this permission to access the local WiFi name for background upload mechanism</string>
+	<key>NSLocationUsageDescription</key>
+	<string>We require this permission to access the local WiFi name</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Enable location setting to show position of assets on map</string>
+	<string>We require this permission to access the local WiFi name</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>We need to access the microphone to let you take beautiful video using this app</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
