@@ -42,10 +42,12 @@
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
+    mdiCast,
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
   import type { Snippet } from 'svelte';
+  import CastSender from '$lib/components/cast/cast-sender.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -83,6 +85,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let showCast = $derived(sharedLink && !sharedLink.password);
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -133,10 +136,13 @@
     {#if showDetailButton}
       <ShowDetailAction {onShowDetail} />
     {/if}
-
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
+    {#if showCast}
+      <CastSender {asset} />
+    {/if}
+
     <!-- {#if showEditorButton}
       <CircleIconButton
         color="opaque"
