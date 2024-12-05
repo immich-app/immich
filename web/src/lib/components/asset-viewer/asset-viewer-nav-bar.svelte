@@ -15,6 +15,7 @@
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import CastSender from '$lib/components/cast/cast-sender.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
@@ -42,12 +43,10 @@
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
-    mdiCast,
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
   import type { Snippet } from 'svelte';
-  import CastSender from '$lib/components/cast/cast-sender.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -85,7 +84,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
-  let showCast = $derived(sharedLink && !sharedLink.password);
+  let showCastButton = $derived(sharedLink && !sharedLink.password && window.chrome);
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -139,7 +138,7 @@
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
-    {#if showCast}
+    {#if showCastButton}
       <CastSender {asset} />
     {/if}
 
