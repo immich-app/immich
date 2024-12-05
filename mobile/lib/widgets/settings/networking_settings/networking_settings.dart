@@ -24,12 +24,13 @@ class NetworkingSettings extends HookConsumerWidget {
         useAppSettingsState(AppSettingsEnum.autoEndpointSwitching);
 
     Future<void> checkWifiReadPermission() async {
-      final hasLocationInUse =
-          await ref.read(networkProvider.notifier).getWifiReadPermission();
-      final hasLocationAlways = await ref
-          .read(networkProvider.notifier)
-          .getWifiReadBackgroundPermission();
+      final [hasLocationInUse, hasLocationAlways] = await Future.wait([
+        ref.read(networkProvider.notifier).getWifiReadPermission(),
+        ref.read(networkProvider.notifier).getWifiReadBackgroundPermission(),
+      ]);
+
       bool? isGrantLocationAlwaysPermission;
+
       if (!hasLocationInUse) {
         await showDialog(
           context: context,
@@ -112,7 +113,7 @@ class NetworkingSettings extends HookConsumerWidget {
           child: Card(
             elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
               side: BorderSide(
                 color: context.colorScheme.surfaceContainerHighest,
                 width: 1,
@@ -205,9 +206,11 @@ class NetworkStatusIcon extends StatelessWidget {
   const NetworkStatusIcon({
     super.key,
     required this.status,
+    this.enabled = true,
   }) : super();
 
   final AuxCheckStatus status;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -233,16 +236,18 @@ class NetworkStatusIcon extends StatelessWidget {
           ),
         );
       case AuxCheckStatus.valid:
-        return const Icon(
+        return Icon(
           Icons.check_circle_rounded,
-          color: Colors.green,
-          key: ValueKey('success'),
+          color: enabled
+              ? Colors.green
+              : context.colorScheme.onSurface.withAlpha(100),
+          key: const ValueKey('success'),
         );
       case AuxCheckStatus.error:
-        return const Icon(
+        return Icon(
           Icons.error_rounded,
-          color: Colors.red,
-          key: ValueKey('error'),
+          color: enabled ? Colors.red : Colors.grey,
+          key: const ValueKey('error'),
         );
       default:
         return const Icon(Icons.circle_outlined, key: ValueKey('unknown'));

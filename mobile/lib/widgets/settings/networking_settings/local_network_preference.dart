@@ -177,6 +177,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                     ListTile(
+                      enabled: enabled,
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.wifi_rounded),
                       title: Text("wifi_name".tr()),
@@ -186,7 +187,10 @@ class LocalNetworkPreference extends HookConsumerWidget {
                               wifiNameText.value,
                               style: context.textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: context.primaryColor,
+                                color: enabled
+                                    ? context.primaryColor
+                                    : context.colorScheme.onSurface
+                                        .withAlpha(100),
                                 fontFamily: 'Inconsolata',
                               ),
                             ),
@@ -196,6 +200,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       ),
                     ),
                     ListTile(
+                      enabled: enabled,
                       contentPadding: const EdgeInsets.only(left: 24, right: 8),
                       leading: const Icon(Icons.lan_rounded),
                       title: Text("server_endpoint".tr()),
@@ -205,7 +210,10 @@ class LocalNetworkPreference extends HookConsumerWidget {
                               localEndpointText.value,
                               style: context.textTheme.labelLarge?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: context.primaryColor,
+                                color: enabled
+                                    ? context.primaryColor
+                                    : context.colorScheme.onSurface
+                                        .withAlpha(100),
                                 fontFamily: 'Inconsolata',
                               ),
                             ),
@@ -240,18 +248,6 @@ class LocalNetworkPreference extends HookConsumerWidget {
                     color: context.primaryColor.withOpacity(0.05),
                   ),
                 ),
-                if (!enabled)
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
-                        child: Container(
-                          color: context.colorScheme.surface.withOpacity(0.5),
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
           ),

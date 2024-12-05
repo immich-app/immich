@@ -19,8 +19,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final entries =
         useState([AuxilaryEndpoint(url: '', status: AuxCheckStatus.unknown)]);
-    final canSave =
-        useState(entries.value.every((e) => e.status == AuxCheckStatus.valid));
+    final canSave = useState(false);
 
     saveEndpointList() {
       canSave.value =
@@ -145,6 +144,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                         initialValue: entries.value[index],
                         onValidated: updateValidationStatus,
                         onDismissed: handleDismiss,
+                        enabled: enabled,
                       );
                     },
                   ),
@@ -157,15 +157,17 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.add),
                       label: Text('add_endpoint'.tr().toUpperCase()),
-                      onPressed: () {
-                        entries.value = [
-                          ...entries.value,
-                          AuxilaryEndpoint(
-                            url: '',
-                            status: AuxCheckStatus.unknown,
-                          ),
-                        ];
-                      },
+                      onPressed: enabled
+                          ? () {
+                              entries.value = [
+                                ...entries.value,
+                                AuxilaryEndpoint(
+                                  url: '',
+                                  status: AuxCheckStatus.unknown,
+                                ),
+                              ];
+                            }
+                          : null,
                     ),
                   ),
                 ),
@@ -180,18 +182,6 @@ class ExternalNetworkPreference extends HookConsumerWidget {
                 color: context.primaryColor.withOpacity(0.05),
               ),
             ),
-            if (!enabled)
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(16)),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
-                    child: Container(
-                      color: context.colorScheme.surface.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),

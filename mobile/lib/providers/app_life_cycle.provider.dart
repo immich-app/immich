@@ -60,10 +60,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       switch (_ref.read(tabProvider)) {
         case TabEnum.home:
           await _ref.read(assetProvider.notifier).getAllAsset();
+          break;
         case TabEnum.search:
         // nothing to do
         case TabEnum.albums:
           await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
+          break;
         case TabEnum.library:
         // nothing to do
       }

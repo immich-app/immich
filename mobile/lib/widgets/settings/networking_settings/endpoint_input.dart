@@ -13,12 +13,14 @@ class EndpointInput extends StatefulHookConsumerWidget {
     required this.index,
     required this.onValidated,
     required this.onDismissed,
+    this.enabled = true,
   });
 
   final AuxilaryEndpoint initialValue;
   final int index;
   final Function(String url, int index, AuxCheckStatus status) onValidated;
   final Function(int index) onDismissed;
+  final bool enabled;
 
   @override
   EndpointInputState createState() => EndpointInputState();
@@ -104,14 +106,17 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 24),
         trailing: ReorderableDragStartListener(
+          enabled: widget.enabled,
           index: widget.index,
           child: const Icon(Icons.drag_handle_rounded),
         ),
         leading: NetworkStatusIcon(
           key: ValueKey('status_$auxCheckStatus'),
           status: auxCheckStatus,
+          enabled: widget.enabled,
         ),
         subtitle: TextFormField(
+          enabled: widget.enabled,
           onTapOutside: (_) => focusNode.unfocus(),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: validateUrl,

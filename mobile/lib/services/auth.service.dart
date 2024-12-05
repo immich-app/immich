@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
+import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
@@ -164,22 +165,25 @@ class AuthService {
   }
 
   Future<String?> _setRemoteConnection() async {
-    try {
-      final endpointList = _authRepository.getExternalEndpointList();
+    List<AuxilaryEndpoint> endpointList;
 
-      for (final endpoint in endpointList) {
-        try {
-          return await _apiService.resolveAndSetEndpoint(endpoint.url);
-        } on ApiException catch (error) {
-          _log.severe("Cannot resolve endpoint", error);
-          continue;
-        } catch (_) {
-          _log.severe("Auxilary server is not valid");
-          continue;
-        }
-      }
+    try {
+      endpointList = _authRepository.getExternalEndpointList();
     } catch (error, stackTrace) {
-      _log.severe("Cannot set external endpoint", error, stackTrace);
+      _log.severe("Cannot get external endpoint", error, stackTrace);
+      return null;
+    }
+
+    for (final endpoint in endpointList) {
+      try {
+        return await _apiService.resolveAndSetEndpoint(endpoint.url);
+      } on ApiException catch (error) {
+        _log.severe("Cannot resolve endpoint", error);
+        continue;
+      } catch (_) {
+        _log.severe("Auxilary server is not valid");
+        continue;
+      }
     }
 
     return null;
