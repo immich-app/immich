@@ -127,16 +127,12 @@ class _MobileLayout extends StatelessWidget {
                   title: Text(
                     setting.title,
                     style: context.textTheme.titleMedium!.copyWith(
+                      fontWeight: FontWeight.w600,
                       color: context.primaryColor,
                     ),
                   ).tr(),
                   subtitle: Text(
                     setting.subtitle,
-                    style: TextStyle(
-                      color: context.isDarkTheme
-                          ? Colors.white
-                          : context.colorScheme.onSurface,
-                    ),
                   ).tr(),
                   onTap: () =>
                       context.pushRoute(SettingsSubRoute(section: setting)),

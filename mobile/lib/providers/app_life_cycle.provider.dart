@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -47,7 +48,11 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     // Needs to be logged in
     if (isAuthenticated) {
       // switch endpoint if needed
-      await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
+      final endpoint =
+          await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
+      if (kDebugMode) {
+        debugPrint("Using server URL: $endpoint");
+      }
 
       final permission = _ref.watch(galleryPermissionNotifier);
       if (permission.isGranted || permission.isLimited) {
@@ -62,12 +67,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           await _ref.read(assetProvider.notifier).getAllAsset();
           break;
         case TabEnum.search:
-        // nothing to do
+          // nothing to do
+          break;
+
         case TabEnum.albums:
           await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
           break;
         case TabEnum.library:
-        // nothing to do
+          // nothing to do
+          break;
       }
     }
 

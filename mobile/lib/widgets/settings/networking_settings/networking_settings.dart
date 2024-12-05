@@ -236,19 +236,29 @@ class NetworkStatusIcon extends StatelessWidget {
           ),
         );
       case AuxCheckStatus.valid:
-        return Icon(
-          Icons.check_circle_rounded,
-          color: enabled
-              ? Colors.green
-              : context.colorScheme.onSurface.withAlpha(100),
-          key: const ValueKey('success'),
-        );
+        return enabled
+            ? const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.green,
+                key: ValueKey('success'),
+              )
+            : Icon(
+                Icons.check_circle_rounded,
+                color: context.colorScheme.onSurface.withAlpha(100),
+                key: const ValueKey('success'),
+              );
       case AuxCheckStatus.error:
-        return Icon(
-          Icons.error_rounded,
-          color: enabled ? Colors.red : Colors.grey,
-          key: const ValueKey('error'),
-        );
+        return enabled
+            ? const Icon(
+                Icons.error_rounded,
+                color: Colors.red,
+                key: ValueKey('error'),
+              )
+            : const Icon(
+                Icons.error_rounded,
+                color: Colors.grey,
+                key: ValueKey('error'),
+              );
       default:
         return const Icon(Icons.circle_outlined, key: ValueKey('unknown'));
     }

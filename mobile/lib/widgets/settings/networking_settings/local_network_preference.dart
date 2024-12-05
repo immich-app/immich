@@ -155,6 +155,15 @@ class LocalNetworkPreference extends HookConsumerWidget {
             ),
             child: Stack(
               children: [
+                Positioned(
+                  bottom: -36,
+                  right: -36,
+                  child: Icon(
+                    Icons.home_outlined,
+                    size: 120,
+                    color: context.primaryColor.withOpacity(0.05),
+                  ),
+                ),
                 ListView(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   physics: const ClampingScrollPhysics(),
@@ -236,15 +245,6 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       ),
                     ),
                   ],
-                ),
-                Positioned(
-                  bottom: -36,
-                  right: -36,
-                  child: Icon(
-                    Icons.home_outlined,
-                    size: 120,
-                    color: context.primaryColor.withOpacity(0.05),
-                  ),
                 ),
               ],
             ),
