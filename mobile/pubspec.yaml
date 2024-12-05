@@ -61,6 +61,7 @@ dependencies:
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
   background_downloader: ^8.5.5
+  network_info_plus: ^6.1.1
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
