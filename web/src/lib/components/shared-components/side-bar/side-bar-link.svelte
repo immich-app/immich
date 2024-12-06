@@ -36,7 +36,7 @@
   });
 </script>
 
-<span class="relative">
+<div class="relative">
   {#if hasDropdown}
     <span class="hidden md:block absolute left-1 z-50 h-full">
       <button
@@ -73,7 +73,8 @@
     </div>
     <div></div>
   </a>
-</span>
+</div>
+
 {#if hasDropdown && dropdownOpen}
   {@render hasDropdown?.()}
 {/if}
