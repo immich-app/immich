@@ -32,6 +32,10 @@ DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport
 # DB_URL='postgresql://immichdbusername:immichdbpassword@postgreshost:postgresport/immichdatabasename?sslmode=require&sslmode=no-verify'
 ```
 
+If Postgres is running on the same host as [docker/podman compose](/install/docker-compose/), `DB_URL` in `.env` might use the hostname  [`host.containers.internal`](https://docs.docker.com/desktop/features/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host).
+```
+DB_URL='postgresql://postgres:P4SSW0RD@host.containers.internal/immich'
+```
 ## With superuser permission
 
 Typically Immich expects superuser permission in the database, which you can grant by running `ALTER USER <immichdbusername> WITH SUPERUSER;` at the `psql` console. If you prefer not to grant superuser permissions, follow the instructions in the next section.
