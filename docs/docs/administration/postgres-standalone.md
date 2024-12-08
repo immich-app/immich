@@ -67,3 +67,14 @@ When installing a new version of pgvecto.rs, you will need to manually update th
 If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat TO <immichdbusername>;`.
 
 [vectors-install]: https://docs.pgvecto.rs/getting-started/installation.html
+
+#### no `pg_hba.conf` entry
+
+Postgres' `pg_hba.conf` (e.g. `/var/lib/postgres/data/pg_hba.conf`) must allow connections from immich server. Otherwise, Immich will forward the psql client error:
+
+> ERROR [ExceptionHandler] no pg_hba.conf entry for host "172.29.79.169", user "...", database "...", no encryption
+
+For example, to (insecurely) allow any IP in the `172.29.79.*` range, add a line to `pg_hba.conf` like
+```
+host    all             all             172.29.79.0/24           trust
+```
