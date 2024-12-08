@@ -2,12 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
+import 'package:immich_mobile/theme/color_scheme.dart';
+import 'package:immich_mobile/theme/dynamic_theme.dart';
 
 class PrimaryColorSetting extends HookConsumerWidget {
   const PrimaryColorSetting({
@@ -124,7 +126,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
               style: context.textTheme.titleLarge,
             ),
           ),
-          if (isDynamicThemeAvailable)
+          if (DynamicTheme.isAvailable)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               margin: const EdgeInsets.only(top: 10),
@@ -153,16 +155,16 @@ class PrimaryColorSetting extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
-              children: ImmichColorPreset.values.map((themePreset) {
-                var theme = themePreset.getTheme();
+              children: ImmichColorPreset.values.map((preset) {
+                final theme = preset.themeOfPreset;
 
                 return GestureDetector(
-                  onTap: () => onPrimaryColorChange(themePreset),
+                  onTap: () => onPrimaryColorChange(preset),
                   child: buildPrimaryColorTile(
                     topColor: theme.light.primary,
                     bottomColor: theme.dark.primary,
                     tileSize: tileSize,
-                    showSelector: currentPreset.value == themePreset &&
+                    showSelector: currentPreset.value == preset &&
                         !systemPrimaryColorSetting.value,
                   ),
                 );
