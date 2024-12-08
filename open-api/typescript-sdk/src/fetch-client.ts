@@ -3460,6 +3460,7 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum AssetMediaSize {
+    Original = "original",
     Preview = "preview",
     Thumbnail = "thumbnail"
 }
@@ -3510,6 +3511,7 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
+    Converted = "converted",
     Preview = "preview",
     Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",

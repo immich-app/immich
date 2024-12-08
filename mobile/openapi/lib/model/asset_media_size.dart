@@ -23,11 +23,13 @@ class AssetMediaSize {
 
   String toJson() => value;
 
+  static const original = AssetMediaSize._(r'original');
   static const preview = AssetMediaSize._(r'preview');
   static const thumbnail = AssetMediaSize._(r'thumbnail');
 
   /// List of all possible values in this [enum][AssetMediaSize].
   static const values = <AssetMediaSize>[
+    original,
     preview,
     thumbnail,
   ];
@@ -68,6 +70,7 @@ class AssetMediaSizeTypeTransformer {
   AssetMediaSize? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
+        case r'original': return AssetMediaSize.original;
         case r'preview': return AssetMediaSize.preview;
         case r'thumbnail': return AssetMediaSize.thumbnail;
         default:
