@@ -18,6 +18,7 @@
       usage: 0,
       usagePhotos: 0,
       usageVideos: 0,
+      usageTranscode: 0,
       usageByUser: [],
     },
   }: Props = $props();
@@ -93,10 +94,11 @@
         class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
       >
         <tr class="flex w-full place-items-center">
-          <th class="w-1/4 text-center text-sm font-medium">{$t('user')}</th>
-          <th class="w-1/4 text-center text-sm font-medium">{$t('photos')}</th>
-          <th class="w-1/4 text-center text-sm font-medium">{$t('videos')}</th>
-          <th class="w-1/4 text-center text-sm font-medium">{$t('usage')}</th>
+          <th class="w-1/5 text-center text-sm font-medium">{$t('user')}</th>
+          <th class="w-1/5 text-center text-sm font-medium">{$t('photos')}</th>
+          <th class="w-1/5 text-center text-sm font-medium">{$t('videos')}</th>
+          <th class="w-1/5 text-center text-sm font-medium">{$t('usage')}</th>
+          <th class="w-1/5 text-center text-sm font-medium">{$t('transcoding')}</th>
         </tr>
       </thead>
       <tbody
@@ -106,14 +108,14 @@
           <tr
             class="flex h-[50px] w-full place-items-center text-center odd:bg-immich-gray even:bg-immich-bg odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50"
           >
-            <td class="w-1/4 text-ellipsis px-2 text-sm">{user.userName}</td>
-            <td class="w-1/4 text-ellipsis px-2 text-sm"
+            <td class="w-1/5 text-ellipsis px-2 text-sm">{user.userName}</td>
+            <td class="w-1/5 text-ellipsis px-2 text-sm"
               >{user.photos.toLocaleString($locale)} ({getByteUnitString(user.usagePhotos, $locale, 0)})</td
             >
-            <td class="w-1/4 text-ellipsis px-2 text-sm"
+            <td class="w-1/5 text-ellipsis px-2 text-sm"
               >{user.videos.toLocaleString($locale)} ({getByteUnitString(user.usageVideos, $locale, 0)})</td
             >
-            <td class="w-1/4 text-ellipsis px-2 text-sm">
+            <td class="w-1/5 text-ellipsis px-2 text-sm">
               {getByteUnitString(user.usage, $locale, 0)}
               {#if user.quotaSizeInBytes}
                 / {getByteUnitString(user.quotaSizeInBytes, $locale, 0)}
@@ -129,6 +131,7 @@
                 {/if}
               </span>
             </td>
+            <td class="w-1/5 text-ellipsis px-2 text-sm">{getByteUnitString(user.usageTranscode, $locale, 0)}</td>
           </tr>
         {/each}
       </tbody>
