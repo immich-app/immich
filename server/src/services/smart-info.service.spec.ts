@@ -289,7 +289,7 @@ describe(SmartInfoService.name, () => {
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
 
       expect(machineLearningMock.encodeImage).toHaveBeenCalledWith(
-        'http://immich-machine-learning:3003',
+        ['http://immich-machine-learning:3003'],
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
@@ -322,7 +322,7 @@ describe(SmartInfoService.name, () => {
 
       expect(databaseMock.wait).toHaveBeenCalledWith(512);
       expect(machineLearningMock.encodeImage).toHaveBeenCalledWith(
-        'http://immich-machine-learning:3003',
+        ['http://immich-machine-learning:3003'],
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );

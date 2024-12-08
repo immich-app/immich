@@ -39,6 +39,7 @@ export enum EmailTemplate {
 
 interface BaseEmailProps {
   baseUrl: string;
+  customTemplate?: string;
 }
 
 export interface TestEmailProps extends BaseEmailProps {
@@ -70,18 +71,22 @@ export type EmailRenderRequest =
   | {
       template: EmailTemplate.TEST_EMAIL;
       data: TestEmailProps;
+      customTemplate: string;
     }
   | {
       template: EmailTemplate.WELCOME;
       data: WelcomeEmailProps;
+      customTemplate: string;
     }
   | {
       template: EmailTemplate.ALBUM_INVITE;
       data: AlbumInviteEmailProps;
+      customTemplate: string;
     }
   | {
       template: EmailTemplate.ALBUM_UPDATE;
       data: AlbumUpdateEmailProps;
+      customTemplate: string;
     };
 
 export type SendEmailResponse = {

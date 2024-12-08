@@ -45,6 +45,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return _authService.validateServerUrl(url);
   }
 
+  /// Validating the url is the alternative connecting server url without
+  /// saving the infomation to the local database
+  Future<bool> validateAuxilaryServerUrl(String url) async {
+    try {
+      final validEndpoint = await _apiService.resolveEndpoint(url);
+      return await _authService.validateAuxilaryServerUrl(validEndpoint);
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<LoginResponse> login(String email, String password) async {
     final response = await _authService.login(email, password);
     await saveAuthInfo(accessToken: response.accessToken);
@@ -160,5 +171,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     return true;
+  }
+
+  Future<void> saveWifiName(String wifiName) {
+    return Store.put(StoreKey.preferredWifiName, wifiName);
+  }
+
+  Future<void> saveLocalEndpoint(String url) {
+    return Store.put(StoreKey.localEndpoint, url);
+  }
+
+  String? getSavedWifiName() {
+    return Store.tryGet(StoreKey.preferredWifiName);
+  }
+
+  String? getSavedLocalEndpoint() {
+    return Store.tryGet(StoreKey.localEndpoint);
+  }
+
+  /// Returns the current server endpoint (with /api) URL from the store
+  String? getServerEndpoint() {
+    return Store.tryGet(StoreKey.serverEndpoint);
+  }
+
+  /// Returns the current server URL (input by the user) from the store
+  String? getServerUrl() {
+    return Store.tryGet(StoreKey.serverUrl);
+  }
+
+  Future<String?> setOpenApiServiceEndpoint() {
+    return _authService.setOpenApiServiceEndpoint();
   }
 }

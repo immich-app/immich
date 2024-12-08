@@ -58,7 +58,7 @@ export const sendFile = async (
 
     res.header('Content-Type', file.contentType);
     if (file.fileName) {
-      res.header('Content-Disposition', `inline; filename="${file.fileName}"`);
+      res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
     const options: SendFileOptions = { dotfiles: 'allow' };

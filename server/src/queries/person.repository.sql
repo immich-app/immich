@@ -20,13 +20,12 @@ SELECT
   "person"."isHidden" AS "person_isHidden"
 FROM
   "person" "person"
-  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
+  INNER JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
   INNER JOIN "assets" "asset" ON "asset"."id" = "face"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "person"."ownerId" = $1
   AND "asset"."isArchived" = false
-  AND "person"."thumbnailPath" != ''
   AND "person"."isHidden" = false
 GROUP BY
   "person"."id"
@@ -257,15 +256,12 @@ SELECT
   ) AS "hidden"
 FROM
   "person" "person"
-  LEFT JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
+  INNER JOIN "asset_faces" "face" ON "face"."personId" = "person"."id"
   INNER JOIN "assets" "asset" ON "asset"."id" = "face"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "person"."ownerId" = $1
   AND "asset"."isArchived" = false
-  AND "person"."thumbnailPath" != ''
-HAVING
-  COUNT("face"."assetId") != 0
 
 -- PersonRepository.getFacesByIds
 SELECT

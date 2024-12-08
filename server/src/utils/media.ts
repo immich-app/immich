@@ -322,14 +322,14 @@ export class BaseConfig implements VideoCodecSWConfig {
 }
 
 export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
-  protected devices: string[];
+  protected device: string;
 
   constructor(
     protected config: SystemConfigFFmpegDto,
     devices: string[] = [],
   ) {
     super(config);
-    this.devices = this.validateDevices(devices);
+    this.device = this.getDevice(devices);
   }
 
   getSupportedCodecs() {
@@ -337,18 +337,29 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   validateDevices(devices: string[]) {
-    return devices
-      .filter((device) => device.startsWith('renderD') || device.startsWith('card'))
-      .sort((a, b) => {
-        // order GPU devices first
-        if (a.startsWith('card') && b.startsWith('renderD')) {
-          return -1;
-        }
-        if (a.startsWith('renderD') && b.startsWith('card')) {
-          return 1;
-        }
-        return -a.localeCompare(b);
-      });
+    if (devices.length === 0) {
+      throw new Error('No /dev/dri devices found. If using Docker, make sure at least one /dev/dri device is mounted');
+    }
+
+    return devices.filter(function (device) {
+      return device.startsWith('renderD') || device.startsWith('card');
+    });
+  }
+
+  getDevice(devices: string[]) {
+    if (this.config.preferredHwDevice === 'auto') {
+      // eslint-disable-next-line unicorn/no-array-reduce
+      return `/dev/dri/${this.validateDevices(devices).reduce(function (a, b) {
+        return a.localeCompare(b) < 0 ? b : a;
+      })}`;
+    }
+
+    const deviceName = this.config.preferredHwDevice.replace('/dev/dri/', '');
+    if (!devices.includes(deviceName)) {
+      throw new Error(`Device '${deviceName}' does not exist. If using Docker, make sure this device is mounted`);
+    }
+
+    return `/dev/dri/${deviceName}`;
   }
 
   getVideoCodec(): string {
@@ -360,20 +371,6 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
       return 256;
     }
     return this.config.gopSize;
-  }
-
-  getPreferredHardwareDevice(): string | undefined {
-    const device = this.config.preferredHwDevice;
-    if (device === 'auto') {
-      return;
-    }
-
-    const deviceName = device.replace('/dev/dri/', '');
-    if (!this.devices.includes(deviceName)) {
-      throw new Error(`Device '${device}' does not exist`);
-    }
-
-    return `/dev/dri/${deviceName}`;
   }
 }
 
@@ -513,12 +510,16 @@ export class AV1Config extends BaseConfig {
 }
 
 export class NvencSwDecodeConfig extends BaseHWConfig {
+  getDevice() {
+    return '0';
+  }
+
   getSupportedCodecs() {
     return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
 
   getBaseInputOptions() {
-    return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
+    return [`-init_hw_device cuda=cuda:${this.device}`, '-filter_hw_device cuda'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -641,17 +642,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
 
 export class QsvSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No QSV device found');
-    }
-
-    let qsvString = '';
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice) {
-      qsvString = `,child_device=${hwDevice}`;
-    }
-
-    return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
+    return [`-init_hw_device qsv=hw,child_device=${this.device}`, '-filter_hw_device hw'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -721,23 +712,14 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
 export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No QSV device found');
-    }
-
-    const options = [
+    return [
       '-hwaccel qsv',
       '-hwaccel_output_format qsv',
       '-async_depth 4',
       '-noautorotate',
+      `-qsv_device ${this.device}`,
       ...this.getInputThreadOptions(),
     ];
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice) {
-      options.push(`-qsv_device ${hwDevice}`);
-    }
-
-    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -789,16 +771,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
 
 export class VaapiSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No VAAPI device found');
-    }
-
-    let hwDevice = this.getPreferredHardwareDevice();
-    if (!hwDevice) {
-      hwDevice = `/dev/dri/${this.devices[0]}`;
-    }
-
-    return [`-init_hw_device vaapi=accel:${hwDevice}`, '-filter_hw_device accel'];
+    return [`-init_hw_device vaapi=accel:${this.device}`, '-filter_hw_device accel'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -856,22 +829,13 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
 
 export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No VAAPI device found');
-    }
-
-    const options = [
+    return [
       '-hwaccel vaapi',
       '-hwaccel_output_format vaapi',
       '-noautorotate',
+      `-hwaccel_device ${this.device}`,
       ...this.getInputThreadOptions(),
     ];
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice) {
-      options.push(`-hwaccel_device ${hwDevice}`);
-    }
-
-    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -934,9 +898,6 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
   }
 
   getBaseInputOptions(): string[] {
-    if (this.devices.length === 0) {
-      throw new Error('No RKMPP device found');
-    }
     return [];
   }
 
@@ -987,10 +948,6 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
   }
 
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No RKMPP device found');
-    }
-
     return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
   }
 

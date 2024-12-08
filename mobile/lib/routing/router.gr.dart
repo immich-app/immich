@@ -1080,6 +1080,64 @@ class MemoryRouteArgs {
 }
 
 /// generated route for
+/// [NativeVideoViewerPage]
+class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
+  NativeVideoViewerRoute({
+    Key? key,
+    required Asset asset,
+    required Widget image,
+    bool showControls = true,
+    List<PageRouteInfo>? children,
+  }) : super(
+          NativeVideoViewerRoute.name,
+          args: NativeVideoViewerRouteArgs(
+            key: key,
+            asset: asset,
+            image: image,
+            showControls: showControls,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'NativeVideoViewerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<NativeVideoViewerRouteArgs>();
+      return NativeVideoViewerPage(
+        key: args.key,
+        asset: args.asset,
+        image: args.image,
+        showControls: args.showControls,
+      );
+    },
+  );
+}
+
+class NativeVideoViewerRouteArgs {
+  const NativeVideoViewerRouteArgs({
+    this.key,
+    required this.asset,
+    required this.image,
+    this.showControls = true,
+  });
+
+  final Key? key;
+
+  final Asset asset;
+
+  final Widget image;
+
+  final bool showControls;
+
+  @override
+  String toString() {
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls}';
+  }
+}
+
+/// generated route for
 /// [PartnerDetailPage]
 class PartnerDetailRoute extends PageRouteInfo<PartnerDetailRouteArgs> {
   PartnerDetailRoute({

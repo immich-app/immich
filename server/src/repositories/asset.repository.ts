@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import picomatch from 'picomatch';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, PaginationMode } from 'src/enum';
 import {
   AssetBuilderOptions,
@@ -708,5 +710,46 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFiles(files: { assetId: string; type: AssetFileType; path: string }[]): Promise<void> {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
+  }
+
+  async updateOffline(
+    pagination: PaginationOptions,
+    importPaths: string[],
+    exclusions: string[],
+  ): Paginated<AssetEntity> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ isOffline: true, deletedAt: new Date() })
+      .where(
+        new Brackets((qb) => {
+          qb.where('originalPath NOT LIKE ANY(:paths)', {
+            paths: importPaths.map((p) => `${p}%`),
+          });
+        }),
+      )
+      .orWhere(
+        new Brackets((qb) => {
+          const exclusionConditions = exclusions.map((_, i) => `originalPath LIKE :exclusionPattern${i}`).join(' OR ');
+          const exclusionParams = exclusions.reduce(
+            (params, pattern, i) => ({
+              ...params,
+              [`exclusionPattern${i}`]: `%${pattern}%`,
+            }),
+            {},
+          );
+
+          qb.where(exclusionConditions, exclusionParams);
+        }),
+      )
+      .andWhere('isOffline = false')
+      .execute();
+
+    return paginate(this.repository, pagination, {
+      where: {
+        originalPath: In(importPaths),
+        isOffline: false,
+      },
+    });
   }
 }

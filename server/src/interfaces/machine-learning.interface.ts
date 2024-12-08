@@ -51,7 +51,7 @@ export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
 
 export interface IMachineLearningRepository {
-  encodeImage(url: string, imagePath: string, config: ModelOptions): Promise<number[]>;
-  encodeText(url: string, text: string, config: ModelOptions): Promise<number[]>;
-  detectFaces(url: string, imagePath: string, config: FaceDetectionOptions): Promise<DetectedFaces>;
+  encodeImage(urls: string[], imagePath: string, config: ModelOptions): Promise<number[]>;
+  encodeText(urls: string[], text: string, config: ModelOptions): Promise<number[]>;
+  detectFaces(urls: string[], imagePath: string, config: FaceDetectionOptions): Promise<DetectedFaces>;
 }

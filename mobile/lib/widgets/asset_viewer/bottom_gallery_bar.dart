@@ -5,11 +5,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/services/stack.service.dart';
@@ -26,12 +26,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/pages/editing/edit.page.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
-  final Asset asset;
   final ValueNotifier<int> assetIndex;
   final bool showStack;
-  final int stackIndex;
+  final ValueNotifier<int> stackIndex;
   final ValueNotifier<int> totalAssets;
-  final bool showVideoPlayerControls;
   final PageController controller;
   final RenderList renderList;
 
@@ -39,20 +37,24 @@ class BottomGalleryBar extends ConsumerWidget {
     super.key,
     required this.showStack,
     required this.stackIndex,
-    required this.asset,
     required this.assetIndex,
     required this.controller,
     required this.totalAssets,
-    required this.showVideoPlayerControls,
     required this.renderList,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final asset = ref.watch(currentAssetProvider);
+    if (asset == null) {
+      return const SizedBox();
+    }
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
+    final showControls = ref.watch(showControlsProvider);
+    final stackId = asset.stackId;
 
-    final stackItems = showStack && asset.stackCount > 0
-        ? ref.watch(assetStackStateProvider(asset))
+    final stackItems = showStack && stackId != null
+        ? ref.watch(assetStackStateProvider(stackId))
         : <Asset>[];
     bool isStackPrimaryAsset = asset.stackPrimaryAssetId == null;
     final navStack = AutoRouter.of(context).stackData;
@@ -64,10 +66,10 @@ class BottomGalleryBar extends ConsumerWidget {
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
 
     void removeAssetFromStack() {
-      if (stackIndex > 0 && showStack) {
+      if (stackIndex.value > 0 && showStack && stackId != null) {
         ref
-            .read(assetStackStateProvider(asset).notifier)
-            .removeChild(stackIndex - 1);
+            .read(assetStackStateProvider(stackId).notifier)
+            .removeChild(stackIndex.value - 1);
       }
     }
 
@@ -135,7 +137,7 @@ class BottomGalleryBar extends ConsumerWidget {
 
       await ref
           .read(stackServiceProvider)
-          .deleteStack(asset.stackId!, [asset, ...stackItems]);
+          .deleteStack(asset.stackId!, stackItems);
     }
 
     void showStackActionItems() {
@@ -324,16 +326,16 @@ class BottomGalleryBar extends ConsumerWidget {
         },
     ];
     return IgnorePointer(
-      ignoring: !ref.watch(showControlsProvider),
+      ignoring: !showControls,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
-        opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
+        opacity: showControls ? 1.0 : 0.0,
         child: DecoratedBox(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
-              colors: [blackOpacity90, Colors.transparent],
+              colors: [Colors.black, Colors.transparent],
             ),
           ),
           position: DecorationPosition.background,
@@ -341,7 +343,7 @@ class BottomGalleryBar extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 40.0),
             child: Column(
               children: [
-                if (showVideoPlayerControls) const VideoControls(),
+                if (asset.isVideo) const VideoControls(),
                 BottomNavigationBar(
                   elevation: 0.0,
                   backgroundColor: Colors.transparent,

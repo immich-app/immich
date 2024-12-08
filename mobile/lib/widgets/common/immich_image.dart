@@ -28,12 +28,11 @@ class ImmichImage extends StatelessWidget {
   // either by using the asset ID or the asset itself
   /// [asset] is the Asset to request, or else use [assetId] to get a remote
   /// image provider
-  /// Use [isThumbnail] and [thumbnailSize] if you'd like to request a thumbnail
-  /// The size of the square thumbnail to request. Ignored if isThumbnail
-  /// is not true
   static ImageProvider imageProvider({
     Asset? asset,
     String? assetId,
+    double width = 1080,
+    double height = 1920,
   }) {
     if (asset == null && assetId == null) {
       throw Exception('Must supply either asset or assetId');
@@ -48,6 +47,8 @@ class ImmichImage extends StatelessWidget {
     if (useLocal(asset)) {
       return ImmichLocalImageProvider(
         asset: asset,
+        width: width,
+        height: height,
       );
     } else {
       return ImmichRemoteImageProvider(
@@ -87,6 +88,8 @@ class ImmichImage extends StatelessWidget {
       },
       image: ImmichImage.imageProvider(
         asset: asset,
+        width: context.width,
+        height: context.height,
       ),
       width: width,
       height: height,

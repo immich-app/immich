@@ -554,8 +554,12 @@ class ApiClient {
           return SystemConfigSmtpTransportDto.fromJson(value);
         case 'SystemConfigStorageTemplateDto':
           return SystemConfigStorageTemplateDto.fromJson(value);
+        case 'SystemConfigTemplateEmailsDto':
+          return SystemConfigTemplateEmailsDto.fromJson(value);
         case 'SystemConfigTemplateStorageOptionDto':
           return SystemConfigTemplateStorageOptionDto.fromJson(value);
+        case 'SystemConfigTemplatesDto':
+          return SystemConfigTemplatesDto.fromJson(value);
         case 'SystemConfigThemeDto':
           return SystemConfigThemeDto.fromJson(value);
         case 'SystemConfigTrashDto':
@@ -578,6 +582,10 @@ class ApiClient {
           return TagsResponse.fromJson(value);
         case 'TagsUpdate':
           return TagsUpdate.fromJson(value);
+        case 'TemplateDto':
+          return TemplateDto.fromJson(value);
+        case 'TemplateResponseDto':
+          return TemplateResponseDto.fromJson(value);
         case 'TestEmailResponseDto':
           return TestEmailResponseDto.fromJson(value);
         case 'TimeBucketResponseDto':

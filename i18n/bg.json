@@ -1,5 +1,5 @@
 {
-  "about": "За Immich",
+  "about": "Обновяване",
   "account": "Акаунт",
   "account_settings": "Настройки на профила",
   "acknowledge": "Потвърждавам",
@@ -1059,6 +1059,8 @@
   "user_purchase_settings_description": "Управлявай покупката си",
   "user_role_set": "Задай {user} като {role}",
   "user_usage_detail": "Подробности за използването на потребителя",
+  "user_usage_stats": "Статистика за използването на акаунта",
+  "user_usage_stats_description": "Преглед на статистиката за използването на акаунта",
   "username": "Потребителско име",
   "users": "Потребители",
   "utilities": "Инструменти",

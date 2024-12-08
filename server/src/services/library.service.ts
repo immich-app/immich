@@ -112,7 +112,14 @@ export class LibraryService extends BaseService {
             if (matcher(path)) {
               const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
               if (asset) {
-                await this.syncAssets(library, [asset.id]);
+                await this.jobRepository.queue({
+                  name: JobName.LIBRARY_SYNC_ASSETS,
+                  data: {
+                    ids: [asset.id],
+                    importPaths: library.importPaths,
+                    exclusionPatterns: library.exclusionPatterns,
+                  },
+                });
               }
               if (matcher(path)) {
                 await this.syncFiles(library, [path]);
@@ -126,7 +133,14 @@ export class LibraryService extends BaseService {
             this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
             const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
             if (asset) {
-              await this.syncAssets(library, [asset.id]);
+              await this.jobRepository.queue({
+                name: JobName.LIBRARY_SYNC_ASSETS,
+                data: {
+                  ids: [asset.id],
+                  importPaths: library.importPaths,
+                  exclusionPatterns: library.exclusionPatterns,
+                },
+              });
             }
             if (matcher(path)) {
               // Note: if the changed file was not previously imported, it will be imported now.
@@ -140,7 +154,14 @@ export class LibraryService extends BaseService {
             this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
             const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
             if (asset) {
-              await this.syncAssets(library, [asset.id]);
+              await this.jobRepository.queue({
+                name: JobName.LIBRARY_SYNC_ASSETS,
+                data: {
+                  ids: [asset.id],
+                  importPaths: library.importPaths,
+                  exclusionPatterns: library.exclusionPatterns,
+                },
+              });
             }
           };
           return handlePromiseError(handler(), this.logger);
@@ -239,13 +260,6 @@ export class LibraryService extends BaseService {
         },
       })),
     );
-  }
-
-  private async syncAssets({ importPaths, exclusionPatterns }: LibraryEntity, assetIds: string[]) {
-    await this.jobRepository.queue({
-      name: JobName.LIBRARY_SYNC_ASSETS,
-      data: { ids: assetIds, importPaths, exclusionPatterns },
-    });
   }
 
   private async validateImportPath(importPath: string): Promise<ValidateLibraryImportPathResponseDto> {
@@ -485,14 +499,7 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const markOffline = async (explanation: string) => {
-      if (!asset.isOffline) {
-        this.logger.debug(`${explanation}, moving to trash: ${asset.originalPath}`);
-        await this.assetRepository.updateAll([asset.id], { isOffline: true, deletedAt: new Date() });
-      }
-    };
-
-    const isInPath = importPaths.find((path) => asset.originalPath.startsWith(path));
+    /* const isInPath = importPaths.find((path) => asset.originalPath.startsWith(path));
     if (!isInPath) {
       await markOffline('Asset is no longer in an import path');
       return JobStatus.SUCCESS;
@@ -502,13 +509,18 @@ export class LibraryService extends BaseService {
     if (isExcluded) {
       await markOffline('Asset is covered by an exclusion pattern');
       return JobStatus.SUCCESS;
-    }
+    } */
 
     let stat;
     try {
       stat = await this.storageRepository.stat(asset.originalPath);
     } catch {
-      await markOffline('Asset is no longer on disk or is inaccessible because of permissions');
+      await (async (explanation: string) => {
+        if (!asset.isOffline) {
+          this.logger.debug(`${explanation}, moving to trash: ${asset.originalPath}`);
+          await this.assetRepository.updateAll([asset.id], { isOffline: true, deletedAt: new Date() });
+        }
+      })('Asset is no longer on disk or is inaccessible because of permissions');
       return JobStatus.SUCCESS;
     }
 
@@ -593,11 +605,17 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    this.logger.log(`Scanning library ${library.id} for removed assets`);
+    this.logger.log(`Checking assets in library ${library.id} against import path and exclusion patterns`);
 
+    // Convert the glob pattern to a regex pattern compatible with postgresql
+    const exclusionRegex = library.exclusionPatterns.map((pattern) => picomatch.parse(pattern).output);
+
+    // Mark assets not in any import path or matching an exclusion pattern as offline, then return the rest of the assets
     const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
+      this.assetRepository.updateOffline(pagination, library.importPaths, exclusionRegex),
     );
+
+    this.logger.log(`Scanning library ${library.id} for removed assets`);
 
     let assetCount = 0;
     for await (const assets of onlineAssets) {

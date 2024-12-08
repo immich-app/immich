@@ -23,6 +23,7 @@
   "add_to": "Мӗн те пулин хуш...",
   "add_to_album": "Альбома хуш",
   "add_to_shared_album": "Пӗрлехи альбома хуш",
+  "add_url": "URL хушӑр",
   "added_to_archive": "Архива хушнӑ",
   "added_to_favorites": "Суйласа илнине хушнӑ",
   "added_to_favorites_count": "Суйласа илнине {count, number} хушнӑ",
@@ -45,5 +46,7 @@
     "image_preview_title": "Малтанлӑха пӑхмалли ӗнерлевсем",
     "image_quality": "Пахалӑх",
     "image_resolution": "Виҫе"
-  }
+  },
+  "user_usage_stats": "Шута ҫырни усӑ курмалли статистика",
+  "user_usage_stats_description": "Шута ҫырни усӑ курмалли статистикӑна пӑхасси"
 }

@@ -59,7 +59,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     await getServerConfig();
   }
 
-  getServerVersion() async {
+  Future<void> getServerVersion() async {
     try {
       final serverVersion = await _serverInfoService.getServerVersion();
 

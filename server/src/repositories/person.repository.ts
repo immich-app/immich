@@ -86,7 +86,7 @@ export class PersonRepository implements IPersonRepository {
   getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions): Paginated<PersonEntity> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
+      .innerJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
@@ -95,7 +95,6 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
       .addOrderBy('person.createdAt')
-      .andWhere("person.thumbnailPath != ''")
       .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id');
     if (!options?.withHidden) {
@@ -232,14 +231,12 @@ export class PersonRepository implements IPersonRepository {
   async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
     const items = await this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
+      .innerJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
-      .andWhere("person.thumbnailPath != ''")
       .select('COUNT(DISTINCT(person.id))', 'total')
       .addSelect('COUNT(DISTINCT(person.id)) FILTER (WHERE person.isHidden = true)', 'hidden')
-      .having('COUNT(face.assetId) != 0')
       .getRawOne();
 
     if (items == undefined) {

@@ -12,6 +12,9 @@
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { SettingInputFieldType } from '$lib/constants';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { mdiMinusCircle } from '@mdi/js';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -42,15 +45,42 @@
 
         <hr />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('url')}
-          description={$t('admin.machine_learning_url_description')}
-          bind:value={config.machineLearning.url}
-          required={true}
-          disabled={disabled || !config.machineLearning.enabled}
-          isEdited={config.machineLearning.url !== savedConfig.machineLearning.url}
-        />
+        <div>
+          {#each config.machineLearning.urls as _, i}
+            {#snippet removeButton()}
+              {#if config.machineLearning.urls.length > 1}
+                <CircleIconButton
+                  size="24"
+                  class="ml-2"
+                  padding="2"
+                  color="red"
+                  title=""
+                  onclick={() => config.machineLearning.urls.splice(i, 1)}
+                  icon={mdiMinusCircle}
+                />
+              {/if}
+            {/snippet}
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={i === 0 ? $t('url') : undefined}
+              description={i === 0 ? $t('admin.machine_learning_url_description') : undefined}
+              bind:value={config.machineLearning.urls[i]}
+              required={i === 0}
+              disabled={disabled || !config.machineLearning.enabled}
+              isEdited={i === 0 && !isEqual(config.machineLearning.urls, savedConfig.machineLearning.urls)}
+              trailingSnippet={removeButton}
+            />
+          {/each}
+        </div>
+
+        <Button
+          class="mb-2"
+          type="button"
+          size="sm"
+          onclick={() => config.machineLearning.urls.splice(0, 0, '')}
+          disabled={disabled || !config.machineLearning.enabled}>{$t('add_url')}</Button
+        >
       </div>
 
       <SettingAccordion
