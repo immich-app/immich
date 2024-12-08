@@ -499,7 +499,7 @@ describe('/libraries', () => {
       expect(newAssets.items).toEqual([]);
     });
 
-    it('should set an asset offline its file is not in any import path', async () => {
+    it('should set an asset offline if its file is not in any import path', async () => {
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       const library = await utils.createLibrary(admin.accessToken, {

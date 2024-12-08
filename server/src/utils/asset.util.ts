@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';

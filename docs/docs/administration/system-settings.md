@@ -157,6 +157,10 @@ Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data
 
 SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/docs/administration/email-notification)
 
+## Notification Templates
+
+Override the default notifications text with notification templates. More information can be found [here](/docs/administration/email-notification)
+
 ## Server Settings
 
 ### External Domain

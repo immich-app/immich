@@ -17,6 +17,7 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { SettingInputFieldType } from '$lib/constants';
+  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -162,13 +163,14 @@
           </div>
         </SettingAccordion>
       </div>
-
-      <SettingButtonsRow
-        onReset={(options) => onReset({ ...options, configKeys: ['notifications'] })}
-        onSave={() => onSave({ notifications: config.notifications })}
-        showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-        {disabled}
-      />
     </form>
   </div>
+  <TemplateSettings {defaultConfig} {config} {savedConfig} {onReset} {onSave} />
+
+  <SettingButtonsRow
+    onReset={(options) => onReset({ ...options, configKeys: ['notifications', 'templates'] })}
+    onSave={() => onSave({ notifications: config.notifications, templates: config.templates })}
+    showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+    {disabled}
+  />
 </div>
