@@ -104,6 +104,10 @@ export interface SearchExifOptions {
   state?: string | null;
 }
 
+export interface SearchTextOptions {
+  query?: string;
+}
+
 export interface SearchEmbeddingOptions {
   embedding: number[];
   userIds: string[];
@@ -140,6 +144,7 @@ export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection
 export type SmartSearchOptions = SearchDateOptions &
   SearchEmbeddingOptions &
   SearchExifOptions &
+  SearchTextOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
