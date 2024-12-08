@@ -192,4 +192,5 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
+  updateOffline(pagination: PaginationOptions, importPaths: string[], exclusions: string[]): Paginated<AssetEntity>;
 }
