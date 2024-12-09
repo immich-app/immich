@@ -18,6 +18,9 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   final ShareService _shareService;
   final AlbumService _albumService;
 
+ 
+  final Set<String> _downloadingAssets = {};
+
   DownloadStateNotifier(
     this._downloadService,
     this._shareService,
@@ -141,7 +144,33 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   void downloadAsset(Asset asset, BuildContext context) async {
-    await _downloadService.download(asset);
+    
+    if (_downloadingAssets.contains(asset.remoteId)) {
+      ImmichToast.show(
+        context: context,
+        msg: 'Download in progress',
+        toastType: ToastType.info,
+        gravity: ToastGravity.BOTTOM,
+      );
+      return;
+    }
+
+    try {
+      
+      _downloadingAssets.add(asset.remoteId!);
+
+      await _downloadService.download(asset);
+    } catch (e) {
+      ImmichToast.show(
+        context: context,
+        msg: 'Download failed',
+        toastType: ToastType.error,
+        gravity: ToastGravity.BOTTOM,
+      );
+    } finally {
+      
+      _downloadingAssets.remove(asset.remoteId);
+    }
   }
 
   void cancelDownload(String id) async {
