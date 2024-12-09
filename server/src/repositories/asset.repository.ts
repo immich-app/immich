@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import picomatch from 'picomatch';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, PaginationMode } from 'src/enum';
 import {
   AssetBuilderOptions,
@@ -28,9 +30,11 @@ import {
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { searchAssetBuilder } from 'src/utils/database';
+import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
+  DataSource,
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsSelect,
@@ -40,6 +44,7 @@ import {
   MoreThan,
   Not,
   Repository,
+  UpdateResult,
 } from 'typeorm';
 
 const truncateMap: Record<TimeBucketSize, string> = {
@@ -59,6 +64,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
+    private dataSource: DataSource,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -708,5 +714,41 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFiles(files: { assetId: string; type: AssetFileType; path: string }[]): Promise<void> {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
+  }
+
+  updateOffline(pagination: PaginationOptions, library: LibraryEntity): Paginated<AssetEntity> {
+    return this.dataSource.manager.transaction(async (transactionalEntityManager) =>
+      transactionalEntityManager.query(
+        `
+        WITH updated_rows AS (
+            UPDATE assets
+            SET "isOffline" = $1, "deletedAt" = $2
+            WHERE "isOffline" = $3
+            AND (
+                "originalPath" NOT SIMILAR TO $4
+                OR "originalPath" SIMILAR TO $5
+            )
+            RETURNING id
+        )
+        SELECT * 
+        FROM assets
+        WHERE id NOT IN (SELECT id FROM updated_rows)
+        AND "libraryId" = $6
+        AND ($7 OR "deletedAt" IS NULL)
+        LIMIT $8 OFFSET $9;
+        `,
+        [
+          true, // $1 - is_offline = true
+          new Date(), // $2 - deleted_at = current timestamp
+          false, // $3 - is_offline = false
+          library.importPaths.map((importPath) => `${importPath}%`).join('|'), // $4 - importPartMatcher pattern
+          library.exclusionPatterns.map(globToSqlPattern).join('|'), // $5 - exclusionPatternMatcher pattern
+          library.id, // $6 - libraryId matches job.id
+          true, // $7 - withDeleted flag
+          pagination.take, // $8 - LIMIT
+          pagination.skip, // $9 - OFFSET
+        ],
+      ),
+    );
   }
 }
