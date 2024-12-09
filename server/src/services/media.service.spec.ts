@@ -1,4 +1,3 @@
-import type { Stats } from 'node:fs';
 import { SystemConfig } from 'src/config';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -2094,7 +2093,47 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should fallback to sw transcoding if hw transcoding fails', async () => {
+    it('should fallback to hw encoding and sw decoding if hw transcoding fails and hw decoding is enabled', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      mediaMock.transcode.mockRejectedValueOnce(new Error('error'));
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledTimes(2);
+      expect(mediaMock.transcode).toHaveBeenLastCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining([
+            '-init_hw_device vaapi=accel:/dev/dri/renderD128',
+            '-filter_hw_device accel',
+          ]),
+          outputOptions: expect.arrayContaining([`-c:v h264_vaapi`]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should fallback to sw decoding if fallback to sw decoding + hw encoding fails', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI, accelDecode: true } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      mediaMock.transcode.mockRejectedValueOnce(new Error('error'));
+      mediaMock.transcode.mockRejectedValueOnce(new Error('error'));
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledTimes(3);
+      expect(mediaMock.transcode).toHaveBeenLastCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v h264']),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should fallback to sw transcoding if hw transcoding fails and hw decoding is disabled', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { accel: TranscodeHWAccel.VAAPI } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
