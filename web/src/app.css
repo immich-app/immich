@@ -22,6 +22,28 @@
     --immich-dark-success: 56 142 60;
     --immich-dark-warning: 245 124 0;
   }
+
+  :root {
+    /* light */
+    --immich-ui-primary: 66 80 175;
+    --immich-ui-dark: 0 0 0;
+    --immich-ui-light: 255 255 255;
+    --immich-ui-success: 34 197 94;
+    --immich-ui-danger: 180 0 0;
+    --immich-ui-warning: 255 170 0;
+    --immich-ui-info: 14 165 233;
+  }
+
+  .dark {
+    /* dark */
+    --immich-ui-primary: 172 203 250;
+    --immich-ui-light: 0 0 0;
+    --immich-ui-dark: 229 231 235;
+    /* --immich-success: 56 142 60; */
+    --immich-ui-danger: 239 68 68;
+    --immich-ui-warning: 255 170 0;
+    --immich-ui-info: 14 165 233;
+  }
 }
 
 @font-face {
