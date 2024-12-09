@@ -15,6 +15,7 @@
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
   import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import CastSender from '$lib/components/cast/cast-sender.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
@@ -83,6 +84,7 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let showCastButton = $derived(sharedLink && !sharedLink.password && window.chrome);
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -133,10 +135,13 @@
     {#if showDetailButton}
       <ShowDetailAction {onShowDetail} />
     {/if}
-
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
+    {#if showCastButton}
+      <CastSender {asset} />
+    {/if}
+
     <!-- {#if showEditorButton}
       <CircleIconButton
         color="opaque"
