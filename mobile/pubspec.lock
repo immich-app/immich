@@ -1017,6 +1017,22 @@ packages:
       url: "https://github.com/immich-app/native_video_player"
     source: git
     version: "1.3.1"
+  network_info_plus:
+    dependency: "direct main"
+    description:
+      name: network_info_plus
+      sha256: bf9e39e523e9951d741868dc33ac386b0bc24301e9b7c8a7d60dbc34879150a8
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.1.1"
+  network_info_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: network_info_plus_platform_interface
+      sha256: b7f35f4a7baef511159e524499f3c15464a49faa5ec10e92ee0bce265e664906
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
   nm:
     dependency: transitive
     description:

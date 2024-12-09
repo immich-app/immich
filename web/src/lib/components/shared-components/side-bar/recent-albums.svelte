@@ -10,9 +10,7 @@
   onMount(async () => {
     try {
       const allAlbums = await getAllAlbums({});
-      albums = allAlbums
-        .sort((album1, album2) => (album1.lastModifiedAssetTimestamp! > album2.lastModifiedAssetTimestamp! ? 1 : 0))
-        .slice(0, 3);
+      albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
     }

@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.121.0+168
+version: 1.122.2+170
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -61,6 +61,7 @@ dependencies:
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
   background_downloader: ^8.5.5
+  network_info_plus: ^6.1.1
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player

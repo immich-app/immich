@@ -680,7 +680,7 @@ class SearchEmptyContent extends StatelessWidget {
           const SizedBox(height: 16),
           Center(
             child: Text(
-              "Search for your photos and videos",
+              'search_page_search_photos_videos'.tr(),
               style: context.textTheme.labelLarge,
             ),
           ),
