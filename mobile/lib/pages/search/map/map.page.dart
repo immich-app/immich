@@ -264,7 +264,7 @@ class MapPage extends HookConsumerWidget {
       selectedAssets.value = selected ? selection : {};
     }
 
-    return MapThemeOveride(
+    return MapThemeOverride(
       mapBuilder: (style) => context.isMobile
           // Single-column
           ? Scaffold(

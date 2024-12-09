@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 
 class BackupErrorChipText extends ConsumerWidget {
