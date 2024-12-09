@@ -13,6 +13,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
@@ -206,6 +207,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       heroOffset: widget.heroOffset,
       onAssetTap: (asset) {
         ref.read(currentAssetProvider.notifier).set(asset);
+        ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
         if (asset.isVideo) {
           ref.read(showControlsProvider.notifier).show = false;
         }
