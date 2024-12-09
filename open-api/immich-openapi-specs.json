@@ -8345,6 +8345,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "original",
           "preview",
           "thumbnail"
         ],
@@ -10071,6 +10072,7 @@
       "PathType": {
         "enum": [
           "original",
+          "converted",
           "preview",
           "thumbnail",
           "encoded_video",

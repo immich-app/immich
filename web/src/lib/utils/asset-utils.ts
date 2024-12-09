@@ -351,6 +351,44 @@ export function isWebCompatibleImage(asset: AssetResponseDto): boolean {
   return supportedImageMimeTypes.has(asset.originalMimeType);
 }
 
+// TODO: share with server
+const supportedRawImageMimeTypes = new Set([
+  'image/3fr',
+  'image/ari',
+  'image/arw',
+  'image/cap',
+  'image/cin',
+  'image/cr2',
+  'image/cr3',
+  'image/crw',
+  'image/dcr',
+  'image/dng',
+  'image/erf',
+  'image/fff',
+  'image/iiq',
+  'image/k25',
+  'image/kdc',
+  'image/mrw',
+  'image/nef',
+  'image/nrw',
+  'image/orf',
+  'image/ori',
+  'image/pef',
+  'image/psd',
+  'image/raf',
+  'image/raw',
+  'image/rw2',
+  'image/rwl',
+  'image/sr2',
+  'image/srf',
+  'image/srw',
+  'image/x3f',
+]);
+
+export function isRawImage(asset: AssetResponseDto): boolean {
+  return supportedRawImageMimeTypes.has(asset.originalMimeType!);
+}
+
 export const getAssetType = (type: AssetTypeEnum) => {
   switch (type) {
     case 'IMAGE': {
