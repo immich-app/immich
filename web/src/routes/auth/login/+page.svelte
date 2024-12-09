@@ -4,6 +4,7 @@
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { Card, CardBody, Text } from '@immich/ui';
   import type { PageData } from './$types';
 
   interface Props {
@@ -14,13 +15,17 @@
 </script>
 
 {#if $featureFlags.loaded}
-  <FullscreenContainer title={data.meta.title} showMessage={!!$serverConfig.loginPageMessage}>
-    {#snippet message()}
-      <p>
-        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-        {@html $serverConfig.loginPageMessage}
-      </p>
-    {/snippet}
+  <FullscreenContainer title={data.meta.title}>
+    {#if !!$serverConfig.loginPageMessage}
+      <Card variant="subtle" color="secondary">
+        <CardBody>
+          <Text>
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+            {@html $serverConfig.loginPageMessage}
+          </Text>
+        </CardBody>
+      </Card>
+    {/if}
 
     <LoginForm
       onSuccess={async () => await goto(AppRoute.PHOTOS, { invalidateAll: true })}
