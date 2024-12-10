@@ -112,7 +112,7 @@ export class SearchService extends BaseService {
     if (dto.includeNull) {
       suggestions.push(null);
     }
-    return this.getSuggestions(userIds, dto);
+    return suggestions;
   }
 
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
