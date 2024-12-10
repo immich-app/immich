@@ -151,6 +151,7 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
+  createAll(assets: AssetCreate[]): Promise<AssetEntity[]>;
   getByIds(
     ids: string[],
     relations?: FindOptionsRelations<AssetEntity>,
@@ -193,5 +194,6 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
-  updateOffline(pagination: PaginationOptions, library: LibraryEntity): Paginated<AssetEntity>;
+  updateOffline(library: LibraryEntity): Promise<UpdateResult>;
+  getNewPaths(libraryId: string, paths: string[]): Promise<string[]>;
 }

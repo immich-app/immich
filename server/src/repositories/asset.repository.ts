@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import picomatch from 'picomatch';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
@@ -77,6 +76,10 @@ export class AssetRepository implements IAssetRepository {
 
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.repository.save(asset);
+  }
+
+  createAll(assets: AssetCreate[]): Promise<AssetEntity[]> {
+    return this.repository.save(assets);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
@@ -716,39 +719,47 @@ export class AssetRepository implements IAssetRepository {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
   }
 
-  updateOffline(pagination: PaginationOptions, library: LibraryEntity): Paginated<AssetEntity> {
-    return this.dataSource.manager.transaction(async (transactionalEntityManager) =>
-      transactionalEntityManager.query(
-        `
-        WITH updated_rows AS (
-            UPDATE assets
-            SET "isOffline" = $1, "deletedAt" = $2
-            WHERE "isOffline" = $3
-            AND (
-                "originalPath" NOT SIMILAR TO $4
-                OR "originalPath" SIMILAR TO $5
-            )
-            RETURNING id
-        )
-        SELECT * 
-        FROM assets
-        WHERE id NOT IN (SELECT id FROM updated_rows)
-        AND "libraryId" = $6
-        AND ($7 OR "deletedAt" IS NULL)
-        LIMIT $8 OFFSET $9;
-        `,
-        [
-          true, // $1 - is_offline = true
-          new Date(), // $2 - deleted_at = current timestamp
-          false, // $3 - is_offline = false
-          library.importPaths.map((importPath) => `${importPath}%`).join('|'), // $4 - importPartMatcher pattern
-          library.exclusionPatterns.map(globToSqlPattern).join('|'), // $5 - exclusionPatternMatcher pattern
-          library.id, // $6 - libraryId matches job.id
-          true, // $7 - withDeleted flag
-          pagination.take, // $8 - LIMIT
-          pagination.skip, // $9 - OFFSET
-        ],
-      ),
+  updateOffline(library: LibraryEntity): Promise<UpdateResult> {
+    const paths = library.importPaths.map((importPath) => `${importPath}%`).join('|');
+    const exclusions = library.exclusionPatterns.map((pattern) => globToSqlPattern(pattern)).join('|');
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where({ isOffline: false })
+      .andWhere({ libraryId: library.id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('originalPath NOT SIMILAR TO :paths', {
+            paths,
+          }).orWhere('originalPath SIMILAR TO :exclusions', {
+            exclusions,
+          });
+        }),
+      )
+      .execute();
+  }
+
+  async getNewPaths(libraryId: string, paths: string[]): Promise<string[]> {
+    const rawSql = `
+    WITH unnested_paths AS (
+      SELECT unnest($1::text[]) AS path
+    )
+    SELECT unnested_paths.path AS path
+    FROM unnested_paths
+    WHERE not exists(
+      SELECT 1
+      FROM assets
+      WHERE "originalPath" = unnested_paths.path AND
+      "libraryId" = $2
     );
+  `;
+
+    return this.repository
+      .query(rawSql, [paths, libraryId])
+      .then((result) => result.map((row: { path: string }) => row.path));
   }
 }

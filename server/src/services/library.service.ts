@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
-import parseLib from 'picomatch/lib/parse';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
@@ -17,10 +16,11 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType, ImmichWorker } from 'src/enum';
+import { AssetStatus, AssetType, ImmichWorker } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { AssetSyncResult } from 'src/interfaces/library.interface';
 import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
@@ -99,6 +99,15 @@ export class LibraryService extends BaseService {
     let _resolve: () => void;
     const ready$ = new Promise<void>((resolve) => (_resolve = resolve));
 
+    const handler = async (event: string, path: string) => {
+      if (matcher(path)) {
+        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
+        await this.syncFiles(library, [path]);
+      } else {
+        this.logger.verbose(`Ignoring file ${event} event for ${path} in library ${library.id}`);
+      }
+    };
+
     this.watchers[id] = this.storageRepository.watch(
       library.importPaths,
       {
@@ -108,58 +117,13 @@ export class LibraryService extends BaseService {
       {
         onReady: () => _resolve(),
         onAdd: (path) => {
-          const handler = async () => {
-            this.logger.debug(`File add event received for ${path} in library ${library.id}}`);
-            if (matcher(path)) {
-              const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-              if (asset) {
-                await this.jobRepository.queue({
-                  name: JobName.LIBRARY_SYNC_ASSETS,
-                  data: {
-                    ids: [asset.id],
-                  },
-                });
-              }
-              if (matcher(path)) {
-                await this.syncFiles(library, [path]);
-              }
-            }
-          };
-          return handlePromiseError(handler(), this.logger);
+          return handlePromiseError(handler('add', path), this.logger);
         },
         onChange: (path) => {
-          const handler = async () => {
-            this.logger.debug(`Detected file change for ${path} in library ${library.id}`);
-            const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-            if (asset) {
-              await this.jobRepository.queue({
-                name: JobName.LIBRARY_SYNC_ASSETS,
-                data: {
-                  ids: [asset.id],
-                },
-              });
-            }
-            if (matcher(path)) {
-              // Note: if the changed file was not previously imported, it will be imported now.
-              await this.syncFiles(library, [path]);
-            }
-          };
-          return handlePromiseError(handler(), this.logger);
+          return handlePromiseError(handler('change', path), this.logger);
         },
         onUnlink: (path) => {
-          const handler = async () => {
-            this.logger.debug(`Detected deleted file at ${path} in library ${library.id}`);
-            const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(library.id, path);
-            if (asset) {
-              await this.jobRepository.queue({
-                name: JobName.LIBRARY_SYNC_ASSETS,
-                data: {
-                  ids: [asset.id],
-                },
-              });
-            }
-          };
-          return handlePromiseError(handler(), this.logger);
+          return handlePromiseError(handler('delete', path), this.logger);
         },
         onError: (error) => {
           this.logger.error(`Library watcher for library ${library.id} encountered error: ${error}`);
@@ -249,7 +213,7 @@ export class LibraryService extends BaseService {
       assetPaths.map((assetPath) => ({
         name: JobName.LIBRARY_SYNC_FILE,
         data: {
-          id,
+          libraryId: id,
           assetPath,
           ownerId,
         },
@@ -370,79 +334,66 @@ export class LibraryService extends BaseService {
 
   @OnJob({ name: JobName.LIBRARY_SYNC_FILE, queue: QueueName.LIBRARY })
   async handleSyncFile(job: JobOf<JobName.LIBRARY_SYNC_FILE>): Promise<JobStatus> {
-    // Only needs to handle new assets
+    /* For performance reasons, we don't check if the asset is already imported. 
+    This is instead handled by a previous step in the scan process. 
+    In the edge case of an asset being imported between that check 
+    and this function call, the database constraint will prevent duplicates.
+     */
+
     const assetPath = path.normalize(job.assetPath);
 
-    let asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.id, assetPath);
+    // TODO: we can replace this get call with an exists call
+    /* let asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, assetPath);
     if (asset) {
-      return JobStatus.SKIPPED;
-    }
+      return await this.handleSyncAssets({ libraryId: job.libraryId, assetIds: [asset.id] });
+    } */
 
-    let stat;
-    try {
-      stat = await this.storageRepository.stat(assetPath);
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
-        this.logger.error(`File not found: ${assetPath}`);
-        return JobStatus.SKIPPED;
-      }
-      this.logger.error(`Error reading file: ${assetPath}. Error: ${error}`);
-      return JobStatus.FAILED;
-    }
-
-    this.logger.log(`Importing new library asset: ${assetPath}`);
-
-    const library = await this.libraryRepository.get(job.id, true);
-    if (!library || library.deletedAt) {
-      this.logger.error('Cannot import asset into deleted library');
-      return JobStatus.FAILED;
-    }
+    this.logger.log(`Importing new asset ${assetPath} into library ${job.libraryId}`);
 
     // TODO: device asset id is deprecated, remove it
     const deviceAssetId = `${basename(assetPath)}`.replaceAll(/\s+/g, '');
 
     const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
 
-    // TODO: doesn't xmp replace the file extension? Will need investigation
-    let sidecarPath: string | null = null;
-    if (await this.storageRepository.checkFileExists(`${assetPath}.xmp`, R_OK)) {
-      sidecarPath = `${assetPath}.xmp`;
-    }
-
     const assetType = mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE;
 
-    const mtime = stat.mtime;
+    const now = new Date();
 
-    asset = await this.assetRepository.create({
+    const asset = await this.assetRepository.create({
       ownerId: job.ownerId,
-      libraryId: job.id,
+      libraryId: job.libraryId,
       checksum: pathHash,
       originalPath: assetPath,
       deviceAssetId,
       deviceId: 'Library Import',
-      fileCreatedAt: mtime,
-      fileModifiedAt: mtime,
-      localDateTime: mtime,
+      fileCreatedAt: now,
+      fileModifiedAt: now,
+      localDateTime: now,
       type: assetType,
       originalFileName: parse(assetPath).base,
-
-      sidecarPath,
       isExternal: true,
     });
 
-    await this.queuePostSyncJobs(asset);
+    this.logger.debug(`Queueing metadata extraction for: ${asset.originalPath}`);
+
+    await this.queuePostSyncJobs([asset.id]);
 
     return JobStatus.SUCCESS;
   }
 
-  async queuePostSyncJobs(asset: AssetEntity) {
-    this.logger.debug(`Queueing metadata extraction for: ${asset.originalPath}`);
-
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+  async queuePostSyncJobs(assetIds: string[]) {
+    await this.jobRepository.queueAll(
+      assetIds.map((assetId) => ({
+        name: JobName.METADATA_EXTRACTION,
+        data: { id: assetId, source: 'upload' },
+      })),
+    );
   }
 
   async queueScan(id: string) {
     await this.findOrFail(id);
+
+    this.logger.log(`Starting to scan library ${id}`);
 
     await this.jobRepository.queue({
       name: JobName.LIBRARY_QUEUE_SYNC_FILES,
@@ -450,12 +401,13 @@ export class LibraryService extends BaseService {
         id,
       },
     });
+
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 
   @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
   async handleQueueSyncAll(): Promise<JobStatus> {
-    this.logger.debug(`Refreshing all external libraries`);
+    this.logger.log(`Initiating scan of all external libraries`);
 
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
@@ -481,52 +433,110 @@ export class LibraryService extends BaseService {
 
   @OnJob({ name: JobName.LIBRARY_SYNC_ASSETS, queue: QueueName.LIBRARY })
   async handleSyncAssets(job: JobOf<JobName.LIBRARY_SYNC_ASSETS>): Promise<JobStatus> {
-    for (const id of job.ids) {
-      await this.handleSyncAsset(id);
+    const assets = await this.assetRepository.getByIds(job.assetIds);
+
+    const assetIdsToOffline: string[] = [];
+    const assetIdsToUpdate: string[] = [];
+
+    for (const asset of assets) {
+      const action = await this.handleSyncAsset(asset);
+      switch (action) {
+        case AssetSyncResult.OFFLINE:
+          assetIdsToOffline.push(asset.id);
+          break;
+        case AssetSyncResult.UPDATE:
+          assetIdsToUpdate.push(asset.id);
+          break;
+      }
+    }
+
+    if (assetIdsToOffline.length) {
+      await this.assetRepository.updateAll(assetIdsToOffline, { isOffline: true, deletedAt: new Date() });
+      this.logger.log(
+        `Originals are missing for ${assetIdsToOffline.length} asset(s) in library ${job.libraryId}, marked offline`,
+      );
+    }
+
+    if (assetIdsToUpdate.length) {
+      //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
+      await this.assetRepository.updateAll(assetIdsToUpdate, {
+        isOffline: false,
+        deletedAt: null,
+      });
+
+      this.logger.log(
+        `Found ${assetIdsToOffline.length} asset(s) with modified files for library ${job.libraryId}, queuing refresh...`,
+      );
+
+      await this.queuePostSyncJobs(assetIdsToUpdate);
+    }
+
+    const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length;
+    if (remainingCount > 0) {
+      this.logger.log(`${remainingCount} asset(s) are unchanged in library ${job.libraryId}, no action required`);
     }
 
     return JobStatus.SUCCESS;
   }
 
-  private async handleSyncAsset(id: string): Promise<JobStatus> {
-    const asset = await this.assetRepository.getById(id);
+  private async checkOfflineAsset(asset: AssetEntity) {
+    if (!asset.libraryId) {
+      return false;
+    }
+
+    const library = await this.libraryRepository.get(asset.libraryId);
+    if (!library) {
+      return false;
+    }
+
+    const isInImportPath = library.importPaths.find((path) => asset.originalPath.startsWith(path));
+    if (!isInImportPath) {
+      return false;
+    }
+
+    const isExcluded = library.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
+    if (isExcluded) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private async handleSyncAsset(asset: AssetEntity): Promise<AssetSyncResult> {
     if (!asset) {
-      return JobStatus.SKIPPED;
+      return AssetSyncResult.DO_NOTHING;
     }
 
     let stat;
     try {
       stat = await this.storageRepository.stat(asset.originalPath);
     } catch {
-      await (async (explanation: string) => {
-        if (!asset.isOffline) {
-          this.logger.debug(`${explanation}, moving to trash: ${asset.originalPath}`);
-          await this.assetRepository.updateAll([asset.id], { isOffline: true, deletedAt: new Date() });
-        }
-      })('Asset is no longer on disk or is inaccessible because of permissions');
-      return JobStatus.SUCCESS;
+      if (asset.isOffline) {
+        return AssetSyncResult.DO_NOTHING;
+      }
+
+      this.logger.debug(
+        `Asset is no longer on disk or is inaccessible because of permissions, moving to trash: ${asset.originalPath}`,
+      );
+      return AssetSyncResult.OFFLINE;
     }
 
     const mtime = stat.mtime;
     const isAssetModified = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    let shouldAssetGoOnline = false;
 
-    if (asset.isOffline || isAssetModified) {
+    if (asset.isOffline && asset.status != AssetStatus.DELETED) {
+      // Only perform the expensive check if the asset is offline
+      shouldAssetGoOnline = await this.checkOfflineAsset(asset);
+    }
+
+    if (shouldAssetGoOnline || isAssetModified) {
       this.logger.debug(`Asset was offline or modified, updating asset record ${asset.originalPath}`);
-      //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
-      await this.assetRepository.updateAll([asset.id], {
-        isOffline: false,
-        deletedAt: null,
-        fileCreatedAt: mtime,
-        fileModifiedAt: mtime,
-        originalFileName: parse(asset.originalPath).base,
-      });
+
+      return AssetSyncResult.UPDATE;
     }
 
-    if (isAssetModified) {
-      this.logger.debug(`Asset was modified, queuing metadata extraction for: ${asset.originalPath}`);
-      await this.queuePostSyncJobs(asset);
-    }
-    return JobStatus.SUCCESS;
+    return AssetSyncResult.DO_NOTHING;
   }
 
   @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_FILES, queue: QueueName.LIBRARY })
@@ -537,7 +547,7 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    this.logger.log(`Refreshing library ${library.id} for new assets`);
+    this.logger.log(`Crawling import paths for library ${library.id}...`);
 
     const validImportPaths: string[] = [];
 
@@ -552,28 +562,53 @@ export class LibraryService extends BaseService {
 
     if (validImportPaths.length === 0) {
       this.logger.warn(`No valid import paths found for library ${library.id}`);
+
+      return JobStatus.SKIPPED;
     }
 
-    const assetsOnDisk = this.storageRepository.walk({
+    const pathsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
       take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
-    let count = 0;
+    let importCount = 0;
+    let crawlCount = 0;
 
-    for await (const assetBatch of assetsOnDisk) {
-      count += assetBatch.length;
-      this.logger.debug(`Discovered ${count} asset(s) on disk for library ${library.id}...`);
-      await this.syncFiles(library, assetBatch);
-      this.logger.verbose(`Queued scan of ${assetBatch.length} crawled asset(s) in library ${library.id}...`);
+    this.logger.log(`Starting crawl of filesystem for ${library.id}...`);
+
+    for await (const pathBatch of pathsOnDisk) {
+      crawlCount += pathBatch.length;
+      this.logger.log(
+        `Crawled ${pathBatch.length} file(s) for library ${library.id}, in total ${crawlCount} file(s) crawled so far`,
+      );
+      const newPaths = await this.assetRepository.getNewPaths(library.id, pathBatch);
+      if (newPaths.length > 0) {
+        importCount += newPaths.length;
+        await this.syncFiles(library, newPaths);
+        if (newPaths.length < pathBatch.length) {
+          this.logger.debug(
+            `Current crawl batch: ${newPaths.length} of ${pathBatch.length} file(s) are new, queued import for library ${library.id}...`,
+          );
+        } else {
+          this.logger.debug(
+            `Current crawl batch: ${newPaths.length} new file(s), queued import for library ${library.id}...`,
+          );
+        }
+      } else {
+        this.logger.debug(`Current crawl batch: ${pathBatch.length} asset(s) already in library ${library.id}`);
+      }
     }
 
-    if (count > 0) {
-      this.logger.debug(`Finished queueing scan of ${count} assets on disk for library ${library.id}`);
-    } else if (validImportPaths.length > 0) {
-      this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
+    if (importCount > 0 && importCount === crawlCount) {
+      this.logger.log(`Finished crawling and queueing ${crawlCount} file(s) for import for library ${library.id}`);
+    } else if (importCount > 0) {
+      this.logger.log(
+        `Finished crawling ${crawlCount} file(s) of which ${importCount} are queued for import for library ${library.id}`,
+      );
+    } else {
+      this.logger.debug(`Finished crawling, no files found for library ${library.id}`);
     }
 
     await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });
@@ -588,33 +623,58 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    this.logger.log(`Checking assets in library ${library.id} against import path and exclusion patterns`);
+    const assetCount = (await this.getStatistics(library.id)).total;
 
-    const onlineAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.updateOffline(pagination, library),
+    this.logger.log(
+      `Scanning library ${library.id} for assets outside of import paths and/or matching an exclusion pattern...`,
     );
+    const offlineResult = await this.assetRepository.updateOffline(library);
 
-    this.logger.log(`Scanning library ${library.id} for removed assets`);
-
-    let assetCount = 0;
-    for await (const assets of onlineAssets) {
-      if (!assets) {
-        console.log('No assets found');
-      } else {
-        console.log(assets[0]);
-        assetCount += assets.length;
-        this.logger.debug(`Discovered ${assetCount} asset(s) in library ${library.id}...`);
-
-        for (const asset of assets) {
-          await this.handleSyncAsset(asset.id);
-        }
-
-        this.logger.debug(`Checked ${assets.length} asset(s) in library ${library.id}...`);
-      }
+    const affectedAssetCount = offlineResult.affected;
+    if (affectedAssetCount === undefined) {
+      this.logger.error(`Unknown error occurred when updating offline status in ${library.id}`);
+      return JobStatus.FAILED;
     }
 
-    if (assetCount) {
-      this.logger.log(`Finished check of ${assetCount} assets for library ${library.id}`);
+    if (affectedAssetCount === assetCount) {
+      this.logger.log(
+        `All ${assetCount} asset(s) in ${library.id} are outside of import paths and/or match an exclusion pattern, marked as offline`,
+      );
+    } else if (affectedAssetCount !== assetCount && affectedAssetCount > 0) {
+      this.logger.log(
+        `${offlineResult.affected} asset(s) out of ${assetCount} were marked offline due to import paths and/or exclusion patterns for library ${library.id}`,
+      );
+    } else {
+      this.logger.log(
+        `All ${assetCount} asset(s) in library ${library.id} were in an import path and none matched an exclusion pattern`,
+      );
+    }
+
+    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
+
+    const existingAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
+      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
+    );
+
+    let currentAssetCount = 0;
+    for await (const assets of existingAssets) {
+      currentAssetCount += assets.length;
+
+      await this.jobRepository.queue({
+        name: JobName.LIBRARY_SYNC_ASSETS,
+        data: {
+          libraryId: library.id,
+          assetIds: assets.map((asset) => asset.id),
+        },
+      });
+
+      this.logger.log(
+        `Queued check of ${assets.length} existing asset(s) in library ${library.id}, ${currentAssetCount} of ${assetCount} queued in total`,
+      );
+    }
+
+    if (currentAssetCount) {
+      this.logger.log(`Finished queuing ${currentAssetCount} file checks for library ${library.id}`);
     }
 
     return JobStatus.SUCCESS;
