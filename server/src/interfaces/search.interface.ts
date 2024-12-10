@@ -170,13 +170,7 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
-interface GetMetadataOptions {
-  includeNull?: boolean;
-}
-
-export type GetCountriesOptions = GetMetadataOptions;
-
-export interface GetStatesOptions extends GetMetadataOptions {
+export interface GetStatesOptions {
   country?: string;
 }
 
@@ -184,11 +178,11 @@ export interface GetCitiesOptions extends GetStatesOptions {
   state?: string;
 }
 
-export interface GetCameraModelsOptions extends GetMetadataOptions {
+export interface GetCameraModelsOptions {
   make?: string;
 }
 
-export interface GetCameraMakesOptions extends GetMetadataOptions {
+export interface GetCameraMakesOptions {
   model?: string;
 }
 
@@ -204,7 +198,7 @@ export interface ISearchRepository {
   deleteAllSearchEmbeddings(): Promise<void>;
   getDimensionSize(): Promise<number>;
   setDimensionSize(dimSize: number): Promise<void>;
-  getCountries(userIds: string[], options: GetCountriesOptions): Promise<Array<string | null>>;
+  getCountries(userIds: string[]): Promise<Array<string | null>>;
   getStates(userIds: string[], options: GetStatesOptions): Promise<Array<string | null>>;
   getCities(userIds: string[], options: GetCitiesOptions): Promise<Array<string | null>>;
   getCameraMakes(userIds: string[], options: GetCameraMakesOptions): Promise<Array<string | null>>;

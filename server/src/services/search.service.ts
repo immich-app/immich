@@ -108,13 +108,17 @@ export class SearchService extends BaseService {
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
     const userIds = await this.getUserIdsToSearch(auth);
+    const suggestions = await this.getSuggestions(userIds, dto);
+    if (dto.includeNull) {
+      suggestions.push(null);
+    }
     return this.getSuggestions(userIds, dto);
   }
 
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds, dto);
+        return this.searchRepository.getCountries(userIds);
       }
       case SearchSuggestionType.STATE: {
         return this.searchRepository.getStates(userIds, dto);
@@ -129,7 +133,7 @@ export class SearchService extends BaseService {
         return this.searchRepository.getCameraModels(userIds, dto);
       }
       default: {
-        return [];
+        return [] as (string | null)[];
       }
     }
   }
