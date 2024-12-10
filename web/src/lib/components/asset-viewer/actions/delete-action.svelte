@@ -11,7 +11,7 @@
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
-  import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
+  import { deleteStack, getStack, deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
@@ -41,7 +41,16 @@
 
   const trashAsset = async () => {
     try {
-      await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
+      if (asset.stack) {
+        const { assets } = await getStack({ id: asset.stack.id });
+        const assetIds = assets.map((asset) => asset.id);
+
+        await deleteStack({ id: asset.stack.id });
+        await deleteAssets({ assetBulkDeleteDto: { ids: assetIds } });
+      } else {
+        await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
+      }
+
       onAction({ type: AssetAction.TRASH, asset });
 
       notificationController.show({
