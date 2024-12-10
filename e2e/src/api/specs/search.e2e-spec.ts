@@ -98,6 +98,7 @@ describe('/search', () => {
       { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
       { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
       { latitude: 59.938_63, longitude: 30.314_13 }, // st. petersburg
+      { latitude: 0, longitude: 0 }, // null island
     ];
 
     const updates = coordinates.map((dto, i) =>
