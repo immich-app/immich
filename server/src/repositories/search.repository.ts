@@ -351,6 +351,7 @@ export class SearchRepository implements ISearchRepository {
       .createQueryBuilder('exif')
       .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.country != ''`)
       .select('exif.country', 'country')
       .distinctOn(['exif.country']);
 
@@ -360,7 +361,7 @@ export class SearchRepository implements ISearchRepository {
 
     const results = await query.getRawMany<{ country: string }>();
 
-    return results.map(({ country }) => country).filter((item) => item !== '');
+    return results.map(({ country }) => country);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
@@ -369,6 +370,7 @@ export class SearchRepository implements ISearchRepository {
       .createQueryBuilder('exif')
       .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.state != ''`)
       .select('exif.state', 'state')
       .distinctOn(['exif.state']);
 
@@ -382,7 +384,7 @@ export class SearchRepository implements ISearchRepository {
 
     const result = await query.getRawMany<{ state: string }>();
 
-    return result.map(({ state }) => state).filter((item) => item !== '');
+    return result.map(({ state }) => state);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
@@ -391,6 +393,7 @@ export class SearchRepository implements ISearchRepository {
       .createQueryBuilder('exif')
       .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.city != ''`)
       .select('exif.city', 'city')
       .distinctOn(['exif.city']);
 
@@ -408,7 +411,7 @@ export class SearchRepository implements ISearchRepository {
 
     const results = await query.getRawMany<{ city: string }>();
 
-    return results.map(({ city }) => city).filter((item) => item !== '');
+    return results.map(({ city }) => city);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
@@ -417,6 +420,7 @@ export class SearchRepository implements ISearchRepository {
       .createQueryBuilder('exif')
       .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.make != ''`)
       .select('exif.make', 'make')
       .distinctOn(['exif.make']);
 
@@ -429,7 +433,7 @@ export class SearchRepository implements ISearchRepository {
     }
 
     const results = await query.getRawMany<{ make: string }>();
-    return results.map(({ make }) => make).filter((item) => item !== '');
+    return results.map(({ make }) => make);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
@@ -451,7 +455,7 @@ export class SearchRepository implements ISearchRepository {
     }
 
     const results = await query.getRawMany<{ model: string }>();
-    return results.map(({ model }) => model).filter((item) => item !== '');
+    return results.map(({ model }) => model);
   }
 
   private getRuntimeConfig(numResults?: number): string | undefined {
