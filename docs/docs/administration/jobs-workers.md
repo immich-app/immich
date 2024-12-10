@@ -11,6 +11,7 @@ The `immich-server` container contains multiple workers:
 
 ## Split workers
 
+For remote workers see [this guide](/docs/guides/remote-workers).
 If you prefer to throttle or distribute the workers, you can do this using the [environment variables](/docs/install/environment-variables) to specify which container should pick up which tasks.
 
 For example, for a simple setup with one container for the Web/API and one for all other microservices, you can do the following:
