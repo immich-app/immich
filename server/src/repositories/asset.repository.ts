@@ -29,9 +29,11 @@ import {
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { searchAssetBuilder } from 'src/utils/database';
+import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
+  DataSource,
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsSelect,
@@ -41,6 +43,7 @@ import {
   MoreThan,
   Not,
   Repository,
+  UpdateResult,
 } from 'typeorm';
 
 const truncateMap: Record<TimeBucketSize, string> = {
@@ -60,6 +63,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
+    private dataSource: DataSource,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -725,5 +729,28 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFiles(files: { assetId: string; type: AssetFileType; path: string }[]): Promise<void> {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
+  }
+
+  updateOffline(importPaths: string[], exclusionPatterns: string[]): Promise<UpdateResult> {
+    const paths = importPaths.map((importPath) => `${importPath}%`).join('|');
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern)).join('|');
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where({ isOffline: false })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('originalPath NOT SIMILAR TO :paths', {
+            paths,
+          }).orWhere('originalPath SIMILAR TO :exclusions', {
+            exclusions,
+          });
+        }),
+      )
+      .execute();
   }
 }

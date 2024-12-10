@@ -10,6 +10,7 @@ import {
   Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UpdateLibraryDto,
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
   ValidateLibraryDto,
@@ -35,6 +36,7 @@ import {
   updateAlbumUser,
   updateAssets,
   updateConfig,
+  updateLibrary,
   updateMyPreferences,
   upsertTags,
   validate,
@@ -42,7 +44,7 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
@@ -392,6 +394,14 @@ export const utils = {
     rmSync(path);
   },
 
+  renameImageFile: (oldPath: string, newPath: string) => {
+    if (!existsSync(oldPath)) {
+      return;
+    }
+
+    renameSync(oldPath, newPath);
+  },
+
   removeDirectory: (path: string) => {
     if (!existsSync(path)) {
       return;
@@ -443,6 +453,9 @@ export const utils = {
 
   createLibrary: (accessToken: string, dto: CreateLibraryDto) =>
     createLibrary({ createLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  updateLibrary: (accessToken: string, id: string, dto: UpdateLibraryDto) =>
+    updateLibrary({ id, updateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),

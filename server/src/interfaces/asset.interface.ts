@@ -4,7 +4,7 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
-import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
+import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect, UpdateResult } from 'typeorm';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -197,4 +197,5 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
+  updateOffline(importPaths: string[], exclusionPatterns: string[]): Promise<UpdateResult>;
 }

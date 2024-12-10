@@ -1,4 +1,4 @@
-import { getKeysDeep, unsetDeep } from 'src/utils/misc';
+import { getKeysDeep, globToSqlPattern, unsetDeep } from 'src/utils/misc';
 import { describe, expect, it } from 'vitest';
 
 describe('getKeysDeep', () => {
@@ -49,5 +49,20 @@ describe('unsetDeep', () => {
 
   it('should clean up an empty property', () => {
     expect(unsetDeep({ foo: 'bar', nested: { enabled: true } }, 'nested.enabled')).toEqual({ foo: 'bar' });
+  });
+});
+
+describe('globToSqlPattern', () => {
+  const testCases = [
+    ['**/Raw/**', '%/Raw/%'],
+    ['**/abc/*.tif', '%/abc/%.tif'],
+    ['**/*.tif', '%/%.tif'],
+    ['**/*.jp?', '%/%.jp_'],
+    ['**/@eaDir/**', '%/@eaDir/%'],
+    ['**/._*', `%/.\\_%`],
+  ];
+
+  it.each(testCases)('should convert %s to %s', (input, expected) => {
+    expect(globToSqlPattern(input)).toEqual(expected);
   });
 });
