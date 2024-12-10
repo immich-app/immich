@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import picomatch from 'picomatch';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, PaginationMode } from 'src/enum';
 import {
   AssetBuilderOptions,
@@ -716,39 +714,26 @@ export class AssetRepository implements IAssetRepository {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
   }
 
-  updateOffline(pagination: PaginationOptions, library: LibraryEntity): Paginated<AssetEntity> {
-    return this.dataSource.manager.transaction(async (transactionalEntityManager) =>
-      transactionalEntityManager.query(
-        `
-        WITH updated_rows AS (
-            UPDATE assets
-            SET "isOffline" = $1, "deletedAt" = $2
-            WHERE "isOffline" = $3
-            AND (
-                "originalPath" NOT SIMILAR TO $4
-                OR "originalPath" SIMILAR TO $5
-            )
-            RETURNING id
-        )
-        SELECT * 
-        FROM assets
-        WHERE id NOT IN (SELECT id FROM updated_rows)
-        AND "libraryId" = $6
-        AND ($7 OR "deletedAt" IS NULL)
-        LIMIT $8 OFFSET $9;
-        `,
-        [
-          true, // $1 - is_offline = true
-          new Date(), // $2 - deleted_at = current timestamp
-          false, // $3 - is_offline = false
-          library.importPaths.map((importPath) => `${importPath}%`).join('|'), // $4 - importPartMatcher pattern
-          library.exclusionPatterns.map(globToSqlPattern).join('|'), // $5 - exclusionPatternMatcher pattern
-          library.id, // $6 - libraryId matches job.id
-          true, // $7 - withDeleted flag
-          pagination.take, // $8 - LIMIT
-          pagination.skip, // $9 - OFFSET
-        ],
-      ),
-    );
+  updateOffline(importPaths: string[], exclusionPatterns: string[]): Promise<UpdateResult> {
+    const paths = importPaths.map((importPath) => `${importPath}%`).join('|');
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern)).join('|');
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where({ isOffline: false })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('originalPath NOT SIMILAR TO :paths', {
+            paths,
+          }).orWhere('originalPath SIMILAR TO :exclusions', {
+            exclusions,
+          });
+        }),
+      )
+      .execute();
   }
 }

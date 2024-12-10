@@ -266,39 +266,49 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 };
 
+const convertTokenToSqlPattern = (token: any): string => {
+  if (typeof token === 'string') {
+    return token;
+  }
+
+  switch (token.type) {
+    case 'slash': {
+      return '/';
+    }
+    case 'text': {
+      return token.value;
+    }
+    case 'globstar':
+    case 'star': {
+      return '%';
+    }
+    case 'underscore': {
+      return String.raw`\_`;
+    }
+    case 'qmark': {
+      return '_';
+    }
+    case 'dot': {
+      return '.';
+    }
+    case 'bracket': {
+      return `[${token.value}]`;
+    }
+    case 'negate': {
+      return `[^${token.value}]`;
+    }
+    case 'brace': {
+      const options = token.value.split(',');
+      return `(${options.join('|')})`;
+    }
+    default: {
+      return '';
+    }
+  }
+};
+
 export const globToSqlPattern = (glob: string) => {
   const tokens = picomatch.parse(glob).tokens;
-
-  const convertTokenToSqlPattern = (token: any): string => {
-    if (typeof token === 'string') {
-      return token;
-    }
-
-    switch (token.type) {
-      case 'slash':
-        return '/';
-      case 'text':
-        return token.value;
-      case 'globstar':
-      case 'star':
-        return '%';
-      case 'underscore':
-        return '\\_';
-      case 'qmark':
-        return '_';
-      case 'dot':
-        return '.';
-      case 'bracket':
-        return `[${token.value}]`;
-      case 'negate':
-        return `[^${token.value}]`;
-      case 'brace':
-        const options = token.value.split(',');
-        return `(${options.join('|')})`;
-      default:
-        return '';
-    }
-  };
 
   let result = '';
   for (const token of tokens) {

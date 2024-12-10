@@ -143,12 +143,13 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
-export interface ILibraryFileJob extends IEntityJob {
+export interface ILibraryFileJob {
+  libraryId: string;
   ownerId: string;
   assetPath: string;
 }
 
-export interface IBulkEntityJob extends IBaseJob {
+export interface IBulkEntityJob {
   ids: string[];
 }
 
