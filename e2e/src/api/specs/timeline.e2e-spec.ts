@@ -66,8 +66,8 @@ describe('/timeline', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.arrayContaining([
-          { count: 3, timeBucket: '1970-02-01T00:00:00.000Z' },
-          { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
+          { count: 3, timeBucket: '1970-02-01' },
+          { count: 1, timeBucket: '1970-01-01' },
         ]),
       );
     });
@@ -94,9 +94,9 @@ describe('/timeline', () => {
 
       expect(status).toBe(200);
       expect(body).toEqual([
-        { count: 2, timeBucket: '1970-02-11T00:00:00.000Z' },
-        { count: 1, timeBucket: '1970-02-10T00:00:00.000Z' },
-        { count: 1, timeBucket: '1970-01-01T00:00:00.000Z' },
+        { count: 2, timeBucket: '1970-02-11' },
+        { count: 1, timeBucket: '1970-02-10' },
+        { count: 1, timeBucket: '1970-01-01' },
       ]);
     });
 
@@ -151,7 +151,7 @@ describe('/timeline', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).get('/timeline/bucket').query({
         size: TimeBucketSize.Month,
-        timeBucket: '1900-01-01T00:00:00.000Z',
+        timeBucket: '1900-01-01',
       });
 
       expect(status).toBe(401);
@@ -161,7 +161,7 @@ describe('/timeline', () => {
     it('should handle 5 digit years', async () => {
       const { status, body } = await request(app)
         .get('/timeline/bucket')
-        .query({ size: TimeBucketSize.Month, timeBucket: '+012345-01-01T00:00:00.000Z' })
+        .query({ size: TimeBucketSize.Month, timeBucket: '012345-01-01' })
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`);
 
       expect(status).toBe(200);
@@ -183,7 +183,7 @@ describe('/timeline', () => {
       const { status, body } = await request(app)
         .get('/timeline/bucket')
         .set('Authorization', `Bearer ${timeBucketUser.accessToken}`)
-        .query({ size: TimeBucketSize.Month, timeBucket: '1970-02-10T00:00:00.000Z' });
+        .query({ size: TimeBucketSize.Month, timeBucket: '1970-02-10' });
 
       expect(status).toBe(200);
       expect(body).toEqual([]);

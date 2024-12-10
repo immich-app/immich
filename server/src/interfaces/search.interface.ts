@@ -1,4 +1,3 @@
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetStatus, AssetType } from 'src/enum';
@@ -114,7 +113,7 @@ export interface SearchPeopleOptions {
 }
 
 export interface SearchOrderOptions {
-  orderDirection?: 'ASC' | 'DESC';
+  orderDirection?: 'asc' | 'desc';
 }
 
 export interface SearchPaginationOptions {
@@ -148,20 +147,21 @@ export type SmartSearchOptions = SearchDateOptions &
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
   numResults: number;
-  maxDistance?: number;
+  maxDistance: number;
 }
 
 export interface AssetDuplicateSearch {
   assetId: string;
   embedding: number[];
-  maxDistance?: number;
+  maxDistance: number;
   type: AssetType;
   userIds: string[];
 }
 
 export interface FaceSearchResult {
   distance: number;
-  face: AssetFaceEntity;
+  id: string;
+  personId: string | null;
 }
 
 export interface AssetDuplicateResult {

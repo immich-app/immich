@@ -1,8 +1,8 @@
-import _ from 'lodash';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
-import { Between, IsNull, LessThanOrEqual, MoreThanOrEqual, Not, SelectQueryBuilder } from 'typeorm';
+import { Expression, Kysely, RawBuilder, sql, TableMetadata, ValueExpression } from 'kysely';
+import { InsertObject } from 'node_modules/kysely/dist/cjs';
+import { InsertObjectOrList } from 'node_modules/kysely/dist/cjs/parser/insert-values-parser';
+import { DB } from 'src/db';
+import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -18,131 +18,62 @@ export function OptionalBetween<T>(from?: T, to?: T) {
   }
 }
 
-export const asVector = (embedding: number[], quote = false) =>
-  quote ? `'[${embedding.join(',')}]'` : `[${embedding.join(',')}]`;
+const UPSERT_COLUMNS = {} as { [K in keyof DB]?: Partial<{ [C in keyof DB[K]]: ValueExpression<DB, K, unknown> }> };
 
-export function searchAssetBuilder(
-  builder: SelectQueryBuilder<AssetEntity>,
-  options: AssetSearchBuilderOptions,
-): SelectQueryBuilder<AssetEntity> {
-  builder.andWhere(
-    _.omitBy(
-      {
-        createdAt: OptionalBetween(options.createdAfter, options.createdBefore),
-        updatedAt: OptionalBetween(options.updatedAfter, options.updatedBefore),
-        deletedAt: OptionalBetween(options.trashedAfter, options.trashedBefore),
-        fileCreatedAt: OptionalBetween(options.takenAfter, options.takenBefore),
-      },
-      _.isUndefined,
-    ),
-  );
-
-  const exifInfo = _.omitBy(_.pick(options, ['city', 'country', 'lensModel', 'make', 'model', 'state']), _.isUndefined);
-  const hasExifQuery = Object.keys(exifInfo).length > 0;
-
-  if (options.withExif && !hasExifQuery) {
-    builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
+const getUpsertColumns = <K extends keyof DB>(table: TableMetadata & { name: K }) => {
+  if (!(table.name in UPSERT_COLUMNS)) {
+    UPSERT_COLUMNS[table.name] = Object.fromEntries(
+      table.columns.map((column) => [column.name, sql`excluded.${sql.ref(column.name)}`]),
+    ) as Partial<{ [C in keyof DB[K]]: RawBuilder<unknown> }>;
   }
 
-  if (hasExifQuery) {
-    if (options.withExif) {
-      builder.leftJoinAndSelect(`${builder.alias}.exifInfo`, 'exifInfo');
-    } else {
-      builder.leftJoin(`${builder.alias}.exifInfo`, 'exifInfo');
-    }
+  return UPSERT_COLUMNS[table.name]!;
+};
 
-    for (const [key, value] of Object.entries(exifInfo)) {
-      if (value === null) {
-        builder.andWhere(`exifInfo.${key} IS NULL`);
-      } else {
-        builder.andWhere(`exifInfo.${key} = :${key}`, { [key]: value });
-      }
+const mapUpsertColumns = <T extends keyof DB>(
+  columns: Record<keyof DB[T], ValueExpression<DB, T, unknown>>,
+  entries: InsertObjectOrList<DB, T>,
+  conflictKeys: (keyof DB[T])[],
+) => {
+  const entry: InsertObject<DB, T> = Array.isArray(entries) ? entries[0] : entries;
+  const upsertColumns: Partial<Record<keyof typeof entry, ValueExpression<DB, T, unknown>>> = {};
+  for (const entryColumn in entry) {
+    if (!conflictKeys.includes(entryColumn as keyof DB[T])) {
+      upsertColumns[entryColumn as keyof typeof entry] = columns[entryColumn as keyof DB[T]];
     }
   }
 
-  const id = _.pick(options, ['checksum', 'deviceAssetId', 'deviceId', 'id', 'libraryId']);
+  return upsertColumns as Expand<Record<keyof typeof entry, ValueExpression<DB, T, unknown>>>;
+};
 
-  if (id.libraryId === null) {
-    id.libraryId = IsNull() as unknown as string;
-  }
+export const upsertHelper = <T extends keyof DB>(
+  db: Kysely<DB>,
+  table: TableMetadata & { name: T },
+  values: InsertObjectOrList<DB, T>,
+  conflictKeys: (string & keyof DB[T])[],
+) =>
+  db
+    .insertInto(table.name)
+    .values(values)
+    .onConflict((oc) =>
+      oc.columns(conflictKeys).doUpdateSet(() => mapUpsertColumns(getUpsertColumns(table), values, conflictKeys)),
+    );
 
-  builder.andWhere(_.omitBy(id, _.isUndefined));
+export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uuid`;
 
-  if (options.userIds) {
-    builder.andWhere(`${builder.alias}.ownerId IN (:...userIds)`, { userIds: options.userIds });
-  }
+export const anyUuid = (ids: string[]) => sql<string>`any(${`{${ids}}`}::uuid[])`;
 
-  const path = _.pick(options, ['encodedVideoPath', 'originalPath']);
-  builder.andWhere(_.omitBy(path, _.isUndefined));
+export const asVector = (embedding: number[]) => sql<number[]>`${`[${embedding}]`}::vector`;
 
-  if (options.originalFileName) {
-    builder.andWhere(`f_unaccent(${builder.alias}.originalFileName) ILIKE f_unaccent(:originalFileName)`, {
-      originalFileName: `%${options.originalFileName}%`,
-    });
-  }
+/**
+ * Mainly for type debugging to make VS Code display a more useful tooltip.
+ * Source: https://stackoverflow.com/a/69288824
+ */
+export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
 
-  const status = _.pick(options, ['isFavorite', 'isVisible', 'type']);
-  const {
-    isArchived,
-    isEncoded,
-    isMotion,
-    withArchived,
-    isNotInAlbum,
-    withFaces,
-    withPeople,
-    personIds,
-    withStacked,
-    trashedAfter,
-    trashedBefore,
-  } = options;
-  builder.andWhere(
-    _.omitBy(
-      {
-        ...status,
-        isArchived: isArchived ?? (withArchived ? undefined : false),
-        encodedVideoPath: isEncoded ? Not(IsNull()) : undefined,
-        livePhotoVideoId: isMotion ? Not(IsNull()) : undefined,
-      },
-      _.isUndefined,
-    ),
-  );
-
-  if (isNotInAlbum) {
-    builder
-      .leftJoin(`${builder.alias}.albums`, 'albums')
-      .andWhere('albums.id IS NULL')
-      .andWhere(`${builder.alias}.isVisible = true`);
-  }
-
-  if (withFaces || withPeople) {
-    builder.leftJoinAndSelect(`${builder.alias}.faces`, 'faces');
-  }
-
-  if (withPeople) {
-    builder.leftJoinAndSelect('faces.person', 'person');
-  }
-
-  if (personIds && personIds.length > 0) {
-    const cte = builder
-      .createQueryBuilder()
-      .select('faces."assetId"')
-      .from(AssetFaceEntity, 'faces')
-      .where('faces."personId" IN (:...personIds)', { personIds })
-      .groupBy(`faces."assetId"`)
-      .having(`COUNT(DISTINCT faces."personId") = :personCount`, { personCount: personIds.length });
-    builder.addCommonTableExpression(cte, 'face_ids').innerJoin('face_ids', 'a', 'a."assetId" = asset.id');
-
-    builder.getQuery(); // typeorm mixes up parameters without this  (੭ °ཀ°)੭
-  }
-
-  if (withStacked) {
-    builder.leftJoinAndSelect(`${builder.alias}.stack`, 'stack').leftJoinAndSelect('stack.assets', 'stackedAssets');
-  }
-
-  const withDeleted = options.withDeleted ?? (trashedAfter !== undefined || trashedBefore !== undefined);
-  if (withDeleted) {
-    builder.withDeleted();
-  }
-
-  return builder;
-}
+/** Recursive version of {@link Expand} from the same source. */
+export type ExpandRecursively<T> = T extends object
+  ? T extends infer O
+    ? { [K in keyof O]: ExpandRecursively<O[K]> }
+    : never
+  : T;
