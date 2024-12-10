@@ -580,6 +580,18 @@ FROM
 ORDER BY
   exif.city
 
+-- SearchRepository.getCountries
+SELECT DISTINCT
+  ON ("exif"."country") "exif"."country" AS "country"
+FROM
+  "exif" "exif"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."country" != ''
+  AND "exif"."country" IS NOT NULL
+
 -- SearchRepository.getStates
 SELECT DISTINCT
   ON ("exif"."state") "exif"."state" AS "state"
