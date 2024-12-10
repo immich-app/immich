@@ -115,19 +115,19 @@ export class SearchService extends BaseService {
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
-        return this.searchRepository.getCountries(userIds);
+        return this.searchRepository.getCountries(userIds, dto);
       }
       case SearchSuggestionType.STATE: {
-        return this.searchRepository.getStates(userIds, dto.country);
+        return this.searchRepository.getStates(userIds, dto);
       }
       case SearchSuggestionType.CITY: {
-        return this.searchRepository.getCities(userIds, dto.country, dto.state);
+        return this.searchRepository.getCities(userIds, dto);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.searchRepository.getCameraMakes(userIds, dto.model);
+        return this.searchRepository.getCameraMakes(userIds, dto);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.searchRepository.getCameraModels(userIds, dto.make);
+        return this.searchRepository.getCameraModels(userIds, dto);
       }
       default: {
         return [];

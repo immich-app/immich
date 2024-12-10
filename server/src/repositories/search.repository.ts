@@ -17,6 +17,10 @@ import {
   AssetSearchOptions,
   FaceEmbeddingSearch,
   FaceSearchResult,
+  GetCameraMakesOptions,
+  GetCameraModelsOptions,
+  GetCitiesOptions,
+  GetStatesOptions,
   ISearchRepository,
   SearchPaginationOptions,
   SmartSearchOptions,
@@ -354,7 +358,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], country: string | undefined): Promise<string[]> {
+  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
@@ -372,7 +376,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], country: string | undefined, state: string | undefined): Promise<string[]> {
+  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
@@ -394,7 +398,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], model: string | undefined): Promise<string[]> {
+  async getCameraMakes(userIds: string[], { model }: GetCameraMakesOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
@@ -411,7 +415,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraModels(userIds: string[], make: string | undefined): Promise<string[]> {
+  async getCameraModels(userIds: string[], { make }: GetCameraModelsOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
       .leftJoin('exif.asset', 'asset')
