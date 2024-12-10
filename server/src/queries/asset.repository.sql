@@ -68,22 +68,19 @@ SELECT
 FROM
   "assets" "entity"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "entity"."id"
-  LEFT JOIN "asset_files" "files" ON "files"."assetId" = "entity"."id"
+  INNER JOIN "asset_files" "files" ON "files"."assetId" = "entity"."id"
 WHERE
   (
-    "entity"."ownerId" IN ($1)
-    AND "entity"."isVisible" = true
-    AND "entity"."isArchived" = false
+    "files"."type" = $1
     AND EXTRACT(
-      DAY
+      YEAR
+      FROM
+        CURRENT_DATE AT TIME ZONE 'UTC'
+    ) - EXTRACT(
+      YEAR
       FROM
         "entity"."localDateTime" AT TIME ZONE 'UTC'
-    ) = $2
-    AND EXTRACT(
-      MONTH
-      FROM
-        "entity"."localDateTime" AT TIME ZONE 'UTC'
-    ) = $3
+    ) > 0
   )
   AND ("entity"."deletedAt" IS NULL)
 ORDER BY

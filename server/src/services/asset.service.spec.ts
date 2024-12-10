@@ -80,7 +80,20 @@ describe(AssetService.name, () => {
       const image4 = { ...assetStub.image, localDateTime: new Date(2009, 1, 15) };
 
       partnerMock.getAll.mockResolvedValue([]);
-      assetMock.getByDayOfYear.mockResolvedValue([image1, image2, image3, image4]);
+      assetMock.getByDayOfYear.mockResolvedValue([
+        {
+          yearsAgo: 1,
+          assets: [image1, image2],
+        },
+        {
+          yearsAgo: 9,
+          assets: [image3],
+        },
+        {
+          yearsAgo: 15,
+          assets: [image4],
+        },
+      ]);
 
       await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { yearsAgo: 1, title: '1 year ago', assets: [mapAsset(image1), mapAsset(image2)] },
