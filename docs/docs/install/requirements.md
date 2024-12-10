@@ -19,8 +19,8 @@ Immich requires the command `docker compose` - the similarly named `docker-compo
 
 - **OS**: Recommended Linux operating system (Ubuntu, Debian, etc).
   - Non-Linux OSes tend to provide a poor Docker experience and are strongly discouraged.
-    Our ability to assist with setup or troubleshooting on non-Linux OS will be severely reduced.
-    If you insist on using a non-Linux OS, you can set it up as follows:
+    Our ability to assist with setup or troubleshooting on non-Linux OSes will be severely reduced.
+    If you still want to try to use a non-Linux OS, you can set it up as follows:
     - Windows: [Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/) or [WSL 2](https://docs.docker.com/desktop/wsl/).
     - macOS: [Docker Desktop on Mac](https://docs.docker.com/desktop/install/mac-install/).
 - **RAM**: Minimum 4GB, recommended 6GB.
