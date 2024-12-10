@@ -72,7 +72,7 @@ docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
 docker exec -it immich_postgres bash    # Enter the Docker shell and run the following command
 # Check the database user if you deviated from the default
-gunzip < "/dump.sql" \
+cat "/dump.sql" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
 | psql --username=postgres      # Restore Backup
 exit                            # Exit the Docker shell
