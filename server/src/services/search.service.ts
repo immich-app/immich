@@ -108,8 +108,7 @@ export class SearchService extends BaseService {
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
     const userIds = await this.getUserIdsToSearch(auth);
-    const results = await this.getSuggestions(userIds, dto);
-    return results.filter((result) => (dto.includeNull ? true : result !== null));
+    return this.getSuggestions(userIds, dto);
   }
 
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {

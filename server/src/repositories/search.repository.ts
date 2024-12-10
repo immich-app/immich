@@ -20,6 +20,7 @@ import {
   GetCameraMakesOptions,
   GetCameraModelsOptions,
   GetCitiesOptions,
+  GetCountriesOptions,
   GetStatesOptions,
   ISearchRepository,
   SearchPaginationOptions,
@@ -345,23 +346,28 @@ export class SearchRepository implements ISearchRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
-  async getCountries(userIds: string[]): Promise<string[]> {
-    const results = await this.exifRepository
+  async getCountries(userIds: string[], { includeNull }: GetCountriesOptions): Promise<string[]> {
+    const query = this.exifRepository
       .createQueryBuilder('exif')
-      .leftJoin('exif.asset', 'asset')
+      .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.country', 'country')
-      .distinctOn(['exif.country'])
-      .getRawMany<{ country: string }>();
+      .distinctOn(['exif.country']);
+
+    if (!includeNull) {
+      query.andWhere('exif.country IS NOT NULL');
+    }
+
+    const results = await query.getRawMany<{ country: string }>();
 
     return results.map(({ country }) => country).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
+  async getStates(userIds: string[], { country, includeNull }: GetStatesOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
-      .leftJoin('exif.asset', 'asset')
+      .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.state', 'state')
       .distinctOn(['exif.state']);
@@ -370,16 +376,20 @@ export class SearchRepository implements ISearchRepository {
       query.andWhere('exif.country = :country', { country });
     }
 
+    if (!includeNull) {
+      query.andWhere('exif.state IS NOT NULL');
+    }
+
     const result = await query.getRawMany<{ state: string }>();
 
     return result.map(({ state }) => state).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
-  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
+  async getCities(userIds: string[], { country, includeNull, state }: GetCitiesOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
-      .leftJoin('exif.asset', 'asset')
+      .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.city', 'city')
       .distinctOn(['exif.city']);
@@ -392,16 +402,20 @@ export class SearchRepository implements ISearchRepository {
       query.andWhere('exif.state = :state', { state });
     }
 
+    if (!includeNull) {
+      query.andWhere('exif.city IS NOT NULL');
+    }
+
     const results = await query.getRawMany<{ city: string }>();
 
     return results.map(({ city }) => city).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraMakes(userIds: string[], { model }: GetCameraMakesOptions): Promise<string[]> {
+  async getCameraMakes(userIds: string[], { includeNull, model }: GetCameraMakesOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
-      .leftJoin('exif.asset', 'asset')
+      .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
       .select('exif.make', 'make')
       .distinctOn(['exif.make']);
@@ -410,21 +424,30 @@ export class SearchRepository implements ISearchRepository {
       query.andWhere('exif.model = :model', { model });
     }
 
+    if (!includeNull) {
+      query.andWhere('exif.make IS NOT NULL');
+    }
+
     const results = await query.getRawMany<{ make: string }>();
     return results.map(({ make }) => make).filter((item) => item !== '');
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
-  async getCameraModels(userIds: string[], { make }: GetCameraModelsOptions): Promise<string[]> {
+  async getCameraModels(userIds: string[], { includeNull, make }: GetCameraModelsOptions): Promise<string[]> {
     const query = this.exifRepository
       .createQueryBuilder('exif')
-      .leftJoin('exif.asset', 'asset')
+      .innerJoin('exif.asset', 'asset')
       .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.model != ''`)
       .select('exif.model', 'model')
       .distinctOn(['exif.model']);
 
     if (make) {
       query.andWhere('exif.make = :make', { make });
+    }
+
+    if (!includeNull) {
+      query.andWhere('exif.model IS NOT NULL');
     }
 
     const results = await query.getRawMany<{ model: string }>();
