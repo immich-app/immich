@@ -11023,7 +11023,8 @@
                 "videos": 1,
                 "diskUsageRaw": 2,
                 "usagePhotos": 1,
-                "usageVideos": 1
+                "usageVideos": 1,
+                "usageTranscode": 1
               }
             ],
             "items": {
@@ -11033,6 +11034,11 @@
             "type": "array"
           },
           "usagePhotos": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "usageTranscode": {
             "default": 0,
             "format": "int64",
             "type": "integer"
@@ -11052,6 +11058,7 @@
           "usage",
           "usageByUser",
           "usagePhotos",
+          "usageTranscode",
           "usageVideos",
           "videos"
         ],
@@ -12650,6 +12657,11 @@
             "format": "int64",
             "type": "integer"
           },
+          "usageTranscode": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
           "usageVideos": {
             "format": "int64",
             "type": "integer"
@@ -12669,6 +12681,7 @@
           "quotaSizeInBytes",
           "usage",
           "usagePhotos",
+          "usageTranscode",
           "usageVideos",
           "userId",
           "userName",

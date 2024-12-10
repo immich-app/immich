@@ -117,6 +117,10 @@ export class UserRepository implements IUserRepository {
         'usageVideos',
       )
       .addSelect('users.quotaSizeInBytes', 'quotaSizeInBytes')
+      .addSelect(
+        `ARRAY_AGG(assets.encodedVideoPath) FILTER (WHERE assets.encodedVideoPath IS NOT NULL)`,
+        'encodedVideoPaths',
+      )
       .leftJoin('users.assets', 'assets')
       .leftJoin('assets.exifInfo', 'exif')
       .groupBy('users.id')
@@ -130,6 +134,7 @@ export class UserRepository implements IUserRepository {
       stat.usagePhotos = Number(stat.usagePhotos);
       stat.usageVideos = Number(stat.usageVideos);
       stat.quotaSizeInBytes = stat.quotaSizeInBytes;
+      stat.encodedVideoPaths = stat.encodedVideoPaths || [];
     }
 
     return stats;

@@ -14,6 +14,7 @@ export interface UserStatsQueryResponse {
   usagePhotos: number;
   usageVideos: number;
   quotaSizeInBytes: number | null;
+  encodedVideoPaths: string[];
 }
 
 export interface UserFindOptions {
