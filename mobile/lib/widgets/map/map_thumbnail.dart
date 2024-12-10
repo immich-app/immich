@@ -62,7 +62,7 @@ class MapThumbnail extends HookConsumerWidget {
       }
     }
 
-    return MapThemeOveride(
+    return MapThemeOverride(
       themeMode: themeMode,
       mapBuilder: (style) => SizedBox(
         height: height,

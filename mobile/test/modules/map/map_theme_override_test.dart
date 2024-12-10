@@ -35,7 +35,7 @@ void main() {
       (tester) async {
     AsyncValue<String>? mapStyle;
     await tester.pumpConsumerWidget(
-      MapThemeOveride(
+      MapThemeOverride(
         mapBuilder: (AsyncValue<String> style) {
           mapStyle = style;
           return const Text("Mock");
@@ -53,7 +53,7 @@ void main() {
   testWidgets("Return error when style is not fetched", (tester) async {
     AsyncValue<String>? mapStyle;
     await tester.pumpConsumerWidget(
-      MapThemeOveride(
+      MapThemeOverride(
         mapBuilder: (AsyncValue<String> style) {
           mapStyle = style;
           return const Text("Mock");
@@ -73,7 +73,7 @@ void main() {
       (tester) async {
     AsyncValue<String>? mapStyle;
     await tester.pumpConsumerWidget(
-      MapThemeOveride(
+      MapThemeOverride(
         mapBuilder: (AsyncValue<String> style) {
           mapStyle = style;
           return const Text("Mock");
@@ -94,7 +94,7 @@ void main() {
     testWidgets("Return dark theme style when system is dark", (tester) async {
       AsyncValue<String>? mapStyle;
       await tester.pumpConsumerWidget(
-        MapThemeOveride(
+        MapThemeOverride(
           mapBuilder: (AsyncValue<String> style) {
             mapStyle = style;
             return const Text("Mock");
@@ -118,7 +118,7 @@ void main() {
         (tester) async {
       AsyncValue<String>? mapStyle;
       await tester.pumpConsumerWidget(
-        MapThemeOveride(
+        MapThemeOverride(
           mapBuilder: (AsyncValue<String> style) {
             mapStyle = style;
             return const Text("Mock");
@@ -142,7 +142,7 @@ void main() {
         (tester) async {
       AsyncValue<String>? mapStyle;
       await tester.pumpConsumerWidget(
-        MapThemeOveride(
+        MapThemeOverride(
           mapBuilder: (AsyncValue<String> style) {
             mapStyle = style;
             return const Text("Mock");
