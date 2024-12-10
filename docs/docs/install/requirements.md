@@ -18,7 +18,7 @@ Immich requires the command `docker compose` - the similarly named `docker-compo
 ## Hardware
 
 - **OS**: Recommended Linux operating system (Ubuntu, Debian, etc).
-  - Non-Linux OS tend to provide a poor Docker experience and are not recommended.
+  - Non-Linux OSes tend to provide a poor Docker experience and are strongly discouraged.
     Our ability to assist with setup or troubleshooting on non-Linux OS will be severely reduced.
     If you insist on using a non-Linux OS, you can set it up as follows:
     - Windows: [Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/) or [WSL 2](https://docs.docker.com/desktop/wsl/).
