@@ -64,6 +64,7 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
 }
 
 export interface IMetadataRepository {
+  setMaxConcurrency(concurrency: number): void;
   teardown(): Promise<void>;
   readTags(path: string): Promise<ImmichTags>;
   writeTags(path: string, tags: Partial<Tags>): Promise<void>;

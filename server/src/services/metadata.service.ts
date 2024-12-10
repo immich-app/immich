@@ -5,7 +5,6 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
-import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
@@ -66,6 +65,8 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   return val;
 };
 
+type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['RegionInfo']> };
+
 @Injectable()
 export class MetadataService extends BaseService {
   @OnEvent({ name: 'app.bootstrap', workers: [ImmichWorker.MICROSERVICES] })
@@ -77,6 +78,16 @@ export class MetadataService extends BaseService {
   @OnEvent({ name: 'app.shutdown' })
   async onShutdown() {
     await this.metadataRepository.teardown();
+  }
+
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+  }
+
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
   }
 
   private async init() {
@@ -101,13 +112,17 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.exifInfo.livePhotoCID) {
+    return this.linkLivePhotos(asset, asset.exifInfo);
+  }
+
+  private async linkLivePhotos(asset: AssetEntity, exifInfo: ExifEntity): Promise<JobStatus> {
+    if (!exifInfo.livePhotoCID) {
       return JobStatus.SKIPPED;
     }
 
     const otherType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
     const match = await this.assetRepository.findLivePhotoMatch({
-      livePhotoCID: asset.exifInfo.livePhotoCID,
+      livePhotoCID: exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
       libraryId: asset.libraryId,
       otherAssetId: asset.id,
@@ -119,10 +134,11 @@ export class MetadataService extends BaseService {
     }
 
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
-
-    await this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
-    await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
-    await this.albumRepository.removeAsset(motionAsset.id);
+    await Promise.all([
+      this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id }),
+      this.assetRepository.update({ id: motionAsset.id, isVisible: false }),
+      this.albumRepository.removeAsset(motionAsset.id),
+    ]);
 
     await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
 
@@ -148,25 +164,37 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
-    const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
+  async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
+    const [{ metadata, reverseGeocoding }, [asset]] = await Promise.all([
+      this.getConfig({ withCache: true }),
+      this.assetRepository.getByIds([data.id], { faces: { person: false } }),
+    ]);
+
     if (!asset) {
       return JobStatus.FAILED;
     }
 
-    const stats = await this.storageRepository.stat(asset.originalPath);
-
-    const exifTags = await this.getExifTags(asset);
+    const [stats, exifTags] = await Promise.all([
+      this.storageRepository.stat(asset.originalPath),
+      this.getExifTags(asset),
+    ]);
 
     this.logger.verbose('Exif Tags', exifTags);
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
-    const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
-
     const { width, height } = this.getImageDimensions(exifTags);
 
-    const exifData: Partial<ExifEntity> = {
+    let geo: ReverseGeocodeResult = { country: null, state: null, city: null };
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    if (reverseGeocoding.enabled && this.hasGeo(exifTags)) {
+      latitude = exifTags.GPSLatitude;
+      longitude = exifTags.GPSLongitude;
+      geo = await this.mapRepository.reverseGeocode({ latitude, longitude });
+    }
+
+    const livePhotoCID = (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null;
+    const exifData: ExifEntity = {
       assetId: asset.id,
 
       // dates
@@ -175,11 +203,11 @@ export class MetadataService extends BaseService {
       timeZone,
 
       // gps
-      latitude,
-      longitude,
-      country,
-      state,
-      city,
+      latitude: exifTags.GPSLatitude ?? null,
+      longitude: exifTags.GPSLongitude ?? null,
+      country: geo.country,
+      state: geo.state,
+      city: geo.city,
 
       // image/file
       fileSizeInByte: stats.size,
@@ -206,30 +234,41 @@ export class MetadataService extends BaseService {
       rating: validateRange(exifTags.Rating, 0, 5),
 
       // grouping
-      livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
+      livePhotoCID,
       autoStackId: this.getAutoStackId(exifTags),
     };
 
-    await this.applyTagList(asset, exifTags);
-    await this.applyMotionPhotos(asset, exifTags);
+    const promises: Promise<unknown>[] = [
+      this.assetRepository.upsertExif(exifData),
+      this.assetRepository.update({
+        id: asset.id,
+        duration: exifTags.Duration?.toString() ?? null,
+        localDateTime,
+        fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      }),
+    ];
 
-    await this.assetRepository.upsertExif(exifData);
-
-    await this.assetRepository.update({
-      id: asset.id,
-      duration: exifTags.Duration?.toString() ?? null,
-      localDateTime,
-      fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
-    });
-
-    await this.assetRepository.upsertJobStatus({
-      assetId: asset.id,
-      metadataExtractedAt: new Date(),
-    });
-
-    if (isFaceImportEnabled(metadata)) {
-      await this.applyTaggedFaces(asset, exifTags);
+    if (this.hasTagList(exifTags)) {
+      promises.push(this.applyTagList(asset, exifTags));
     }
+
+    if (asset.type === AssetType.IMAGE) {
+      promises.push(this.applyMotionPhotos(asset, exifTags));
+    }
+
+    if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
+      promises.push(this.applyTaggedFaces(asset, exifTags));
+    }
+
+    if (livePhotoCID) {
+      promises.push(this.linkLivePhotos(asset, exifData));
+    }
+
+    await Promise.all(promises);
+    await Promise.all([
+      this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() }),
+      this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data }),
+    ]);
 
     return JobStatus.SUCCESS;
   }
@@ -326,45 +365,60 @@ export class MetadataService extends BaseService {
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
-    const mediaTags = await this.metadataRepository.readTags(asset.originalPath);
-    const sidecarTags = asset.sidecarPath ? await this.metadataRepository.readTags(asset.sidecarPath) : {};
-    const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
+    const promises = [this.metadataRepository.readTags(asset.originalPath)];
+    if (asset.sidecarPath) {
+      promises.push(this.metadataRepository.readTags(asset.sidecarPath));
+    }
+    if (asset.type === AssetType.VIDEO) {
+      promises.push(this.getVideoTags(asset.originalPath));
+    }
+
+    const [mediaTags, sidecarTags, videoTags] = await Promise.all(promises);
+    if (!sidecarTags && !videoTags) {
+      return mediaTags;
+    }
 
     // prefer dates from sidecar tags
-    const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
-    if (sidecarDate) {
-      for (const tag of EXIF_DATE_TAGS) {
-        delete mediaTags[tag];
+    if (sidecarTags) {
+      const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
+      if (sidecarDate) {
+        for (const tag of EXIF_DATE_TAGS) {
+          delete mediaTags[tag];
+        }
       }
     }
 
     // prefer duration from video tags
     delete mediaTags.Duration;
-    delete sidecarTags.Duration;
+    delete sidecarTags?.Duration;
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
   }
 
+  private hasTagList(tags: ImmichTags): tags is ImmichTags & { TagsList: string[] } {
+    return tags.TagsList !== undefined || tags.HierarchicalSubject !== undefined || tags.Keywords !== undefined;
+  }
+
   private async applyTagList(asset: AssetEntity, exifTags: ImmichTags) {
-    const tags: string[] = [];
+    let tags: string[] = [];
     if (exifTags.TagsList) {
-      tags.push(...exifTags.TagsList.map(String));
+      tags = exifTags.TagsList.map(String);
     } else if (exifTags.HierarchicalSubject) {
-      tags.push(
-        ...exifTags.HierarchicalSubject.map((tag) =>
-          String(tag)
-            // convert | to /
-            .replaceAll('/', '<PLACEHOLDER>')
-            .replaceAll('|', '/')
-            .replaceAll('<PLACEHOLDER>', '|'),
-        ),
+      tags = exifTags.HierarchicalSubject.map((tag) =>
+        typeof tag === 'number'
+          ? String(tag)
+          : tag
+              // convert | to /
+              .replaceAll('/', '<PLACEHOLDER>')
+              .replaceAll('|', '/')
+              .replaceAll('<PLACEHOLDER>', '|'),
       );
     } else if (exifTags.Keywords) {
       let keywords = exifTags.Keywords;
       if (!Array.isArray(keywords)) {
         keywords = [keywords];
       }
-      tags.push(...keywords.map(String));
+      tags = keywords.map(String);
     }
 
     const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
@@ -503,11 +557,13 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTags) {
-    if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
-      return;
-    }
+  private hasTaggedFaces(tags: ImmichTags): tags is ImmichTagsWithFaces {
+    return (
+      tags.RegionInfo !== undefined && tags.RegionInfo.AppliedToDimensions && tags.RegionInfo.RegionList.length > 0
+    );
+  }
 
+  private async applyTaggedFaces(asset: AssetEntity, tags: ImmichTagsWithFaces) {
     const facesToAdd: Partial<AssetFaceEntity>[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
@@ -609,24 +665,12 @@ export class MetadataService extends BaseService {
     };
   }
 
-  private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {
-    let latitude = validate(tags.GPSLatitude);
-    let longitude = validate(tags.GPSLongitude);
-
-    // TODO take ref into account
-
-    if (latitude === 0 && longitude === 0) {
-      this.logger.warn('Latitude and longitude of 0, setting to null');
-      latitude = null;
-      longitude = null;
-    }
-
-    let result: ReverseGeocodeResult = { country: null, state: null, city: null };
-    if (reverseGeocoding.enabled && longitude && latitude) {
-      result = await this.mapRepository.reverseGeocode({ latitude, longitude });
-    }
-
-    return { ...result, latitude, longitude };
+  private hasGeo(tags: ImmichTags): tags is ImmichTags & { GPSLatitude: number; GPSLongitude: number } {
+    return (
+      tags.GPSLatitude !== undefined &&
+      tags.GPSLongitude !== undefined &&
+      (tags.GPSLatitude !== 0 || tags.GPSLatitude !== 0)
+    );
   }
 
   private getAutoStackId(tags: ImmichTags | null): string | null {

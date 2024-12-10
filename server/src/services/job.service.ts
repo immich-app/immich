@@ -240,7 +240,6 @@ export class JobService extends BaseService {
             this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
         }
-        await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
         break;
       }
 
