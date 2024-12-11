@@ -92,7 +92,7 @@ export class AssetRepository implements IAssetRepository {
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
       .innerJoinAndSelect('entity.files', 'files')
-      .where('files.type = :type', { type: AssetFileType.THUMBNAIL })
+      .andWhere('files.type = :type', { type: AssetFileType.THUMBNAIL })
       .andWhere(
         `EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE 'UTC') - EXTRACT(YEAR FROM entity.localDateTime AT TIME ZONE 'UTC') > 0`,
       )
