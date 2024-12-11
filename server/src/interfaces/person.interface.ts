@@ -10,6 +10,7 @@ export const IPersonRepository = 'IPersonRepository';
 export interface PersonSearchOptions {
   minimumFaceCount: number;
   withHidden: boolean;
+  closestFaceAssetId?: string;
 }
 
 export interface PersonNameSearchOptions {

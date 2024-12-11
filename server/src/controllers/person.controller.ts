@@ -31,8 +31,8 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PERSON_READ })
-  getAllPeople(@Auth() auth: AuthDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
-    return this.service.getAll(auth, withHidden);
+  getAllPeople(@Auth() auth: AuthDto, @Query() options: PersonSearchDto): Promise<PeopleResponseDto> {
+    return this.service.getAll(auth, options);
   }
 
   @Post()

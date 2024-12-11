@@ -67,6 +67,10 @@ export class MergePersonDto {
 export class PersonSearchDto {
   @ValidateBoolean({ optional: true })
   withHidden?: boolean;
+  @ValidateUUID({ optional: true })
+  closestPersonId?: string;
+  @ValidateUUID({ optional: true })
+  closestAssetId?: string;
 
   /** Page number for pagination */
   @ApiPropertyOptional()
