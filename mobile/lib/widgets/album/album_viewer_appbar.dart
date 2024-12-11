@@ -278,6 +278,10 @@ class AlbumViewerAppbar extends HookConsumerWidget
       }
     }
 
+    void onSortOrderToggled() {
+      ref.read(albumProvider.notifier).toggleSortOrder(album);
+    }
+
     return AppBar(
       elevation: 0,
       leading: buildLeadingButton(),
@@ -285,12 +289,17 @@ class AlbumViewerAppbar extends HookConsumerWidget
       actions: [
         if (album.shared && (album.activityEnabled || comments != 0))
           buildActivitiesButton(),
-        if (album.isRemote)
+        if (album.isRemote) ...[
+          IconButton(
+            onPressed: onSortOrderToggled,
+            icon: const Icon(Icons.swap_vert_rounded),
+          ),
           IconButton(
             splashRadius: 25,
             onPressed: buildBottomSheet,
             icon: const Icon(Icons.more_horiz_rounded),
           ),
+        ],
       ],
     );
   }
