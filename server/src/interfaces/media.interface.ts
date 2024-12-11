@@ -130,6 +130,11 @@ export interface ProbeOptions {
   countFrames: boolean;
 }
 
+export interface VideoInterfaces {
+  dri: string[];
+  mali: boolean;
+}
+
 export interface IMediaRepository {
   // image
   extract(input: string, output: string): Promise<boolean>;
