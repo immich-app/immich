@@ -890,7 +890,7 @@
             renderThumbsAtBottomMargin={THUMBNAIL_INTERSECTION_ROOT_BOTTOM}
             {withStacked}
             {showArchiveIcon}
-            {showUserThumbnailsinViewer}
+            {showOwnerAvatar}
             {assetStore}
             {assetInteractionStore}
             {isSelectionMode}
