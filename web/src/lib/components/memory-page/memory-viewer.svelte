@@ -46,6 +46,8 @@
   import { tweened } from 'svelte/motion';
   import { derived as storeDerived } from 'svelte/store';
   import { fade } from 'svelte/transition';
+  import { preferences, user } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
   type MemoryIndex = {
     memoryIndex: number;
@@ -221,6 +223,7 @@
   $effect(() => {
     handlePromiseError(handleAction(galleryInView ? 'pause' : 'play'));
   });
+  let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
 </script>
 
 <svelte:window
@@ -253,6 +256,9 @@
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
         <ArchiveAction menuItem unarchive={isAllArchived} onArchive={handleRemove} />
+        {#if $preferences.tags.enabled && isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
         <DeleteAssets menuItem onAssetDelete={handleRemove} />
       </ButtonContextMenu>
     </AssetSelectControlBar>

@@ -71,7 +71,20 @@ FROM
   INNER JOIN "asset_files" "files" ON "files"."assetId" = "entity"."id"
 WHERE
   (
-    "files"."type" = $1
+    "entity"."ownerId" IN ($1)
+    AND "entity"."isVisible" = true
+    AND "entity"."isArchived" = false
+    AND EXTRACT(
+      DAY
+      FROM
+        "entity"."localDateTime" AT TIME ZONE 'UTC'
+    ) = $2
+    AND EXTRACT(
+      MONTH
+      FROM
+        "entity"."localDateTime" AT TIME ZONE 'UTC'
+    ) = $3
+    AND "files"."type" = $4
     AND EXTRACT(
       YEAR
       FROM
