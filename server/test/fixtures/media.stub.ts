@@ -17,6 +17,7 @@ const probeStubDefaultVideoStream: VideoStreamInfo[] = [
     rotation: 0,
     isHDR: false,
     bitrate: 0,
+    pixelFormat: 'yuv420p',
   },
 ];
 
@@ -43,6 +44,7 @@ export const probeStub = {
         rotation: 0,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
       {
         index: 1,
@@ -53,6 +55,7 @@ export const probeStub = {
         rotation: 0,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
     ],
   }),
@@ -68,6 +71,7 @@ export const probeStub = {
         rotation: 0,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
     ],
   }),
@@ -83,12 +87,20 @@ export const probeStub = {
         rotation: 0,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
     ],
   }),
   videoStream40Mbps: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [{ ...probeStubDefaultVideoStream[0], bitrate: 40_000_000 }],
+  }),
+  videoStreamMTS: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    format: {
+      ...probeStubDefaultFormat,
+      formatName: 'mpegts',
+    },
   }),
   videoStreamHDR: Object.freeze<VideoInfo>({
     ...probeStubDefault,
@@ -102,6 +114,23 @@ export const probeStub = {
         rotation: 0,
         isHDR: true,
         bitrate: 0,
+        pixelFormat: 'yuv420p10le',
+      },
+    ],
+  }),
+  videoStream10Bit: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 480,
+        width: 480,
+        codecName: 'h264',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+        bitrate: 0,
+        pixelFormat: 'yuv420p10le',
       },
     ],
   }),
@@ -117,6 +146,7 @@ export const probeStub = {
         rotation: 90,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
     ],
   }),
@@ -132,6 +162,7 @@ export const probeStub = {
         rotation: 0,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
     ],
   }),
@@ -147,12 +178,20 @@ export const probeStub = {
         rotation: 0,
         isHDR: false,
         bitrate: 0,
+        pixelFormat: 'yuv420p',
       },
     ],
   }),
   audioStreamAac: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecName: 'aac', frameCount: 100 }],
+  }),
+  audioStreamUnknown: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    audioStreams: [
+      { index: 0, codecName: 'aac', frameCount: 100 },
+      { index: 1, codecName: 'unknown', frameCount: 200 },
+    ],
   }),
   matroskaContainer: Object.freeze<VideoInfo>({
     ...probeStubDefault,

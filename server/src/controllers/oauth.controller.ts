@@ -3,14 +3,13 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import {
   AuthDto,
-  ImmichCookie,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
   OAuthCallbackDto,
   OAuthConfigDto,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto } from 'src/dtos/user.dto';
-import { AuthType } from 'src/enum';
+import { AuthType, ImmichCookie } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { respondWithCookie } from 'src/utils/response';

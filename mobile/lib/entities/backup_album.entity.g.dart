@@ -45,7 +45,7 @@ const BackupAlbumSchema = CollectionSchema(
   getId: _backupAlbumGetId,
   getLinks: _backupAlbumGetLinks,
   attach: _backupAlbumAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _backupAlbumEstimateSize(

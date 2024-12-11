@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   const recentTimes: number[] = [];
   // TODO: track average time to measure, and use this to populate TUNABLES.ASSETS_STORE.CHECK_INTERVAL_MS
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -20,9 +20,13 @@
   import { resizeObserver } from '$lib/actions/resize-observer';
   import type { AssetBucket, AssetStore, BucketListener } from '$lib/stores/assets.store';
 
-  export let assetStore: AssetStore;
-  export let bucket: AssetBucket;
-  export let onMeasured: () => void;
+  interface Props {
+    assetStore: AssetStore;
+    bucket: AssetBucket;
+    onMeasured: () => void;
+  }
+
+  let { assetStore, bucket, onMeasured }: Props = $props();
 
   async function _measure(element: Element) {
     try {

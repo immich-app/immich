@@ -6,9 +6,13 @@
   import type { OnStack, OnUnstack } from '$lib/utils/actions';
   import { t } from 'svelte-i18n';
 
-  export let unstack = false;
-  export let onStack: OnStack | undefined;
-  export let onUnstack: OnUnstack | undefined;
+  interface Props {
+    unstack?: boolean;
+    onStack: OnStack | undefined;
+    onUnstack: OnUnstack | undefined;
+  }
+
+  let { unstack = false, onStack, onUnstack }: Props = $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 

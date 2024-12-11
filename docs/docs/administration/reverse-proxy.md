@@ -40,6 +40,26 @@ server {
 }
 ```
 
+#### Compatibility with Let's Encrypt
+
+In the event that your nginx configuration includes a section for Let's Encrypt, it's likely that you have a segment similar to the following:
+
+```nginx
+location ~ /.well-known {
+    ...
+}
+```
+
+This particular `location` directive can inadvertently prevent mobile clients from reaching the `/.well-known/immich` path, which is crucial for discovery. Usual error message for this case is: "Your app major version is not compatible with the server". To remedy this, you should introduce an additional location block specifically for this path, ensuring that requests are correctly proxied to the Immich server:
+
+```nginx
+location = /.well-known/immich {
+    proxy_pass http://<backend_url>:2283;
+}
+```
+
+By doing so, you'll maintain the functionality of Let's Encrypt while allowing mobile clients to access the necessary Immich path without obstruction.
+
 ### Caddy example config
 
 As an alternative to nginx, you can also use [Caddy](https://caddyserver.com/) as a reverse proxy (with automatic HTTPS configuration). Below is an example config.

@@ -62,7 +62,6 @@ export class UserAdminCreateDto {
   @Transform(toEmail)
   email!: string;
 
-  @IsNotEmpty()
   @IsString()
   password!: string;
 

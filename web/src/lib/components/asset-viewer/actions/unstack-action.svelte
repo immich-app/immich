@@ -7,8 +7,12 @@
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
-  export let stack: StackResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    stack: StackResponseDto;
+    onAction: OnAction;
+  }
+
+  let { stack, onAction }: Props = $props();
 
   const handleUnstack = async () => {
     const unstackedAssets = await deleteStack([stack.id]);

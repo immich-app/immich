@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -103,7 +103,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   /// Connects websocket to server unless already connected
   void connect() {
     if (state.isConnected) return;
-    final authenticationState = _ref.read(authenticationProvider);
+    final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
       try {

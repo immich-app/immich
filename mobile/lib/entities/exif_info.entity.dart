@@ -23,6 +23,7 @@ class ExifInfo {
   String? state;
   String? country;
   String? description;
+  String? orientation;
 
   @ignore
   bool get hasCoordinates =>
@@ -46,6 +47,13 @@ class ExifInfo {
   String get focalLength => mm != null ? mm!.toStringAsFixed(1) : "";
 
   @ignore
+  bool? _isFlipped;
+
+  @ignore
+  @pragma('vm:prefer-inline')
+  bool get isFlipped => _isFlipped ??= _isOrientationFlipped(orientation);
+
+  @ignore
   double? get latitude => lat;
 
   @ignore
@@ -67,7 +75,8 @@ class ExifInfo {
         city = dto.city,
         state = dto.state,
         country = dto.country,
-        description = dto.description;
+        description = dto.description,
+        orientation = dto.orientation;
 
   ExifInfo({
     this.id,
@@ -87,6 +96,7 @@ class ExifInfo {
     this.state,
     this.country,
     this.description,
+    this.orientation,
   });
 
   ExifInfo copyWith({
@@ -107,6 +117,7 @@ class ExifInfo {
     String? state,
     String? country,
     String? description,
+    String? orientation,
   }) =>
       ExifInfo(
         id: id ?? this.id,
@@ -126,6 +137,7 @@ class ExifInfo {
         state: state ?? this.state,
         country: country ?? this.country,
         description: description ?? this.description,
+        orientation: orientation ?? this.orientation,
       );
 
   @override
@@ -147,7 +159,8 @@ class ExifInfo {
         city == other.city &&
         state == other.state &&
         country == other.country &&
-        description == other.description;
+        description == other.description &&
+        orientation == other.orientation;
   }
 
   @override
@@ -169,7 +182,8 @@ class ExifInfo {
       city.hashCode ^
       state.hashCode ^
       country.hashCode ^
-      description.hashCode;
+      description.hashCode ^
+      orientation.hashCode;
 
   @override
   String toString() {
@@ -192,8 +206,19 @@ class ExifInfo {
   state: $state,
   country: $country,
   description: $description,
+  orientation: $orientation
 }""";
   }
+}
+
+bool _isOrientationFlipped(String? orientation) {
+  final value = orientation != null ? int.tryParse(orientation) : null;
+  if (value == null) {
+    return false;
+  }
+  final isRotated90CW = value == 5 || value == 6 || value == 90;
+  final isRotated270CW = value == 7 || value == 8 || value == -90;
+  return isRotated90CW || isRotated270CW;
 }
 
 double? _exposureTimeToSeconds(String? s) {

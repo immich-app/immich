@@ -9,14 +9,19 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SvelteSet } from 'svelte/reactivity';
 
-  export let onTag: (tagIds: string[]) => void;
-  export let onCancel: () => void;
+  interface Props {
+    onTag: (tagIds: string[]) => void;
+    onCancel: () => void;
+  }
 
-  let allTags: TagResponseDto[] = [];
-  $: tagMap = Object.fromEntries(allTags.map((tag) => [tag.id, tag]));
-  let selectedIds = new Set<string>();
-  $: disabled = selectedIds.size === 0;
+  let { onTag, onCancel }: Props = $props();
+
+  let allTags: TagResponseDto[] = $state([]);
+  let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
+  let selectedIds = $state(new SvelteSet<string>());
+  let disabled = $derived(selectedIds.size === 0);
 
   onMount(async () => {
     allTags = await getAllTags();
@@ -30,26 +35,31 @@
     }
 
     selectedIds.add(option.value);
-    selectedIds = selectedIds;
   };
 
   const handleRemove = (tag: string) => {
     selectedIds.delete(tag);
-    selectedIds = selectedIds;
+  };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    handleSubmit();
   };
 </script>
 
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
   <div class="text-sm">
     <p>
-      <FormatMessage key="tag_not_found_question" let:message>
-        <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
-          {message}
-        </a>
+      <FormatMessage key="tag_not_found_question">
+        {#snippet children({ message })}
+          <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
+            {message}
+          </a>
+        {/snippet}
       </FormatMessage>
     </p>
   </div>
-  <form on:submit|preventDefault={handleSubmit} autocomplete="off" id="create-tag-form">
+  <form {onsubmit} autocomplete="off" id="create-tag-form">
     <div class="my-4 flex flex-col gap-2">
       <Combobox
         onSelect={handleSelect}
@@ -77,7 +87,7 @@
             type="button"
             class="text-gray-100 dark:text-immich-dark-gray bg-immich-primary/95 dark:bg-immich-dark-primary/95 rounded-tr-full rounded-br-full place-items-center place-content-center pr-2 pl-1 py-1 hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
             title="Remove tag"
-            on:click={() => handleRemove(tagId)}
+            onclick={() => handleRemove(tagId)}
           >
             <Icon path={mdiClose} />
           </button>
@@ -86,8 +96,8 @@
     {/each}
   </section>
 
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={onCancel}>{$t('cancel')}</Button>
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth form="create-tag-form" {disabled}>{$t('tag_assets')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

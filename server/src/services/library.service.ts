@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
-import path, { basename, parse } from 'node:path';
+import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
@@ -16,47 +16,41 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType } from 'src/enum';
+import { AssetType, ImmichWorker } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import {
-  IEntityJob,
-  ILibraryAssetJob,
-  ILibraryFileJob,
-  JobName,
-  JOBS_LIBRARY_PAGINATION_SIZE,
-  JobStatus,
-} from 'src/interfaces/job.interface';
+import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
-import { validateCronExpression } from 'src/validation';
 
 @Injectable()
 export class LibraryService extends BaseService {
   private watchLibraries = false;
-  private watchLock = false;
+  private lock = false;
   private watchers: Record<string, () => Promise<void>> = {};
 
-  @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap() {
-    const config = await this.getConfig({ withCache: false });
-
-    const { watch, scan } = config.library;
-
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  async onConfigInit({
+    newConfig: {
+      library: { watch, scan },
+    },
+  }: ArgOf<'config.init'>) {
     // This ensures that library watching only occurs in one microservice
-    // TODO: we could make the lock be per-library instead of global
-    this.watchLock = await this.databaseRepository.tryLock(DatabaseLock.LibraryWatch);
+    this.lock = await this.databaseRepository.tryLock(DatabaseLock.Library);
 
-    this.watchLibraries = this.watchLock && watch.enabled;
+    this.watchLibraries = this.lock && watch.enabled;
 
-    this.jobRepository.addCronJob(
-      'libraryScan',
-      scan.cronExpression,
-      () => handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
-      scan.enabled,
-    );
+    if (this.lock) {
+      this.cronRepository.create({
+        name: 'libraryScan',
+        expression: scan.cronExpression,
+        onTick: () =>
+          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+        start: scan.enabled,
+      });
+    }
 
     if (this.watchLibraries) {
       await this.watchAll();
@@ -64,25 +58,21 @@ export class LibraryService extends BaseService {
   }
 
   @OnEvent({ name: 'config.update', server: true })
-  async onConfigUpdate({ newConfig: { library }, oldConfig }: ArgOf<'config.update'>) {
-    if (!oldConfig || !this.watchLock) {
+  async onConfigUpdate({ newConfig: { library } }: ArgOf<'config.update'>) {
+    if (!this.lock) {
       return;
     }
 
-    this.jobRepository.updateCronJob('libraryScan', library.scan.cronExpression, library.scan.enabled);
+    this.cronRepository.update({
+      name: 'libraryScan',
+      expression: library.scan.cronExpression,
+      start: library.scan.enabled,
+    });
 
     if (library.watch.enabled !== this.watchLibraries) {
       // Watch configuration changed, update accordingly
       this.watchLibraries = library.watch.enabled;
       await (this.watchLibraries ? this.watchAll() : this.unwatchAll());
-    }
-  }
-
-  @OnEvent({ name: 'config.validate' })
-  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
-    const { scan } = newConfig.library;
-    if (!validateCronExpression(scan.cronExpression)) {
-      throw new Error(`Invalid cron expression ${scan.cronExpression}`);
     }
   }
 
@@ -180,7 +170,7 @@ export class LibraryService extends BaseService {
   }
 
   private async unwatchAll() {
-    if (!this.watchLock) {
+    if (!this.lock) {
       return false;
     }
 
@@ -190,7 +180,7 @@ export class LibraryService extends BaseService {
   }
 
   async watchAll() {
-    if (!this.watchLock) {
+    if (!this.lock) {
       return false;
     }
 
@@ -218,6 +208,7 @@ export class LibraryService extends BaseService {
     return libraries.map((library) => mapLibrary(library));
   }
 
+  @OnJob({ name: JobName.LIBRARY_QUEUE_CLEANUP, queue: QueueName.LIBRARY })
   async handleQueueCleanup(): Promise<JobStatus> {
     this.logger.debug('Cleaning up any pending library deletions');
     const pendingDeletion = await this.libraryRepository.getAllDeleted();
@@ -265,6 +256,11 @@ export class LibraryService extends BaseService {
 
     if (StorageCore.isImmichPath(importPath)) {
       validation.message = 'Cannot use media upload folder for external libraries';
+      return validation;
+    }
+
+    if (!isAbsolute(importPath)) {
+      validation.message = `Import path must be absolute, try ${path.resolve(importPath)}`;
       return validation;
     }
 
@@ -330,7 +326,8 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_DELETE, data: { id } });
   }
 
-  async handleDeleteLibrary(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_DELETE, queue: QueueName.LIBRARY })
+  async handleDeleteLibrary(job: JobOf<JobName.LIBRARY_DELETE>): Promise<JobStatus> {
     const libraryId = job.id;
 
     const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
@@ -364,7 +361,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSyncFile(job: ILibraryFileJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_SYNC_FILE, queue: QueueName.LIBRARY })
+  async handleSyncFile(job: JobOf<JobName.LIBRARY_SYNC_FILE>): Promise<JobStatus> {
     // Only needs to handle new assets
     const assetPath = path.normalize(job.assetPath);
 
@@ -448,6 +446,7 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
   async handleQueueSyncAll(): Promise<JobStatus> {
     this.logger.debug(`Refreshing all external libraries`);
 
@@ -473,7 +472,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSyncAsset(job: ILibraryAssetJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_SYNC_ASSET, queue: QueueName.LIBRARY })
+  async handleSyncAsset(job: JobOf<JobName.LIBRARY_SYNC_ASSET>): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(job.id);
     if (!asset) {
       return JobStatus.SKIPPED;
@@ -528,7 +528,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueSyncFiles(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_FILES, queue: QueueName.LIBRARY })
+  async handleQueueSyncFiles(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_FILES>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
     if (!library) {
       this.logger.debug(`Library ${job.id} not found, skipping refresh`);
@@ -579,7 +580,8 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueSyncAssets(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, queue: QueueName.LIBRARY })
+  async handleQueueSyncAssets(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_ASSETS>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
     if (!library) {
       return JobStatus.SKIPPED;

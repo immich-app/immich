@@ -38,7 +38,7 @@ describe(StorageTemplateService.name, () => {
 
     systemMock.get.mockResolvedValue({ storageTemplate: { enabled: true } });
 
-    sut.onConfigUpdate({ newConfig: defaults });
+    sut.onConfigInit({ newConfig: defaults });
   });
 
   describe('onConfigValidate', () => {
@@ -67,6 +67,41 @@ describe(StorageTemplateService.name, () => {
           oldConfig: {} as SystemConfig,
         }),
       ).toThrow(/Invalid storage template.*/);
+    });
+  });
+
+  describe('getStorageTemplateOptions', () => {
+    it('should send back the datetime variables', () => {
+      expect(sut.getStorageTemplateOptions()).toEqual({
+        dayOptions: ['d', 'dd'],
+        hourOptions: ['h', 'hh', 'H', 'HH'],
+        minuteOptions: ['m', 'mm'],
+        monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
+        presetOptions: [
+          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+          '{{y}}/{{MM}}-{{dd}}/{{filename}}',
+          '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
+          '{{y}}/{{MM}}/{{filename}}',
+          '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+          '{{y}}/{{MMM}}/{{filename}}',
+          '{{y}}/{{MMMM}}/{{filename}}',
+          '{{y}}/{{MM}}/{{dd}}/{{filename}}',
+          '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+          '{{y}}-{{MM}}-{{dd}}/{{filename}}',
+          '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
+          '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}/{{filename}}',
+          '{{y}}/{{y}}-{{WW}}/{{filename}}',
+          '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+          '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+          '{{y}}/{{y}}-{{WW}}/{{assetId}}',
+          '{{album}}/{{filename}}',
+        ],
+        secondOptions: ['s', 'ss', 'SSS'],
+        weekOptions: ['W', 'WW'],
+        yearOptions: ['y', 'yy'],
+      });
     });
   });
 
@@ -136,7 +171,7 @@ describe(StorageTemplateService.name, () => {
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other/{{MM}}{{/if}}/{{filename}}';
 
-      sut.onConfigUpdate({ oldConfig: defaults, newConfig: config });
+      sut.onConfigInit({ newConfig: config });
 
       userMock.get.mockResolvedValue(user);
       assetMock.getByIds.mockResolvedValueOnce([asset]);
@@ -157,7 +192,7 @@ describe(StorageTemplateService.name, () => {
       const user = userStub.user1;
       const config = structuredClone(defaults);
       config.storageTemplate.template = '{{y}}/{{#if album}}{{album}}{{else}}other//{{MM}}{{/if}}/{{filename}}';
-      sut.onConfigUpdate({ oldConfig: defaults, newConfig: config });
+      sut.onConfigInit({ newConfig: config });
 
       userMock.get.mockResolvedValue(user);
       assetMock.getByIds.mockResolvedValueOnce([asset]);

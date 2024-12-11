@@ -7,29 +7,49 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
-  export let url: string;
-  export let altText: string | undefined;
-  export let title: string | null = null;
-  export let heightStyle: string | undefined = undefined;
-  export let widthStyle: string;
-  export let base64ThumbHash: string | null = null;
-  export let curve = false;
-  export let shadow = false;
-  export let circle = false;
-  export let hidden = false;
-  export let border = false;
-  export let preload = true;
-  export let hiddenIconClass = 'text-white';
-  export let onComplete: (() => void) | undefined = undefined;
+  interface Props {
+    url: string;
+    altText: string | undefined;
+    title?: string | null;
+    heightStyle?: string | undefined;
+    widthStyle: string;
+    base64ThumbHash?: string | null;
+    curve?: boolean;
+    shadow?: boolean;
+    circle?: boolean;
+    hidden?: boolean;
+    border?: boolean;
+    preload?: boolean;
+    hiddenIconClass?: string;
+    onComplete?: (() => void) | undefined;
+    onClick?: (() => void) | undefined;
+  }
+
+  let {
+    url,
+    altText,
+    title = null,
+    heightStyle = undefined,
+    widthStyle,
+    base64ThumbHash = null,
+    curve = false,
+    shadow = false,
+    circle = false,
+    hidden = false,
+    border = false,
+    preload = true,
+    hiddenIconClass = 'text-white',
+    onComplete = undefined,
+  }: Props = $props();
 
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
-  let loaded = false;
-  let errored = false;
+  let loaded = $state(false);
+  let errored = $state(false);
 
-  let img: HTMLImageElement;
+  let img = $state<HTMLImageElement>();
 
   const setLoaded = () => {
     loaded = true;
@@ -40,20 +60,22 @@
     onComplete?.();
   };
   onMount(() => {
-    if (img.complete) {
+    if (img?.complete) {
       setLoaded();
     }
   });
 
-  $: optionalClasses = [
-    curve && 'rounded-xl',
-    circle && 'rounded-full',
-    shadow && 'shadow-lg',
-    (circle || !heightStyle) && 'aspect-square',
-    border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  let optionalClasses = $derived(
+    [
+      curve && 'rounded-xl',
+      circle && 'rounded-full',
+      shadow && 'shadow-lg',
+      (circle || !heightStyle) && 'aspect-square',
+      border && 'border-[3px] border-immich-dark-primary/80 hover:border-immich-primary',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
 </script>
 
 {#if errored}
@@ -61,8 +83,8 @@
 {:else}
   <img
     bind:this={img}
-    on:load={setLoaded}
-    on:error={setErrored}
+    onload={setLoaded}
+    onerror={setErrored}
     loading={preload ? 'eager' : 'lazy'}
     style:width={widthStyle}
     style:height={heightStyle}
@@ -96,5 +118,5 @@
     class:rounded-full={circle}
     draggable="false"
     out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-  />
+  ></canvas>
 {/if}

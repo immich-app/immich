@@ -7,24 +7,16 @@ import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, ImmichWorker, SourceType } from 'src/enum';
+import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import {
-  IBaseJob,
-  IEntityJob,
-  ISidecarWriteJob,
-  JobName,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { ReverseGeocodeResult } from 'src/interfaces/map.interface';
 import { ImmichTags } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
@@ -43,17 +35,6 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'MediaCreateDate',
   'DateTimeCreated',
 ];
-
-export enum Orientation {
-  Horizontal = 1,
-  MirrorHorizontal = 2,
-  Rotate180 = 3,
-  MirrorVertical = 4,
-  MirrorHorizontalRotate270CW = 5,
-  Rotate90CW = 6,
-  MirrorHorizontalRotate90CW = 7,
-  Rotate270CW = 8,
-}
 
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
@@ -87,13 +68,10 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 
 @Injectable()
 export class MetadataService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap' })
-  async onBootstrap(app: ArgOf<'app.bootstrap'>) {
-    if (app !== ImmichWorker.MICROSERVICES) {
-      return;
-    }
-    const config = await this.getConfig({ withCache: false });
-    await this.init(config);
+  @OnEvent({ name: 'app.bootstrap', workers: [ImmichWorker.MICROSERVICES] })
+  async onBootstrap() {
+    this.logger.log('Bootstrapping metadata service');
+    await this.init();
   }
 
   @OnEvent({ name: 'app.shutdown' })
@@ -101,17 +79,8 @@ export class MetadataService extends BaseService {
     await this.metadataRepository.teardown();
   }
 
-  @OnEvent({ name: 'config.update' })
-  async onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
-    await this.init(newConfig);
-  }
-
-  private async init({ reverseGeocoding }: SystemConfig) {
-    const { enabled } = reverseGeocoding;
-
-    if (!enabled) {
-      return;
-    }
+  private async init() {
+    this.logger.log('Initializing metadata service');
 
     try {
       await this.jobRepository.pause(QueueName.METADATA_EXTRACTION);
@@ -124,7 +93,8 @@ export class MetadataService extends BaseService {
     }
   }
 
-  async handleLivePhotoLinking(job: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.LINK_LIVE_PHOTOS, queue: QueueName.METADATA_EXTRACTION })
+  async handleLivePhotoLinking(job: JobOf<JobName.LINK_LIVE_PHOTOS>): Promise<JobStatus> {
     const { id } = job;
     const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
     if (!asset?.exifInfo) {
@@ -159,7 +129,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueMetadataExtraction(job: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
+  async handleQueueMetadataExtraction(job: JobOf<JobName.QUEUE_METADATA_EXTRACTION>): Promise<JobStatus> {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
@@ -176,7 +147,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleMetadataExtraction({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
+  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
     if (!asset) {
@@ -191,6 +163,8 @@ export class MetadataService extends BaseService {
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
+
+    const { width, height } = this.getImageDimensions(exifTags);
 
     const exifData: Partial<ExifEntity> = {
       assetId: asset.id,
@@ -209,8 +183,8 @@ export class MetadataService extends BaseService {
 
       // image/file
       fileSizeInByte: stats.size,
-      exifImageHeight: validate(exifTags.ImageHeight),
-      exifImageWidth: validate(exifTags.ImageWidth),
+      exifImageHeight: validate(height),
+      exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
       projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
@@ -260,7 +234,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleQueueSidecar(job: IBaseJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.QUEUE_SIDECAR, queue: QueueName.SIDECAR })
+  async handleQueueSidecar(job: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
     const { force } = job;
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
@@ -280,11 +255,13 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  handleSidecarSync({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_SYNC, queue: QueueName.SIDECAR })
+  handleSidecarSync({ id }: JobOf<JobName.SIDECAR_SYNC>): Promise<JobStatus> {
     return this.processSidecar(id, true);
   }
 
-  handleSidecarDiscovery({ id }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_DISCOVERY, queue: QueueName.SIDECAR })
+  handleSidecarDiscovery({ id }: JobOf<JobName.SIDECAR_DISCOVERY>): Promise<JobStatus> {
     return this.processSidecar(id, false);
   }
 
@@ -298,7 +275,8 @@ export class MetadataService extends BaseService {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
   }
 
-  async handleSidecarWrite(job: ISidecarWriteJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_WRITE, queue: QueueName.SIDECAR })
+  async handleSidecarWrite(job: JobOf<JobName.SIDECAR_WRITE>): Promise<JobStatus> {
     const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
     const [asset] = await this.assetRepository.getByIds([id], { tags: true });
     if (!asset) {
@@ -334,18 +312,35 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
+  private getImageDimensions(exifTags: ImmichTags): { width?: number; height?: number } {
+    /*
+     * The "true" values for width and height are a bit hidden, depending on the camera model and file format.
+     * For RAW images in the CR2 or RAF format, the "ImageSize" value seems to be correct,
+     * but ImageWidth and ImageHeight are not correct (they contain the dimensions of the preview image).
+     */
+    let [width, height] = exifTags.ImageSize?.split('x').map((dim) => Number.parseInt(dim) || undefined) || [];
+    if (!width || !height) {
+      [width, height] = [exifTags.ImageWidth, exifTags.ImageHeight];
+    }
+    return { width, height };
+  }
+
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
     const mediaTags = await this.metadataRepository.readTags(asset.originalPath);
     const sidecarTags = asset.sidecarPath ? await this.metadataRepository.readTags(asset.sidecarPath) : {};
     const videoTags = asset.type === AssetType.VIDEO ? await this.getVideoTags(asset.originalPath) : {};
 
-    // make sure dates comes from sidecar
+    // prefer dates from sidecar tags
     const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
     if (sidecarDate) {
       for (const tag of EXIF_DATE_TAGS) {
         delete mediaTags[tag];
       }
     }
+
+    // prefer duration from video tags
+    delete mediaTags.Duration;
+    delete sidecarTags.Duration;
 
     return { ...mediaTags, ...videoTags, ...sidecarTags };
   }
@@ -575,7 +570,7 @@ export class MetadataService extends BaseService {
 
   private getDates(asset: AssetEntity, exifTags: ImmichTags) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
-    this.logger.debug(`Asset ${asset.id} date time is ${dateTime}`);
+    this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
 
     // timezone
     let timeZone = exifTags.tz ?? null;
@@ -586,7 +581,7 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
-      this.logger.debug(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
+      this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
     } else {
       this.logger.warn(`Asset ${asset.id} has no time zone information`);
     }
@@ -599,7 +594,7 @@ export class MetadataService extends BaseService {
       localDateTime = asset.fileCreatedAt;
     }
 
-    this.logger.debug(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
 
     let modifyDate = asset.fileModifiedAt;
     try {
@@ -667,19 +662,19 @@ export class MetadataService extends BaseService {
     if (videoStreams[0]) {
       switch (videoStreams[0].rotation) {
         case -90: {
-          tags.Orientation = Orientation.Rotate90CW;
+          tags.Orientation = ExifOrientation.Rotate90CW;
           break;
         }
         case 0: {
-          tags.Orientation = Orientation.Horizontal;
+          tags.Orientation = ExifOrientation.Horizontal;
           break;
         }
         case 90: {
-          tags.Orientation = Orientation.Rotate270CW;
+          tags.Orientation = ExifOrientation.Rotate270CW;
           break;
         }
         case 180: {
-          tags.Orientation = Orientation.Rotate180;
+          tags.Orientation = ExifOrientation.Rotate180;
           break;
         }
       }

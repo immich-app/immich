@@ -6,6 +6,8 @@
     type AlbumResponseDto,
     type UserResponseDto,
     AssetOrder,
+    AlbumUserRole,
+    updateAlbumUser,
   } from '@immich/sdk';
   import { mdiArrowDownThin, mdiArrowUpThin, mdiPlus, mdiDotsVertical } from '@mdi/js';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -21,23 +23,38 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
-  export let album: AlbumResponseDto;
-  export let order: AssetOrder | undefined;
-  export let user: UserResponseDto; // Declare user as a prop
-  export let onChangeOrder: (order: AssetOrder) => void;
-  export let onClose: () => void;
-  export let onToggleEnabledActivity: () => void;
-  export let onShowSelectSharedUser: () => void;
-  export let onRemove: (userId: string) => void;
+  interface Props {
+    album: AlbumResponseDto;
+    order: AssetOrder | undefined;
+    user: UserResponseDto;
+    onChangeOrder: (order: AssetOrder) => void;
+    onClose: () => void;
+    onToggleEnabledActivity: () => void;
+    onShowSelectSharedUser: () => void;
+    onRemove: (userId: string) => void;
+    onRefreshAlbum: () => void;
+  }
 
-  let selectedRemoveUser: UserResponseDto | null = null;
+  let {
+    album,
+    order,
+    user,
+    onChangeOrder,
+    onClose,
+    onToggleEnabledActivity,
+    onShowSelectSharedUser,
+    onRemove,
+    onRefreshAlbum,
+  }: Props = $props();
+
+  let selectedRemoveUser: UserResponseDto | null = $state(null);
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
     [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: $t('newest_first') },
   };
 
-  $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
+  let selectedOption = $derived(order ? options[order] : options[AssetOrder.Desc]);
 
   const handleToggle = async (returnedOption: RenderedOption): Promise<void> => {
     if (selectedOption === returnedOption) {
@@ -80,6 +97,21 @@
       selectedRemoveUser = null;
     }
   };
+
+  const handleUpdateSharedUserRole = async (user: UserResponseDto, role: AlbumUserRole) => {
+    try {
+      await updateAlbumUser({ id: album.id, userId: user.id, updateAlbumUserDto: { role } });
+      const message = $t('user_role_set', {
+        values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
+      });
+      onRefreshAlbum();
+      notificationController.show({ type: NotificationType.Info, message });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_change_album_user_role'));
+    } finally {
+      selectedRemoveUser = null;
+    }
+  };
 </script>
 
 {#if !selectedRemoveUser}
@@ -107,7 +139,7 @@
       <div class="py-2">
         <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
         <div class="p-2">
-          <button type="button" class="flex items-center gap-2" on:click={onShowSelectSharedUser}>
+          <button type="button" class="flex items-center gap-2" onclick={onShowSelectSharedUser}>
             <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
               <div><Icon path={mdiPlus} size="25" /></div>
             </div>
@@ -122,15 +154,31 @@
             <div>{$t('owner')}</div>
           </div>
 
-          {#each album.albumUsers as { user } (user.id)}
+          {#each album.albumUsers as { user, role } (user.id)}
             <div class="flex items-center gap-2 py-2">
               <div>
                 <UserAvatar {user} size="md" />
               </div>
               <div class="w-full">{user.name}</div>
+              {#if role === AlbumUserRole.Viewer}
+                {$t('role_viewer')}
+              {:else}
+                {$t('role_editor')}
+              {/if}
               {#if user.id !== album.ownerId}
-                <!-- Allow deletion for non-owners -->
                 <ButtonContextMenu icon={mdiDotsVertical} size="20" title={$t('options')}>
+                  {#if role === AlbumUserRole.Viewer}
+                    <MenuOption
+                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Editor)}
+                      text={$t('allow_edits')}
+                    />
+                  {:else}
+                    <MenuOption
+                      onClick={() => handleUpdateSharedUserRole(user, AlbumUserRole.Viewer)}
+                      text={$t('disallow_edits')}
+                    />
+                  {/if}
+                  <!-- Allow deletion for non-owners -->
                   <MenuOption onClick={() => handleMenuRemove(user)} text={$t('remove')} />
                 </ButtonContextMenu>
               {/if}

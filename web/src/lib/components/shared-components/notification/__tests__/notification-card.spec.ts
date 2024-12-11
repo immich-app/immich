@@ -79,6 +79,8 @@ describe('NotificationCard component', () => {
     });
 
     expect(sut.getByTestId('title')).toHaveTextContent('info');
-    expect(sut.getByTestId('message').innerHTML).toEqual('Notification <b>message</b> with <a href="link">link</a>');
+    expect(sut.getByTestId('message').innerHTML.replaceAll('<!---->', '')).toEqual(
+      'Notification <b>message</b> with <a href="link">link</a>',
+    );
   });
 });

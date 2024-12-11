@@ -6,6 +6,7 @@ import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
 import { AuditService } from 'src/services/audit.service';
 import { AuthService } from 'src/services/auth.service';
+import { BackupService } from 'src/services/backup.service';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 import { DownloadService } from 'src/services/download.service';
@@ -16,7 +17,6 @@ import { MapService } from 'src/services/map.service';
 import { MediaService } from 'src/services/media.service';
 import { MemoryService } from 'src/services/memory.service';
 import { MetadataService } from 'src/services/metadata.service';
-import { MicroservicesService } from 'src/services/microservices.service';
 import { NotificationService } from 'src/services/notification.service';
 import { PartnerService } from 'src/services/partner.service';
 import { PersonService } from 'src/services/person.service';
@@ -48,6 +48,7 @@ export const services = [
   AssetService,
   AuditService,
   AuthService,
+  BackupService,
   CliService,
   DatabaseService,
   DownloadService,
@@ -58,7 +59,6 @@ export const services = [
   MediaService,
   MemoryService,
   MetadataService,
-  MicroservicesService,
   NotificationService,
   PartnerService,
   PersonService,

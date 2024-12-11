@@ -299,7 +299,7 @@ describe('/libraries', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, {
+      const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
       });
       expect(assets.count).toBe(1);
@@ -320,7 +320,7 @@ describe('/libraries', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(1);
       expect(assets.items[0].originalPath.includes('directoryB'));
@@ -340,7 +340,7 @@ describe('/libraries', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(2);
       expect(assets.items.find((asset) => asset.originalPath.includes('directoryA'))).toBeDefined();
@@ -365,7 +365,7 @@ describe('/libraries', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(2);
       expect(assets.items.find((asset) => asset.originalPath.includes('folder, a'))).toBeDefined();
@@ -393,7 +393,7 @@ describe('/libraries', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(2);
       expect(assets.items.find((asset) => asset.originalPath.includes('folder{ a'))).toBeDefined();
@@ -428,7 +428,7 @@ describe('/libraries', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
       utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, {
+      const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
         model: 'NIKON D750',
       });
@@ -460,7 +460,7 @@ describe('/libraries', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
       utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, {
+      const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
         model: 'NIKON D750',
       });
@@ -478,7 +478,7 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
 
       utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
@@ -495,7 +495,7 @@ describe('/libraries', () => {
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
       expect(trashedAsset.isOffline).toEqual(true);
 
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(newAssets.items).toEqual([]);
     });
 
@@ -510,7 +510,7 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
 
       utils.createDirectory(`${testAssetDir}/temp/another-path/`);
@@ -532,7 +532,7 @@ describe('/libraries', () => {
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
       expect(trashedAsset.isOffline).toBe(true);
 
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(newAssets.items).toEqual([]);
 
@@ -549,7 +549,7 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, {
+      const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
         originalFileName: 'assetB.png',
       });
@@ -568,7 +568,7 @@ describe('/libraries', () => {
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/directoryB/assetB.png`);
       expect(trashedAsset.isOffline).toBe(true);
 
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(newAssets.items).toEqual([
         expect.objectContaining({
@@ -586,7 +586,7 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets: assetsBefore } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets: assetsBefore } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assetsBefore.count).toBeGreaterThan(1);
 
       const { status } = await request(app)
@@ -597,7 +597,7 @@ describe('/libraries', () => {
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets).toEqual(assetsBefore);
     });
@@ -630,6 +630,29 @@ describe('/libraries', () => {
         importPath: pathToTest,
         isValid: false,
         message: `Path does not exist (ENOENT)`,
+      });
+    });
+
+    it("should fail if path isn't absolute", async () => {
+      const pathToTest = `relative/path`;
+
+      const cwd = process.cwd();
+      // Create directory in cwd
+      utils.createDirectory(`${cwd}/${pathToTest}`);
+
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
+      });
+
+      utils.removeDirectory(`${cwd}/${pathToTest}`);
+
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
+
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: expect.stringMatching('Import path must be absolute, try /usr/src/app/relative/path'),
       });
     });
 

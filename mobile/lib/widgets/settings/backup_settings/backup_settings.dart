@@ -54,7 +54,7 @@ class BackupSettings extends HookConsumerWidget {
       if (Platform.isAndroid && isAdvancedTroubleshooting.value)
         SettingsButtonListTile(
           icon: Icons.warning_rounded,
-          title: 'Check for corrupt asset backups',
+          title: 'check_corrupt_asset_backup'.tr(),
           subtitle: isCorruptCheckInProgress
               ? const Column(
                   children: [
@@ -65,9 +65,9 @@ class BackupSettings extends HookConsumerWidget {
                 )
               : null,
           subtileText: !isCorruptCheckInProgress
-              ? 'Run this check only over Wi-Fi and once all assets have been backed-up. The procedure might take a few minutes.'
+              ? 'check_corrupt_asset_backup_description'.tr()
               : null,
-          buttonText: 'Perform check',
+          buttonText: 'check_corrupt_asset_backup_button'.tr(),
           onButtonTap: !isCorruptCheckInProgress
               ? () => ref
                   .read(backupVerificationProvider.notifier)

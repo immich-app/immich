@@ -15,11 +15,20 @@ Immich saves [file paths in the database](https://github.com/immich-app/immich/d
 Refer to the official [postgres documentation](https://www.postgresql.org/docs/current/backup.html) for details about backing up and restoring a postgres database.
 :::
 
-The recommended way to backup and restore the Immich database is to use the `pg_dumpall` command. When restoring, you need to delete the `DB_DATA_LOCATION` folder (if it exists) to reset the database.
-
 :::caution
 It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so while the database is running can lead to a corrupted backup that cannot be restored.
 :::
+
+### Automatic Database Backups
+
+Immich will automatically create database backups by default. The backups are stored in `UPLOAD_LOCATION/backups`.  
+You can adjust the schedule and amount of kept backups in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
+By default, Immich will keep the last 14 backups and create a new backup every day at 2:00 AM.
+
+#### Restoring
+
+We hope to make restoring simpler in future versions, for now you can find the backups in the `UPLOAD_LOCATION/backups` folder on your host.  
+Then please follow the steps in the following section for restoring the database.
 
 ### Manual Backup and Restore
 
@@ -49,72 +58,34 @@ docker compose up -d            # Start remainder of Immich apps
   <TabItem value="Windows system (PowerShell)" label="Windows system (PowerShell)">
 
 ```powershell title='Backup'
-docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres | Set-Content -Encoding utf8 "C:\path\to\backup\dump.sql"
+[System.IO.File]::WriteAllLines("C:\absolute\path\to\backup\dump.sql", (docker exec -t immich_postgres pg_dumpall --clean --if-exists --username=postgres))
 ```
 
 ```powershell title='Restore'
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
 ## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
 # Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
+## You should mount the backup (as a volume, example: - 'C:\path\to\backup\dump.sql':/dump.sql) into the immich_postgres container using the docker-compose.yml
 docker compose pull             # Update to latest version of Immich (if desired)
 docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
+docker exec -it immich_postgres bash    # Enter the Docker shell and run the following command
 # Check the database user if you deviated from the default
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres  # Restore Backup
+cat "/dump.sql" \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| psql --username=postgres      # Restore Backup
+exit                            # Exit the Docker shell
 docker compose up -d            # Start remainder of Immich apps
 ```
 
 </TabItem>
 </Tabs>
 
-Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.).
+Note that for the database restore to proceed properly, it requires a completely fresh install (i.e. the Immich server has never run since creating the Docker containers). If the Immich app has run, Postgres conflicts may be encountered upon database restoration (relation already exists, violated foreign key constraints, multiple primary keys, etc.), in which case you need to delete the `DB_DATA_LOCATION` folder to reset the database.
 
 :::tip
-Some deployment methods make it difficult to start the database without also starting the server or microservices. In these cases, you may set the environmental variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Note that both the server and microservices must have this variable set to prevent the migrations from running. Be sure to remove this variable and restart the services after the database is restored.
-:::
-
-### Automatic Database Backups
-
-The database dumps can also be automated (using [this image](https://github.com/prodrigestivill/docker-postgres-backup-local)) by editing the docker compose file to match the following:
-
-```yaml
-services:
-  ...
-  backup:
-    container_name: immich_db_dumper
-    image: prodrigestivill/postgres-backup-local:14
-    restart: always
-    env_file:
-      - .env
-    environment:
-      POSTGRES_HOST: database
-      POSTGRES_CLUSTER: 'TRUE'
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_DATABASE_NAME}
-      SCHEDULE: "@daily"
-      POSTGRES_EXTRA_OPTS: '--clean --if-exists'
-      BACKUP_DIR: /db_dumps
-    volumes:
-      - ./db_dumps:/db_dumps
-    depends_on:
-      - database
-```
-
-Then you can restore with the same command but pointed at the latest dump.
-
-```bash title='Automated Restore'
-# Be sure to check the username if you changed it from default
-gunzip < db_dumps/last/immich-latest.sql.gz \
-| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --username=postgres
-```
-
-:::note
-If you see the error `ERROR:  type "earth" does not exist`, or you have problems with Reverse Geocoding after a restore, add the following `sed` fragment to your restore command.
-
-Example: `gunzip < "/path/to/backup/dump.sql.gz" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | docker exec -i immich_postgres psql --username=postgres`
+Some deployment methods make it difficult to start the database without also starting the server. In these cases, you may set the environment variable `DB_SKIP_MIGRATIONS=true` before starting the services. This will prevent the server from running migrations that interfere with the restore process. Be sure to remove this variable and restart the services after the database is restored.
 :::
 
 ## Filesystem

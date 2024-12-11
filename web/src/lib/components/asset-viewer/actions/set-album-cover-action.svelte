@@ -9,8 +9,12 @@
   import { mdiImageOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let album: AlbumResponseDto;
+  interface Props {
+    asset: AssetResponseDto;
+    album: AlbumResponseDto;
+  }
+
+  let { asset, album }: Props = $props();
 
   const handleUpdateThumbnail = async () => {
     try {

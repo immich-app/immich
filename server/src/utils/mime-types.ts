@@ -74,6 +74,7 @@ const video: Record<string, string[]> = {
   '.mpeg': ['video/mpeg'],
   '.mpg': ['video/mpeg'],
   '.mts': ['video/mp2t'],
+  '.vob': ['video/mpeg'],
   '.webm': ['video/webm'],
   '.wmv': ['video/x-ms-wmv'],
 };

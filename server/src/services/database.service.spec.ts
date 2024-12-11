@@ -60,11 +60,15 @@ describe(DatabaseService.name, () => {
         configMock.getEnv.mockReturnValue(
           mockEnvData({
             database: {
-              host: 'database',
-              port: 5432,
-              username: 'postgres',
-              password: 'postgres',
-              name: 'immich',
+              config: {
+                connectionType: 'parts',
+                type: 'postgres',
+                host: 'database',
+                port: 5432,
+                username: 'postgres',
+                password: 'postgres',
+                database: 'immich',
+              },
               skipMigrations: false,
               vectorExtension: extension,
             },
@@ -286,11 +290,15 @@ describe(DatabaseService.name, () => {
       configMock.getEnv.mockReturnValue(
         mockEnvData({
           database: {
-            host: 'database',
-            port: 5432,
-            username: 'postgres',
-            password: 'postgres',
-            name: 'immich',
+            config: {
+              connectionType: 'parts',
+              type: 'postgres',
+              host: 'database',
+              port: 5432,
+              username: 'postgres',
+              password: 'postgres',
+              database: 'immich',
+            },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTORS,
           },
@@ -306,11 +314,15 @@ describe(DatabaseService.name, () => {
       configMock.getEnv.mockReturnValue(
         mockEnvData({
           database: {
-            host: 'database',
-            port: 5432,
-            username: 'postgres',
-            password: 'postgres',
-            name: 'immich',
+            config: {
+              connectionType: 'parts',
+              type: 'postgres',
+              host: 'database',
+              port: 5432,
+              username: 'postgres',
+              password: 'postgres',
+              database: 'immich',
+            },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTOR,
           },

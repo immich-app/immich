@@ -6,17 +6,16 @@
   import { mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
+  interface Props {
+    asset: AssetResponseDto;
+  }
 
-  let showModal = false;
+  let { asset }: Props = $props();
+
+  let showModal = $state(false);
 </script>
 
-<CircleIconButton
-  color="opaque"
-  icon={mdiShareVariantOutline}
-  on:click={() => (showModal = true)}
-  title={$t('share')}
-/>
+<CircleIconButton color="opaque" icon={mdiShareVariantOutline} onclick={() => (showModal = true)} title={$t('share')} />
 
 {#if showModal}
   <Portal target="body">

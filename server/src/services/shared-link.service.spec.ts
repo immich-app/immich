@@ -1,6 +1,5 @@
 import { BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import _ from 'lodash';
-import { DEFAULT_EXTERNAL_DOMAIN } from 'src/constants';
 import { AssetIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { SharedLinkType } from 'src/enum';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -304,7 +303,7 @@ describe(SharedLinkService.name, () => {
       sharedLinkMock.get.mockResolvedValue(sharedLinkStub.individual);
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '1 shared photos & videos',
-        imageUrl: `${DEFAULT_EXTERNAL_DOMAIN}/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
+        imageUrl: `http://localhost:2283/api/assets/asset-id/thumbnail?key=LCtkaJX4R1O_9D-2lq0STzsPryoL1UdAbyb6Sna1xxmQCSuqU2J1ZUsqt6GR-yGm1s0`,
         title: 'Public Share',
       });
       expect(sharedLinkMock.get).toHaveBeenCalled();
@@ -314,7 +313,7 @@ describe(SharedLinkService.name, () => {
       sharedLinkMock.get.mockResolvedValue({ ...sharedLinkStub.individual, album: undefined, assets: [] });
       await expect(sut.getMetadataTags(authStub.adminSharedLink)).resolves.toEqual({
         description: '0 shared photos & videos',
-        imageUrl: `${DEFAULT_EXTERNAL_DOMAIN}/feature-panel.png`,
+        imageUrl: `http://localhost:2283/feature-panel.png`,
         title: 'Public Share',
       });
       expect(sharedLinkMock.get).toHaveBeenCalled();
