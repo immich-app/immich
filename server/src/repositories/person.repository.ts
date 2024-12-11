@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -96,18 +96,12 @@ export class PersonRepository implements IPersonRepository {
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
       .orderBy('person.isHidden', 'ASC');
-    if (options?.closestPersonId) {
-      const person = await this.personRepository.findOne({
-        where: { id: options.closestPersonId, ownerId: userId },
-      });
-      if (!person?.faceAssetId) {
-        throw new Error('Person does not exist');
-      }
+    if (options?.closestFaceAssetId) {
       const face = await this.faceSearchRepository.findOne({
-        where: { faceId: person?.faceAssetId || '' },
+        where: { faceId: options.closestFaceAssetId },
       });
       if (!face?.embedding) {
-        throw new Error('Person does not have a face');
+        throw new Error('Face does not exist');
       }
       queryBuilder
         .leftJoin('face.faceSearch', 'search')

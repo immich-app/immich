@@ -8,7 +8,6 @@
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
     createPerson,
-    getAllPeople,
     getFaces,
     reassignFacesById,
     AssetTypeEnum,
@@ -53,7 +52,6 @@
 
   // search people
   let showSelectedFaces = $state(false);
-  let allPeople: PersonResponseDto[] = $state([]);
 
   // timers
   let loaderLoadingDoneTimeout: ReturnType<typeof setTimeout>;
@@ -64,8 +62,6 @@
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { people } = await getAllPeople({ withHidden: true });
-      allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
     } catch (error) {
       handleError(error, $t('errors.cant_get_faces'));
@@ -322,7 +318,6 @@
 
 {#if showSelectedFaces && editedFace}
   <AssignFaceSidePanel
-    {allPeople}
     {editedFace}
     {assetId}
     {assetType}

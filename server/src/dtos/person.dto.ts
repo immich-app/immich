@@ -69,6 +69,8 @@ export class PersonSearchDto {
   withHidden?: boolean;
   @ValidateUUID({ optional: true })
   closestPersonId?: string;
+  @ValidateUUID({ optional: true })
+  closestAssetId?: string;
 
   /** Page number for pagination */
   @ApiPropertyOptional()

@@ -35,7 +35,7 @@
   let peopleToNotShow = $derived([...selectedPeople, person]);
 
   onMount(async () => {
-    const data = await getAllPeople({ withHidden: false, closestPersonId: person.id  });
+    const data = await getAllPeople({ withHidden: false, closestPersonId: person.id });
     people = data.people;
   });
 
