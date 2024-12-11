@@ -438,11 +438,16 @@ class AlbumService {
     return _albumRepository.search(searchTerm, filterMode);
   }
 
-  Future<Album> updateSortOrder(Album album, SortOrder order) async {
-    final updateAlbum =
-        await _albumApiRepository.update(album.remoteId!, sortOrder: order);
-    album.sortOrder = updateAlbum.sortOrder;
+  Future<Album?> updateSortOrder(Album album, SortOrder order) async {
+    try {
+      final updateAlbum =
+          await _albumApiRepository.update(album.remoteId!, sortOrder: order);
+      album.sortOrder = updateAlbum.sortOrder;
 
-    return _albumRepository.update(album);
+      return _albumRepository.update(album);
+    } catch (error, stackTrace) {
+      _log.severe("Error updating album sort order", error, stackTrace);
+    }
+    return null;
   }
 }

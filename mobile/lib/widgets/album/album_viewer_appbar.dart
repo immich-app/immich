@@ -278,8 +278,18 @@ class AlbumViewerAppbar extends HookConsumerWidget
       }
     }
 
-    void onSortOrderToggled() {
-      ref.read(albumProvider.notifier).toggleSortOrder(album);
+    void onSortOrderToggled() async {
+      final updatedAlbum =
+          await ref.read(albumProvider.notifier).toggleSortOrder(album);
+
+      if (updatedAlbum == null) {
+        ImmichToast.show(
+          context: context,
+          msg: "error_change_sort_album".tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.BOTTOM,
+        );
+      }
     }
 
     return AppBar(
