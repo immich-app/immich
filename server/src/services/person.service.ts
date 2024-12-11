@@ -55,7 +55,7 @@ import { IsNull } from 'typeorm';
 @Injectable()
 export class PersonService extends BaseService {
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const { withHidden = false, page, size } = dto;
+    const { withHidden = false, closestPersonId, page, size } = dto;
     const pagination = {
       take: size,
       skip: (page - 1) * size,
@@ -65,6 +65,7 @@ export class PersonService extends BaseService {
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
+      closestPersonId,
     });
     const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
 

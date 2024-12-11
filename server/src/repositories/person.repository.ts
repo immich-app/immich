@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import _ from 'lodash';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -20,6 +20,7 @@ import {
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
+import { asVector } from 'src/utils/database';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
@@ -83,14 +84,38 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [{ take: 10, skip: 10 }, DummyValue.UUID] })
-  getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions): Paginated<PersonEntity> {
+  async getAllForUser(
+    pagination: PaginationOptions,
+    userId: string,
+    options?: PersonSearchOptions,
+  ): Paginated<PersonEntity> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .innerJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
-      .orderBy('person.isHidden', 'ASC')
+      .orderBy('person.isHidden', 'ASC');
+    if (options?.closestPersonId) {
+      const person = await this.personRepository.findOne({
+        where: { id: options.closestPersonId, ownerId: userId },
+      });
+      if (!person?.faceAssetId) {
+        throw new Error('Person does not exist');
+      }
+      const face = await this.faceSearchRepository.findOne({
+        where: { faceId: person?.faceAssetId || '' },
+      });
+      if (!face?.embedding) {
+        throw new Error('Person does not have a face');
+      }
+      queryBuilder
+        .leftJoin('face.faceSearch', 'search')
+        .addSelect('AVG(search.embedding <=> :embedding)', 'distance')
+        .addOrderBy('distance')
+        .setParameters({ embedding: asVector(face.embedding) });
+    }
+    queryBuilder
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
@@ -100,7 +125,6 @@ export class PersonRepository implements IPersonRepository {
     if (!options?.withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
-
     return paginatedBuilder(queryBuilder, {
       mode: PaginationMode.LIMIT_OFFSET,
       ...pagination,
