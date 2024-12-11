@@ -186,31 +186,31 @@ class DownloadService {
     }
   }
 
-  Future<String> _getUniqueDestinationPath(String filename, String? relativePath) async {
-    final baseDirectory = Platform.isAndroid 
-      ? '/storage/emulated/0/DCIM/Immich' 
-      : '${Platform.environment['HOME']}/Pictures/Immich';
+  // Future<String> _getUniqueDestinationPath(String filename, String? relativePath) async {
+  //   final baseDirectory = Platform.isAndroid 
+  //     ? '/storage/emulated/0/DCIM/Immich' 
+  //     : '${Platform.environment['HOME']}/Pictures/Immich';
 
    
-    await Directory(baseDirectory).create(recursive: true);
+  //   await Directory(baseDirectory).create(recursive: true);
 
     
-    final filenameWithoutExtension = filename.split('.').first;
-    final extension = filename.split('.').last;
+  //   final filenameWithoutExtension = filename.split('.').first;
+  //   final extension = filename.split('.').last;
 
     
-    String destinationPath = '$baseDirectory/$filename';
+  //   String destinationPath = '$baseDirectory/$filename';
 
     
-    int counter = 1;
-    while (await File(destinationPath).exists()) {
+  //   int counter = 1;
+  //   while (await File(destinationPath).exists()) {
       
-      destinationPath = '$baseDirectory/${filenameWithoutExtension} ($counter).$extension';
-      counter++;
-    }
+  //     destinationPath = '$baseDirectory/${filenameWithoutExtension} ($counter).$extension';
+  //     counter++;
+  //   }
 
-    return destinationPath;
-  }
+  //   return destinationPath;
+  // }
 
   Future<bool> saveLivePhotos(
     Task task,
@@ -275,7 +275,7 @@ class DownloadService {
 
     final existingLocalFile = await _findLocalFileWithHash(assetHash);
     if (existingLocalFile != null) {
-      _log.info('File with hash ${assetHash} already exists. Skipping download.');
+      _log.info('File with hash $assetHash already exists. Skipping download.');
       return;
     }
 
@@ -349,16 +349,16 @@ class DownloadService {
     return null;
   }
 
-  Future<bool> _fileExistsWithHash(String filePath, String expectedHash) async {
-    final file = File(filePath);
-    if (!await file.exists()) {
-      return false;
-    }
+  // Future<bool> _fileExistsWithHash(String filePath, String expectedHash) async {
+  //   final file = File(filePath);
+  //   if (!await file.exists()) {
+  //     return false;
+  //   }
 
-    final bytes = await file.readAsBytes();
-    final fileHash = sha256.convert(bytes).toString();
-    return fileHash == expectedHash;
-  }
+  //   final bytes = await file.readAsBytes();
+  //   final fileHash = sha256.convert(bytes).toString();
+  //   return fileHash == expectedHash;
+  // }
 
   DownloadTask _buildDownloadTask(
     String id,
@@ -433,10 +433,11 @@ Future<bool> _isFileDuplicate(String filePath, String filename) async {
             
             return true;
           } else {
-            
+            return false;
           }
         } catch (e) {
           
+          return false;
         }
       }
 
@@ -450,7 +451,7 @@ Future<bool> _isFileDuplicate(String filePath, String filename) async {
           return true;
         }
       } catch (e) {
-        
+        return false;
       }
     }
   }
