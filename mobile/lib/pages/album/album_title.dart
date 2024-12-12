@@ -16,7 +16,7 @@ class AlbumTitle extends ConsumerWidget {
     final (isOwner, isRemote, albumName) = ref.watch(
       currentAlbumProvider.select((album) {
         if (album == null) {
-          return (false, false, '');
+          return const (false, false, '');
         }
 
         return (album.ownerId == userId, album.isRemote, album.name);
