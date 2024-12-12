@@ -17,19 +17,9 @@
 
   let { stats, isDismissible, isUploading, remainingUploads } = uploadAssetsStore;
 
-  const autoHide = () => {
-    if (!$isUploading && showDetail) {
-      showDetail = false;
-    }
-
-    if ($isUploading && !showDetail) {
-      showDetail = true;
-    }
-  };
-
   $effect(() => {
     if ($isUploading) {
-      autoHide();
+      showDetail = true;
     }
   });
 </script>

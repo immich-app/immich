@@ -65,12 +65,17 @@ docker compose up -d            # Start remainder of Immich apps
 docker compose down -v  # CAUTION! Deletes all Immich data to start from scratch
 ## Uncomment the next line and replace DB_DATA_LOCATION with your Postgres path to permanently reset the Postgres database
 # Remove-Item -Recurse -Force DB_DATA_LOCATION # CAUTION! Deletes all Immich data to start from scratch
+## You should mount the backup (as a volume, example: - 'C:\path\to\backup\dump.sql':/dump.sql) into the immich_postgres container using the docker-compose.yml
 docker compose pull             # Update to latest version of Immich (if desired)
 docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
+docker exec -it immich_postgres bash    # Enter the Docker shell and run the following command
 # Check the database user if you deviated from the default
-gc "C:\path\to\backup\dump.sql" | docker exec -i immich_postgres psql --username=postgres  # Restore Backup
+cat "/dump.sql" \
+| sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
+| psql --username=postgres      # Restore Backup
+exit                            # Exit the Docker shell
 docker compose up -d            # Start remainder of Immich apps
 ```
 
