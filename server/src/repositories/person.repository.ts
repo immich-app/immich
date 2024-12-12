@@ -20,7 +20,6 @@ import {
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { asVector } from 'src/utils/database';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import { DataSource, FindManyOptions, FindOptionsRelations, FindOptionsSelect, In, Repository } from 'typeorm';
 
@@ -97,17 +96,17 @@ export class PersonRepository implements IPersonRepository {
       .andWhere('asset.isArchived = false')
       .orderBy('person.isHidden', 'ASC');
     if (options?.closestFaceAssetId) {
-      const face = await this.faceSearchRepository.findOne({
-        where: { faceId: options.closestFaceAssetId },
-      });
-      if (!face?.embedding) {
-        throw new Error('Face does not exist');
-      }
+      const innerQueryBuilder = this.faceSearchRepository
+        .createQueryBuilder('face_search')
+        .select('embedding', 'embedding')
+        .where('"face_search"."faceId" = "person"."faceAssetId"');
+      const faceSelectQueryBuilder = this.faceSearchRepository
+        .createQueryBuilder('face_search')
+        .select('embedding', 'embedding')
+        .where('"face_search"."faceId" = :faceId', { faceId: options.closestFaceAssetId });
       queryBuilder
-        .leftJoin('face.faceSearch', 'search')
-        .addSelect('AVG(search.embedding <=> :embedding)', 'distance')
-        .addOrderBy('distance')
-        .setParameters({ embedding: asVector(face.embedding) });
+        .addOrderBy('(' + innerQueryBuilder.getQuery() + ') <=> (' + faceSelectQueryBuilder.getQuery() + ')')
+        .setParameters(faceSelectQueryBuilder.getParameters());
     }
     queryBuilder
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
