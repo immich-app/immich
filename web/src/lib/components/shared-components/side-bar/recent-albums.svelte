@@ -4,13 +4,19 @@
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
   import { handleError } from '$lib/utils/handle-error';
   import { t } from 'svelte-i18n';
+  import { userInteraction } from '$lib/stores/user.svelte';
 
   let albums: AlbumResponseDto[] = $state([]);
 
   onMount(async () => {
+    if (userInteraction.recentAlbums) {
+      albums = userInteraction.recentAlbums;
+      return;
+    }
     try {
       const allAlbums = await getAllAlbums({});
       albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
+      userInteraction.recentAlbums = albums;
     } catch (error) {
       handleError(error, $t('failed_to_load_assets'));
     }
