@@ -5,10 +5,10 @@ export const ImmichFooter = () => (
   <>
     <Row className="h-18 w-full">
       <Column align="center" className="w-6/12 sm:w-full">
-      <div>
-        <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich" className='object-contain'>
-          <Img className="max-w-full" src={`https://immich.app/img/google-play-badge.png`} />
-        </Link>
+        <div>
+          <Link href="https://play.google.com/store/apps/details?id=app.alextran.immich" className="object-contain">
+            <Img className="max-w-full" src={`https://immich.app/img/google-play-badge.png`} />
+          </Link>
         </div>
       </Column>
       <Column align="center" className="w-6/12 sm:w-full">
