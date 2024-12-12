@@ -465,7 +465,7 @@
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, assetInteraction.isAllArchived);
+    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
     if (ids) {
       $assetStore.removeAssets(ids);
       deselectAllAssets();

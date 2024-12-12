@@ -35,7 +35,6 @@
   const assetInteraction = new AssetInteraction();
 
   let selectedAssets = $derived(assetInteraction.selectedAssetsArray);
-  let isAllOwned = $derived(selectedAssets.every((asset) => asset.ownerId === $user.id));
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
   let isLinkActionAvailable = $derived.by(() => {
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
@@ -44,7 +43,7 @@
       selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image) &&
       selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image);
 
-    return isAllOwned && (isLivePhoto || isLivePhotoCandidate);
+    return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
   const handleEscape = () => {
     if ($showAssetViewer) {
