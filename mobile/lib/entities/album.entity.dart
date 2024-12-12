@@ -121,8 +121,7 @@ class Album {
         owner.value == other.owner.value &&
         thumbnail.value == other.thumbnail.value &&
         sharedUsers.length == other.sharedUsers.length &&
-        assets.length == other.assets.length &&
-        sortOrder == other.sortOrder;
+        assets.length == other.assets.length;
   }
 
   @override
@@ -142,8 +141,7 @@ class Album {
       owner.value.hashCode ^
       thumbnail.value.hashCode ^
       sharedUsers.length.hashCode ^
-      assets.length.hashCode ^
-      sortOrder.hashCode;
+      assets.length.hashCode;
 
   static Future<Album> remote(AlbumResponseDto dto) async {
     final Isar db = Isar.getInstance()!;

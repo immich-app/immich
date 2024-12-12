@@ -139,13 +139,11 @@ class AlbumAssetSelectionRouteArgs {
 class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
   AlbumOptionsRoute({
     Key? key,
-    required Album album,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumOptionsRoute.name,
           args: AlbumOptionsRouteArgs(
             key: key,
-            album: album,
           ),
           initialChildren: children,
         );
@@ -158,25 +156,19 @@ class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
       final args = data.argsAs<AlbumOptionsRouteArgs>();
       return AlbumOptionsPage(
         key: args.key,
-        album: args.album,
       );
     },
   );
 }
 
 class AlbumOptionsRouteArgs {
-  const AlbumOptionsRouteArgs({
-    this.key,
-    required this.album,
-  });
+  const AlbumOptionsRouteArgs({this.key});
 
   final Key? key;
 
-  final Album album;
-
   @override
   String toString() {
-    return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
+    return 'AlbumOptionsRouteArgs{key: $key}';
   }
 }
 

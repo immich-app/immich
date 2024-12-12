@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/render_list_status_provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -22,6 +23,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/asset_grid/multiselect_grid_status_indicator.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
@@ -73,6 +75,27 @@ class MultiselectGrid extends HookConsumerWidget {
     final selection = useState(<Asset>{});
     final currentUser = ref.watch(currentUserProvider);
     final processing = useProcessingOverlay();
+    final renderList =
+        useState<RenderList?>(ref.read(renderListProvider).value);
+
+    ref.listen(renderListProvider, (_, data) {
+      data.when(
+        data: (data) {
+          ref.read(renderListStatusProvider.notifier).status = data.isEmpty
+              ? RenderListStatusEnum.empty
+              : RenderListStatusEnum.complete;
+          renderList.value = data;
+        },
+        loading: () {
+          ref.read(renderListStatusProvider.notifier).status =
+              RenderListStatusEnum.loading;
+        },
+        error: (error, _) {
+          ref.read(renderListStatusProvider.notifier).status =
+              RenderListStatusEnum.error;
+        },
+      );
+    });
 
     useEffect(
       () {
@@ -411,28 +434,24 @@ class MultiselectGrid extends HookConsumerWidget {
       bottom: false,
       child: Stack(
         children: [
-          ref.watch(renderListProvider).when(
-                data: (data) => data.isEmpty &&
-                        (buildLoadingIndicator != null || topWidget == null)
-                    ? (buildLoadingIndicator ?? buildEmptyIndicator)()
-                    : ImmichAssetGrid(
-                        renderList: data,
-                        listener: selectionListener,
-                        selectionActive: selectionEnabledHook.value,
-                        onRefresh: onRefresh == null
-                            ? null
-                            : wrapLongRunningFun(
-                                onRefresh!,
-                                showOverlay: false,
-                              ),
-                        topWidget: topWidget,
-                        showStack: stackEnabled,
-                      ),
-                error: (error, _) => Center(child: Text(error.toString())),
-                loading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
-              ),
+          ImmichAssetGrid(
+            key: const ValueKey("immichAssetGrid"),
+            renderList: renderList.value ?? RenderList([], null, []),
+            listener: selectionListener,
+            selectionActive: selectionEnabledHook.value,
+            onRefresh: onRefresh == null
+                ? null
+                : wrapLongRunningFun(
+                    onRefresh!,
+                    showOverlay: false,
+                  ),
+            topWidget: topWidget,
+            showStack: stackEnabled,
+          ),
+          const MultiselectGridStatusIndicator(),
           if (selectionEnabledHook.value)
             ControlBottomAppBar(
+              key: const ValueKey("controlBottomAppBar"),
               onShare: onShareAssets,
               onFavorite: favoriteEnabled ? onFavoriteAssets : null,
               onArchive: archiveEnabled ? onArchiveAsset : null,
