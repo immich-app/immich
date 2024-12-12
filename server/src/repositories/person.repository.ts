@@ -94,7 +94,13 @@ export class PersonRepository implements IPersonRepository {
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
-      .orderBy('person.isHidden', 'ASC');
+      .orderBy('person.isHidden', 'ASC')
+      .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
+      .addOrderBy('COUNT(face.assetId)', 'DESC')
+      .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
+      .addOrderBy('person.createdAt')
+      .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
+      .groupBy('person.id');
     if (options?.closestFaceAssetId) {
       const innerQueryBuilder = this.faceSearchRepository
         .createQueryBuilder('face_search')
@@ -105,16 +111,9 @@ export class PersonRepository implements IPersonRepository {
         .select('embedding', 'embedding')
         .where('"face_search"."faceId" = :faceId', { faceId: options.closestFaceAssetId });
       queryBuilder
-        .addOrderBy('(' + innerQueryBuilder.getQuery() + ') <=> (' + faceSelectQueryBuilder.getQuery() + ')')
+        .orderBy('(' + innerQueryBuilder.getQuery() + ') <=> (' + faceSelectQueryBuilder.getQuery() + ')')
         .setParameters(faceSelectQueryBuilder.getParameters());
     }
-    queryBuilder
-      .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
-      .addOrderBy('COUNT(face.assetId)', 'DESC')
-      .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
-      .addOrderBy('person.createdAt')
-      .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
-      .groupBy('person.id');
     if (!options?.withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
