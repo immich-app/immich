@@ -41,7 +41,7 @@
     const isLivePhotoCandidate =
       selectedAssets.length === 2 &&
       selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image) &&
-      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Image);
+      selectedAssets.some((asset) => asset.type === AssetTypeEnum.Video);
 
     return assetInteraction.isAllUserOwned && (isLivePhoto || isLivePhotoCandidate);
   });
