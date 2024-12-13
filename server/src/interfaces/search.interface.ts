@@ -170,6 +170,22 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
+export interface GetStatesOptions {
+  country?: string;
+}
+
+export interface GetCitiesOptions extends GetStatesOptions {
+  state?: string;
+}
+
+export interface GetCameraModelsOptions {
+  make?: string;
+}
+
+export interface GetCameraMakesOptions {
+  model?: string;
+}
+
 export interface ISearchRepository {
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
@@ -183,8 +199,8 @@ export interface ISearchRepository {
   getDimensionSize(): Promise<number>;
   setDimensionSize(dimSize: number): Promise<void>;
   getCountries(userIds: string[]): Promise<Array<string | null>>;
-  getStates(userIds: string[], country?: string): Promise<Array<string | null>>;
-  getCities(userIds: string[], country?: string, state?: string): Promise<Array<string | null>>;
-  getCameraMakes(userIds: string[], model?: string): Promise<Array<string | null>>;
-  getCameraModels(userIds: string[], make?: string): Promise<Array<string | null>>;
+  getStates(userIds: string[], options: GetStatesOptions): Promise<Array<string | null>>;
+  getCities(userIds: string[], options: GetCitiesOptions): Promise<Array<string | null>>;
+  getCameraMakes(userIds: string[], options: GetCameraMakesOptions): Promise<Array<string | null>>;
+  getCameraModels(userIds: string[], options: GetCameraModelsOptions): Promise<Array<string | null>>;
 }

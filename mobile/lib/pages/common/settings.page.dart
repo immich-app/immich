@@ -133,6 +133,7 @@ class _MobileLayout extends StatelessWidget {
                   ).tr(),
                   subtitle: Text(
                     setting.subtitle,
+                    style: context.textTheme.labelLarge,
                   ).tr(),
                   onTap: () =>
                       context.pushRoute(SettingsSubRoute(section: setting)),
