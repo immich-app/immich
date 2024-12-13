@@ -124,7 +124,6 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=["*.armnn"],
         )
 
@@ -136,7 +135,6 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            local_dir_use_symlinks=False,
             ignore_patterns=[],
         )
 
@@ -212,9 +210,23 @@ class TestOrtSession:
         session = OrtSession(model_path, providers=["OpenVINOExecutionProvider", "CPUExecutionProvider"])
 
         assert session.provider_options == [
-            {"device_type": "GPU", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
+            {"device_type": "GPU.0", "precision": "FP32", "cache_dir": "/cache/ViT-B-32__openai/openvino"},
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
+
+    def test_sets_device_id_for_openvino(self) -> None:
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        session = OrtSession("ViT-B-32__openai", providers=["OpenVINOExecutionProvider"])
+
+        assert session.provider_options[0]["device_type"] == "GPU.1"
+
+    def test_sets_device_id_for_cuda(self) -> None:
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
+
+        assert session.provider_options[0]["device_id"] == "1"
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
@@ -379,13 +391,40 @@ class TestCLIP:
 
         clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
         clip_encoder._load()
-        tokens = clip_encoder.tokenize("test search query")
+        tokens = clip_encoder.tokenize("test   search query")
 
         assert "text" in tokens
         assert isinstance(tokens["text"], np.ndarray)
         assert tokens["text"].shape == (1, 77)
         assert tokens["text"].dtype == np.int32
         assert np.allclose(tokens["text"], np.array([mock_ids], dtype=np.int32), atol=0)
+        mock_tokenizer.encode.assert_called_once_with("test search query")
+
+    def test_openclip_tokenizer_canonicalizes_text(
+        self,
+        mocker: MockerFixture,
+        clip_model_cfg: dict[str, Any],
+        clip_tokenizer_cfg: Callable[[Path], dict[str, Any]],
+    ) -> None:
+        clip_model_cfg["text_cfg"]["tokenizer_kwargs"] = {"clean": "canonicalize"}
+        mocker.patch.object(OpenClipTextualEncoder, "download")
+        mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
+        mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
+        mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
+        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_ids = [randint(0, 50000) for _ in range(77)]
+        mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
+
+        clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
+        clip_encoder._load()
+        tokens = clip_encoder.tokenize("Test   Search Query!")
+
+        assert "text" in tokens
+        assert isinstance(tokens["text"], np.ndarray)
+        assert tokens["text"].shape == (1, 77)
+        assert tokens["text"].dtype == np.int32
+        assert np.allclose(tokens["text"], np.array([mock_ids], dtype=np.int32), atol=0)
+        mock_tokenizer.encode.assert_called_once_with("test search query")
 
     def test_mclip_tokenizer(
         self,
@@ -510,7 +549,7 @@ class TestFaceRecognition:
         face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path)
         face_recognizer.load()
 
-        assert face_recognizer.batch is True
+        assert face_recognizer.batch_size is None
         update_dims.assert_called_once_with(proto, {"input.1": ["batch", 3, 224, 224]}, {"output.1": ["batch", 800]})
         onnx.save.assert_called_once_with(update_dims.return_value, face_recognizer.model_path)
 
@@ -533,7 +572,7 @@ class TestFaceRecognition:
         face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path)
         face_recognizer.load()
 
-        assert face_recognizer.batch is True
+        assert face_recognizer.batch_size is None
         update_dims.assert_not_called()
         onnx.load.assert_not_called()
         onnx.save.assert_not_called()
@@ -557,7 +596,33 @@ class TestFaceRecognition:
         face_recognizer = FaceRecognizer("buffalo_s", model_format=ModelFormat.ARMNN, cache_dir=path)
         face_recognizer.load()
 
-        assert face_recognizer.batch is False
+        assert face_recognizer.batch_size == 1
+        update_dims.assert_not_called()
+        onnx.load.assert_not_called()
+        onnx.save.assert_not_called()
+
+    def test_recognition_does_not_add_batch_axis_for_openvino(
+        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    ) -> None:
+        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        update_dims = mocker.patch(
+            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        )
+        mocker.patch("app.models.base.InferenceModel.download")
+        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
+
+        inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
+        outputs = [SimpleNamespace(name="output.1", shape=("batch", 800))]
+        ort_session.return_value.get_inputs.return_value = inputs
+        ort_session.return_value.get_outputs.return_value = outputs
+
+        face_recognizer = FaceRecognizer(
+            "buffalo_s", model_format=ModelFormat.ARMNN, cache_dir=path, providers=["OpenVINOExecutionProvider"]
+        )
+        face_recognizer.load()
+
+        assert face_recognizer.batch_size == 1
         update_dims.assert_not_called()
         onnx.load.assert_not_called()
         onnx.save.assert_not_called()
@@ -771,11 +836,26 @@ class TestLoad:
         mock_model.model_format = ModelFormat.ONNX
 
 
+def test_root_endpoint(deployed_app: TestClient) -> None:
+    response = deployed_app.get("http://localhost:3003")
+
+    body = response.json()
+    assert response.status_code == 200
+    assert body == {"message": "Immich ML"}
+
+
+def test_ping_endpoint(deployed_app: TestClient) -> None:
+    response = deployed_app.get("http://localhost:3003/ping")
+
+    assert response.status_code == 200
+    assert response.text == "pong"
+
+
 @pytest.mark.skipif(
     not settings.test_full,
     reason="More time-consuming since it deploys the app and loads models.",
 )
-class TestEndpoints:
+class TestPredictionEndpoints:
     def test_clip_image_endpoint(
         self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient
     ) -> None:

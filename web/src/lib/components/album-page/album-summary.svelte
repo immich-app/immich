@@ -4,10 +4,11 @@
   import type { AlbumResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
+  interface Props {
+    album: AlbumResponseDto;
+  }
 
-  $: startDate = formatDate(album.startDate);
-  $: endDate = formatDate(album.endDate);
+  let { album }: Props = $props();
 
   const formatDate = (date?: string) => {
     return date ? new Date(date).toLocaleDateString($locale, dateFormats.album) : undefined;
@@ -24,6 +25,8 @@
 
     return '';
   };
+  let startDate = $derived(formatDate(album.startDate));
+  let endDate = $derived(formatDate(album.endDate));
 </script>
 
 <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">

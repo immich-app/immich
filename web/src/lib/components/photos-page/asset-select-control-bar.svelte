@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import { createContext } from '$lib/utils/context';
   import { t } from 'svelte-i18n';
 
@@ -17,10 +17,16 @@
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiClose } from '@mdi/js';
   import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import type { Snippet } from 'svelte';
 
-  export let assets: Set<AssetResponseDto>;
-  export let clearSelect: () => void;
-  export let ownerId: string | undefined = undefined;
+  interface Props {
+    assets: Set<AssetResponseDto>;
+    clearSelect: () => void;
+    ownerId?: string | undefined;
+    children?: Snippet;
+  }
+
+  let { assets, clearSelect, ownerId = undefined, children }: Props = $props();
 
   setContext({
     getAssets: () => assets,
@@ -30,10 +36,14 @@
   });
 </script>
 
-<ControlAppBar on:close={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
-  <div class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-    <p class="block sm:hidden">{assets.size}</p>
-    <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.size } })}</p>
-  </div>
-  <slot slot="trailing" />
+<ControlAppBar onClose={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+  {#snippet leading()}
+    <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
+      <p class="block sm:hidden">{assets.size}</p>
+      <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.size } })}</p>
+    </div>
+  {/snippet}
+  {#snippet trailing()}
+    {@render children?.()}
+  {/snippet}
 </ControlAppBar>

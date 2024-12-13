@@ -52,14 +52,25 @@ On iOS (iPhone and iPad), the operating system determines if a particular app ca
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
 - Use the Immich app more often.
 
+### Why are features not working with a self-signed cert or mTLS?
+
+Due to limitations in the upstream app/video library, using a self-signed TLS certificate or mutual TLS may break video playback or asset upload (both foreground and/or background).
+We recommend using a real SSL certificate from a free provider, for example [Let's Encrypt](https://letsencrypt.org/).
+
 ---
 
 ## Assets
 
 ### Does Immich change the file?
 
-No, Immich does not touch the original file under any circumstances,  
-all edited metadata are saved in the companion sidecar file and the database.
+No, Immich does not modify the original files.
+All edited metadata is saved in companion `.xmp` sidecar files and the database.
+However, Immich will delete original files that have been trashed when the trash is emptied in the Immich UI.
+
+### Why do my file names appear as a random string in the file manager?
+
+When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names. To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
+It is recommended to read about [Storage Template](https://immich.app/docs/administration/storage-template) before activation.
 
 ### Can I add my existing photo library?
 
@@ -157,13 +168,26 @@ We haven't implemented an official mechanism for creating albums from external l
 
 Duplicate checking only exists for upload libraries, using the file hash. Furthermore, duplicate checking is not global, but _per library_. Therefore, a situation where the same file appears twice in the timeline is possible, especially for external libraries.
 
+### Why are my edits to files not being saved in read-only external libraries?
+
+Images in read-write external libraries (the default) can be edited as normal.
+In read-only libraries (`:ro` in the `docker-compose.yml`), Immich is unable to create the `.xmp` sidecar files to store edited file metadata.
+For this reason, the metadata (timestamp, location, description, star rating, etc.) cannot be edited for files in read-only external libraries.
+
+### How are deletions of files handled in external libraries?
+
+Immich will attempt to delete original files that have been trashed when the trash is emptied.
+In read-write external libraries (the default), Immich will delete the original file.
+In read-only libraries (`:ro` in the `docker-compose.yml`), files can still be trashed in the UI.
+However, when the trash is emptied, the files will re-appear in the main timeline since Immich is unable to delete the original file.
+
 ---
 
 ## Machine Learning
 
 ### How does smart search work?
 
-Immich uses CLIP models. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
+Immich uses CLIP models. An ML model converts each image to an "embedding", which is essentially a string of numbers that semantically encodes what is in the image. The same is done for the text that you enter when you do a search, and that text embedding is then compared with those of the images to find similar ones. As such, there are no "tags", "labels", or "descriptions" generated that you can look at. For more information about CLIP and its capabilities, read about it [here](https://openai.com/research/clip).
 
 ### How does facial recognition work?
 
@@ -309,7 +333,11 @@ You may need to add mount points or docker volumes for the following internal co
 - `immich-machine-learning:/.cache`
 - `redis:/data`
 
-The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION`.
+The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION` and `/cache` for machine-learning.
+
+:::note Docker Compose Volumes
+The Docker Compose top level volume element does not support non-root access, all of the above volumes must be local volume mounts.
+:::
 
 For a further hardened system, you can add the following block to every container except for `immich_postgres`.
 

@@ -5,26 +5,36 @@
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { mdiMinusCircle } from '@mdi/js';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div class="mt-2">
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault class="mx-4 mt-4">
+    <form autocomplete="off" {onsubmit} class="mx-4 mt-4">
       <div class="flex flex-col gap-4">
         <SettingSwitch
           title={$t('admin.machine_learning_enabled')}
@@ -35,15 +45,42 @@
 
         <hr />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          label={$t('url')}
-          desc={$t('admin.machine_learning_url_description')}
-          bind:value={config.machineLearning.url}
-          required={true}
-          disabled={disabled || !config.machineLearning.enabled}
-          isEdited={config.machineLearning.url !== savedConfig.machineLearning.url}
-        />
+        <div>
+          {#each config.machineLearning.urls as _, i}
+            {#snippet removeButton()}
+              {#if config.machineLearning.urls.length > 1}
+                <CircleIconButton
+                  size="24"
+                  class="ml-2"
+                  padding="2"
+                  color="red"
+                  title=""
+                  onclick={() => config.machineLearning.urls.splice(i, 1)}
+                  icon={mdiMinusCircle}
+                />
+              {/if}
+            {/snippet}
+
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={i === 0 ? $t('url') : undefined}
+              description={i === 0 ? $t('admin.machine_learning_url_description') : undefined}
+              bind:value={config.machineLearning.urls[i]}
+              required={i === 0}
+              disabled={disabled || !config.machineLearning.enabled}
+              isEdited={i === 0 && !isEqual(config.machineLearning.urls, savedConfig.machineLearning.urls)}
+              trailingSnippet={removeButton}
+            />
+          {/each}
+        </div>
+
+        <Button
+          class="mb-2"
+          type="button"
+          size="sm"
+          onclick={() => config.machineLearning.urls.splice(0, 0, '')}
+          disabled={disabled || !config.machineLearning.enabled}>{$t('add_url')}</Button
+        >
       </div>
 
       <SettingAccordion
@@ -69,11 +106,15 @@
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.clip.enabled}
             isEdited={config.machineLearning.clip.modelName !== savedConfig.machineLearning.clip.modelName}
           >
-            <p slot="desc" class="immich-form-label pb-2 text-sm">
-              <FormatMessage key="admin.machine_learning_clip_model_description" let:message>
-                <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
-              </FormatMessage>
-            </p>
+            {#snippet descriptionSnippet()}
+              <p class="immich-form-label pb-2 text-sm">
+                <FormatMessage key="admin.machine_learning_clip_model_description">
+                  {#snippet children({ message })}
+                    <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+                  {/snippet}
+                </FormatMessage>
+              </p>
+            {/snippet}
           </SettingInputField>
         </div>
       </SettingAccordion>
@@ -100,7 +141,7 @@
             step="0.0005"
             min={0.001}
             max={0.1}
-            desc={$t('admin.machine_learning_max_detection_distance_description')}
+            description={$t('admin.machine_learning_max_detection_distance_description')}
             disabled={disabled || !$featureFlags.duplicateDetection}
             isEdited={config.machineLearning.duplicateDetection.maxDistance !==
               savedConfig.machineLearning.duplicateDetection.maxDistance}
@@ -142,10 +183,10 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_min_detection_score')}
-            desc={$t('admin.machine_learning_min_detection_score_description')}
+            description={$t('admin.machine_learning_min_detection_score_description')}
             bind:value={config.machineLearning.facialRecognition.minScore}
             step="0.1"
-            min={0}
+            min={0.1}
             max={1}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.minScore !==
@@ -155,10 +196,10 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_max_recognition_distance')}
-            desc={$t('admin.machine_learning_max_recognition_distance_description')}
+            description={$t('admin.machine_learning_max_recognition_distance_description')}
             bind:value={config.machineLearning.facialRecognition.maxDistance}
             step="0.1"
-            min={0}
+            min={0.1}
             max={2}
             disabled={disabled || !config.machineLearning.enabled || !config.machineLearning.facialRecognition.enabled}
             isEdited={config.machineLearning.facialRecognition.maxDistance !==
@@ -168,7 +209,7 @@
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
             label={$t('admin.machine_learning_min_recognized_faces')}
-            desc={$t('admin.machine_learning_min_recognized_faces_description')}
+            description={$t('admin.machine_learning_min_recognized_faces_description')}
             bind:value={config.machineLearning.facialRecognition.minFaces}
             step="1"
             min={1}

@@ -167,6 +167,6 @@ final trashedAssetsProvider = StreamProvider<RenderList>((ref) {
       .filter()
       .ownerIdEqualTo(user.isarId)
       .isTrashedEqualTo(true)
-      .sortByFileCreatedAt();
+      .sortByFileCreatedAtDesc();
   return renderListGeneratorWithGroupBy(query, GroupAssetsBy.none);
 });

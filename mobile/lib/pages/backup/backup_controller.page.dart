@@ -51,8 +51,8 @@ class BackupControllerPage extends HookConsumerWidget {
     }
 
     void stopScreenDarkenTimer() {
-      isScreenDarkened.value = false;
       darkenScreenTimer.value?.cancel();
+      isScreenDarkened.value = false;
       SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: [
@@ -74,8 +74,6 @@ class BackupControllerPage extends HookConsumerWidget {
         ref
             .watch(websocketProvider.notifier)
             .stopListenToEvent('on_upload_success');
-
-        WakelockPlus.enable();
 
         return () {
           WakelockPlus.disable();
@@ -102,8 +100,10 @@ class BackupControllerPage extends HookConsumerWidget {
       () {
         if (backupState.backupProgress == BackUpProgressEnum.inProgress) {
           startScreenDarkenTimer();
+          WakelockPlus.enable();
         } else {
           stopScreenDarkenTimer();
+          WakelockPlus.disable();
         }
 
         return null;
@@ -212,7 +212,7 @@ class BackupControllerPage extends HookConsumerWidget {
                     .read(backupProvider.notifier)
                     .backupAlbumSelectionDone();
                 // waited until backup albums are stored in DB
-                ref.read(albumProvider.notifier).getDeviceAlbums();
+                ref.read(albumProvider.notifier).refreshDeviceAlbums();
               },
               child: const Text(
                 "backup_controller_page_select",

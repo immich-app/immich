@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { UserAvatarColor, UserMetadataEntity, UserMetadataKey } from 'src/entities/user-metadata.entity';
-import { UserEntity, UserStatus } from 'src/entities/user.entity';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
+import { UserEntity } from 'src/entities/user.entity';
+import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { getPreferences } from 'src/utils/preferences';
 import { Optional, ValidateBoolean, toEmail, toSanitized } from 'src/validation';
 
@@ -31,6 +32,7 @@ export class UserResponseDto {
   profileImagePath!: string;
   @ApiProperty({ enumName: 'UserAvatarColor', enum: UserAvatarColor })
   avatarColor!: UserAvatarColor;
+  profileChangedAt!: Date;
 }
 
 export class UserLicense {
@@ -46,6 +48,7 @@ export const mapUser = (entity: UserEntity): UserResponseDto => {
     name: entity.name,
     profileImagePath: entity.profileImagePath,
     avatarColor: getPreferences(entity).avatar.color,
+    profileChangedAt: entity.profileChangedAt,
   };
 };
 
@@ -59,7 +62,6 @@ export class UserAdminCreateDto {
   @Transform(toEmail)
   email!: string;
 
-  @IsNotEmpty()
   @IsString()
   password!: string;
 

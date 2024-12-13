@@ -141,6 +141,7 @@ describe('/albums', () => {
       expect(body).toEqual({
         ...user1Albums[0],
         assets: [expect.objectContaining({ isFavorite: false })],
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
 
@@ -297,6 +298,7 @@ describe('/albums', () => {
       expect(body).toEqual({
         ...user1Albums[0],
         assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
 
@@ -327,6 +329,7 @@ describe('/albums', () => {
       expect(body).toEqual({
         ...user1Albums[0],
         assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
 
@@ -340,20 +343,21 @@ describe('/albums', () => {
         ...user1Albums[0],
         assets: [],
         assetCount: 1,
+        lastModifiedAssetTimestamp: expect.any(String),
       });
     });
   });
 
-  describe('GET /albums/count', () => {
+  describe('GET /albums/statistics', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/albums/count');
+      const { status, body } = await request(app).get('/albums/statistics');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
 
     it('should return total count of albums the user has access to', async () => {
       const { status, body } = await request(app)
-        .get('/albums/count')
+        .get('/albums/statistics')
         .set('Authorization', `Bearer ${user1.accessToken}`);
 
       expect(status).toBe(200);

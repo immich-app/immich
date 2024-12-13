@@ -6,16 +6,17 @@
   import Button from '../elements/buttons/button.svelte';
   import PasswordField from '../shared-components/password-field.svelte';
   import { t } from 'svelte-i18n';
+  import { retrieveServerConfig } from '$lib/stores/server-config.store';
 
-  let email = '';
-  let password = '';
-  let confirmPassword = '';
-  let name = '';
+  let email = $state('');
+  let password = $state('');
+  let confirmPassword = $state('');
+  let name = $state('');
 
-  let errorMessage: string;
-  let canRegister = false;
+  let errorMessage: string = $state('');
+  let canRegister = $state(false);
 
-  $: {
+  $effect(() => {
     if (password !== confirmPassword && confirmPassword.length > 0) {
       errorMessage = $t('password_does_not_match');
       canRegister = false;
@@ -23,7 +24,7 @@
       errorMessage = '';
       canRegister = true;
     }
-  }
+  });
 
   async function registerAdmin() {
     if (canRegister) {
@@ -31,6 +32,7 @@
 
       try {
         await signUpAdmin({ signUpDto: { email, password, name } });
+        await retrieveServerConfig();
         await goto(AppRoute.AUTH_LOGIN);
       } catch (error) {
         handleError(error, $t('errors.unable_to_create_admin_account'));
@@ -38,9 +40,14 @@
       }
     }
   }
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await registerAdmin();
+  };
 </script>
 
-<form on:submit|preventDefault={registerAdmin} method="post" class="mt-5 flex flex-col gap-5">
+<form {onsubmit} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="email">{$t('admin_email')}</label>
     <input class="immich-form-input" id="email" bind:value={email} type="email" autocomplete="email" required />

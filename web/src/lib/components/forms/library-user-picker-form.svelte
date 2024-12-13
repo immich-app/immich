@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
@@ -9,33 +8,37 @@
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { t } from 'svelte-i18n';
 
-  let ownerId: string = $user.id;
+  interface Props {
+    onCancel: () => void;
+    onSubmit: (ownerId: string) => void;
+  }
 
-  let userOptions: { value: string; text: string }[] = [];
+  let { onCancel, onSubmit }: Props = $props();
+
+  let ownerId: string = $state($user.id);
+
+  let userOptions: { value: string; text: string }[] = $state([]);
 
   onMount(async () => {
     const users = await searchUsersAdmin({});
     userOptions = users.map((user) => ({ value: user.id, text: user.name }));
   });
 
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    submit: { ownerId: string };
-    delete: void;
-  }>();
-
-  const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', { ownerId });
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSubmit(ownerId);
+  };
 </script>
 
-<FullScreenModal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={handleCancel}>
-  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="select-library-owner-form">
+<FullScreenModal title={$t('select_library_owner')} icon={mdiFolderSync} onClose={onCancel}>
+  <form {onsubmit} autocomplete="off" id="select-library-owner-form">
     <p class="p-5 text-sm">{$t('admin.note_cannot_be_changed_later')}</p>
 
     <SettingSelect bind:value={ownerId} options={userOptions} name="user" />
   </form>
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
+
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" fullwidth form="select-library-owner-form">{$t('create')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

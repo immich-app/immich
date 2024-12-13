@@ -58,6 +58,7 @@ Optionally, you can enable hardware acceleration for machine learning and transc
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
 - Consider changing `DB_PASSWORD` to a custom value. Postgres is not publically exposed, so this password is only used for local authentication.
   To avoid issues with Docker parsing this value, it is best to use only the characters `A-Za-z0-9`.
+- Set your timezone by uncommenting the `TZ=` line.
 
 ### Step 3 - Start the containers
 
@@ -78,6 +79,10 @@ The Compose file './docker-compose.yml' is invalid because:
 ```
 
 See the previous paragraph about installing from the official docker repository.
+:::
+
+:::info Health check start interval
+If you get an error `can't set healthcheck.start_interval as feature require Docker Engine v25 or later`, it helps to comment out the line for `start_interval` in the `database` section of the `docker-compose.yml` file.
 :::
 
 :::tip
@@ -109,7 +114,7 @@ Immich is currently under heavy development, which means you can expect [breakin
 [compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 [env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env
 [watchtower]: https://containrrr.dev/watchtower/
-[breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Abreaking-change+sort%3Adate_created
+[breaking]: https://github.com/immich-app/immich/discussions?discussions_q=label%3Achangelog%3Abreaking-change+sort%3Adate_created
 [container-auth]: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry
 [releases]: https://github.com/immich-app/immich/releases
 [docker-repo]: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository

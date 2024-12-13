@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
@@ -12,47 +13,85 @@
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
+  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { AppRoute } from '$lib/constants';
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
-  import { AssetJobName, AssetTypeEnum, type AlbumResponseDto, type AssetResponseDto } from '@immich/sdk';
+  import {
+    AssetJobName,
+    AssetTypeEnum,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type StackResponseDto,
+  } from '@immich/sdk';
   import {
     mdiAlertOutline,
     mdiCogRefreshOutline,
     mdiContentCopy,
     mdiDatabaseRefreshOutline,
     mdiDotsVertical,
+    mdiHeadSyncOutline,
     mdiImageRefreshOutline,
+    mdiImageSearch,
     mdiMagnifyMinusOutline,
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
   } from '@mdi/js';
-  import { canCopyImagesToClipboard } from 'copy-image-clipboard';
+  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
-  export let asset: AssetResponseDto;
-  export let album: AlbumResponseDto | null = null;
-  export let stackedAssets: AssetResponseDto[];
-  export let showDetailButton: boolean;
-  export let showSlideshow = false;
-  export let hasStackChildren = false;
-  export let onZoomImage: () => void;
-  export let onCopyImage: () => void;
-  export let onAction: OnAction;
-  export let onRunJob: (name: AssetJobName) => void;
-  export let onPlaySlideshow: () => void;
-  export let onShowDetail: () => void;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    album?: AlbumResponseDto | null;
+    stack?: StackResponseDto | null;
+    showDetailButton: boolean;
+    showSlideshow?: boolean;
+    onZoomImage: () => void;
+    onCopyImage?: () => Promise<void>;
+    onAction: OnAction;
+    onRunJob: (name: AssetJobName) => void;
+    onPlaySlideshow: () => void;
+    onShowDetail: () => void;
+    // export let showEditorHandler: () => void;
+    onClose: () => void;
+    motionPhoto?: Snippet;
+  }
+
+  let {
+    asset,
+    album = null,
+    stack = null,
+    showDetailButton,
+    showSlideshow = false,
+    onZoomImage,
+    onCopyImage,
+    onAction,
+    onRunJob,
+    onPlaySlideshow,
+    onShowDetail,
+    onClose,
+    motionPhoto,
+  }: Props = $props();
 
   const sharedLink = getSharedLink();
-
-  $: isOwner = $user && asset.ownerId === $user?.id;
-  $: showDownloadButton = sharedLink ? sharedLink.allowDownload : !asset.isOffline;
+  let isOwner = $derived($user && asset.ownerId === $user?.id);
+  let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  // $: showEditorButton =
+  //   isOwner &&
+  //   asset.type === AssetTypeEnum.Image &&
+  //   !(
+  //     asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR ||
+  //     (asset.originalPath && asset.originalPath.toLowerCase().endsWith('.insp'))
+  //   ) &&
+  //   !(asset.originalPath && asset.originalPath.toLowerCase().endsWith('.gif')) &&
+  //   !asset.livePhotoVideoId;
 </script>
 
 <div
@@ -69,10 +108,10 @@
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
-      <CircleIconButton color="opaque" icon={mdiAlertOutline} on:click={onShowDetail} title={$t('asset_offline')} />
+      <CircleIconButton color="alert" icon={mdiAlertOutline} onclick={onShowDetail} title={$t('asset_offline')} />
     {/if}
     {#if asset.livePhotoVideoId}
-      <slot name="motion-photo" />
+      {@render motionPhoto?.()}
     {/if}
     {#if asset.type === AssetTypeEnum.Image}
       <CircleIconButton
@@ -80,11 +119,11 @@
         hideMobile={true}
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title={$t('zoom_image')}
-        on:click={onZoomImage}
+        onclick={onZoomImage}
       />
     {/if}
-    {#if canCopyImagesToClipboard() && asset.type === AssetTypeEnum.Image}
-      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} on:click={onCopyImage} />
+    {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}
+      <CircleIconButton color="opaque" icon={mdiContentCopy} title={$t('copy_image')} onclick={() => onCopyImage?.()} />
     {/if}
 
     {#if !isOwner && showDownloadButton}
@@ -98,6 +137,15 @@
     {#if isOwner}
       <FavoriteAction {asset} {onAction} />
     {/if}
+    <!-- {#if showEditorButton}
+      <CircleIconButton
+        color="opaque"
+        hideMobile={true}
+        icon={mdiImageEditOutline}
+        onclick={showEditorHandler}
+        title={$t('editor')}
+      />
+    {/if} -->
 
     {#if isOwner}
       <DeleteAction {asset} {onAction} />
@@ -117,8 +165,9 @@
         {/if}
 
         {#if isOwner}
-          {#if hasStackChildren}
-            <UnstackAction {stackedAssets} {onAction} />
+          {#if stack}
+            <UnstackAction {stack} {onAction} />
+            <KeepThisDeleteOthersAction {stack} {asset} {onAction} />
           {/if}
           {#if album}
             <SetAlbumCoverAction {asset} {album} />
@@ -132,7 +181,19 @@
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
             text={$t('replace_with_upload')}
           />
+          {#if !asset.isArchived && !asset.isTrashed}
+            <MenuOption
+              icon={mdiImageSearch}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              text={$t('view_in_timeline')}
+            />
+          {/if}
           <hr />
+          <MenuOption
+            icon={mdiHeadSyncOutline}
+            onClick={() => onRunJob(AssetJobName.RefreshFaces)}
+            text={$getAssetJobName(AssetJobName.RefreshFaces)}
+          />
           <MenuOption
             icon={mdiDatabaseRefreshOutline}
             onClick={() => onRunJob(AssetJobName.RefreshMetadata)}

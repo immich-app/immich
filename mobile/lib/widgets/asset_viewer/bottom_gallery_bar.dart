@@ -6,16 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
-import 'package:immich_mobile/providers/album/shared_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/image_viewer_page_state.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/services/asset_stack.service.dart';
+import 'package:immich_mobile/services/stack.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -24,12 +26,10 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/pages/editing/edit.page.dart';
 
 class BottomGalleryBar extends ConsumerWidget {
-  final Asset asset;
   final ValueNotifier<int> assetIndex;
   final bool showStack;
-  final int stackIndex;
+  final ValueNotifier<int> stackIndex;
   final ValueNotifier<int> totalAssets;
-  final bool showVideoPlayerControls;
   final PageController controller;
   final RenderList renderList;
 
@@ -37,23 +37,26 @@ class BottomGalleryBar extends ConsumerWidget {
     super.key,
     required this.showStack,
     required this.stackIndex,
-    required this.asset,
     required this.assetIndex,
     required this.controller,
     required this.totalAssets,
-    required this.showVideoPlayerControls,
     required this.renderList,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final asset = ref.watch(currentAssetProvider);
+    if (asset == null) {
+      return const SizedBox();
+    }
     final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
+    final showControls = ref.watch(showControlsProvider);
+    final stackId = asset.stackId;
 
-    final stack = showStack && asset.stackChildrenCount > 0
-        ? ref.watch(assetStackStateProvider(asset))
+    final stackItems = showStack && stackId != null
+        ? ref.watch(assetStackStateProvider(stackId))
         : <Asset>[];
-    final stackElements = showStack ? [asset, ...stack] : <Asset>[];
-    bool isParent = stackIndex == -1 || stackIndex == 0;
+    bool isStackPrimaryAsset = asset.stackPrimaryAssetId == null;
     final navStack = AutoRouter.of(context).stackData;
     final isTrashEnabled =
         ref.watch(serverInfoProvider.select((v) => v.serverFeatures.trash));
@@ -63,10 +66,10 @@ class BottomGalleryBar extends ConsumerWidget {
     final isInAlbum = ref.watch(currentAlbumProvider)?.isRemote ?? false;
 
     void removeAssetFromStack() {
-      if (stackIndex > 0 && showStack) {
+      if (stackIndex.value > 0 && showStack && stackId != null) {
         ref
-            .read(assetStackStateProvider(asset).notifier)
-            .removeChild(stackIndex - 1);
+            .read(assetStackStateProvider(stackId).notifier)
+            .removeChild(stackIndex.value - 1);
       }
     }
 
@@ -76,7 +79,7 @@ class BottomGalleryBar extends ConsumerWidget {
           {asset},
           force: force,
         );
-        if (isDeleted && isParent) {
+        if (isDeleted && isStackPrimaryAsset) {
           // Workaround for asset remaining in the gallery
           renderList.deleteAsset(asset);
 
@@ -98,7 +101,7 @@ class BottomGalleryBar extends ConsumerWidget {
         final isDeleted = await onDelete(false);
         if (isDeleted) {
           // Can only trash assets stored in server. Local assets are always permanently removed for now
-          if (context.mounted && asset.isRemote && isParent) {
+          if (context.mounted && asset.isRemote && isStackPrimaryAsset) {
             ImmichToast.show(
               durationInSecond: 1,
               context: context,
@@ -127,6 +130,16 @@ class BottomGalleryBar extends ConsumerWidget {
       );
     }
 
+    unStack() async {
+      if (asset.stackId == null) {
+        return;
+      }
+
+      await ref
+          .read(stackServiceProvider)
+          .deleteStack(asset.stackId!, stackItems);
+    }
+
     void showStackActionItems() {
       showModalBottomSheet<void>(
         context: context,
@@ -138,74 +151,13 @@ class BottomGalleryBar extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (!isParent)
-                    ListTile(
-                      leading: const Icon(
-                        Icons.bookmark_border_outlined,
-                        size: 24,
-                      ),
-                      onTap: () async {
-                        await ref
-                            .read(assetStackServiceProvider)
-                            .updateStackParent(
-                              asset,
-                              stackElements.elementAt(stackIndex),
-                            );
-                        ctx.pop();
-                        context.maybePop();
-                      },
-                      title: const Text(
-                        "viewer_stack_use_as_main_asset",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ).tr(),
-                    ),
-                  ListTile(
-                    leading: const Icon(
-                      Icons.copy_all_outlined,
-                      size: 24,
-                    ),
-                    onTap: () async {
-                      if (isParent) {
-                        await ref
-                            .read(assetStackServiceProvider)
-                            .updateStackParent(
-                              asset,
-                              stackElements
-                                  .elementAt(1), // Next asset as parent
-                            );
-                        // Remove itself from stack
-                        await ref.read(assetStackServiceProvider).updateStack(
-                          stackElements.elementAt(1),
-                          childrenToRemove: [asset],
-                        );
-                        ctx.pop();
-                        context.maybePop();
-                      } else {
-                        await ref.read(assetStackServiceProvider).updateStack(
-                          asset,
-                          childrenToRemove: [
-                            stackElements.elementAt(stackIndex),
-                          ],
-                        );
-                        removeAssetFromStack();
-                        ctx.pop();
-                      }
-                    },
-                    title: const Text(
-                      "viewer_remove_from_stack",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ).tr(),
-                  ),
                   ListTile(
                     leading: const Icon(
                       Icons.filter_none_outlined,
                       size: 18,
                     ),
                     onTap: () async {
-                      await ref.read(assetStackServiceProvider).updateStack(
-                            asset,
-                            childrenToRemove: stack,
-                          );
+                      await unStack();
                       ctx.pop();
                       context.maybePop();
                     },
@@ -232,30 +184,26 @@ class BottomGalleryBar extends ConsumerWidget {
         );
         return;
       }
-      ref.read(imageViewerStateProvider.notifier).shareAsset(asset, context);
+      ref.read(downloadStateProvider.notifier).shareAsset(asset, context);
     }
 
     void handleEdit() async {
-      if (asset.isOffline) {
-        ImmichToast.show(
-          durationInSecond: 1,
-          context: context,
-          msg: 'asset_action_edit_err_offline'.tr(),
-          gravity: ToastGravity.BOTTOM,
-        );
-        return;
-      }
-      Navigator.of(context).push(
+      final image = Image(image: ImmichImage.imageProvider(asset: asset));
+
+      context.navigator.push(
         MaterialPageRoute(
-          builder: (context) =>
-              EditImagePage(asset: asset), // Send the Asset object
+          builder: (context) => EditImagePage(
+            asset: asset,
+            image: image,
+            isEdited: false,
+          ),
         ),
       );
     }
 
     handleArchive() {
       ref.read(assetProvider.notifier).toggleArchive([asset]);
-      if (isParent) {
+      if (isStackPrimaryAsset) {
         context.maybePop();
         return;
       }
@@ -276,7 +224,7 @@ class BottomGalleryBar extends ConsumerWidget {
         return;
       }
 
-      ref.read(imageViewerStateProvider.notifier).downloadAsset(
+      ref.read(downloadStateProvider.notifier).downloadAsset(
             asset,
             context,
           );
@@ -285,9 +233,7 @@ class BottomGalleryBar extends ConsumerWidget {
     handleRemoveFromAlbum() async {
       final album = ref.read(currentAlbumProvider);
       final bool isSuccess = album != null &&
-          await ref
-              .read(sharedAlbumProvider.notifier)
-              .removeAssetFromAlbum(album, [asset]);
+          await ref.read(albumProvider.notifier).removeAsset(album, [asset]);
 
       if (isSuccess) {
         // Workaround for asset remaining in the gallery
@@ -346,7 +292,7 @@ class BottomGalleryBar extends ConsumerWidget {
                   tooltip: 'control_bottom_app_bar_archive'.tr(),
                 ): (_) => handleArchive(),
         },
-      if (isOwner && stack.isNotEmpty)
+      if (isOwner && asset.stackCount > 0)
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.burst_mode_outlined),
@@ -366,8 +312,8 @@ class BottomGalleryBar extends ConsumerWidget {
         {
           BottomNavigationBarItem(
             icon: const Icon(Icons.download_outlined),
-            label: 'download'.tr(),
-            tooltip: 'download'.tr(),
+            label: 'control_bottom_app_bar_download'.tr(),
+            tooltip: 'control_bottom_app_bar_download'.tr(),
           ): (_) => handleDownload(),
         },
       if (isInAlbum)
@@ -380,43 +326,55 @@ class BottomGalleryBar extends ConsumerWidget {
         },
     ];
     return IgnorePointer(
-      ignoring: !ref.watch(showControlsProvider),
+      ignoring: !showControls,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
-        opacity: ref.watch(showControlsProvider) ? 1.0 : 0.0,
-        child: Column(
-          children: [
-            Visibility(
-              visible: showVideoPlayerControls,
-              child: const VideoControls(),
+        opacity: showControls ? 1.0 : 0.0,
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [Colors.black, Colors.transparent],
             ),
-            BottomNavigationBar(
-              backgroundColor: Colors.black.withOpacity(0.4),
-              unselectedIconTheme: const IconThemeData(color: Colors.white),
-              selectedIconTheme: const IconThemeData(color: Colors.white),
-              unselectedLabelStyle: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                height: 2.3,
-              ),
-              selectedLabelStyle: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                height: 2.3,
-              ),
-              unselectedFontSize: 14,
-              selectedFontSize: 14,
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white,
-              showSelectedLabels: true,
-              showUnselectedLabels: true,
-              items:
-                  albumActions.map((e) => e.keys.first).toList(growable: false),
-              onTap: (index) {
-                albumActions[index].values.first.call(index);
-              },
+          ),
+          position: DecorationPosition.background,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 40.0),
+            child: Column(
+              children: [
+                if (asset.isVideo) const VideoControls(),
+                BottomNavigationBar(
+                  elevation: 0.0,
+                  backgroundColor: Colors.transparent,
+                  unselectedIconTheme: const IconThemeData(color: Colors.white),
+                  selectedIconTheme: const IconThemeData(color: Colors.white),
+                  unselectedLabelStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    height: 2.3,
+                  ),
+                  selectedLabelStyle: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    height: 2.3,
+                  ),
+                  unselectedFontSize: 14,
+                  selectedFontSize: 14,
+                  selectedItemColor: Colors.white,
+                  unselectedItemColor: Colors.white,
+                  showSelectedLabels: true,
+                  showUnselectedLabels: true,
+                  items: albumActions
+                      .map((e) => e.keys.first)
+                      .toList(growable: false),
+                  onTap: (index) {
+                    albumActions[index].values.first.call(index);
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

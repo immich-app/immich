@@ -1,11 +1,12 @@
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 
 const upstream = {
-  target: process.env.IMMICH_SERVER_URL || 'http://immich-server:3001/',
+  target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
   secure: true,
   changeOrigin: true,
   logLevel: 'info',
@@ -37,6 +38,7 @@ export default defineConfig({
         })
       : undefined,
     enhancedImages(),
+    svelteTesting(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
@@ -49,6 +51,5 @@ export default defineConfig({
     sequence: {
       hooks: 'list',
     },
-    alias: [{ find: /^svelte$/, replacement: 'svelte/internal' }],
   },
 });

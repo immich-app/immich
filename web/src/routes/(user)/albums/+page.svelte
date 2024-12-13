@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { PageData } from './$types';
+  import { scrollMemory } from '$lib/actions/scroll-memory';
   import { AlbumFilter, albumViewSettings } from '$lib/stores/preferences.store';
   import { createAlbumAndRedirect } from '$lib/utils/album-utils';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
@@ -8,18 +9,25 @@
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
+  import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let searchQuery = '';
-  let albumGroups: string[] = [];
+  let { data }: Props = $props();
+
+  let searchQuery = $state('');
+  let albumGroups: string[] = $state([]);
 </script>
 
-<UserPageLayout title={data.meta.title}>
-  <div class="flex place-items-center gap-2" slot="buttons">
-    <AlbumsControls {albumGroups} bind:searchQuery />
-  </div>
+<UserPageLayout title={data.meta.title} use={[[scrollMemory, { routeStartsWith: AppRoute.ALBUMS }]]}>
+  {#snippet buttons()}
+    <div class="flex place-items-center gap-2">
+      <AlbumsControls {albumGroups} bind:searchQuery />
+    </div>
+  {/snippet}
 
   <div class="xl:hidden">
     <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
@@ -43,6 +51,8 @@
     {searchQuery}
     bind:albumGroupIds={albumGroups}
   >
-    <EmptyPlaceholder slot="empty" text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} />
+    {/snippet}
   </Albums>
 </UserPageLayout>

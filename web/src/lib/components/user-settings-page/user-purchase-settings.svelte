@@ -24,8 +24,8 @@
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
   const { isPurchased } = purchaseStore;
 
-  let isServerProduct = false;
-  let serverPurchaseInfo: LicenseResponseDto | null = null;
+  let isServerProduct = $state(false);
+  let serverPurchaseInfo: LicenseResponseDto | null = $state(null);
 
   const checkPurchaseInfo = async () => {
     const serverInfo = await getAboutInfo();
@@ -115,7 +115,7 @@
           title={$t('show_supporter_badge')}
           subtitle={$t('show_supporter_badge_description')}
           bind:checked={$preferences.purchase.showSupportBadge}
-          on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
+          onToggle={setSupportBadgeVisibility}
         />
       </div>
 
@@ -145,7 +145,7 @@
 
         {#if $user.isAdmin}
           <div class="text-right mt-4">
-            <Button size="sm" color="red" on:click={removeServerProductKey}>{$t('purchase_button_remove_key')}</Button>
+            <Button size="sm" color="red" onclick={removeServerProductKey}>{$t('purchase_button_remove_key')}</Button>
           </div>
         {/if}
       {:else}
@@ -169,8 +169,7 @@
         </div>
 
         <div class="text-right mt-4">
-          <Button size="sm" color="red" on:click={removeIndividualProductKey}>{$t('purchase_button_remove_key')}</Button
-          >
+          <Button size="sm" color="red" onclick={removeIndividualProductKey}>{$t('purchase_button_remove_key')}</Button>
         </div>
       {/if}
     {:else}

@@ -15,6 +15,7 @@ import {
   mdiCloudUploadOutline,
   mdiCollage,
   mdiContentDuplicate,
+  mdiCrop,
   mdiDevices,
   mdiEmailOutline,
   mdiExpansionCard,
@@ -26,6 +27,7 @@ import {
   mdiFileSearch,
   mdiFlash,
   mdiFolder,
+  mdiFolderMultiple,
   mdiForum,
   mdiHandshakeOutline,
   mdiHeart,
@@ -36,6 +38,7 @@ import {
   mdiImageMultipleOutline,
   mdiImageSearch,
   mdiKeyboardSettingsOutline,
+  mdiLicense,
   mdiLockOutline,
   mdiMagnify,
   mdiMagnifyScan,
@@ -55,25 +58,34 @@ import {
   mdiScaleBalance,
   mdiSecurity,
   mdiServer,
+  mdiShare,
   mdiShareAll,
   mdiShareCircle,
   mdiStar,
+  mdiStarOutline,
   mdiTableKey,
   mdiTag,
+  mdiTagMultiple,
   mdiText,
   mdiThemeLightDark,
   mdiTrashCanOutline,
   mdiVectorCombine,
+  mdiFolderSync,
+  mdiFaceRecognition,
   mdiVideo,
   mdiWeb,
-  mdiLicense,
+  mdiDatabaseOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
-  // TODO
+  'v1.120.0': new Date(2024, 10, 6),
+  'v1.114.0': new Date(2024, 8, 6),
+  'v1.113.0': new Date(2024, 7, 30),
+  'v1.112.0': new Date(2024, 7, 14),
+  'v1.111.0': new Date(2024, 6, 26),
   'v1.110.0': new Date(2024, 5, 11),
   'v1.109.0': new Date(2024, 6, 18),
   'v1.106.1': new Date(2024, 5, 11),
@@ -141,6 +153,9 @@ const weirdTags = {
   'v1.2.0': 'v0.2-dev ',
 };
 
+const title = 'Roadmap';
+const description = 'A list of future plans and goals, as well as past achievements and milestones.';
+
 const withLanguage = (date: Date) => (language: string) => date.toLocaleDateString(language);
 
 type Base = { icon: string; iconColor?: React.CSSProperties['color']; title: string; description: string };
@@ -167,6 +182,38 @@ const withRelease = ({
 const roadmap: Item[] = [
   {
     done: false,
+    icon: mdiFlash,
+    iconColor: 'gold',
+    title: 'Workflows',
+    description: 'Automate tasks with workflows',
+    getDateLabel: () => 'Planned for 2025',
+  },
+  {
+    done: false,
+    icon: mdiTableKey,
+    iconColor: 'gray',
+    title: 'Fine grained access controls',
+    description: 'Granular access controls for users and api keys',
+    getDateLabel: () => 'Planned for 2025',
+  },
+  {
+    done: false,
+    icon: mdiImageEdit,
+    iconColor: 'rebeccapurple',
+    title: 'Basic editor',
+    description: 'Basic photo editing capabilities',
+    getDateLabel: () => 'Planned for 2025',
+  },
+  {
+    done: false,
+    icon: mdiRocketLaunch,
+    iconColor: 'indianred',
+    title: 'Stable release',
+    description: 'Immich goes stable',
+    getDateLabel: () => 'Planned for early 2025',
+  },
+  {
+    done: false,
     icon: mdiLockOutline,
     iconColor: 'sandybrown',
     title: 'Private/locked photos',
@@ -175,42 +222,10 @@ const roadmap: Item[] = [
   },
   {
     done: false,
-    icon: mdiRocketLaunch,
-    iconColor: 'indianred',
-    title: 'Stable release',
-    description: 'Immich goes stable',
-    getDateLabel: () => 'Planned for 2024',
-  },
-  {
-    done: false,
     icon: mdiCloudUploadOutline,
     iconColor: 'cornflowerblue',
     title: 'Better background backups',
     description: 'Rework background backups to be more reliable',
-    getDateLabel: () => 'Planned for 2024',
-  },
-  {
-    done: false,
-    icon: mdiImageEdit,
-    iconColor: 'rebeccapurple',
-    title: 'Basic editor',
-    description: 'Basic photo editing capabilities',
-    getDateLabel: () => 'Planned for 2024',
-  },
-  {
-    done: false,
-    icon: mdiFlash,
-    iconColor: 'gold',
-    title: 'Workflows',
-    description: 'Automate tasks with workflows',
-    getDateLabel: () => 'Planned for 2024',
-  },
-  {
-    done: false,
-    icon: mdiTableKey,
-    iconColor: 'gray',
-    title: 'Fine grained access controls',
-    description: 'Granular access controls for users and api keys',
     getDateLabel: () => 'Planned for 2024',
   },
   {
@@ -224,6 +239,74 @@ const roadmap: Item[] = [
 ];
 
 const milestones: Item[] = [
+  withRelease({
+    icon: mdiDatabaseOutline,
+    iconColor: 'brown',
+    title: 'Automatic database backups',
+    description: 'Database backups are now integrated into the Immich server',
+    release: 'v1.120.0',
+  }),
+  {
+    icon: mdiStar,
+    iconColor: 'gold',
+    title: '50,000 Stars',
+    description: 'Reached 50K Stars on GitHub!',
+    getDateLabel: withLanguage(new Date(2024, 10, 1)),
+  },
+  withRelease({
+    icon: mdiFaceRecognition,
+    title: 'Metadata Face Import',
+    description: 'Read face metadata in Digikam format during import',
+    release: 'v1.114.0',
+  }),
+  withRelease({
+    icon: mdiTagMultiple,
+    iconColor: 'orange',
+    title: 'Tags',
+    description: 'Tag your photos and videos',
+    release: 'v1.113.0',
+  }),
+  withRelease({
+    icon: mdiFolderSync,
+    iconColor: 'green',
+    title: 'Album sync (mobile)',
+    description: 'Sync or mirror an album from your phone to the Immich server',
+    release: 'v1.113.0',
+  }),
+  withRelease({
+    icon: mdiFolderMultiple,
+    iconColor: 'brown',
+    title: 'Folders',
+    description: 'Browse your photos and videos in their folder structure',
+    release: 'v1.113.0',
+  }),
+  withRelease({
+    icon: mdiPalette,
+    title: 'Theming (mobile)',
+    description: 'Pick a primary color for the mobile app',
+    release: 'v1.112.0',
+  }),
+  withRelease({
+    icon: mdiStarOutline,
+    iconColor: 'gold',
+    title: 'Star rating',
+    description: 'Rate your photos and videos',
+    release: 'v1.112.0',
+  }),
+  withRelease({
+    icon: mdiCrop,
+    iconColor: 'royalblue',
+    title: 'Editor (mobile)',
+    description: 'Crop and rotate on mobile',
+    release: 'v1.111.0',
+  }),
+  withRelease({
+    icon: mdiMap,
+    iconColor: 'green',
+    title: 'Deploy tiles.immich.cloud',
+    description: 'Dedicated tile server for Immich',
+    release: 'v1.111.0',
+  }),
   {
     icon: mdiStar,
     iconColor: 'gold',
@@ -231,6 +314,12 @@ const milestones: Item[] = [
     description: 'Reached 40K Stars on GitHub!',
     getDateLabel: withLanguage(new Date(2024, 6, 21)),
   },
+  withRelease({
+    icon: mdiShare,
+    title: 'Deploy my.immich.app',
+    description: 'Url router for immich links',
+    release: 'v1.109.0',
+  }),
   withRelease({
     icon: mdiLicense,
     iconColor: 'gold',
@@ -783,14 +872,12 @@ const milestones: Item[] = [
 
 export default function MilestonePage(): JSX.Element {
   return (
-    <Layout title="Milestones" description="History of Immich">
+    <Layout title={title} description={description}>
       <section className="my-8">
         <h1 className="md:text-6xl text-center mb-10 text-immich-primary dark:text-immich-dark-primary px-2">
-          Roadmap
+          {title}
         </h1>
-        <p className="text-center text-xl px-2">
-          A list of future plans and goals, as well as past achievements and milestones.
-        </p>
+        <p className="text-center text-xl px-2">{description}</p>
         <div className="flex justify-around mt-8 w-full max-w-full">
           <Timeline items={[...roadmap, ...milestones]} />
         </div>

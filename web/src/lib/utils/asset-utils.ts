@@ -4,23 +4,31 @@ import { NotificationType, notificationController } from '$lib/components/shared
 import { AppRoute } from '$lib/constants';
 import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-import { BucketPosition, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
+import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
+import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
+  createStack,
+  deleteAssets,
+  deleteStacks,
   getAssetInfo,
   getBaseUrl,
   getDownloadInfo,
+  getStack,
+  tagAssets as tagAllAssets,
+  untagAssets,
   updateAsset,
   updateAssets,
   type AlbumResponseDto,
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -46,7 +54,7 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       timeout: 5000,
       message:
         count > 0
-          ? $t('assets_added_to_album_count', { values: { count: count } })
+          ? $t('assets_added_to_album_count', { values: { count } })
           : $t('assets_were_part_of_album_count', { values: { count: assetIds.length } }),
       button: {
         text: $t('view_album'),
@@ -56,6 +64,54 @@ export const addAssetsToAlbum = async (albumId: string, assetIds: string[], show
       },
     });
   }
+};
+
+export const tagAssets = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  for (const tagId of tagIds) {
+    await tagAllAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
+  }
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    notificationController.show({
+      message: $t('tagged_assets', { values: { count: assetIds.length } }),
+      type: NotificationType.Info,
+    });
+  }
+
+  return assetIds;
+};
+
+export const removeTag = async ({
+  assetIds,
+  tagIds,
+  showNotification = true,
+}: {
+  assetIds: string[];
+  tagIds: string[];
+  showNotification?: boolean;
+}) => {
+  for (const tagId of tagIds) {
+    await untagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } });
+  }
+
+  if (showNotification) {
+    const $t = await getFormatter();
+    notificationController.show({
+      message: $t('removed_tagged_assets', { values: { count: assetIds.length } }),
+      type: NotificationType.Info,
+    });
+  }
+
+  return assetIds;
 };
 
 export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[]) => {
@@ -157,13 +213,6 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 
 export const downloadFile = async (asset: AssetResponseDto) => {
   const $t = get(t);
-  if (asset.isOffline) {
-    notificationController.show({
-      type: NotificationType.Info,
-      message: $t('asset_filename_is_offline', { values: { filename: asset.originalFileName } }),
-    });
-    return;
-  }
   const assets = [
     {
       filename: asset.originalFileName,
@@ -172,13 +221,19 @@ export const downloadFile = async (asset: AssetResponseDto) => {
     },
   ];
 
+  const isAndroidMotionVideo = (asset: AssetResponseDto) => {
+    return asset.originalPath.includes('encoded-video');
+  };
+
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
-    assets.push({
-      filename: motionAsset.originalFileName,
-      id: asset.livePhotoVideoId,
-      size: motionAsset.exifInfo?.fileSizeInByte || 0,
-    });
+    if (!isAndroidMotionVideo(motionAsset) || get(preferences).download.includeEmbeddedVideos) {
+      assets.push({
+        filename: motionAsset.originalFileName,
+        id: asset.livePhotoVideoId,
+        size: motionAsset.exifInfo?.fileSizeInByte || 0,
+      });
+    }
   }
 
   for (const { filename, id, size } of assets) {
@@ -204,7 +259,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
       downloadBlob(data, filename);
     } catch (error) {
-      handleError(error, $t('errors.error_downloading', { values: { filename: filename } }));
+      handleError(error, $t('errors.error_downloading', { values: { filename } }));
       downloadManager.clear(downloadKey);
     } finally {
       setTimeout(() => downloadManager.clear(downloadKey), 5000);
@@ -329,79 +384,80 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
     return false;
   }
 
-  const parent = assets[0];
-  const children = assets.slice(1);
-  const ids = children.map(({ id }) => id);
   const $t = get(t);
 
   try {
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids,
-        stackParentId: parent.id,
-      },
-    });
+    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
+    if (showNotification) {
+      notificationController.show({
+        message: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
+        type: NotificationType.Info,
+        button: {
+          text: $t('view_stack'),
+          onClick: () => assetViewingStore.setAssetId(stack.primaryAssetId),
+        },
+      });
+    }
+
+    for (const [index, asset] of assets.entries()) {
+      asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
+    }
+
+    return assets.slice(1).map((asset) => asset.id);
   } catch (error) {
     handleError(error, $t('errors.failed_to_stack_assets'));
     return false;
   }
-
-  let grandChildren: AssetResponseDto[] = [];
-  for (const asset of children) {
-    asset.stackParentId = parent.id;
-    if (asset.stack) {
-      // Add grand-children to new parent
-      grandChildren = grandChildren.concat(asset.stack);
-      // Reset children stack info
-      asset.stackCount = null;
-      asset.stack = [];
-    }
-  }
-
-  parent.stack ??= [];
-  parent.stack = parent.stack.concat(children, grandChildren);
-  parent.stackCount = parent.stack.length + 1;
-
-  if (showNotification) {
-    notificationController.show({
-      message: $t('stacked_assets_count', { values: { count: parent.stackCount } }),
-      type: NotificationType.Info,
-      button: {
-        text: $t('view_stack'),
-        onClick() {
-          return assetViewingStore.setAssetId(parent.id);
-        },
-      },
-    });
-  }
-
-  return ids;
 };
 
-export const unstackAssets = async (assets: AssetResponseDto[]) => {
-  const ids = assets.map(({ id }) => id);
-  const $t = get(t);
-  try {
-    await updateAssets({
-      assetBulkUpdateDto: {
-        ids,
-        removeParent: true,
-      },
-    });
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_unstack_assets'));
+export const deleteStack = async (stackIds: string[]) => {
+  const ids = [...new Set(stackIds)];
+  if (ids.length === 0) {
     return;
   }
-  for (const asset of assets) {
-    asset.stackParentId = null;
-    asset.stackCount = null;
-    asset.stack = [];
+
+  const $t = get(t);
+
+  try {
+    const stacks = await Promise.all(ids.map((id) => getStack({ id })));
+    const count = stacks.reduce((sum, stack) => sum + stack.assets.length, 0);
+
+    await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('unstacked_assets_count', { values: { count } }),
+    });
+
+    const assets = stacks.flatMap((stack) => stack.assets);
+    for (const asset of assets) {
+      asset.stack = null;
+    }
+
+    return assets;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_unstack_assets'));
   }
-  notificationController.show({
-    type: NotificationType.Info,
-    message: $t('unstacked_assets_count', { values: { count: assets.length } }),
-  });
-  return assets;
+};
+
+export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
+  const $t = get(t);
+
+  try {
+    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
+    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
+    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
+    });
+
+    keepAsset.stack = null;
+    return keepAsset;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
+  }
 };
 
 export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
@@ -413,7 +469,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
 
   try {
     for (const bucket of assetStore.buckets) {
-      await assetStore.loadBucket(bucket.bucketDate, BucketPosition.Unknown);
+      await assetStore.loadBucket(bucket.bucketDate);
 
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
@@ -431,6 +487,11 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
     handleError(error, $t('errors.error_selecting_all_assets'));
     isSelectingAllAssets.set(false);
   }
+};
+
+export const cancelMultiselect = (assetInteractionStore: AssetInteractionStore) => {
+  isSelectingAllAssets.set(false);
+  assetInteractionStore.clearMultiselect();
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {
@@ -485,4 +546,42 @@ export const archiveAssets = async (assets: AssetResponseDto[], archive: boolean
 
 export const delay = async (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const canCopyImageToClipboard = (): boolean => {
+  return !!(navigator.clipboard && window.ClipboardItem);
+};
+
+const imgToBlob = async (imageElement: HTMLImageElement) => {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  canvas.width = imageElement.naturalWidth;
+  canvas.height = imageElement.naturalHeight;
+
+  if (context) {
+    context.drawImage(imageElement, 0, 0);
+
+    return await new Promise<Blob>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          throw new Error('Canvas conversion to Blob failed');
+        }
+      });
+    });
+  }
+
+  throw new Error('Canvas context is null');
+};
+
+const urlToBlob = async (imageSource: string) => {
+  const response = await fetch(imageSource);
+  return await response.blob();
+};
+
+export const copyImageToClipboard = async (source: HTMLImageElement | string) => {
+  const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
+  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 };

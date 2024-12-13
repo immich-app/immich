@@ -4,9 +4,9 @@
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AssetAction, ProjectionType } from '$lib/constants';
   import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
@@ -15,7 +15,6 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { navigate } from '$lib/utils/navigation';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import {
     AssetJobName,
@@ -26,13 +25,14 @@
     getActivities,
     getActivityStatistics,
     getAllAlbums,
+    getStack,
     runAssetJobs,
     type ActivityResponseDto,
     type AlbumResponseDto,
     type AssetResponseDto,
+    type StackResponseDto,
   } from '@immich/sdk';
-  import { mdiImageBrokenVariant } from '@mdi/js';
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
@@ -41,21 +41,44 @@
   import ActivityViewer from './activity-viewer.svelte';
   import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
   import DetailPanel from './detail-panel.svelte';
-  import PanoramaViewer from './panorama-viewer.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import EditorPanel from './editor/editor-panel.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
+  import ImagePanoramaViewer from './image-panorama-viewer.svelte';
 
-  export let assetStore: AssetStore | null = null;
-  export let asset: AssetResponseDto;
-  export let preloadAssets: AssetResponseDto[] = [];
-  export let showNavigation = true;
-  export let withStacked = false;
-  export let isShared = false;
-  export let album: AlbumResponseDto | null = null;
-  export let onAction: OnAction | undefined = undefined;
+  interface Props {
+    assetStore?: AssetStore | null;
+    asset: AssetResponseDto;
+    preloadAssets?: AssetResponseDto[];
+    showNavigation?: boolean;
+    withStacked?: boolean;
+    isShared?: boolean;
+    album?: AlbumResponseDto | null;
+    onAction?: OnAction | undefined;
+    reactions?: ActivityResponseDto[];
+    onClose: (dto: { asset: AssetResponseDto }) => void;
+    onNext: () => void;
+    onPrevious: () => void;
+    copyImage?: () => Promise<void>;
+  }
 
-  let reactions: ActivityResponseDto[] = [];
+  let {
+    assetStore = null,
+    asset = $bindable(),
+    preloadAssets = $bindable([]),
+    showNavigation = true,
+    withStacked = false,
+    isShared = false,
+    album = null,
+    onAction = undefined,
+    reactions = $bindable([]),
+    onClose,
+    onNext,
+    onPrevious,
+    copyImage = $bindable(),
+  }: Props = $props();
 
   const { setAsset } = assetViewingStore;
   const {
@@ -63,55 +86,46 @@
     stopProgress: stopSlideshowProgress,
     slideshowNavigation,
     slideshowState,
+    slideshowTransition,
   } = slideshowStore;
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    next: void;
-    previous: void;
-  }>();
-
-  let appearsInAlbums: AlbumResponseDto[] = [];
-  let stackedAssets: AssetResponseDto[] = [];
-  let shouldPlayMotionPhoto = false;
+  let appearsInAlbums: AlbumResponseDto[] = $state([]);
+  let shouldPlayMotionPhoto = $state(false);
   let sharedLink = getSharedLink();
   let enableDetailPanel = asset.hasMetadata;
   let slideshowStateUnsubscribe: () => void;
   let shuffleSlideshowUnsubscribe: () => void;
-  let previewStackedAsset: AssetResponseDto | undefined;
-  let isShowActivity = false;
-  let isLiked: ActivityResponseDto | null = null;
-  let numberOfComments: number;
-  let fullscreenElement: Element;
-  let unsubscribe: () => void;
-  let zoomToggle = () => void 0;
-  let copyImage: () => Promise<void>;
+  let previewStackedAsset: AssetResponseDto | undefined = $state();
+  let isShowActivity = $state(false);
+  let isShowEditor = $state(false);
+  let isLiked: ActivityResponseDto | null = $state(null);
+  let numberOfComments = $state(0);
+  let fullscreenElement = $state<Element>();
+  let unsubscribes: (() => void)[] = [];
+  let selectedEditType: string = $state('');
+  let stack: StackResponseDto | null = $state(null);
 
-  $: isFullScreen = fullscreenElement !== null;
+  let zoomToggle = $state(() => void 0);
 
-  $: {
-    if (asset.stackCount && asset.stack) {
-      stackedAssets = asset.stack;
-      stackedAssets = [...stackedAssets, asset].sort(
-        (a, b) => new Date(b.fileCreatedAt).getTime() - new Date(a.fileCreatedAt).getTime(),
-      );
+  const refreshStack = async () => {
+    if (isSharedLink()) {
+      return;
+    }
 
-      // if its a stack, add the next stack image in addition to the next asset
-      if (asset.stackCount > 1) {
-        preloadAssets.push(stackedAssets[1]);
+    if (asset.stack) {
+      stack = await getStack({ id: asset.stack.id });
+    }
+
+    if (!stack?.assets.some(({ id }) => id === asset.id)) {
+      stack = null;
+    }
+
+    untrack(() => {
+      if (stack && stack?.assets.length > 1) {
+        preloadAssets.push(stack.assets[1]);
       }
-    }
-
-    if (!stackedAssets.map((a) => a.id).includes(asset.id)) {
-      stackedAssets = [];
-    }
-  }
-
-  $: {
-    if (album && !album.isActivityEnabled && numberOfComments === 0) {
-      isShowActivity = false;
-    }
-  }
+    });
+  };
 
   const handleAddComment = () => {
     numberOfComments++;
@@ -172,20 +186,18 @@
     }
   };
 
-  $: {
-    if (isShared && asset.id) {
-      handlePromiseError(getFavorite());
-      handlePromiseError(getNumberOfComments());
+  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+    if (assetUpdate.id === asset.id) {
+      asset = assetUpdate;
     }
-  }
+  };
 
   onMount(async () => {
-    unsubscribe = websocketEvents.on('on_upload_success', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
-    await navigate({ targetRoute: 'current', assetId: asset.id });
+    unsubscribes.push(
+      websocketEvents.on('on_upload_success', onAssetUpdate),
+      websocketEvents.on('on_asset_update', onAssetUpdate),
+    );
+
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
       if (value === SlideshowState.PlaySlideshow) {
         slideshowHistory.reset();
@@ -206,15 +218,6 @@
     if (!sharedLink) {
       await handleGetAllAlbums();
     }
-
-    if (asset.stackCount && asset.stack) {
-      stackedAssets = asset.stack;
-      stackedAssets = [...stackedAssets, asset].sort(
-        (a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime(),
-      );
-    } else {
-      stackedAssets = [];
-    }
   });
 
   onDestroy(() => {
@@ -225,14 +228,11 @@
     if (shuffleSlideshowUnsubscribe) {
       shuffleSlideshowUnsubscribe();
     }
-    unsubscribe?.();
-  });
 
-  $: {
-    if (asset.id && !sharedLink) {
-      handlePromiseError(handleGetAllAlbums());
+    for (const unsubscribe of unsubscribes) {
+      unsubscribe();
     }
-  }
+  });
 
   const handleGetAllAlbums = async () => {
     if (isSharedLink()) {
@@ -258,9 +258,14 @@
     $isShowDetail = !$isShowDetail;
   };
 
-  const closeViewer = async () => {
-    dispatch('close');
-    await navigate({ targetRoute: 'current', assetId: null });
+  const closeViewer = () => {
+    onClose({ asset });
+  };
+
+  const closeEditor = () => {
+    closeEditorCofirm(() => {
+      isShowEditor = false;
+    });
   };
 
   const navigateAssetRandom = async () => {
@@ -303,8 +308,16 @@
     }
 
     e?.stopPropagation();
-    dispatch(order);
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    order === 'previous' ? onPrevious() : onNext();
   };
+
+  // const showEditorHandler = () => {
+  //   if (isShowActivity) {
+  //     isShowActivity = false;
+  //   }
+  //   isShowEditor = !isShowEditor;
+  // };
 
   const handleRunJob = async (name: AssetJobName) => {
     try {
@@ -319,7 +332,7 @@
    * Slide show mode
    */
 
-  let assetViewerHtmlElement: HTMLElement;
+  let assetViewerHtmlElement = $state<HTMLElement>();
 
   const slideshowHistory = new SlideshowHistory((asset) => {
     setAsset(asset);
@@ -334,7 +347,7 @@
 
   const handlePlaySlideshow = async () => {
     try {
-      await assetViewerHtmlElement.requestFullscreen?.();
+      await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
       handleError(error, $t('errors.unable_to_enter_fullscreen'));
       $slideshowState = SlideshowState.StopSlideshow;
@@ -355,9 +368,7 @@
     }
   };
 
-  const handleStackedAssetMouseEvent = (e: CustomEvent<{ isMouseOver: boolean }>, asset: AssetResponseDto) => {
-    const { isMouseOver } = e.detail;
-
+  const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
 
@@ -367,32 +378,60 @@
         await handleGetAllAlbums();
         break;
       }
+
+      case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
-        await closeViewer();
+        closeViewer();
       }
     }
 
     onAction?.(action);
   };
+
+  const handleUpdateSelectedEditType = (type: string) => {
+    selectedEditType = type;
+  };
+  let isFullScreen = $derived(fullscreenElement !== null);
+  $effect(() => {
+    if (asset) {
+      previewStackedAsset = undefined;
+      handlePromiseError(refreshStack());
+    }
+  });
+  $effect(() => {
+    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  });
+  $effect(() => {
+    if (isShared && asset.id) {
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
+    }
+  });
+  $effect(() => {
+    if (asset.id && !sharedLink) {
+      handlePromiseError(handleGetAllAlbums());
+    }
+  });
 </script>
 
 <svelte:document bind:fullscreenElement />
 
 <section
   id="immich-asset-viewer"
-  class="fixed left-0 top-0 z-[1001] grid h-screen w-screen grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed left-0 top-0 z-[1001] grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
 >
   <!-- Top navigation bar -->
-  {#if $slideshowState === SlideshowState.None}
+  {#if $slideshowState === SlideshowState.None && !isShowEditor}
     <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
       <AssetViewerNavBar
         {asset}
         {album}
-        {stackedAssets}
+        {stack}
         showDetailButton={enableDetailPanel}
         showSlideshow={!!assetStore}
-        hasStackChildren={stackedAssets.length > 0}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         onAction={handleAction}
@@ -401,16 +440,17 @@
         onShowDetail={toggleDetailPanel}
         onClose={closeViewer}
       >
-        <MotionPhotoAction
-          slot="motion-photo"
-          isPlaying={shouldPlayMotionPhoto}
-          onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
-        />
+        {#snippet motionPhoto()}
+          <MotionPhotoAction
+            isPlaying={shouldPlayMotionPhoto}
+            onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
+          />
+        {/snippet}
       </AssetViewerNavBar>
     </div>
   {/if}
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
@@ -422,7 +462,7 @@
       <div class="z-[1000] absolute w-full flex">
         <SlideshowBar
           {isFullScreen}
-          onSetToFullScreen={() => assetViewerHtmlElement.requestFullscreen?.()}
+          onSetToFullScreen={() => assetViewerHtmlElement?.requestFullscreen?.()}
           onPrevious={() => navigateAsset('previous')}
           onNext={() => navigateAsset('next')}
           onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
@@ -438,7 +478,9 @@
             bind:copyImage
             asset={previewStackedAsset}
             {preloadAssets}
-            on:close={closeViewer}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+            onClose={closeViewer}
             haveFadeTransition={false}
             {sharedLink}
           />
@@ -448,38 +490,45 @@
             checksum={previewStackedAsset.checksum}
             projectionType={previewStackedAsset.exifInfo?.projectionType}
             loopVideo={true}
-            on:close={closeViewer}
-            on:onVideoEnded={() => navigateAsset()}
-            on:onVideoStarted={handleVideoStarted}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+            onClose={closeViewer}
+            onVideoEnded={() => navigateAsset()}
+            onVideoStarted={handleVideoStarted}
           />
         {/if}
       {/key}
     {:else}
       {#key asset.id}
-        {#if !asset.resized}
-          <div class="flex h-full w-full justify-center">
-            <div
-              class="px-auto flex aspect-square h-full items-center justify-center bg-gray-100 dark:bg-immich-dark-gray"
-            >
-              <Icon path={mdiImageBrokenVariant} size="25%" />
-            </div>
-          </div>
-        {:else if asset.type === AssetTypeEnum.Image}
+        {#if asset.type === AssetTypeEnum.Image}
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
               checksum={asset.checksum}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-              on:close={closeViewer}
-              on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
             />
           {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
                 .toLowerCase()
                 .endsWith('.insp'))}
-            <PanoramaViewer {asset} />
+            <ImagePanoramaViewer {asset} />
+          {:else if isShowEditor && selectedEditType === 'crop'}
+            <CropArea {asset} />
           {:else}
-            <PhotoViewer bind:zoomToggle bind:copyImage {asset} {preloadAssets} on:close={closeViewer} {sharedLink} />
+            <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
+              {asset}
+              {preloadAssets}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              onClose={closeViewer}
+              {sharedLink}
+              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+            />
           {/if}
         {:else}
           <VideoViewer
@@ -487,9 +536,11 @@
             checksum={asset.checksum}
             projectionType={asset.exifInfo?.projectionType}
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
-            on:close={closeViewer}
-            on:onVideoEnded={() => navigateAsset()}
-            on:onVideoStarted={handleVideoStarted}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+            onClose={closeViewer}
+            onVideoEnded={() => navigateAsset()}
+            onVideoStarted={handleVideoStarted}
           />
         {/if}
         {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
@@ -498,8 +549,8 @@
               disabled={!album?.isActivityEnabled}
               {isLiked}
               {numberOfComments}
-              on:favorite={handleFavorite}
-              on:openActivityTab={handleOpenActivity}
+              onFavorite={handleFavorite}
+              onOpenActivityTab={handleOpenActivity}
             />
           </div>
         {/if}
@@ -507,30 +558,42 @@
     {/if}
   </div>
 
-  {#if $slideshowState === SlideshowState.None && showNavigation}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
     <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
 
-  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
     <div
       transition:fly={{ duration: 150 }}
       id="detail-panel"
       class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
       translate="yes"
     >
-      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} on:close={() => ($isShowDetail = false)} />
+      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
     </div>
   {/if}
 
-  {#if stackedAssets.length > 0 && withStacked}
+  {#if isShowEditor}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="editor-panel"
+      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+    </div>
+  {/if}
+
+  {#if stack && withStacked}
+    {@const stackedAssets = stack.assets}
     <div
       id="stack-slideshow"
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
     >
       <div class="relative w-full whitespace-nowrap transition-all">
-        {#each stackedAssets as stackedAsset, index (stackedAsset.id)}
+        {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
             class="{stackedAsset.id == asset.id
               ? '-translate-y-[1px]'
@@ -541,12 +604,11 @@
                 ? 'bg-transparent border-2 border-white'
                 : 'bg-gray-700/40'} inline-block hover:bg-transparent"
               asset={stackedAsset}
-              onClick={(stackedAsset, event) => {
-                event.preventDefault();
+              onClick={(stackedAsset) => {
                 asset = stackedAsset;
-                preloadAssets = index + 1 >= stackedAssets.length ? [] : [stackedAssets[index + 1]];
               }}
-              on:mouse-event={(e) => handleStackedAssetMouseEvent(e, stackedAsset)}
+              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+              disableMouseOver
               readonly
               thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
               showStackedIcon={false}
@@ -554,7 +616,7 @@
 
             {#if stackedAsset.id == asset.id}
               <div class="w-full flex place-items-center place-content-center">
-                <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]" />
+                <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
               </div>
             {/if}
           </div>
@@ -579,10 +641,10 @@
         assetId={asset.id}
         {isLiked}
         bind:reactions
-        on:addComment={handleAddComment}
-        on:deleteComment={handleRemoveComment}
-        on:deleteLike={() => (isLiked = null)}
-        on:close={() => (isShowActivity = false)}
+        onAddComment={handleAddComment}
+        onDeleteComment={handleRemoveComment}
+        onDeleteLike={() => (isLiked = null)}
+        onClose={() => (isShowActivity = false)}
       />
     </div>
   {/if}

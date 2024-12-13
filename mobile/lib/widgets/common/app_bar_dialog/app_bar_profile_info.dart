@@ -7,8 +7,7 @@ import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
-import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 
 class AppBarProfileInfoBox extends HookConsumerWidget {
@@ -18,7 +17,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AuthenticationState authState = ref.watch(authenticationProvider);
+    final authState = ref.watch(authProvider);
     final uploadProfileImageStatus =
         ref.watch(uploadProfileImageProvider).status;
     final user = Store.tryGet(StoreKey.currentUser);
@@ -63,7 +62,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
         if (success) {
           final profileImagePath =
               ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.watch(authenticationProvider.notifier).updateUserProfileImagePath(
+          ref.watch(authProvider.notifier).updateUserProfileImagePath(
                 profileImagePath,
               );
           if (user != null) {

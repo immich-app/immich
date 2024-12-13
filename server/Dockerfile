@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20240806@sha256:357c0e3a6b3cece3af7e9c46f5a2d11b6f032ded6a5b1de7706acf785b85a873 AS dev
+FROM ghcr.io/immich-app/base-server-dev:20241210@sha256:35c28404b508fc0741fffb39a9de17e3a6acdff0b623bb7b6cdf4a427462a0e2 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -25,7 +25,7 @@ COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
 
 # web build
-FROM node:20.16.0-alpine3.20@sha256:eb8101caae9ac02229bd64c024919fe3d4504ff7f329da79ca60a04db08cef52 AS web
+FROM node:22.11.0-alpine3.20@sha256:b64ced2e7cd0a4816699fe308ce6e8a08ccba463c757c00c14cd372e3d2c763e AS web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -37,11 +37,12 @@ WORKDIR /usr/src/app
 COPY web/package*.json web/svelte.config.js ./
 RUN npm ci
 COPY web ./
+COPY i18n ../i18n
 RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20240806@sha256:c13555680d8b454a416fa0e8c0e9e33b348433793c29680231e83b08838f06ec
+FROM ghcr.io/immich-app/base-server-prod:20241210@sha256:076d002070385bc6dc7454ef9419f44341c074bcfc49be5deddbdb4108ae0060
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \
@@ -76,7 +77,7 @@ ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
 ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
 
 VOLUME /usr/src/app/upload
-EXPOSE 3001
+EXPOSE 2283
 ENTRYPOINT ["tini", "--", "/bin/bash"]
 CMD ["start.sh"]
 

@@ -6,10 +6,14 @@
   import { handlePromiseError, isSharedLink } from '$lib/utils';
   import { preferences } from '$lib/stores/user.store';
 
-  export let asset: AssetResponseDto;
-  export let isOwner: boolean;
+  interface Props {
+    asset: AssetResponseDto;
+    isOwner: boolean;
+  }
 
-  $: rating = asset.exifInfo?.rating || 0;
+  let { asset, isOwner }: Props = $props();
+
+  let rating = $derived(asset.exifInfo?.rating || 0);
 
   const handleChangeRating = async (rating: number) => {
     try {
@@ -20,8 +24,8 @@
   };
 </script>
 
-{#if !isSharedLink() && $preferences?.rating?.enabled}
-  <section class="relative flex px-4 pt-2">
+{#if !isSharedLink() && $preferences?.ratings.enabled}
+  <section class="px-4 pt-2">
     <StarRating {rating} readOnly={!isOwner} onRating={(rating) => handlePromiseError(handleChangeRating(rating))} />
   </section>
 {/if}

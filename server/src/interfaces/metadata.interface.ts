@@ -7,7 +7,19 @@ export interface ExifDuration {
   Scale?: number;
 }
 
-export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Description' | 'ImageDescription'> {
+type StringOrNumber = string | number;
+
+type TagsWithWrongTypes =
+  | 'FocalLength'
+  | 'Duration'
+  | 'Description'
+  | 'ImageDescription'
+  | 'RegionInfo'
+  | 'TagsList'
+  | 'Keywords'
+  | 'HierarchicalSubject'
+  | 'ISO';
+export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
   MotionPhoto?: number;
   MotionPhotoVersion?: number;
@@ -19,20 +31,41 @@ export interface ImmichTags extends Omit<Tags, 'FocalLength' | 'Duration' | 'Des
   EmbeddedVideoType?: string;
   EmbeddedVideoFile?: BinaryField;
   MotionPhotoVideo?: BinaryField;
+  TagsList?: StringOrNumber[];
+  HierarchicalSubject?: StringOrNumber[];
+  Keywords?: StringOrNumber | StringOrNumber[];
+  ISO?: number | number[];
 
   // Type is wrong, can also be number.
-  Description?: string | number;
-  ImageDescription?: string | number;
+  Description?: StringOrNumber;
+  ImageDescription?: StringOrNumber;
+
+  // Extended properties for image regions, such as faces
+  RegionInfo?: {
+    AppliedToDimensions: {
+      W: number;
+      H: number;
+      Unit: string;
+    };
+    RegionList: {
+      Area: {
+        // (X,Y) // center of the rectangle
+        X: number;
+        Y: number;
+        W: number;
+        H: number;
+        Unit: string;
+      };
+      Rotation?: number;
+      Type?: string;
+      Name?: string;
+    }[];
+  };
 }
 
 export interface IMetadataRepository {
   teardown(): Promise<void>;
-  readTags(path: string): Promise<ImmichTags | null>;
+  readTags(path: string): Promise<ImmichTags>;
   writeTags(path: string, tags: Partial<Tags>): Promise<void>;
   extractBinaryTag(tagName: string, path: string): Promise<Buffer>;
-  getCountries(userId: string): Promise<Array<string | null>>;
-  getStates(userId: string, country?: string): Promise<Array<string | null>>;
-  getCities(userId: string, country?: string, state?: string): Promise<Array<string | null>>;
-  getCameraMakes(userId: string, model?: string): Promise<Array<string | null>>;
-  getCameraModels(userId: string, make?: string): Promise<Array<string | null>>;
 }

@@ -4,30 +4,30 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import type { MapSettings } from '$lib/stores/preferences.store';
   import { Duration } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
   import LinkButton from '../elements/buttons/link-button.svelte';
   import DateInput from '../elements/date-input.svelte';
 
-  export let settings: MapSettings;
-  let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
+  interface Props {
+    settings: MapSettings;
+    onClose: () => void;
+    onSave: (settings: MapSettings) => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    save: MapSettings;
-  }>();
+  let { settings = $bindable(), onClose, onSave }: Props = $props();
 
-  const handleClose = () => dispatch('close');
+  let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSave(settings);
+  };
 </script>
 
-<FullScreenModal title={$t('map_settings')} onClose={handleClose}>
-  <form
-    on:submit|preventDefault={() => dispatch('save', settings)}
-    class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
-    id="map-settings-form"
-  >
+<FullScreenModal title={$t('map_settings')} {onClose}>
+  <form {onsubmit} class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary" id="map-settings-form">
     <SettingSwitch title={$t('allow_dark_mode')} bind:checked={settings.allowDarkMode} />
     <SettingSwitch title={$t('only_favorites')} bind:checked={settings.onlyFavorites} />
     <SettingSwitch title={$t('include_archived')} bind:checked={settings.includeArchived} />
@@ -51,7 +51,7 @@
         </div>
         <div class="flex justify-center text-xs">
           <LinkButton
-            on:click={() => {
+            onclick={() => {
               customDateRange = false;
               settings.dateAfter = '';
               settings.dateBefore = '';
@@ -96,7 +96,7 @@
         />
         <div class="text-xs">
           <LinkButton
-            on:click={() => {
+            onclick={() => {
               customDateRange = true;
               settings.relativeDate = '';
             }}
@@ -107,8 +107,9 @@
       </div>
     {/if}
   </form>
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" size="sm" fullwidth on:click={handleClose}>{$t('cancel')}</Button>
+
+  {#snippet stickyBottom()}
+    <Button color="gray" size="sm" fullwidth onclick={onClose}>{$t('cancel')}</Button>
     <Button type="submit" size="sm" fullwidth form="map-settings-form">{$t('save')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

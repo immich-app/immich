@@ -1,13 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getVectorExtension } from 'src/database.config';
+import { randomUUID } from 'node:crypto';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { AssetType, PaginationMode } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateResult,
@@ -15,30 +17,35 @@ import {
   AssetSearchOptions,
   FaceEmbeddingSearch,
   FaceSearchResult,
+  GetCameraMakesOptions,
+  GetCameraModelsOptions,
+  GetCitiesOptions,
+  GetStatesOptions,
   ISearchRepository,
   SearchPaginationOptions,
   SmartSearchOptions,
 } from 'src/interfaces/search.interface';
 import { asVector, searchAssetBuilder } from 'src/utils/database';
-import { Instrumentation } from 'src/utils/instrumentation';
-import { Paginated, PaginationMode, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
+import { Paginated, PaginationResult, paginatedBuilder } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class SearchRepository implements ISearchRepository {
+  private vectorExtension: VectorExtension;
   private faceColumns: string[];
   private assetsByCityQuery: string;
 
   constructor(
-    @InjectRepository(SmartInfoEntity) private repository: Repository<SmartInfoEntity>,
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
+    @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetFaceEntity) private assetFaceRepository: Repository<AssetFaceEntity>,
     @InjectRepository(SmartSearchEntity) private smartSearchRepository: Repository<SmartSearchEntity>,
     @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
+    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(SearchRepository.name);
     this.faceColumns = this.assetFaceRepository.manager.connection
       .getMetadata(AssetFaceEntity)
@@ -60,18 +67,16 @@ export class SearchRepository implements ISearchRepository {
       {
         takenAfter: DummyValue.DATE,
         lensModel: DummyValue.STRING,
-        ownerId: DummyValue.UUID,
         withStacked: true,
         isFavorite: true,
-        ownerIds: [DummyValue.UUID],
+        userIds: [DummyValue.UUID],
       },
     ],
   })
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity> {
     let builder = this.assetRepository.createQueryBuilder('asset');
-    builder = searchAssetBuilder(builder, options);
+    builder = searchAssetBuilder(builder, options).orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
 
-    builder.orderBy('asset.fileCreatedAt', options.orderDirection ?? 'DESC');
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: (pagination.page - 1) * pagination.size,
@@ -79,17 +84,38 @@ export class SearchRepository implements ISearchRepository {
     });
   }
 
-  private createPersonFilter(builder: SelectQueryBuilder<AssetFaceEntity>, personIds: string[]) {
-    return builder
-      .select(`${builder.alias}."assetId"`)
-      .where(`${builder.alias}."personId" IN (:...personIds)`, { personIds })
-      .groupBy(`${builder.alias}."assetId"`)
-      .having(`COUNT(DISTINCT ${builder.alias}."personId") = :personCount`, { personCount: personIds.length });
+  @GenerateSql({
+    params: [
+      100,
+      {
+        takenAfter: DummyValue.DATE,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
+    const builder1 = searchAssetBuilder(this.assetRepository.createQueryBuilder('asset'), options);
+    const builder2 = builder1.clone();
+
+    const uuid = randomUUID();
+    builder1.andWhere('asset.id > :uuid', { uuid }).orderBy('asset.id').take(size);
+    builder2.andWhere('asset.id < :uuid', { uuid }).orderBy('asset.id').take(size);
+
+    const [assets1, assets2] = await Promise.all([builder1.getMany(), builder2.getMany()]);
+    const missingCount = size - assets1.length;
+    for (let i = 0; i < missingCount && i < assets2.length; i++) {
+      assets1.push(assets2[i]);
+    }
+
+    return assets1;
   }
 
   @GenerateSql({
     params: [
-      { page: 1, size: 100 },
+      { page: 1, size: 200 },
       {
         takenAfter: DummyValue.DATE,
         embedding: Array.from({ length: 512 }, Math.random),
@@ -102,21 +128,12 @@ export class SearchRepository implements ISearchRepository {
   })
   async searchSmart(
     pagination: SearchPaginationOptions,
-    { embedding, userIds, personIds, ...options }: SmartSearchOptions,
+    { embedding, userIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
       let builder = manager.createQueryBuilder(AssetEntity, 'asset');
-
-      if (personIds?.length) {
-        const assetFaceBuilder = manager.createQueryBuilder(AssetFaceEntity, 'asset_face');
-        const cte = this.createPersonFilter(assetFaceBuilder, personIds);
-        builder
-          .addCommonTableExpression(cte, 'asset_face_ids')
-          .innerJoin('asset_face_ids', 'a', 'a."assetId" = asset.id');
-      }
-
       builder = searchAssetBuilder(builder, options);
       builder
         .innerJoin('asset.smartSearch', 'search')
@@ -124,7 +141,10 @@ export class SearchRepository implements ISearchRepository {
         .orderBy('search.embedding <=> :embedding')
         .setParameters({ userIds, embedding: asVector(embedding) });
 
-      await manager.query(this.getRuntimeConfig(pagination.size));
+      const runtimeConfig = this.getRuntimeConfig(pagination.size);
+      if (runtimeConfig) {
+        await manager.query(runtimeConfig);
+      }
       results = await paginatedBuilder<AssetEntity>(builder, {
         mode: PaginationMode.LIMIT_OFFSET,
         skip: (pagination.page - 1) * pagination.size,
@@ -183,7 +203,7 @@ export class SearchRepository implements ISearchRepository {
       {
         userIds: [DummyValue.UUID],
         embedding: Array.from({ length: 512 }, Math.random),
-        numResults: 100,
+        numResults: 10,
         maxDistance: 0.6,
       },
     ],
@@ -223,7 +243,10 @@ export class SearchRepository implements ISearchRepository {
         cte.addSelect(`faces.${col}`, col);
       }
 
-      await manager.query(this.getRuntimeConfig(numResults));
+      const runtimeConfig = this.getRuntimeConfig(numResults);
+      if (runtimeConfig) {
+        await manager.query(runtimeConfig);
+      }
       results = await manager
         .createQueryBuilder()
         .select('res.*')
@@ -263,7 +286,7 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async getAssetsByCity(userIds: string[]): Promise<AssetEntity[]> {
     const parameters = [userIds, true, false, AssetType.IMAGE];
-    const rawRes = await this.repository.query(this.assetsByCityQuery, parameters);
+    const rawRes = await this.assetRepository.query(this.assetsByCityQuery, parameters);
 
     const items: AssetEntity[] = [];
     for (const res of rawRes) {
@@ -321,17 +344,109 @@ export class SearchRepository implements ISearchRepository {
     return this.smartSearchRepository.clear();
   }
 
-  private getRuntimeConfig(numResults?: number): string {
-    if (getVectorExtension() === DatabaseExtension.VECTOR) {
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getCountries(userIds: string[]): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .innerJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.country != ''`)
+      .andWhere('exif.country IS NOT NULL')
+      .select('exif.country', 'country')
+      .distinctOn(['exif.country']);
+
+    const results = await query.getRawMany<{ country: string }>();
+    return results.map(({ country }) => country);
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getStates(userIds: string[], { country }: GetStatesOptions): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .innerJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.state != ''`)
+      .andWhere('exif.state IS NOT NULL')
+      .select('exif.state', 'state')
+      .distinctOn(['exif.state']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    const result = await query.getRawMany<{ state: string }>();
+    return result.map(({ state }) => state);
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING, DummyValue.STRING] })
+  async getCities(userIds: string[], { country, state }: GetCitiesOptions): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .innerJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.city != ''`)
+      .andWhere('exif.city IS NOT NULL')
+      .select('exif.city', 'city')
+      .distinctOn(['exif.city']);
+
+    if (country) {
+      query.andWhere('exif.country = :country', { country });
+    }
+
+    if (state) {
+      query.andWhere('exif.state = :state', { state });
+    }
+
+    const results = await query.getRawMany<{ city: string }>();
+    return results.map(({ city }) => city);
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraMakes(userIds: string[], { model }: GetCameraMakesOptions): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .innerJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.make != ''`)
+      .andWhere('exif.make IS NOT NULL')
+      .select('exif.make', 'make')
+      .distinctOn(['exif.make']);
+
+    if (model) {
+      query.andWhere('exif.model = :model', { model });
+    }
+
+    const results = await query.getRawMany<{ make: string }>();
+    return results.map(({ make }) => make);
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.STRING] })
+  async getCameraModels(userIds: string[], { make }: GetCameraModelsOptions): Promise<string[]> {
+    const query = this.exifRepository
+      .createQueryBuilder('exif')
+      .innerJoin('exif.asset', 'asset')
+      .where('asset.ownerId IN (:...userIds )', { userIds })
+      .andWhere(`exif.model != ''`)
+      .andWhere('exif.model IS NOT NULL')
+      .select('exif.model', 'model')
+      .distinctOn(['exif.model']);
+
+    if (make) {
+      query.andWhere('exif.make = :make', { make });
+    }
+
+    const results = await query.getRawMany<{ model: string }>();
+    return results.map(({ model }) => model);
+  }
+
+  private getRuntimeConfig(numResults?: number): string | undefined {
+    if (this.vectorExtension === DatabaseExtension.VECTOR) {
       return 'SET LOCAL hnsw.ef_search = 1000;'; // mitigate post-filter recall
     }
 
-    let runtimeConfig = 'SET LOCAL vectors.enable_prefilter=on; SET LOCAL vectors.search_mode=vbase;';
-    if (numResults) {
-      runtimeConfig += ` SET LOCAL vectors.hnsw_ef_search = ${numResults};`;
+    if (numResults && numResults !== 100) {
+      return `SET LOCAL vectors.hnsw_ef_search = ${Math.max(numResults, 100)};`;
     }
-
-    return runtimeConfig;
   }
 }
 

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Put } from '@nestjs/common';
-import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
+import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -10,6 +10,7 @@ import {
   ServerStatsResponseDto,
   ServerStorageResponseDto,
   ServerThemeDto,
+  ServerVersionHistoryResponseDto,
   ServerVersionResponseDto,
 } from 'src/dtos/server.dto';
 import { Authenticated } from 'src/middleware/auth.guard';
@@ -26,57 +27,53 @@ export class ServerController {
 
   @Get('about')
   @Authenticated()
-  @ApiExcludeEndpoint()
   getAboutInfo(): Promise<ServerAboutResponseDto> {
     return this.service.getAboutInfo();
   }
 
   @Get('storage')
   @Authenticated()
-  @ApiExcludeEndpoint()
   getStorage(): Promise<ServerStorageResponseDto> {
     return this.service.getStorage();
   }
 
   @Get('ping')
-  @ApiExcludeEndpoint()
   pingServer(): ServerPingResponse {
     return this.service.ping();
   }
 
   @Get('version')
-  @ApiExcludeEndpoint()
   getServerVersion(): ServerVersionResponseDto {
     return this.versionService.getVersion();
   }
 
+  @Get('version-history')
+  getVersionHistory(): Promise<ServerVersionHistoryResponseDto[]> {
+    return this.versionService.getVersionHistory();
+  }
+
   @Get('features')
-  @ApiExcludeEndpoint()
   getServerFeatures(): Promise<ServerFeaturesDto> {
     return this.service.getFeatures();
   }
 
   @Get('theme')
-  @ApiExcludeEndpoint()
   getTheme(): Promise<ServerThemeDto> {
     return this.service.getTheme();
   }
 
   @Get('config')
-  @ApiExcludeEndpoint()
   getServerConfig(): Promise<ServerConfigDto> {
-    return this.service.getConfig();
+    return this.service.getSystemConfig();
   }
 
-  @Authenticated({ admin: true })
   @Get('statistics')
-  @ApiExcludeEndpoint()
+  @Authenticated({ admin: true })
   getServerStatistics(): Promise<ServerStatsResponseDto> {
     return this.service.getStatistics();
   }
 
   @Get('media-types')
-  @ApiExcludeEndpoint()
   getSupportedMediaTypes(): ServerMediaTypesResponseDto {
     return this.service.getSupportedMediaTypes();
   }

@@ -1,26 +1,39 @@
 <script lang="ts">
   import { browser } from '$app/environment';
 
-  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
   import { isSelectingAllAssets } from '$lib/stores/assets.store';
   import { t } from 'svelte-i18n';
 
-  export let showBackButton = true;
-  export let backIcon = mdiClose;
-  export let tailwindClasses = '';
-  export let forceDark = false;
+  interface Props {
+    showBackButton?: boolean;
+    backIcon?: string;
+    tailwindClasses?: string;
+    forceDark?: boolean;
+    onClose?: () => void;
+    leading?: Snippet;
+    children?: Snippet;
+    trailing?: Snippet;
+  }
 
-  let appBarBorder = 'bg-immich-bg border border-transparent';
+  let {
+    showBackButton = true,
+    backIcon = mdiClose,
+    tailwindClasses = '',
+    forceDark = false,
+    onClose = () => {},
+    leading,
+    children,
+    trailing,
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let appBarBorder = $state('bg-immich-bg border border-transparent');
 
   const onScroll = () => {
-    if (window.pageYOffset > 80) {
+    if (window.scrollY > 80) {
       appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
 
       if (forceDark) {
@@ -33,7 +46,7 @@
 
   const handleClose = () => {
     $isSelectingAllAssets = false;
-    dispatch('close');
+    onClose();
   };
 
   onMount(() => {
@@ -48,7 +61,7 @@
     }
   });
 
-  $: buttonClass = forceDark ? 'hover:text-immich-dark-gray' : undefined;
+  let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
@@ -60,17 +73,17 @@
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton title={$t('close')} on:click={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
+        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
       {/if}
-      <slot name="leading" />
+      {@render leading?.()}
     </div>
 
     <div class="w-full">
-      <slot />
+      {@render children?.()}
     </div>
 
     <div class="mr-4 flex place-items-center gap-1 justify-self-end">
-      <slot name="trailing" />
+      {@render trailing?.()}
     </div>
   </div>
 </div>

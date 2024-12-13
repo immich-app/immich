@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type Size = 'full' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'xxxl';
 </script>
 
@@ -13,27 +13,37 @@
     email: string;
     profileImagePath: string;
     avatarColor: UserAvatarColor;
+    profileChangedAt: string;
   }
 
-  export let user: User;
-  export let color: UserAvatarColor | undefined = undefined;
-  export let size: Size = 'full';
-  export let rounded = true;
-  export let interactive = false;
-  export let showTitle = true;
-  export let showProfileImage = true;
-  export let label: string | undefined = undefined;
+  interface Props {
+    user: User;
+    color?: UserAvatarColor | undefined;
+    size?: Size;
+    rounded?: boolean;
+    interactive?: boolean;
+    showTitle?: boolean;
+    showProfileImage?: boolean;
+    label?: string | undefined;
+  }
 
-  let img: HTMLImageElement;
-  let showFallback = true;
+  let {
+    user,
+    color = undefined,
+    size = 'full',
+    rounded = true,
+    interactive = false,
+    showTitle = true,
+    showProfileImage = true,
+    label = undefined,
+  }: Props = $props();
 
-  // sveeeeeeelteeeeee fiveeeeee
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  $: img, user, void tryLoadImage();
+  let img: HTMLImageElement | undefined = $state();
+  let showFallback = $state(true);
 
   const tryLoadImage = async () => {
     try {
-      await img.decode();
+      await img?.decode();
       showFallback = false;
     } catch {
       showFallback = true;
@@ -63,12 +73,20 @@
     xxxl: 'w-28 h-28',
   };
 
-  $: colorClass = colorClasses[color || user.avatarColor];
-  $: sizeClass = sizeClasses[size];
-  $: title = label ?? `${user.name} (${user.email})`;
-  $: interactiveClass = interactive
-    ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
-    : '';
+  $effect(() => {
+    if (img && user) {
+      tryLoadImage().catch(console.error);
+    }
+  });
+
+  let colorClass = $derived(colorClasses[color || user.avatarColor]);
+  let sizeClass = $derived(sizeClasses[size]);
+  let title = $derived(label ?? `${user.name} (${user.email})`);
+  let interactiveClass = $derived(
+    interactive
+      ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
+      : '',
+  );
 </script>
 
 <figure
@@ -79,7 +97,7 @@
   {#if showProfileImage && user.profileImagePath}
     <img
       bind:this={img}
-      src={getProfileImageUrl(user.id)}
+      src={getProfileImageUrl(user)}
       alt={$t('profile_image_of_user', { values: { user: title } })}
       class="h-full w-full object-cover"
       class:hidden={showFallback}

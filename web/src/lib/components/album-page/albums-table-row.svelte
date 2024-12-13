@@ -9,9 +9,12 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
-  export let onShowContextMenu: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined =
-    undefined;
+  interface Props {
+    album: AlbumResponseDto;
+    onShowContextMenu?: ((position: ContextMenuPosition, album: AlbumResponseDto) => unknown) | undefined;
+  }
+
+  let { album, onShowContextMenu = undefined }: Props = $props();
 
   const showContextMenu = (position: ContextMenuPosition) => {
     onShowContextMenu?.(position, album);
@@ -20,12 +23,17 @@
   const dateLocaleString = (dateString: string) => {
     return new Date(dateString).toLocaleDateString($locale, dateFormats.album);
   };
+
+  const oncontextmenu = (event: MouseEvent) => {
+    event.preventDefault();
+    showContextMenu({ x: event.x, y: event.y });
+  };
 </script>
 
 <tr
   class="flex h-[50px] w-full place-items-center border-[3px] border-transparent p-2 text-center odd:bg-immich-gray even:bg-immich-bg hover:cursor-pointer hover:border-immich-primary/75 odd:dark:bg-immich-dark-gray/75 even:dark:bg-immich-dark-gray/50 dark:hover:border-immich-dark-primary/75 md:p-5"
-  on:click={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
-  on:contextmenu|preventDefault={(e) => showContextMenu({ x: e.x, y: e.y })}
+  onclick={() => goto(`${AppRoute.ALBUMS}/${album.id}`)}
+  {oncontextmenu}
 >
   <td class="text-md text-ellipsis text-left w-8/12 sm:w-4/12 md:w-4/12 xl:w-[30%] 2xl:w-[40%] items-center">
     {album.albumName}

@@ -1,6 +1,13 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
-  import { createApiKey, deleteApiKey, getApiKeys, updateApiKey, type ApiKeyResponseDto } from '@immich/sdk';
+  import {
+    createApiKey,
+    deleteApiKey,
+    getApiKeys,
+    Permission,
+    updateApiKey,
+    type ApiKeyResponseDto,
+  } from '@immich/sdk';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
@@ -12,11 +19,15 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let keys: ApiKeyResponseDto[];
+  interface Props {
+    keys: ApiKeyResponseDto[];
+  }
 
-  let newKey: Partial<ApiKeyResponseDto> | null = null;
-  let editKey: ApiKeyResponseDto | null = null;
-  let secret = '';
+  let { keys = $bindable() }: Props = $props();
+
+  let newKey: { name: string } | null = $state(null);
+  let editKey: ApiKeyResponseDto | null = $state(null);
+  let secret = $state('');
 
   const format: Intl.DateTimeFormatOptions = {
     month: 'short',
@@ -28,9 +39,14 @@
     keys = await getApiKeys();
   }
 
-  const handleCreate = async (detail: Partial<ApiKeyResponseDto>) => {
+  const handleCreate = async ({ name }: { name: string }) => {
     try {
-      const data = await createApiKey({ apiKeyCreateDto: detail });
+      const data = await createApiKey({
+        apiKeyCreateDto: {
+          name,
+          permissions: [Permission.All],
+        },
+      });
       secret = data.secret;
     } catch (error) {
       handleError(error, $t('errors.unable_to_create_api_key'));
@@ -84,13 +100,13 @@
     title={$t('new_api_key')}
     submitText={$t('create')}
     apiKey={newKey}
-    on:submit={({ detail }) => handleCreate(detail)}
-    on:cancel={() => (newKey = null)}
+    onSubmit={(key) => handleCreate(key)}
+    onCancel={() => (newKey = null)}
   />
 {/if}
 
 {#if secret}
-  <APIKeySecret {secret} on:done={() => (secret = '')} />
+  <APIKeySecret {secret} onDone={() => (secret = '')} />
 {/if}
 
 {#if editKey}
@@ -98,15 +114,15 @@
     title={$t('api_key')}
     submitText={$t('save')}
     apiKey={editKey}
-    on:submit={({ detail }) => handleUpdate(detail)}
-    on:cancel={() => (editKey = null)}
+    onSubmit={(key) => handleUpdate(key)}
+    onCancel={() => (editKey = null)}
   />
 {/if}
 
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button size="sm" on:click={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
+      <Button size="sm" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
     </div>
 
     {#if keys.length > 0}
@@ -140,14 +156,14 @@
                     icon={mdiPencilOutline}
                     title={$t('edit_key')}
                     size="16"
-                    on:click={() => (editKey = key)}
+                    onclick={() => (editKey = key)}
                   />
                   <CircleIconButton
                     color="primary"
                     icon={mdiTrashCanOutline}
                     title={$t('delete_key')}
                     size="16"
-                    on:click={() => handleDelete(key)}
+                    onclick={() => handleDelete(key)}
                   />
                 </td>
               </tr>

@@ -1,26 +1,40 @@
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiChevronDown } from '@mdi/js';
 
-  export let value: string | number;
-  export let options: { value: string | number; text: string }[];
-  export let label = '';
-  export let desc = '';
-  export let name = '';
-  export let isEdited = false;
-  export let number = false;
-  export let disabled = false;
+  interface Props {
+    value: string | number;
+    options: { value: string | number; text: string }[];
+    label?: string;
+    desc?: string;
+    name?: string;
+    isEdited?: boolean;
+    number?: boolean;
+    disabled?: boolean;
+    onSelect?: (setting: string | number) => void;
+  }
 
-  const dispatch = createEventDispatcher<{ select: string | number }>();
+  let {
+    value = $bindable(),
+    options,
+    label = '',
+    desc = '',
+    name = '',
+    isEdited = false,
+    number = false,
+    disabled = false,
+    onSelect = () => {},
+  }: Props = $props();
 
   const handleChange = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
     if (number) {
       value = Number.parseInt(value);
     }
-    dispatch('select', value);
+    onSelect(value);
   };
 </script>
 
@@ -46,17 +60,27 @@
     </p>
   {/if}
 
-  <select
-    class="immich-form-input w-full pb-2"
-    {disabled}
-    aria-describedby={desc ? `${name}-desc` : undefined}
-    {name}
-    id="{name}-select"
-    bind:value
-    on:change={handleChange}
-  >
-    {#each options as option}
-      <option value={option.value}>{option.text}</option>
-    {/each}
-  </select>
+  <div class="grid">
+    <Icon
+      path={mdiChevronDown}
+      size={'1.2em'}
+      ariaHidden={true}
+      class="pointer-events-none right-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
+        ? 'text-immich-bg'
+        : 'text-immich-fg dark:text-immich-bg'}"
+    />
+    <select
+      class="immich-form-input w-full appearance-none row-start-1 col-start-1 !pr-6"
+      {disabled}
+      aria-describedby={desc ? `${name}-desc` : undefined}
+      {name}
+      id="{name}-select"
+      bind:value
+      onchange={handleChange}
+    >
+      {#each options as option}
+        <option value={option.value}>{option.text}</option>
+      {/each}
+    </select>
+  </div>
 </div>

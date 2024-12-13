@@ -11,7 +11,6 @@
     loopVideo,
     playVideoThumbnailOnHover,
     showDeleteModal,
-    sidebarSettings,
   } from '$lib/stores/preferences.store';
   import { findLocale } from '$lib/utils';
   import { getClosestAvailableLocale, langCodes } from '$lib/utils/i18n';
@@ -19,34 +18,8 @@
   import { locale as i18nLocale, t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { invalidateAll } from '$app/navigation';
-  import { preferences } from '$lib/stores/user.store';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { handleError } from '../../utils/handle-error';
-  import {
-    notificationController,
-    NotificationType,
-  } from '$lib/components/shared-components/notification/notification';
 
-  let time = new Date();
-
-  $: formattedDate = time.toLocaleString(editedLocale, {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  });
-  $: timePortion = time.toLocaleString(editedLocale, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-  $: selectedDate = `${formattedDate} ${timePortion}`;
-  $: editedLocale = findLocale($locale).code;
-  $: selectedOption = {
-    value: findLocale(editedLocale).code || fallbackLocale.code,
-    label: findLocale(editedLocale).name || fallbackLocale.name,
-  };
-  $: closestLanguage = getClosestAvailableLocale([$lang], langCodes);
-  $: ratingEnabled = $preferences?.rating?.enabled;
+  let time = $state(new Date());
 
   onMount(() => {
     const interval = setInterval(() => {
@@ -98,17 +71,27 @@
       $locale = newLocale;
     }
   };
-
-  const handleRatingChange = async (enabled: boolean) => {
-    try {
-      const data = await updateMyPreferences({ userPreferencesUpdateDto: { rating: { enabled } } });
-      $preferences.rating.enabled = data.rating.enabled;
-
-      notificationController.show({ message: $t('saved_settings'), type: NotificationType.Info });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_update_settings'));
-    }
-  };
+  let editedLocale = $derived(findLocale($locale).code);
+  let formattedDate = $derived(
+    time.toLocaleString(editedLocale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }),
+  );
+  let timePortion = $derived(
+    time.toLocaleString(editedLocale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    }),
+  );
+  let selectedDate = $derived(`${formattedDate} ${timePortion}`);
+  let selectedOption = $derived({
+    value: findLocale(editedLocale).code || fallbackLocale.code,
+    label: findLocale(editedLocale).name || fallbackLocale.name,
+  });
+  let closestLanguage = $derived(getClosestAvailableLocale([$lang], langCodes));
 </script>
 
 <section class="my-4">
@@ -119,7 +102,7 @@
           title={$t('theme_selection')}
           subtitle={$t('theme_selection_description')}
           bind:checked={$colorTheme.system}
-          on:toggle={handleToggleColorTheme}
+          onToggle={handleToggleColorTheme}
         />
       </div>
 
@@ -139,7 +122,7 @@
           title={$t('default_locale')}
           subtitle={$t('default_locale_description')}
           checked={$locale == undefined}
-          on:toggle={handleToggleLocaleBrowser}
+          onToggle={handleToggleLocaleBrowser}
         >
           <p class="mt-2 dark:text-gray-400">{selectedDate}</p>
         </SettingSwitch>
@@ -162,7 +145,7 @@
           title={$t('display_original_photos')}
           subtitle={$t('display_original_photos_setting_description')}
           bind:checked={$alwaysLoadOriginalFile}
-          on:toggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
+          onToggle={() => ($alwaysLoadOriginalFile = !$alwaysLoadOriginalFile)}
         />
       </div>
       <div class="ml-4">
@@ -170,7 +153,7 @@
           title={$t('video_hover_setting')}
           subtitle={$t('video_hover_setting_description')}
           bind:checked={$playVideoThumbnailOnHover}
-          on:toggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
+          onToggle={() => ($playVideoThumbnailOnHover = !$playVideoThumbnailOnHover)}
         />
       </div>
       <div class="ml-4">
@@ -178,7 +161,7 @@
           title={$t('loop_videos')}
           subtitle={$t('loop_videos_description')}
           bind:checked={$loopVideo}
-          on:toggle={() => ($loopVideo = !$loopVideo)}
+          onToggle={() => ($loopVideo = !$loopVideo)}
         />
       </div>
 
@@ -187,29 +170,6 @@
           title={$t('permanent_deletion_warning')}
           subtitle={$t('permanent_deletion_warning_setting_description')}
           bind:checked={$showDeleteModal}
-        />
-      </div>
-
-      <div class="ml-4">
-        <SettingSwitch
-          title={$t('people')}
-          subtitle={$t('people_sidebar_description')}
-          bind:checked={$sidebarSettings.people}
-        />
-      </div>
-      <div class="ml-4">
-        <SettingSwitch
-          title={$t('sharing')}
-          subtitle={$t('sharing_sidebar_description')}
-          bind:checked={$sidebarSettings.sharing}
-        />
-      </div>
-      <div class="ml-4">
-        <SettingSwitch
-          title={$t('rating')}
-          subtitle={$t('rating_description')}
-          bind:checked={ratingEnabled}
-          on:toggle={({ detail: enabled }) => handleRatingChange(enabled)}
         />
       </div>
     </div>

@@ -10,7 +10,6 @@
   import AppSettings from './app-settings.svelte';
   import ChangePasswordSettings from './change-password-settings.svelte';
   import DeviceList from './device-list.svelte';
-  import MemoriesSettings from './memories-settings.svelte';
   import OAuthSettings from './oauth-settings.svelte';
   import PartnerSettings from './partner-settings.svelte';
   import UserAPIKeyList from './user-api-key-list.svelte';
@@ -19,9 +18,29 @@
   import { t } from 'svelte-i18n';
   import DownloadSettings from '$lib/components/user-settings-page/download-settings.svelte';
   import UserPurchaseSettings from '$lib/components/user-settings-page/user-purchase-settings.svelte';
+  import FeatureSettings from '$lib/components/user-settings-page/feature-settings.svelte';
+  import {
+    mdiAccountGroupOutline,
+    mdiAccountOutline,
+    mdiApi,
+    mdiBellOutline,
+    mdiCogOutline,
+    mdiDevices,
+    mdiDownload,
+    mdiFeatureSearchOutline,
+    mdiKeyOutline,
+    mdiOnepassword,
+    mdiServerOutline,
+    mdiTwoFactorAuthentication,
+  } from '@mdi/js';
+  import UserUsageStatistic from '$lib/components/user-settings-page/user-usage-statistic.svelte';
 
-  export let keys: ApiKeyResponseDto[] = [];
-  export let sessions: SessionResponseDto[] = [];
+  interface Props {
+    keys?: ApiKeyResponseDto[];
+    sessions?: SessionResponseDto[];
+  }
+
+  let { keys = $bindable([]), sessions = $bindable([]) }: Props = $props();
 
   let oauthOpen =
     oauth.isCallback(window.location) ||
@@ -29,23 +48,43 @@
 </script>
 
 <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-  <SettingAccordion key="app-settings" title={$t('app_settings')} subtitle={$t('manage_the_app_settings')}>
+  <SettingAccordion
+    icon={mdiCogOutline}
+    key="app-settings"
+    title={$t('app_settings')}
+    subtitle={$t('manage_the_app_settings')}
+  >
     <AppSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
+  <SettingAccordion icon={mdiAccountOutline} key="account" title={$t('account')} subtitle={$t('manage_your_account')}>
     <UserProfileSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
+  <SettingAccordion
+    icon={mdiServerOutline}
+    key="user-usage-info"
+    title={$t('user_usage_stats')}
+    subtitle={$t('user_usage_stats_description')}
+  >
+    <UserUsageStatistic />
+  </SettingAccordion>
+
+  <SettingAccordion icon={mdiApi} key="api-keys" title={$t('api_keys')} subtitle={$t('manage_your_api_keys')}>
     <UserAPIKeyList bind:keys />
   </SettingAccordion>
 
-  <SettingAccordion key="authorized-devices" title={$t('authorized_devices')} subtitle={$t('manage_your_devices')}>
+  <SettingAccordion
+    icon={mdiDevices}
+    key="authorized-devices"
+    title={$t('authorized_devices')}
+    subtitle={$t('manage_your_devices')}
+  >
     <DeviceList bind:devices={sessions} />
   </SettingAccordion>
 
   <SettingAccordion
+    icon={mdiDownload}
     key="download-settings"
     title={$t('download_settings')}
     subtitle={$t('download_settings_description')}
@@ -53,16 +92,27 @@
     <DownloadSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="memories" title={$t('memories')} subtitle={$t('memories_setting_description')}>
-    <MemoriesSettings />
+  <SettingAccordion
+    icon={mdiFeatureSearchOutline}
+    key="feature"
+    title={$t('features')}
+    subtitle={$t('features_setting_description')}
+  >
+    <FeatureSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="notifications" title={$t('notifications')} subtitle={$t('notifications_setting_description')}>
+  <SettingAccordion
+    icon={mdiBellOutline}
+    key="notifications"
+    title={$t('notifications')}
+    subtitle={$t('notifications_setting_description')}
+  >
     <NotificationsSettings />
   </SettingAccordion>
 
   {#if $featureFlags.loaded && $featureFlags.oauth}
     <SettingAccordion
+      icon={mdiTwoFactorAuthentication}
       key="oauth"
       title={$t('oauth')}
       subtitle={$t('manage_your_oauth_connection')}
@@ -72,18 +122,25 @@
     </SettingAccordion>
   {/if}
 
-  <SettingAccordion key="password" title={$t('password')} subtitle={$t('change_your_password')}>
+  <SettingAccordion icon={mdiOnepassword} key="password" title={$t('password')} subtitle={$t('change_your_password')}>
     <ChangePasswordSettings />
   </SettingAccordion>
 
-  <SettingAccordion key="partner-sharing" title={$t('partner_sharing')} subtitle={$t('manage_sharing_with_partners')}>
+  <SettingAccordion
+    icon={mdiAccountGroupOutline}
+    key="partner-sharing"
+    title={$t('partner_sharing')}
+    subtitle={$t('manage_sharing_with_partners')}
+  >
     <PartnerSettings user={$user} />
   </SettingAccordion>
 
   <SettingAccordion
+    icon={mdiKeyOutline}
     key="user-purchase-settings"
     title={$t('user_purchase_settings')}
     subtitle={$t('user_purchase_settings_description')}
+    autoScrollTo={true}
   >
     <UserPurchaseSettings />
   </SettingAccordion>

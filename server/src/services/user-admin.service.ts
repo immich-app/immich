@@ -1,6 +1,5 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { SALT_ROUNDS } from 'src/constants';
-import { UserCore } from 'src/cores/user.core';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
@@ -11,45 +10,32 @@ import {
   UserAdminUpdateDto,
   mapUserAdmin,
 } from 'src/dtos/user.dto';
-import { UserMetadataKey } from 'src/entities/user-metadata.entity';
-import { UserStatus } from 'src/entities/user.entity';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
+import { UserMetadataKey, UserStatus } from 'src/enum';
+import { JobName } from 'src/interfaces/job.interface';
+import { UserFindOptions } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class UserAdminService {
-  private userCore: UserCore;
-
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.userCore = UserCore.create(cryptoRepository, userRepository);
-    this.logger.setContext(UserAdminService.name);
-  }
-
+export class UserAdminService extends BaseService {
   async search(auth: AuthDto, dto: UserAdminSearchDto): Promise<UserAdminResponseDto[]> {
     const users = await this.userRepository.getList({ withDeleted: dto.withDeleted });
     return users.map((user) => mapUserAdmin(user));
   }
 
   async create(dto: UserAdminCreateDto): Promise<UserAdminResponseDto> {
-    const { notify, ...rest } = dto;
-    const user = await this.userCore.createUser(rest);
+    const { notify, ...userDto } = dto;
+    const config = await this.getConfig({ withCache: false });
+    if (!config.oauth.enabled && !userDto.password) {
+      throw new BadRequestException('password is required');
+    }
 
-    await this.eventRepository.emit('onUserSignupEvent', {
+    const user = await this.createUser(userDto);
+
+    await this.eventRepository.emit('user.signup', {
       notify: !!notify,
       id: user.id,
-      tempPassword: user.shouldChangePassword ? rest.password : undefined,
+      tempPassword: user.shouldChangePassword ? userDto.password : undefined,
     });
 
     return mapUserAdmin(user);

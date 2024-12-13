@@ -3,30 +3,88 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { generateId } from '$lib/utils/generate-id';
+  import { onDestroy } from 'svelte';
 
-  export let url: string;
-  export let durationInSeconds = 0;
-  export let enablePlayback = false;
-  export let playbackOnIconHover = false;
-  export let showTime = true;
-  export let curve = false;
-  export let playIcon = mdiPlayCircleOutline;
-  export let pauseIcon = mdiPauseCircleOutline;
-
-  let remainingSeconds = durationInSeconds;
-  let loading = true;
-  let error = false;
-  let player: HTMLVideoElement;
-
-  $: if (!enablePlayback) {
-    // Reset remaining time when playback is disabled.
-    remainingSeconds = durationInSeconds;
-
-    if (player) {
-      // Cancel video buffering.
-      player.src = '';
-    }
+  interface Props {
+    assetStore?: AssetStore | undefined;
+    url: string;
+    durationInSeconds?: number;
+    enablePlayback?: boolean;
+    playbackOnIconHover?: boolean;
+    showTime?: boolean;
+    curve?: boolean;
+    playIcon?: string;
+    pauseIcon?: string;
   }
+
+  let {
+    assetStore = undefined,
+    url,
+    durationInSeconds = 0,
+    enablePlayback = $bindable(false),
+    playbackOnIconHover = false,
+    showTime = true,
+    curve = false,
+    playIcon = mdiPlayCircleOutline,
+    pauseIcon = mdiPauseCircleOutline,
+  }: Props = $props();
+
+  const componentId = generateId();
+  let remainingSeconds = $state(durationInSeconds);
+  let loading = $state(true);
+  let error = $state(false);
+  let player: HTMLVideoElement | undefined = $state();
+
+  $effect(() => {
+    if (!enablePlayback) {
+      // Reset remaining time when playback is disabled.
+      remainingSeconds = durationInSeconds;
+
+      if (player) {
+        // Cancel video buffering.
+        player.src = '';
+      }
+    }
+  });
+  const onMouseEnter = () => {
+    if (assetStore) {
+      assetStore.taskManager.queueScrollSensitiveTask({
+        componentId,
+        task: () => {
+          if (playbackOnIconHover) {
+            enablePlayback = true;
+          }
+        },
+      });
+    } else {
+      if (playbackOnIconHover) {
+        enablePlayback = true;
+      }
+    }
+  };
+
+  const onMouseLeave = () => {
+    if (assetStore) {
+      assetStore.taskManager.queueScrollSensitiveTask({
+        componentId,
+        task: () => {
+          if (playbackOnIconHover) {
+            enablePlayback = false;
+          }
+        },
+      });
+    } else {
+      if (playbackOnIconHover) {
+        enablePlayback = false;
+      }
+    }
+  };
+
+  onDestroy(() => {
+    assetStore?.taskManager.removeAllTasksForComponent(componentId);
+  });
 </script>
 
 <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
@@ -36,20 +94,8 @@
     </span>
   {/if}
 
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <span
-    class="pr-2 pt-2"
-    on:mouseenter={() => {
-      if (playbackOnIconHover) {
-        enablePlayback = true;
-      }
-    }}
-    on:mouseleave={() => {
-      if (playbackOnIconHover) {
-        enablePlayback = false;
-      }
-    }}
-  >
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <span class="pr-2 pt-2" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
     {#if enablePlayback}
       {#if loading}
         <LoadingSpinner />
@@ -73,17 +119,24 @@
     autoplay
     loop
     src={url}
-    on:play={() => {
+    onplay={() => {
       loading = false;
       error = false;
     }}
-    on:error={() => {
+    onerror={() => {
+      if (!player?.src) {
+        // Do not show error when the URL is empty.
+        return;
+      }
       error = true;
       loading = false;
     }}
-    on:timeupdate={({ currentTarget }) => {
+    ontimeupdate={({ currentTarget }) => {
       const remaining = currentTarget.duration - currentTarget.currentTime;
-      remainingSeconds = Math.min(Math.ceil(remaining), durationInSeconds);
+      remainingSeconds = Math.min(
+        Math.ceil(Number.isNaN(remaining) ? Number.POSITIVE_INFINITY : remaining),
+        durationInSeconds,
+      );
     }}
-  />
+  ></video>
 {/if}

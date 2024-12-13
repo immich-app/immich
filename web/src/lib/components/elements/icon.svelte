@@ -1,28 +1,48 @@
 <script lang="ts">
   import type { AriaRole } from 'svelte/elements';
 
-  export let size: string | number = '1em';
-  export let color = 'currentColor';
-  export let path: string;
-  export let title: string | null = null;
-  export let desc = '';
-  export let flipped = false;
-  let className = '';
-  export { className as class };
-  export let viewBox = '0 0 24 24';
-  export let role: AriaRole = 'img';
-  export let ariaHidden: boolean | undefined = undefined;
-  export let ariaLabel: string | undefined = undefined;
-  export let ariaLabelledby: string | undefined = undefined;
-  export let strokeWidth: number = 0;
-  export let strokeColor: string = 'currentColor';
+  interface Props {
+    size?: string | number;
+    color?: string;
+    path: string;
+    title?: string | null;
+    desc?: string;
+    flipped?: boolean;
+    class?: string;
+    viewBox?: string;
+    role?: AriaRole;
+    ariaHidden?: boolean | undefined;
+    ariaLabel?: string | undefined;
+    ariaLabelledby?: string | undefined;
+    strokeWidth?: number;
+    strokeColor?: string;
+    spin?: boolean;
+  }
+
+  let {
+    size = '1em',
+    color = 'currentColor',
+    path,
+    title = null,
+    desc = '',
+    flipped = false,
+    class: className = '',
+    viewBox = '0 0 24 24',
+    role = 'img',
+    ariaHidden = undefined,
+    ariaLabel = undefined,
+    ariaLabelledby = undefined,
+    strokeWidth = 0,
+    strokeColor = 'currentColor',
+    spin = false,
+  }: Props = $props();
 </script>
 
 <svg
   width={size}
   height={size}
   {viewBox}
-  class="{className} {flipped ? '-scale-x-100' : ''}"
+  class="{className} {flipped ? '-scale-x-100' : ''} {spin ? 'animate-spin' : ''}"
   {role}
   stroke={strokeColor}
   stroke-width={strokeWidth}

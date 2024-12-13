@@ -17,7 +17,10 @@ class ServerConfigDto {
     required this.isInitialized,
     required this.isOnboarded,
     required this.loginPageMessage,
+    required this.mapDarkStyleUrl,
+    required this.mapLightStyleUrl,
     required this.oauthButtonText,
+    required this.publicUsers,
     required this.trashDays,
     required this.userDeleteDelay,
   });
@@ -30,7 +33,13 @@ class ServerConfigDto {
 
   String loginPageMessage;
 
+  String mapDarkStyleUrl;
+
+  String mapLightStyleUrl;
+
   String oauthButtonText;
+
+  bool publicUsers;
 
   int trashDays;
 
@@ -42,7 +51,10 @@ class ServerConfigDto {
     other.isInitialized == isInitialized &&
     other.isOnboarded == isOnboarded &&
     other.loginPageMessage == loginPageMessage &&
+    other.mapDarkStyleUrl == mapDarkStyleUrl &&
+    other.mapLightStyleUrl == mapLightStyleUrl &&
     other.oauthButtonText == oauthButtonText &&
+    other.publicUsers == publicUsers &&
     other.trashDays == trashDays &&
     other.userDeleteDelay == userDeleteDelay;
 
@@ -53,12 +65,15 @@ class ServerConfigDto {
     (isInitialized.hashCode) +
     (isOnboarded.hashCode) +
     (loginPageMessage.hashCode) +
+    (mapDarkStyleUrl.hashCode) +
+    (mapLightStyleUrl.hashCode) +
     (oauthButtonText.hashCode) +
+    (publicUsers.hashCode) +
     (trashDays.hashCode) +
     (userDeleteDelay.hashCode);
 
   @override
-  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, oauthButtonText=$oauthButtonText, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
+  String toString() => 'ServerConfigDto[externalDomain=$externalDomain, isInitialized=$isInitialized, isOnboarded=$isOnboarded, loginPageMessage=$loginPageMessage, mapDarkStyleUrl=$mapDarkStyleUrl, mapLightStyleUrl=$mapLightStyleUrl, oauthButtonText=$oauthButtonText, publicUsers=$publicUsers, trashDays=$trashDays, userDeleteDelay=$userDeleteDelay]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -66,7 +81,10 @@ class ServerConfigDto {
       json[r'isInitialized'] = this.isInitialized;
       json[r'isOnboarded'] = this.isOnboarded;
       json[r'loginPageMessage'] = this.loginPageMessage;
+      json[r'mapDarkStyleUrl'] = this.mapDarkStyleUrl;
+      json[r'mapLightStyleUrl'] = this.mapLightStyleUrl;
       json[r'oauthButtonText'] = this.oauthButtonText;
+      json[r'publicUsers'] = this.publicUsers;
       json[r'trashDays'] = this.trashDays;
       json[r'userDeleteDelay'] = this.userDeleteDelay;
     return json;
@@ -76,6 +94,7 @@ class ServerConfigDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerConfigDto? fromJson(dynamic value) {
+    upgradeDto(value, "ServerConfigDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -84,7 +103,10 @@ class ServerConfigDto {
         isInitialized: mapValueOfType<bool>(json, r'isInitialized')!,
         isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
+        mapDarkStyleUrl: mapValueOfType<String>(json, r'mapDarkStyleUrl')!,
+        mapLightStyleUrl: mapValueOfType<String>(json, r'mapLightStyleUrl')!,
         oauthButtonText: mapValueOfType<String>(json, r'oauthButtonText')!,
+        publicUsers: mapValueOfType<bool>(json, r'publicUsers')!,
         trashDays: mapValueOfType<int>(json, r'trashDays')!,
         userDeleteDelay: mapValueOfType<int>(json, r'userDeleteDelay')!,
       );
@@ -138,7 +160,10 @@ class ServerConfigDto {
     'isInitialized',
     'isOnboarded',
     'loginPageMessage',
+    'mapDarkStyleUrl',
+    'mapLightStyleUrl',
     'oauthButtonText',
+    'publicUsers',
     'trashDays',
     'userDeleteDelay',
   };

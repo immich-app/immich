@@ -2,27 +2,32 @@
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
   import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
-  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
-  import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
+  import LinkLivePhotoAction from '$lib/components/photos-page/actions/link-live-photo-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
-  import { AssetStore } from '$lib/stores/assets.store';
-  import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { AssetStore } from '$lib/stores/assets.store';
   import { preferences, user } from '$lib/stores/user.store';
+  import type { OnLink, OnUnlink } from '$lib/utils/actions';
+  import { openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { AssetTypeEnum } from '@immich/sdk';
+  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -30,14 +35,23 @@
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  let isAllFavorite: boolean;
-  let isAssetStackSelected: boolean;
+  let isAllFavorite = $state(false);
+  let isAllOwned = $state(false);
+  let isAssetStackSelected = $state(false);
+  let isLinkActionAvailable = $state(false);
 
-  $: {
+  $effect(() => {
     const selection = [...$selectedAssets];
+    isAllOwned = selection.every((asset) => asset.ownerId === $user.id);
     isAllFavorite = selection.every((asset) => asset.isFavorite);
     isAssetStackSelected = selection.length === 1 && !!selection[0].stack;
-  }
+    const isLivePhoto = selection.length === 1 && !!selection[0].livePhotoVideoId;
+    const isLivePhotoCandidate =
+      selection.length === 2 &&
+      selection.some((asset) => asset.type === AssetTypeEnum.Image) &&
+      selection.some((asset) => asset.type === AssetTypeEnum.Video);
+    isLinkActionAvailable = isAllOwned && (isLivePhoto || isLivePhotoCandidate);
+  });
 
   const handleEscape = () => {
     if ($showAssetViewer) {
@@ -48,6 +62,20 @@
       return;
     }
   };
+
+  const handleLink: OnLink = ({ still, motion }) => {
+    assetStore.removeAssets([motion.id]);
+    assetStore.updateAssets([still]);
+  };
+
+  const handleUnlink: OnUnlink = ({ still, motion }) => {
+    assetStore.addAssets([motion]);
+    assetStore.updateAssets([still]);
+  };
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 {#if $isMultiSelectState}
@@ -72,9 +100,20 @@
           onUnstack={(assets) => assetStore.addAssets(assets)}
         />
       {/if}
+      {#if isLinkActionAvailable}
+        <LinkLivePhotoAction
+          menuItem
+          unlink={[...$selectedAssets].length === 1}
+          onLink={handleLink}
+          onUnlink={handleUnlink}
+        />
+      {/if}
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
       <hr />
       <AssetJobActions />
@@ -84,15 +123,18 @@
 
 <UserPageLayout hideNavbar={$isMultiSelectState} showUploadButton scrollbar={false}>
   <AssetGrid
+    enableRouting={true}
     {assetStore}
     {assetInteractionStore}
     removeAction={AssetAction.ARCHIVE}
-    on:escape={handleEscape}
+    onEscape={handleEscape}
     withStacked
   >
     {#if $preferences.memories.enabled}
       <MemoryLane />
     {/if}
-    <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} slot="empty" />
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_assets_message')} onClick={() => openFileUploadDialog()} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

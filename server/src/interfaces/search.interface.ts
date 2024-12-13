@@ -1,6 +1,7 @@
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity, AssetType } from 'src/entities/asset.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
+import { AssetStatus, AssetType } from 'src/enum';
 import { Paginated } from 'src/utils/pagination';
 
 export const ISearchRepository = 'ISearchRepository';
@@ -60,13 +61,13 @@ export interface SearchStatusOptions {
   isVisible?: boolean;
   isNotInAlbum?: boolean;
   type?: AssetType;
+  status?: AssetStatus;
   withArchived?: boolean;
   withDeleted?: boolean;
 }
 
 export interface SearchOneToOneRelationOptions {
   withExif?: boolean;
-  withSmartInfo?: boolean;
   withStacked?: boolean;
 }
 
@@ -169,15 +170,37 @@ export interface AssetDuplicateResult {
   distance: number;
 }
 
+export interface GetStatesOptions {
+  country?: string;
+}
+
+export interface GetCitiesOptions extends GetStatesOptions {
+  state?: string;
+}
+
+export interface GetCameraModelsOptions {
+  make?: string;
+}
+
+export interface GetCameraMakesOptions {
+  model?: string;
+}
+
 export interface ISearchRepository {
   searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions): Paginated<AssetEntity>;
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions): Paginated<AssetEntity>;
   searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
+  searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]>;
   upsert(assetId: string, embedding: number[]): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
   getAssetsByCity(userIds: string[]): Promise<AssetEntity[]>;
   deleteAllSearchEmbeddings(): Promise<void>;
   getDimensionSize(): Promise<number>;
   setDimensionSize(dimSize: number): Promise<void>;
+  getCountries(userIds: string[]): Promise<Array<string | null>>;
+  getStates(userIds: string[], options: GetStatesOptions): Promise<Array<string | null>>;
+  getCities(userIds: string[], options: GetCitiesOptions): Promise<Array<string | null>>;
+  getCameraMakes(userIds: string[], options: GetCameraMakesOptions): Promise<Array<string | null>>;
+  getCameraModels(userIds: string[], options: GetCameraModelsOptions): Promise<Array<string | null>>;
 }

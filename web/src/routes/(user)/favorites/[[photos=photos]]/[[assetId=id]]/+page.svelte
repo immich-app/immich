@@ -19,14 +19,25 @@
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const assetStore = new AssetStore({ isFavorite: true });
   const assetInteractionStore = createAssetInteractionStore();
   const { isMultiSelectState, selectedAssets } = assetInteractionStore;
 
-  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
+  let isAllArchive = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 <!-- Multiselection mode app bar -->
@@ -44,13 +55,18 @@
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
       <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
 
 <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
-  <AssetGrid {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
-    <EmptyPlaceholder text={$t('no_favorites_message')} slot="empty" />
+  <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_favorites_message')} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

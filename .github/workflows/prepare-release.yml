@@ -29,10 +29,17 @@ jobs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
 
     steps:
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.ORG_RELEASE_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Install Poetry
         run: pipx install poetry
@@ -44,10 +51,8 @@ jobs:
         id: push-tag
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: Alex The Bot
-          author_email: alex.tran1502@gmail.com
-          default_author: user_info
-          message: 'Version ${{ env.IMMICH_VERSION }}'
+          default_author: github_actions
+          message: 'chore: version ${{ env.IMMICH_VERSION }}'
           tag: ${{ env.IMMICH_VERSION }}
           push: true
 

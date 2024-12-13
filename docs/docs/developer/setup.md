@@ -39,13 +39,16 @@ All the services are packaged to run as with single Docker Compose command.
 make dev # required Makefile installed on the system.
 ```
 
-5. Access the dev instance in your browser at http://localhost:2283, or connect via the mobile app.
+5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.
 
 All the services will be started with hot-reloading enabled for a quick feedback loop.
 
-You can access the web from `http://your-machine-ip:2283` or `http://localhost:2283` and access the server from the mobile app at `http://your-machine-ip:2283/api`
+You can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000/api`
 
-**Note:** the "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
+**Notes:**
+
+- The "web" development container runs with uid 1000. If that uid does not have read/write permissions on the mounted volumes, you may encounter errors
+- In case of rootless docker setup, you need to use root within the container, otherwise you will encounter read/write permission related errors, see comments in `docker/docker-compose.dev.yml`.
 
 #### Connect web to a remote backend
 
@@ -76,7 +79,7 @@ Setting these in the IDE give a better developer experience, auto-formatting cod
 
 ### Dart Code Metrics
 
-The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/getting-started/#installation) page for more information on setting up DCM
+The mobile app uses DCM (Dart Code Metrics) for linting and metrics calculation. Please refer to the [Getting Started](https://dcm.dev/docs/) page for more information on setting up DCM
 
 Note: Activating the license is not required.
 
@@ -106,7 +109,7 @@ in User `settings.json` (`cmd + shift + p` and search for `Open User Settings JS
     "editor.suggest.snippetsPreventQuickSuggestions": false,
     "editor.suggestSelection": "first",
     "editor.tabCompletion": "onlySnippets",
-    "editor.wordBasedSuggestions": false,
+    "editor.wordBasedSuggestions": "off",
     "editor.defaultFormatter": "Dart-Code.dart-code"
   }
 }

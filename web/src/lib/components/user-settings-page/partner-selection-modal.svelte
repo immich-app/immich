@@ -1,18 +1,21 @@
 <script lang="ts">
-  import { searchUsers, getPartners, type UserResponseDto, PartnerDirection } from '@immich/sdk';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { getPartners, PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
+  import { onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { t } from 'svelte-i18n';
 
-  export let user: UserResponseDto;
-  export let onClose: () => void;
+  interface Props {
+    user: UserResponseDto;
+    onClose: () => void;
+    onAddUsers: (users: UserResponseDto[]) => void;
+  }
 
-  let availableUsers: UserResponseDto[] = [];
-  let selectedUsers: UserResponseDto[] = [];
+  let { user, onClose, onAddUsers }: Props = $props();
 
-  const dispatch = createEventDispatcher<{ 'add-users': UserResponseDto[] }>();
+  let availableUsers: UserResponseDto[] = $state([]);
+  let selectedUsers: UserResponseDto[] = $state([]);
 
   onMount(async () => {
     let users = await searchUsers();
@@ -39,7 +42,7 @@
       {#each availableUsers as user}
         <button
           type="button"
-          on:click={() => selectUser(user)}
+          onclick={() => selectUser(user)}
           class="flex w-full place-items-center gap-4 px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
         >
           {#if selectedUsers.includes(user)}
@@ -69,7 +72,7 @@
 
     {#if selectedUsers.length > 0}
       <div class="pt-5">
-        <Button size="sm" fullwidth on:click={() => dispatch('add-users', selectedUsers)}>{$t('add')}</Button>
+        <Button size="sm" fullwidth onclick={() => onAddUsers(selectedUsers)}>{$t('add')}</Button>
       </div>
     {/if}
   </div>

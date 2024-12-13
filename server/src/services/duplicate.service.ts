@@ -1,49 +1,44 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { Injectable } from '@nestjs/common';
+import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto, mapDuplicateResponse } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import {
-  IBaseJob,
-  IEntityJob,
-  IJobRepository,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-  JobStatus,
-} from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AssetDuplicateResult, ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { WithoutProperty } from 'src/interfaces/asset.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { AssetDuplicateResult } from 'src/interfaces/search.interface';
+import { BaseService } from 'src/services/base.service';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class DuplicateService {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {
-    this.logger.setContext(DuplicateService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-  }
-
+export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
     const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
-
-    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth })));
+    const uniqueAssetIds: string[] = [];
+    const duplicates = mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true }))).filter(
+      (duplicate) => {
+        if (duplicate.assets.length === 1) {
+          uniqueAssetIds.push(duplicate.assets[0].id);
+          return false;
+        }
+        return true;
+      },
+    );
+    if (uniqueAssetIds.length > 0) {
+      try {
+        await this.assetRepository.updateAll(uniqueAssetIds, { duplicateId: null });
+      } catch (error: any) {
+        this.logger.error(`Failed to remove duplicateId from assets: ${error.message}`);
+      }
+    }
+    return duplicates;
   }
 
-  async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+  @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
+  async handleQueueSearchDuplicates({ force }: JobOf<JobName.QUEUE_DUPLICATE_DETECTION>): Promise<JobStatus> {
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -63,13 +58,14 @@ export class DuplicateService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+  @OnJob({ name: JobName.DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
+  async handleSearchDuplicates({ id }: JobOf<JobName.DUPLICATE_DETECTION>): Promise<JobStatus> {
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
-    const asset = await this.assetRepository.getById(id, { smartSearch: true });
+    const asset = await this.assetRepository.getById(id, { files: true, smartSearch: true });
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
       return JobStatus.FAILED;
@@ -80,7 +76,8 @@ export class DuplicateService {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       this.logger.warn(`Asset ${id} is missing preview image`);
       return JobStatus.FAILED;
     }

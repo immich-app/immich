@@ -3,22 +3,20 @@ import { render } from '@testing-library/svelte';
 
 describe('ImageThumbnail component', () => {
   beforeAll(() => {
-    Object.defineProperty(HTMLImageElement.prototype, 'decode', {
-      value: vi.fn(),
-    });
+    Element.prototype.animate = vi.fn().mockImplementation(() => ({
+      cancel: () => {},
+    }));
   });
 
   it('shows thumbhash while image is loading', () => {
     const sut = render(ImageThumbnail, {
       url: 'http://localhost/img.png',
       altText: 'test',
-      thumbhash: '1QcSHQRnh493V4dIh4eXh1h4kJUI',
+      base64ThumbHash: '1QcSHQRnh493V4dIh4eXh1h4kJUI',
       widthStyle: '250px',
     });
 
-    const [_, thumbhash] = sut.getAllByRole('img');
-    expect(thumbhash.getAttribute('src')).toContain(
-      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABcAAAAgCAYAAAD5VeO1AAAMRklEQVR4AQBdAKL/', // truncated
-    );
+    const thumbhash = sut.getByTestId('thumbhash');
+    expect(thumbhash).not.toBeFalsy();
   });
 });

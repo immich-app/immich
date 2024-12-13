@@ -1,8 +1,6 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import {
     mdiArrowDownThin,
@@ -17,10 +15,15 @@
   import type { RenderedOption } from './elements/dropdown.svelte';
   import SettingDropdown from './shared-components/settings/setting-dropdown.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook } = slideshowStore;
+  const { slideshowDelay, showProgressBar, slideshowNavigation, slideshowLook, slideshowTransition } = slideshowStore;
 
-  export let onClose = () => {};
+  interface Props {
+    onClose?: () => void;
+  }
+
+  let { onClose = () => {} }: Props = $props();
 
   const navigationOptions: Record<SlideshowNavigation, RenderedOption> = {
     [SlideshowNavigation.Shuffle]: { icon: mdiShuffle, title: $t('shuffle') },
@@ -46,7 +49,7 @@
   };
 </script>
 
-<FullScreenModal title={$t('slideshow_settings')} {onClose}>
+<FullScreenModal title={$t('slideshow_settings')} onClose={() => onClose()}>
   <div class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary">
     <SettingDropdown
       title={$t('direction')}
@@ -65,15 +68,17 @@
       }}
     />
     <SettingSwitch title={$t('show_progress_bar')} bind:checked={$showProgressBar} />
+    <SettingSwitch title={$t('show_slideshow_transition')} bind:checked={$slideshowTransition} />
     <SettingInputField
       inputType={SettingInputFieldType.NUMBER}
       label={$t('duration')}
-      desc={$t('admin.slideshow_duration_description')}
+      description={$t('admin.slideshow_duration_description')}
       min={1}
       bind:value={$slideshowDelay}
     />
   </div>
-  <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth color="primary" on:click={onClose}>{$t('done')}</Button>
-  </svelte:fragment>
+
+  {#snippet stickyBottom()}
+    <Button fullwidth color="primary" onclick={(_) => onClose()}>{$t('done')}</Button>
+  {/snippet}
 </FullScreenModal>

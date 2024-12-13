@@ -17,7 +17,7 @@
   } from '@immich/sdk';
   import { mdiClose, mdiDotsVertical, mdiHeart, mdiSend, mdiDeleteOutline } from '@mdi/js';
   import * as luxon from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
@@ -47,43 +47,44 @@
     return relativeFormatter.format(Math.trunc(diff.as(unit)), unit);
   };
 
-  export let reactions: ActivityResponseDto[];
-  export let user: UserResponseDto;
-  export let assetId: string | undefined = undefined;
-  export let albumId: string;
-  export let assetType: AssetTypeEnum | undefined = undefined;
-  export let albumOwnerId: string;
-  export let disabled: boolean;
-  export let isLiked: ActivityResponseDto | null;
-
-  let textArea: HTMLTextAreaElement;
-  let innerHeight: number;
-  let activityHeight: number;
-  let chatHeight: number;
-  let divHeight: number;
-  let previousAssetId: string | undefined = assetId;
-  let message = '';
-  let isSendingMessage = false;
-
-  const dispatch = createEventDispatcher<{
-    deleteComment: void;
-    deleteLike: void;
-    addComment: void;
-    close: void;
-  }>();
-
-  $: {
-    if (innerHeight && activityHeight) {
-      divHeight = innerHeight - activityHeight;
-    }
+  interface Props {
+    reactions: ActivityResponseDto[];
+    user: UserResponseDto;
+    assetId?: string | undefined;
+    albumId: string;
+    assetType?: AssetTypeEnum | undefined;
+    albumOwnerId: string;
+    disabled: boolean;
+    isLiked: ActivityResponseDto | null;
+    onDeleteComment: () => void;
+    onDeleteLike: () => void;
+    onAddComment: () => void;
+    onClose: () => void;
   }
 
-  $: {
-    if (assetId && previousAssetId != assetId) {
-      handlePromiseError(getReactions());
-      previousAssetId = assetId;
-    }
-  }
+  let {
+    reactions = $bindable(),
+    user,
+    assetId = undefined,
+    albumId,
+    assetType = undefined,
+    albumOwnerId,
+    disabled,
+    isLiked,
+    onDeleteComment,
+    onDeleteLike,
+    onAddComment,
+    onClose,
+  }: Props = $props();
+
+  let innerHeight: number = $state(0);
+  let activityHeight: number = $state(0);
+  let chatHeight: number = $state(0);
+  let divHeight: number = $state(0);
+  let previousAssetId: string | undefined = $state(assetId);
+  let message = $state('');
+  let isSendingMessage = $state(false);
+
   onMount(async () => {
     await getReactions();
   });
@@ -109,11 +110,10 @@
     try {
       await deleteActivity({ id: reaction.id });
       reactions.splice(index, 1);
-      reactions = reactions;
       if (isLiked && reaction.type === ReactionType.Like && reaction.id == isLiked.id) {
-        dispatch('deleteLike');
+        onDeleteLike();
       } else {
-        dispatch('deleteComment');
+        onDeleteComment();
       }
 
       const deleteMessages: Record<ReactionType, string> = {
@@ -139,17 +139,31 @@
         activityCreateDto: { albumId, assetId, type: ReactionType.Comment, comment: message },
       });
       reactions.push(data);
-      textArea.style.height = '18px';
+
       message = '';
-      dispatch('addComment');
-      // Re-render the activity feed
-      reactions = reactions;
+      onAddComment();
     } catch (error) {
       handleError(error, $t('errors.unable_to_add_comment'));
     } finally {
       clearTimeout(timeout);
     }
     isSendingMessage = false;
+  };
+  $effect(() => {
+    if (innerHeight && activityHeight) {
+      divHeight = innerHeight - activityHeight;
+    }
+  });
+  $effect(() => {
+    if (assetId && previousAssetId != assetId) {
+      handlePromiseError(getReactions());
+      previousAssetId = assetId;
+    }
+  });
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleSendComment();
   };
 </script>
 
@@ -160,7 +174,7 @@
       bind:clientHeight={activityHeight}
     >
       <div class="flex place-items-center gap-2">
-        <CircleIconButton on:click={() => dispatch('close')} icon={mdiClose} title={$t('close')} />
+        <CircleIconButton onclick={onClose} icon={mdiClose} title={$t('close')} />
 
         <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('activity')}</p>
       </div>
@@ -280,15 +294,13 @@
         <div>
           <UserAvatar {user} size="md" showTitle={false} />
         </div>
-        <form class="flex w-full max-h-56 gap-1" on:submit|preventDefault={() => handleSendComment()}>
+        <form class="flex w-full max-h-56 gap-1" {onsubmit}>
           <div class="flex w-full items-center gap-4">
             <textarea
               {disabled}
-              bind:this={textArea}
               bind:value={message}
-              use:autoGrowHeight={'5px'}
+              use:autoGrowHeight={{ height: '5px', value: message }}
               placeholder={disabled ? $t('comments_are_disabled') : $t('say_something')}
-              on:input={() => autoGrowHeight(textArea, '5px')}
               use:shortcut={{
                 shortcut: { key: 'Enter' },
                 onShortcut: () => handleSendComment(),
@@ -296,7 +308,7 @@
               class="h-[18px] {disabled
                 ? 'cursor-not-allowed'
                 : ''} w-full max-h-56 pr-2 items-center overflow-y-auto leading-4 outline-none resize-none bg-gray-200"
-            />
+            ></textarea>
           </div>
           {#if isSendingMessage}
             <div class="flex items-end place-items-center pb-2 ml-0">
@@ -311,7 +323,7 @@
                 size="15"
                 icon={mdiSend}
                 class="dark:text-immich-dark-gray"
-                on:click={() => handleSendComment()}
+                onclick={() => handleSendComment()}
               />
             </div>
           {/if}

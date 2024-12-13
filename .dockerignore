@@ -22,6 +22,7 @@ open-api/typescript-sdk/node_modules/
 server/coverage/
 server/node_modules/
 server/upload/
+server/src/queries
 server/dist/
 server/www/
 

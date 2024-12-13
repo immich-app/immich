@@ -11,7 +11,7 @@ class ActivityStatistics extends _$ActivityStatistics {
     ref
         .watch(activityServiceProvider)
         .getStatistics(albumId, assetId: assetId)
-        .then((comments) => state = comments);
+        .then((stats) => state = stats.comments);
     return 0;
   }
 

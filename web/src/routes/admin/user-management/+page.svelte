@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import DeleteConfirmDialog from '$lib/components/admin-page/delete-confirm-dialogue.svelte';
   import RestoreDialogue from '$lib/components/admin-page/restore-dialogue.svelte';
   import Button from '$lib/components/elements/buttons/button.svelte';
@@ -10,33 +9,38 @@
   import CreateUserForm from '$lib/components/forms/create-user-form.svelte';
   import EditUserForm from '$lib/components/forms/edit-user-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
-  import { serverConfig } from '$lib/stores/server-config.store';
+  import { serverConfig, featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { copyToClipboard } from '$lib/utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { UserStatus, searchUsersAdmin, type UserAdminResponseDto } from '@immich/sdk';
-  import { mdiInfinity, mdiContentCopy, mdiDeleteRestore, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiContentCopy, mdiDeleteRestore, mdiInfinity, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
-  import type { PageData } from './$types';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let allUsers: UserAdminResponseDto[] = [];
-  let shouldShowEditUserForm = false;
-  let shouldShowCreateUserForm = false;
-  let shouldShowPasswordResetSuccess = false;
-  let shouldShowDeleteConfirmDialog = false;
-  let shouldShowRestoreDialog = false;
-  let selectedUser: UserAdminResponseDto;
-  let newPassword: string;
+  let { data }: Props = $props();
+
+  let allUsers: UserAdminResponseDto[] = $state([]);
+  let shouldShowEditUserForm = $state(false);
+  let shouldShowCreateUserForm = $state(false);
+  let shouldShowPasswordResetSuccess = $state(false);
+  let shouldShowDeleteConfirmDialog = $state(false);
+  let shouldShowRestoreDialog = $state(false);
+  let selectedUser = $state<UserAdminResponseDto>();
+  let newPassword = $state('');
 
   const refresh = async () => {
     allUsers = await searchUsersAdmin({ withDeleted: true });
@@ -110,38 +114,39 @@
     <section class="w-full pb-28 lg:w-[850px]">
       {#if shouldShowCreateUserForm}
         <CreateUserForm
-          on:submit={onUserCreated}
-          on:cancel={() => (shouldShowCreateUserForm = false)}
+          onSubmit={onUserCreated}
+          onCancel={() => (shouldShowCreateUserForm = false)}
           onClose={() => (shouldShowCreateUserForm = false)}
+          oauthEnabled={$featureFlags.oauth}
         />
       {/if}
 
-      {#if shouldShowEditUserForm}
+      {#if shouldShowEditUserForm && selectedUser}
         <EditUserForm
           user={selectedUser}
           bind:newPassword
           canResetPassword={selectedUser?.id !== $user.id}
-          on:editSuccess={onEditUserSuccess}
-          on:resetPasswordSuccess={onEditPasswordSuccess}
+          onEditSuccess={onEditUserSuccess}
+          onResetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}
         />
       {/if}
 
-      {#if shouldShowDeleteConfirmDialog}
+      {#if shouldShowDeleteConfirmDialog && selectedUser}
         <DeleteConfirmDialog
           user={selectedUser}
-          on:success={onUserDelete}
-          on:fail={onUserDelete}
-          on:cancel={() => (shouldShowDeleteConfirmDialog = false)}
+          onSuccess={onUserDelete}
+          onFail={onUserDelete}
+          onCancel={() => (shouldShowDeleteConfirmDialog = false)}
         />
       {/if}
 
-      {#if shouldShowRestoreDialog}
+      {#if shouldShowRestoreDialog && selectedUser}
         <RestoreDialogue
           user={selectedUser}
-          on:success={onUserRestore}
-          on:fail={onUserRestore}
-          on:cancel={() => (shouldShowRestoreDialog = false)}
+          onSuccess={onUserRestore}
+          onFail={onUserRestore}
+          onCancel={() => (shouldShowRestoreDialog = false)}
         />
       {/if}
 
@@ -154,7 +159,7 @@
           hideCancelButton={true}
           confirmColor="green"
         >
-          <svelte:fragment slot="prompt">
+          {#snippet promptSnippet()}
             <div class="flex flex-col gap-4">
               <p>{$t('admin.user_password_has_been_reset')}</p>
 
@@ -164,7 +169,7 @@
                 >
                   {newPassword}
                 </code>
-                <LinkButton on:click={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
+                <LinkButton onclick={() => copyToClipboard(newPassword)} title={$t('copy_password')}>
                   <div class="flex place-items-center gap-2 text-sm">
                     <Icon path={mdiContentCopy} size="18" />
                   </div>
@@ -173,7 +178,7 @@
 
               <p>{$t('admin.user_password_reset_description')}</p>
             </div>
-          </svelte:fragment>
+          {/snippet}
         </ConfirmDialog>
       {/if}
 
@@ -222,7 +227,7 @@
                       title={$t('edit_user')}
                       color="primary"
                       size="16"
-                      on:click={() => editUserHandler(immichUser)}
+                      onclick={() => editUserHandler(immichUser)}
                     />
                     {#if immichUser.id !== $user.id}
                       <CircleIconButton
@@ -230,7 +235,7 @@
                         title={$t('delete_user')}
                         color="primary"
                         size="16"
-                        on:click={() => deleteUserHandler(immichUser)}
+                        onclick={() => deleteUserHandler(immichUser)}
                       />
                     {/if}
                   {/if}
@@ -242,7 +247,7 @@
                       })}
                       color="primary"
                       size="16"
-                      on:click={() => restoreUserHandler(immichUser)}
+                      onclick={() => restoreUserHandler(immichUser)}
                     />
                   {/if}
                 </td>
@@ -252,7 +257,7 @@
         </tbody>
       </table>
 
-      <Button size="sm" on:click={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
+      <Button size="sm" onclick={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

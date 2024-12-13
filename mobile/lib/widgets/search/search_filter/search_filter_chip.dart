@@ -48,7 +48,7 @@ class SearchFilterChip extends StatelessWidget {
       child: Card(
         elevation: 0,
         shape: StadiumBorder(
-          side: BorderSide(color: context.colorScheme.outline.withOpacity(.5)),
+          side: BorderSide(color: context.colorScheme.outline.withAlpha(15)),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 14.0),

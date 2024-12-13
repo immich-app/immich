@@ -38,8 +38,12 @@
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let albumGroups: string[];
-  export let searchQuery: string;
+  interface Props {
+    albumGroups: string[];
+    searchQuery: string;
+  }
+
+  let { albumGroups, searchQuery = $bindable() }: Props = $props();
 
   const flipOrdering = (ordering: string) => {
     return ordering === SortOrder.Asc ? SortOrder.Desc : SortOrder.Asc;
@@ -73,57 +77,38 @@
       $albumViewSettings.view === AlbumViewMode.Cover ? AlbumViewMode.List : AlbumViewMode.Cover;
   };
 
-  let selectedGroupOption: AlbumGroupOptionMetadata;
-  let groupIcon: string;
-
-  $: selectedFilterOption = albumFilterNames[findFilterOption($albumViewSettings.filter)];
-
-  $: selectedSortOption = findSortOptionMetadata($albumViewSettings.sortBy);
-
-  $: {
-    selectedGroupOption = findGroupOptionMetadata($albumViewSettings.groupBy);
-    if (selectedGroupOption.isDisabled()) {
-      selectedGroupOption = findGroupOptionMetadata(AlbumGroupBy.None);
+  let groupIcon = $derived.by(() => {
+    if (selectedGroupOption?.id === AlbumGroupBy.None) {
+      return mdiFolderRemoveOutline;
     }
-  }
+    return $albumViewSettings.groupOrder === SortOrder.Desc ? mdiFolderArrowDownOutline : mdiFolderArrowUpOutline;
+  });
 
-  $: {
-    if (selectedGroupOption.id === AlbumGroupBy.None) {
-      groupIcon = mdiFolderRemoveOutline;
-    } else {
-      groupIcon =
-        $albumViewSettings.groupOrder === SortOrder.Desc ? mdiFolderArrowDownOutline : mdiFolderArrowUpOutline;
-    }
-  }
+  let albumFilterNames: Record<AlbumFilter, string> = $derived({
+    [AlbumFilter.All]: $t('all'),
+    [AlbumFilter.Owned]: $t('owned'),
+    [AlbumFilter.Shared]: $t('shared'),
+  });
 
-  $: sortIcon = $albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin;
+  let selectedFilterOption = $derived(albumFilterNames[findFilterOption($albumViewSettings.filter)]);
+  let selectedSortOption = $derived(findSortOptionMetadata($albumViewSettings.sortBy));
+  let selectedGroupOption = $derived(findGroupOptionMetadata($albumViewSettings.groupBy));
+  let sortIcon = $derived($albumViewSettings.sortOrder === SortOrder.Desc ? mdiArrowDownThin : mdiArrowUpThin);
 
-  $: albumFilterNames = ((): Record<AlbumFilter, string> => {
-    return {
-      [AlbumFilter.All]: $t('all'),
-      [AlbumFilter.Owned]: $t('owned'),
-      [AlbumFilter.Shared]: $t('shared'),
-    };
-  })();
+  let albumSortByNames: Record<AlbumSortBy, string> = $derived({
+    [AlbumSortBy.Title]: $t('sort_title'),
+    [AlbumSortBy.ItemCount]: $t('sort_items'),
+    [AlbumSortBy.DateModified]: $t('sort_modified'),
+    [AlbumSortBy.DateCreated]: $t('sort_created'),
+    [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
+    [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
+  });
 
-  $: albumSortByNames = ((): Record<AlbumSortBy, string> => {
-    return {
-      [AlbumSortBy.Title]: $t('sort_title'),
-      [AlbumSortBy.ItemCount]: $t('sort_items'),
-      [AlbumSortBy.DateModified]: $t('sort_modified'),
-      [AlbumSortBy.DateCreated]: $t('sort_created'),
-      [AlbumSortBy.MostRecentPhoto]: $t('sort_recent'),
-      [AlbumSortBy.OldestPhoto]: $t('sort_oldest'),
-    };
-  })();
-
-  $: albumGroupByNames = ((): Record<AlbumGroupBy, string> => {
-    return {
-      [AlbumGroupBy.None]: $t('group_no'),
-      [AlbumGroupBy.Owner]: $t('group_owner'),
-      [AlbumGroupBy.Year]: $t('group_year'),
-    };
-  })();
+  let albumGroupByNames: Record<AlbumGroupBy, string> = $derived({
+    [AlbumGroupBy.None]: $t('group_no'),
+    [AlbumGroupBy.Owner]: $t('group_owner'),
+    [AlbumGroupBy.Year]: $t('group_year'),
+  });
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
@@ -142,7 +127,7 @@
 </div>
 
 <!-- Create Album -->
-<LinkButton on:click={() => createAlbumAndRedirect()}>
+<LinkButton onclick={() => createAlbumAndRedirect()}>
   <div class="flex place-items-center gap-2 text-sm">
     <Icon path={mdiPlusBoxOutline} size="18" />
     <p class="hidden md:block">{$t('create_album')}</p>
@@ -154,7 +139,7 @@
   title={$t('sort_albums_by')}
   options={Object.values(sortOptionsMetadata)}
   selectedOption={selectedSortOption}
-  on:select={({ detail }) => handleChangeSortBy(detail)}
+  onSelect={handleChangeSortBy}
   render={({ id }) => ({
     title: albumSortByNames[id],
     icon: sortIcon,
@@ -166,7 +151,7 @@
   title={$t('group_albums_by')}
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
-  on:select={({ detail }) => handleChangeGroupBy(detail)}
+  onSelect={handleChangeGroupBy}
   render={({ id, isDisabled }) => ({
     title: albumGroupByNames[id],
     icon: groupIcon,
@@ -179,7 +164,7 @@
     <!-- Expand Album Groups -->
     <div class="hidden xl:flex gap-0">
       <div class="block">
-        <LinkButton title={$t('expand_all')} on:click={() => expandAllAlbumGroups()}>
+        <LinkButton title={$t('expand_all')} onclick={() => expandAllAlbumGroups()}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldMoreHorizontal} size="18" />
           </div>
@@ -188,7 +173,7 @@
 
       <!-- Collapse Album Groups -->
       <div class="block">
-        <LinkButton title={$t('collapse_all')} on:click={() => collapseAllAlbumGroups(albumGroups)}>
+        <LinkButton title={$t('collapse_all')} onclick={() => collapseAllAlbumGroups(albumGroups)}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiUnfoldLessHorizontal} size="18" />
           </div>
@@ -199,7 +184,7 @@
 {/if}
 
 <!-- Cover/List Display Toggle -->
-<LinkButton on:click={() => handleChangeListMode()}>
+<LinkButton onclick={() => handleChangeListMode()}>
   <div class="flex place-items-center gap-2 text-sm">
     {#if $albumViewSettings.view === AlbumViewMode.List}
       <Icon path={mdiViewGridOutline} size="18" />

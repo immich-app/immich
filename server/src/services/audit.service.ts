@@ -1,9 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
-import { AccessCore, Permission } from 'src/cores/access.core';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import {
   AuditDeletesDto,
   AuditDeletesResponseDto,
@@ -13,47 +13,33 @@ import {
   PathEntityType,
 } from 'src/dtos/audit.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DatabaseAction } from 'src/entities/audit.entity';
-import { AssetPathType, PersonPathType, UserPathType } from 'src/entities/move.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import {
+  AssetFileType,
+  AssetPathType,
+  DatabaseAction,
+  Permission,
+  PersonPathType,
+  StorageFolder,
+  UserPathType,
+} from 'src/enum';
+import { JobName, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { BaseService } from 'src/services/base.service';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class AuditService {
-  private access: AccessCore;
-
-  constructor(
-    @Inject(IAccessRepository) accessRepository: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IPersonRepository) private personRepository: IPersonRepository,
-    @Inject(IAuditRepository) private repository: IAuditRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.access = AccessCore.create(accessRepository);
-    this.logger.setContext(AuditService.name);
-  }
-
+export class AuditService extends BaseService {
+  @OnJob({ name: JobName.CLEAN_OLD_AUDIT_LOGS, queue: QueueName.BACKGROUND_TASK })
   async handleCleanup(): Promise<JobStatus> {
-    await this.repository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
+    await this.auditRepository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
     return JobStatus.SUCCESS;
   }
 
   async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
     const userId = dto.userId || auth.user.id;
-    await this.access.requirePermission(auth, Permission.TIMELINE_READ, userId);
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
 
-    const audits = await this.repository.getAfter(dto.after, {
+    const audits = await this.auditRepository.getAfter(dto.after, {
       userIds: [userId],
       entityType: dto.entityType,
       action: DatabaseAction.DELETE,
@@ -97,12 +83,12 @@ export class AuditService {
         }
 
         case AssetPathType.PREVIEW: {
-          await this.assetRepository.update({ id, previewPath: pathValue });
+          await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.PREVIEW, path: pathValue });
           break;
         }
 
         case AssetPathType.THUMBNAIL: {
-          await this.assetRepository.update({ id, thumbnailPath: pathValue });
+          await this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.THUMBNAIL, path: pathValue });
           break;
         }
 
@@ -155,7 +141,7 @@ export class AuditService {
       }
     }
 
-    const track = (filename: string | null) => {
+    const track = (filename: string | null | undefined) => {
       if (!filename) {
         return;
       }
@@ -175,8 +161,9 @@ export class AuditService {
     const orphans: FileReportItemDto[] = [];
     for await (const assets of pagination) {
       assetCount += assets.length;
-      for (const { id, originalPath, previewPath, encodedVideoPath, thumbnailPath, isExternal, checksum } of assets) {
-        for (const file of [originalPath, previewPath, encodedVideoPath, thumbnailPath]) {
+      for (const { id, files, originalPath, encodedVideoPath, isExternal, checksum } of assets) {
+        const { previewFile, thumbnailFile } = getAssetFiles(files);
+        for (const file of [originalPath, previewFile?.path, encodedVideoPath, thumbnailFile?.path]) {
           track(file);
         }
 
@@ -192,11 +179,11 @@ export class AuditService {
         ) {
           orphans.push({ ...entity, pathType: AssetPathType.ORIGINAL, pathValue: originalPath });
         }
-        if (previewPath && !hasFile(thumbFiles, previewPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.PREVIEW, pathValue: previewPath });
+        if (previewFile && !hasFile(thumbFiles, previewFile.path)) {
+          orphans.push({ ...entity, pathType: AssetPathType.PREVIEW, pathValue: previewFile.path });
         }
-        if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
-          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: thumbnailPath });
+        if (thumbnailFile && !hasFile(thumbFiles, thumbnailFile.path)) {
+          orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: thumbnailFile.path });
         }
         if (encodedVideoPath && !hasFile(videoFiles, encodedVideoPath)) {
           orphans.push({ ...entity, pathType: AssetPathType.THUMBNAIL, pathValue: encodedVideoPath });

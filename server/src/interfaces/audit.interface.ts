@@ -1,4 +1,4 @@
-import { DatabaseAction, EntityType } from 'src/entities/audit.entity';
+import { DatabaseAction, EntityType } from 'src/enum';
 
 export const IAuditRepository = 'IAuditRepository';
 

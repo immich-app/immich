@@ -12,8 +12,12 @@
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    asset: AssetResponseDto;
+    onAction: OnAction;
+  }
+
+  let { asset, onAction }: Props = $props();
 
   const toggleFavorite = async () => {
     try {
@@ -24,7 +28,8 @@
         },
       });
 
-      asset.isFavorite = data.isFavorite;
+      asset = { ...asset, isFavorite: data.isFavorite };
+
       onAction({ type: asset.isFavorite ? AssetAction.FAVORITE : AssetAction.UNFAVORITE, asset });
 
       notificationController.show({
@@ -43,5 +48,5 @@
   color="opaque"
   icon={asset.isFavorite ? mdiHeart : mdiHeartOutline}
   title={asset.isFavorite ? $t('unfavorite') : $t('to_favorite')}
-  on:click={toggleFavorite}
+  onclick={toggleFavorite}
 />

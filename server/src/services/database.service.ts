@@ -1,17 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { Duration } from 'luxon';
 import semver from 'semver';
-import { getVectorExtension } from 'src/database.config';
-import { EventHandlerOptions } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import {
   DatabaseExtension,
   DatabaseLock,
   EXTENSION_NAMES,
-  IDatabaseRepository,
   VectorExtension,
   VectorIndex,
 } from 'src/interfaces/database.interface';
-import { OnEvents } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { BootstrapEventPriority } from 'src/interfaces/event.interface';
+import { BaseService } from 'src/services/base.service';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -60,17 +59,14 @@ const messages = {
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
 };
 
-@Injectable()
-export class DatabaseService implements OnEvents {
-  constructor(
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(DatabaseService.name);
-  }
+const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
 
-  @EventHandlerOptions({ priority: -200 })
-  async onBootstrapEvent() {
+@Injectable()
+export class DatabaseService extends BaseService {
+  private reconnection?: NodeJS.Timeout;
+
+  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
+  async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
     const postgresRange = this.databaseRepository.getPostgresVersionRange();
@@ -81,7 +77,8 @@ export class DatabaseService implements OnEvents {
     }
 
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      const extension = getVectorExtension();
+      const envData = this.configRepository.getEnv();
+      const extension = envData.database.vectorExtension;
       const name = EXTENSION_NAMES[extension];
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
@@ -112,10 +109,31 @@ export class DatabaseService implements OnEvents {
 
       await this.checkReindexing();
 
-      if (process.env.DB_SKIP_MIGRATIONS !== 'true') {
+      const { database } = this.configRepository.getEnv();
+      if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
     });
+  }
+
+  handleConnectionError(error: Error) {
+    if (this.reconnection) {
+      return;
+    }
+
+    this.logger.error(`Database disconnected: ${error}`);
+    this.reconnection = setInterval(() => void this.reconnect(), RETRY_DURATION.toMillis());
+  }
+
+  private async reconnect() {
+    const isConnected = await this.databaseRepository.reconnect();
+    if (isConnected) {
+      this.logger.log('Database reconnected');
+      clearInterval(this.reconnection);
+      delete this.reconnection;
+    } else {
+      this.logger.warn(`Database connection failed, retrying in ${RETRY_DURATION.toHuman()}`);
+    }
   }
 
   private async createExtension(extension: DatabaseExtension) {

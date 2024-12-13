@@ -4,11 +4,9 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { IsNull, Not } from 'typeorm';
 import { Repository } from 'typeorm/repository/Repository.js';
 
-@Instrumentation()
 @Injectable()
 export class LibraryRepository implements ILibraryRepository {
   constructor(@InjectRepository(LibraryEntity) private repository: Repository<LibraryEntity>) {}
@@ -92,30 +90,6 @@ export class LibraryRepository implements ILibraryRepository {
       usage: Number(stats.usage),
       total: Number(stats.photos) + Number(stats.videos),
     };
-  }
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getAssetIds(libraryId: string, withDeleted = false): Promise<string[]> {
-    const builder = this.repository
-      .createQueryBuilder('library')
-      .innerJoinAndSelect('library.assets', 'assets')
-      .where('library.id = :id', { id: libraryId })
-      .select('assets.id');
-
-    if (withDeleted) {
-      builder.withDeleted();
-    }
-
-    // Return all asset paths for a given library
-    const rawResults = await builder.getRawMany();
-
-    const results: string[] = [];
-
-    for (const rawPath of rawResults) {
-      results.push(rawPath.assets_id);
-    }
-
-    return results;
   }
 
   private async save(library: Partial<LibraryEntity>) {

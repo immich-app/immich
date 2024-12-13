@@ -16,7 +16,7 @@ export const handleToggleTheme = () => {
 };
 
 const initTheme = (): ThemeSetting => {
-  if (browser && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  if (browser && window.matchMedia && !window.matchMedia('(prefers-color-scheme: dark)').matches) {
     return { value: Theme.LIGHT, system: false };
   }
   return { value: Theme.DARK, system: false };
@@ -96,11 +96,6 @@ export interface SidebarSettings {
   sharing: boolean;
 }
 
-export const sidebarSettings = persisted<SidebarSettings>('sidebar-settings-1', {
-  people: false,
-  sharing: true,
-});
-
 export enum SortOrder {
   Asc = 'asc',
   Desc = 'desc',
@@ -149,3 +144,5 @@ export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-f
 export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnail-on-hover', true, {});
 
 export const loopVideo = persisted<boolean>('loop-video', true, {});
+
+export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});

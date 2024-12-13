@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import Button from '../elements/buttons/button.svelte';
   import LibraryImportPathForm from './library-import-path-form.svelte';
@@ -11,17 +11,23 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let library: LibraryResponseDto;
+  interface Props {
+    library: LibraryResponseDto;
+    onCancel: () => void;
+    onSubmit: (library: LibraryResponseDto) => void;
+  }
 
-  let addImportPath = false;
-  let editImportPath: number | null = null;
+  let { library = $bindable(), onCancel, onSubmit }: Props = $props();
 
-  let importPathToAdd: string | null = null;
-  let editedImportPath: string;
+  let addImportPath = $state(false);
+  let editImportPath: number | null = $state(null);
 
-  let validatedPaths: ValidateLibraryImportPathResponseDto[] = [];
+  let importPathToAdd: string | null = $state(null);
+  let editedImportPath: string = $state('');
 
-  $: importPaths = validatedPaths.map((validatedPath) => validatedPath.importPath);
+  let validatedPaths: ValidateLibraryImportPathResponseDto[] = $state([]);
+
+  let importPaths = $derived(validatedPaths.map((validatedPath) => validatedPath.importPath));
 
   onMount(async () => {
     if (library.importPaths) {
@@ -63,19 +69,6 @@
         type: NotificationType.Warning,
       });
     }
-  };
-
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    submit: Partial<LibraryResponseDto>;
-  }>();
-
-  const handleCancel = () => {
-    dispatch('cancel');
-  };
-
-  const handleSubmit = () => {
-    dispatch('submit', { ...library });
   };
 
   const handleAddImportPath = async () => {
@@ -145,6 +138,11 @@
       editImportPath = null;
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSubmit({ ...library });
+  };
 </script>
 
 {#if addImportPath}
@@ -153,8 +151,8 @@
     submitText={$t('add')}
     bind:importPath={importPathToAdd}
     {importPaths}
-    on:submit={handleAddImportPath}
-    on:cancel={() => {
+    onSubmit={handleAddImportPath}
+    onCancel={() => {
       addImportPath = false;
       importPathToAdd = null;
     }}
@@ -168,15 +166,13 @@
     isEditing={true}
     bind:importPath={editedImportPath}
     {importPaths}
-    on:submit={handleEditImportPath}
-    on:delete={handleDeleteImportPath}
-    on:cancel={() => {
-      editImportPath = null;
-    }}
+    onSubmit={handleEditImportPath}
+    onDelete={handleDeleteImportPath}
+    onCancel={() => (editImportPath = null)}
   />
 {/if}
 
-<form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" class="m-4 flex flex-col gap-4">
+<form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
       {#each validatedPaths as validatedPath, listIndex}
@@ -212,7 +208,7 @@
               icon={mdiPencilOutline}
               title={$t('edit_import_path')}
               size="16"
-              on:click={() => {
+              onclick={() => {
                 editImportPath = listIndex;
                 editedImportPath = validatedPath.importPath;
               }}
@@ -236,7 +232,7 @@
           ><Button
             type="button"
             size="sm"
-            on:click={() => {
+            onclick={() => {
               addImportPath = true;
             }}>{$t('add_path')}</Button
           ></td
@@ -246,12 +242,12 @@
   </table>
   <div class="flex justify-between w-full">
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => revalidate()}
+      <Button size="sm" color="gray" onclick={() => revalidate()}
         ><Icon path={mdiRefresh} size={20} />{$t('validate')}</Button
       >
     </div>
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" on:click={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
       <Button size="sm" type="submit">{$t('save')}</Button>
     </div>
   </div>

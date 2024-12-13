@@ -7,13 +7,32 @@ on:
 
 jobs:
   checks:
+    name: Docs Deploy Checks
     runs-on: ubuntu-latest
     outputs:
       parameters: ${{ steps.parameters.outputs.result }}
+      artifact: ${{ steps.get-artifact.outputs.result }}
     steps:
-      - if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-        run: echo 'The triggering workflow failed' && exit 1
-
+      - if: ${{ github.event.workflow_run.conclusion != 'success' }}
+        run: echo 'The triggering workflow did not succeed' && exit 1
+      - name: Get artifact
+        id: get-artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "docs-build-output"
+            })[0];
+            if (!matchArtifact) {
+              console.log("No artifact found with the name docs-build-output, build job was skipped")
+              return { found: false };
+            }
+            return { found: true, id: matchArtifact.id };
       - name: Determine deploy parameters
         id: parameters
         uses: actions/github-script@v7
@@ -73,9 +92,10 @@ jobs:
             return parameters;
 
   deploy:
+    name: Docs Deploy
     runs-on: ubuntu-latest
     needs: checks
-    if: ${{ fromJson(needs.checks.outputs.parameters).shouldDeploy }}
+    if: ${{ fromJson(needs.checks.outputs.artifact).found && fromJson(needs.checks.outputs.parameters).shouldDeploy }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -98,18 +118,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: context.payload.workflow_run.id,
-            });
-            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "docs-build-output"
-            })[0];
+            let artifact = ${{ needs.checks.outputs.artifact }};
             let download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
+               artifact_id: artifact.id,
                archive_format: 'zip',
             });
             let fs = require('fs');

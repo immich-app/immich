@@ -8,7 +8,7 @@
     AlbumUserRole,
   } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { handleError } from '../../utils/handle-error';
   import ConfirmDialog from '../shared-components/dialog/confirm-dialog.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
@@ -18,18 +18,19 @@
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
 
-  export let album: AlbumResponseDto;
-  export let onClose: () => void;
+  interface Props {
+    album: AlbumResponseDto;
+    onClose: () => void;
+    onRemove: (userId: string) => void;
+    onRefreshAlbum: () => void;
+  }
 
-  const dispatch = createEventDispatcher<{
-    remove: string;
-    refreshAlbum: void;
-  }>();
+  let { album, onClose, onRemove, onRefreshAlbum }: Props = $props();
 
-  let currentUser: UserResponseDto;
-  let selectedRemoveUser: UserResponseDto | null = null;
+  let currentUser: UserResponseDto | undefined = $state();
+  let selectedRemoveUser: UserResponseDto | null = $state(null);
 
-  $: isOwned = currentUser?.id == album.ownerId;
+  let isOwned = $derived(currentUser?.id == album.ownerId);
 
   onMount(async () => {
     try {
@@ -52,7 +53,7 @@
 
     try {
       await removeUserFromAlbum({ id: album.id, userId });
-      dispatch('remove', userId);
+      onRemove(userId);
       const message =
         userId === 'me'
           ? $t('album_user_left', { values: { album: album.albumName } })
@@ -71,7 +72,7 @@
       const message = $t('user_role_set', {
         values: { user: user.name, role: role == AlbumUserRole.Viewer ? $t('role_viewer') : $t('role_editor') },
       });
-      dispatch('refreshAlbum');
+      onRefreshAlbum();
       notificationController.show({ type: NotificationType.Info, message });
     } catch (error) {
       handleError(error, $t('errors.unable_to_change_album_user_role'));
@@ -126,7 +127,7 @@
             {:else if user.id == currentUser?.id}
               <button
                 type="button"
-                on:click={() => (selectedRemoveUser = user)}
+                onclick={() => (selectedRemoveUser = user)}
                 class="text-sm font-medium text-immich-primary transition-colors hover:text-immich-primary/75 dark:text-immich-dark-primary"
                 >{$t('leave')}</button
               >

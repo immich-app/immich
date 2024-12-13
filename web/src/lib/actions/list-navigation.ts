@@ -1,8 +1,20 @@
 import { shortcuts } from '$lib/actions/shortcut';
 import type { Action } from 'svelte/action';
 
-export const listNavigation: Action<HTMLElement, HTMLElement> = (node, container: HTMLElement) => {
+/**
+ * Enables keyboard navigation (up and down arrows) for a list of elements.
+ * @param node Element which listens for keyboard events
+ * @param container Element containing the list of elements
+ */
+export const listNavigation: Action<HTMLElement, HTMLElement | undefined> = (
+  node: HTMLElement,
+  container?: HTMLElement,
+) => {
   const moveFocus = (direction: 'up' | 'down') => {
+    if (!container) {
+      return;
+    }
+
     const children = Array.from(container?.children);
     if (children.length === 0) {
       return;

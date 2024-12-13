@@ -4,7 +4,11 @@
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
-  export let options: SystemConfigTemplateStorageOptionDto;
+  interface Props {
+    options: SystemConfigTemplateStorageOptionDto;
+  }
+
+  let { options }: Props = $props();
 
   const getLuxonExample = (format: string) => {
     return DateTime.fromISO('2022-09-04T20:03:05.250Z', { locale: $locale }).toFormat(format);

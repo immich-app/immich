@@ -6,7 +6,7 @@
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
   import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
+  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
@@ -19,12 +19,17 @@
   import { handlePromiseError } from '$lib/utils';
   import AlbumSummary from './album-summary.svelte';
   import { t } from 'svelte-i18n';
+  import { onDestroy } from 'svelte';
 
-  export let sharedLink: SharedLinkResponseDto;
-  export let user: UserResponseDto | undefined = undefined;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+    user?: UserResponseDto | undefined;
+  }
+
+  let { sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-  let innerWidth: number;
+  let innerWidth: number = $state(0);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -38,6 +43,9 @@
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
   });
+  onDestroy(() => {
+    assetStore.destroy();
+  });
 </script>
 
 <svelte:window
@@ -45,7 +53,7 @@
     shortcut: { key: 'Escape' },
     onShortcut: () => {
       if (!$showAssetViewer && $isMultiSelectState) {
-        assetInteractionStore.clearMultiselect();
+        cancelMultiselect(assetInteractionStore);
       }
     },
   }}
@@ -66,15 +74,15 @@
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar showBackButton={false}>
-      <svelte:fragment slot="leading">
+      {#snippet leading()}
         <ImmichLogoSmallLink width={innerWidth} />
-      </svelte:fragment>
+      {/snippet}
 
-      <svelte:fragment slot="trailing">
+      {#snippet trailing()}
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}
-            on:click={() => openFileUploadDialog({ albumId: album.id })}
+            onclick={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
@@ -82,19 +90,19 @@
         {#if album.assetCount > 0 && sharedLink.allowDownload}
           <CircleIconButton
             title={$t('download')}
-            on:click={() => downloadAlbum(album)}
+            onclick={() => downloadAlbum(album)}
             icon={mdiFolderDownloadOutline}
           />
         {/if}
 
         <ThemeButton />
-      </svelte:fragment>
+      {/snippet}
     </ControlAppBar>
   {/if}
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid {album} {assetStore} {assetInteractionStore}>
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteractionStore}>
     <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->
       <h1

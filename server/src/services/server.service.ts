@@ -1,8 +1,7 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { getBuildMetadata, getServerLicensePublicKey } from 'src/config';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { serverVersion } from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { StorageCore } from 'src/cores/storage.core';
+import { OnEvent } from 'src/decorators';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import {
   ServerAboutResponseDto,
@@ -14,35 +13,17 @@ import {
   ServerStorageResponseDto,
   UsageByUserDto,
 } from 'src/dtos/server.dto';
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { OnEvents } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository, UserStatsQueryResponse } from 'src/interfaces/user.interface';
+import { StorageFolder, SystemMetadataKey } from 'src/enum';
+import { UserStatsQueryResponse } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isDuplicateDetectionEnabled, isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc';
 
 @Injectable()
-export class ServerService implements OnEvents {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) private systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IServerInfoRepository) private serverInfoRepository: IServerInfoRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-  ) {
-    this.logger.setContext(ServerService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
-
-  async onBootstrapEvent(): Promise<void> {
+export class ServerService extends BaseService {
+  @OnEvent({ name: 'app.bootstrap' })
+  async onBootstrap(): Promise<void> {
     const featureFlags = await this.getFeatures();
     if (featureFlags.configFile) {
       await this.systemMetadataRepository.set(SystemMetadataKey.ADMIN_ONBOARDING, {
@@ -54,7 +35,7 @@ export class ServerService implements OnEvents {
 
   async getAboutInfo(): Promise<ServerAboutResponseDto> {
     const version = `v${serverVersion.toString()}`;
-    const buildMetadata = getBuildMetadata();
+    const { buildMetadata } = this.configRepository.getEnv();
     const buildVersions = await this.serverInfoRepository.getBuildVersions();
     const licensed = await this.systemMetadataRepository.get(SystemMetadataKey.LICENSE);
 
@@ -89,8 +70,9 @@ export class ServerService implements OnEvents {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, map, machineLearning, trash, oauth, passwordLogin, notifications } =
-      await this.configCore.getConfig({ withCache: false });
+    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+      await this.getConfig({ withCache: false });
+    const { configFile } = this.configRepository.getEnv();
 
     return {
       smartSearch: isSmartSearchEnabled(machineLearning),
@@ -98,24 +80,25 @@ export class ServerService implements OnEvents {
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
       reverseGeocoding: reverseGeocoding.enabled,
+      importFaces: metadata.faces.import,
       sidecar: true,
       search: true,
       trash: trash.enabled,
       oauth: oauth.enabled,
       oauthAutoLaunch: oauth.autoLaunch,
       passwordLogin: passwordLogin.enabled,
-      configFile: this.configCore.isUsingConfigFile(),
+      configFile: !!configFile,
       email: notifications.smtp.enabled,
     };
   }
 
   async getTheme() {
-    const { theme } = await this.configCore.getConfig({ withCache: false });
+    const { theme } = await this.getConfig({ withCache: false });
     return theme;
   }
 
-  async getConfig(): Promise<ServerConfigDto> {
-    const config = await this.configCore.getConfig({ withCache: false });
+  async getSystemConfig(): Promise<ServerConfigDto> {
+    const config = await this.getConfig({ withCache: false });
     const isInitialized = await this.userRepository.hasAdmin();
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.ADMIN_ONBOARDING);
 
@@ -127,6 +110,9 @@ export class ServerService implements OnEvents {
       isInitialized,
       isOnboarded: onboarding?.isOnboarded || false,
       externalDomain: config.server.externalDomain,
+      publicUsers: config.server.publicUsers,
+      mapDarkStyleUrl: config.map.darkStyle,
+      mapLightStyleUrl: config.map.lightStyle,
     };
   }
 
@@ -141,11 +127,16 @@ export class ServerService implements OnEvents {
       usage.photos = user.photos;
       usage.videos = user.videos;
       usage.usage = user.usage;
+      usage.usagePhotos = user.usagePhotos;
+      usage.usageVideos = user.usageVideos;
       usage.quotaSizeInBytes = user.quotaSizeInBytes;
 
       serverStats.photos += usage.photos;
       serverStats.videos += usage.videos;
       serverStats.usage += usage.usage;
+      serverStats.usagePhotos += usage.usagePhotos;
+      serverStats.usageVideos += usage.usageVideos;
+
       serverStats.usageByUser.push(usage);
     }
 
@@ -176,20 +167,13 @@ export class ServerService implements OnEvents {
     if (!dto.licenseKey.startsWith('IMSV-')) {
       throw new BadRequestException('Invalid license key');
     }
-    const licenseValid = this.cryptoRepository.verifySha256(
-      dto.licenseKey,
-      dto.activationKey,
-      getServerLicensePublicKey(),
-    );
-
+    const { licensePublicKey } = this.configRepository.getEnv();
+    const licenseValid = this.cryptoRepository.verifySha256(dto.licenseKey, dto.activationKey, licensePublicKey.server);
     if (!licenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 
-    const licenseData = {
-      ...dto,
-      activatedAt: new Date(),
-    };
+    const licenseData = { ...dto, activatedAt: new Date() };
 
     await this.systemMetadataRepository.set(SystemMetadataKey.LICENSE, licenseData);
 

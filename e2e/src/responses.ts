@@ -13,6 +13,12 @@ export const errorDto = {
     message: expect.any(String),
     correlationId: expect.any(String),
   },
+  missingPermission: (permission: string) => ({
+    error: 'Forbidden',
+    statusCode: 403,
+    message: `Missing required permission: ${permission}`,
+    correlationId: expect.any(String),
+  }),
   wrongPassword: {
     error: 'Bad Request',
     statusCode: 400,
@@ -88,6 +94,7 @@ export const signupResponseDto = {
     quotaSizeInBytes: null,
     status: 'active',
     license: null,
+    profileChangedAt: expect.any(String),
   },
 };
 

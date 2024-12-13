@@ -13,9 +13,8 @@ FROM
       "asset"."libraryId" AS "asset_libraryId",
       "asset"."deviceId" AS "asset_deviceId",
       "asset"."type" AS "asset_type",
+      "asset"."status" AS "asset_status",
       "asset"."originalPath" AS "asset_originalPath",
-      "asset"."previewPath" AS "asset_previewPath",
-      "asset"."thumbnailPath" AS "asset_thumbnailPath",
       "asset"."thumbhash" AS "asset_thumbhash",
       "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
       "asset"."createdAt" AS "asset_createdAt",
@@ -45,9 +44,8 @@ FROM
       "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
       "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
       "stackedAssets"."type" AS "stackedAssets_type",
+      "stackedAssets"."status" AS "stackedAssets_status",
       "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-      "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-      "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
       "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
       "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
       "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -79,10 +77,11 @@ FROM
         "asset"."fileCreatedAt" >= $1
         AND "exifInfo"."lensModel" = $2
         AND 1 = 1
+        AND "asset"."ownerId" IN ($3)
         AND 1 = 1
         AND (
-          "asset"."isFavorite" = $3
-          AND "asset"."isArchived" = $4
+          "asset"."isFavorite" = $4
+          AND "asset"."isArchived" = $5
         )
       )
       AND ("asset"."deletedAt" IS NULL)
@@ -93,16 +92,194 @@ ORDER BY
 LIMIT
   101
 
+-- SearchRepository.searchRandom
+SELECT DISTINCT
+  "distinctAlias"."asset_id" AS "ids_asset_id",
+  "distinctAlias"."asset_id"
+FROM
+  (
+    SELECT
+      "asset"."id" AS "asset_id",
+      "asset"."deviceAssetId" AS "asset_deviceAssetId",
+      "asset"."ownerId" AS "asset_ownerId",
+      "asset"."libraryId" AS "asset_libraryId",
+      "asset"."deviceId" AS "asset_deviceId",
+      "asset"."type" AS "asset_type",
+      "asset"."status" AS "asset_status",
+      "asset"."originalPath" AS "asset_originalPath",
+      "asset"."thumbhash" AS "asset_thumbhash",
+      "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+      "asset"."createdAt" AS "asset_createdAt",
+      "asset"."updatedAt" AS "asset_updatedAt",
+      "asset"."deletedAt" AS "asset_deletedAt",
+      "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+      "asset"."localDateTime" AS "asset_localDateTime",
+      "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+      "asset"."isFavorite" AS "asset_isFavorite",
+      "asset"."isArchived" AS "asset_isArchived",
+      "asset"."isExternal" AS "asset_isExternal",
+      "asset"."isOffline" AS "asset_isOffline",
+      "asset"."checksum" AS "asset_checksum",
+      "asset"."duration" AS "asset_duration",
+      "asset"."isVisible" AS "asset_isVisible",
+      "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+      "asset"."originalFileName" AS "asset_originalFileName",
+      "asset"."sidecarPath" AS "asset_sidecarPath",
+      "asset"."stackId" AS "asset_stackId",
+      "asset"."duplicateId" AS "asset_duplicateId",
+      "stack"."id" AS "stack_id",
+      "stack"."ownerId" AS "stack_ownerId",
+      "stack"."primaryAssetId" AS "stack_primaryAssetId",
+      "stackedAssets"."id" AS "stackedAssets_id",
+      "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
+      "stackedAssets"."ownerId" AS "stackedAssets_ownerId",
+      "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
+      "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
+      "stackedAssets"."type" AS "stackedAssets_type",
+      "stackedAssets"."status" AS "stackedAssets_status",
+      "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
+      "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
+      "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
+      "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
+      "stackedAssets"."updatedAt" AS "stackedAssets_updatedAt",
+      "stackedAssets"."deletedAt" AS "stackedAssets_deletedAt",
+      "stackedAssets"."fileCreatedAt" AS "stackedAssets_fileCreatedAt",
+      "stackedAssets"."localDateTime" AS "stackedAssets_localDateTime",
+      "stackedAssets"."fileModifiedAt" AS "stackedAssets_fileModifiedAt",
+      "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
+      "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
+      "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
+      "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
+      "stackedAssets"."checksum" AS "stackedAssets_checksum",
+      "stackedAssets"."duration" AS "stackedAssets_duration",
+      "stackedAssets"."isVisible" AS "stackedAssets_isVisible",
+      "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
+      "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
+      "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
+      "stackedAssets"."stackId" AS "stackedAssets_stackId",
+      "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
+    FROM
+      "assets" "asset"
+      LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+      LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
+      LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
+      AND ("stackedAssets"."deletedAt" IS NULL)
+    WHERE
+      (
+        "asset"."fileCreatedAt" >= $1
+        AND "exifInfo"."lensModel" = $2
+        AND 1 = 1
+        AND "asset"."ownerId" IN ($3)
+        AND 1 = 1
+        AND (
+          "asset"."isFavorite" = $4
+          AND "asset"."isArchived" = $5
+        )
+        AND "asset"."id" > $6
+      )
+      AND ("asset"."deletedAt" IS NULL)
+  ) "distinctAlias"
+ORDER BY
+  "distinctAlias"."asset_id" ASC,
+  "asset_id" ASC
+LIMIT
+  100
+SELECT DISTINCT
+  "distinctAlias"."asset_id" AS "ids_asset_id",
+  "distinctAlias"."asset_id"
+FROM
+  (
+    SELECT
+      "asset"."id" AS "asset_id",
+      "asset"."deviceAssetId" AS "asset_deviceAssetId",
+      "asset"."ownerId" AS "asset_ownerId",
+      "asset"."libraryId" AS "asset_libraryId",
+      "asset"."deviceId" AS "asset_deviceId",
+      "asset"."type" AS "asset_type",
+      "asset"."status" AS "asset_status",
+      "asset"."originalPath" AS "asset_originalPath",
+      "asset"."thumbhash" AS "asset_thumbhash",
+      "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
+      "asset"."createdAt" AS "asset_createdAt",
+      "asset"."updatedAt" AS "asset_updatedAt",
+      "asset"."deletedAt" AS "asset_deletedAt",
+      "asset"."fileCreatedAt" AS "asset_fileCreatedAt",
+      "asset"."localDateTime" AS "asset_localDateTime",
+      "asset"."fileModifiedAt" AS "asset_fileModifiedAt",
+      "asset"."isFavorite" AS "asset_isFavorite",
+      "asset"."isArchived" AS "asset_isArchived",
+      "asset"."isExternal" AS "asset_isExternal",
+      "asset"."isOffline" AS "asset_isOffline",
+      "asset"."checksum" AS "asset_checksum",
+      "asset"."duration" AS "asset_duration",
+      "asset"."isVisible" AS "asset_isVisible",
+      "asset"."livePhotoVideoId" AS "asset_livePhotoVideoId",
+      "asset"."originalFileName" AS "asset_originalFileName",
+      "asset"."sidecarPath" AS "asset_sidecarPath",
+      "asset"."stackId" AS "asset_stackId",
+      "asset"."duplicateId" AS "asset_duplicateId",
+      "stack"."id" AS "stack_id",
+      "stack"."ownerId" AS "stack_ownerId",
+      "stack"."primaryAssetId" AS "stack_primaryAssetId",
+      "stackedAssets"."id" AS "stackedAssets_id",
+      "stackedAssets"."deviceAssetId" AS "stackedAssets_deviceAssetId",
+      "stackedAssets"."ownerId" AS "stackedAssets_ownerId",
+      "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
+      "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
+      "stackedAssets"."type" AS "stackedAssets_type",
+      "stackedAssets"."status" AS "stackedAssets_status",
+      "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
+      "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
+      "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
+      "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
+      "stackedAssets"."updatedAt" AS "stackedAssets_updatedAt",
+      "stackedAssets"."deletedAt" AS "stackedAssets_deletedAt",
+      "stackedAssets"."fileCreatedAt" AS "stackedAssets_fileCreatedAt",
+      "stackedAssets"."localDateTime" AS "stackedAssets_localDateTime",
+      "stackedAssets"."fileModifiedAt" AS "stackedAssets_fileModifiedAt",
+      "stackedAssets"."isFavorite" AS "stackedAssets_isFavorite",
+      "stackedAssets"."isArchived" AS "stackedAssets_isArchived",
+      "stackedAssets"."isExternal" AS "stackedAssets_isExternal",
+      "stackedAssets"."isOffline" AS "stackedAssets_isOffline",
+      "stackedAssets"."checksum" AS "stackedAssets_checksum",
+      "stackedAssets"."duration" AS "stackedAssets_duration",
+      "stackedAssets"."isVisible" AS "stackedAssets_isVisible",
+      "stackedAssets"."livePhotoVideoId" AS "stackedAssets_livePhotoVideoId",
+      "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
+      "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
+      "stackedAssets"."stackId" AS "stackedAssets_stackId",
+      "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
+    FROM
+      "assets" "asset"
+      LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
+      LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
+      LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
+      AND ("stackedAssets"."deletedAt" IS NULL)
+    WHERE
+      (
+        "asset"."fileCreatedAt" >= $1
+        AND "exifInfo"."lensModel" = $2
+        AND 1 = 1
+        AND "asset"."ownerId" IN ($3)
+        AND 1 = 1
+        AND (
+          "asset"."isFavorite" = $4
+          AND "asset"."isArchived" = $5
+        )
+        AND "asset"."id" < $6
+      )
+      AND ("asset"."deletedAt" IS NULL)
+  ) "distinctAlias"
+ORDER BY
+  "distinctAlias"."asset_id" ASC,
+  "asset_id" ASC
+LIMIT
+  100
+
 -- SearchRepository.searchSmart
 START TRANSACTION
 SET
-  LOCAL vectors.enable_prefilter = on;
-
-SET
-  LOCAL vectors.search_mode = vbase;
-
-SET
-  LOCAL vectors.hnsw_ef_search = 100;
+  LOCAL vectors.hnsw_ef_search = 200;
 SELECT
   "asset"."id" AS "asset_id",
   "asset"."deviceAssetId" AS "asset_deviceAssetId",
@@ -110,9 +287,8 @@ SELECT
   "asset"."libraryId" AS "asset_libraryId",
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
+  "asset"."status" AS "asset_status",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -142,9 +318,8 @@ SELECT
   "stackedAssets"."libraryId" AS "stackedAssets_libraryId",
   "stackedAssets"."deviceId" AS "stackedAssets_deviceId",
   "stackedAssets"."type" AS "stackedAssets_type",
+  "stackedAssets"."status" AS "stackedAssets_status",
   "stackedAssets"."originalPath" AS "stackedAssets_originalPath",
-  "stackedAssets"."previewPath" AS "stackedAssets_previewPath",
-  "stackedAssets"."thumbnailPath" AS "stackedAssets_thumbnailPath",
   "stackedAssets"."thumbhash" AS "stackedAssets_thumbhash",
   "stackedAssets"."encodedVideoPath" AS "stackedAssets_encodedVideoPath",
   "stackedAssets"."createdAt" AS "stackedAssets_createdAt",
@@ -188,7 +363,7 @@ WHERE
 ORDER BY
   "search"."embedding" <= > $6 ASC
 LIMIT
-  101
+  201
 COMMIT
 
 -- SearchRepository.searchDuplicates
@@ -224,12 +399,6 @@ WHERE
 -- SearchRepository.searchFaces
 START TRANSACTION
 SET
-  LOCAL vectors.enable_prefilter = on;
-
-SET
-  LOCAL vectors.search_mode = vbase;
-
-SET
   LOCAL vectors.hnsw_ef_search = 100;
 WITH
   "cte" AS (
@@ -243,6 +412,7 @@ WITH
       "faces"."boundingBoxY1" AS "boundingBoxY1",
       "faces"."boundingBoxX2" AS "boundingBoxX2",
       "faces"."boundingBoxY2" AS "boundingBoxY2",
+      "faces"."sourceType" AS "sourceType",
       "search"."embedding" <= > $1 AS "distance"
     FROM
       "asset_faces" "faces"
@@ -254,7 +424,7 @@ WITH
     ORDER BY
       "search"."embedding" <= > $1 ASC
     LIMIT
-      100
+      64
   )
 SELECT
   res.*
@@ -352,9 +522,8 @@ SELECT
   "asset"."libraryId" AS "asset_libraryId",
   "asset"."deviceId" AS "asset_deviceId",
   "asset"."type" AS "asset_type",
+  "asset"."status" AS "asset_status",
   "asset"."originalPath" AS "asset_originalPath",
-  "asset"."previewPath" AS "asset_previewPath",
-  "asset"."thumbnailPath" AS "asset_thumbnailPath",
   "asset"."thumbhash" AS "asset_thumbhash",
   "asset"."encodedVideoPath" AS "asset_encodedVideoPath",
   "asset"."createdAt" AS "asset_createdAt",
@@ -410,3 +579,63 @@ FROM
   INNER JOIN cte ON asset.id = cte."assetId"
 ORDER BY
   exif.city
+
+-- SearchRepository.getCountries
+SELECT DISTINCT
+  ON ("exif"."country") "exif"."country" AS "country"
+FROM
+  "exif" "exif"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."country" != ''
+  AND "exif"."country" IS NOT NULL
+
+-- SearchRepository.getStates
+SELECT DISTINCT
+  ON ("exif"."state") "exif"."state" AS "state"
+FROM
+  "exif" "exif"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."state" != ''
+  AND "exif"."state" IS NOT NULL
+
+-- SearchRepository.getCities
+SELECT DISTINCT
+  ON ("exif"."city") "exif"."city" AS "city"
+FROM
+  "exif" "exif"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."city" != ''
+  AND "exif"."city" IS NOT NULL
+
+-- SearchRepository.getCameraMakes
+SELECT DISTINCT
+  ON ("exif"."make") "exif"."make" AS "make"
+FROM
+  "exif" "exif"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."make" != ''
+  AND "exif"."make" IS NOT NULL
+
+-- SearchRepository.getCameraModels
+SELECT DISTINCT
+  ON ("exif"."model") "exif"."model" AS "model"
+FROM
+  "exif" "exif"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  AND ("asset"."deletedAt" IS NULL)
+WHERE
+  "asset"."ownerId" IN ($1)
+  AND "exif"."model" != ''
+  AND "exif"."model" IS NOT NULL

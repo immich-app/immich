@@ -9,7 +9,7 @@ export class AddAuditTable1692804658140 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_ownerId_createdAt"`);
+        await queryRunner.query(`DROP INDEX "IDX_ownerId_createdAt"`);
         await queryRunner.query(`DROP TABLE "audit"`);
     }
 

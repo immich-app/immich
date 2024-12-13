@@ -3,10 +3,9 @@ import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ExifResponseDto } from 'src/dtos/exif.dto';
 import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { mapUser } from 'src/dtos/user.dto';
-import { AssetOrder } from 'src/entities/album.entity';
-import { AssetType } from 'src/entities/asset.entity';
-import { SharedLinkEntity, SharedLinkType } from 'src/entities/shared-link.entity';
+import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetOrder, AssetStatus, AssetType, SharedLinkType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -55,7 +54,6 @@ const assetResponse: AssetResponseDto = {
   originalMimeType: 'image/jpeg',
   originalPath: 'fake_path/jpeg',
   originalFileName: 'asset_1.jpeg',
-  resized: false,
   thumbhash: null,
   fileModifiedAt: today,
   isOffline: false,
@@ -64,10 +62,6 @@ const assetResponse: AssetResponseDto = {
   updatedAt: today,
   isFavorite: false,
   isArchived: false,
-  smartInfo: {
-    tags: [],
-    objects: ['a', 'b', 'c'],
-  },
   duration: '0:00:00.00000',
   exifInfo: assetInfo,
   livePhotoVideoId: null,
@@ -77,14 +71,12 @@ const assetResponse: AssetResponseDto = {
   isTrashed: false,
   libraryId: 'library-id',
   hasMetadata: true,
-  stackCount: 0,
 };
 
 const assetResponseWithoutMetadata = {
   id: 'id_1',
   type: AssetType.VIDEO,
   originalMimeType: 'image/jpeg',
-  resized: false,
   thumbhash: null,
   localDateTime: today,
   duration: '0:00:00.00000',
@@ -192,13 +184,13 @@ export const sharedLinkStub = {
       assets: [
         {
           id: 'id_1',
+          status: AssetStatus.ACTIVE,
           owner: undefined as unknown as UserEntity,
           ownerId: 'user_id_1',
           deviceAssetId: 'device_asset_id_1',
           deviceId: 'device_id_1',
           type: AssetType.VIDEO,
           originalPath: 'fake_path/jpeg',
-          previewPath: '',
           checksum: Buffer.from('file hash', 'utf8'),
           fileModifiedAt: today,
           fileCreatedAt: today,
@@ -209,13 +201,7 @@ export const sharedLinkStub = {
           isArchived: false,
           isExternal: false,
           isOffline: false,
-          smartInfo: {
-            assetId: 'id_1',
-            tags: [],
-            objects: ['a', 'b', 'c'],
-            asset: null as any,
-          },
-          thumbnailPath: '',
+          files: [],
           thumbhash: null,
           encodedVideoPath: '',
           duration: null,
@@ -312,21 +298,6 @@ export const sharedLinkResponseStub = {
     showMetadata: true,
     type: SharedLinkType.ALBUM,
     userId: 'admin_id',
-  }),
-  readonly: Object.freeze<SharedLinkResponseDto>({
-    id: '123',
-    userId: 'admin_id',
-    key: sharedLinkBytes.toString('base64url'),
-    type: SharedLinkType.ALBUM,
-    createdAt: today,
-    expiresAt: tomorrow,
-    description: null,
-    password: null,
-    allowUpload: false,
-    allowDownload: false,
-    showMetadata: true,
-    album: albumResponse,
-    assets: [assetResponse],
   }),
   readonlyNoMetadata: Object.freeze<SharedLinkResponseDto>({
     id: '123',

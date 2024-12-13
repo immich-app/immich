@@ -10,15 +10,16 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { t } from 'svelte-i18n';
 
-  export let jobs: AssetJobName[] = [
-    AssetJobName.RegenerateThumbnail,
-    AssetJobName.RefreshMetadata,
-    AssetJobName.TranscodeVideo,
-  ];
+  interface Props {
+    jobs?: AssetJobName[];
+  }
+
+  let { jobs = [AssetJobName.RegenerateThumbnail, AssetJobName.RefreshMetadata, AssetJobName.TranscodeVideo] }: Props =
+    $props();
 
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  $: isAllVideos = [...getOwnedAssets()].every((asset) => asset.type === AssetTypeEnum.Video);
+  let isAllVideos = $derived([...getOwnedAssets()].every((asset) => asset.type === AssetTypeEnum.Video));
 
   const handleRunJob = async (name: AssetJobName) => {
     try {

@@ -1,37 +1,20 @@
-import { SystemMetadataKey } from 'src/entities/system-metadata.entity';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
+import { SystemMetadataKey } from 'src/enum';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerService } from 'src/services/server.service';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
+
   let storageMock: Mocked<IStorageRepository>;
-  let userMock: Mocked<IUserRepository>;
-  let serverInfoMock: Mocked<IServerInfoRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    storageMock = newStorageRepositoryMock();
-    userMock = newUserRepositoryMock();
-    serverInfoMock = newServerInfoRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-
-    sut = new ServerService(userMock, storageMock, systemMock, serverInfoMock, loggerMock, cryptoMock);
+    ({ sut, storageMock, systemMock, userMock } = newTestService(ServerService));
   });
 
   it('should work', () => {
@@ -160,6 +143,7 @@ describe(ServerService.name, () => {
         smartSearch: true,
         duplicateDetection: true,
         facialRecognition: true,
+        importFaces: false,
         map: true,
         reverseGeocoding: true,
         oauth: false,
@@ -175,9 +159,9 @@ describe(ServerService.name, () => {
     });
   });
 
-  describe('getConfig', () => {
+  describe('getSystemConfig', () => {
     it('should respond the server configuration', async () => {
-      await expect(sut.getConfig()).resolves.toEqual({
+      await expect(sut.getSystemConfig()).resolves.toEqual({
         loginPageMessage: '',
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
@@ -185,6 +169,9 @@ describe(ServerService.name, () => {
         isInitialized: undefined,
         isOnboarded: false,
         externalDomain: '',
+        publicUsers: true,
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
       expect(systemMock.get).toHaveBeenCalled();
     });
@@ -199,6 +186,8 @@ describe(ServerService.name, () => {
           photos: 10,
           videos: 11,
           usage: 12_345,
+          usagePhotos: 1,
+          usageVideos: 11_345,
           quotaSizeInBytes: 0,
         },
         {
@@ -207,6 +196,8 @@ describe(ServerService.name, () => {
           photos: 10,
           videos: 20,
           usage: 123_456,
+          usagePhotos: 100,
+          usageVideos: 23_456,
           quotaSizeInBytes: 0,
         },
         {
@@ -215,6 +206,8 @@ describe(ServerService.name, () => {
           photos: 100,
           videos: 0,
           usage: 987_654,
+          usagePhotos: 900,
+          usageVideos: 87_654,
           quotaSizeInBytes: 0,
         },
       ]);
@@ -223,11 +216,15 @@ describe(ServerService.name, () => {
         photos: 120,
         videos: 31,
         usage: 1_123_455,
+        usagePhotos: 1001,
+        usageVideos: 122_455,
         usageByUser: [
           {
             photos: 10,
             quotaSizeInBytes: 0,
             usage: 12_345,
+            usagePhotos: 1,
+            usageVideos: 11_345,
             userName: '1 User',
             userId: 'user1',
             videos: 11,
@@ -236,6 +233,8 @@ describe(ServerService.name, () => {
             photos: 10,
             quotaSizeInBytes: 0,
             usage: 123_456,
+            usagePhotos: 100,
+            usageVideos: 23_456,
             userName: '2 User',
             userId: 'user2',
             videos: 20,
@@ -244,6 +243,8 @@ describe(ServerService.name, () => {
             photos: 100,
             quotaSizeInBytes: 0,
             usage: 987_654,
+            usagePhotos: 900,
+            usageVideos: 87_654,
             userName: '3 User',
             userId: 'user3',
             videos: 0,

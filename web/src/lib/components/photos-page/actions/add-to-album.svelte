@@ -6,12 +6,18 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiImageAlbum, mdiShareVariantOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import type { OnAddToAlbum } from '$lib/utils/actions';
 
-  export let shared = false;
+  interface Props {
+    shared?: boolean;
+    onAddToAlbum?: OnAddToAlbum;
+  }
 
-  let showAlbumPicker = false;
+  let { shared = false, onAddToAlbum = () => {} }: Props = $props();
 
-  const { getAssets, clearSelect } = getAssetControlContext();
+  let showAlbumPicker = $state(false);
+
+  const { getAssets } = getAssetControlContext();
 
   const handleHideAlbumPicker = () => {
     showAlbumPicker = false;
@@ -21,14 +27,19 @@
     showAlbumPicker = false;
 
     const assetIds = [...getAssets()].map((asset) => asset.id);
-    await addAssetsToNewAlbum(albumName, assetIds);
+    const album = await addAssetsToNewAlbum(albumName, assetIds);
+    if (!album) {
+      return;
+    }
+
+    onAddToAlbum(assetIds, album.id);
   };
 
   const handleAddToAlbum = async (album: AlbumResponseDto) => {
     showAlbumPicker = false;
     const assetIds = [...getAssets()].map((asset) => asset.id);
     await addAssetsToAlbum(album.id, assetIds);
-    clearSelect();
+    onAddToAlbum(assetIds, album.id);
   };
 </script>
 
@@ -41,8 +52,8 @@
 {#if showAlbumPicker}
   <AlbumSelectionModal
     {shared}
-    on:newAlbum={({ detail }) => handleAddToNewAlbum(detail)}
-    on:album={({ detail }) => handleAddToAlbum(detail)}
+    onNewAlbum={handleAddToNewAlbum}
+    onAlbumClick={handleAddToAlbum}
     onClose={handleHideAlbumPicker}
   />
 {/if}

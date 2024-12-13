@@ -9,10 +9,14 @@
   import { getAssetControlContext } from '../asset-select-control-bar.svelte';
   import { mdiCalendarEditOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  export let menuItem = false;
+  interface Props {
+    menuItem?: boolean;
+  }
+
+  let { menuItem = false }: Props = $props();
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  let isShowChangeDate = false;
+  let isShowChangeDate = $state(false);
 
   const handleConfirm = async (dateTimeOriginal: string) => {
     isShowChangeDate = false;
@@ -31,9 +35,5 @@
   <MenuOption text={$t('change_date')} icon={mdiCalendarEditOutline} onClick={() => (isShowChangeDate = true)} />
 {/if}
 {#if isShowChangeDate}
-  <ChangeDate
-    initialDate={DateTime.now()}
-    on:confirm={({ detail: date }) => handleConfirm(date)}
-    on:cancel={() => (isShowChangeDate = false)}
-  />
+  <ChangeDate initialDate={DateTime.now()} onConfirm={handleConfirm} onCancel={() => (isShowChangeDate = false)} />
 {/if}

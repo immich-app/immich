@@ -1,15 +1,21 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
+  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
   import DetailPanelLocation from '$lib/components/asset-viewer/detail-panel-location.svelte';
+  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
+  import DetailPanelTags from '$lib/components/asset-viewer/detail-panel-tags.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ChangeDate from '$lib/components/shared-components/change-date.svelte';
   import { AppRoute, QueryParameter, timeToLoadTheMap } from '$lib/constants';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { user } from '$lib/stores/user.store';
-  import { websocketEvents } from '$lib/stores/websocket';
+  import { preferences, user } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, getPeopleThumbnailUrl, handlePromiseError, isSharedLink } from '$lib/utils';
   import { delay, isFlipped } from '$lib/utils/asset-utils';
+  import { getByteUnitString } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
+  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
     getAssetInfo,
@@ -19,6 +25,7 @@
     type ExifResponseDto,
   } from '@immich/sdk';
   import {
+    mdiAccountOff,
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
@@ -27,27 +34,26 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
-    mdiAccountOff,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
-  import { getByteUnitString } from '$lib/utils/byte-units';
-  import { handleError } from '$lib/utils/handle-error';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import PersonSidePanel from '../faces-page/person-side-panel.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
-  import DetailPanelDescription from '$lib/components/asset-viewer/detail-panel-description.svelte';
-  import DetailPanelRating from '$lib/components/asset-viewer/detail-panel-star-rating.svelte';
-  import { t } from 'svelte-i18n';
-  import { goto } from '$app/navigation';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
-  export let asset: AssetResponseDto;
-  export let albums: AlbumResponseDto[] = [];
-  export let currentAlbum: AlbumResponseDto | null = null;
+  interface Props {
+    asset: AssetResponseDto;
+    albums?: AlbumResponseDto[];
+    currentAlbum?: AlbumResponseDto | null;
+    onClose: () => void;
+  }
+
+  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -58,11 +64,11 @@
     return { width, height };
   };
 
-  let showAssetPath = false;
-  let showEditFaces = false;
-  let previousId: string;
+  let showAssetPath = $state(false);
+  let showEditFaces = $state(false);
+  let previousId: string | undefined = $state();
 
-  $: {
+  $effect(() => {
     if (!previousId) {
       previousId = asset.id;
     }
@@ -70,9 +76,9 @@
       showEditFaces = false;
       previousId = asset.id;
     }
-  }
+  });
 
-  $: isOwner = $user?.id === asset.ownerId;
+  let isOwner = $derived($user?.id === asset.ownerId);
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
@@ -83,33 +89,30 @@
     }
   };
 
-  $: handlePromiseError(handleNewAsset(asset));
-
-  $: latlng = (() => {
-    const lat = asset.exifInfo?.latitude;
-    const lng = asset.exifInfo?.longitude;
-
-    if (lat && lng) {
-      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
-    }
-  })();
-
-  $: people = asset.people || [];
-  $: showingHiddenPeople = false;
-
-  $: unassignedFaces = asset.unassignedFaces || [];
-
-  onMount(() => {
-    return websocketEvents.on('on_asset_update', (assetUpdate) => {
-      if (assetUpdate.id === asset.id) {
-        asset = assetUpdate;
-      }
-    });
+  $effect(() => {
+    handlePromiseError(handleNewAsset(asset));
   });
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+  let latlng = $derived(
+    (() => {
+      const lat = asset.exifInfo?.latitude;
+      const lng = asset.exifInfo?.longitude;
+
+      if (lat && lng) {
+        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
+      }
+    })(),
+  );
+
+  let people = $state(asset.people || []);
+  let unassignedFaces = $state(asset.unassignedFaces || []);
+  let showingHiddenPeople = $state(false);
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime),
+  );
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -131,7 +134,7 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  let isShowChangeDate = false;
+  let isShowChangeDate = $state(false);
 
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
@@ -145,18 +148,27 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={() => dispatch('close')} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
   {#if asset.isOffline}
     <section class="px-4 py-4">
       <div role="alert">
-        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">{$t('asset_offline')}</div>
-        <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
+          {$t('asset_offline')}
+        </div>
+        <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {$t('asset_offline_description')}
+            {#if $user?.isAdmin}
+              {$t('admin.asset_offline_description')}
+            {:else}
+              {$t('asset_offline_description')}
+            {/if}
           </p>
+        </div>
+        <div class="rounded-b bg-red-500 px-4 py-2 text-white text-sm">
+          <p>{asset.originalPath}</p>
         </div>
       </div>
     </section>
@@ -166,7 +178,7 @@
   <DetailPanelRating {asset} {isOwner} />
 
   {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
-    <section class="px-4 py-4 text-sm">
+    <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
@@ -185,7 +197,7 @@
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
               buttonSize="32"
-              on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+              onclick={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
           <CircleIconButton
@@ -194,7 +206,7 @@
             padding="1"
             size="20"
             buttonSize="32"
-            on:click={() => (showEditFaces = true)}
+            onclick={() => (showEditFaces = true)}
           />
         </div>
       </div>
@@ -207,10 +219,10 @@
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
-              on:focus={() => ($boundingBoxesArray = people[index].faces)}
-              on:blur={() => ($boundingBoxesArray = [])}
-              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
-              on:mouseleave={() => ($boundingBoxesArray = [])}
+              onfocus={() => ($boundingBoxesArray = people[index].faces)}
+              onblur={() => ($boundingBoxesArray = [])}
+              onmouseover={() => ($boundingBoxesArray = people[index].faces)}
+              onmouseleave={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
                 <ImageThumbnail
@@ -221,16 +233,15 @@
                   title={person.name}
                   widthStyle="90px"
                   heightStyle="90px"
-                  thumbhash={null}
                   hidden={person.isHidden}
                 />
               </div>
               <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
               {#if person.birthDate}
                 {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                {@const age = Math.floor(DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'years').years)}
+                {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
                 {@const ageInMonths = Math.floor(
-                  DateTime.fromISO(asset.fileCreatedAt).diff(personBirthDate, 'months').months,
+                  DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
                 )}
                 {#if age >= 0}
                   <p
@@ -270,14 +281,11 @@
       <p class="text-sm">{$t('no_exif_info_available').toUpperCase()}</p>
     {/if}
 
-    {#if asset.exifInfo?.dateTimeOriginal}
-      {@const assetDateTimeOriginal = DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-        zone: asset.exifInfo.timeZone ?? undefined,
-      })}
+    {#if dateTime}
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -289,7 +297,7 @@
 
           <div>
             <p>
-              {assetDateTimeOriginal.toLocaleString(
+              {dateTime.toLocaleString(
                 {
                   month: 'short',
                   day: 'numeric',
@@ -300,12 +308,12 @@
             </p>
             <div class="flex gap-2 text-sm">
               <p>
-                {assetDateTimeOriginal.toLocaleString(
+                {dateTime.toLocaleString(
                   {
                     weekday: 'short',
                     hour: 'numeric',
                     minute: '2-digit',
-                    timeZoneName: 'longOffset',
+                    timeZoneName: timeZone ? 'longOffset' : undefined,
                   },
                   { locale: $locale },
                 )}
@@ -320,7 +328,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
+    {:else if !dateTime && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -334,56 +342,55 @@
     {/if}
 
     {#if isShowChangeDate}
-      {@const assetDateTimeOriginal = asset.exifInfo?.dateTimeOriginal
-        ? DateTime.fromISO(asset.exifInfo.dateTimeOriginal, {
-            zone: asset.exifInfo.timeZone ?? undefined,
-            locale: $locale,
-          })
-        : DateTime.now()}
-      <ChangeDate
-        initialDate={assetDateTimeOriginal}
-        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
-        on:cancel={() => (isShowChangeDate = false)}
-      />
+      <Portal>
+        <ChangeDate
+          initialDate={dateTime}
+          initialTimeZone={timeZone ?? ''}
+          onConfirm={handleConfirmChangeDate}
+          onCancel={() => (isShowChangeDate = false)}
+        />
+      </Portal>
     {/if}
 
-    {#if asset.exifInfo?.fileSizeInByte}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiImageOutline} size="24" /></div>
+    <div class="flex gap-4 py-4">
+      <div><Icon path={mdiImageOutline} size="24" /></div>
 
-        <div>
-          <p class="break-all flex place-items-center gap-2">
-            {asset.originalFileName}
-            {#if isOwner}
-              <CircleIconButton
-                icon={mdiInformationOutline}
-                title={$t('show_file_location')}
-                size="16"
-                padding="2"
-                on:click={toggleAssetPath}
-              />
-            {/if}
+      <div>
+        <p class="break-all flex place-items-center gap-2">
+          {asset.originalFileName}
+          {#if isOwner}
+            <CircleIconButton
+              icon={mdiInformationOutline}
+              title={$t('show_file_location')}
+              size="16"
+              padding="2"
+              onclick={toggleAssetPath}
+            />
+          {/if}
+        </p>
+        {#if showAssetPath}
+          <p class="text-xs opacity-50 break-all pb-2" transition:slide={{ duration: 250 }}>
+            {asset.originalPath}
           </p>
+        {/if}
+        {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">
-            {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
+            {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
               {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                 <p>
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
+                {@const { width, height } = getDimensions(asset.exifInfo)}
+                <p>{width} x {height}</p>
               {/if}
-              {@const { width, height } = getDimensions(asset.exifInfo)}
-              <p>{width} x {height}</p>
             {/if}
-            <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {#if asset.exifInfo?.fileSizeInByte}
+              <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {/if}
           </div>
-          {#if showAssetPath}
-            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
-              {asset.originalPath}
-            </p>
-          {/if}
-        </div>
+        {/if}
       </div>
-    {/if}
+    </div>
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
@@ -393,7 +400,7 @@
           <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
-              <p>{$locale ? `ƒ/${asset.exifInfo.fNumber.toLocaleString($locale)}` : ''}</p>
+              <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
             {/if}
 
             {#if asset.exifInfo.exposureTime}
@@ -428,8 +435,7 @@
         </div>
       {/await}
     {:then component}
-      <svelte:component
-        this={component.default}
+      <component.default
         mapMarkers={[
           {
             lat: latlng.lat,
@@ -446,7 +452,7 @@
         useLocationPin
         onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
-        <svelte:fragment slot="popup" let:marker>
+        {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
@@ -458,8 +464,8 @@
               {$t('open_in_openstreetmap')}
             </a>
           </div>
-        </svelte:fragment>
-      </svelte:component>
+        {/snippet}
+      </component.default>
     {/await}
   </div>
 {/if}
@@ -482,11 +488,11 @@
 {/if}
 
 {#if albums.length > 0}
-  <section class="p-6 dark:text-immich-dark-fg">
+  <section class="px-6 pt-6 dark:text-immich-dark-fg">
     <p class="pb-4 text-sm">{$t('appears_in').toUpperCase()}</p>
     {#each albums as album}
-      <a data-sveltekit-preload-data="hover" href={`/albums/${album.id}`}>
-        <div class="flex gap-4 py-2 hover:cursor-pointer items-center">
+      <a href="{AppRoute.ALBUMS}/{album.id}">
+        <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
           <div>
             <img
               alt={album.albumName}
@@ -511,13 +517,17 @@
   </section>
 {/if}
 
+{#if $preferences?.tags?.enabled}
+  <section class="relative px-2 pb-12 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
+    <DetailPanelTags {asset} {isOwner} />
+  </section>
+{/if}
+
 {#if showEditFaces}
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    on:close={() => {
-      showEditFaces = false;
-    }}
-    on:refresh={handleRefreshPeople}
+    onClose={() => (showEditFaces = false)}
+    onRefresh={handleRefreshPeople}
   />
 {/if}

@@ -3,13 +3,14 @@ import { ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AssetIdsResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
-import { AuthDto, ImmichCookie } from 'src/dtos/auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
 } from 'src/dtos/shared-link.dto';
+import { ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
 import { LoginDetails } from 'src/services/auth.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
@@ -22,7 +23,7 @@ export class SharedLinkController {
   constructor(private service: SharedLinkService) {}
 
   @Get()
-  @Authenticated()
+  @Authenticated({ permission: Permission.SHARED_LINK_READ })
   getAllSharedLinks(@Auth() auth: AuthDto): Promise<SharedLinkResponseDto[]> {
     return this.service.getAll(auth);
   }
@@ -48,19 +49,19 @@ export class SharedLinkController {
   }
 
   @Get(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.SHARED_LINK_READ })
   getSharedLinkById(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<SharedLinkResponseDto> {
     return this.service.get(auth, id);
   }
 
   @Post()
-  @Authenticated()
+  @Authenticated({ permission: Permission.SHARED_LINK_CREATE })
   createSharedLink(@Auth() auth: AuthDto, @Body() dto: SharedLinkCreateDto) {
     return this.service.create(auth, dto);
   }
 
   @Patch(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.SHARED_LINK_UPDATE })
   updateSharedLink(
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
@@ -70,7 +71,7 @@ export class SharedLinkController {
   }
 
   @Delete(':id')
-  @Authenticated()
+  @Authenticated({ permission: Permission.SHARED_LINK_DELETE })
   removeSharedLink(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {
     return this.service.remove(auth, id);
   }

@@ -1,14 +1,15 @@
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { AssetStatus, AssetType } from 'src/enum';
 import {
   Column,
   CreateDateColumn,
@@ -68,14 +69,14 @@ export class AssetEntity {
   @Column()
   type!: AssetType;
 
+  @Column({ type: 'enum', enum: AssetStatus, default: AssetStatus.ACTIVE })
+  status!: AssetStatus;
+
   @Column()
   originalPath!: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  previewPath!: string | null;
-
-  @Column({ type: 'varchar', nullable: true, default: '' })
-  thumbnailPath!: string | null;
+  @OneToMany(() => AssetFileEntity, (assetFile) => assetFile.asset)
+  files!: AssetFileEntity[];
 
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;
@@ -141,9 +142,6 @@ export class AssetEntity {
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
   exifInfo?: ExifEntity;
 
-  @OneToOne(() => SmartInfoEntity, (smartInfoEntity) => smartInfoEntity.asset)
-  smartInfo?: SmartInfoEntity;
-
   @OneToOne(() => SmartSearchEntity, (smartSearchEntity) => smartSearchEntity.asset)
   smartSearch?: SmartSearchEntity;
 
@@ -174,11 +172,4 @@ export class AssetEntity {
   @Index('IDX_assets_duplicateId')
   @Column({ type: 'uuid', nullable: true })
   duplicateId!: string | null;
-}
-
-export enum AssetType {
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO',
-  OTHER = 'OTHER',
 }

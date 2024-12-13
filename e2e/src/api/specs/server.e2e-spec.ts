@@ -110,6 +110,7 @@ describe('/server', () => {
         facialRecognition: false,
         map: true,
         reverseGeocoding: true,
+        importFaces: false,
         oauth: false,
         oauthAutoLaunch: false,
         passwordLogin: true,
@@ -132,7 +133,10 @@ describe('/server', () => {
         userDeleteDelay: 7,
         isInitialized: true,
         externalDomain: '',
+        publicUsers: true,
         isOnboarded: false,
+        mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
+        mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
     });
   });
@@ -160,11 +164,15 @@ describe('/server', () => {
       expect(body).toEqual({
         photos: 0,
         usage: 0,
+        usagePhotos: 0,
+        usageVideos: 0,
         usageByUser: [
           {
             quotaSizeInBytes: null,
             photos: 0,
             usage: 0,
+            usagePhotos: 0,
+            usageVideos: 0,
             userName: 'Immich Admin',
             userId: admin.userId,
             videos: 0,
@@ -173,6 +181,8 @@ describe('/server', () => {
             quotaSizeInBytes: null,
             photos: 0,
             usage: 0,
+            usagePhotos: 0,
+            usageVideos: 0,
             userName: 'User 1',
             userId: nonAdmin.userId,
             videos: 0,

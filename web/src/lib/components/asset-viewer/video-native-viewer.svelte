@@ -4,77 +4,114 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { AssetMediaSize } from '@immich/sdk';
-  import { createEventDispatcher, tick } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { swipe } from 'svelte-gestures';
+  import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let assetId: string;
-  export let loopVideo: boolean;
-  export let checksum: string;
-
-  let element: HTMLVideoElement | undefined = undefined;
-  let isVideoLoading = true;
-  let assetFileUrl: string;
-  let forceMuted = false;
-
-  $: if (element) {
-    assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
-    forceMuted = false;
-    element.load();
+  interface Props {
+    assetId: string;
+    loopVideo: boolean;
+    checksum: string;
+    onPreviousAsset?: () => void;
+    onNextAsset?: () => void;
+    onVideoEnded?: () => void;
+    onVideoStarted?: () => void;
+    onClose?: () => void;
   }
 
-  const dispatch = createEventDispatcher<{ onVideoEnded: void; onVideoStarted: void }>();
+  let {
+    assetId,
+    loopVideo,
+    checksum,
+    onPreviousAsset = () => {},
+    onNextAsset = () => {},
+    onVideoEnded = () => {},
+    onVideoStarted = () => {},
+    onClose = () => {},
+  }: Props = $props();
+
+  let videoPlayer: HTMLVideoElement | undefined = $state();
+  let isLoading = $state(true);
+  let assetFileUrl = $state('');
+  let forceMuted = $state(false);
+
+  onMount(() => {
+    if (videoPlayer) {
+      assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+      forceMuted = false;
+      videoPlayer.load();
+    }
+  });
+
+  onDestroy(() => {
+    if (videoPlayer) {
+      videoPlayer.src = '';
+    }
+  });
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
       await video.play();
-      dispatch('onVideoStarted');
+      onVideoStarted();
     } catch (error) {
       if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
         await tryForceMutedPlay(video);
         return;
       }
+
       handleError(error, $t('errors.unable_to_play_video'));
     } finally {
-      isVideoLoading = false;
+      isLoading = false;
     }
   };
 
   const tryForceMutedPlay = async (video: HTMLVideoElement) => {
     try {
-      forceMuted = true;
-      await tick();
+      video.muted = true;
       await handleCanPlay(video);
     } catch (error) {
       handleError(error, $t('errors.unable_to_play_video'));
+    }
+  };
+
+  const onSwipe = (event: SwipeCustomEvent) => {
+    if (event.detail.direction === 'left') {
+      onNextAsset();
+    }
+    if (event.detail.direction === 'right') {
+      onPreviousAsset();
     }
   };
 </script>
 
 <div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
   <video
-    bind:this={element}
+    bind:this={videoPlayer}
     loop={$loopVideoPreference && loopVideo}
     autoplay
     playsinline
     controls
     class="h-full object-contain"
-    on:canplay={(e) => handleCanPlay(e.currentTarget)}
-    on:ended={() => dispatch('onVideoEnded')}
-    on:volumechange={(e) => {
+    use:swipe
+    onswipe={onSwipe}
+    oncanplay={(e) => handleCanPlay(e.currentTarget)}
+    onended={onVideoEnded}
+    onvolumechange={(e) => {
       if (!forceMuted) {
         $videoViewerMuted = e.currentTarget.muted;
       }
     }}
+    onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
     poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    src={assetFileUrl}
   >
-    <source src={assetFileUrl} type="video/mp4" />
-    <track kind="captions" />
   </video>
 
-  {#if isVideoLoading}
+  {#if isLoading}
     <div class="absolute flex place-content-center place-items-center">
       <LoadingSpinner />
     </div>

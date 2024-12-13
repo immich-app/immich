@@ -8,16 +8,20 @@ Immich supports the option to send notifications via Email for the following eve
 
 ## SMTP settings
 
-You can access the settings panel from the web at `Administration -> Settings -> Notification settings`
+You can access the settings panel from the web at `Administration -> Settings -> Notification settings`.
 
-Under Email, enter the following details to connect with SMTP servers.
+Under Email, enter the required details to connect with an SMTP server.
 
-You can use the following [guide](/docs/guides/smtp-gmail) to use Gmail's SMTP server.
-
-<img src={require('./img/email-settings.png').default} width="80%" title="SMTP settings" />
+You can use [this guide](/docs/guides/smtp-gmail) to use Gmail's SMTP server.
 
 ## User's notifications settings
 
 Users can manage their email notification settings from their account settings page on the web. They can choose to turn email notifications on or off for the following events:
 
 <img src={require('./img/user-notifications-settings.png').default} width="80%" title="User notification settings" />
+
+## Notification templates
+
+You can override the default notification text with custom templates in HTML format. You can use tags to show dynamic tags in your templates.
+
+<img src={require('./img/user-notifications-templates.png').default} width="80%" title="User notification templates" />

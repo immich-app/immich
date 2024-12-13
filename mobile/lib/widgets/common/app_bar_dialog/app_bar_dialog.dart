@@ -7,7 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -28,6 +28,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
+    final isLoggingOut = useState(false);
 
     useEffect(
       () {
@@ -63,11 +64,16 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildActionButton(IconData icon, String text, Function() onTap) {
+    buildActionButton(
+      IconData icon,
+      String text,
+      Function() onTap, {
+      Widget? trailing,
+    }) {
       return ListTile(
         dense: true,
         visualDensity: VisualDensity.standard,
-        contentPadding: const EdgeInsets.only(left: 30),
+        contentPadding: const EdgeInsets.only(left: 30, right: 30),
         minLeadingWidth: 40,
         leading: SizedBox(
           child: Icon(
@@ -83,6 +89,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           ),
         ).tr(),
         onTap: onTap,
+        trailing: trailing,
       );
     }
 
@@ -107,6 +114,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         Icons.logout_rounded,
         "profile_drawer_sign_out",
         () async {
+          if (isLoggingOut.value) {
+            return;
+          }
+
           showDialog(
             context: context,
             builder: (BuildContext ctx) {
@@ -115,7 +126,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 content: "app_bar_signout_dialog_content",
                 ok: "app_bar_signout_dialog_ok",
                 onOk: () async {
-                  await ref.read(authenticationProvider.notifier).logout();
+                  isLoggingOut.value = true;
+                  await ref
+                      .read(authProvider.notifier)
+                      .logout()
+                      .whenComplete(() => isLoggingOut.value = false);
 
                   ref.read(manualUploadProvider.notifier).cancelBackup();
                   ref.read(backupProvider.notifier).cancelBackup();
@@ -127,6 +142,12 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             },
           );
         },
+        trailing: isLoggingOut.value
+            ? const SizedBox.square(
+                dimension: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : null,
       );
     }
 
@@ -237,35 +258,41 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    return Dialog(
-      clipBehavior: Clip.hardEdge,
-      alignment: Alignment.topCenter,
-      insetPadding: EdgeInsets.only(
-        top: isHorizontal ? 20 : 40,
-        left: horizontalPadding,
-        right: horizontalPadding,
-        bottom: isHorizontal ? 20 : 100,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: SizedBox(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: buildTopRow(),
-              ),
-              const AppBarProfileInfoBox(),
-              buildStorageInformation(),
-              const AppBarServerInfo(),
-              buildAppLogButton(),
-              buildSettingButton(),
-              buildSignOutButton(),
-              buildFooter(),
-            ],
+    return Dismissible(
+      behavior: HitTestBehavior.translucent,
+      direction: DismissDirection.down,
+      onDismissed: (_) => context.pop(),
+      key: const Key('app_bar_dialog'),
+      child: Dialog(
+        clipBehavior: Clip.hardEdge,
+        alignment: Alignment.topCenter,
+        insetPadding: EdgeInsets.only(
+          top: isHorizontal ? 20 : 40,
+          left: horizontalPadding,
+          right: horizontalPadding,
+          bottom: isHorizontal ? 20 : 100,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: SizedBox(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  child: buildTopRow(),
+                ),
+                const AppBarProfileInfoBox(),
+                buildStorageInformation(),
+                const AppBarServerInfo(),
+                buildAppLogButton(),
+                buildSettingButton(),
+                buildSignOutButton(),
+                buildFooter(),
+              ],
+            ),
           ),
         ),
       ),

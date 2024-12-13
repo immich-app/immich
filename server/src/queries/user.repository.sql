@@ -15,7 +15,8 @@ SELECT
   "UserEntity"."status" AS "UserEntity_status",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
-  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes",
+  "UserEntity"."profileChangedAt" AS "UserEntity_profileChangedAt"
 FROM
   "users" "UserEntity"
 WHERE
@@ -60,7 +61,8 @@ SELECT
   "user"."status" AS "user_status",
   "user"."updatedAt" AS "user_updatedAt",
   "user"."quotaSizeInBytes" AS "user_quotaSizeInBytes",
-  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes"
+  "user"."quotaUsageInBytes" AS "user_quotaUsageInBytes",
+  "user"."profileChangedAt" AS "user_profileChangedAt"
 FROM
   "users" "user"
 WHERE
@@ -82,7 +84,8 @@ SELECT
   "UserEntity"."status" AS "UserEntity_status",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
-  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes",
+  "UserEntity"."profileChangedAt" AS "UserEntity_profileChangedAt"
 FROM
   "users" "UserEntity"
 WHERE
@@ -106,7 +109,8 @@ SELECT
   "UserEntity"."status" AS "UserEntity_status",
   "UserEntity"."updatedAt" AS "UserEntity_updatedAt",
   "UserEntity"."quotaSizeInBytes" AS "UserEntity_quotaSizeInBytes",
-  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes"
+  "UserEntity"."quotaUsageInBytes" AS "UserEntity_quotaUsageInBytes",
+  "UserEntity"."profileChangedAt" AS "UserEntity_profileChangedAt"
 FROM
   "users" "UserEntity"
 WHERE
@@ -136,7 +140,23 @@ SELECT
         "assets"."libraryId" IS NULL
     ),
     0
-  ) AS "usage"
+  ) AS "usage",
+  COALESCE(
+    SUM("exif"."fileSizeInByte") FILTER (
+      WHERE
+        "assets"."libraryId" IS NULL
+        AND "assets"."type" = 'IMAGE'
+    ),
+    0
+  ) AS "usagePhotos",
+  COALESCE(
+    SUM("exif"."fileSizeInByte") FILTER (
+      WHERE
+        "assets"."libraryId" IS NULL
+        AND "assets"."type" = 'VIDEO'
+    ),
+    0
+  ) AS "usageVideos"
 FROM
   "users" "users"
   LEFT JOIN "assets" "assets" ON "assets"."ownerId" = "users"."id"

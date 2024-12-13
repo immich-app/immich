@@ -1,19 +1,27 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  interface Props {
+    /**
+     * Unique identifier for the checkbox element, used to associate labels with the input element.
+     */
+    id: string;
+    /**
+     * Optional aria-describedby attribute to associate the checkbox with a description.
+     */
+    ariaDescribedBy?: string | undefined;
+    checked?: boolean;
+    disabled?: boolean;
+    onToggle?: ((checked: boolean) => void) | undefined;
+  }
 
-  /**
-   * Unique identifier for the checkbox element, used to associate labels with the input element.
-   */
-  export let id: string;
-  /**
-   * Optional aria-describedby attribute to associate the checkbox with a description.
-   */
-  export let ariaDescribedBy: string | undefined = undefined;
-  export let checked = false;
-  export let disabled = false;
+  let {
+    id,
+    ariaDescribedBy = undefined,
+    checked = $bindable(false),
+    disabled = false,
+    onToggle = undefined,
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher<{ toggle: boolean }>();
-  const onToggle = (event: Event) => dispatch('toggle', (event.target as HTMLInputElement).checked);
+  const handleToggle = (event: Event) => onToggle?.((event.target as HTMLInputElement).checked);
 </script>
 
 <label class="relative inline-block h-[10px] w-[36px] flex-none">
@@ -22,7 +30,7 @@
     class="disabled::cursor-not-allowed h-0 w-0 opacity-0 peer"
     type="checkbox"
     bind:checked
-    on:click={onToggle}
+    onclick={handleToggle}
     {disabled}
     aria-describedby={ariaDescribedBy}
   />
@@ -30,11 +38,11 @@
   {#if disabled}
     <span
       class="slider slider-disabled cursor-not-allowed border border-transparent before:border before:border-transparent"
-    />
+    ></span>
   {:else}
     <span
       class="slider slider-enabled cursor-pointer border-2 border-transparent before:border-2 before:border-transparent peer-focus-visible:outline before:peer-focus-visible:outline peer-focus-visible:dark:outline-gray-200 before:peer-focus-visible:dark:outline-gray-200 peer-focus-visible:outline-gray-600 before:peer-focus-visible:outline-gray-600 peer-focus-visible:dark:border-black before:peer-focus-visible:dark:border-black peer-focus-visible:border-white before:peer-focus-visible:border-white"
-    />
+    ></span>
   {/if}
 </label>
 

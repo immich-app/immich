@@ -10,12 +10,20 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    onClose: () => void;
+  }
 
-  let imgElement: HTMLDivElement;
+  let { asset, onClose }: Props = $props();
+
+  let imgElement: HTMLDivElement | undefined = $state();
 
   onMount(() => {
+    if (!imgElement) {
+      return;
+    }
+
     imgElement.style.width = '100%';
   });
 
@@ -45,6 +53,10 @@
   };
 
   const handleSetProfilePicture = async () => {
+    if (!imgElement) {
+      return;
+    }
+
     try {
       const blob = await domtoimage.toBlob(imgElement);
       if (await hasTransparentPixels(blob)) {
@@ -56,13 +68,14 @@
         return;
       }
       const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
-      const { profileImagePath } = await createProfileImage({ createProfileImageDto: { file } });
+      const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
         message: $t('profile_picture_set'),
         timeout: 3000,
       });
       $user.profileImagePath = profileImagePath;
+      $user.profileChangedAt = profileChangedAt;
     } catch (error) {
       handleError(error, $t('errors.unable_to_set_profile_picture'));
     }
@@ -78,7 +91,8 @@
       <PhotoViewer bind:element={imgElement} {asset} />
     </div>
   </div>
-  <svelte:fragment slot="sticky-bottom">
-    <Button fullwidth on:click={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
-  </svelte:fragment>
+
+  {#snippet stickyBottom()}
+    <Button fullwidth onclick={handleSetProfilePicture}>{$t('set_as_profile_picture')}</Button>
+  {/snippet}
 </FullScreenModal>

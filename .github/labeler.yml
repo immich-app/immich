@@ -33,3 +33,6 @@ documentation:
   - changed-files:
       - any-glob-to-any-file:
           - machine-learning/app/**
+
+changelog:translation:
+  - head-branch: ['^chore/translations$']

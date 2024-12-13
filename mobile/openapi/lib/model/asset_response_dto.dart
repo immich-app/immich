@@ -36,11 +36,8 @@ class AssetResponseDto {
     this.owner,
     required this.ownerId,
     this.people = const [],
-    required this.resized,
-    this.smartInfo,
-    this.stack = const [],
-    required this.stackCount,
-    this.stackParentId,
+    this.resized,
+    this.stack,
     this.tags = const [],
     required this.thumbhash,
     required this.type,
@@ -114,21 +111,16 @@ class AssetResponseDto {
 
   List<PersonWithFacesResponseDto> people;
 
-  bool resized;
-
+  /// This property was deprecated in v1.113.0
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  SmartInfoResponseDto? smartInfo;
+  bool? resized;
 
-  List<AssetResponseDto> stack;
-
-  int? stackCount;
-
-  String? stackParentId;
+  AssetStackResponseDto? stack;
 
   List<TagResponseDto> tags;
 
@@ -166,10 +158,7 @@ class AssetResponseDto {
     other.ownerId == ownerId &&
     _deepEquality.equals(other.people, people) &&
     other.resized == resized &&
-    other.smartInfo == smartInfo &&
-    _deepEquality.equals(other.stack, stack) &&
-    other.stackCount == stackCount &&
-    other.stackParentId == stackParentId &&
+    other.stack == stack &&
     _deepEquality.equals(other.tags, tags) &&
     other.thumbhash == thumbhash &&
     other.type == type &&
@@ -202,11 +191,8 @@ class AssetResponseDto {
     (owner == null ? 0 : owner!.hashCode) +
     (ownerId.hashCode) +
     (people.hashCode) +
-    (resized.hashCode) +
-    (smartInfo == null ? 0 : smartInfo!.hashCode) +
-    (stack.hashCode) +
-    (stackCount == null ? 0 : stackCount!.hashCode) +
-    (stackParentId == null ? 0 : stackParentId!.hashCode) +
+    (resized == null ? 0 : resized!.hashCode) +
+    (stack == null ? 0 : stack!.hashCode) +
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
@@ -214,7 +200,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, stackCount=$stackCount, stackParentId=$stackParentId, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -265,22 +251,15 @@ class AssetResponseDto {
     }
       json[r'ownerId'] = this.ownerId;
       json[r'people'] = this.people;
+    if (this.resized != null) {
       json[r'resized'] = this.resized;
-    if (this.smartInfo != null) {
-      json[r'smartInfo'] = this.smartInfo;
     } else {
-    //  json[r'smartInfo'] = null;
+    //  json[r'resized'] = null;
     }
+    if (this.stack != null) {
       json[r'stack'] = this.stack;
-    if (this.stackCount != null) {
-      json[r'stackCount'] = this.stackCount;
     } else {
-    //  json[r'stackCount'] = null;
-    }
-    if (this.stackParentId != null) {
-      json[r'stackParentId'] = this.stackParentId;
-    } else {
-    //  json[r'stackParentId'] = null;
+    //  json[r'stack'] = null;
     }
       json[r'tags'] = this.tags;
     if (this.thumbhash != null) {
@@ -298,6 +277,7 @@ class AssetResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -325,11 +305,8 @@ class AssetResponseDto {
         owner: UserResponseDto.fromJson(json[r'owner']),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
-        resized: mapValueOfType<bool>(json, r'resized')!,
-        smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
-        stack: AssetResponseDto.listFromJson(json[r'stack']),
-        stackCount: mapValueOfType<int>(json, r'stackCount'),
-        stackParentId: mapValueOfType<String>(json, r'stackParentId'),
+        resized: mapValueOfType<bool>(json, r'resized'),
+        stack: AssetStackResponseDto.fromJson(json[r'stack']),
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
@@ -398,8 +375,6 @@ class AssetResponseDto {
     'originalFileName',
     'originalPath',
     'ownerId',
-    'resized',
-    'stackCount',
     'thumbhash',
     'type',
     'updatedAt',

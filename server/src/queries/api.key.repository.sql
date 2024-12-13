@@ -9,6 +9,7 @@ FROM
       "APIKeyEntity"."id" AS "APIKeyEntity_id",
       "APIKeyEntity"."key" AS "APIKeyEntity_key",
       "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
+      "APIKeyEntity"."permissions" AS "APIKeyEntity_permissions",
       "APIKeyEntity__APIKeyEntity_user"."id" AS "APIKeyEntity__APIKeyEntity_user_id",
       "APIKeyEntity__APIKeyEntity_user"."name" AS "APIKeyEntity__APIKeyEntity_user_name",
       "APIKeyEntity__APIKeyEntity_user"."isAdmin" AS "APIKeyEntity__APIKeyEntity_user_isAdmin",
@@ -23,6 +24,7 @@ FROM
       "APIKeyEntity__APIKeyEntity_user"."updatedAt" AS "APIKeyEntity__APIKeyEntity_user_updatedAt",
       "APIKeyEntity__APIKeyEntity_user"."quotaSizeInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaSizeInBytes",
       "APIKeyEntity__APIKeyEntity_user"."quotaUsageInBytes" AS "APIKeyEntity__APIKeyEntity_user_quotaUsageInBytes",
+      "APIKeyEntity__APIKeyEntity_user"."profileChangedAt" AS "APIKeyEntity__APIKeyEntity_user_profileChangedAt",
       "7f5f7a38bf327bfbbf826778460704c9a50fe6f4"."userId" AS "7f5f7a38bf327bfbbf826778460704c9a50fe6f4_userId",
       "7f5f7a38bf327bfbbf826778460704c9a50fe6f4"."key" AS "7f5f7a38bf327bfbbf826778460704c9a50fe6f4_key",
       "7f5f7a38bf327bfbbf826778460704c9a50fe6f4"."value" AS "7f5f7a38bf327bfbbf826778460704c9a50fe6f4_value"
@@ -46,6 +48,7 @@ SELECT
   "APIKeyEntity"."id" AS "APIKeyEntity_id",
   "APIKeyEntity"."name" AS "APIKeyEntity_name",
   "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
+  "APIKeyEntity"."permissions" AS "APIKeyEntity_permissions",
   "APIKeyEntity"."createdAt" AS "APIKeyEntity_createdAt",
   "APIKeyEntity"."updatedAt" AS "APIKeyEntity_updatedAt"
 FROM
@@ -63,6 +66,7 @@ SELECT
   "APIKeyEntity"."id" AS "APIKeyEntity_id",
   "APIKeyEntity"."name" AS "APIKeyEntity_name",
   "APIKeyEntity"."userId" AS "APIKeyEntity_userId",
+  "APIKeyEntity"."permissions" AS "APIKeyEntity_permissions",
   "APIKeyEntity"."createdAt" AS "APIKeyEntity_createdAt",
   "APIKeyEntity"."updatedAt" AS "APIKeyEntity_updatedAt"
 FROM

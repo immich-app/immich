@@ -32,7 +32,8 @@ export default [
       '**/svelte.config.js',
       'eslint.config.mjs',
       'postcss.config.cjs',
-      'tailwind.config.cjs',
+      'tailwind.config.js',
+      'coverage',
     ],
   },
   ...compat.extends(
@@ -87,6 +88,7 @@ export default [
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
+      'object-shorthand': ['error', 'always'],
     },
   },
   {

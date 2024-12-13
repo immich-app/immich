@@ -1,5 +1,6 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type ComboBoxOption = {
+    id?: string;
     label: string;
     value: string;
   };
@@ -20,21 +21,32 @@
   import { fly } from 'svelte/transition';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiMagnify, mdiUnfoldMoreHorizontal, mdiClose } from '@mdi/js';
-  import { createEventDispatcher, tick } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import type { FormEventHandler } from 'svelte/elements';
   import { shortcuts } from '$lib/actions/shortcut';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
   import { get } from 'svelte/store';
 
-  export let label: string;
-  export let hideLabel = false;
-  export let options: ComboBoxOption[] = [];
-  export let selectedOption: ComboBoxOption | undefined;
-  export let placeholder = '';
+  interface Props {
+    label: string;
+    hideLabel?: boolean;
+    options?: ComboBoxOption[];
+    selectedOption?: ComboBoxOption | undefined;
+    placeholder?: string;
+    onSelect?: (option: ComboBoxOption | undefined) => void;
+  }
+
+  let {
+    label,
+    hideLabel = false,
+    options = [],
+    selectedOption = $bindable(),
+    placeholder = '',
+    onSelect = () => {},
+  }: Props = $props();
 
   /**
    * Unique identifier for the combobox.
@@ -43,27 +55,54 @@
   /**
    * Indicates whether or not the dropdown autocomplete list should be visible.
    */
-  let isOpen = false;
+  let isOpen = $state(false);
   /**
    * Keeps track of whether the combobox is actively being used.
    */
-  let isActive = false;
-  let searchQuery = selectedOption?.label || '';
-  let selectedIndex: number | undefined;
-  let optionRefs: HTMLElement[] = [];
-  let input: HTMLInputElement;
+  let isActive = $state(false);
+  let searchQuery = $state(selectedOption?.label || '');
+  let selectedIndex: number | undefined = $state();
+  let optionRefs: HTMLElement[] = $state([]);
+  let input = $state<HTMLInputElement>();
+  let bounds: DOMRect | undefined = $state();
+
   const inputId = `combobox-${id}`;
   const listboxId = `listbox-${id}`;
+  /**
+   * Buffer distance between the dropdown and top/bottom of the viewport.
+   */
+  const dropdownOffset = 15;
+  /**
+   * Minimum space required for the dropdown to be displayed at the bottom of the input.
+   */
+  const bottomBreakpoint = 225;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const inputEntry = entries[0];
+      if (inputEntry.intersectionRatio < 1) {
+        isOpen = false;
+      }
+    },
+    { threshold: 0.5 },
+  );
 
-  $: filteredOptions = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+  onMount(() => {
+    if (!input) {
+      return;
+    }
+    observer.observe(input);
+    const scrollableAncestor = input?.closest('.overflow-y-auto, .overflow-y-scroll');
+    scrollableAncestor?.addEventListener('scroll', onPositionChange);
+    window.visualViewport?.addEventListener('resize', onPositionChange);
+    window.visualViewport?.addEventListener('scroll', onPositionChange);
 
-  $: {
-    searchQuery = selectedOption ? selectedOption.label : '';
-  }
-
-  const dispatch = createEventDispatcher<{
-    select: ComboBoxOption | undefined;
-  }>();
+    return () => {
+      observer.disconnect();
+      scrollableAncestor?.removeEventListener('scroll', onPositionChange);
+      window.visualViewport?.removeEventListener('resize', onPositionChange);
+      window.visualViewport?.removeEventListener('scroll', onPositionChange);
+    };
+  });
 
   const activate = () => {
     isActive = true;
@@ -79,6 +118,7 @@
 
   const openDropdown = () => {
     isOpen = true;
+    bounds = getInputPosition();
   };
 
   const closeDropdown = () => {
@@ -105,10 +145,10 @@
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
   };
 
-  let onSelect = (option: ComboBoxOption) => {
+  let handleSelect = (option: ComboBoxOption) => {
     selectedOption = option;
     searchQuery = option.label;
-    dispatch('select', option);
+    onSelect(option);
     closeDropdown();
   };
 
@@ -117,14 +157,81 @@
     selectedIndex = undefined;
     selectedOption = undefined;
     searchQuery = '';
-    dispatch('select', selectedOption);
+    onSelect(selectedOption);
   };
+
+  const calculatePosition = (boundary: DOMRect | undefined) => {
+    const visualViewport = window.visualViewport;
+
+    if (!boundary) {
+      return;
+    }
+
+    const left = boundary.left + (visualViewport?.offsetLeft || 0);
+    const offsetTop = visualViewport?.offsetTop || 0;
+
+    if (dropdownDirection === 'top') {
+      return {
+        bottom: `${window.innerHeight - boundary.top - offsetTop}px`,
+        left: `${left}px`,
+        width: `${boundary.width}px`,
+        maxHeight: maxHeight(boundary.top - dropdownOffset),
+      };
+    }
+
+    const viewportHeight = visualViewport?.height || 0;
+    const availableHeight = viewportHeight - boundary.bottom;
+    return {
+      top: `${boundary.bottom + offsetTop}px`,
+      left: `${left}px`,
+      width: `${boundary.width}px`,
+      maxHeight: maxHeight(availableHeight - dropdownOffset),
+    };
+  };
+
+  const maxHeight = (size: number) => `min(${size}px,18rem)`;
+
+  const onPositionChange = () => {
+    if (!isOpen) {
+      return;
+    }
+    bounds = getInputPosition();
+  };
+
+  const getComboboxDirection = (
+    boundary: DOMRect | undefined,
+    visualViewport: VisualViewport | null,
+  ): 'bottom' | 'top' => {
+    if (!boundary) {
+      return 'bottom';
+    }
+
+    const visualHeight = visualViewport?.height || 0;
+    const heightBelow = visualHeight - boundary.bottom;
+    const heightAbove = boundary.top;
+
+    const isViewportScaled = visualHeight && Math.floor(visualHeight) !== Math.floor(window.innerHeight);
+
+    return heightBelow <= bottomBreakpoint && heightAbove > heightBelow && !isViewportScaled ? 'top' : 'bottom';
+  };
+
+  const getInputPosition = () => input?.getBoundingClientRect();
+
+  $effect(() => {
+    searchQuery = selectedOption ? selectedOption.label : '';
+  });
+
+  let filteredOptions = $derived(
+    options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase())),
+  );
+  let position = $derived(calculatePosition(bounds));
+  let dropdownDirection: 'bottom' | 'top' = $derived(getComboboxDirection(bounds, visualViewport));
 </script>
 
+<svelte:window onresize={onPositionChange} />
 <label class="immich-form-label" class:sr-only={hideLabel} for={inputId}>{label}</label>
 <div
   class="relative w-full dark:text-gray-300 text-gray-700 text-base"
-  use:clickOutside={{ onOutclick: deactivate }}
   use:focusOutside={{ onFocusOut: deactivate }}
   use:shortcuts={[
     {
@@ -154,13 +261,14 @@
       autocomplete="off"
       bind:this={input}
       class:!pl-8={isActive}
-      class:!rounded-b-none={isOpen}
+      class:!rounded-b-none={isOpen && dropdownDirection === 'bottom'}
+      class:!rounded-t-none={isOpen && dropdownDirection === 'top'}
       class:cursor-pointer={!isActive}
       class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
       id={inputId}
-      on:click={activate}
-      on:focus={activate}
-      on:input={onInput}
+      onclick={activate}
+      onfocus={activate}
+      oninput={onInput}
       role="combobox"
       type="text"
       value={searchQuery}
@@ -189,7 +297,7 @@
           shortcut: { key: 'Enter' },
           onShortcut: () => {
             if (selectedIndex !== undefined && filteredOptions.length > 0) {
-              onSelect(filteredOptions[selectedIndex]);
+              handleSelect(filteredOptions[selectedIndex]);
             }
             closeDropdown();
           },
@@ -210,7 +318,7 @@
       class:pointer-events-none={!selectedOption}
     >
       {#if selectedOption}
-        <CircleIconButton on:click={onClear} title={$t('clear_value')} icon={mdiClose} size="16" padding="2" />
+        <CircleIconButton onclick={onClear} title={$t('clear_value')} icon={mdiClose} size="16" padding="2" />
       {:else if !isOpen}
         <Icon path={mdiUnfoldMoreHorizontal} ariaHidden={true} />
       {/if}
@@ -221,32 +329,40 @@
     role="listbox"
     id={listboxId}
     transition:fly={{ duration: 250 }}
-    class="absolute text-left text-sm w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border-t-0 border-gray-300 dark:border-gray-900 rounded-b-xl z-10"
+    class="fixed text-left text-sm w-full overflow-y-auto bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-900 z-[10000]"
+    class:rounded-b-xl={dropdownDirection === 'bottom'}
+    class:rounded-t-xl={dropdownDirection === 'top'}
+    class:shadow={dropdownDirection === 'bottom'}
     class:border={isOpen}
+    style:top={position?.top}
+    style:bottom={position?.bottom}
+    style:left={position?.left}
+    style:width={position?.width}
+    style:max-height={position?.maxHeight}
     tabindex="-1"
   >
     {#if isOpen}
       {#if filteredOptions.length === 0}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           role="option"
           aria-selected={selectedIndex === 0}
           aria-disabled={true}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
+          class="text-left w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${0}`}
-          on:click={() => closeDropdown()}
+          onclick={() => closeDropdown()}
         >
           {$t('no_results')}
         </li>
       {/if}
-      {#each filteredOptions as option, index (option.label)}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
+      {#each filteredOptions as option, index (option.id || option.label)}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <li
           aria-selected={index === selectedIndex}
           bind:this={optionRefs[index]}
-          class="text-left w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-100 aria-selected:dark:bg-gray-700"
+          class="text-left w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all cursor-pointer aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700 break-words"
           id={`${listboxId}-${index}`}
-          on:click={() => onSelect(option)}
+          onclick={() => handleSelect(option)}
           role="option"
         >
           {option.label}

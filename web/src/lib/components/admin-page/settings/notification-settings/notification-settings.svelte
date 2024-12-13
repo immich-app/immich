@@ -3,9 +3,7 @@
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
@@ -18,15 +16,21 @@
   import { user } from '$lib/stores/user.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { SettingInputFieldType } from '$lib/constants';
+  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
 
-  let isSending = false;
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  let isSending = $state(false);
 
   const handleSendTestEmail = async () => {
     if (isSending) {
@@ -65,11 +69,15 @@
       isSending = false;
     }
   };
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault class="mt-4">
+    <form autocomplete="off" {onsubmit} class="mt-4">
       <div class="flex flex-col gap-4">
         <SettingAccordion key="email" title={$t('email')} subtitle={$t('admin.notification_email_setting_description')}>
           <div class="ml-4 mt-4 flex flex-col gap-4">
@@ -85,7 +93,7 @@
               inputType={SettingInputFieldType.TEXT}
               required
               label={$t('host')}
-              desc={$t('admin.notification_email_host_description')}
+              description={$t('admin.notification_email_host_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.host}
               isEdited={config.notifications.smtp.transport.host !== savedConfig.notifications.smtp.transport.host}
@@ -95,7 +103,7 @@
               inputType={SettingInputFieldType.NUMBER}
               required
               label={$t('port')}
-              desc={$t('admin.notification_email_port_description')}
+              description={$t('admin.notification_email_port_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.port}
               isEdited={config.notifications.smtp.transport.port !== savedConfig.notifications.smtp.transport.port}
@@ -104,7 +112,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('username')}
-              desc={$t('admin.notification_email_username_description')}
+              description={$t('admin.notification_email_username_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.username}
               isEdited={config.notifications.smtp.transport.username !==
@@ -114,7 +122,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.PASSWORD}
               label={$t('password')}
-              desc={$t('admin.notification_email_password_description')}
+              description={$t('admin.notification_email_password_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.transport.password}
               isEdited={config.notifications.smtp.transport.password !==
@@ -134,14 +142,14 @@
               inputType={SettingInputFieldType.TEXT}
               required
               label={$t('admin.notification_email_from_address')}
-              desc={$t('admin.notification_email_from_address_description')}
+              description={$t('admin.notification_email_from_address_description')}
               disabled={disabled || !config.notifications.smtp.enabled}
               bind:value={config.notifications.smtp.from}
               isEdited={config.notifications.smtp.from !== savedConfig.notifications.smtp.from}
             />
 
             <div class="flex gap-2 place-items-center">
-              <Button size="sm" disabled={!config.notifications.smtp.enabled} on:click={handleSendTestEmail}>
+              <Button size="sm" disabled={!config.notifications.smtp.enabled} onclick={handleSendTestEmail}>
                 {#if disabled}
                   {$t('admin.notification_email_test_email')}
                 {:else}
@@ -155,13 +163,14 @@
           </div>
         </SettingAccordion>
       </div>
-
-      <SettingButtonsRow
-        onReset={(options) => onReset({ ...options, configKeys: ['notifications'] })}
-        onSave={() => onSave({ notifications: config.notifications })}
-        showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-        {disabled}
-      />
     </form>
   </div>
+  <TemplateSettings {defaultConfig} {config} {savedConfig} {onReset} {onSave} />
+
+  <SettingButtonsRow
+    onReset={(options) => onReset({ ...options, configKeys: ['notifications', 'templates'] })}
+    onSave={() => onSave({ notifications: config.notifications, templates: config.templates })}
+    showResetToDefault={!isEqual(savedConfig, defaultConfig)}
+    {disabled}
+  />
 </div>

@@ -1,52 +1,30 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
-import { OnEvents, SystemConfigUpdateEvent } from 'src/interfaces/event.interface';
-import {
-  IBaseJob,
-  IEntityJob,
-  IJobRepository,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { OnEvent, OnJob } from 'src/decorators';
+import { ImmichWorker } from 'src/enum';
+import { WithoutProperty } from 'src/interfaces/asset.interface';
+import { DatabaseLock } from 'src/interfaces/database.interface';
+import { ArgOf } from 'src/interfaces/event.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { BaseService } from 'src/services/base.service';
+import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class SmartInfoService implements OnEvents {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IMachineLearningRepository) private machineLearning: IMachineLearningRepository,
-    @Inject(ISearchRepository) private repository: ISearchRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(SmartInfoService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
+export class SmartInfoService extends BaseService {
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  async onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    await this.init(newConfig);
   }
 
-  async onBootstrapEvent(app: 'api' | 'microservices') {
-    if (app !== 'microservices') {
-      return;
-    }
-
-    const config = await this.configCore.getConfig({ withCache: false });
-    await this.init(config);
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'config.update'>) {
+    await this.init(newConfig, oldConfig);
   }
 
-  onConfigValidateEvent({ newConfig }: SystemConfigUpdateEvent) {
+  @OnEvent({ name: 'config.validate' })
+  onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
     } catch {
@@ -56,10 +34,6 @@ export class SmartInfoService implements OnEvents {
     }
   }
 
-  async onConfigUpdateEvent({ oldConfig, newConfig }: SystemConfigUpdateEvent) {
-    await this.init(newConfig, oldConfig);
-  }
-
   private async init(newConfig: SystemConfig, oldConfig?: SystemConfig) {
     if (!isSmartSearchEnabled(newConfig.machineLearning)) {
       return;
@@ -67,7 +41,7 @@ export class SmartInfoService implements OnEvents {
 
     await this.databaseRepository.withLock(DatabaseLock.CLIPDimSize, async () => {
       const { dimSize } = getCLIPModelInfo(newConfig.machineLearning.clip.modelName);
-      const dbDimSize = await this.repository.getDimensionSize();
+      const dbDimSize = await this.searchRepository.getDimensionSize();
       this.logger.verbose(`Current database CLIP dimension size is ${dbDimSize}`);
 
       const modelChange =
@@ -88,10 +62,10 @@ export class SmartInfoService implements OnEvents {
           `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
         );
         this.logger.log(`Updating database CLIP dimension size to ${dimSize}.`);
-        await this.repository.setDimensionSize(dimSize);
+        await this.searchRepository.setDimensionSize(dimSize);
         this.logger.log(`Successfully updated database CLIP dimension size from ${dbDimSize} to ${dimSize}.`);
       } else {
-        await this.repository.deleteAllSearchEmbeddings();
+        await this.searchRepository.deleteAllSearchEmbeddings();
       }
 
       if (!isPaused) {
@@ -100,14 +74,15 @@ export class SmartInfoService implements OnEvents {
     });
   }
 
-  async handleQueueEncodeClip({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+  @OnJob({ name: JobName.QUEUE_SMART_SEARCH, queue: QueueName.SMART_SEARCH })
+  async handleQueueEncodeClip({ force }: JobOf<JobName.QUEUE_SMART_SEARCH>): Promise<JobStatus> {
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
     if (force) {
-      await this.repository.deleteAllSearchEmbeddings();
+      await this.searchRepository.deleteAllSearchEmbeddings();
     }
 
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
@@ -125,13 +100,14 @@ export class SmartInfoService implements OnEvents {
     return JobStatus.SUCCESS;
   }
 
-  async handleEncodeClip({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+  @OnJob({ name: JobName.SMART_SEARCH, queue: QueueName.SMART_SEARCH })
+  async handleEncodeClip({ id }: JobOf<JobName.SMART_SEARCH>): Promise<JobStatus> {
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isSmartSearchEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
 
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const [asset] = await this.assetRepository.getByIds([id], { files: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -140,13 +116,14 @@ export class SmartInfoService implements OnEvents {
       return JobStatus.SKIPPED;
     }
 
-    if (!asset.previewPath) {
+    const { previewFile } = getAssetFiles(asset.files);
+    if (!previewFile) {
       return JobStatus.FAILED;
     }
 
-    const embedding = await this.machineLearning.encodeImage(
-      machineLearning.url,
-      asset.previewPath,
+    const embedding = await this.machineLearningRepository.encodeImage(
+      machineLearning.urls,
+      previewFile.path,
       machineLearning.clip,
     );
 
@@ -155,7 +132,7 @@ export class SmartInfoService implements OnEvents {
       await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
     }
 
-    await this.repository.upsert(asset.id, embedding);
+    await this.searchRepository.upsert(asset.id, embedding);
 
     return JobStatus.SUCCESS;
   }

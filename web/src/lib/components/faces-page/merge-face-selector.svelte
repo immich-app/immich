@@ -6,7 +6,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, getPerson, mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { mdiCallMerge, mdiMerge, mdiSwapHorizontal } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { flip } from 'svelte/animate';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
@@ -19,27 +19,25 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let person: PersonResponseDto;
-  let people: PersonResponseDto[] = [];
-  let selectedPeople: PersonResponseDto[] = [];
-  let screenHeight: number;
+  interface Props {
+    person: PersonResponseDto;
+    onBack: () => void;
+    onMerge: (mergedPerson: PersonResponseDto) => void;
+  }
 
-  let dispatch = createEventDispatcher<{
-    back: void;
-    merge: PersonResponseDto;
-  }>();
+  let { person = $bindable(), onBack, onMerge }: Props = $props();
 
-  $: hasSelection = selectedPeople.length > 0;
-  $: peopleToNotShow = [...selectedPeople, person];
+  let people: PersonResponseDto[] = $state([]);
+  let selectedPeople: PersonResponseDto[] = $state([]);
+  let screenHeight: number = $state(0);
+
+  let hasSelection = $derived(selectedPeople.length > 0);
+  let peopleToNotShow = $derived([...selectedPeople, person]);
 
   onMount(async () => {
     const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
-
-  const onClose = () => {
-    dispatch('back');
-  };
 
   const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
@@ -47,7 +45,7 @@
     await goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
   };
 
-  const onSelect = (selected: PersonResponseDto) => {
+  const onSelect = async (selected: PersonResponseDto) => {
     if (selectedPeople.includes(selected)) {
       selectedPeople = selectedPeople.filter((person) => person.id !== selected.id);
       return;
@@ -62,6 +60,10 @@
     }
 
     selectedPeople = [selected, ...selectedPeople];
+
+    if (selectedPeople.length === 1 && !person.name && selected.name) {
+      await handleSwapPeople();
+    }
   };
 
   const handleMerge = async () => {
@@ -81,10 +83,10 @@
       const mergedPerson = await getPerson({ id: person.id });
       const count = results.filter(({ success }) => success).length;
       notificationController.show({
-        message: $t('merged_people_count', { values: { count: count } }),
+        message: $t('merged_people_count', { values: { count } }),
         type: NotificationType.Info,
       });
-      dispatch('merge', mergedPerson);
+      onMerge(mergedPerson);
     } catch (error) {
       handleError(error, $t('cannot_merge_people'));
     }
@@ -97,21 +99,21 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close={onClose}>
-    <svelte:fragment slot="leading">
+  <ControlAppBar onClose={onBack}>
+    {#snippet leading()}
       {#if hasSelection}
         {$t('selected_count', { values: { count: selectedPeople.length } })}
       {:else}
         {$t('merge_people')}
       {/if}
-      <div />
-    </svelte:fragment>
-    <svelte:fragment slot="trailing">
-      <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
+      <div></div>
+    {/snippet}
+    {#snippet trailing()}
+      <Button size={'sm'} disabled={!hasSelection} onclick={handleMerge}>
         <Icon path={mdiMerge} size={18} />
         <span class="ml-2">{$t('merge')}</span></Button
       >
-    </svelte:fragment>
+    {/snippet}
   </ControlAppBar>
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
@@ -121,7 +123,7 @@
         <div class="grid grid-flow-col-dense place-content-center place-items-center gap-4">
           {#each selectedPeople as person (person.id)}
             <div animate:flip={{ duration: 250, easing: quintOut }}>
-              <FaceThumbnail border circle {person} selectable thumbnailSize={120} on:click={() => onSelect(person)} />
+              <FaceThumbnail border circle {person} selectable thumbnailSize={120} onClick={() => onSelect(person)} />
             </div>
           {/each}
 
@@ -137,7 +139,7 @@
                       title={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
                       size="24"
-                      on:click={handleSwapPeople}
+                      onclick={handleSwapPeople}
                     />
                   </div>
                 {/if}
@@ -148,7 +150,7 @@
         </div>
       </div>
 
-      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => onSelect(detail)} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} />
     </section>
   </section>
 </section>

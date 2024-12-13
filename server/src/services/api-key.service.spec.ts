@@ -1,31 +1,31 @@
 import { BadRequestException } from '@nestjs/common';
+import { Permission } from 'src/enum';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { APIKeyService } from 'src/services/api-key.service';
 import { keyStub } from 'test/fixtures/api-key.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(APIKeyService.name, () => {
   let sut: APIKeyService;
-  let keyMock: Mocked<IKeyRepository>;
+
   let cryptoMock: Mocked<ICryptoRepository>;
+  let keyMock: Mocked<IKeyRepository>;
 
   beforeEach(() => {
-    cryptoMock = newCryptoRepositoryMock();
-    keyMock = newKeyRepositoryMock();
-    sut = new APIKeyService(cryptoMock, keyMock);
+    ({ sut, cryptoMock, keyMock } = newTestService(APIKeyService));
   });
 
   describe('create', () => {
     it('should create a new key', async () => {
       keyMock.create.mockResolvedValue(keyStub.admin);
-      await sut.create(authStub.admin, { name: 'Test Key' });
+      await sut.create(authStub.admin, { name: 'Test Key', permissions: [Permission.ALL] });
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'Test Key',
+        permissions: [Permission.ALL],
         userId: authStub.admin.user.id,
       });
       expect(cryptoMock.newPassword).toHaveBeenCalled();
@@ -35,15 +35,25 @@ describe(APIKeyService.name, () => {
     it('should not require a name', async () => {
       keyMock.create.mockResolvedValue(keyStub.admin);
 
-      await sut.create(authStub.admin, {});
+      await sut.create(authStub.admin, { permissions: [Permission.ALL] });
 
       expect(keyMock.create).toHaveBeenCalledWith({
         key: 'cmFuZG9tLWJ5dGVz (hashed)',
         name: 'API Key',
+        permissions: [Permission.ALL],
         userId: authStub.admin.user.id,
       });
       expect(cryptoMock.newPassword).toHaveBeenCalled();
       expect(cryptoMock.hashSha256).toHaveBeenCalled();
+    });
+
+    it('should throw an error if the api key does not have sufficient permissions', async () => {
+      await expect(
+        sut.create(
+          { ...authStub.admin, apiKey: { ...keyStub.admin, permissions: [] } },
+          { permissions: [Permission.ASSET_READ] },
+        ),
+      ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
 

@@ -17,6 +17,8 @@ const authServer = {
   external: 'http://127.0.0.1:3000',
 };
 
+const mobileOverrideRedirectUri = 'https://photos.immich.app/oauth/mobile-redirect';
+
 const redirect = async (url: string, cookies?: string[]) => {
   const { headers } = await request(url)
     .get('/')
@@ -24,8 +26,8 @@ const redirect = async (url: string, cookies?: string[]) => {
   return { cookies: (headers['set-cookie'] as unknown as string[]) || [], location: headers.location };
 };
 
-const loginWithOAuth = async (sub: OAuthUser | string) => {
-  const { url } = await startOAuth({ oAuthConfigDto: { redirectUri: `${baseUrl}/auth/login` } });
+const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => {
+  const { url } = await startOAuth({ oAuthConfigDto: { redirectUri: redirectUri ?? `${baseUrl}/auth/login` } });
 
   // login
   const response1 = await redirect(url.replace(authServer.internal, authServer.external));
@@ -92,14 +94,14 @@ describe(`/oauth`, () => {
     it('should return a redirect uri', async () => {
       const { status, body } = await request(app)
         .post('/oauth/authorize')
-        .send({ redirectUri: 'http://127.0.0.1:2283/auth/login' });
+        .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
       expect(status).toBe(201);
       expect(body).toEqual({ url: expect.stringContaining(`${authServer.internal}/auth?`) });
 
       const params = new URL(body.url).searchParams;
       expect(params.get('client_id')).toBe('client-default');
       expect(params.get('response_type')).toBe('code');
-      expect(params.get('redirect_uri')).toBe('http://127.0.0.1:2283/auth/login');
+      expect(params.get('redirect_uri')).toBe('http://127.0.0.1:2285/auth/login');
       expect(params.get('state')).toBeDefined();
     });
   });
@@ -252,6 +254,52 @@ describe(`/oauth`, () => {
           userId,
           userEmail: 'oauth-user3@immich.app',
         });
+      });
+    });
+  });
+
+  describe('mobile redirect override', () => {
+    beforeAll(async () => {
+      await setupOAuth(admin.accessToken, {
+        enabled: true,
+        clientId: OAuthClient.DEFAULT,
+        clientSecret: OAuthClient.DEFAULT,
+        buttonText: 'Login with Immich',
+        storageLabelClaim: 'immich_username',
+        mobileOverrideEnabled: true,
+        mobileRedirectUri: mobileOverrideRedirectUri,
+      });
+    });
+
+    it('should return the mobile redirect uri', async () => {
+      const { status, body } = await request(app)
+        .post('/oauth/authorize')
+        .send({ redirectUri: 'app.immich:///oauth-callback' });
+      expect(status).toBe(201);
+      expect(body).toEqual({ url: expect.stringContaining(`${authServer.internal}/auth?`) });
+
+      const params = new URL(body.url).searchParams;
+      expect(params.get('client_id')).toBe('client-default');
+      expect(params.get('response_type')).toBe('code');
+      expect(params.get('redirect_uri')).toBe(mobileOverrideRedirectUri);
+      expect(params.get('state')).toBeDefined();
+    });
+
+    it('should auto register the user by default', async () => {
+      const url = await loginWithOAuth('oauth-mobile-override', 'app.immich:///oauth-callback');
+      expect(url).toEqual(expect.stringContaining(mobileOverrideRedirectUri));
+
+      // simulate redirecting back to mobile app
+      const redirectUri = url.replace(mobileOverrideRedirectUri, 'app.immich:///oauth-callback');
+
+      const { status, body } = await request(app).post('/oauth/callback').send({ url: redirectUri });
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        accessToken: expect.any(String),
+        isAdmin: false,
+        name: 'OAuth User',
+        userEmail: 'oauth-mobile-override@immich.app',
+        userId: expect.any(String),
       });
     });
   });

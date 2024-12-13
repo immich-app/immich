@@ -27,23 +27,14 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
 :::
 
-### Supported filesystems
-
-The Immich Postgres database (`DB_DATA_LOCATION`) must be located on a filesystem that supports user/group
-ownership and permissions (EXT2/3/4, ZFS, APFS, BTRFS, XFS, etc.). It will not work on any filesystem formatted in NTFS or ex/FAT/32.
-It will not work in WSL (Windows Subsystem for Linux) when using a mounted host directory (commonly under `/mnt`).
-If this is an issue, you can change the bind mount to a Docker volume instead.
-
-Regardless of filesystem, it is not recommended to use a network share for your database location due to performance and possible data loss issues.
-
 ## General
 
 | Variable                            | Description                                                                               |           Default            | Containers               | Workers            |
 | :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
-| `TZ`                                | Timezone                                                                                  |                              | server                   | microservices      |
+| `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
 | `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media Location inside the container ⚠️**You probably shouldn't set this**<sup>\*1</sup>⚠️ |   `./upload`<sup>\*2</sup>   | server                   | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media Location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
 | `CPU_CORES`                         | Amount of cores available to the immich server                                            | auto-detected cpu core count | server                   |                    |
@@ -51,17 +42,15 @@ Regardless of filesystem, it is not recommended to use a network share for your 
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies                                        |                              | server                   | api                |
+| `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/docs/administration/system-integrity)                             |                              | server                   | api, microservices |
 
-\*1: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
-
-\*2: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
-It only need to be set if the Immich deployment method is changing.
-
-:::tip
-`TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
-
+\*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
-:::
+
+\*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
+
+\*3: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
+It only need to be set if the Immich deployment method is changing.
 
 ## Workers
 
@@ -79,7 +68,7 @@ Information on the current workers can be found [here](/docs/administration/jobs
 | Variable      | Description    |                  Default                   |
 | :------------ | :------------- | :----------------------------------------: |
 | `IMMICH_HOST` | Listening host |                 `0.0.0.0`                  |
-| `IMMICH_PORT` | Listening port | `3001` (server), `3003` (machine learning) |
+| `IMMICH_PORT` | Listening port | `2283` (server), `3003` (machine learning) |
 
 ## Database
 
@@ -125,7 +114,7 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
-More info can be found in the upstream [ioredis][redis-api] documentation.
+More info can be found in the upstream [ioredis] documentation.
 
 When `REDIS_URL` or `REDIS_SOCKET` are defined, the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored.
 :::
@@ -159,25 +148,32 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-| Variable                                         | Description                                                                                         |                Default                | Containers       |
-| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-----------------------------------: | :--------------- |
-| `MACHINE_LEARNING_MODEL_TTL`                     | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                  |                 `300`                 | machine learning |
-| `MACHINE_LEARNING_MODEL_TTL_POLL_S`              | Interval (s) between checks for the model TTL (disabled if \<= 0)                                   |                 `10`                  | machine learning |
-| `MACHINE_LEARNING_CACHE_FOLDER`                  | Directory where models are downloaded                                                               |               `/cache`                | machine learning |
-| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup> | Thread count of the request thread pool (disabled if \<= 0)                                         |          number of CPU cores          | machine learning |
-| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`        | Number of parallel model operations                                                                 |                  `1`                  | machine learning |
-| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`        | Number of threads for each model operation                                                          |                  `2`                  | machine learning |
-| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>         | Number of worker processes to spawn                                                                 |                  `1`                  | machine learning |
-| `MACHINE_LEARNING_WORKER_TIMEOUT`                | Maximum time (s) of unresponsiveness before a worker is killed                                      | `120` (`300` if using OpenVINO image) | machine learning |
-| `MACHINE_LEARNING_PRELOAD__CLIP`                 | Name of a CLIP model to be preloaded and kept in cache                                              |                                       | machine learning |
-| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`   | Name of a facial recognition model to be preloaded and kept in cache                                |                                       | machine learning |
-| `MACHINE_LEARNING_ANN`                           | Enable ARM-NN hardware acceleration if supported                                                    |                `True`                 | machine learning |
-| `MACHINE_LEARNING_ANN_FP16_TURBO`                | Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN) |                `False`                | machine learning |
-| `MACHINE_LEARNING_ANN_TUNING_LEVEL`              | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |                  `2`                  | machine learning |
+| Variable                                                  | Description                                                                                         |             Default             | Containers       |
+| :-------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-----------------------------: | :--------------- |
+| `MACHINE_LEARNING_MODEL_TTL`                              | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                  |              `300`              | machine learning |
+| `MACHINE_LEARNING_MODEL_TTL_POLL_S`                       | Interval (s) between checks for the model TTL (disabled if \<= 0)                                   |              `10`               | machine learning |
+| `MACHINE_LEARNING_CACHE_FOLDER`                           | Directory where models are downloaded                                                               |            `/cache`             | machine learning |
+| `MACHINE_LEARNING_REQUEST_THREADS`<sup>\*1</sup>          | Thread count of the request thread pool (disabled if \<= 0)                                         |       number of CPU cores       | machine learning |
+| `MACHINE_LEARNING_MODEL_INTER_OP_THREADS`                 | Number of parallel model operations                                                                 |               `1`               | machine learning |
+| `MACHINE_LEARNING_MODEL_INTRA_OP_THREADS`                 | Number of threads for each model operation                                                          |               `2`               | machine learning |
+| `MACHINE_LEARNING_WORKERS`<sup>\*2</sup>                  | Number of worker processes to spawn                                                                 |               `1`               | machine learning |
+| `MACHINE_LEARNING_HTTP_KEEPALIVE_TIMEOUT_S`<sup>\*3</sup> | HTTP Keep-alive time in seconds                                                                     |               `2`               | machine learning |
+| `MACHINE_LEARNING_WORKER_TIMEOUT`                         | Maximum time (s) of unresponsiveness before a worker is killed                                      | `120` (`300` if using OpenVINO) | machine learning |
+| `MACHINE_LEARNING_PRELOAD__CLIP`                          | Name of a CLIP model to be preloaded and kept in cache                                              |                                 | machine learning |
+| `MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION`            | Name of a facial recognition model to be preloaded and kept in cache                                |                                 | machine learning |
+| `MACHINE_LEARNING_ANN`                                    | Enable ARM-NN hardware acceleration if supported                                                    |             `True`              | machine learning |
+| `MACHINE_LEARNING_ANN_FP16_TURBO`                         | Execute operations in FP16 precision: increasing speed, reducing precision (applies only to ARM-NN) |             `False`             | machine learning |
+| `MACHINE_LEARNING_ANN_TUNING_LEVEL`                       | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |               `2`               | machine learning |
+| `MACHINE_LEARNING_DEVICE_IDS`<sup>\*4</sup>               | Device IDs to use in multi-GPU environments                                                         |               `0`               | machine learning |
+| `MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION`     | Set the maximum number of faces that will be processed at once by the facial recognition model      |  None (`1` if using OpenVINO)   | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 
 \*2: Since each process duplicates models in memory, changing this is not recommended unless you have abundant memory to go around.
+
+\*3: For scenarios like HPA in K8S. https://github.com/immich-app/immich/discussions/12064
+
+\*4: Using multiple GPUs requires `MACHINE_LEARNING_WORKERS` to be set greater than 1. A single device is assigned to each worker in round-robin priority.
 
 :::info
 
@@ -187,15 +183,10 @@ Other machine learning parameters can be tuned from the admin UI.
 
 ## Prometheus
 
-| Variable                       | Description                                                                                   | Default | Containers | Workers            |
-| :----------------------------- | :-------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
-| `IMMICH_METRICS`<sup>\*1</sup> | Toggle all metrics (one of [`true`, `false`])                                                 |         | server     | api, microservices |
-| `IMMICH_API_METRICS`           | Toggle metrics for endpoints and response times (one of [`true`, `false`])                    |         | server     | api, microservices |
-| `IMMICH_HOST_METRICS`          | Toggle metrics for CPU and memory utilization for host and process (one of [`true`, `false`]) |         | server     | api, microservices |
-| `IMMICH_IO_METRICS`            | Toggle metrics for database queries, image processing, etc. (one of [`true`, `false`])        |         | server     | api, microservices |
-| `IMMICH_JOB_METRICS`           | Toggle metrics for jobs and queues (one of [`true`, `false`])                                 |         | server     | api, microservices |
-
-\*1: Overridden for a metric group when its corresponding environmental variable is set.
+| Variable                   | Description                                                                                                           | Default | Containers | Workers            |
+| :------------------------- | :-------------------------------------------------------------------------------------------------------------------- | :-----: | :--------- | :----------------- |
+| `IMMICH_TELEMETRY_INCLUDE` | Collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`. Note: You can also specify `all` to enable all |         | server     | api, microservices |
+| `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`                                          |         | server     | api, microservices |
 
 ## Docker Secrets
 
@@ -223,4 +214,4 @@ to use use a Docker secret for the password in the Redis container.
 [docker-secrets-example]: https://github.com/docker-library/redis/issues/46#issuecomment-335326234
 [docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
-[redis-api]: https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+[ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis

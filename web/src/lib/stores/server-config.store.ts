@@ -8,6 +8,7 @@ export const featureFlags = writable<FeatureFlags>({
   smartSearch: true,
   duplicateDetection: false,
   facialRecognition: true,
+  importFaces: false,
   sidecar: true,
   map: true,
   reverseGeocoding: true,
@@ -31,9 +32,12 @@ export const serverConfig = writable<ServerConfig>({
   isInitialized: false,
   isOnboarded: false,
   externalDomain: '',
+  mapDarkStyleUrl: '',
+  mapLightStyleUrl: '',
+  publicUsers: true,
 });
 
-export const loadConfig = async () => {
+export const retrieveServerConfig = async () => {
   const [flags, config] = await Promise.all([getServerFeatures(), getServerConfig()]);
 
   featureFlags.update(() => ({ ...flags, loaded: true }));

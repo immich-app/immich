@@ -218,47 +218,6 @@ class AlbumsApi {
     }
   }
 
-  /// Performs an HTTP 'GET /albums/count' operation and returns the [Response].
-  Future<Response> getAlbumCountWithHttpInfo() async {
-    // ignore: prefer_const_declarations
-    final path = r'/albums/count';
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  Future<AlbumCountResponseDto?> getAlbumCount() async {
-    final response = await getAlbumCountWithHttpInfo();
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumCountResponseDto',) as AlbumCountResponseDto;
-    
-    }
-    return null;
-  }
-
   /// Performs an HTTP 'GET /albums/{id}' operation and returns the [Response].
   /// Parameters:
   ///
@@ -317,6 +276,47 @@ class AlbumsApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumResponseDto',) as AlbumResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /albums/statistics' operation and returns the [Response].
+  Future<Response> getAlbumStatisticsWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/albums/statistics';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<AlbumStatisticsResponseDto?> getAlbumStatistics() async {
+    final response = await getAlbumStatisticsWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AlbumStatisticsResponseDto',) as AlbumStatisticsResponseDto;
     
     }
     return null;

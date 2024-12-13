@@ -1,3 +1,4 @@
+import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import '@testing-library/jest-dom';
 import { render, waitFor, type RenderResult } from '@testing-library/svelte';
 import { get } from 'svelte/store';
@@ -9,13 +10,8 @@ function _getNotificationListElement(sut: RenderResult<NotificationList>): HTMLA
 }
 
 describe('NotificationList component', () => {
-  const sut: RenderResult<NotificationList> = render(NotificationList);
-
   beforeAll(() => {
-    // https://testing-library.com/docs/svelte-testing-library/faq#why-arent-transition-events-running
-    vi.stubGlobal('requestAnimationFrame', (fn: FrameRequestCallback) => {
-      setTimeout(() => fn(Date.now()), 16);
-    });
+    Element.prototype.animate = getAnimateMock();
   });
 
   afterAll(() => {
@@ -23,6 +19,10 @@ describe('NotificationList component', () => {
   });
 
   it('shows a notification when added and closes it automatically after the delay timeout', async () => {
+    const sut: RenderResult<NotificationList> = render(NotificationList, { intro: false });
+    const status = await sut.findAllByRole('status');
+
+    expect(status).toHaveLength(1);
     expect(_getNotificationListElement(sut)).not.toBeInTheDocument();
 
     notificationController.show({
