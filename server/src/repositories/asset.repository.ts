@@ -197,14 +197,6 @@ export class AssetRepository implements IAssetRepository {
     return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
-    return this.repository.findOne({
-      where: { library: { id: libraryId }, originalPath },
-      withDeleted: true,
-    });
-  }
-
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
   @ChunkedArray({ paramIndex: 1 })
   async getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]> {
@@ -224,6 +216,20 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
+    return paginatedBuilder<AssetEntity>(builder, {
+      mode: PaginationMode.SKIP_TAKE,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
+  }
+
+  getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+    const builder = this.repository
+      .createQueryBuilder('asset')
+      .select('asset.id')
+      .where('asset.libraryId = :libraryId', { libraryId })
+      .withDeleted();
+
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: pagination.skip,
@@ -778,5 +784,11 @@ export class AssetRepository implements IAssetRepository {
     return this.repository
       .query(rawSql, [paths, libraryId])
       .then((result) => result.map((row: { path: string }) => row.path));
+  }
+
+  async getAssetCount(id: string, options: AssetSearchOptions = {}): Promise<number | undefined> {
+    let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
+    builder = searchAssetBuilder(builder, options);
+    return builder.getCount();
   }
 }

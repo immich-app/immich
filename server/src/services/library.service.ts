@@ -388,15 +388,14 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting to scan library ${id}`);
 
-    await this.jobRepository.queueAll([
-      {
-        name: JobName.LIBRARY_QUEUE_SYNC_FILES,
-        data: {
-          id,
-        },
+    await this.jobRepository.queue({
+      name: JobName.LIBRARY_QUEUE_SYNC_FILES,
+      data: {
+        id,
       },
-      { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } },
-    ]);
+    });
+
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 
   @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
@@ -434,6 +433,8 @@ export class LibraryService extends BaseService {
     const assetIdsToOffline: string[] = [];
     const assetIdsToUpdate: string[] = [];
 
+    this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.libraryId}`);
+
     for (const asset of assets) {
       const action = await this.handleSyncAsset(asset);
       switch (action) {
@@ -447,30 +448,28 @@ export class LibraryService extends BaseService {
     }
 
     if (assetIdsToOffline.length) {
-      await this.assetRepository.updateAll(assetIdsToOffline, { isOffline: true, deletedAt: new Date() });
-      this.logger.log(
-        `Originals are missing for ${assetIdsToOffline.length} asset(s) in library ${job.libraryId}, marked offline`,
-      );
+      await this.assetRepository.updateAll(assetIdsToOffline, {
+        isOffline: true,
+        status: AssetStatus.TRASHED,
+        deletedAt: new Date(),
+      });
     }
 
     if (assetIdsToUpdate.length) {
       //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
       await this.assetRepository.updateAll(assetIdsToUpdate, {
         isOffline: false,
+        status: AssetStatus.ACTIVE,
         deletedAt: null,
       });
-
-      this.logger.log(
-        `Found ${assetIdsToOffline.length} asset(s) with modified files for library ${job.libraryId}, queuing refresh...`,
-      );
-
       await this.queuePostSyncJobs(assetIdsToUpdate);
     }
 
     const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length;
-    if (remainingCount > 0) {
-      this.logger.log(`${remainingCount} asset(s) are unchanged in library ${job.libraryId}, no action required`);
-    }
+
+    this.logger.log(
+      `Checked existing asset(s): ${assetIdsToOffline.length} offlined, ${assetIdsToUpdate.length} updated, ${remainingCount} unchanged of batch of ${assets.length} in library ${job.libraryId}.`,
+    );
 
     return JobStatus.SUCCESS;
   }
@@ -606,7 +605,7 @@ export class LibraryService extends BaseService {
         `Finished crawling ${crawlCount} file(s) of which ${importCount} file(s) are queued for import for library ${library.id}`,
       );
     } else {
-      this.logger.log(`All ${crawlCount} file(s) on disk are already in ${library.id}`);
+      this.logger.log(`All ${crawlCount} file(s) on disk are already in library ${library.id}`);
     }
 
     await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });
@@ -621,11 +620,17 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const assetCount = (await this.getStatistics(library.id)).total;
+    const assetCount = await this.assetRepository.getAssetCount(library.id, { withDeleted: true });
+
+    if (!assetCount) {
+      this.logger.log(`Library ${library.id} is empty, no need to check assets`);
+      return JobStatus.SUCCESS;
+    }
 
     this.logger.log(
-      `Scanning library ${library.id} for assets outside of import paths and/or matching an exclusion pattern...`,
+      `${assetCount} asset(s) in library ${library.id} will be checked against import paths and exclusion patterns...`,
     );
+
     const offlineResult = await this.assetRepository.updateOffline(library);
 
     const affectedAssetCount = offlineResult.affected;
@@ -638,6 +643,8 @@ export class LibraryService extends BaseService {
       this.logger.log(
         `All ${assetCount} asset(s) in ${library.id} are outside of import paths and/or match an exclusion pattern, marked as offline`,
       );
+
+      return JobStatus.SUCCESS;
     } else if (affectedAssetCount !== assetCount && affectedAssetCount > 0) {
       this.logger.log(
         `${offlineResult.affected} asset(s) out of ${assetCount} were marked offline due to import paths and/or exclusion patterns for library ${library.id}`,
@@ -651,7 +658,7 @@ export class LibraryService extends BaseService {
     this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
 
     const existingAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId: job.id, withDeleted: true }),
+      this.assetRepository.getAllInLibrary(pagination, job.id),
     );
 
     let currentAssetCount = 0;
@@ -667,12 +674,12 @@ export class LibraryService extends BaseService {
       });
 
       this.logger.log(
-        `Queued check of ${assets.length} existing asset(s) in library ${library.id}, ${currentAssetCount} of ${assetCount} queued in total`,
+        `Queued check of ${currentAssetCount} of ${assetCount} existing asset(s) so far in library ${library.id}`,
       );
     }
 
     if (currentAssetCount) {
-      this.logger.log(`Finished queuing ${currentAssetCount} file checks for library ${library.id}`);
+      this.logger.log(`Finished queuing ${currentAssetCount} asset check(s) for library ${library.id}`);
     }
 
     return JobStatus.SUCCESS;

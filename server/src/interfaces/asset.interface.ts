@@ -178,9 +178,9 @@ export interface IAssetRepository {
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
+  getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getLivePhotoCount(motionId: string): Promise<number>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
@@ -201,4 +201,5 @@ export interface IAssetRepository {
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
   updateOffline(library: LibraryEntity): Promise<UpdateResult>;
   getNewPaths(libraryId: string, paths: string[]): Promise<string[]>;
+  getAssetCount(id: string, options: AssetSearchOptions): Promise<number | undefined>;
 }

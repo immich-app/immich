@@ -14,6 +14,7 @@ export class TrashRepository implements ITrashRepository {
         .createQueryBuilder('asset')
         .select('asset.id')
         .where({ status: AssetStatus.DELETED })
+        .orWhere({ isOffline: true })
         .withDeleted(),
       pagination,
     );
@@ -34,10 +35,13 @@ export class TrashRepository implements ITrashRepository {
   }
 
   async empty(userId: string): Promise<number> {
-    const result = await this.assetRepository.update(
-      { ownerId: userId, status: AssetStatus.TRASHED },
-      { status: AssetStatus.DELETED },
-    );
+    const result = await this.assetRepository
+      .createQueryBuilder()
+      .update(AssetEntity)
+      .set({ status: AssetStatus.DELETED })
+      .where({ ownerId: userId, status: AssetStatus.TRASHED })
+      .orWhere({ ownerId: userId, isOffline: true })
+      .execute();
 
     return result.affected || 0;
   }
