@@ -86,7 +86,7 @@ export class SearchService extends BaseService {
     const userIds = await this.getUserIdsToSearch(auth);
 
     const embedding = await this.machineLearningRepository.encodeText(
-      machineLearning.url,
+      machineLearning.urls,
       dto.query,
       machineLearning.clip,
     );
@@ -108,8 +108,11 @@ export class SearchService extends BaseService {
 
   async getSearchSuggestions(auth: AuthDto, dto: SearchSuggestionRequestDto) {
     const userIds = await this.getUserIdsToSearch(auth);
-    const results = await this.getSuggestions(userIds, dto);
-    return results.filter((result) => (dto.includeNull ? true : result !== null));
+    const suggestions = await this.getSuggestions(userIds, dto);
+    if (dto.includeNull) {
+      suggestions.push(null);
+    }
+    return suggestions;
   }
 
   private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
@@ -118,19 +121,19 @@ export class SearchService extends BaseService {
         return this.searchRepository.getCountries(userIds);
       }
       case SearchSuggestionType.STATE: {
-        return this.searchRepository.getStates(userIds, dto.country);
+        return this.searchRepository.getStates(userIds, dto);
       }
       case SearchSuggestionType.CITY: {
-        return this.searchRepository.getCities(userIds, dto.country, dto.state);
+        return this.searchRepository.getCities(userIds, dto);
       }
       case SearchSuggestionType.CAMERA_MAKE: {
-        return this.searchRepository.getCameraMakes(userIds, dto.model);
+        return this.searchRepository.getCameraMakes(userIds, dto);
       }
       case SearchSuggestionType.CAMERA_MODEL: {
-        return this.searchRepository.getCameraModels(userIds, dto.make);
+        return this.searchRepository.getCameraModels(userIds, dto);
       }
       default: {
-        return [];
+        return [] as (string | null)[];
       }
     }
   }

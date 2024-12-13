@@ -165,7 +165,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.9.0
+        uses: docker/build-push-action@v6.10.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}
@@ -256,7 +256,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.9.0
+        uses: docker/build-push-action@v6.10.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}

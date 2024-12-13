@@ -83,7 +83,7 @@ The default configuration looks like this:
   },
   "machineLearning": {
     "enabled": true,
-    "url": "http://immich-machine-learning:3003",
+    "url": ["http://immich-machine-learning:3003"],
     "clip": {
       "enabled": true,
       "modelName": "ViT-B-32__openai"

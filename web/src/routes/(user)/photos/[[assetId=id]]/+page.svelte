@@ -49,7 +49,7 @@
     const isLivePhotoCandidate =
       selection.length === 2 &&
       selection.some((asset) => asset.type === AssetTypeEnum.Image) &&
-      selection.some((asset) => asset.type === AssetTypeEnum.Image);
+      selection.some((asset) => asset.type === AssetTypeEnum.Video);
     isLinkActionAvailable = isAllOwned && (isLivePhoto || isLivePhotoCandidate);
   });
 

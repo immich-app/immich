@@ -265,6 +265,7 @@ export const langs = [
   { name: 'Belarusian', code: 'be', loader: () => import('$i18n/be.json') },
   { name: 'Bulgarian', code: 'bg', loader: () => import('$i18n/bg.json') },
   { name: 'Bislama', code: 'bi', loader: () => import('$i18n/bi.json') },
+  { name: 'Bengali', code: 'bn', loader: () => import('$i18n/bn.json') },
   { name: 'Catalan', code: 'ca', loader: () => import('$i18n/ca.json') },
   { name: 'Czech', code: 'cs', loader: () => import('$i18n/cs.json') },
   { name: 'Chuvash', code: 'cv', loader: () => import('$i18n/cv.json') },
@@ -319,6 +320,7 @@ export const langs = [
   { name: 'Thai', code: 'th', loader: () => import('$i18n/th.json') },
   { name: 'Turkish', code: 'tr', loader: () => import('$i18n/tr.json') },
   { name: 'Ukrainian', code: 'uk', loader: () => import('$i18n/uk.json') },
+  { name: 'Urdu', code: 'ur', loader: () => import('$i18n/ur.json') },
   { name: 'Vietnamese', code: 'vi', loader: () => import('$i18n/vi.json') },
   {
     name: 'Chinese (Traditional)',

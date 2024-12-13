@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.121.0+168
+version: 1.122.3+171
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -25,9 +25,6 @@ dependencies:
   intl: ^0.19.0
   auto_route: ^9.2.0
   fluttertoast: ^8.2.4
-  video_player: ^2.9.2
-  video_player_android: 2.6.0
-  chewie: ^1.7.4
   socket_io_client: ^2.0.3+1
   maplibre_gl: 0.19.0+2
   geolocator: ^11.0.0 # used to move to current location in map view
@@ -45,7 +42,7 @@ dependencies:
   path_provider: ^2.1.2
   collection: ^1.18.0
   http_parser: ^4.0.2
-  flutter_web_auth: ^0.6.0
+  flutter_web_auth: 0.6.0
   easy_image_viewer: ^1.4.0
   isar:
     version: *isar_version
@@ -64,6 +61,11 @@ dependencies:
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
   background_downloader: ^8.5.5
+  network_info_plus: ^6.1.1
+  native_video_player:
+    git:
+      url: https://github.com/immich-app/native_video_player
+      ref: ac78487
 
   #image editing packages
   crop_image: ^1.0.13

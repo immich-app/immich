@@ -1,6 +1,6 @@
 {
   "name": "immich",
-  "version": "1.121.0",
+  "version": "1.122.3",
   "description": "",
   "author": "",
   "private": true,
@@ -139,6 +139,6 @@
     "vitest": "^2.0.5"
   },
   "volta": {
-    "node": "22.11.0"
+    "node": "22.12.0"
   }
 }

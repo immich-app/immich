@@ -144,3 +144,5 @@ export const alwaysLoadOriginalFile = persisted<boolean>('always-load-original-f
 export const playVideoThumbnailOnHover = persisted<boolean>('play-video-thumbnail-on-hover', true, {});
 
 export const loopVideo = persisted<boolean>('loop-video', true, {});
+
+export const recentAlbumsDropdown = persisted<boolean>('recent-albums-open', true, {});

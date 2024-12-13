@@ -15,6 +15,8 @@ import 'package:immich_mobile/extensions/latlngbounds_extension.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
 import 'package:immich_mobile/models/map/map_marker.model.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/map/map_marker.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
@@ -99,8 +101,11 @@ class MapPage extends HookConsumerWidget {
 
     useEffect(
       () {
+        final currentAssetLink =
+            ref.read(currentAssetProvider.notifier).ref.keepAlive();
+
         loadMarkers();
-        return null;
+        return currentAssetLink.close;
       },
       [],
     );
@@ -186,6 +191,10 @@ class MapPage extends HookConsumerWidget {
         GroupAssetsBy.none,
       );
 
+      ref.read(currentAssetProvider.notifier).set(asset);
+      if (asset.isVideo) {
+        ref.read(showControlsProvider.notifier).show = false;
+      }
       context.pushRoute(
         GalleryViewerRoute(
           initialIndex: 0,
@@ -255,7 +264,7 @@ class MapPage extends HookConsumerWidget {
       selectedAssets.value = selected ? selection : {};
     }
 
-    return MapThemeOveride(
+    return MapThemeOverride(
       mapBuilder: (style) => context.isMobile
           // Single-column
           ? Scaffold(

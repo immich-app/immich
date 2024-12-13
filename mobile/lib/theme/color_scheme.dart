@@ -1,29 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/theme/theme_data.dart';
 
-enum ImmichColorPreset {
-  indigo,
-  deepPurple,
-  pink,
-  red,
-  orange,
-  yellow,
-  lime,
-  green,
-  cyan,
-  slateGray
-}
-
-const ImmichColorPreset defaultColorPreset = ImmichColorPreset.indigo;
-const String defaultColorPresetName = "indigo";
-
-const Color immichBrandColorLight = Color(0xFF4150AF);
-const Color immichBrandColorDark = Color(0xFFACCBFA);
-const Color whiteOpacity75 = Color.fromARGB((0.75 * 255) ~/ 1, 255, 255, 255);
-const Color blackOpacity90 = Color.fromARGB((0.90 * 255) ~/ 1, 0, 0, 0);
-const Color red400 = Color(0xFFEF5350);
-
-final Map<ImmichColorPreset, ImmichTheme> _themePresetsMap = {
+final Map<ImmichColorPreset, ImmichTheme> _themePresets = {
   ImmichColorPreset.indigo: ImmichTheme(
     light: ColorScheme.fromSeed(
       seedColor: immichBrandColorLight,
@@ -110,5 +89,5 @@ final Map<ImmichColorPreset, ImmichTheme> _themePresetsMap = {
 };
 
 extension ImmichColorModeExtension on ImmichColorPreset {
-  ImmichTheme getTheme() => _themePresetsMap[this]!;
+  ImmichTheme get themeOfPreset => _themePresets[this]!;
 }

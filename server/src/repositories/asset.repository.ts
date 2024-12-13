@@ -17,6 +17,7 @@ import {
   AssetUpdateAllOptions,
   AssetUpdateDuplicateOptions,
   AssetUpdateOptions,
+  DayOfYearAssets,
   IAssetRepository,
   LivePhotoSearchOptions,
   MonthDay,
@@ -74,8 +75,8 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
-  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<AssetEntity[]> {
-    return this.repository
+  async getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<DayOfYearAssets[]> {
+    const assets = await this.repository
       .createQueryBuilder('entity')
       .where(
         `entity.ownerId IN (:...ownerIds)
@@ -90,9 +91,25 @@ export class AssetRepository implements IAssetRepository {
         },
       )
       .leftJoinAndSelect('entity.exifInfo', 'exifInfo')
-      .leftJoinAndSelect('entity.files', 'files')
+      .innerJoinAndSelect('entity.files', 'files')
+      .andWhere('files.type = :type', { type: AssetFileType.THUMBNAIL })
+      .andWhere(
+        `EXTRACT(YEAR FROM CURRENT_DATE AT TIME ZONE 'UTC') - EXTRACT(YEAR FROM entity.localDateTime AT TIME ZONE 'UTC') > 0`,
+      )
       .orderBy('entity.fileCreatedAt', 'ASC')
       .getMany();
+
+    const groups: Record<number, DayOfYearAssets> = {};
+    const currentYear = new Date().getFullYear();
+    for (const asset of assets) {
+      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
+      if (!groups[yearsAgo]) {
+        groups[yearsAgo] = { yearsAgo, assets: [] };
+      }
+      groups[yearsAgo].assets.push(asset);
+    }
+
+    return Object.values(groups);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
