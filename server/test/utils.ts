@@ -12,6 +12,7 @@ import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock'
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
+import { newCronRepositoryMock } from 'test/repositories/cron.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -58,12 +59,11 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides?: Overrides,
 ) => {
-  const { metadataRepository, worker: workerOverride } = overrides || {};
-
-  const worker = workerOverride || ImmichWorker.API;
+  const { metadataRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggerRepositoryMock();
+  const cronMock = newCronRepositoryMock();
   const cryptoMock = newCryptoRepositoryMock();
   const activityMock = newActivityRepositoryMock();
   const auditMock = newAuditRepositoryMock();
@@ -102,7 +102,6 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    worker,
     loggerMock,
     accessMock,
     activityMock,
@@ -111,6 +110,7 @@ export const newTestService = <T extends BaseService>(
     albumUserMock,
     assetMock,
     configMock,
+    cronMock,
     cryptoMock,
     databaseMock,
     eventMock,
@@ -147,6 +147,7 @@ export const newTestService = <T extends BaseService>(
     sut,
     accessMock,
     loggerMock,
+    cronMock,
     cryptoMock,
     activityMock,
     auditMock,

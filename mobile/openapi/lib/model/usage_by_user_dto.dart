@@ -16,6 +16,8 @@ class UsageByUserDto {
     required this.photos,
     required this.quotaSizeInBytes,
     required this.usage,
+    required this.usagePhotos,
+    required this.usageVideos,
     required this.userId,
     required this.userName,
     required this.videos,
@@ -26,6 +28,10 @@ class UsageByUserDto {
   int? quotaSizeInBytes;
 
   int usage;
+
+  int usagePhotos;
+
+  int usageVideos;
 
   String userId;
 
@@ -38,6 +44,8 @@ class UsageByUserDto {
     other.photos == photos &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
     other.usage == usage &&
+    other.usagePhotos == usagePhotos &&
+    other.usageVideos == usageVideos &&
     other.userId == userId &&
     other.userName == userName &&
     other.videos == videos;
@@ -48,12 +56,14 @@ class UsageByUserDto {
     (photos.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (usage.hashCode) +
+    (usagePhotos.hashCode) +
+    (usageVideos.hashCode) +
     (userId.hashCode) +
     (userName.hashCode) +
     (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, userId=$userId, userName=$userName, videos=$videos]';
+  String toString() => 'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, usagePhotos=$usagePhotos, usageVideos=$usageVideos, userId=$userId, userName=$userName, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -64,6 +74,8 @@ class UsageByUserDto {
     //  json[r'quotaSizeInBytes'] = null;
     }
       json[r'usage'] = this.usage;
+      json[r'usagePhotos'] = this.usagePhotos;
+      json[r'usageVideos'] = this.usageVideos;
       json[r'userId'] = this.userId;
       json[r'userName'] = this.userName;
       json[r'videos'] = this.videos;
@@ -82,6 +94,8 @@ class UsageByUserDto {
         photos: mapValueOfType<int>(json, r'photos')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         usage: mapValueOfType<int>(json, r'usage')!,
+        usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
+        usageVideos: mapValueOfType<int>(json, r'usageVideos')!,
         userId: mapValueOfType<String>(json, r'userId')!,
         userName: mapValueOfType<String>(json, r'userName')!,
         videos: mapValueOfType<int>(json, r'videos')!,
@@ -135,6 +149,8 @@ class UsageByUserDto {
     'photos',
     'quotaSizeInBytes',
     'usage',
+    'usagePhotos',
+    'usageVideos',
     'userId',
     'userName',
     'videos',

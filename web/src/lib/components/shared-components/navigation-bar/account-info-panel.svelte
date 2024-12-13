@@ -15,10 +15,14 @@
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
 
-  export let onLogout: () => void;
-  export let onClose: () => void = () => {};
+  interface Props {
+    onLogout: () => void;
+    onClose?: () => void;
+  }
 
-  let isShowSelectAvatar = false;
+  let { onLogout, onClose = () => {} }: Props = $props();
+
+  let isShowSelectAvatar = $state(false);
 
   const handleSaveProfile = async (color: UserAvatarColor) => {
     try {
@@ -60,7 +64,7 @@
           class="border"
           size="12"
           padding="2"
-          on:click={() => (isShowSelectAvatar = true)}
+          onclick={() => (isShowSelectAvatar = true)}
         />
       </div>
     </div>
@@ -72,7 +76,7 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <Button href={AppRoute.USER_SETTINGS} on:click={onClose} color="dark-gray" size="sm" shadow={false} border>
+      <Button href={AppRoute.USER_SETTINGS} onclick={onClose} color="dark-gray" size="sm" shadow={false} border>
         <div class="flex place-content-center place-items-center text-center gap-2 px-2">
           <Icon path={mdiCog} size="18" ariaHidden />
           {$t('account_settings')}
@@ -81,7 +85,7 @@
       {#if $user.isAdmin}
         <Button
           href={AppRoute.ADMIN_USER_MANAGEMENT}
-          on:click={onClose}
+          onclick={onClose}
           color="dark-gray"
           size="sm"
           shadow={false}
@@ -101,7 +105,7 @@
     <button
       type="button"
       class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      on:click={onLogout}
+      onclick={onLogout}
     >
       <Icon path={mdiLogout} size={24} />
       {$t('sign_out')}</button

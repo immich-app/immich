@@ -18,13 +18,17 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
-  export let onClose: () => void;
-  export let onSelect: (selectedUsers: AlbumUserAddDto[]) => void;
-  export let onShare: () => void;
+  interface Props {
+    album: AlbumResponseDto;
+    onClose: () => void;
+    onSelect: (selectedUsers: AlbumUserAddDto[]) => void;
+    onShare: () => void;
+  }
 
-  let users: UserResponseDto[] = [];
-  let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = {};
+  let { album, onClose, onSelect, onShare }: Props = $props();
+
+  let users: UserResponseDto[] = $state([]);
+  let selectedUsers: Record<string, { user: UserResponseDto; role: AlbumUserRole }> = $state({});
 
   const roleOptions: Array<{ title: string; value: AlbumUserRole | 'none'; icon?: string }> = [
     { title: $t('role_editor'), value: AlbumUserRole.Editor, icon: mdiPencil },
@@ -32,7 +36,7 @@
     { title: $t('remove_user'), value: 'none' },
   ];
 
-  let sharedLinks: SharedLinkResponseDto[] = [];
+  let sharedLinks: SharedLinkResponseDto[] = $state([]);
   onMount(async () => {
     await getSharedLinks();
     const data = await searchUsers();
@@ -54,7 +58,6 @@
   const handleToggle = (user: UserResponseDto) => {
     if (Object.keys(selectedUsers).includes(user.id)) {
       delete selectedUsers[user.id];
-      selectedUsers = selectedUsers;
     } else {
       selectedUsers[user.id] = { user, role: AlbumUserRole.Editor };
     }
@@ -63,7 +66,6 @@
   const handleChangeRole = (user: UserResponseDto, role: AlbumUserRole | 'none') => {
     if (role === 'none') {
       delete selectedUsers[user.id];
-      selectedUsers = selectedUsers;
     } else {
       selectedUsers[user.id].role = role;
     }
@@ -121,11 +123,7 @@
         {#each users as user}
           {#if !Object.keys(selectedUsers).includes(user.id)}
             <div class="flex place-items-center transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl">
-              <button
-                type="button"
-                on:click={() => handleToggle(user)}
-                class="flex w-full place-items-center gap-4 p-4"
-              >
+              <button type="button" onclick={() => handleToggle(user)} class="flex w-full place-items-center gap-4 p-4">
                 <UserAvatar {user} size="md" />
                 <div class="text-left flex-grow">
                   <p class="text-immich-fg dark:text-immich-dark-fg">
@@ -150,7 +148,7 @@
         fullwidth
         rounded="full"
         disabled={Object.keys(selectedUsers).length === 0}
-        on:click={() =>
+        onclick={() =>
           onSelect(Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })))}
         >{$t('add')}</Button
       >
@@ -163,7 +161,7 @@
     <button
       type="button"
       class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
-      on:click={onShare}
+      onclick={onShare}
     >
       <Icon path={mdiLink} size={24} />
       <p class="text-sm">{$t('create_link')}</p>

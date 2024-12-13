@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:immich_mobile/interfaces/database.interface.dart';
 import 'package:isar/isar.dart';
 

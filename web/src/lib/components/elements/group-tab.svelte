@@ -1,10 +1,14 @@
 <script lang="ts">
   import { generateId } from '$lib/utils/generate-id';
 
-  export let filters: string[];
-  export let selected: string;
-  export let label: string;
-  export let onSelect: (selected: string) => void;
+  interface Props {
+    filters: string[];
+    selected: string;
+    label: string;
+    onSelect: (selected: string) => void;
+  }
+
+  let { filters, selected, label, onSelect }: Props = $props();
 
   const id = `group-tab-${generateId()}`;
 </script>
@@ -22,7 +26,7 @@
         class="peer sr-only"
         value={filter}
         checked={filter === selected}
-        on:change={() => onSelect(filter)}
+        onchange={() => onSelect(filter)}
       />
       <label
         for="{id}-{index}"

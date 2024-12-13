@@ -6,6 +6,8 @@ import {
   TranscodeCommand,
   VideoCodecHWConfig,
   VideoCodecSWConfig,
+  VideoFormat,
+  VideoInterfaces,
   VideoStreamInfo,
 } from 'src/interfaces/media.interface';
 
@@ -13,11 +15,11 @@ export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   protected constructor(protected config: SystemConfigFFmpegDto) {}
 
-  static create(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false): VideoCodecSWConfig {
+  static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces): VideoCodecSWConfig {
     if (config.accel === TranscodeHWAccel.DISABLED) {
       return this.getSWCodecConfig(config);
     }
-    return this.getHWCodecConfig(config, devices, hasMaliOpenCL);
+    return this.getHWCodecConfig(config, interfaces);
   }
 
   private static getSWCodecConfig(config: SystemConfigFFmpegDto) {
@@ -40,28 +42,31 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  private static getHWCodecConfig(config: SystemConfigFFmpegDto, devices: string[] = [], hasMaliOpenCL = false) {
+  private static getHWCodecConfig(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces) {
     let handler: VideoCodecHWConfig;
     switch (config.accel) {
       case TranscodeHWAccel.NVENC: {
-        handler = config.accelDecode ? new NvencHwDecodeConfig(config) : new NvencSwDecodeConfig(config);
+        handler = config.accelDecode
+          ? new NvencHwDecodeConfig(config, interfaces)
+          : new NvencSwDecodeConfig(config, interfaces);
         break;
       }
       case TranscodeHWAccel.QSV: {
-        handler = config.accelDecode ? new QsvHwDecodeConfig(config, devices) : new QsvSwDecodeConfig(config, devices);
+        handler = config.accelDecode
+          ? new QsvHwDecodeConfig(config, interfaces)
+          : new QsvSwDecodeConfig(config, interfaces);
         break;
       }
       case TranscodeHWAccel.VAAPI: {
         handler = config.accelDecode
-          ? new VaapiHwDecodeConfig(config, devices)
-          : new VaapiSwDecodeConfig(config, devices);
+          ? new VaapiHwDecodeConfig(config, interfaces)
+          : new VaapiSwDecodeConfig(config, interfaces);
         break;
       }
       case TranscodeHWAccel.RKMPP: {
-        handler =
-          config.accelDecode && hasMaliOpenCL
-            ? new RkmppHwDecodeConfig(config, devices)
-            : new RkmppSwDecodeConfig(config, devices);
+        handler = config.accelDecode
+          ? new RkmppHwDecodeConfig(config, interfaces)
+          : new RkmppSwDecodeConfig(config, interfaces);
         break;
       }
       default: {
@@ -77,9 +82,14 @@ export class BaseConfig implements VideoCodecSWConfig {
     return handler;
   }
 
-  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
+  getCommand(
+    target: TranscodeTarget,
+    videoStream: VideoStreamInfo,
+    audioStream?: AudioStreamInfo,
+    format?: VideoFormat,
+  ) {
     const options = {
-      inputOptions: this.getBaseInputOptions(videoStream),
+      inputOptions: this.getBaseInputOptions(videoStream, format),
       outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v verbose'],
       twoPass: this.eligibleForTwoPass(),
       progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
@@ -101,7 +111,7 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getBaseInputOptions(videoStream: VideoStreamInfo): string[] {
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
     return this.getInputThreadOptions();
   }
 
@@ -317,14 +327,16 @@ export class BaseConfig implements VideoCodecSWConfig {
 }
 
 export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
-  protected devices: string[];
+  protected device: string;
+  protected interfaces: VideoInterfaces;
 
   constructor(
     protected config: SystemConfigFFmpegDto,
-    devices: string[] = [],
+    interfaces: VideoInterfaces,
   ) {
     super(config);
-    this.devices = this.validateDevices(devices);
+    this.interfaces = interfaces;
+    this.device = this.getDevice(interfaces);
   }
 
   getSupportedCodecs() {
@@ -332,18 +344,29 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
   }
 
   validateDevices(devices: string[]) {
-    return devices
-      .filter((device) => device.startsWith('renderD') || device.startsWith('card'))
-      .sort((a, b) => {
-        // order GPU devices first
-        if (a.startsWith('card') && b.startsWith('renderD')) {
-          return -1;
-        }
-        if (a.startsWith('renderD') && b.startsWith('card')) {
-          return 1;
-        }
-        return -a.localeCompare(b);
-      });
+    if (devices.length === 0) {
+      throw new Error('No /dev/dri devices found. If using Docker, make sure at least one /dev/dri device is mounted');
+    }
+
+    return devices.filter(function (device) {
+      return device.startsWith('renderD') || device.startsWith('card');
+    });
+  }
+
+  getDevice({ dri }: VideoInterfaces) {
+    if (this.config.preferredHwDevice === 'auto') {
+      // eslint-disable-next-line unicorn/no-array-reduce
+      return `/dev/dri/${this.validateDevices(dri).reduce(function (a, b) {
+        return a.localeCompare(b) < 0 ? b : a;
+      })}`;
+    }
+
+    const deviceName = this.config.preferredHwDevice.replace('/dev/dri/', '');
+    if (!dri.includes(deviceName)) {
+      throw new Error(`Device '${deviceName}' does not exist. If using Docker, make sure this device is mounted`);
+    }
+
+    return `/dev/dri/${deviceName}`;
   }
 
   getVideoCodec(): string {
@@ -356,20 +379,6 @@ export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
     }
     return this.config.gopSize;
   }
-
-  getPreferredHardwareDevice(): string | undefined {
-    const device = this.config.preferredHwDevice;
-    if (device === 'auto') {
-      return;
-    }
-
-    const deviceName = device.replace('/dev/dri/', '');
-    if (!this.devices.includes(deviceName)) {
-      throw new Error(`Device '${device}' does not exist`);
-    }
-
-    return `/dev/dri/${deviceName}`;
-  }
 }
 
 export class ThumbnailConfig extends BaseConfig {
@@ -377,8 +386,11 @@ export class ThumbnailConfig extends BaseConfig {
     return new ThumbnailConfig(config);
   }
 
-  getBaseInputOptions(): string[] {
-    return ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
+    // skip_frame nointra skips all frames for some MPEG-TS files. Look at ffmpeg tickets 7950 and 7895 for more details.
+    return format?.formatName === 'mpegts'
+      ? ['-sws_flags accurate_rnd+full_chroma_int']
+      : ['-skip_frame nointra', '-sws_flags accurate_rnd+full_chroma_int'];
   }
 
   getBaseOutputOptions() {
@@ -505,12 +517,16 @@ export class AV1Config extends BaseConfig {
 }
 
 export class NvencSwDecodeConfig extends BaseHWConfig {
+  getDevice() {
+    return '0';
+  }
+
   getSupportedCodecs() {
     return [VideoCodec.H264, VideoCodec.HEVC, VideoCodec.AV1];
   }
 
   getBaseInputOptions() {
-    return ['-init_hw_device cuda=cuda:0', '-filter_hw_device cuda'];
+    return [`-init_hw_device cuda=cuda:${this.device}`, '-filter_hw_device cuda'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -633,17 +649,7 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
 
 export class QsvSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No QSV device found');
-    }
-
-    let qsvString = '';
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice) {
-      qsvString = `,child_device=${hwDevice}`;
-    }
-
-    return [`-init_hw_device qsv=hw${qsvString}`, '-filter_hw_device hw'];
+    return [`-init_hw_device qsv=hw,child_device=${this.device}`, '-filter_hw_device hw'];
   }
 
   getBaseOutputOptions(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream?: AudioStreamInfo) {
@@ -713,23 +719,14 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
 export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No QSV device found');
-    }
-
-    const options = [
+    return [
       '-hwaccel qsv',
       '-hwaccel_output_format qsv',
       '-async_depth 4',
       '-noautorotate',
+      `-qsv_device ${this.device}`,
       ...this.getInputThreadOptions(),
     ];
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice) {
-      options.push(`-qsv_device ${hwDevice}`);
-    }
-
-    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -781,16 +778,7 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
 
 export class VaapiSwDecodeConfig extends BaseHWConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No VAAPI device found');
-    }
-
-    let hwDevice = this.getPreferredHardwareDevice();
-    if (!hwDevice) {
-      hwDevice = `/dev/dri/${this.devices[0]}`;
-    }
-
-    return [`-init_hw_device vaapi=accel:${hwDevice}`, '-filter_hw_device accel'];
+    return [`-init_hw_device vaapi=accel:${this.device}`, '-filter_hw_device accel'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -848,22 +836,13 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
 
 export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No VAAPI device found');
-    }
-
-    const options = [
+    return [
       '-hwaccel vaapi',
       '-hwaccel_output_format vaapi',
       '-noautorotate',
+      `-hwaccel_device ${this.device}`,
       ...this.getInputThreadOptions(),
     ];
-    const hwDevice = this.getPreferredHardwareDevice();
-    if (hwDevice) {
-      options.push(`-hwaccel_device ${hwDevice}`);
-    }
-
-    return options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -914,21 +893,11 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
 }
 
 export class RkmppSwDecodeConfig extends BaseHWConfig {
-  constructor(
-    protected config: SystemConfigFFmpegDto,
-    devices: string[] = [],
-  ) {
-    super(config, devices);
-  }
-
   eligibleForTwoPass(): boolean {
     return false;
   }
 
   getBaseInputOptions(): string[] {
-    if (this.devices.length === 0) {
-      throw new Error('No RKMPP device found');
-    }
     return [];
   }
 
@@ -969,25 +938,32 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
 
 export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
   getBaseInputOptions() {
-    if (this.devices.length === 0) {
-      throw new Error('No RKMPP device found');
-    }
-
     return ['-hwaccel rkmpp', '-hwaccel_output_format drm_prime', '-afbc rga', '-noautorotate'];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     if (this.shouldToneMap(videoStream)) {
       const { primaries, transfer, matrix } = this.getColors();
+      if (this.interfaces.mali) {
+        return [
+          // use RKMPP for scaling, OpenCL for tone mapping
+          `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1:async_depth=4`,
+          'hwmap=derive_device=opencl:mode=read',
+          `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
+          'hwmap=derive_device=rkmpp:mode=write:reverse=1',
+          'format=drm_prime',
+        ];
+      }
       return [
-        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1`,
-        'hwmap=derive_device=opencl:mode=read',
-        `tonemap_opencl=format=nv12:r=pc:p=${primaries}:t=${transfer}:m=${matrix}:tonemap=${this.config.tonemap}:desat=0:tonemap_mode=lum:peak=100`,
-        'hwmap=derive_device=rkmpp:mode=write:reverse=1',
-        'format=drm_prime',
+        // use RKMPP for scaling, CPU for tone mapping (only works on RK3588, which supports 10-bit output)
+        `scale_rkrga=${this.getScaling(videoStream)}:format=p010:afbc=1:async_depth=4`,
+        'hwdownload',
+        'format=p010',
+        `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=yuv420p`,
+        'hwupload',
       ];
     } else if (this.shouldScale(videoStream)) {
-      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1`];
+      return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1:async_depth=4`];
     }
     return [];
   }

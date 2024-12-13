@@ -279,7 +279,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
     void copyLinkToClipboard() {
       Clipboard.setData(ClipboardData(text: newShareLink.value)).then((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        context.scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text(
               "shared_link_clipboard_copied_massage",

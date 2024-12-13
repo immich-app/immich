@@ -24,6 +24,7 @@ export class ImmichFileResponse {
   public readonly path!: string;
   public readonly contentType!: string;
   public readonly cacheControl!: CacheControl;
+  public readonly fileName?: string;
 
   constructor(response: ImmichFileResponse) {
     Object.assign(this, response);
@@ -56,6 +57,9 @@ export const sendFile = async (
     }
 
     res.header('Content-Type', file.contentType);
+    if (file.fileName) {
+      res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
+    }
 
     const options: SendFileOptions = { dotfiles: 'allow' };
     if (!isAbsolute(file.path)) {

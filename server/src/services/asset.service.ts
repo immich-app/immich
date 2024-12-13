@@ -43,28 +43,13 @@ export class AssetService extends BaseService {
     });
     const userIds = [auth.user.id, ...partnerIds];
 
-    const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
-    const assetsWithThumbnails = assets.filter(({ files }) => !!getAssetFiles(files).thumbnailFile);
-    const groups: Record<number, AssetEntity[]> = {};
-    const currentYear = new Date().getFullYear();
-    for (const asset of assetsWithThumbnails) {
-      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
-      if (!groups[yearsAgo]) {
-        groups[yearsAgo] = [];
-      }
-      groups[yearsAgo].push(asset);
-    }
-
-    return Object.keys(groups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .filter((yearsAgo) => yearsAgo > 0)
-      .map((yearsAgo) => ({
-        yearsAgo,
-        // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
-      }));
+    const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
+    return groups.map(({ yearsAgo, assets }) => ({
+      yearsAgo,
+      // TODO move this to clients
+      title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
+      assets: assets.map((asset) => mapAsset(asset, { auth })),
+    }));
   }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
@@ -94,7 +79,6 @@ export class AssetService extends BaseService {
       {
         exifInfo: true,
         sharedLinks: true,
-        smartInfo: true,
         tags: true,
         owner: true,
         faces: {
@@ -162,7 +146,6 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      smartInfo: true,
       tags: true,
       faces: {
         person: true,

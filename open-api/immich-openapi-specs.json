@@ -3430,6 +3430,57 @@
         ]
       }
     },
+    "/notifications/templates/{name}": {
+      "post": {
+        "operationId": "getNotificationTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/notifications/test-email": {
       "post": {
         "operationId": "sendTestEmail",
@@ -4409,7 +4460,7 @@
     },
     "/search/metadata": {
       "post": {
-        "operationId": "searchMetadata",
+        "operationId": "searchAssets",
         "parameters": [],
         "requestBody": {
           "content": {
@@ -7385,7 +7436,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.119.1",
+    "version": "1.122.3",
     "contact": {}
   },
   "tags": [],
@@ -8401,9 +8452,6 @@
             "deprecated": true,
             "description": "This property was deprecated in v1.113.0",
             "type": "boolean"
-          },
-          "smartInfo": {
-            "$ref": "#/components/schemas/SmartInfoResponseDto"
           },
           "stack": {
             "allOf": [
@@ -10828,6 +10876,9 @@
           "oauthButtonText": {
             "type": "string"
           },
+          "publicUsers": {
+            "type": "boolean"
+          },
           "trashDays": {
             "type": "integer"
           },
@@ -10843,6 +10894,7 @@
           "mapDarkStyleUrl",
           "mapLightStyleUrl",
           "oauthButtonText",
+          "publicUsers",
           "trashDays",
           "userDeleteDelay"
         ],
@@ -10969,7 +11021,9 @@
               {
                 "photos": 1,
                 "videos": 1,
-                "diskUsageRaw": 1
+                "diskUsageRaw": 2,
+                "usagePhotos": 1,
+                "usageVideos": 1
               }
             ],
             "items": {
@@ -10977,6 +11031,16 @@
             },
             "title": "Array of usage for each user",
             "type": "array"
+          },
+          "usagePhotos": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
+          },
+          "usageVideos": {
+            "default": 0,
+            "format": "int64",
+            "type": "integer"
           },
           "videos": {
             "default": 0,
@@ -10987,6 +11051,8 @@
           "photos",
           "usage",
           "usageByUser",
+          "usagePhotos",
+          "usageVideos",
           "videos"
         ],
         "type": "object"
@@ -11284,25 +11350,6 @@
         ],
         "type": "object"
       },
-      "SmartInfoResponseDto": {
-        "properties": {
-          "objects": {
-            "items": {
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          },
-          "tags": {
-            "items": {
-              "type": "string"
-            },
-            "nullable": true,
-            "type": "array"
-          }
-        },
-        "type": "object"
-      },
       "SmartSearchDto": {
         "properties": {
           "city": {
@@ -11542,6 +11589,9 @@
           "storageTemplate": {
             "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
           },
+          "templates": {
+            "$ref": "#/components/schemas/SystemConfigTemplatesDto"
+          },
           "theme": {
             "$ref": "#/components/schemas/SystemConfigThemeDto"
           },
@@ -11569,6 +11619,7 @@
           "reverseGeocoding",
           "server",
           "storageTemplate",
+          "templates",
           "theme",
           "trash",
           "user"
@@ -11861,7 +11912,17 @@
             "$ref": "#/components/schemas/FacialRecognitionConfig"
           },
           "url": {
+            "deprecated": true,
+            "description": "This property was deprecated in v1.122.0",
             "type": "string"
+          },
+          "urls": {
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "required": [
@@ -11869,7 +11930,7 @@
           "duplicateDetection",
           "enabled",
           "facialRecognition",
-          "url"
+          "urls"
         ],
         "type": "object"
       },
@@ -12022,11 +12083,15 @@
           },
           "loginPageMessage": {
             "type": "string"
+          },
+          "publicUsers": {
+            "type": "boolean"
           }
         },
         "required": [
           "externalDomain",
-          "loginPageMessage"
+          "loginPageMessage",
+          "publicUsers"
         ],
         "type": "object"
       },
@@ -12101,6 +12166,25 @@
         ],
         "type": "object"
       },
+      "SystemConfigTemplateEmailsDto": {
+        "properties": {
+          "albumInviteTemplate": {
+            "type": "string"
+          },
+          "albumUpdateTemplate": {
+            "type": "string"
+          },
+          "welcomeTemplate": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumInviteTemplate",
+          "albumUpdateTemplate",
+          "welcomeTemplate"
+        ],
+        "type": "object"
+      },
       "SystemConfigTemplateStorageOptionDto": {
         "properties": {
           "dayOptions": {
@@ -12161,6 +12245,17 @@
           "secondOptions",
           "weekOptions",
           "yearOptions"
+        ],
+        "type": "object"
+      },
+      "SystemConfigTemplatesDto": {
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/SystemConfigTemplateEmailsDto"
+          }
+        },
+        "required": [
+          "email"
         ],
         "type": "object"
       },
@@ -12340,6 +12435,32 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "TemplateDto": {
+        "properties": {
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ],
+        "type": "object"
+      },
+      "TemplateResponseDto": {
+        "properties": {
+          "html": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "html",
+          "name"
+        ],
         "type": "object"
       },
       "TestEmailResponseDto": {
@@ -12525,6 +12646,14 @@
             "format": "int64",
             "type": "integer"
           },
+          "usagePhotos": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "usageVideos": {
+            "format": "int64",
+            "type": "integer"
+          },
           "userId": {
             "type": "string"
           },
@@ -12539,6 +12668,8 @@
           "photos",
           "quotaSizeInBytes",
           "usage",
+          "usagePhotos",
+          "usageVideos",
           "userId",
           "userName",
           "videos"

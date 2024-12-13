@@ -1,5 +1,5 @@
 import { Writable } from 'node:stream';
-import { ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
+import { ExifOrientation, ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
 
 export const IMediaRepository = 'IMediaRepository';
 
@@ -31,6 +31,7 @@ interface DecodeImageOptions {
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
   size: number;
+  orientation?: ExifOrientation;
 }
 
 export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
@@ -113,7 +114,12 @@ export interface ImageBuffer {
 }
 
 export interface VideoCodecSWConfig {
-  getCommand(target: TranscodeTarget, videoStream: VideoStreamInfo, audioStream: AudioStreamInfo): TranscodeCommand;
+  getCommand(
+    target: TranscodeTarget,
+    videoStream: VideoStreamInfo,
+    audioStream: AudioStreamInfo,
+    format?: VideoFormat,
+  ): TranscodeCommand;
 }
 
 export interface VideoCodecHWConfig extends VideoCodecSWConfig {
@@ -122,6 +128,11 @@ export interface VideoCodecHWConfig extends VideoCodecSWConfig {
 
 export interface ProbeOptions {
   countFrames: boolean;
+}
+
+export interface VideoInterfaces {
+  dri: string[];
+  mali: boolean;
 }
 
 export interface IMediaRepository {

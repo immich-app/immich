@@ -1,5 +1,5 @@
 allprojects {
-    ext.kotlin_version = '1.9.24' 
+    ext.kotlin_version = '2.0.20' 
 
     repositories {
         google()
@@ -16,8 +16,8 @@ subprojects {
         if (project.plugins.hasPlugin("com.android.application") ||
                 project.plugins.hasPlugin("com.android.library")) {
             project.android {
-                compileSdkVersion 34
-                buildToolsVersion "34.0.0"
+                compileSdkVersion 35
+                buildToolsVersion "35.0.0"
             }
         }
     }

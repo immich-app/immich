@@ -95,6 +95,13 @@ export const probeStub = {
     ...probeStubDefault,
     videoStreams: [{ ...probeStubDefaultVideoStream[0], bitrate: 40_000_000 }],
   }),
+  videoStreamMTS: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    format: {
+      ...probeStubDefaultFormat,
+      formatName: 'mpegts',
+    },
+  }),
   videoStreamHDR: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [

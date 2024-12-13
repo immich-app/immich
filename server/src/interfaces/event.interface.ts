@@ -2,22 +2,21 @@ import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichWorker } from 'src/enum';
 import { JobItem, QueueName } from 'src/interfaces/job.interface';
 
 export const IEventRepository = 'IEventRepository';
 
 type EventMap = {
   // app events
-  'app.bootstrap': [ImmichWorker];
-  'app.shutdown': [ImmichWorker];
+  'app.bootstrap': [];
+  'app.shutdown': [];
 
+  'config.init': [{ newConfig: SystemConfig }];
   // config events
   'config.update': [
     {
       newConfig: SystemConfig;
-      /** When the server starts, `oldConfig` is `undefined` */
-      oldConfig?: SystemConfig;
+      oldConfig: SystemConfig;
     },
   ];
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
@@ -88,6 +87,13 @@ export type EventItem<T extends EmitEvent> = {
   handler: EmitHandler<T>;
   server: boolean;
 };
+
+export enum BootstrapEventPriority {
+  // Database service should be initialized before anything else, most other services need database access
+  DatabaseService = -200,
+  // Initialise config after other bootstrap services, stop other services from using config on bootstrap
+  SystemConfig = 100,
+}
 
 export interface IEventRepository {
   setup(options: { services: ClassConstructor<unknown>[] }): void;

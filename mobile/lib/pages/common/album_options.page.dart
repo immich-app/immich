@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -25,7 +25,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
-    final userId = ref.watch(authenticationProvider).userId;
+    final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.activityEnabled);
     final isProcessing = useProcessingOverlay();
     final isOwner = owner?.id == userId;
@@ -49,7 +49,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
         if (isSuccess) {
           context.navigateTo(
-            TabControllerRoute(children: [AlbumsRoute()]),
+            const TabControllerRoute(children: [AlbumsRoute()]),
           );
         } else {
           showErrorMessage();

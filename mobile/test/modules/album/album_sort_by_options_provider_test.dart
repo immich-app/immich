@@ -147,24 +147,40 @@ void main() {
     group("Album sort - Most Recent", () {
       const mostRecent = AlbumSortMode.mostRecent;
 
-      test("Most Recent - ASC", () {
-        final sorted = mostRecent.sortFn(albums, false);
+      test("Most Recent - DESC", () {
+        final sorted = mostRecent.sortFn(
+          [
+            AlbumStub.create2020end2020Album,
+            AlbumStub.create2020end2022Album,
+            AlbumStub.create2020end2024Album,
+            AlbumStub.create2020end2026Album,
+          ],
+          false,
+        );
         final sortedList = [
-          AlbumStub.sharedWithUser,
-          AlbumStub.twoAsset,
-          AlbumStub.oneAsset,
-          AlbumStub.emptyAlbum,
+          AlbumStub.create2020end2026Album,
+          AlbumStub.create2020end2024Album,
+          AlbumStub.create2020end2022Album,
+          AlbumStub.create2020end2020Album,
         ];
         expect(sorted, orderedEquals(sortedList));
       });
 
-      test("Most Recent - DESC", () {
-        final sorted = mostRecent.sortFn(albums, true);
+      test("Most Recent - ASC", () {
+        final sorted = mostRecent.sortFn(
+          [
+            AlbumStub.create2020end2020Album,
+            AlbumStub.create2020end2022Album,
+            AlbumStub.create2020end2024Album,
+            AlbumStub.create2020end2026Album,
+          ],
+          true,
+        );
         final sortedList = [
-          AlbumStub.emptyAlbum,
-          AlbumStub.oneAsset,
-          AlbumStub.twoAsset,
-          AlbumStub.sharedWithUser,
+          AlbumStub.create2020end2020Album,
+          AlbumStub.create2020end2022Album,
+          AlbumStub.create2020end2024Album,
+          AlbumStub.create2020end2026Album,
         ];
         expect(sorted, orderedEquals(sortedList));
       });

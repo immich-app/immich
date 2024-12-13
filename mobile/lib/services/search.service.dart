@@ -77,7 +77,7 @@ class SearchService {
           ),
         );
       } else {
-        response = await _apiService.searchApi.searchMetadata(
+        response = await _apiService.searchApi.searchAssets(
           MetadataSearchDto(
             originalFileName:
                 filter.filename != null && filter.filename!.isNotEmpty

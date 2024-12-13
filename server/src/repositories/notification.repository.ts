@@ -55,22 +55,22 @@ export class NotificationRepository implements INotificationRepository {
     }
   }
 
-  private render({ template, data }: EmailRenderRequest): React.FunctionComponentElement<any> {
+  private render({ template, data, customTemplate }: EmailRenderRequest): React.FunctionComponentElement<any> {
     switch (template) {
       case EmailTemplate.TEST_EMAIL: {
-        return React.createElement(TestEmail, data);
+        return React.createElement(TestEmail, { ...data, customTemplate });
       }
 
       case EmailTemplate.WELCOME: {
-        return React.createElement(WelcomeEmail, data);
+        return React.createElement(WelcomeEmail, { ...data, customTemplate });
       }
 
       case EmailTemplate.ALBUM_INVITE: {
-        return React.createElement(AlbumInviteEmail, data);
+        return React.createElement(AlbumInviteEmail, { ...data, customTemplate });
       }
 
       case EmailTemplate.ALBUM_UPDATE: {
-        return React.createElement(AlbumUpdateEmail, data);
+        return React.createElement(AlbumUpdateEmail, { ...data, customTemplate });
       }
     }
   }

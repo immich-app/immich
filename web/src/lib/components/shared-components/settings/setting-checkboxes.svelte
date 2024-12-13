@@ -4,13 +4,25 @@
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let value: string[];
-  export let options: { value: string; text: string }[];
-  export let label = '';
-  export let desc = '';
-  export let name = '';
-  export let isEdited = false;
-  export let disabled = false;
+  interface Props {
+    value: string[];
+    options: { value: string; text: string }[];
+    label?: string;
+    desc?: string;
+    name?: string;
+    isEdited?: boolean;
+    disabled?: boolean;
+  }
+
+  let {
+    value = $bindable(),
+    options,
+    label = '',
+    desc = '',
+    name = '',
+    isEdited = false,
+    disabled = false,
+  }: Props = $props();
 
   function handleCheckboxChange(option: string) {
     value = value.includes(option) ? value.filter((item) => item !== option) : [...value, option];
@@ -46,7 +58,7 @@
         checked={value.includes(option.value)}
         {disabled}
         labelClass="text-gray-500 dark:text-gray-300"
-        on:change={() => handleCheckboxChange(option.value)}
+        onchange={() => handleCheckboxChange(option.value)}
       />
     {/each}
   </div>

@@ -3,7 +3,7 @@
   import { cubicOut } from 'svelte/easing';
   import { tweened } from 'svelte/motion';
 
-  let showing = false;
+  let showing = $state(false);
 
   // delay showing any progress for a little bit so very fast loads
   // do not cause flicker
