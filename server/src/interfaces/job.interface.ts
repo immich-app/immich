@@ -84,7 +84,7 @@ export enum JobName {
   // library management
   LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
   LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
-  LIBRARY_SYNC_FILE = 'library-sync-file',
+  LIBRARY_SYNC_FILES = 'library-sync-files',
   LIBRARY_SYNC_ASSETS = 'library-sync-assets',
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SYNC_ALL = 'library-queue-sync-all',
@@ -135,7 +135,7 @@ export interface IDelayedJob extends IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: 'upload' | 'library-import' | 'sidecar-write' | 'copy';
   notify?: boolean;
 }
 
@@ -146,7 +146,7 @@ export interface IAssetDeleteJob extends IEntityJob {
 export interface ILibraryFileJob {
   libraryId: string;
   ownerId: string;
-  assetPath: string;
+  assetPaths: string[];
 }
 
 export interface ILibraryBulkIdsJob {
@@ -290,7 +290,7 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
-  | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
   | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }

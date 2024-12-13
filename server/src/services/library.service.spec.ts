@@ -179,7 +179,7 @@ describe(LibraryService.name, () => {
 
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.LIBRARY_SYNC_FILE,
+          name: JobName.LIBRARY_SYNC_FILES,
           data: {
             id: libraryStub.externalLibrary1.id,
             ownerId: libraryStub.externalLibrary1.owner.id,
@@ -960,7 +960,7 @@ describe(LibraryService.name, () => {
 
         expect(jobMock.queueAll).toHaveBeenCalledWith([
           {
-            name: JobName.LIBRARY_SYNC_FILE,
+            name: JobName.LIBRARY_SYNC_FILES,
             data: {
               id: libraryStub.externalLibraryWithImportPaths1.id,
               assetPath: '/foo/photo.jpg',
@@ -985,7 +985,7 @@ describe(LibraryService.name, () => {
 
         expect(jobMock.queueAll).toHaveBeenCalledWith([
           {
-            name: JobName.LIBRARY_SYNC_FILE,
+            name: JobName.LIBRARY_SYNC_FILES,
             data: {
               id: libraryStub.externalLibraryWithImportPaths1.id,
               assetPath: '/foo/photo.jpg',
