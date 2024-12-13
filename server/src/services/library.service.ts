@@ -214,17 +214,26 @@ export class LibraryService extends BaseService {
 
   @OnJob({ name: JobName.LIBRARY_SYNC_FILES, queue: QueueName.LIBRARY })
   async handleSyncFiles(job: JobOf<JobName.LIBRARY_SYNC_FILES>): Promise<JobStatus> {
+    const library = await this.libraryRepository.get(job.libraryId);
+    if (!library) {
+      // We need to check if the library still exists as it could have been deleted after the scan was queued
+      this.logger.debug(`Library ${job.libraryId} not found, skipping file import`);
+      return JobStatus.FAILED;
+    }
+
     const assetImports = job.assetPaths.map((assetPath) => this.processEntity(assetPath, job.ownerId, job.libraryId));
 
     const assetIds: string[] = [];
-    const batchSize = 1000; // Adjust the batch size as needed
+
+    // Due to a typeorm limitation we must batch the inserts
+    const batchSize = 2000;
     for (let i = 0; i < assetImports.length; i += batchSize) {
       const batch = assetImports.slice(i, i + batchSize);
       const batchIds = await this.assetRepository.createAll(batch).then((assets) => assets.map((asset) => asset.id));
       assetIds.push(...batchIds);
     }
 
-    this.logger.log(`Imported ${assetIds.length} asset(s) for library ${job.libraryId}`);
+    this.logger.log(`Imported ${assetIds.length} file(s) into library ${job.libraryId}`);
 
     await this.queuePostSyncJobs(assetIds);
 
@@ -379,14 +388,15 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting to scan library ${id}`);
 
-    await this.jobRepository.queue({
-      name: JobName.LIBRARY_QUEUE_SYNC_FILES,
-      data: {
-        id,
+    await this.jobRepository.queueAll([
+      {
+        name: JobName.LIBRARY_QUEUE_SYNC_FILES,
+        data: {
+          id,
+        },
       },
-    });
-
-    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
+      { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } },
+    ]);
   }
 
   @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
@@ -396,6 +406,7 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
     const libraries = await this.libraryRepository.getAll(true);
+
     await this.jobRepository.queueAll(
       libraries.map((library) => ({
         name: JobName.LIBRARY_QUEUE_SYNC_FILES,
@@ -412,6 +423,7 @@ export class LibraryService extends BaseService {
         },
       })),
     );
+
     return JobStatus.SUCCESS;
   }
 
@@ -531,7 +543,7 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    this.logger.log(`Crawling import paths for library ${library.id}...`);
+    this.logger.debug(`Validating import paths for library ${library.id}...`);
 
     const validImportPaths: string[] = [];
 
@@ -560,11 +572,11 @@ export class LibraryService extends BaseService {
     let importCount = 0;
     let crawlCount = 0;
 
-    this.logger.log(`Starting crawl of filesystem for ${library.id}...`);
+    this.logger.log(`Starting crawl of ${validImportPaths.length} path(s) for library ${library.id}...`);
 
     for await (const pathBatch of pathsOnDisk) {
       crawlCount += pathBatch.length;
-      this.logger.log(
+      this.logger.debug(
         `Crawled ${pathBatch.length} file(s) for library ${library.id}, in total ${crawlCount} file(s) crawled so far`,
       );
       const newPaths = await this.assetRepository.getNewPaths(library.id, pathBatch);
@@ -575,29 +587,26 @@ export class LibraryService extends BaseService {
           name: JobName.LIBRARY_SYNC_FILES,
           data: { libraryId: library.id, ownerId: library.ownerId, assetPaths: newPaths },
         });
-
-        if (newPaths.length < pathBatch.length) {
-          this.logger.debug(
-            `Current crawl batch: ${newPaths.length} of ${pathBatch.length} file(s) are new, queued import for library ${library.id}...`,
-          );
-        } else {
-          this.logger.debug(
-            `Current crawl batch: ${newPaths.length} new file(s), queued import for library ${library.id}...`,
-          );
-        }
+        this.logger.log(
+          `Crawled ${crawlCount} file(s) so far: ${newPaths.length} of current batch queued for import for ${library.id}...`,
+        );
       } else {
-        this.logger.debug(`Current crawl batch: ${pathBatch.length} asset(s) already in library ${library.id}`);
+        this.logger.log(
+          `Crawled ${crawlCount} file(s) so far: ${pathBatch.length} of current batch already in library ${library.id}...`,
+        );
       }
     }
 
-    if (importCount > 0 && importCount === crawlCount) {
+    if (crawlCount === 0) {
+      this.logger.log(`No files found on disk for library ${library.id}`);
+    } else if (importCount > 0 && importCount === crawlCount) {
       this.logger.log(`Finished crawling and queueing ${crawlCount} file(s) for import for library ${library.id}`);
     } else if (importCount > 0) {
       this.logger.log(
-        `Finished crawling ${crawlCount} file(s) of which ${importCount} are queued for import for library ${library.id}`,
+        `Finished crawling ${crawlCount} file(s) of which ${importCount} file(s) are queued for import for library ${library.id}`,
       );
     } else {
-      this.logger.debug(`Finished crawling, no files found for library ${library.id}`);
+      this.logger.log(`All ${crawlCount} file(s) on disk are already in ${library.id}`);
     }
 
     await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });

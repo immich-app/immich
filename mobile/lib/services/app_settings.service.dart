@@ -1,4 +1,4 @@
-import 'package:immich_mobile/constants/immich_colors.dart';
+import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 enum AppSettingsEnum<T> {
