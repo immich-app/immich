@@ -1,4 +1,5 @@
 {
+  "change_display_order": "Change display order",
   "error_change_sort_album": "Failed to change album sort order",
   "action_common_back": "Back",
   "action_common_cancel": "Cancel",

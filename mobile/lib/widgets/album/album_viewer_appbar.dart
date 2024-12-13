@@ -153,6 +153,22 @@ class AlbumViewerAppbar extends HookConsumerWidget
       // }
     }
 
+    void onSortOrderToggled() async {
+      final updatedAlbum =
+          await ref.read(albumProvider.notifier).toggleSortOrder(album);
+
+      if (updatedAlbum == null) {
+        ImmichToast.show(
+          context: context,
+          msg: "error_change_sort_album".tr(),
+          toastType: ToastType.error,
+          gravity: ToastGravity.BOTTOM,
+        );
+      }
+
+      context.pop();
+    }
+
     void buildBottomSheet() {
       final ownerActions = [
         ListTile(
@@ -166,6 +182,14 @@ class AlbumViewerAppbar extends HookConsumerWidget
           },
           title: const Text(
             "album_viewer_page_share_add_users",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ).tr(),
+        ),
+        ListTile(
+          leading: const Icon(Icons.swap_vert_rounded),
+          onTap: onSortOrderToggled,
+          title: const Text(
+            "change_display_order",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
@@ -285,20 +309,6 @@ class AlbumViewerAppbar extends HookConsumerWidget
       }
     }
 
-    void onSortOrderToggled() async {
-      final updatedAlbum =
-          await ref.read(albumProvider.notifier).toggleSortOrder(album);
-
-      if (updatedAlbum == null) {
-        ImmichToast.show(
-          context: context,
-          msg: "error_change_sort_album".tr(),
-          toastType: ToastType.error,
-          gravity: ToastGravity.BOTTOM,
-        );
-      }
-    }
-
     return AppBar(
       elevation: 0,
       leading: buildLeadingButton(),
@@ -307,10 +317,6 @@ class AlbumViewerAppbar extends HookConsumerWidget
         if (album.shared && (album.activityEnabled || comments != 0))
           buildActivitiesButton(),
         if (album.isRemote) ...[
-          IconButton(
-            onPressed: onSortOrderToggled,
-            icon: const Icon(Icons.swap_vert_rounded),
-          ),
           IconButton(
             splashRadius: 25,
             onPressed: buildBottomSheet,
