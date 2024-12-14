@@ -2,7 +2,7 @@ import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
-import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
@@ -460,7 +460,7 @@ export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: S
   }
 };
 
-export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
+export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: AssetInteraction) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;
@@ -474,7 +474,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
       }
-      assetInteractionStore.selectAssets(bucket.assets);
+      assetInteraction.selectAssets(bucket.assets);
 
       // We use setTimeout to allow the UI to update. Otherwise, this may
       // cause a long delay between the start of 'select all' and the
@@ -489,9 +489,9 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
   }
 };
 
-export const cancelMultiselect = (assetInteractionStore: AssetInteractionStore) => {
+export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
   isSelectingAllAssets.set(false);
-  assetInteractionStore.clearMultiselect();
+  assetInteraction.clearMultiselect();
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {
