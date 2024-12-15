@@ -12,9 +12,15 @@ interface UserInteractions {
   serverInfo?: ServerStorageResponseDto;
 }
 
-export const userInteraction = $state<UserInteractions>({
+const defaultUserInteraction: UserInteractions = {
   recentAlbums: undefined,
   versions: undefined,
   aboutInfo: undefined,
   serverInfo: undefined,
-});
+};
+
+export const resetUserInteraction = () => {
+  Object.assign(userInteraction, defaultUserInteraction);
+};
+
+export const userInteraction = $state<UserInteractions>(defaultUserInteraction);
