@@ -9,7 +9,7 @@ fi
 IMMICH_HOST="${IMMICH_HOST:=localhost}"
 IMMICH_PORT="${IMMICH_PORT:=2283}"
 
-result=$(curl http://"$IMMICH_HOST":"$IMMICH_PORT"/api/server/ping)
+result=$(curl -m 2 http://"$IMMICH_HOST":"$IMMICH_PORT"/api/server/ping)
 result_exit=$?
 
 if ! [ $result_exit == 0 ]; then
