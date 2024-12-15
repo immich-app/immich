@@ -3515,7 +3515,7 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
-    Converted = "converted",
+    Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",

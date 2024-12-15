@@ -10188,7 +10188,7 @@
       "PathType": {
         "enum": [
           "original",
-          "converted",
+          "fullsize",
           "preview",
           "thumbnail",
           "encoded_video",

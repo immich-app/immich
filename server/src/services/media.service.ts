@@ -135,7 +135,7 @@ export class MediaService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    await this.storageCore.moveAssetImage(asset, AssetPathType.CONVERTED, ImageFormat.JPEG);
+    await this.storageCore.moveAssetImage(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
     await this.storageCore.moveAssetImage(asset, AssetPathType.PREVIEW, image.preview.format);
     await this.storageCore.moveAssetImage(asset, AssetPathType.THUMBNAIL, image.thumbnail.format);
     await this.storageCore.moveAssetVideo(asset);
@@ -182,7 +182,7 @@ export class MediaService extends BaseService {
     }
 
     if (generated.convertedPath && convertedFile?.path !== generated.convertedPath) {
-      toUpsert.push({ assetId: asset.id, path: generated.convertedPath, type: AssetFileType.CONVERTED });
+      toUpsert.push({ assetId: asset.id, path: generated.convertedPath, type: AssetFileType.FULLSIZE });
     }
 
     if (toUpsert.length > 0) {
@@ -242,7 +242,7 @@ export class MediaService extends BaseService {
     if (imageIsRaw) {
       let useExtracted = false;
       // extracted image from RAW is always in JPEG format, as implied from the `jpgFromRaw` tag name
-      convertedPath = StorageCore.getImagePath(asset, AssetPathType.CONVERTED, ImageFormat.JPEG);
+      convertedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
       if (image.extractEmbedded) {
         // try extracting embedded preview from RAW
         const didExtract = await this.mediaRepository.extract(asset.originalPath, convertedPath);
@@ -257,7 +257,7 @@ export class MediaService extends BaseService {
       } else {
         // did not extract or extracted preview is smaller than target size,
         // convert a full-sized thumbnail from original instead
-        convertedPath = StorageCore.getImagePath(asset, AssetPathType.CONVERTED, image.preview.format);
+        convertedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
         // unset size to disable resizing
         decodeOptions.size = undefined;
         shouldConvertFromRaw = true;

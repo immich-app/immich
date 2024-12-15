@@ -26,7 +26,7 @@ export interface MoveRequest {
   };
 }
 
-export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.CONVERTED;
+export type GeneratedImageType = AssetPathType.PREVIEW | AssetPathType.THUMBNAIL | AssetPathType.FULLSIZE;
 export type GeneratedAssetType = GeneratedImageType | AssetPathType.ENCODED_VIDEO;
 
 let instance: StorageCore | null;
@@ -276,6 +276,9 @@ export class StorageCore {
     switch (pathType) {
       case AssetPathType.ORIGINAL: {
         return this.assetRepository.update({ id, originalPath: newPath });
+      }
+      case AssetPathType.FULLSIZE: {
+        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.FULLSIZE, path: newPath });
       }
       case AssetPathType.PREVIEW: {
         return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.PREVIEW, path: newPath });
