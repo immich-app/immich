@@ -98,6 +98,7 @@ describe('/search', () => {
       { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
       { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
       { latitude: 59.938_63, longitude: 30.314_13 }, // st. petersburg
+      { latitude: 0, longitude: 0 }, // null island
     ];
 
     const updates = coordinates.map((dto, i) =>
@@ -532,7 +533,7 @@ describe('/search', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should get suggestions for country', async () => {
+    it('should get suggestions for country (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=country&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -555,7 +556,29 @@ describe('/search', () => {
       expect(status).toBe(200);
     });
 
-    it('should get suggestions for state', async () => {
+    it('should get suggestions for country', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=country')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(body).toEqual([
+        'Cuba',
+        'France',
+        'Georgia',
+        'Germany',
+        'Ghana',
+        'Japan',
+        'Morocco',
+        "People's Republic of China",
+        'Russian Federation',
+        'Singapore',
+        'Spain',
+        'Switzerland',
+        'United States of America',
+      ]);
+      expect(status).toBe(200);
+    });
+
+    it('should get suggestions for state (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=state&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -579,7 +602,30 @@ describe('/search', () => {
       expect(status).toBe(200);
     });
 
-    it('should get suggestions for city', async () => {
+    it('should get suggestions for state', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=state')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(body).toEqual([
+        'Andalusia',
+        'Berlin',
+        'Glarus',
+        'Greater Accra',
+        'Havana',
+        'Île-de-France',
+        'Marrakesh-Safi',
+        'Mississippi',
+        'New York',
+        'Shanghai',
+        'St.-Petersburg',
+        'Tbilisi',
+        'Tokyo',
+        'Virginia',
+      ]);
+      expect(status).toBe(200);
+    });
+
+    it('should get suggestions for city (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=city&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -604,7 +650,31 @@ describe('/search', () => {
       expect(status).toBe(200);
     });
 
-    it('should get suggestions for camera make', async () => {
+    it('should get suggestions for city', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=city')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(body).toEqual([
+        'Accra',
+        'Berlin',
+        'Glarus',
+        'Havana',
+        'Marrakesh',
+        'Montalbán de Córdoba',
+        'New York City',
+        'Novena',
+        'Paris',
+        'Philadelphia',
+        'Saint Petersburg',
+        'Shanghai',
+        'Stanley',
+        'Tbilisi',
+        'Tokyo',
+      ]);
+      expect(status).toBe(200);
+    });
+
+    it('should get suggestions for camera make (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=camera-make&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -621,7 +691,23 @@ describe('/search', () => {
       expect(status).toBe(200);
     });
 
-    it('should get suggestions for camera model', async () => {
+    it('should get suggestions for camera make', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=camera-make')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(body).toEqual([
+        'Apple',
+        'Canon',
+        'FUJIFILM',
+        'NIKON CORPORATION',
+        'PENTAX Corporation',
+        'samsung',
+        'SONY',
+      ]);
+      expect(status).toBe(200);
+    });
+
+    it('should get suggestions for camera model (including null)', async () => {
       const { status, body } = await request(app)
         .get('/search/suggestions?type=camera-model&includeNull=true')
         .set('Authorization', `Bearer ${admin.accessToken}`);
@@ -639,6 +725,27 @@ describe('/search', () => {
         'SM-S906U',
         'SM-T970',
         null,
+      ]);
+      expect(status).toBe(200);
+    });
+
+    it('should get suggestions for camera model', async () => {
+      const { status, body } = await request(app)
+        .get('/search/suggestions?type=camera-model')
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(body).toEqual([
+        'Canon EOS 7D',
+        'Canon EOS R5',
+        'DSLR-A550',
+        'FinePix S3Pro',
+        'iPhone 7',
+        'NIKON D700',
+        'NIKON D750',
+        'NIKON D80',
+        'PENTAX K10D',
+        'SM-F711N',
+        'SM-S906U',
+        'SM-T970',
       ]);
       expect(status).toBe(200);
     });

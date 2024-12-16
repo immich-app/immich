@@ -3,7 +3,6 @@
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetBucket, AssetStore, type BucketListener, type ViewportXY } from '$lib/stores/assets.store';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
@@ -37,6 +36,7 @@
   import type { UpdatePayload } from 'vite';
   import { generateId } from '$lib/utils/generate-id';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -46,7 +46,7 @@
    additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
     assetStore: AssetStore;
-    assetInteractionStore: AssetInteractionStore;
+    assetInteraction: AssetInteraction;
     removeAction?: AssetAction.UNARCHIVE | AssetAction.ARCHIVE | AssetAction.FAVORITE | AssetAction.UNFAVORITE | null;
     withStacked?: boolean;
     showArchiveIcon?: boolean;
@@ -64,7 +64,7 @@
     singleSelect = false,
     enableRouting,
     assetStore = $bindable(),
-    assetInteractionStore,
+    assetInteraction,
     removeAction = null,
     withStacked = false,
     showArchiveIcon = false,
@@ -78,8 +78,6 @@
   }: Props = $props();
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
-  const { assetSelectionCandidates, assetSelectionStart, selectedGroup, selectedAssets, isMultiSelectState } =
-    assetInteractionStore;
 
   const viewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
   const safeViewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
@@ -437,11 +435,11 @@
       (assetIds) => $assetStore.removeAssets(assetIds),
       idsSelectedAssets,
     );
-    assetInteractionStore.clearMultiselect();
+    assetInteraction.clearMultiselect();
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = Array.from($selectedAssets).some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.selectedAssetsArray.some((asset) => asset.isTrashed);
 
     if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
@@ -459,7 +457,7 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssets(Array.from($selectedAssets));
+    const ids = await stackAssets(assetInteraction.selectedAssetsArray);
     if (ids) {
       $assetStore.removeAssets(ids);
       onEscape();
@@ -467,7 +465,7 @@
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(Array.from($selectedAssets), !isAllArchived);
+    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
     if (ids) {
       $assetStore.removeAssets(ids);
       deselectAllAssets();
@@ -482,7 +480,7 @@
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
     if (!$assetStore.albumAssets.has(asset.id)) {
-      assetInteractionStore.selectAsset(asset);
+      assetInteraction.selectAsset(asset);
     }
   };
 
@@ -573,7 +571,7 @@
   let shiftKeyIsDown = $state(false);
 
   const deselectAllAssets = () => {
-    cancelMultiselect(assetInteractionStore);
+    cancelMultiselect(assetInteraction);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -606,13 +604,13 @@
   };
 
   const handleGroupSelect = (group: string, assets: AssetResponseDto[]) => {
-    if ($selectedGroup.has(group)) {
-      assetInteractionStore.removeGroupFromMultiselectGroup(group);
+    if (assetInteraction.selectedGroup.has(group)) {
+      assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
-        assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+        assetInteraction.removeAssetFromMultiselectGroup(asset);
       }
     } else {
-      assetInteractionStore.addGroupToMultiselectGroup(group);
+      assetInteraction.addGroupToMultiselectGroup(group);
       for (const asset of assets) {
         handleSelectAsset(asset);
       }
@@ -631,26 +629,26 @@
       return;
     }
 
-    const rangeSelection = $assetSelectionCandidates.size > 0;
-    const deselect = $selectedAssets.has(asset);
+    const rangeSelection = assetInteraction.assetSelectionCandidates.size > 0;
+    const deselect = assetInteraction.selectedAssets.has(asset);
 
     // Select/deselect already loaded assets
     if (deselect) {
-      for (const candidate of $assetSelectionCandidates || []) {
-        assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
+      for (const candidate of assetInteraction.assetSelectionCandidates) {
+        assetInteraction.removeAssetFromMultiselectGroup(candidate);
       }
-      assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+      assetInteraction.removeAssetFromMultiselectGroup(asset);
     } else {
-      for (const candidate of $assetSelectionCandidates || []) {
+      for (const candidate of assetInteraction.assetSelectionCandidates) {
         handleSelectAsset(candidate);
       }
       handleSelectAsset(asset);
     }
 
-    assetInteractionStore.clearAssetSelectionCandidates();
+    assetInteraction.clearAssetSelectionCandidates();
 
-    if ($assetSelectionStart && rangeSelection) {
-      let startBucketIndex = $assetStore.getBucketIndexByAssetId($assetSelectionStart.id);
+    if (assetInteraction.assetSelectionStart && rangeSelection) {
+      let startBucketIndex = $assetStore.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
       let endBucketIndex = $assetStore.getBucketIndexByAssetId(asset.id);
 
       if (startBucketIndex === null || endBucketIndex === null) {
@@ -667,7 +665,7 @@
         await $assetStore.loadBucket(bucket.bucketDate);
         for (const asset of bucket.assets) {
           if (deselect) {
-            assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+            assetInteraction.removeAssetFromMultiselectGroup(asset);
           } else {
             handleSelectAsset(asset);
           }
@@ -682,16 +680,16 @@
         const assetsGroupByDate = splitBucketIntoDateGroups(bucket, $locale);
         for (const dateGroup of assetsGroupByDate) {
           const dateGroupTitle = formatGroupTitle(dateGroup.date);
-          if (dateGroup.assets.every((a) => $selectedAssets.has(a))) {
-            assetInteractionStore.addGroupToMultiselectGroup(dateGroupTitle);
+          if (dateGroup.assets.every((a) => assetInteraction.selectedAssets.has(a))) {
+            assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
           } else {
-            assetInteractionStore.removeGroupFromMultiselectGroup(dateGroupTitle);
+            assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
           }
         }
       }
     }
 
-    assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
+    assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
   const selectAssetCandidates = (endAsset: AssetResponseDto) => {
@@ -699,7 +697,7 @@
       return;
     }
 
-    const startAsset = $assetSelectionStart;
+    const startAsset = assetInteraction.assetSelectionStart;
     if (!startAsset) {
       return;
     }
@@ -711,11 +709,11 @@
       [start, end] = [end, start];
     }
 
-    assetInteractionStore.setAssetSelectionCandidates($assetStore.assets.slice(start, end + 1));
+    assetInteraction.setAssetSelectionCandidates($assetStore.assets.slice(start, end + 1));
   };
 
   const onSelectStart = (e: Event) => {
-    if ($isMultiSelectState && shiftKeyIsDown) {
+    if (assetInteraction.selectionActive && shiftKeyIsDown) {
       e.preventDefault();
     }
   };
@@ -724,12 +722,11 @@
   });
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived($assetStore.initialized && $assetStore.buckets.length === 0);
-  let idsSelectedAssets = $derived([...$selectedAssets].map(({ id }) => id));
-  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+  let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
   $effect(() => {
     if (isEmpty) {
-      assetInteractionStore.clearMultiselect();
+      assetInteraction.clearMultiselect();
     }
   });
 
@@ -760,12 +757,12 @@
         { shortcut: { key: 'Escape' }, onShortcut: onEscape },
         { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteractionStore) },
+        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
       ];
 
-      if ($isMultiSelectState) {
+      if (assetInteraction.selectionActive) {
         shortcuts.push(
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
           { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
@@ -781,13 +778,13 @@
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
-      assetInteractionStore.clearAssetSelectionCandidates();
+      assetInteraction.clearAssetSelectionCandidates();
     }
   });
 
   $effect(() => {
     if (!shiftKeyIsDown) {
-      assetInteractionStore.clearAssetSelectionCandidates();
+      assetInteraction.clearAssetSelectionCandidates();
     }
   });
 
@@ -889,7 +886,7 @@
             {withStacked}
             {showArchiveIcon}
             {assetStore}
-            {assetInteractionStore}
+            {assetInteraction}
             {isSelectionMode}
             {singleSelect}
             {onScrollTarget}

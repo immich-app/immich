@@ -1,6 +1,6 @@
 {
   "name": "@immich/sdk",
-  "version": "1.122.2",
+  "version": "1.122.3",
   "description": "Auto-generated TypeScript SDK for the Immich API",
   "type": "module",
   "main": "./build/index.js",
@@ -28,6 +28,6 @@
     "directory": "open-api/typescript-sdk"
   },
   "volta": {
-    "node": "22.11.0"
+    "node": "22.12.0"
   }
 }

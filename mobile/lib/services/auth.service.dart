@@ -57,13 +57,18 @@ class AuthService {
 
   Future<bool> validateAuxilaryServerUrl(String url) async {
     final httpclient = HttpClient();
-    final accessToken = _authRepository.getAccessToken();
     bool isValid = false;
 
     try {
       final uri = Uri.parse('$url/users/me');
       final request = await httpclient.getUrl(uri);
-      request.headers.add('x-immich-user-token', accessToken);
+
+      // add auth token + any configured custom headers
+      final customHeaders = ApiService.getRequestHeaders();
+      customHeaders.forEach((key, value) {
+        request.headers.add(key, value);
+      });
+
       final response = await request.close();
       if (response.statusCode == 200) {
         isValid = true;

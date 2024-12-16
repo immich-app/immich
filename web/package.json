@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.122.2",
+  "version": "1.122.3",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -87,6 +87,6 @@
     "thumbhash": "^0.1.1"
   },
   "volta": {
-    "node": "22.11.0"
+    "node": "22.12.0"
   }
 }
