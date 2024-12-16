@@ -1,7 +1,7 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
-  import { serverInfo } from '$lib/stores/server-info.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { mdiAccountEditOutline } from '@mdi/js';
@@ -37,7 +37,8 @@
   let quotaSizeWarning = $derived(
     previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
       !!quotaSize &&
-      convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw,
+      userInteraction.serverInfo &&
+      convertToBytes(Number(quotaSize), ByteUnit.GiB) > userInteraction.serverInfo.diskSizeRaw,
   );
 
   const editUser = async () => {
