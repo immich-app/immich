@@ -37,7 +37,7 @@
       selectedIds.add(option.value);
     } else {
       const [newTag] = await upsertTags({ tagUpsertDto: { tags: [option.label] } });
-      allTags = await getAllTags();
+      allTags.push(newTag);
       selectedIds.add(newTag.id);
     }
   };

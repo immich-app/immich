@@ -362,7 +362,7 @@
           id={`${listboxId}-${0}`}
           onclick={() => closeDropdown()}
         >
-          {allowCreate ? searchQuery : 112}
+          {allowCreate ? searchQuery : $t('no_results')}
         </li>
       {/if}
       {#each filteredOptions as option, index (option.id || option.label)}
