@@ -1,9 +1,13 @@
 <script lang="ts">
-  export let id: string;
-  export let label: string;
-  export let name: string;
-  export let value: string;
-  export let group: string | undefined = undefined;
+  interface Props {
+    id: string;
+    label: string;
+    name: string;
+    value: string;
+    group?: string | undefined;
+  }
+
+  let { id, label, name, value, group = $bindable(undefined) }: Props = $props();
 </script>
 
 <div class="flex items-center space-x-2">

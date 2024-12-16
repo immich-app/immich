@@ -27,11 +27,15 @@
     inTimeline: boolean;
   }
 
-  export let user: UserResponseDto;
+  interface Props {
+    user: UserResponseDto;
+  }
 
-  let createPartnerFlag = false;
+  let { user }: Props = $props();
+
+  let createPartnerFlag = $state(false);
   // let removePartnerDto: PartnerResponseDto | null = null;
-  let partners: Array<PartnerSharing> = [];
+  let partners: Array<PartnerSharing> = $state([]);
 
   onMount(async () => {
     await refreshPartners();
@@ -113,7 +117,6 @@
       await updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
 
       partner.inTimeline = inTimeline;
-      partners = partners;
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }
@@ -139,7 +142,7 @@
 
           {#if partner.sharedByMe}
             <CircleIconButton
-              on:click={() => handleRemovePartner(partner.user)}
+              onclick={() => handleRemovePartner(partner.user)}
               icon={mdiClose}
               size={'16'}
               title={$t('stop_sharing_photos_with_user')}
@@ -186,7 +189,7 @@
   {/if}
 
   <div class="flex justify-end mt-5">
-    <Button size="sm" on:click={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
+    <Button size="sm" onclick={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
   </div>
 </section>
 

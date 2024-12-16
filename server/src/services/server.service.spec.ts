@@ -169,6 +169,7 @@ describe(ServerService.name, () => {
         isInitialized: undefined,
         isOnboarded: false,
         externalDomain: '',
+        publicUsers: true,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
@@ -185,6 +186,8 @@ describe(ServerService.name, () => {
           photos: 10,
           videos: 11,
           usage: 12_345,
+          usagePhotos: 1,
+          usageVideos: 11_345,
           quotaSizeInBytes: 0,
         },
         {
@@ -193,6 +196,8 @@ describe(ServerService.name, () => {
           photos: 10,
           videos: 20,
           usage: 123_456,
+          usagePhotos: 100,
+          usageVideos: 23_456,
           quotaSizeInBytes: 0,
         },
         {
@@ -201,6 +206,8 @@ describe(ServerService.name, () => {
           photos: 100,
           videos: 0,
           usage: 987_654,
+          usagePhotos: 900,
+          usageVideos: 87_654,
           quotaSizeInBytes: 0,
         },
       ]);
@@ -209,11 +216,15 @@ describe(ServerService.name, () => {
         photos: 120,
         videos: 31,
         usage: 1_123_455,
+        usagePhotos: 1001,
+        usageVideos: 122_455,
         usageByUser: [
           {
             photos: 10,
             quotaSizeInBytes: 0,
             usage: 12_345,
+            usagePhotos: 1,
+            usageVideos: 11_345,
             userName: '1 User',
             userId: 'user1',
             videos: 11,
@@ -222,6 +233,8 @@ describe(ServerService.name, () => {
             photos: 10,
             quotaSizeInBytes: 0,
             usage: 123_456,
+            usagePhotos: 100,
+            usageVideos: 23_456,
             userName: '2 User',
             userId: 'user2',
             videos: 20,
@@ -230,6 +243,8 @@ describe(ServerService.name, () => {
             photos: 100,
             quotaSizeInBytes: 0,
             usage: 987_654,
+            usagePhotos: 900,
+            usageVideos: 87_654,
             userName: '3 User',
             userId: 'user3',
             videos: 0,

@@ -8,8 +8,12 @@
   import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    asset: AssetResponseDto;
+    onAction: OnAction;
+  }
+
+  let { asset, onAction }: Props = $props();
 
   const onArchive = async () => {
     const updatedAsset = await toggleArchive(asset);

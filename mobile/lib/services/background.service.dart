@@ -6,6 +6,7 @@ import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -17,15 +18,20 @@ import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/auth.repository.dart';
+import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/repositories/network.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -36,11 +42,13 @@ import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path_provider_ios/path_provider_ios.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
@@ -421,6 +429,24 @@ class BackgroundService {
       assetRepository,
       assetMediaRepository,
     );
+
+    AuthApiRepository authApiRepository = AuthApiRepository(apiService);
+    AuthRepository authRepository = AuthRepository(db);
+    NetworkRepository networkRepository = NetworkRepository(NetworkInfo());
+    PermissionRepository permissionRepository = PermissionRepository();
+    NetworkService networkService =
+        NetworkService(networkRepository, permissionRepository);
+    AuthService authService = AuthService(
+      authApiRepository,
+      authRepository,
+      apiService,
+      networkService,
+    );
+
+    final endpoint = await authService.setOpenApiServiceEndpoint();
+    if (kDebugMode) {
+      debugPrint("[BG UPLOAD] Using endpoint: $endpoint");
+    }
 
     final selectedAlbums =
         await backupRepository.getAllBySelection(BackupSelection.select);

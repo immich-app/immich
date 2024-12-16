@@ -4,11 +4,16 @@
   import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
+  import { mdiAlert } from '@mdi/js';
+  import Icon from '$lib/components/elements/icon.svelte';
 
-  export let onClose: () => void;
+  interface Props {
+    onClose: () => void;
+    info: ServerAboutResponseDto;
+    versions: ServerVersionHistoryResponseDto[];
+  }
 
-  export let info: ServerAboutResponseDto;
-  export let versions: ServerVersionHistoryResponseDto[];
+  let { onClose, info, versions }: Props = $props();
 </script>
 
 <Portal>
@@ -149,6 +154,15 @@
               {info.buildImage}
             </a>
           </div>
+        </div>
+      {/if}
+
+      {#if info.sourceRef === 'main' && info.repository === 'immich-app/immich'}
+        <div class="col-span-full p-4 flex gap-1">
+          <Icon path={mdiAlert} size="2em" color="#ffcc4d" />
+          <p class="immich-form-label text-sm" id="main-warning">
+            {$t('main_branch_warning')}
+          </p>
         </div>
       {/if}
 

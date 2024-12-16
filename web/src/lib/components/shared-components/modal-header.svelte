@@ -5,20 +5,24 @@
   import { mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  /**
-   * Unique identifier for the header text.
-   */
-  export let id: string;
-  export let title: string;
-  export let onClose: () => void;
-  /**
-   * If true, the logo will be displayed next to the modal title.
-   */
-  export let showLogo = false;
-  /**
-   * Optional icon to display next to the modal title, if `showLogo` is false.
-   */
-  export let icon: string | undefined = undefined;
+  interface Props {
+    /**
+     * Unique identifier for the header text.
+     */
+    id: string;
+    title: string;
+    onClose: () => void;
+    /**
+     * If true, the logo will be displayed next to the modal title.
+     */
+    showLogo?: boolean;
+    /**
+     * Optional icon to display next to the modal title, if `showLogo` is false.
+     */
+    icon?: string;
+  }
+
+  let { id, title, onClose, showLogo = false, icon = undefined }: Props = $props();
 </script>
 
 <div class="flex place-items-center justify-between px-5 pb-3">
@@ -33,5 +37,5 @@
     </h1>
   </div>
 
-  <CircleIconButton on:click={onClose} icon={mdiClose} size={'20'} title={$t('close')} />
+  <CircleIconButton onclick={onClose} icon={mdiClose} size={'20'} title={$t('close')} />
 </div>

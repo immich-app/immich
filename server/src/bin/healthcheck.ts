@@ -3,7 +3,7 @@ import { ImmichWorker } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 
 const main = async () => {
-  const { workers, port } = new ConfigRepository().getEnv();
+  const { host, workers, port } = new ConfigRepository().getEnv();
   if (!workers.includes(ImmichWorker.API)) {
     process.exit();
   }
@@ -11,7 +11,7 @@ const main = async () => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 2000);
   try {
-    const response = await fetch(`http://localhost:${port}/api/server/ping`, {
+    const response = await fetch(`http://${host || 'localhost'}:${port}/api/server/ping`, {
       signal: controller.signal,
     });
 

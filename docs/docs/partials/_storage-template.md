@@ -31,5 +31,5 @@ Immich also provides a mechanism to migrate between templates so that if the tem
 If you want to store assets in album folders, but you also have assets that do not belong to any album, you can use `{{#if album}}`, `{{else}}` and `{{/if}}` to create a conditional statement. For example, the following template will store assets in album folders if they belong to an album, and in a folder named "Other/Month" if they do not belong to an album:
 
 ```
-{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}
+{{y}}/{{#if album}}{{album}}{{else}}Other{{/if}}/{{MM}}/{{filename}}
 ```

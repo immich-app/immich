@@ -149,6 +149,22 @@ If you get an error here, please rename the other external library to something 
 
 Within seconds, the assets from the old-pics and videos folders should show up in the main timeline.
 
+### Folder view
+
+:::info
+This feature also exists for assets uploaded other than through external libraries.
+:::tip
+You can use the storage template migration feature for the best experience with uploaded assets in this view.
+:::
+
+You can browse your photos and videos by folder like in a file explorer.
+
+Enable this feature from the Users Settings > Features > Folders.
+
+The UI is currently only available for the web; mobile will come in a subsequent release.
+
+<img src={require('./img/folder-view.png').default} width="75%" title='Folder-view' />
+
 ### Set Custom Scan Interval
 
 :::note

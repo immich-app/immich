@@ -10,8 +10,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ApiBearerAuth, ApiCookieAuth, ApiOkResponse, ApiQuery, ApiSecurity } from '@nestjs/swagger';
 import { Request } from 'express';
-import { AuthDto, ImmichQuery } from 'src/dtos/auth.dto';
-import { MetadataKey, Permission } from 'src/enum';
+import { AuthDto } from 'src/dtos/auth.dto';
+import { ImmichQuery, MetadataKey, Permission } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
 import { UAParser } from 'ua-parser-js';

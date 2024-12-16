@@ -18,6 +18,9 @@ class CurrentUploadAsset {
     this.iCloudAsset,
   });
 
+  @pragma('vm:prefer-inline')
+  bool get isIcloudAsset => iCloudAsset != null && iCloudAsset!;
+
   CurrentUploadAsset copyWith({
     String? id,
     DateTime? fileCreatedAt,

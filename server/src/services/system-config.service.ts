@@ -2,29 +2,19 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
-import {
-  supportedDayTokens,
-  supportedHourTokens,
-  supportedMinuteTokens,
-  supportedMonthTokens,
-  supportedPresetTokens,
-  supportedSecondTokens,
-  supportedWeekTokens,
-  supportedYearTokens,
-} from 'src/constants';
 import { OnEvent } from 'src/decorators';
-import { SystemConfigDto, SystemConfigTemplateStorageOptionDto, mapConfig } from 'src/dtos/system-config.dto';
-import { ArgOf } from 'src/interfaces/event.interface';
+import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
+import { ArgOf, BootstrapEventPriority } from 'src/interfaces/event.interface';
 import { BaseService } from 'src/services/base.service';
 import { clearConfigCache } from 'src/utils/config';
 import { toPlainObject } from 'src/utils/object';
 
 @Injectable()
 export class SystemConfigService extends BaseService {
-  @OnEvent({ name: 'app.bootstrap', priority: -100 })
+  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.SystemConfig })
   async onBootstrap() {
     const config = await this.getConfig({ withCache: false });
-    await this.eventRepository.emit('config.update', { newConfig: config });
+    await this.eventRepository.emit('config.init', { newConfig: config });
   }
 
   async getSystemConfig(): Promise<SystemConfigDto> {
@@ -36,14 +26,18 @@ export class SystemConfigService extends BaseService {
     return mapConfig(defaults);
   }
 
-  @OnEvent({ name: 'config.update', server: true })
-  onConfigUpdate({ newConfig: { logging } }: ArgOf<'config.update'>) {
+  @OnEvent({ name: 'config.init' })
+  onConfigInit({ newConfig: { logging } }: ArgOf<'config.init'>) {
     const { logLevel: envLevel } = this.configRepository.getEnv();
     const configLevel = logging.enabled ? logging.level : false;
     const level = envLevel ?? configLevel;
     this.logger.setLogLevel(level);
     this.logger.log(`LogLevel=${level} ${envLevel ? '(set via IMMICH_LOG_LEVEL)' : '(set via system config)'}`);
-    // TODO only do this if the event is a socket.io event
+  }
+
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.onConfigInit({ newConfig });
     clearConfigCache();
   }
 
@@ -75,21 +69,6 @@ export class SystemConfigService extends BaseService {
     await this.eventRepository.emit('config.update', { newConfig, oldConfig });
 
     return mapConfig(newConfig);
-  }
-
-  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
-    const options = new SystemConfigTemplateStorageOptionDto();
-
-    options.dayOptions = supportedDayTokens;
-    options.weekOptions = supportedWeekTokens;
-    options.monthOptions = supportedMonthTokens;
-    options.yearOptions = supportedYearTokens;
-    options.hourOptions = supportedHourTokens;
-    options.secondOptions = supportedSecondTokens;
-    options.minuteOptions = supportedMinuteTokens;
-    options.presetOptions = supportedPresetTokens;
-
-    return options;
   }
 
   async getCustomCss(): Promise<string> {

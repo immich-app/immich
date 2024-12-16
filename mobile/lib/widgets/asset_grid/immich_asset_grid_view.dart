@@ -12,7 +12,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
@@ -89,6 +92,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       ScrollOffsetController();
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
+  late final KeepAliveLink currentAssetLink;
 
   /// The timestamp when the haptic feedback was last invoked
   int _hapticFeedbackTS = 0;
@@ -201,6 +205,13 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       allAssetsSelected: _allAssetsSelected,
       showStack: widget.showStack,
       heroOffset: widget.heroOffset,
+      onAssetTap: (asset) {
+        ref.read(currentAssetProvider.notifier).set(asset);
+        ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
+        if (asset.isVideo) {
+          ref.read(showControlsProvider.notifier).show = false;
+        }
+      },
     );
   }
 
@@ -348,6 +359,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   @override
   void initState() {
     super.initState();
+    currentAssetLink = ref.read(currentAssetProvider.notifier).ref.keepAlive();
     scrollToTopNotifierProvider.addListener(_scrollToTop);
     scrollToDateNotifierProvider.addListener(_scrollToDate);
 
@@ -369,6 +381,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       _itemPositionsListener.itemPositions.removeListener(_positionListener);
     }
     _itemPositionsListener.itemPositions.removeListener(_hapticsListener);
+    currentAssetLink.close();
     super.dispose();
   }
 
@@ -595,12 +608,13 @@ class _Section extends StatelessWidget {
   final RenderList renderList;
   final bool selectionActive;
   final bool dynamicLayout;
-  final Function(List<Asset>) selectAssets;
-  final Function(List<Asset>) deselectAssets;
+  final void Function(List<Asset>) selectAssets;
+  final void Function(List<Asset>) deselectAssets;
   final bool Function(List<Asset>) allAssetsSelected;
   final bool showStack;
   final int heroOffset;
   final bool showStorageIndicator;
+  final void Function(Asset) onAssetTap;
 
   const _Section({
     required this.section,
@@ -618,6 +632,7 @@ class _Section extends StatelessWidget {
     required this.showStack,
     required this.heroOffset,
     required this.showStorageIndicator,
+    required this.onAssetTap,
   });
 
   @override
@@ -683,6 +698,7 @@ class _Section extends StatelessWidget {
                       selectionActive: selectionActive,
                       onSelect: (asset) => selectAssets([asset]),
                       onDeselect: (asset) => deselectAssets([asset]),
+                      onAssetTap: onAssetTap,
                     ),
           ],
         );
@@ -724,9 +740,9 @@ class _Title extends StatelessWidget {
   final String title;
   final List<Asset> assets;
   final bool selectionActive;
-  final Function(List<Asset>) selectAssets;
-  final Function(List<Asset>) deselectAssets;
-  final Function(List<Asset>) allAssetsSelected;
+  final void Function(List<Asset>) selectAssets;
+  final void Function(List<Asset>) deselectAssets;
+  final bool Function(List<Asset>) allAssetsSelected;
 
   const _Title({
     required this.title,
@@ -765,8 +781,9 @@ class _AssetRow extends StatelessWidget {
   final bool showStorageIndicator;
   final int heroOffset;
   final bool showStack;
-  final Function(Asset)? onSelect;
-  final Function(Asset)? onDeselect;
+  final void Function(Asset) onAssetTap;
+  final void Function(Asset)? onSelect;
+  final void Function(Asset)? onDeselect;
   final bool isSelectionActive;
 
   const _AssetRow({
@@ -786,6 +803,7 @@ class _AssetRow extends StatelessWidget {
     required this.showStack,
     required this.isSelectionActive,
     required this.selectedAssets,
+    required this.onAssetTap,
     this.onSelect,
     this.onDeselect,
   });
@@ -838,6 +856,8 @@ class _AssetRow extends StatelessWidget {
                   onSelect?.call(asset);
                 }
               } else {
+                final asset = renderList.loadAsset(absoluteOffset + index);
+                onAssetTap(asset);
                 context.pushRoute(
                   GalleryViewerRoute(
                     renderList: renderList,

@@ -3,9 +3,7 @@ import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 
-@Instrumentation()
 @Injectable()
 export class MetadataRepository implements IMetadataRepository {
   private exiftool = new ExifTool({

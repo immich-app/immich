@@ -11,6 +11,8 @@ export interface UserStatsQueryResponse {
   photos: number;
   videos: number;
   usage: number;
+  usagePhotos: number;
+  usageVideos: number;
   quotaSizeInBytes: number | null;
 }
 

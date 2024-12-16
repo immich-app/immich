@@ -1,69 +1,70 @@
-<script lang="ts" context="module">
-  import type { HTMLButtonAttributes, HTMLLinkAttributes } from 'svelte/elements';
-
-  export type Color = 'transparent' | 'light' | 'dark' | 'gray' | 'primary' | 'opaque' | 'alert';
+<script lang="ts" module>
+  export type Color = 'transparent' | 'light' | 'dark' | 'red' | 'gray' | 'primary' | 'opaque' | 'alert';
   export type Padding = '1' | '2' | '3';
-
-  type BaseProps = {
-    icon: string;
-    title: string;
-    class?: string;
-    color?: Color;
-    padding?: Padding;
-    size?: string;
-    hideMobile?: true;
-    buttonSize?: string;
-    viewBox?: string;
-  };
-
-  export type ButtonProps = HTMLButtonAttributes &
-    BaseProps & {
-      href?: never;
-    };
-
-  export type LinkProps = HTMLLinkAttributes &
-    BaseProps & {
-      type?: never;
-    };
-
-  export type Props = ButtonProps | LinkProps;
 </script>
 
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
 
-  type $$Props = Props;
-
-  export let type: $$Props['type'] = 'button';
-  export let href: $$Props['href'] = undefined;
-  export let icon: string;
-  export let color: Color = 'transparent';
-  export let title: string;
-  /**
-   * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
-   */
-  export let padding: Padding = '3';
-  /**
-   * Size of the button, used for a CSS value.
-   */
-  export let size = '24';
-  export let hideMobile = false;
-  export let buttonSize: string | undefined = undefined;
-  /**
-   * viewBox attribute for the SVG icon.
-   */
-  export let viewBox: string | undefined = undefined;
-
   /**
    * Override the default styling of the button for specific use cases, such as the icon color.
    */
-  let className = '';
-  export { className as class };
+  interface Props {
+    id?: string;
+    type?: string;
+    href?: string;
+    icon: string;
+    color?: Color;
+    title: string;
+    /**
+     * The padding of the button, used by the `p-{padding}` Tailwind CSS class.
+     */
+    padding?: Padding;
+    /**
+     * Size of the button, used for a CSS value.
+     */
+    size?: string;
+    hideMobile?: boolean;
+    buttonSize?: string | undefined;
+    /**
+     * viewBox attribute for the SVG icon.
+     */
+    viewBox?: string | undefined;
+    class?: string;
+
+    'aria-hidden'?: boolean | undefined | null;
+    'aria-checked'?: 'true' | 'false' | undefined | null;
+    'aria-current'?: 'page' | 'step' | 'location' | 'date' | 'time' | 'true' | 'false' | undefined | null;
+    'aria-controls'?: string | undefined | null;
+    'aria-expanded'?: boolean;
+    'aria-haspopup'?: boolean;
+    tabindex?: number | undefined | null;
+    role?: string | undefined | null;
+    onclick: (e: MouseEvent) => void;
+    disabled?: boolean;
+  }
+
+  let {
+    type = 'button',
+    href = undefined,
+    icon,
+    color = 'transparent',
+    title,
+    padding = '3',
+    size = '24',
+    hideMobile = false,
+    buttonSize = undefined,
+    viewBox = undefined,
+    class: className = '',
+    onclick,
+    ...rest
+  }: Props = $props();
 
   const colorClasses: Record<Color, string> = {
     transparent: 'bg-transparent hover:bg-[#d3d3d3] dark:text-immich-dark-fg',
     opaque: 'bg-transparent hover:bg-immich-bg/30 text-white hover:dark:text-white',
     light: 'bg-white hover:bg-[#d3d3d3]',
+    red: 'text-red-400 hover:bg-[#d3d3d3]',
     dark: 'bg-[#202123] hover:bg-[#d3d3d3]',
     alert: 'text-[#ff0000] hover:text-white',
     gray: 'bg-[#d3d3d3] hover:bg-[#e2e7e9] text-immich-dark-gray hover:text-black',
@@ -77,12 +78,12 @@
     '3': 'p-3',
   };
 
-  $: colorClass = colorClasses[color];
-  $: mobileClass = hideMobile ? 'hidden sm:flex' : '';
-  $: paddingClass = paddingClasses[padding];
+  let colorClass = $derived(colorClasses[color]);
+  let mobileClass = $derived(hideMobile ? 'hidden sm:flex' : '');
+  let paddingClass = $derived(paddingClasses[padding]);
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href ? 'a' : 'button'}
   type={href ? undefined : type}
@@ -91,8 +92,8 @@
   style:width={buttonSize ? buttonSize + 'px' : ''}
   style:height={buttonSize ? buttonSize + 'px' : ''}
   class="flex place-content-center place-items-center rounded-full {colorClass} {paddingClass} transition-all disabled:cursor-default hover:dark:text-immich-dark-gray {className} {mobileClass}"
-  on:click
-  {...$$restProps}
+  {onclick}
+  {...rest}
 >
   <Icon path={icon} {size} ariaLabel={title} {viewBox} color="currentColor" />
 </svelte:element>

@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
+import { OnJob } from 'src/decorators';
 import {
   AssetResponseDto,
   MemoryLaneResponseDto,
@@ -21,12 +22,13 @@ import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, Permission } from 'src/enum';
 import {
-  IAssetDeleteJob,
   ISidecarWriteJob,
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
   JobName,
+  JobOf,
   JobStatus,
+  QueueName,
 } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
@@ -41,28 +43,13 @@ export class AssetService extends BaseService {
     });
     const userIds = [auth.user.id, ...partnerIds];
 
-    const assets = await this.assetRepository.getByDayOfYear(userIds, dto);
-    const assetsWithThumbnails = assets.filter(({ files }) => !!getAssetFiles(files).thumbnailFile);
-    const groups: Record<number, AssetEntity[]> = {};
-    const currentYear = new Date().getFullYear();
-    for (const asset of assetsWithThumbnails) {
-      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
-      if (!groups[yearsAgo]) {
-        groups[yearsAgo] = [];
-      }
-      groups[yearsAgo].push(asset);
-    }
-
-    return Object.keys(groups)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .filter((yearsAgo) => yearsAgo > 0)
-      .map((yearsAgo) => ({
-        yearsAgo,
-        // TODO move this to clients
-        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-        assets: groups[yearsAgo].map((asset) => mapAsset(asset, { auth })),
-      }));
+    const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
+    return groups.map(({ yearsAgo, assets }) => ({
+      yearsAgo,
+      // TODO move this to clients
+      title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
+      assets: assets.map((asset) => mapAsset(asset, { auth })),
+    }));
   }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {
@@ -92,7 +79,6 @@ export class AssetService extends BaseService {
       {
         exifInfo: true,
         sharedLinks: true,
-        smartInfo: true,
         tags: true,
         owner: true,
         faces: {
@@ -160,7 +146,6 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      smartInfo: true,
       tags: true,
       faces: {
         person: true,
@@ -186,6 +171,7 @@ export class AssetService extends BaseService {
     await this.assetRepository.updateAll(ids, options);
   }
 
+  @OnJob({ name: JobName.ASSET_DELETION_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleAssetDeletionCheck(): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const trashedDays = config.trash.enabled ? config.trash.days : 0;
@@ -211,7 +197,8 @@ export class AssetService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleAssetDeletion(job: IAssetDeleteJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.ASSET_DELETION, queue: QueueName.BACKGROUND_TASK })
+  async handleAssetDeletion(job: JobOf<JobName.ASSET_DELETION>): Promise<JobStatus> {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {

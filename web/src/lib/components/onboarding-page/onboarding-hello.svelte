@@ -7,7 +7,11 @@
   import { user } from '$lib/stores/user.store';
   import { t } from 'svelte-i18n';
 
-  export let onDone: () => void;
+  interface Props {
+    onDone: () => void;
+  }
+
+  let { onDone }: Props = $props();
 </script>
 
 <OnboardingCard>
@@ -18,7 +22,7 @@
   <p class="text-3xl pb-6 font-light">{$t('onboarding_welcome_description')}</p>
 
   <div class="w-full flex place-content-end">
-    <Button class="flex gap-2 place-content-center" on:click={() => onDone()}>
+    <Button class="flex gap-2 place-content-center" onclick={() => onDone()}>
       <p>{$t('theme')}</p>
       <Icon path={mdiArrowRight} size="18" />
     </Button>

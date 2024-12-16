@@ -2,13 +2,17 @@
   import { t } from 'svelte-i18n';
   import Button from './button.svelte';
 
-  /**
-   * Target for the skip link to move focus to.
-   */
-  export let target: string = 'main';
-  export let text: string = $t('skip_to_content');
+  interface Props {
+    /**
+     * Target for the skip link to move focus to.
+     */
+    target?: string;
+    text?: string;
+  }
 
-  let isFocused = false;
+  let { target = 'main', text = $t('skip_to_content') }: Props = $props();
+
+  let isFocused = $state(false);
 
   const moveFocus = () => {
     const targetEl = document.querySelector<HTMLElement>(target);
@@ -20,9 +24,9 @@
   <Button
     size={'sm'}
     rounded="none"
-    on:click={moveFocus}
-    on:focus={() => (isFocused = true)}
-    on:blur={() => (isFocused = false)}
+    onclick={moveFocus}
+    onfocus={() => (isFocused = true)}
+    onblur={() => (isFocused = false)}
   >
     {text}
   </Button>

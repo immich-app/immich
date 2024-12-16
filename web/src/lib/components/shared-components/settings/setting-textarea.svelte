@@ -2,13 +2,27 @@
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import type { Snippet } from 'svelte';
 
-  export let value: string;
-  export let label = '';
-  export let desc = '';
-  export let required = false;
-  export let disabled = false;
-  export let isEdited = false;
+  interface Props {
+    value: string;
+    label?: string;
+    description?: string;
+    required?: boolean;
+    disabled?: boolean;
+    isEdited?: boolean;
+    descriptionSnippet?: Snippet;
+  }
+
+  let {
+    value = $bindable(),
+    label = '',
+    description = '',
+    required = false,
+    disabled = false,
+    isEdited = false,
+    descriptionSnippet,
+  }: Props = $props();
 
   const handleInput = (e: Event) => {
     value = (e.target as HTMLInputElement).value;
@@ -32,23 +46,23 @@
     {/if}
   </div>
 
-  {#if desc}
+  {#if description}
     <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
-      {desc}
+      {description}
     </p>
   {:else}
-    <slot name="desc" />
+    {@render descriptionSnippet?.()}
   {/if}
 
   <textarea
     class="immich-form-input w-full pb-2"
-    aria-describedby={desc ? `${label}-desc` : undefined}
+    aria-describedby={description ? `${label}-desc` : undefined}
     aria-labelledby="{label}-label"
     id={label}
     name={label}
     {required}
     {value}
-    on:input={handleInput}
+    oninput={handleInput}
     {disabled}
-  />
+  ></textarea>
 </div>

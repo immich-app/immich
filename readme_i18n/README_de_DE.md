@@ -32,6 +32,8 @@
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
+  <a href="README_vi_VN.md">Tiếng Việt</a>
+  <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
 ## Warnung
@@ -101,6 +103,8 @@ Für die Handy-App kannst Du `https://demo.immich.app/api` als `Server Endpoint 
 | Offline Unterstützung                                | Ja     | Nein  |
 | Schreibgeschützte Gallerie                           | Ja     | Ja    |
 | Gestapelte Bilder                                    | Ja     | Ja    |
+| Tags                                                 | Nein   | Ja    |
+| Ordner-Ansicht                                       | Nein   | Ja    |
 
 
 ## Übersetzungen

@@ -9,6 +9,7 @@ import {
   VectorExtension,
   VectorIndex,
 } from 'src/interfaces/database.interface';
+import { BootstrapEventPriority } from 'src/interfaces/event.interface';
 import { BaseService } from 'src/services/base.service';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
@@ -64,7 +65,7 @@ const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
 export class DatabaseService extends BaseService {
   private reconnection?: NodeJS.Timeout;
 
-  @OnEvent({ name: 'app.bootstrap', priority: -200 })
+  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);

@@ -35,8 +35,9 @@ class UserService {
     this._syncService,
   );
 
-  Future<List<User>> getUsers({bool self = false}) =>
-      _userRepository.getAll(self: self);
+  Future<List<User>> getUsers({bool self = false}) {
+    return _userRepository.getAll(self: self);
+  }
 
   Future<({String profileImagePath})?> uploadProfileImage(XFile image) async {
     try {

@@ -26,6 +26,20 @@ class FileMediaRepository implements IFileMediaRepository {
   }
 
   @override
+  Future<Asset?> saveImageWithFile(
+    String filePath, {
+    String? title,
+    String? relativePath,
+  }) async {
+    final entity = await PhotoManager.editor.saveImageWithPath(
+      filePath,
+      title: title,
+      relativePath: relativePath,
+    );
+    return AssetMediaRepository.toAsset(entity);
+  }
+
+  @override
   Future<Asset?> saveLivePhoto({
     required File image,
     required File video,

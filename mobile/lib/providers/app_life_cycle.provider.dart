@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
@@ -5,7 +6,7 @@ import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
@@ -35,43 +36,60 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     return state;
   }
 
-  void handleAppResume() {
+  void handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
 
     // no need to resume because app was never really paused
     if (!_wasPaused) return;
     _wasPaused = false;
 
-    final isAuthenticated = _ref.read(authenticationProvider).isAuthenticated;
+    final isAuthenticated = _ref.read(authProvider).isAuthenticated;
 
     // Needs to be logged in
     if (isAuthenticated) {
+      // switch endpoint if needed
+      final endpoint =
+          await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
+      if (kDebugMode) {
+        debugPrint("Using server URL: $endpoint");
+      }
+
       final permission = _ref.watch(galleryPermissionNotifier);
       if (permission.isGranted || permission.isLimited) {
-        _ref.read(backupProvider.notifier).resumeBackup();
-        _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+        await _ref.read(backupProvider.notifier).resumeBackup();
+        await _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
       }
-      _ref.read(serverInfoProvider.notifier).getServerVersion();
+
+      await _ref.read(serverInfoProvider.notifier).getServerVersion();
+
       switch (_ref.read(tabProvider)) {
         case TabEnum.home:
-          _ref.read(assetProvider.notifier).getAllAsset();
+          await _ref.read(assetProvider.notifier).getAllAsset();
+          break;
         case TabEnum.search:
-        // nothing to do
+          // nothing to do
+          break;
+
         case TabEnum.albums:
-          _ref.read(albumProvider.notifier).refreshRemoteAlbums();
+          await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
+          break;
         case TabEnum.library:
-        // nothing to do
+          // nothing to do
+          break;
       }
     }
 
     _ref.read(websocketProvider.notifier).connect();
 
-    _ref
+    await _ref
         .read(notificationPermissionProvider.notifier)
         .getNotificationPermission();
-    _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
 
-    _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
+    await _ref
+        .read(galleryPermissionNotifier.notifier)
+        .getGalleryPermissionStatus();
+
+    await _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
 
     _ref.invalidate(memoryFutureProvider);
   }
@@ -85,7 +103,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     state = AppLifeCycleEnum.paused;
     _wasPaused = true;
 
-    if (_ref.read(authenticationProvider).isAuthenticated) {
+    if (_ref.read(authProvider).isAuthenticated) {
       // Do not cancel backup if manual upload is in progress
       if (_ref.read(backupProvider.notifier).backupProgress !=
           BackUpProgressEnum.manualInProgress) {

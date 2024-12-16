@@ -3,12 +3,16 @@ import { ApiTags } from '@nestjs/swagger';
 import { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
+import { StorageTemplateService } from 'src/services/storage-template.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 
 @ApiTags('System Config')
 @Controller('system-config')
 export class SystemConfigController {
-  constructor(private service: SystemConfigService) {}
+  constructor(
+    private service: SystemConfigService,
+    private storageTemplateService: StorageTemplateService,
+  ) {}
 
   @Get()
   @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
@@ -31,6 +35,6 @@ export class SystemConfigController {
   @Get('storage-template-options')
   @Authenticated({ permission: Permission.SYSTEM_CONFIG_READ, admin: true })
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
-    return this.service.getStorageTemplateOptions();
+    return this.storageTemplateService.getStorageTemplateOptions();
   }
 }
