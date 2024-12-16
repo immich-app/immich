@@ -2,37 +2,55 @@
   import { onMount } from 'svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-  import { handleError } from '$lib/utils/handle-error';
-  import { t } from 'svelte-i18n';
 
   let albums: AlbumResponseDto[] = $state([]);
 
-  onMount(async () => {
+  let loadingAlbums: boolean = $state(false);
+
+  async function loadAlbums() {
     try {
+      loadingAlbums = true;
       const allAlbums = await getAllAlbums({});
       albums = allAlbums.sort((a, b) => (a.updatedAt > b.updatedAt ? -1 : 1)).slice(0, 3);
     } catch (error) {
-      handleError(error, $t('failed_to_load_assets'));
+      console.error('Failed to load albums', error);
+    } finally {
+      loadingAlbums = false;
     }
-  });
+  }
+
+  onMount(loadAlbums);
 </script>
 
-{#each albums as album}
-  <a
-    href={'/albums/' + album.id}
-    title={album.albumName}
-    class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary pl-10 group-hover:sm:px-10 md:px-10"
-  >
-    <div>
-      <div
-        class="h-6 w-6 bg-cover rounded bg-gray-200 dark:bg-gray-600"
-        style={album.albumThumbnailAssetId
-          ? `background-image:url('${getAssetThumbnailUrl({ id: album.albumThumbnailAssetId })}')`
-          : ''}
-      ></div>
+{#if !loadingAlbums}
+  {#each albums as album}
+    <a
+      href={'/albums/' + album.id}
+      title={album.albumName}
+      class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary pl-10 group-hover:sm:px-10 md:px-10"
+    >
+      <div>
+        <div
+          class="h-6 w-6 bg-cover rounded bg-gray-200 dark:bg-gray-600"
+          style={album.albumThumbnailAssetId
+            ? `background-image:url('${getAssetThumbnailUrl({ id: album.albumThumbnailAssetId })}')`
+            : ''}
+        ></div>
+      </div>
+      <div class="grow text-sm font-medium truncate">
+        {album.albumName}
+      </div>
+    </a>
+  {/each}
+{:else}
+  {#each { length: 3 } as _}
+    <div
+      class="flex w-full place-items-center justify-between gap-4 rounded-r-full py-3 transition-[padding] delay-100 duration-100 hover:cursor-pointer hover:bg-immich-gray hover:text-immich-primary dark:text-immich-dark-fg dark:hover:bg-immich-dark-gray dark:hover:text-immich-dark-primary pl-10 group-hover:sm:px-10 md:px-10"
+    >
+      <div>
+        <div class="h-6 w-6 bg-cover rounded bg-gray-200 dark:bg-gray-600"></div>
+      </div>
+      <div class="text-sm h-2 grow font-medium truncate bg-gray-200 rounded-full dark:bg-gray-700"></div>
     </div>
-    <div class="grow text-sm font-medium truncate">
-      {album.albumName}
-    </div>
-  </a>
-{/each}
+  {/each}
+{/if}
