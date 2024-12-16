@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
@@ -435,5 +436,18 @@ class AlbumService {
     QuickFilterMode filterMode,
   ) async {
     return _albumRepository.search(searchTerm, filterMode);
+  }
+
+  Future<Album?> updateSortOrder(Album album, SortOrder order) async {
+    try {
+      final updateAlbum =
+          await _albumApiRepository.update(album.remoteId!, sortOrder: order);
+      album.sortOrder = updateAlbum.sortOrder;
+
+      return _albumRepository.update(album);
+    } catch (error, stackTrace) {
+      _log.severe("Error updating album sort order", error, stackTrace);
+    }
+    return null;
   }
 }
