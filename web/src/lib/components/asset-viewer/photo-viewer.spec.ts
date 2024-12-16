@@ -51,7 +51,7 @@ describe('PhotoViewer component', () => {
 
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
-      size: AssetMediaSize.Original,
+      size: AssetMediaSize.Fullsize,
       checksum: asset.checksum,
     });
   });
@@ -63,7 +63,7 @@ describe('PhotoViewer component', () => {
 
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
-      size: AssetMediaSize.Original,
+      size: AssetMediaSize.Fullsize,
       checksum: asset.checksum,
     });
   });

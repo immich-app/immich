@@ -8,12 +8,7 @@
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import {
-    isRawImage,
-    isWebCompatibleImage,
-    canCopyImageToClipboard,
-    copyImageToClipboard,
-  } from '$lib/utils/asset-utils';
+  import { isWebCompatibleImage, canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
@@ -149,17 +144,14 @@
   });
 
   let isWebCompatible = $derived(isWebCompatibleImage(asset));
-  // RAW files may have corresponding converted web-compatible original-sized files
-  let isRaw = $derived(isRawImage(asset));
+
   let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
 
   // when true, will force loading of the original image
-  let forceUseOriginal: boolean = $derived(
-    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && (isWebCompatible || isRaw)),
-  );
+  let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
 
   const targetImageSize = $derived(
-    useOriginalByDefault || forceUseOriginal ? AssetMediaSize.Original : AssetMediaSize.Preview,
+    useOriginalByDefault || forceUseOriginal ? AssetMediaSize.Fullsize : AssetMediaSize.Preview,
   );
 
   $effect(() => {

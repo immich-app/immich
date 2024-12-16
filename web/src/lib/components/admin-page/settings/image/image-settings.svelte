@@ -149,6 +149,15 @@
           isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}
           {disabled}
         />
+
+        <SettingSwitch
+          title={$t('admin.image_enable_original_size_preview')}
+          subtitle={$t('admin.image_enable_original_size_preview_setting_description')}
+          checked={config.image.fullsizePreview}
+          onToggle={(isChecked) => (config.image.fullsizePreview = isChecked)}
+          isEdited={config.image.fullsizePreview !== savedConfig.image.fullsizePreview}
+          {disabled}
+        />
       </div>
 
       <div class="ml-4">

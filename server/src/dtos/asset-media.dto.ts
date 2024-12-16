@@ -5,10 +5,10 @@ import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/valid
 
 export enum AssetMediaSize {
   /**
-   * An original-sized JPG extracted from the RAW image,
-   * or otherwise the original non-RAW image itself.
+   * An full-sized image extracted/converted from non-web-friendly formats like RAW/HIF.
+   * or otherwise the original image itself.
    */
-  ORIGINAL = 'original',
+  FULLSIZE = 'fullsize',
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
 }

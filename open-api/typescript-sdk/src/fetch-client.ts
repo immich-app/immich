@@ -1131,6 +1131,7 @@ export type SystemConfigGeneratedImageDto = {
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
     extractEmbedded: boolean;
+    fullsizePreview: boolean;
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
@@ -3464,7 +3465,7 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum AssetMediaSize {
-    Original = "original",
+    Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
 }

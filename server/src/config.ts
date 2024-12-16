@@ -112,6 +112,7 @@ export interface SystemConfig {
     preview: ImageOptions;
     colorspace: Colorspace;
     extractEmbedded: boolean;
+    fullsizePreview: boolean;
   };
   newVersionCheck: {
     enabled: boolean;
@@ -281,6 +282,7 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
+    fullsizePreview: false,
   },
   newVersionCheck: {
     enabled: true,
