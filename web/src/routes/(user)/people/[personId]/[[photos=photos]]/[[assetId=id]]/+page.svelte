@@ -109,7 +109,7 @@
       previousRoute = getPreviousRoute;
     }
 
-    const getAfterMergeRoute = $page.url.searchParams.get(QueryParameter.AFTER_MERGE_ROUTE);
+    const getAfterMergeRoute = $page.url.searchParams.get(QueryParameter.NEXT_ROUTE);
     if (getAfterMergeRoute && !isExternalUrl(getAfterMergeRoute)) {
       afterMergeRoute = getAfterMergeRoute;
     }
