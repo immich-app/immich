@@ -60,7 +60,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
       try {
         final local = asset.local;
-        if (local != null) {
+        if (local != null && asset.livePhotoVideoId == null) {
           final file = await local.file;
           if (file == null) {
             throw Exception('No file found for the video');
