@@ -434,21 +434,26 @@ class MultiselectGrid extends HookConsumerWidget {
       bottom: false,
       child: Stack(
         children: [
-          ImmichAssetGrid(
-            key: const ValueKey("immichAssetGrid"),
-            renderList: renderList.value ?? RenderList([], null, []),
-            listener: selectionListener,
-            selectionActive: selectionEnabledHook.value,
-            onRefresh: onRefresh == null
-                ? null
-                : wrapLongRunningFun(
-                    onRefresh!,
-                    showOverlay: false,
-                  ),
-            topWidget: topWidget,
-            showStack: stackEnabled,
-          ),
-          const MultiselectGridStatusIndicator(),
+          ref.watch(renderListProvider).when(
+                data: (data) => data.isEmpty &&
+                        (buildLoadingIndicator != null || topWidget == null)
+                    ? (buildLoadingIndicator ?? buildEmptyIndicator)()
+                    : ImmichAssetGrid(
+                        renderList: data,
+                        listener: selectionListener,
+                        selectionActive: selectionEnabledHook.value,
+                        onRefresh: onRefresh == null
+                            ? null
+                            : wrapLongRunningFun(
+                                onRefresh!,
+                                showOverlay: false,
+                              ),
+                        topWidget: topWidget,
+                        showStack: stackEnabled,
+                      ),
+                error: (error, _) => Center(child: Text(error.toString())),
+                loading: buildLoadingIndicator ?? buildDefaultLoadingIndicator,
+              ),
           if (selectionEnabledHook.value)
             ControlBottomAppBar(
               key: const ValueKey("controlBottomAppBar"),
