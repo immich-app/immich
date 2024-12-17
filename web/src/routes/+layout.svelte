@@ -35,7 +35,7 @@
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
-      theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+      theme.value = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
     if (theme.value === Theme.LIGHT) {
@@ -59,7 +59,7 @@
     const element = document.querySelector('#stencil');
     element?.remove();
     // if the browser theme changes, changes the Immich theme too
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
+    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
 
   onDestroy(() => {
@@ -110,7 +110,7 @@
     {#if $page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.origin).href}
+        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
       />
     {/if}
 
@@ -121,7 +121,7 @@
     {#if $page.data.meta.imageUrl}
       <meta
         name="twitter:image"
-        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.origin).href}
+        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
       />
     {/if}
   {/if}

@@ -11,7 +11,7 @@ export class KeyedPriorityQueue<K, T> {
     const removed = this.set.delete(key);
     if (removed) {
       const idx = this.items.findIndex((i) => i.key === key);
-      if (idx >= 0) {
+      if (idx !== -1) {
         this.items.splice(idx, 1);
       }
     }
