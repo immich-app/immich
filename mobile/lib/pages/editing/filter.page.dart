@@ -104,7 +104,7 @@ class FilterImagePage extends HookWidget {
       body: Column(
         children: [
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
+            height: context.height * 0.7,
             child: Center(
               child: ColorFiltered(
                 colorFilter: colorFilter.value,
@@ -180,7 +180,7 @@ class _FilterButton extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(label, style: context.themeData.textTheme.bodyMedium),
       ],
     );
   }

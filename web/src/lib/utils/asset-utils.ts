@@ -2,7 +2,7 @@ import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
-import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
@@ -14,6 +14,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
+  deleteAssets,
   deleteStacks,
   getAssetInfo,
   getBaseUrl,
@@ -27,6 +28,7 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
@@ -438,7 +440,27 @@ export const deleteStack = async (stackIds: string[]) => {
   }
 };
 
-export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
+export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
+  const $t = get(t);
+
+  try {
+    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
+    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
+    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
+    });
+
+    keepAsset.stack = null;
+    return keepAsset;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
+  }
+};
+
+export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: AssetInteraction) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;
@@ -452,7 +474,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
       }
-      assetInteractionStore.selectAssets(bucket.assets);
+      assetInteraction.selectAssets(bucket.assets);
 
       // We use setTimeout to allow the UI to update. Otherwise, this may
       // cause a long delay between the start of 'select all' and the
@@ -467,9 +489,9 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
   }
 };
 
-export const cancelMultiselect = (assetInteractionStore: AssetInteractionStore) => {
+export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
   isSelectingAllAssets.set(false);
-  assetInteractionStore.clearMultiselect();
+  assetInteraction.clearMultiselect();
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {

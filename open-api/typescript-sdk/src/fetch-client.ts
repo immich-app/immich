@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.119.1
+ * 1.122.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -221,10 +221,6 @@ export type PersonWithFacesResponseDto = {
     /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
-export type SmartInfoResponseDto = {
-    objects?: string[] | null;
-    tags?: string[] | null;
-};
 export type AssetStackResponseDto = {
     assetCount: number;
     id: string;
@@ -267,7 +263,6 @@ export type AssetResponseDto = {
     people?: PersonWithFacesResponseDto[];
     /** This property was deprecated in v1.113.0 */
     resized?: boolean;
-    smartInfo?: SmartInfoResponseDto;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     thumbhash: string | null;
@@ -639,6 +634,13 @@ export type MemoryUpdateDto = {
     memoryAt?: string;
     seenAt?: string;
 };
+export type TemplateDto = {
+    template: string;
+};
+export type TemplateResponseDto = {
+    html: string;
+    name: string;
+};
 export type SystemConfigSmtpTransportDto = {
     host: string;
     ignoreCert: boolean;
@@ -933,6 +935,7 @@ export type ServerConfigDto = {
     mapDarkStyleUrl: string;
     mapLightStyleUrl: string;
     oauthButtonText: string;
+    publicUsers: boolean;
     trashDays: number;
     userDeleteDelay: number;
 };
@@ -974,6 +977,8 @@ export type UsageByUserDto = {
     photos: number;
     quotaSizeInBytes: number | null;
     usage: number;
+    usagePhotos: number;
+    usageVideos: number;
     userId: string;
     userName: string;
     videos: number;
@@ -982,6 +987,8 @@ export type ServerStatsResponseDto = {
     photos: number;
     usage: number;
     usageByUser: UsageByUserDto[];
+    usagePhotos: number;
+    usageVideos: number;
     videos: number;
 };
 export type ServerStorageResponseDto = {
@@ -1104,7 +1111,6 @@ export type SystemConfigFFmpegDto = {
     crf: number;
     gopSize: number;
     maxBitrate: string;
-    npl: number;
     preferredHwDevice: string;
     preset: string;
     refs: number;
@@ -1179,7 +1185,9 @@ export type SystemConfigMachineLearningDto = {
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    url: string;
+    /** This property was deprecated in v1.122.0 */
+    url?: string;
+    urls: string[];
 };
 export type SystemConfigMapDto = {
     darkStyle: string;
@@ -1224,11 +1232,20 @@ export type SystemConfigReverseGeocodingDto = {
 export type SystemConfigServerDto = {
     externalDomain: string;
     loginPageMessage: string;
+    publicUsers: boolean;
 };
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
     hashVerificationEnabled: boolean;
     template: string;
+};
+export type SystemConfigTemplateEmailsDto = {
+    albumInviteTemplate: string;
+    albumUpdateTemplate: string;
+    welcomeTemplate: string;
+};
+export type SystemConfigTemplatesDto = {
+    email: SystemConfigTemplateEmailsDto;
 };
 export type SystemConfigThemeDto = {
     customCss: string;
@@ -1257,6 +1274,7 @@ export type SystemConfigDto = {
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
+    templates: SystemConfigTemplatesDto;
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
@@ -2225,6 +2243,19 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
+export function getNotificationTemplate({ name, templateDto }: {
+    name: string;
+    templateDto: TemplateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TemplateResponseDto;
+    }>(`/notifications/templates/${encodeURIComponent(name)}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: templateDto
+    })));
+}
 export function sendTestEmail({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2331,7 +2362,9 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ page, size, withHidden }: {
+export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
+    closestAssetId?: string;
+    closestPersonId?: string;
     page?: number;
     size?: number;
     withHidden?: boolean;
@@ -2340,6 +2373,8 @@ export function getAllPeople({ page, size, withHidden }: {
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
+        closestAssetId,
+        closestPersonId,
         page,
         size,
         withHidden
@@ -2485,7 +2520,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function searchMetadata({ metadataSearchDto }: {
+export function searchAssets({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{

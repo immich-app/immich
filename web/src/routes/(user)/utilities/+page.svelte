@@ -3,7 +3,11 @@
   import type { PageData } from './$types';
   import UtilitiesMenu from '$lib/components/utilities-page/utilities-menu.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 </script>
 
 <UserPageLayout title={data.meta.title}>

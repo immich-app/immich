@@ -1,3 +1,4 @@
+import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import PhotoViewer from '$lib/components/asset-viewer/photo-viewer.svelte';
 import * as utils from '$lib/utils';
 import { AssetMediaSize } from '@immich/sdk';
@@ -22,6 +23,10 @@ describe('PhotoViewer component', () => {
   beforeAll(() => {
     getAssetOriginalUrlSpy = vi.spyOn(utils, 'getAssetOriginalUrl');
     getAssetThumbnailUrlSpy = vi.spyOn(utils, 'getAssetThumbnailUrl');
+  });
+
+  beforeEach(() => {
+    Element.prototype.animate = getAnimateMock();
   });
 
   afterEach(() => {

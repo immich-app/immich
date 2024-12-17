@@ -1,15 +1,16 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 
 class VideoPlaybackControls {
-  VideoPlaybackControls({
+  const VideoPlaybackControls({
     required this.position,
-    required this.mute,
     required this.pause,
+    this.restarted = false,
   });
 
   final double position;
-  final bool mute;
   final bool pause;
+  final bool restarted;
 }
 
 final videoPlayerControlsProvider =
@@ -17,15 +18,11 @@ final videoPlayerControlsProvider =
   return VideoPlayerControls(ref);
 });
 
+const videoPlayerControlsDefault =
+    VideoPlaybackControls(position: 0, pause: false);
+
 class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
-  VideoPlayerControls(this.ref)
-      : super(
-          VideoPlaybackControls(
-            position: 0,
-            pause: false,
-            mute: false,
-          ),
-        );
+  VideoPlayerControls(this.ref) : super(videoPlayerControlsDefault);
 
   final Ref ref;
 
@@ -36,75 +33,48 @@ class VideoPlayerControls extends StateNotifier<VideoPlaybackControls> {
   }
 
   void reset() {
-    state = VideoPlaybackControls(
-      position: 0,
-      pause: false,
-      mute: false,
-    );
+    state = videoPlayerControlsDefault;
   }
 
   double get position => state.position;
-  bool get mute => state.mute;
+  bool get paused => state.pause;
 
   set position(double value) {
-    state = VideoPlaybackControls(
-      position: value,
-      mute: state.mute,
-      pause: state.pause,
-    );
-  }
+    if (state.position == value) {
+      return;
+    }
 
-  set mute(bool value) {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: value,
-      pause: state.pause,
-    );
-  }
-
-  void toggleMute() {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: !state.mute,
-      pause: state.pause,
-    );
+    state = VideoPlaybackControls(position: value, pause: state.pause);
   }
 
   void pause() {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: state.mute,
-      pause: true,
-    );
+    if (state.pause) {
+      return;
+    }
+
+    state = VideoPlaybackControls(position: state.position, pause: true);
   }
 
   void play() {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: state.mute,
-      pause: false,
-    );
+    if (!state.pause) {
+      return;
+    }
+
+    state = VideoPlaybackControls(position: state.position, pause: false);
   }
 
   void togglePlay() {
-    state = VideoPlaybackControls(
-      position: state.position,
-      mute: state.mute,
-      pause: !state.pause,
-    );
+    state =
+        VideoPlaybackControls(position: state.position, pause: !state.pause);
   }
 
   void restart() {
-    state = VideoPlaybackControls(
-      position: 0,
-      mute: state.mute,
-      pause: true,
-    );
-
-    state = VideoPlaybackControls(
-      position: 0,
-      mute: state.mute,
-      pause: false,
-    );
+    state =
+        const VideoPlaybackControls(position: 0, pause: false, restarted: true);
+    ref.read(videoPlaybackValueProvider.notifier).value =
+        ref.read(videoPlaybackValueProvider.notifier).value.copyWith(
+              state: VideoPlaybackState.playing,
+              position: Duration.zero,
+            );
   }
 }

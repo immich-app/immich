@@ -6,8 +6,15 @@ import type { Action } from 'svelte/action';
  * @param node Element which listens for keyboard events
  * @param container Element containing the list of elements
  */
-export const listNavigation: Action<HTMLElement, HTMLElement> = (node, container: HTMLElement) => {
+export const listNavigation: Action<HTMLElement, HTMLElement | undefined> = (
+  node: HTMLElement,
+  container?: HTMLElement,
+) => {
   const moveFocus = (direction: 'up' | 'down') => {
+    if (!container) {
+      return;
+    }
+
     const children = Array.from(container?.children);
     if (children.length === 0) {
       return;

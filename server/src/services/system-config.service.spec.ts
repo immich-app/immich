@@ -65,7 +65,6 @@ const updatedConfig = Object.freeze<SystemConfig>({
     bframes: -1,
     refs: 0,
     gopSize: 0,
-    npl: 0,
     temporalAQ: false,
     cqMode: CQMode.AUTO,
     twoPass: false,
@@ -86,7 +85,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   machineLearning: {
     enabled: true,
-    url: 'http://immich-machine-learning:3003',
+    urls: ['http://immich-machine-learning:3003'],
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
@@ -134,6 +133,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   server: {
     externalDomain: '',
     loginPageMessage: '',
+    publicUsers: true,
   },
   storageTemplate: {
     enabled: false,
@@ -188,6 +188,13 @@ const updatedConfig = Object.freeze<SystemConfig>({
         password: '',
         ignoreCert: false,
       },
+    },
+  },
+  templates: {
+    email: {
+      albumInviteTemplate: '',
+      welcomeTemplate: '',
+      albumUpdateTemplate: '',
     },
   },
 });
@@ -262,6 +269,29 @@ describe(SystemConfigService.name, () => {
       });
     });
 
+    it('should accept valid cron expressions', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: '0 0 * * *' } } }));
+
+      await expect(sut.getSystemConfig()).resolves.toMatchObject({
+        library: {
+          scan: {
+            enabled: true,
+            cronExpression: '0 0 * * *',
+          },
+        },
+      });
+    });
+
+    it('should reject invalid cron expressions', async () => {
+      configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+      systemMock.readFile.mockResolvedValue(JSON.stringify({ library: { scan: { cronExpression: 'foo' } } }));
+
+      await expect(sut.getSystemConfig()).rejects.toThrow(
+        'library.scan.cronExpression has failed the following constraints: cronValidator',
+      );
+    });
+
     it('should log errors with the config file', async () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
 
@@ -307,11 +337,11 @@ describe(SystemConfigService.name, () => {
 
     it('should allow underscores in the machine learning url', async () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
-      const partialConfig = { machineLearning: { url: 'immich_machine_learning' } };
+      const partialConfig = { machineLearning: { urls: ['immich_machine_learning'] } };
       systemMock.readFile.mockResolvedValue(JSON.stringify(partialConfig));
 
       const config = await sut.getSystemConfig();
-      expect(config.machineLearning.url).toEqual('immich_machine_learning');
+      expect(config.machineLearning.urls).toEqual(['immich_machine_learning']);
     });
 
     const externalDomainTests = [

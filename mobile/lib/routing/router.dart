@@ -14,16 +14,17 @@ import 'package:immich_mobile/pages/backup/backup_controller.page.dart';
 import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
+import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
 import 'package:immich_mobile/pages/library/places/places_collection.page.dart';
 import 'package:immich_mobile/pages/library/library.page.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
-import 'package:immich_mobile/pages/common/album_additional_shared_user_selection.page.dart';
-import 'package:immich_mobile/pages/common/album_asset_selection.page.dart';
-import 'package:immich_mobile/pages/common/album_options.page.dart';
-import 'package:immich_mobile/pages/common/album_shared_user_selection.page.dart';
-import 'package:immich_mobile/pages/common/album_viewer.page.dart';
+import 'package:immich_mobile/pages/album/album_additional_shared_user_selection.page.dart';
+import 'package:immich_mobile/pages/album/album_asset_selection.page.dart';
+import 'package:immich_mobile/pages/album/album_options.page.dart';
+import 'package:immich_mobile/pages/album/album_shared_user_selection.page.dart';
+import 'package:immich_mobile/pages/album/album_viewer.page.dart';
 import 'package:immich_mobile/pages/common/app_log.page.dart';
 import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
 import 'package:immich_mobile/pages/common/create_album.page.dart';
@@ -271,6 +272,10 @@ class AppRouter extends RootStackRouter {
       page: PlacesCollectionRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    AutoRoute(
+      page: NativeVideoViewerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
     ),
   ];
 }

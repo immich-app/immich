@@ -23,24 +23,38 @@
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
 
-  export let album: AlbumResponseDto;
-  export let order: AssetOrder | undefined;
-  export let user: UserResponseDto; // Declare user as a prop
-  export let onChangeOrder: (order: AssetOrder) => void;
-  export let onClose: () => void;
-  export let onToggleEnabledActivity: () => void;
-  export let onShowSelectSharedUser: () => void;
-  export let onRemove: (userId: string) => void;
-  export let onRefreshAlbum: () => void;
+  interface Props {
+    album: AlbumResponseDto;
+    order: AssetOrder | undefined;
+    user: UserResponseDto;
+    onChangeOrder: (order: AssetOrder) => void;
+    onClose: () => void;
+    onToggleEnabledActivity: () => void;
+    onShowSelectSharedUser: () => void;
+    onRemove: (userId: string) => void;
+    onRefreshAlbum: () => void;
+  }
 
-  let selectedRemoveUser: UserResponseDto | null = null;
+  let {
+    album,
+    order,
+    user,
+    onChangeOrder,
+    onClose,
+    onToggleEnabledActivity,
+    onShowSelectSharedUser,
+    onRemove,
+    onRefreshAlbum,
+  }: Props = $props();
+
+  let selectedRemoveUser: UserResponseDto | null = $state(null);
 
   const options: Record<AssetOrder, RenderedOption> = {
     [AssetOrder.Asc]: { icon: mdiArrowUpThin, title: $t('oldest_first') },
     [AssetOrder.Desc]: { icon: mdiArrowDownThin, title: $t('newest_first') },
   };
 
-  $: selectedOption = order ? options[order] : options[AssetOrder.Desc];
+  let selectedOption = $derived(order ? options[order] : options[AssetOrder.Desc]);
 
   const handleToggle = async (returnedOption: RenderedOption): Promise<void> => {
     if (selectedOption === returnedOption) {
@@ -125,7 +139,7 @@
       <div class="py-2">
         <div class="text-gray text-sm mb-3">{$t('people').toUpperCase()}</div>
         <div class="p-2">
-          <button type="button" class="flex items-center gap-2" on:click={onShowSelectSharedUser}>
+          <button type="button" class="flex items-center gap-2" onclick={onShowSelectSharedUser}>
             <div class="rounded-full w-10 h-10 border border-gray-500 flex items-center justify-center">
               <div><Icon path={mdiPlus} size="25" /></div>
             </div>

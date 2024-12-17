@@ -54,7 +54,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                                   text: assetDetail.toString(),
                                 ),
                               ).then((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                context.scaffoldMessenger.showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       "Copied to clipboard",

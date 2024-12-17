@@ -11,7 +11,8 @@ import { ClassConstructor } from 'class-transformer';
 import _ from 'lodash';
 import { Server, Socket } from 'socket.io';
 import { EventConfig } from 'src/decorators';
-import { MetadataKey } from 'src/enum';
+import { ImmichWorker, MetadataKey } from 'src/enum';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   ArgsOf,
   ClientEventMap,
@@ -23,6 +24,7 @@ import {
   ServerEvents,
 } from 'src/interfaces/event.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { AuthService } from 'src/services/auth.service';
 import { handlePromiseError } from 'src/utils/misc';
 
@@ -50,6 +52,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private moduleRef: ModuleRef,
+    @Inject(IConfigRepository) private configRepository: ConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(EventRepository.name);
@@ -58,6 +61,10 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
   setup({ services }: { services: ClassConstructor<unknown>[] }) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
     const items: Item<EmitEvent>[] = [];
+    const worker = this.configRepository.getWorker();
+    if (!worker) {
+      throw new Error('Unable to determine worker type');
+    }
 
     // discovery
     for (const Service of services) {
@@ -76,6 +83,11 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
         const event = reflector.get<EventConfig>(MetadataKey.EVENT_CONFIG, handler);
         if (!event) {
+          continue;
+        }
+
+        const workers = event.workers ?? Object.values(ImmichWorker);
+        if (!workers.includes(worker)) {
           continue;
         }
 
@@ -133,7 +145,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     await client.leave(client.nsp.name);
   }
 
-  private addHandler<T extends EmitEvent>(item: EventItem<T>): void {
+  private addHandler<T extends EmitEvent>(item: Item<T>): void {
     const event = item.event;
 
     if (!this.emitHandlers[event]) {
@@ -143,7 +155,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
     this.emitHandlers[event].push(item);
   }
 
-  async emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {
+  emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {
     return this.onEvent({ name: event, args, server: false });
   }
 

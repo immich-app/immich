@@ -157,6 +157,10 @@ Immich supports [Reverse Geocoding](/docs/features/reverse-geocoding) using data
 
 SMTP server setup, for user creation notifications, new albums, etc. More information can be found [here](/docs/administration/email-notification)
 
+## Notification Templates
+
+Override the default notifications text with notification templates. More information can be found [here](/docs/administration/email-notification)
+
 ## Server Settings
 
 ### External Domain
@@ -205,4 +209,68 @@ When this option is enabled the `immich-server` will periodically make requests 
 
 ## Video Transcoding Settings
 
-The system administrator can define parameters according to which video files will be converted to different formats (depending on the settings). The settings can be changed in depth, to learn more about the terminology used here, refer to FFmpeg documentation for [H.264](https://trac.ffmpeg.org/wiki/Encode/H.264) codec, [HEVC](https://trac.ffmpeg.org/wiki/Encode/H.265) codec and [VP9](https://trac.ffmpeg.org/wiki/Encode/VP9) codec.
+The system administrator can configure which video files will be converted to different formats. The settings can be changed in depth, to learn more about the terminology used here, refer to FFmpeg documentation for [H.264](https://trac.ffmpeg.org/wiki/Encode/H.264) codec, [HEVC](https://trac.ffmpeg.org/wiki/Encode/H.265) codec and [VP9](https://trac.ffmpeg.org/wiki/Encode/VP9) codec.
+
+Which streams of a video file will be transcoded is determined by the [Transcode Policy](#ffmpeg.transcode). Streams that are transcoded use the following settings (config file name in brackets). Streams that are not transcoded are untouched and preserve their original settings.
+
+### Accepted containers (`ffmpeg.acceptedContainers`) {#ffmpeg.acceptedContainers}
+
+If the video asset's container format is not in this list, it will be remuxed to MP4 even if no streams need to be transcoded.
+
+The default set of accepted container formats is `mov`, `ogg` and `webm`.
+
+### Preset (`ffmpeg.preset`) {#ffmpeg.preset}
+
+The amount of "compute effort" to put into transcoding. These use [the preset names from h264](https://trac.ffmpeg.org/wiki/Encode/H.264#Preset) and will be converted to appropriate values for encoders that configure effort in different ways.
+
+The default value is `ultrafast`.
+
+### Audio codec (`ffmpeg.targetAudioCodec`) {#ffmpeg.targetAudioCodec}
+
+Which audio codec to use when the audio stream is being transcoded. Can be one of `mp3`, `aac`, `libopus`.
+
+The default value is `aac`.
+
+### Video Codec (`ffmpeg.targetVideoCodec`) {#ffmpeg.targetVideoCodec}
+
+Which video codec to use when the video stream is being transcoded. Can be one of `h264`, `hevc`, `vp9` or `av1`.
+
+The default value is `h264`.
+
+### Target resolution (`ffmpeg.targetResolution`) {#ffmpeg.targetResolution}
+
+When transcoding a video stream, downscale the largest dimension to this value while preserving aspect ratio. Videos are never upscaled.
+
+The default value is `720`.
+
+### Transcode policy (`ffmpeg.transcode`) {#ffmpeg.transcode}
+
+The transcoding policy configures which streams of a video asset will be transcoded. The transcoding decision is made independently for video streams and audio streams. This means that if a video stream needs to be transcoded, but an audio stream does not, then the video stream will be transcoded while the audio stream will be copied. If the transcoding policy does not require any stream to be transcoded and does not require the video to be remuxed, then no separate video file will be created.
+
+The default policy is `required`.
+
+#### All videos (`all`) {#ffmpeg.transcode-all}
+
+Videos are always transcoded. This ensures consistency during video playback.
+
+#### Don't transcode any videos (`disabled`) {#ffmpeg.transcode-disabled}
+
+Videos are never transcoded. This saves space and resources on the server, but may prevent playback on devices that don't support the source format (especially web browsers) or result in high bandwidth usage when playing high-bitrate files.
+
+#### Only videos not in an accepted format (`required`) {#ffmpeg.transcode-required}
+
+Video streams are transcoded when any of the following conditions are met:
+
+- The video is HDR.
+- The video is not in the yuv420p pixel format.
+- The video codec is not in `acceptedVideoCodecs`.
+
+Audio is transcoded if the audio codec is not in `acceptedAudioCodecs`.
+
+#### Videos higher than max bitrate or not in an accepted format (`bitrate`) {#ffmpeg.transcode-bitrate}
+
+In addition to the conditions in `required`, video streams are also transcoded if their bitrate is over `maxBitrate`.
+
+#### Videos higher than target resolution or not in an accepted format (`optimal`) {#ffmpeg.transcode-optimal}
+
+In addition to the conditions in `required`, video streams are also transcoded if the horizontal **and** vertical dimensions are higher than [`targetResolution`](#ffmpeg.targetResolution).

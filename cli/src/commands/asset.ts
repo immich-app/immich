@@ -1,5 +1,6 @@
 import {
   Action,
+  AssetBulkUploadCheckItem,
   AssetBulkUploadCheckResult,
   AssetMediaResponseDto,
   AssetMediaStatus,
@@ -11,7 +12,7 @@ import {
   getSupportedMediaTypes,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
-import { Presets, SingleBar } from 'cli-progress';
+import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
@@ -90,23 +91,23 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     return { newFiles: files, duplicates: [] };
   }
 
-  const progressBar = new SingleBar(
-    { format: 'Checking files | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
+  const multiBar = new MultiBar(
+    { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
     Presets.shades_classic,
   );
 
-  progressBar.start(files.length, 0);
+  const hashProgressBar = multiBar.create(files.length, 0, { message: 'Hashing files          ' });
+  const checkProgressBar = multiBar.create(files.length, 0, { message: 'Checking for duplicates' });
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
 
-  const queue = new Queue<string[], AssetBulkUploadCheckResults>(
-    async (filepaths: string[]) => {
-      const dto = await Promise.all(
-        filepaths.map(async (filepath) => ({ id: filepath, checksum: await sha1(filepath) })),
-      );
-      const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets: dto } });
+  const checkBulkUploadQueue = new Queue<AssetBulkUploadCheckItem[], void>(
+    async (assets: AssetBulkUploadCheckItem[]) => {
+      const response = await checkBulkUpload({ assetBulkUploadCheckDto: { assets } });
+
       const results = response.results as AssetBulkUploadCheckResults;
+
       for (const { id: filepath, assetId, action } of results) {
         if (action === Action.Accept) {
           newFiles.push(filepath);
@@ -115,19 +116,46 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
           duplicates.push({ id: assetId as string, filepath });
         }
       }
-      progressBar.increment(filepaths.length);
+
+      checkProgressBar.increment(assets.length);
+    },
+    { concurrency, retry: 3 },
+  );
+
+  const results: { id: string; checksum: string }[] = [];
+  let checkBulkUploadRequests: AssetBulkUploadCheckItem[] = [];
+
+  const queue = new Queue<string, AssetBulkUploadCheckItem[]>(
+    async (filepath: string): Promise<AssetBulkUploadCheckItem[]> => {
+      const dto = { id: filepath, checksum: await sha1(filepath) };
+
+      results.push(dto);
+      checkBulkUploadRequests.push(dto);
+      if (checkBulkUploadRequests.length === 5000) {
+        const batch = checkBulkUploadRequests;
+        checkBulkUploadRequests = [];
+        void checkBulkUploadQueue.push(batch);
+      }
+
+      hashProgressBar.increment();
       return results;
     },
     { concurrency, retry: 3 },
   );
 
-  for (const items of chunk(files, concurrency)) {
-    await queue.push(items);
+  for (const item of files) {
+    void queue.push(item);
   }
 
   await queue.drained();
 
-  progressBar.stop();
+  if (checkBulkUploadRequests.length > 0) {
+    void checkBulkUploadQueue.push(checkBulkUploadRequests);
+  }
+
+  await checkBulkUploadQueue.drained();
+
+  multiBar.stop();
 
   console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
 
@@ -201,8 +229,8 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
     { concurrency, retry: 3 },
   );
 
-  for (const filepath of files) {
-    await queue.push(filepath);
+  for (const item of files) {
+    void queue.push(item);
   }
 
   await queue.drained();

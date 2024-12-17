@@ -1,6 +1,4 @@
-<script lang="ts" context="module">
-  import type { HTMLButtonAttributes, HTMLLinkAttributes } from 'svelte/elements';
-
+<script lang="ts" module>
   export type Color =
     | 'primary'
     | 'primary-inversed'
@@ -17,44 +15,47 @@
   export type Size = 'tiny' | 'icon' | 'link' | 'sm' | 'base' | 'lg';
   export type Rounded = 'lg' | '3xl' | 'full' | 'none';
   export type Shadow = 'md' | false;
+</script>
 
-  type BaseProps = {
-    class?: string;
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+
+  interface Props {
+    type?: string;
+    href?: string;
     color?: Color;
     size?: Size;
     rounded?: Rounded;
     shadow?: Shadow;
     fullwidth?: boolean;
     border?: boolean;
-  };
+    class?: string;
+    children?: Snippet;
+    onclick?: (event: MouseEvent) => void;
+    onfocus?: () => void;
+    onblur?: () => void;
+    form?: string;
+    disabled?: boolean;
+    title?: string;
+    'aria-current'?: 'page' | 'step' | 'location' | 'date' | 'time' | undefined | null;
+  }
 
-  export type ButtonProps = HTMLButtonAttributes &
-    BaseProps & {
-      href?: never;
-    };
-
-  export type LinkProps = HTMLLinkAttributes &
-    BaseProps & {
-      type?: never;
-    };
-
-  export type Props = ButtonProps | LinkProps;
-</script>
-
-<script lang="ts">
-  type $$Props = Props;
-
-  export let type: $$Props['type'] = 'button';
-  export let href: $$Props['href'] = undefined;
-  export let color: Color = 'primary';
-  export let size: Size = 'base';
-  export let rounded: Rounded = '3xl';
-  export let shadow: Shadow = 'md';
-  export let fullwidth = false;
-  export let border = false;
-
-  let className = '';
-  export { className as class };
+  let {
+    type = 'button',
+    href = undefined,
+    color = 'primary',
+    size = 'base',
+    rounded = '3xl',
+    shadow = 'md',
+    fullwidth = false,
+    border = false,
+    class: className = '',
+    children,
+    onclick,
+    onfocus,
+    onblur,
+    ...rest
+  }: Props = $props();
 
   const colorClasses: Record<Color, string> = {
     primary:
@@ -93,29 +94,31 @@
     full: 'rounded-full',
   };
 
-  $: computedClass = [
-    className,
-    colorClasses[color],
-    sizeClasses[size],
-    roundedClasses[rounded],
-    shadow === 'md' && 'shadow-md',
-    fullwidth && 'w-full',
-    border && 'border',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  let computedClass = $derived(
+    [
+      className,
+      colorClasses[color],
+      sizeClasses[size],
+      roundedClasses[rounded],
+      shadow === 'md' && 'shadow-md',
+      fullwidth && 'w-full',
+      border && 'border',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href ? 'a' : 'button'}
   type={href ? undefined : type}
   {href}
-  on:click
-  on:focus
-  on:blur
+  {onclick}
+  {onfocus}
+  {onblur}
   class="inline-flex items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-60 disabled:pointer-events-none {computedClass}"
-  {...$$restProps}
+  {...rest}
 >
-  <slot />
+  {@render children?.()}
 </svelte:element>

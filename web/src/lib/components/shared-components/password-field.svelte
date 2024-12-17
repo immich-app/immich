@@ -4,28 +4,26 @@
   import Icon from '../elements/icon.svelte';
   import { t } from 'svelte-i18n';
 
-  interface $$Props extends HTMLInputAttributes {
+  interface Props extends HTMLInputAttributes {
     password: string;
-    autocomplete: string;
+    autocomplete: AutoFill;
     required?: boolean;
     onInput?: (value: string) => void;
   }
 
-  export let password: $$Props['password'];
-  export let required = true;
-  export let onInput: $$Props['onInput'] = undefined;
+  let { password = $bindable(), required = true, onInput = undefined, ...rest }: Props = $props();
 
-  let showPassword = false;
+  let showPassword = $state(false);
 </script>
 
 <div class="relative w-full">
   <input
-    {...$$restProps}
+    {...rest}
     class="immich-form-input w-full !pr-12"
     type={showPassword ? 'text' : 'password'}
     {required}
     value={password}
-    on:input={(e) => {
+    oninput={(e) => {
       password = e.currentTarget.value;
       onInput?.(password);
     }}
@@ -36,7 +34,7 @@
       type="button"
       tabindex="-1"
       class="absolute inset-y-0 end-0 px-4 text-gray-700 dark:text-gray-200"
-      on:click={() => (showPassword = !showPassword)}
+      onclick={() => (showPassword = !showPassword)}
       title={showPassword ? $t('hide_password') : $t('show_password')}
     >
       <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />

@@ -13,10 +13,14 @@
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let notification: Notification | ComponentNotification;
+  interface Props {
+    notification: Notification | ComponentNotification;
+  }
 
-  $: icon = notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline;
-  $: hoverStyle = notification.action.type === 'discard' ? 'hover:cursor-pointer' : '';
+  let { notification }: Props = $props();
+
+  let icon = $derived(notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline);
+  let hoverStyle = $derived(notification.action.type === 'discard' ? 'hover:cursor-pointer' : '');
 
   const backgroundColor: Record<NotificationType, string> = {
     [NotificationType.Info]: '#E0E2F0',
@@ -66,14 +70,14 @@
   };
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   transition:fade={{ duration: 250 }}
   style:background-color={backgroundColor[notification.type]}
   style:border-color={borderColor[notification.type]}
   class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
-  on:click={handleClick}
-  on:keydown={handleClick}
+  onclick={handleClick}
+  onkeydown={handleClick}
 >
   <div class="flex justify-between">
     <div class="flex place-items-center gap-2">
@@ -90,15 +94,15 @@
       class="dark:text-immich-dark-gray"
       size="20"
       padding="2"
-      on:click={discard}
-      aria-hidden="true"
+      onclick={discard}
+      aria-hidden={true}
       tabindex={-1}
     />
   </div>
 
   <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
     {#if isComponentNotification(notification)}
-      <svelte:component this={notification.component.type} {...notification.component.props} />
+      <notification.component.type {...notification.component.props} />
     {:else}
       {notification.message}
     {/if}
@@ -109,7 +113,7 @@
       <button
         type="button"
         class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
-        on:click={handleButtonClick}
+        onclick={handleButtonClick}
         aria-hidden="true"
         tabindex={-1}
       >

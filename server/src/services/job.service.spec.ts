@@ -1,38 +1,28 @@
 import { BadRequestException } from '@nestjs/common';
-import { defaults } from 'src/config';
+import { defaults, SystemConfig } from 'src/config';
 import { ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import {
-  IJobRepository,
-  JobCommand,
-  JobHandler,
-  JobItem,
-  JobName,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IConfigRepository } from 'src/interfaces/config.interface';
+import { IJobRepository, JobCommand, JobItem, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { JobService } from 'src/services/job.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newTestService } from 'test/utils';
-import { Mocked, vitest } from 'vitest';
-
-const makeMockHandlers = (status: JobStatus) => {
-  const mock = vitest.fn().mockResolvedValue(status);
-  return Object.fromEntries(Object.values(JobName).map((jobName) => [jobName, mock])) as unknown as Record<
-    JobName,
-    JobHandler
-  >;
-};
+import { Mocked } from 'vitest';
 
 describe(JobService.name, () => {
   let sut: JobService;
   let assetMock: Mocked<IAssetRepository>;
+  let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
+  let loggerMock: Mocked<ILoggerRepository>;
+  let telemetryMock: Mocked<ITelemetryRepository>;
 
   beforeEach(() => {
-    ({ sut, assetMock, jobMock, systemMock } = newTestService(JobService));
+    ({ sut, assetMock, configMock, jobMock, loggerMock, telemetryMock } = newTestService(JobService, {}));
+
+    configMock.getWorker.mockReturnValue(ImmichWorker.MICROSERVICES);
   });
 
   it('should work', () => {
@@ -41,8 +31,7 @@ describe(JobService.name, () => {
 
   describe('onConfigUpdate', () => {
     it('should update concurrency', () => {
-      sut.onBootstrap(ImmichWorker.MICROSERVICES);
-      sut.onConfigUpdate({ oldConfig: defaults, newConfig: defaults });
+      sut.onConfigUpdate({ newConfig: defaults, oldConfig: {} as SystemConfig });
 
       expect(jobMock.setConcurrency).toHaveBeenCalledTimes(15);
       expect(jobMock.setConcurrency).toHaveBeenNthCalledWith(5, QueueName.FACIAL_RECOGNITION, 1);
@@ -225,11 +214,19 @@ describe(JobService.name, () => {
     });
   });
 
-  describe('init', () => {
-    it('should register a handler for each queue', async () => {
-      await sut.init(makeMockHandlers(JobStatus.SUCCESS));
-      expect(systemMock.get).toHaveBeenCalled();
-      expect(jobMock.addHandler).toHaveBeenCalledTimes(Object.keys(QueueName).length);
+  describe('onJobStart', () => {
+    it('should process a successful job', async () => {
+      jobMock.run.mockResolvedValue(JobStatus.SUCCESS);
+
+      await sut.onJobStart(QueueName.BACKGROUND_TASK, {
+        name: JobName.DELETE_FILES,
+        data: { files: ['path/to/file'] },
+      });
+
+      expect(telemetryMock.jobs.addToGauge).toHaveBeenCalledWith('immich.queues.background_task.active', 1);
+      expect(telemetryMock.jobs.addToGauge).toHaveBeenCalledWith('immich.queues.background_task.active', -1);
+      expect(telemetryMock.jobs.addToCounter).toHaveBeenCalledWith('immich.jobs.delete_files.success', 1);
+      expect(loggerMock.error).not.toHaveBeenCalled();
     });
 
     const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
@@ -297,8 +294,9 @@ describe(JobService.name, () => {
           }
         }
 
-        await sut.init(makeMockHandlers(JobStatus.SUCCESS));
-        await jobMock.addHandler.mock.calls[0][2](item);
+        jobMock.run.mockResolvedValue(JobStatus.SUCCESS);
+
+        await sut.onJobStart(QueueName.BACKGROUND_TASK, item);
 
         if (jobs.length > 1) {
           expect(jobMock.queueAll).toHaveBeenCalledWith(
@@ -313,8 +311,9 @@ describe(JobService.name, () => {
       });
 
       it(`should not queue any jobs when ${item.name} fails`, async () => {
-        await sut.init(makeMockHandlers(JobStatus.FAILED));
-        await jobMock.addHandler.mock.calls[0][2](item);
+        jobMock.run.mockResolvedValue(JobStatus.FAILED);
+
+        await sut.onJobStart(QueueName.BACKGROUND_TASK, item);
 
         expect(jobMock.queueAll).not.toHaveBeenCalled();
       });
