@@ -1249,7 +1249,7 @@ describe('/asset', () => {
       for (const { id, status } of assets) {
         expect(status).toBe(AssetMediaStatus.Created);
         // longer timeout as the thumbnail generation from full-size raw files can take a while
-        await utils.waitForWebsocketEvent({ event: 'assetUpload', id, timeout: 60_000 });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
       }
 
       for (const [i, { id }] of assets.entries()) {
