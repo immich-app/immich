@@ -152,6 +152,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
+    fullsizePreview: false,
   },
   newVersionCheck: {
     enabled: true,
