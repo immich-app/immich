@@ -2363,9 +2363,7 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
-    closestAssetId?: string;
-    closestPersonId?: string;
+export function getAllPeople({ page, size, withHidden }: {
     page?: number;
     size?: number;
     withHidden?: boolean;
@@ -2374,8 +2372,6 @@ export function getAllPeople({ closestAssetId, closestPersonId, page, size, with
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
-        closestAssetId,
-        closestPersonId,
         page,
         size,
         withHidden

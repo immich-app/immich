@@ -66,10 +66,6 @@ class PeopleApi {
   /// Performs an HTTP 'GET /people' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [String] closestAssetId:
-  ///
-  /// * [String] closestPersonId:
-  ///
   /// * [num] page:
   ///   Page number for pagination
   ///
@@ -77,7 +73,7 @@ class PeopleApi {
   ///   Number of items per page
   ///
   /// * [bool] withHidden:
-  Future<Response> getAllPeopleWithHttpInfo({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
+  Future<Response> getAllPeopleWithHttpInfo({ num? page, num? size, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final path = r'/people';
 
@@ -88,12 +84,6 @@ class PeopleApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    if (closestAssetId != null) {
-      queryParams.addAll(_queryParams('', 'closestAssetId', closestAssetId));
-    }
-    if (closestPersonId != null) {
-      queryParams.addAll(_queryParams('', 'closestPersonId', closestPersonId));
-    }
     if (page != null) {
       queryParams.addAll(_queryParams('', 'page', page));
     }
@@ -120,10 +110,6 @@ class PeopleApi {
 
   /// Parameters:
   ///
-  /// * [String] closestAssetId:
-  ///
-  /// * [String] closestPersonId:
-  ///
   /// * [num] page:
   ///   Page number for pagination
   ///
@@ -131,8 +117,8 @@ class PeopleApi {
   ///   Number of items per page
   ///
   /// * [bool] withHidden:
-  Future<PeopleResponseDto?> getAllPeople({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
-    final response = await getAllPeopleWithHttpInfo( closestAssetId: closestAssetId, closestPersonId: closestPersonId, page: page, size: size, withHidden: withHidden, );
+  Future<PeopleResponseDto?> getAllPeople({ num? page, num? size, bool? withHidden, }) async {
+    final response = await getAllPeopleWithHttpInfo( page: page, size: size, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
