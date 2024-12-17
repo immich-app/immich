@@ -64,10 +64,13 @@ class ShareService {
         );
       }
 
-      final box = context.findRenderObject() as RenderBox?;
+      final size = MediaQuery.of(context).size;
       Share.shareXFiles(
         downloadedXFiles,
-        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
+        sharePositionOrigin: Rect.fromPoints(
+          Offset.zero,
+          Offset(size.width / 3, size.height),
+        ),
       );
       return true;
     } catch (error) {

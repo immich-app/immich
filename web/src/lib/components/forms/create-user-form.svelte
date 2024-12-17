@@ -1,7 +1,7 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { serverInfo } from '$lib/stores/server-info.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { createUserAdmin } from '@immich/sdk';
@@ -34,7 +34,9 @@
   let isCreatingUser = $state(false);
 
   let quotaSizeInBytes = $derived(quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
-  let quotaSizeWarning = $derived(quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw);
+  let quotaSizeWarning = $derived(
+    quotaSizeInBytes && userInteraction.serverInfo && quotaSizeInBytes > userInteraction.serverInfo.diskSizeRaw,
+  );
 
   $effect(() => {
     if (password !== confirmPassword && confirmPassword.length > 0) {

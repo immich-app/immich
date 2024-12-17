@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
@@ -23,6 +24,7 @@ class Album {
     this.lastModifiedAssetTimestamp,
     required this.shared,
     required this.activityEnabled,
+    this.sortOrder = SortOrder.desc,
   });
 
   // fields stored in DB
@@ -39,6 +41,8 @@ class Album {
   DateTime? lastModifiedAssetTimestamp;
   bool shared;
   bool activityEnabled;
+  @enumerated
+  SortOrder sortOrder;
   final IsarLink<User> owner = IsarLink<User>();
   final IsarLink<Asset> thumbnail = IsarLink<Asset>();
   final IsarLinks<User> sharedUsers = IsarLinks<User>();
@@ -154,6 +158,11 @@ class Album {
     );
     a.remoteAssetCount = dto.assetCount;
     a.owner.value = await db.users.getById(dto.ownerId);
+    if (dto.order != null) {
+      a.sortOrder =
+          dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc;
+    }
+
     if (dto.albumThumbnailAssetId != null) {
       a.thumbnail.value = await db.assets
           .where()
