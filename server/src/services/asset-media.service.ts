@@ -212,6 +212,7 @@ export class AssetMediaService extends BaseService {
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
     } else if (size === AssetMediaSize.FULLSIZE) {
+      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
       // eslint-disable-next-line unicorn/prefer-ternary
       if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
         filepath = asset.originalPath;
