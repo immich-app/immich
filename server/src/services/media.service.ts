@@ -263,8 +263,11 @@ export class MediaService extends BaseService {
         // use this as origin of preview and thumbnail
         decodeInputPath = extractedPath;
         if (asset.exifInfo) {
-          // write EXIF, especially orientation and colorspace essential for subsequent processing
-          await this.mediaRepository.writeExif(asset.exifInfo, extractedPath);
+          // write essential orientation and colorspace EXIF for correct fullsize preview and subsequent processing
+          await this.mediaRepository.writeExif(
+            { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace },
+            extractedPath,
+          );
         }
       } else {
         fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
