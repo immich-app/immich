@@ -1235,7 +1235,7 @@ describe('/asset', () => {
       },
     ];
 
-    it(`should upload and generate a thumbnail for different file types`, { timeout: 60_000 }, async () => {
+    it(`should upload and generate a thumbnail for different file types`, async () => {
       // upload in parallel
       const assets = await Promise.all(
         tests.map(async ({ input }) => {

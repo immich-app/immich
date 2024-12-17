@@ -1,11 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { BinaryField, exiftool } from 'exiftool-vendored';
+import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
@@ -13,6 +14,7 @@ import {
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
+  IMediaRepository,
   ProbeOptions,
   TranscodeCommand,
   VideoInfo,
@@ -61,40 +63,40 @@ export class MediaRepository {
     return true;
   }
 
-  async cloneExif(input: string, output: string): Promise<boolean> {
+  async writeExif(tags: ExifEntity, output: string): Promise<boolean> {
     try {
-      // exclude some non-tag fields that interfere with writing back to the image
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { errors, warnings, OriginalFileName, FileName, Directory, ...exifTags } = await exiftool.read(input, {
-        ignoreMinorErrors: true,
-      });
-      this.logger.debug('Read exif data from original image:', exifTags);
-      if (errors?.length) {
-        this.logger.debug('Error reading exif data', JSON.stringify(errors));
-      }
-      if (warnings?.length) {
-        this.logger.debug('Warning reading exif data', JSON.stringify(warnings));
-      }
-      // filter out binary fields as they emit errors like:
-      // Could not extract exif data from image: cannot encode {"_ctor":"BinaryField","bytes":4815633,"rawValue":"(Binary data 4815633 bytes, use -b option to extract)"}
-      const exifTagsToWrite = Object.fromEntries(
-        Object.entries(exifTags).filter(([, value]) => !(value instanceof BinaryField)),
-      );
-      // GOTCHA: "Orientation" is read as a number by default,
-      // but when writing back, it has to be keyed "Orientation#"
-      // @see https://github.com/photostructure/exiftool-vendored.js/blob/f77b0f097fb26b68326d325caaf1642cf29cfe3d/src/WriteTags.ts#L22
-      if (exifTags.Orientation != null) {
-        exifTagsToWrite['Orientation#'] = exifTags.Orientation;
-        delete exifTagsToWrite['Orientation'];
-      }
-      const result = await exiftool.write(output, exifTagsToWrite, {
+      const tagsToWrite: WriteTags = {
+        ExifImageWidth: tags.exifImageWidth,
+        ExifImageHeight: tags.exifImageHeight,
+        DateTimeOriginal: tags.dateTimeOriginal && ExifDateTime.fromMillis(tags.dateTimeOriginal.getTime()),
+        ModifyDate: tags.modifyDate && ExifDateTime.fromMillis(tags.modifyDate.getTime()),
+        TimeZone: tags.timeZone,
+        GPSLatitude: tags.latitude,
+        GPSLongitude: tags.longitude,
+        ProjectionType: tags.projectionType,
+        City: tags.city,
+        Country: tags.country,
+        Make: tags.make,
+        Model: tags.model,
+        LensModel: tags.lensModel,
+        Fnumber: tags.fNumber?.toFixed(1),
+        FocalLength: tags.focalLength?.toFixed(1),
+        ISO: tags.iso,
+        ExposureTime: tags.exposureTime,
+        ProfileDescription: tags.profileDescription,
+        ColorSpace: tags.colorspace,
+        Rating: tags.rating,
+        // specially convert Orientation to numeric Orientation# for exiftool
+        'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
+      };
+
+      await exiftool.write(output, tagsToWrite, {
         ignoreMinorErrors: true,
         writeArgs: ['-overwrite_original'],
       });
-      this.logger.debug('Wrote exif data to extracted image:', result);
       return true;
     } catch (error: any) {
-      this.logger.warn(`Could not extract exif data from image: ${error.message}`);
+      this.logger.warn(`Could not write exif data to image: ${error.message}`);
       return false;
     }
   }
@@ -104,17 +106,13 @@ export class MediaRepository {
   }
 
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    let pipeline = this.getImageDecodingPipeline(input, options).toFormat(options.format, {
-      quality: options.quality,
-      // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-      chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-    });
-
-    if (options.keepExif === true) {
-      pipeline = pipeline.keepExif();
-    }
-
-    await pipeline.toFile(output);
+    await this.getImageDecodingPipeline(input, options)
+      .toFormat(options.format, {
+        quality: options.quality,
+        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
+        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
+      })
+      .toFile(output);
   }
 
   private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {

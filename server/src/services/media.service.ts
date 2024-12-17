@@ -240,7 +240,7 @@ export class MediaService extends BaseService {
     let useExtracted = false;
     let decodeInputPath: string = asset.originalPath;
     // Converted or extracted image from non-web-supported formats (e.g. RAW)
-    let fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
+    let fullsizePath: string | undefined;
     if (shouldConvertFullsize) {
       // unset size to decode fullsize image
       decodeOptions.size = undefined;
@@ -252,7 +252,7 @@ export class MediaService extends BaseService {
       // Assume extracted image from RAW always in JPEG format, as implied from the `jpgFromRaw` tag name
       const extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
       const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath, true);
-      useExtracted = didExtract && (await this.shouldUseExtractedImage(fullsizePath, image.preview.size));
+      useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
 
       if (useExtracted) {
         if (shouldConvertFullsize) {
@@ -262,9 +262,12 @@ export class MediaService extends BaseService {
         }
         // use this as origin of preview and thumbnail
         decodeInputPath = extractedPath;
-        // clone EXIF to persist orientation and other metadata
-        // this is delayed to reduce I/O overhead as we cannot do it in one go with extraction due to exiftool limitations
-        await this.mediaRepository.cloneExif(asset.originalPath, extractedPath);
+        if (asset.exifInfo) {
+          // write EXIF, especially orientation and colorspace essential for subsequent processing
+          await this.mediaRepository.writeExif(asset.exifInfo, extractedPath);
+        }
+      } else {
+        fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
       }
     }
 
@@ -275,11 +278,11 @@ export class MediaService extends BaseService {
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailPath),
       this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
-      shouldConvertFullsize &&
+      fullsizePath &&
         !useExtracted && // did not extract a usable image from RAW
         this.mediaRepository.generateThumbnail(
           data,
-          { ...image.preview, ...thumbnailOptions, size: undefined, keepExif: true },
+          { ...image.preview, ...thumbnailOptions, size: undefined },
           fullsizePath,
         ),
     ]);
