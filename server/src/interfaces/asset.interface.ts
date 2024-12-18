@@ -201,5 +201,5 @@ export interface IAssetRepository {
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
   updateOffline(library: LibraryEntity): Promise<UpdateResult>;
   getNewPaths(libraryId: string, paths: string[]): Promise<string[]>;
-  getAssetCount(id: string, options: AssetSearchOptions): Promise<number | undefined>;
+  getAssetCount(options: AssetSearchOptions): Promise<number | undefined>;
 }

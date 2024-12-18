@@ -2853,9 +2853,9 @@
         ]
       }
     },
-    "/libraries/{id}/scan": {
-      "post": {
-        "operationId": "scanLibrary",
+    "/libraries/{id}/count": {
+      "get": {
+        "operationId": "getAssetCount",
         "parameters": [
           {
             "name": "id",
@@ -2868,7 +2868,14 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "number"
+                }
+              }
+            },
             "description": ""
           }
         },
@@ -2888,9 +2895,9 @@
         ]
       }
     },
-    "/libraries/{id}/statistics": {
-      "get": {
-        "operationId": "getLibraryStatistics",
+    "/libraries/{id}/scan": {
+      "post": {
+        "operationId": "scanLibrary",
         "parameters": [
           {
             "name": "id",
@@ -2903,14 +2910,7 @@
           }
         ],
         "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LibraryStatsResponseDto"
-                }
-              }
-            },
+          "204": {
             "description": ""
           }
         },
@@ -9461,34 +9461,6 @@
           "ownerId",
           "refreshedAt",
           "updatedAt"
-        ],
-        "type": "object"
-      },
-      "LibraryStatsResponseDto": {
-        "properties": {
-          "photos": {
-            "default": 0,
-            "type": "integer"
-          },
-          "total": {
-            "default": 0,
-            "type": "integer"
-          },
-          "usage": {
-            "default": 0,
-            "format": "int64",
-            "type": "integer"
-          },
-          "videos": {
-            "default": 0,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "photos",
-          "total",
-          "usage",
-          "videos"
         ],
         "type": "object"
       },

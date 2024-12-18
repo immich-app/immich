@@ -786,7 +786,7 @@ export class AssetRepository implements IAssetRepository {
       .then((result) => result.map((row: { path: string }) => row.path));
   }
 
-  async getAssetCount(id: string, options: AssetSearchOptions = {}): Promise<number | undefined> {
+  async getAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
     let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
     builder = searchAssetBuilder(builder, options);
     return builder.getCount();

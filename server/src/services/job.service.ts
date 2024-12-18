@@ -266,7 +266,7 @@ export class JobService extends BaseService {
       }
 
       case JobName.GENERATE_THUMBNAILS: {
-        if (!item.data.notify && item.data.source !== 'upload') {
+        if (!item.data.notify && item.data.source !== 'upload' && item.data.source !== 'library-import') {
           break;
         }
 

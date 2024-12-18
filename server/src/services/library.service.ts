@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
@@ -174,12 +174,12 @@ export class LibraryService extends BaseService {
     }
   }
 
-  async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
-    const statistics = await this.libraryRepository.getStatistics(id);
-    if (!statistics) {
-      throw new BadRequestException(`Library ${id} not found`);
+  async getAssetCount(id: string): Promise<number> {
+    const count = await this.assetRepository.getAssetCount({ libraryId: id });
+    if (count == undefined) {
+      throw new InternalServerErrorException(`Failed to get asset count for library ${id}`);
     }
-    return statistics;
+    return count;
   }
 
   async get(id: string): Promise<LibraryResponseDto> {
@@ -354,7 +354,8 @@ export class LibraryService extends BaseService {
   private processEntity(filePath: string, ownerId: string, libraryId: string): AssetCreate {
     const assetPath = path.normalize(filePath);
 
-    const now = new Date();
+    // This date will be set until metadata extraction runs
+    const datePlaceholder = new Date('1900-01-01');
 
     return {
       ownerId: ownerId,
@@ -365,9 +366,9 @@ export class LibraryService extends BaseService {
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
-      fileCreatedAt: now,
-      fileModifiedAt: now,
-      localDateTime: now,
+      fileCreatedAt: datePlaceholder,
+      fileModifiedAt: datePlaceholder,
+      localDateTime: datePlaceholder,
       type: mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE,
       originalFileName: parse(assetPath).base,
       isExternal: true,
@@ -620,7 +621,7 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const assetCount = await this.assetRepository.getAssetCount(library.id, { withDeleted: true });
+    const assetCount = await this.assetRepository.getAssetCount({ libraryId: job.id, withDeleted: true });
 
     if (!assetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);
