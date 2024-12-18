@@ -35,7 +35,6 @@
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute, AlbumPageViewMode } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -87,6 +86,7 @@
   import { onDestroy } from 'svelte';
   import { confirmAlbumDelete } from '$lib/utils/album-utils';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -107,11 +107,8 @@
   let reactions: ActivityResponseDto[] = $state([]);
   let albumOrder: AssetOrder | undefined = $state(data.album.order);
 
-  const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
-
-  const timelineInteractionStore = createAssetInteractionStore();
-  const { selectedAssets: timelineSelected } = timelineInteractionStore;
+  const assetInteraction = new AssetInteraction();
+  const timelineInteraction = new AssetInteraction();
 
   afterNavigate(({ from }) => {
     let url: string | undefined = from?.url?.pathname;
@@ -234,8 +231,8 @@
     if ($showAssetViewer) {
       return;
     }
-    if ($isMultiSelectState) {
-      cancelMultiselect(assetInteractionStore);
+    if (assetInteraction.selectionActive) {
+      cancelMultiselect(assetInteraction);
       return;
     }
     await goto(backUrl);
@@ -245,9 +242,8 @@
   const refreshAlbum = async () => {
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
-
   const handleAddAssets = async () => {
-    const assetIds = [...$timelineSelected].map((asset) => asset.id);
+    const assetIds = timelineInteraction.selectedAssetsArray.map((asset) => asset.id);
 
     try {
       const results = await addAssetsToAlbum({
@@ -263,7 +259,7 @@
 
       await refreshAlbum();
 
-      timelineInteractionStore.clearMultiselect();
+      timelineInteraction.clearMultiselect();
       await setModeToView();
     } catch (error) {
       handleError(error, $t('errors.error_adding_assets_to_album'));
@@ -284,13 +280,13 @@
   };
 
   const handleCloseSelectAssets = async () => {
-    timelineInteractionStore.clearMultiselect();
+    timelineInteraction.clearMultiselect();
     await setModeToView();
   };
 
   const handleSelectFromComputer = async () => {
     await openFileUploadDialog({ albumId: album.id });
-    timelineInteractionStore.clearMultiselect();
+    timelineInteraction.clearMultiselect();
     await setModeToView();
   };
 
@@ -359,16 +355,16 @@
     }
 
     viewMode = AlbumPageViewMode.VIEW;
-    assetInteractionStore.clearMultiselect();
+    assetInteraction.clearMultiselect();
 
     await updateThumbnail(assetId);
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
-    if ($selectedAssets.size === 1) {
-      const assetId = [...$selectedAssets][0].id;
-      assetInteractionStore.clearMultiselect();
-      await updateThumbnail(assetId);
+    if (assetInteraction.selectedAssets.size === 1) {
+      const [firstAsset] = assetInteraction.selectedAssets;
+      assetInteraction.clearMultiselect();
+      await updateThumbnail(firstAsset.id);
     }
   };
 
@@ -410,9 +406,6 @@
   let timelineStore = $derived(new AssetStore({ isArchived: false, withPartners: true }, albumId));
 
   let isOwned = $derived($user.id == album.ownerId);
-  let isAllUserOwned = $derived([...$selectedAssets].every((asset) => asset.ownerId === $user.id));
-  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
-  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
 
   let showActivityStatus = $derived(
     album.albumUsers.length > 0 && !$showAssetViewer && (album.isActivityEnabled || $numberOfComments > 0),
@@ -433,40 +426,50 @@
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
   <div class="relative w-full shrink">
-    {#if $isMultiSelectState}
-      <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+    {#if assetInteraction.selectionActive}
+      <AssetSelectControlBar
+        assets={assetInteraction.selectedAssets}
+        clearSelect={() => assetInteraction.clearMultiselect()}
+      >
         <CreateSharedLink />
-        <SelectAllAssets {assetStore} {assetInteractionStore} />
+        <SelectAllAssets {assetStore} {assetInteraction} />
         <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
           <AddToAlbum />
           <AddToAlbum shared />
         </ButtonContextMenu>
-        {#if isAllUserOwned}
-          <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+        {#if assetInteraction.isAllUserOwned}
+          <FavoriteAction
+            removeFavorite={assetInteraction.isAllFavorite}
+            onFavorite={() => assetStore.triggerUpdate()}
+          />
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
-          {#if isAllUserOwned}
+          {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
-            {#if $selectedAssets.size === 1}
+            {#if assetInteraction.selectedAssets.size === 1}
               <MenuOption
                 text={$t('set_as_album_cover')}
                 icon={mdiImageOutline}
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction menuItem unarchive={isAllArchived} onArchive={() => assetStore.triggerUpdate()} />
+            <ArchiveAction
+              menuItem
+              unarchive={assetInteraction.isAllArchived}
+              onArchive={() => assetStore.triggerUpdate()}
+            />
           {/if}
 
-          {#if $preferences.tags.enabled && isAllUserOwned}
+          {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
 
-          {#if isOwned || isAllUserOwned}
+          {#if isOwned || assetInteraction.isAllUserOwned}
             <RemoveFromAlbum menuItem bind:album onRemove={handleRemoveAssets} />
           {/if}
-          {#if isAllUserOwned}
+          {#if assetInteraction.isAllUserOwned}
             <DeleteAssets menuItem onAssetDelete={handleRemoveAssets} />
           {/if}
         </ButtonContextMenu>
@@ -540,10 +543,10 @@
         <ControlAppBar onClose={handleCloseSelectAssets}>
           {#snippet leading()}
             <p class="text-lg dark:text-immich-dark-fg">
-              {#if $timelineSelected.size === 0}
+              {#if !timelineInteraction.selectionActive}
                 {$t('add_to_album')}
               {:else}
-                {$t('selected_count', { values: { count: $timelineSelected.size } })}
+                {$t('selected_count', { values: { count: timelineInteraction.selectedAssets.size } })}
               {/if}
             </p>
           {/snippet}
@@ -556,7 +559,7 @@
             >
               {$t('select_from_computer')}
             </button>
-            <Button size="sm" rounded="lg" disabled={$timelineSelected.size === 0} onclick={handleAddAssets}
+            <Button size="sm" rounded="lg" disabled={!timelineInteraction.selectionActive} onclick={handleAddAssets}
               >{$t('done')}</Button
             >
           {/snippet}
@@ -579,7 +582,7 @@
           <AssetGrid
             enableRouting={false}
             assetStore={timelineStore}
-            assetInteractionStore={timelineInteractionStore}
+            assetInteraction={timelineInteraction}
             isSelectionMode={true}
           />
         {:else}
@@ -587,7 +590,7 @@
             enableRouting={true}
             {album}
             {assetStore}
-            {assetInteractionStore}
+            {assetInteraction}
             isShared={album.albumUsers.length > 0}
             isSelectionMode={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
             singleSelect={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}

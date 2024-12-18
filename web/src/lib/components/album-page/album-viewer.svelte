@@ -4,7 +4,6 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
@@ -20,6 +19,7 @@
   import AlbumSummary from './album-summary.svelte';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     sharedLink: SharedLinkResponseDto;
@@ -34,8 +34,7 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   const assetStore = new AssetStore({ albumId: album.id, order: album.order });
-  const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+  const assetInteraction = new AssetInteraction();
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -52,8 +51,8 @@
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
-      if (!$showAssetViewer && $isMultiSelectState) {
-        cancelMultiselect(assetInteractionStore);
+      if (!$showAssetViewer && assetInteraction.selectionActive) {
+        cancelMultiselect(assetInteraction);
       }
     },
   }}
@@ -61,13 +60,13 @@
 />
 
 <header>
-  {#if $isMultiSelectState}
+  {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       ownerId={user?.id}
-      assets={$selectedAssets}
-      clearSelect={() => assetInteractionStore.clearMultiselect()}
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
     >
-      <SelectAllAssets {assetStore} {assetInteractionStore} />
+      <SelectAllAssets {assetStore} {assetInteraction} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" />
       {/if}
@@ -102,7 +101,7 @@
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteractionStore}>
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->
       <h1

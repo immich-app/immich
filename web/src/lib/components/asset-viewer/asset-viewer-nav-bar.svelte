@@ -100,10 +100,7 @@
   <div class="text-white">
     <CloseAction {onClose} />
   </div>
-  <div
-    class="flex w-[calc(100%-3rem)] justify-end gap-2 overflow-hidden text-white"
-    data-testid="asset-viewer-navbar-actions"
-  >
+  <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
     {#if !asset.isTrashed && $user}
       <ShareAction {asset} />
     {/if}

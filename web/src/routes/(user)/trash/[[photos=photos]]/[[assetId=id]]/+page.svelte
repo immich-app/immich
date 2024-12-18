@@ -15,7 +15,6 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -26,6 +25,7 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -39,8 +39,7 @@
 
   const options = { isTrashed: true };
   const assetStore = new AssetStore(options);
-  const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+  const assetInteraction = new AssetInteraction();
 
   const handleEmptyTrash = async () => {
     const isConfirmed = await dialogController.show({
@@ -93,25 +92,28 @@
   });
 </script>
 
-{#if $isMultiSelectState}
-  <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
-    <SelectAllAssets {assetStore} {assetInteractionStore} />
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
+    <SelectAllAssets {assetStore} {assetInteraction} />
     <DeleteAssets force onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     <RestoreAssets onRestore={(assetIds) => assetStore.removeAssets(assetIds)} />
   </AssetSelectControlBar>
 {/if}
 
 {#if $featureFlags.loaded && $featureFlags.trash}
-  <UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
+  <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
       <div class="flex place-items-center gap-2">
-        <LinkButton onclick={handleRestoreTrash} disabled={$isMultiSelectState}>
+        <LinkButton onclick={handleRestoreTrash} disabled={assetInteraction.selectionActive}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiHistory} size="18" />
             {$t('restore_all')}
           </div>
         </LinkButton>
-        <LinkButton onclick={() => handleEmptyTrash()} disabled={$isMultiSelectState}>
+        <LinkButton onclick={() => handleEmptyTrash()} disabled={assetInteraction.selectionActive}>
           <div class="flex place-items-center gap-2 text-sm">
             <Icon path={mdiDeleteForeverOutline} size="18" />
             {$t('empty_trash')}
@@ -120,7 +122,7 @@
       </div>
     {/snippet}
 
-    <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore}>
+    <AssetGrid enableRouting={true} {assetStore} {assetInteraction}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

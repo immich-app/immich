@@ -1,18 +1,18 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
-  import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
   import { requestServerInfo } from '$lib/utils/auth';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { getByteUnitString } from '../../../utils/byte-units';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import LoadingSpinner from '../loading-spinner.svelte';
+  import { userInteraction } from '$lib/stores/user.svelte';
 
   let usageClasses = $state('');
 
   let hasQuota = $derived($user?.quotaSizeInBytes !== null);
-  let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0);
-  let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0);
+  let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : userInteraction.serverInfo?.diskSizeRaw) || 0);
+  let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : userInteraction.serverInfo?.diskUseRaw) || 0);
   let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
 
   const onUpdate = () => {
@@ -38,6 +38,9 @@
   });
 
   onMount(async () => {
+    if (userInteraction.serverInfo && $user) {
+      return;
+    }
     await requestServerInfo();
   });
 </script>
@@ -54,7 +57,7 @@
   <div class="hidden group-hover:sm:block md:block">
     <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
 
-    {#if $serverInfo}
+    {#if userInteraction.serverInfo}
       <p class="text-gray-500 dark:text-gray-300">
         {$t('storage_usage', {
           values: {
