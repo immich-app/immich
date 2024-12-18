@@ -58,7 +58,7 @@ export function handleMouseDown(e: MouseEvent) {
   }
 
   document.body.style.userSelect = 'none';
-  window.addEventListener('mouseup', handleMouseUp);
+  globalThis.addEventListener('mouseup', handleMouseUp);
 }
 
 export function handleMouseMove(e: MouseEvent) {
@@ -80,7 +80,7 @@ export function handleMouseMove(e: MouseEvent) {
 }
 
 export function handleMouseUp() {
-  window.removeEventListener('mouseup', handleMouseUp);
+  globalThis.removeEventListener('mouseup', handleMouseUp);
   document.body.style.userSelect = '';
   stopInteraction();
 }
