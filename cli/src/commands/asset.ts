@@ -332,7 +332,10 @@ const deleteFiles = async ({ files: string[], duplicates: string[] } , options: 
     deletionProgress.stop();
   }
 
-
+  
+  if (!options.deleteDuplicates) {
+    return;
+  }
   console.log('Deleting assets which are duplicates...');
 
   const deletionProgressDupe = new SingleBar(
