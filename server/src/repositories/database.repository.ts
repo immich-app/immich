@@ -21,7 +21,7 @@ import { DataSource, EntityManager, QueryRunner } from 'typeorm';
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
   private vectorExtension: VectorExtension;
-  readonly asyncLock = new AsyncLock();
+  private readonly asyncLock = new AsyncLock();
 
   constructor(
     @InjectDataSource() private dataSource: DataSource,
