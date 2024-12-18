@@ -6,6 +6,7 @@ import {
   LoginResponseDto,
   SharedLinkType,
   getAssetInfo,
+  getAssetStatistics,
   getConfig,
   getMyUser,
   updateConfig,
@@ -19,7 +20,7 @@ import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, tempDir, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -780,6 +781,94 @@ describe('/asset', () => {
 
       const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(true);
+    });
+
+    it('should permanently delete an asset from trash', async () => {
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [assetId] })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      const trashed = await utils.getAssetInfo(admin.accessToken, assetId);
+      expect(trashed.isTrashed).toBe(true);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [assetId], force: true })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after.total).toBe(0);
+    });
+
+    it('should permanently delete a single offline asset from trash, but not others', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline1.png`);
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline2.png`);
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: asset1list } = await utils.searchAssets(admin.accessToken, { originalFileName: 'offline1.png' });
+      const asset1 = asset1list.items[0];
+
+      const { assets: asset2list } = await utils.searchAssets(admin.accessToken, { originalFileName: 'offline2.png' });
+      const asset2 = asset2list.items[0];
+
+      await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const offlineAsset1 = await utils.getAssetInfo(admin.accessToken, asset1.id);
+      expect(offlineAsset1.isTrashed).toBe(true);
+      expect(offlineAsset1.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline1.png`);
+      expect(offlineAsset1.isOffline).toBe(true);
+
+      const offlineAsset2 = await utils.getAssetInfo(admin.accessToken, asset2.id);
+      expect(offlineAsset2.isTrashed).toBe(true);
+      expect(offlineAsset2.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline2.png`);
+      expect(offlineAsset2.isOffline).toBe(true);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [offlineAsset1.id], force: true })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      const after = await getAssetStatistics({ isTrashed: true }, { headers: asBearerAuth(admin.accessToken) });
+      expect(after.total).toBe(1);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline1.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline1.png`);
     });
 
     it('should clean up live photos', async () => {
