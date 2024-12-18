@@ -65,69 +65,33 @@
           </FormatMessage>
         </p>
 
-        <SettingInputField
-          inputType={SettingInputFieldType.NUMBER}
-          {disabled}
-          label={$t('admin.transcoding_constant_rate_factor')}
-          description={$t('admin.transcoding_constant_rate_factor_description')}
-          bind:value={config.ffmpeg.crf}
-          required={true}
-          isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
-        />
 
         <SettingSelect
-          label={$t('admin.transcoding_preset_preset')}
+          label={$t('admin.transcoding_transcode_policy')}
           {disabled}
-          desc={$t('admin.transcoding_preset_preset_description')}
-          bind:value={config.ffmpeg.preset}
-          name="preset"
+          desc={$t('admin.transcoding_transcode_policy_description')}
+          bind:value={config.ffmpeg.transcode}
+          name="transcode"
           options={[
-            { value: 'ultrafast', text: 'ultrafast' },
-            { value: 'superfast', text: 'superfast' },
-            { value: 'veryfast', text: 'veryfast' },
-            { value: 'faster', text: 'faster' },
-            { value: 'fast', text: 'fast' },
-            { value: 'medium', text: 'medium' },
-            { value: 'slow', text: 'slow' },
-            { value: 'slower', text: 'slower' },
-            { value: 'veryslow', text: 'veryslow' },
+            { value: TranscodePolicy.All, text: $t('all_videos') },
+            {
+              value: TranscodePolicy.Optimal,
+              text: $t('admin.transcoding_optimal_description'),
+            },
+            {
+              value: TranscodePolicy.Bitrate,
+              text: $t('admin.transcoding_bitrate_description'),
+            },
+            {
+              value: TranscodePolicy.Required,
+              text: $t('admin.transcoding_required_description'),
+            },
+            {
+              value: TranscodePolicy.Disabled,
+              text: $t('admin.transcoding_disabled_description'),
+            },
           ]}
-          isEdited={config.ffmpeg.preset !== savedConfig.ffmpeg.preset}
-        />
-
-        <SettingSelect
-          label={$t('admin.transcoding_video_codec')}
-          {disabled}
-          desc={$t('admin.transcoding_video_codec_description')}
-          bind:value={config.ffmpeg.targetVideoCodec}
-          options={[
-            { value: VideoCodec.H264, text: 'h264' },
-            { value: VideoCodec.Hevc, text: 'hevc' },
-            { value: VideoCodec.Vp9, text: 'vp9' },
-            { value: VideoCodec.Av1, text: 'av1' },
-          ]}
-          name="vcodec"
-          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
-          onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
-        />
-
-        <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
-        <SettingSelect
-          label={$t('admin.transcoding_audio_codec')}
-          {disabled}
-          desc={$t('admin.transcoding_audio_codec_description')}
-          bind:value={config.ffmpeg.targetAudioCodec}
-          options={[
-            { value: AudioCodec.Aac, text: 'aac' },
-            { value: AudioCodec.Mp3, text: 'mp3' },
-            { value: AudioCodec.Libopus, text: 'opus' },
-          ]}
-          name="acodec"
-          isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
-          onSelect={() =>
-            config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
-              ? null
-              : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
+          isEdited={config.ffmpeg.transcode !== savedConfig.ffmpeg.transcode}
         />
 
         <SettingCheckboxes
@@ -174,6 +138,42 @@
           isEdited={!isEqual(sortBy(config.ffmpeg.acceptedContainers), sortBy(savedConfig.ffmpeg.acceptedContainers))}
         />
 
+
+        <SettingSelect
+          label={$t('admin.transcoding_video_codec')}
+          {disabled}
+          desc={$t('admin.transcoding_video_codec_description')}
+          bind:value={config.ffmpeg.targetVideoCodec}
+          options={[
+            { value: VideoCodec.H264, text: 'h264' },
+            { value: VideoCodec.Hevc, text: 'hevc' },
+            { value: VideoCodec.Vp9, text: 'vp9' },
+            { value: VideoCodec.Av1, text: 'av1' },
+          ]}
+          name="vcodec"
+          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
+          onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
+        />
+
+        <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
+        <SettingSelect
+          label={$t('admin.transcoding_audio_codec')}
+          {disabled}
+          desc={$t('admin.transcoding_audio_codec_description')}
+          bind:value={config.ffmpeg.targetAudioCodec}
+          options={[
+            { value: AudioCodec.Aac, text: 'aac' },
+            { value: AudioCodec.Mp3, text: 'mp3' },
+            { value: AudioCodec.Libopus, text: 'opus' },
+          ]}
+          name="acodec"
+          isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
+          onSelect={() =>
+            config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
+              ? null
+              : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
+        />
+
         <SettingSelect
           label={$t('admin.transcoding_target_resolution')}
           {disabled}
@@ -192,6 +192,36 @@
         />
 
         <SettingInputField
+          inputType={SettingInputFieldType.NUMBER}
+          {disabled}
+          label={$t('admin.transcoding_constant_rate_factor')}
+          description={$t('admin.transcoding_constant_rate_factor_description')}
+          bind:value={config.ffmpeg.crf}
+          required={true}
+          isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
+        />
+
+        <SettingSelect
+          label={$t('admin.transcoding_preset_preset')}
+          {disabled}
+          desc={$t('admin.transcoding_preset_preset_description')}
+          bind:value={config.ffmpeg.preset}
+          name="preset"
+          options={[
+            { value: 'ultrafast', text: 'ultrafast' },
+            { value: 'superfast', text: 'superfast' },
+            { value: 'veryfast', text: 'veryfast' },
+            { value: 'faster', text: 'faster' },
+            { value: 'fast', text: 'fast' },
+            { value: 'medium', text: 'medium' },
+            { value: 'slow', text: 'slow' },
+            { value: 'slower', text: 'slower' },
+            { value: 'veryslow', text: 'veryslow' },
+          ]}
+          isEdited={config.ffmpeg.preset !== savedConfig.ffmpeg.preset}
+        />
+
+        <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           {disabled}
           label={$t('admin.transcoding_max_bitrate')}
@@ -207,34 +237,6 @@
           description={$t('admin.transcoding_threads_description')}
           bind:value={config.ffmpeg.threads}
           isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
-        />
-
-        <SettingSelect
-          label={$t('admin.transcoding_transcode_policy')}
-          {disabled}
-          desc={$t('admin.transcoding_transcode_policy_description')}
-          bind:value={config.ffmpeg.transcode}
-          name="transcode"
-          options={[
-            { value: TranscodePolicy.All, text: $t('all_videos') },
-            {
-              value: TranscodePolicy.Optimal,
-              text: $t('admin.transcoding_optimal_description'),
-            },
-            {
-              value: TranscodePolicy.Bitrate,
-              text: $t('admin.transcoding_bitrate_description'),
-            },
-            {
-              value: TranscodePolicy.Required,
-              text: $t('admin.transcoding_required_description'),
-            },
-            {
-              value: TranscodePolicy.Disabled,
-              text: $t('admin.transcoding_disabled_description'),
-            },
-          ]}
-          isEdited={config.ffmpeg.transcode !== savedConfig.ffmpeg.transcode}
         />
 
         <SettingSelect
