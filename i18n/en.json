@@ -326,7 +326,7 @@
     "transcoding_transcode_policy_description": "Policy for when a video should be transcoded. HDR videos will always be transcoded (except if transcoding is disabled).",
     "transcoding_two_pass_encoding": "Two-pass encoding",
     "transcoding_two_pass_encoding_setting_description": "Transcode in two passes to produce better encoded videos. When max bitrate is enabled (required for it to work with H.264 and HEVC), this mode uses a bitrate range based on the max bitrate and ignores CRF. For VP9, CRF can be used if max bitrate is disabled.",
-    "transcoding_video_codec": "Video Codec",
+    "transcoding_video_codec": "Video codec",
     "transcoding_video_codec_description": "VP9 has high efficiency and web compatibility, but takes longer to transcode. HEVC performs similarly, but has lower web compatibility. H.264 is widely compatible and quick to transcode, but produces much larger files. AV1 is the most efficient codec but lacks support on older devices.",
     "trash_enabled_description": "Enable Trash features",
     "trash_number_of_days": "Number of days",
