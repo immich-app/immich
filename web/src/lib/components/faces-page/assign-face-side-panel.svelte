@@ -72,6 +72,14 @@
   };
 </script>
 
+<svelte:window
+  on:keydown={(e) => {
+    if (!searchFaces && /^[\dA-Za-z]$/.test(e.key)) {
+      searchFaces = true;
+    }
+  }}
+/>
+
 <section
   transition:fly={{ x: 360, duration: 100, easing: linear }}
   class="absolute top-0 z-[2001] h-full w-[360px] overflow-x-hidden p-2 bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
