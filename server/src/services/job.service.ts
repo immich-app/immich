@@ -250,7 +250,7 @@ export class JobService extends BaseService {
       }
 
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
-        if (item.data.source === 'upload' || item.data.source === 'copy' || item.data.source === 'library-import') {
+        if (item.data.source === 'upload' || item.data.source === 'copy') {
           await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });
         }
         break;
@@ -266,7 +266,7 @@ export class JobService extends BaseService {
       }
 
       case JobName.GENERATE_THUMBNAILS: {
-        if (!item.data.notify && item.data.source !== 'upload' && item.data.source === 'library-import') {
+        if (!item.data.notify && item.data.source !== 'upload') {
           break;
         }
 

@@ -425,7 +425,7 @@ export class LibraryService extends BaseService {
 
     await this.jobRepository.queue({
       name: JobName.METADATA_EXTRACTION,
-      data: { id: asset.id, source: 'library-import' },
+      data: { id: asset.id, source: 'upload' },
     });
   }
 

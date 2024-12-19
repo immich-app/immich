@@ -148,19 +148,19 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction({ id, source }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
+  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     this.logger.verbose(`Extracting metadata for asset ${id}`);
 
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
-
-    if (source === 'library-import') {
-      await this.processSidecar(id, false);
-    }
 
     const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
 
     if (!asset) {
       return JobStatus.FAILED;
+    }
+
+    if (asset.isExternal) {
+      await this.processSidecar(id, false);
     }
 
     this.logger.verbose(`Sidecar path: ${asset.sidecarPath}`);
