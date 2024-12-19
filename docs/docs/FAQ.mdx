@@ -326,14 +326,15 @@ To decrease Redis logs, you can add the following line to the `redis:` section o
 
 ### How can I run Immich as a non-root user?
 
-You can change the user in the container by setting the `user` argument in `docker-compose.yml` for each service.
-You may need to add mount points or docker volumes for the following internal container paths:
+You need to use the `docker-compose.non-root.yml` and extend the .env file with the following variables:
+- REDIS_DATA_LOCATION
+- MODEL_CACHE_LOCATION
+- ML_CONFIG_LOCATION
+- USER_ID
+- GROUP_ID
 
-- `immich-machine-learning:/.config`
-- `immich-machine-learning:/.cache`
-- `redis:/data`
-
-The non-root user/group needs read/write access to the volume mounts, including `UPLOAD_LOCATION` and `/cache` for machine-learning.
+The given `USER_ID`/`GROUP_ID` needs read/write access to the `_LOCATION` postfixed variable's directories,
+except the DB_DATA_LOCATION which needs to be owned by the 999 userid.
 
 :::note Docker Compose Volumes
 The Docker Compose top level volume element does not support non-root access, all of the above volumes must be local volume mounts.
