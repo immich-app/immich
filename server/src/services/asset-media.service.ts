@@ -30,7 +30,6 @@ import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
-import { QueryFailedError } from 'typeorm';
 export interface UploadRequest {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
@@ -302,7 +301,7 @@ export class AssetMediaService extends BaseService {
     });
 
     // handle duplicates with a success response
-    if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
+    if (error.constraint_name === ASSET_CHECKSUM_CONSTRAINT) {
       const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
       if (!duplicateId) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
@@ -343,7 +342,7 @@ export class AssetMediaService extends BaseService {
       localDateTime: dto.fileCreatedAt,
       duration: dto.duration || null,
 
-      livePhotoVideo: null,
+      livePhotoVideoId: null,
       sidecarPath: sidecarPath || null,
     });
 

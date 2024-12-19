@@ -1,3 +1,4 @@
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ImmichTelemetry } from 'src/enum';
 import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
@@ -79,14 +80,20 @@ describe('getEnv', () => {
     it('should use defaults', () => {
       const { database } = getEnv();
       expect(database).toEqual({
-        config: expect.objectContaining({
-          type: 'postgres',
-          host: 'database',
-          port: 5432,
-          database: 'immich',
-          username: 'postgres',
-          password: 'postgres',
-        }),
+        config: {
+          kysely: {
+            dialect: expect.any(PostgresJSDialect),
+            log: ['error'],
+          },
+          typeorm: expect.objectContaining({
+            type: 'postgres',
+            host: 'database',
+            port: 5432,
+            database: 'immich',
+            username: 'postgres',
+            password: 'postgres',
+          }),
+        },
         skipMigrations: false,
         vectorExtension: 'vectors',
       });
