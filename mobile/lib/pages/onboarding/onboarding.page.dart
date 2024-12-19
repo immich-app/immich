@@ -34,7 +34,7 @@ class OnboardingPage extends HookConsumerWidget {
       body: SafeArea(
         child: PageView(
           controller: pageController,
-          physics: const NeverScrollableScrollPhysics(),
+          // physics: const NeverScrollableScrollPhysics(),
           children: [
             OnboardingWelcome(
               onNextPage: () => toNextPage(),
@@ -197,8 +197,8 @@ class AnimatedHeroImageState extends State<AnimatedHeroImage>
         image: AssetImage(widget.imagePath),
         filterQuality: FilterQuality.high,
         isAntiAlias: true,
-        color: widget.color,
-        colorBlendMode: widget.colorBlendMode,
+        // color: widget.color,
+        // colorBlendMode: widget.colorBlendMode,
       ),
       builder: (context, child) {
         return Transform.scale(
@@ -223,10 +223,100 @@ class OnboardingGalleryPermission extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ElevatedButton(
-        onPressed: onNextPage,
-        child: const Text("to location permission"),
+    return ListView(
+      padding: const EdgeInsets.all(24.0),
+      physics: const ClampingScrollPhysics(),
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.perm_media_outlined,
+              size: 48,
+              color: context.primaryColor.withAlpha(250),
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+        Text(
+          "Gallery Permission",
+          style: context.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "We need the read and write permission of the media gallery for the following actions",
+          style: context.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w400,
+            color: context.colorScheme.onSurface.withAlpha(220),
+          ),
+        ),
+        const SizedBox(height: 40),
+        const BulletList([
+          'Display the local videos and images',
+          'Read the file content to upload to your Immich instance',
+          'Remove the media from the device on your request',
+        ]),
+        const SizedBox(height: 64),
+        SizedBox(
+          height: 48,
+          child: ElevatedButton(
+            onPressed: onNextPage,
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class BulletList extends StatelessWidget {
+  final List<String> strings;
+
+  const BulletList(this.strings, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: strings.map((textString) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '\u2022',
+                  style: TextStyle(
+                    fontSize: 20,
+                    height: 1.25,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    textString,
+                    textAlign: TextAlign.left,
+                    softWrap: true,
+                    style: context.textTheme.headlineSmall?.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
