@@ -309,6 +309,35 @@ SELECT
   "asset"."sidecarPath" AS "asset_sidecarPath",
   "asset"."stackId" AS "asset_stackId",
   "asset"."duplicateId" AS "asset_duplicateId",
+  "exif"."assetId" AS "exif_assetId",
+  "exif"."description" AS "exif_description",
+  "exif"."exifImageWidth" AS "exif_exifImageWidth",
+  "exif"."exifImageHeight" AS "exif_exifImageHeight",
+  "exif"."fileSizeInByte" AS "exif_fileSizeInByte",
+  "exif"."orientation" AS "exif_orientation",
+  "exif"."dateTimeOriginal" AS "exif_dateTimeOriginal",
+  "exif"."modifyDate" AS "exif_modifyDate",
+  "exif"."timeZone" AS "exif_timeZone",
+  "exif"."latitude" AS "exif_latitude",
+  "exif"."longitude" AS "exif_longitude",
+  "exif"."projectionType" AS "exif_projectionType",
+  "exif"."city" AS "exif_city",
+  "exif"."livePhotoCID" AS "exif_livePhotoCID",
+  "exif"."autoStackId" AS "exif_autoStackId",
+  "exif"."state" AS "exif_state",
+  "exif"."country" AS "exif_country",
+  "exif"."make" AS "exif_make",
+  "exif"."model" AS "exif_model",
+  "exif"."lensModel" AS "exif_lensModel",
+  "exif"."fNumber" AS "exif_fNumber",
+  "exif"."focalLength" AS "exif_focalLength",
+  "exif"."iso" AS "exif_iso",
+  "exif"."exposureTime" AS "exif_exposureTime",
+  "exif"."profileDescription" AS "exif_profileDescription",
+  "exif"."colorspace" AS "exif_colorspace",
+  "exif"."bitsPerSample" AS "exif_bitsPerSample",
+  "exif"."rating" AS "exif_rating",
+  "exif"."fps" AS "exif_fps",
   "stack"."id" AS "stack_id",
   "stack"."ownerId" AS "stack_ownerId",
   "stack"."primaryAssetId" AS "stack_primaryAssetId",
@@ -339,9 +368,11 @@ SELECT
   "stackedAssets"."originalFileName" AS "stackedAssets_originalFileName",
   "stackedAssets"."sidecarPath" AS "stackedAssets_sidecarPath",
   "stackedAssets"."stackId" AS "stackedAssets_stackId",
-  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId"
+  "stackedAssets"."duplicateId" AS "stackedAssets_duplicateId",
+  "search"."embedding" <= > $1 AS "similarity"
 FROM
   "assets" "asset"
+  LEFT JOIN "exif" "exif" ON "exif"."assetId" = "asset"."id"
   LEFT JOIN "exif" "exifInfo" ON "exifInfo"."assetId" = "asset"."id"
   LEFT JOIN "asset_stack" "stack" ON "stack"."id" = "asset"."stackId"
   LEFT JOIN "assets" "stackedAssets" ON "stackedAssets"."stackId" = "stack"."id"
@@ -349,19 +380,25 @@ FROM
   INNER JOIN "smart_search" "search" ON "search"."assetId" = "asset"."id"
 WHERE
   (
-    "asset"."fileCreatedAt" >= $1
-    AND "exifInfo"."lensModel" = $2
+    "asset"."fileCreatedAt" >= $2
+    AND "exifInfo"."lensModel" = $3
     AND 1 = 1
     AND 1 = 1
     AND (
-      "asset"."isFavorite" = $3
-      AND "asset"."isArchived" = $4
+      "asset"."isFavorite" = $4
+      AND "asset"."isArchived" = $5
     )
-    AND "asset"."ownerId" IN ($5)
+    AND "asset"."ownerId" IN ($6)
   )
   AND ("asset"."deletedAt" IS NULL)
 ORDER BY
-  "search"."embedding" <= > $6 ASC
+  CASE
+    WHEN to_tsvector('english', COALESCE("exif"."description", '')) @@ plainto_tsquery('english', $7) THEN ts_rank(
+      to_tsvector('english', COALESCE("exif"."description", '')),
+      plainto_tsquery('english', $7)
+    )
+    ELSE 0
+  END * 0.7 + COALESCE((1 - ("search"."embedding" <= > $1)), 0) * 0.3 DESC
 LIMIT
   201
 COMMIT
