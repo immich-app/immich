@@ -1,5 +1,5 @@
 {
-  "about": "Yenile",
+  "about": "Hakkında",
   "account": "Hesap",
   "account_settings": "Hesap Ayarları",
   "acknowledge": "Onayla",
@@ -28,7 +28,7 @@
   "added_to_favorites": "Favorilere eklendi",
   "added_to_favorites_count": "{count, number} fotoğraf favorilere eklendi",
   "admin": {
-    "add_exclusion_pattern_description": "Dışlama desenleri ekleyin. *, ** ve ? kullanılarak Globbing (temsili yer doldurucu karakter) desteklenir. Farzedelim \"Raw\" adlı bir dizininiz var, içinde ki tüm dosyaları yoksaymak için \"**/Raw/**\" şeklinde yazabilirsiniz. \".tif\" ile biten tüm dosyaları yoksaymak için \"**/*.tif\" yazabilirsiniz. Mutlak yolu yoksaymak için \"/yoksayılacak/olan/yol/**\" şeklinde yazabilirsiniz.",
+    "add_exclusion_pattern_description": "Hariç tutma desenleri ekleyin. *, ** ve ? kullanılarak Globbing (temsili yer doldurucu karakter) desteklenir. Farzedelim \"Raw\" adlı bir dizininiz var, içinde ki tüm dosyaları yoksaymak için \"**/Raw/**\" şeklinde yazabilirsiniz. \".tif\" ile biten tüm dosyaları yoksaymak için \"**/*.tif\" yazabilirsiniz. Mutlak yolu yoksaymak için \"/yoksayılacak/olan/yol/**\" şeklinde yazabilirsiniz.",
     "asset_offline_description": "Bu harici kütüphane varlığı artık diskte bulunmuyor ve çöp kutusuna taşındı. Dosya kütüphane içinde taşındıysa, yeni karşılık gelen varlık için zaman çizelgenizi kontrol edin. Bu varlığı geri yüklemek için lütfen aşağıdaki dosya yolunun Immich tarafından erişilebilir olduğundan emin olun ve kütüphaneyi tarayın.",
     "authentication_settings": "Yetkilendirme Ayarları",
     "authentication_settings_description": "Şifre, OAuth, ve diğer yetkilendirme ayarlarını yönet",

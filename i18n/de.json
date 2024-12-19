@@ -259,7 +259,7 @@
     "template_email_update_album": "Album Vorlage aktualisieren",
     "template_email_welcome": "Willkommen bei den E-Mail Vorlagen",
     "template_settings": "Benachrichtigungsvorlagen",
-    "template_settings_description": "Benutzerdefinierte Vorlagen für Benachrichtigungen verwalten",
+    "template_settings_description": "Benutzerdefinierte Vorlagen für Benachrichtigungen verwalten.",
     "theme_custom_css_settings": "Benutzerdefiniertes CSS",
     "theme_custom_css_settings_description": "Mit Cascading Style Sheets (CSS) kann das Design von Immich angepasst werden.",
     "theme_settings": "Theme-Einstellungen",
