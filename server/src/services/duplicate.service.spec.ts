@@ -31,7 +31,12 @@ describe(SearchService.name, () => {
 
   describe('getDuplicates', () => {
     it('should get duplicates', async () => {
-      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe, assetStub.hasDupe]);
+      assetMock.getDuplicates.mockResolvedValue([
+        {
+          duplicateId: assetStub.hasDupe.duplicateId!,
+          assets: [assetStub.hasDupe, assetStub.hasDupe],
+        },
+      ]);
       await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([
         {
           duplicateId: assetStub.hasDupe.duplicateId,
@@ -41,12 +46,6 @@ describe(SearchService.name, () => {
           ],
         },
       ]);
-    });
-
-    it('should update assets with duplicateId', async () => {
-      assetMock.getDuplicates.mockResolvedValue([assetStub.hasDupe]);
-      await expect(sut.getDuplicates(authStub.admin)).resolves.toEqual([]);
-      expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.hasDupe.id], { duplicateId: null });
     });
   });
 
