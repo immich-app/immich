@@ -13,6 +13,8 @@ import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:logging/logging.dart';
+import 'package:crypto/crypto.dart';
+import 'dart:math' show max, min;
 
 final downloadServiceProvider = Provider(
   (ref) => DownloadService(
@@ -61,19 +63,61 @@ class DownloadService {
     final filePath = await task.filePath();
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
+    
+    _log.info('Attempting to save image: $title');
+    _log.info('Source file path: $filePath');
+
     try {
+      
+      final isDuplicate = await _isFileDuplicate(filePath, title);
+      if (isDuplicate) {
+        _log.info('Duplicate file detected. Skipping save: $title');
+        return true; 
+      }
+
+      final sourceFile = File(filePath);
+      
+      
+      if (!await sourceFile.exists()) {
+        _log.severe('Source file does not exist: $filePath');
+        return false;
+      }
+
+      
+      try {
+        final fileSize = await sourceFile.length();
+        _log.info('Source file size: $fileSize bytes');
+      } catch (e) {
+        _log.severe('Cannot read source file size: $e');
+      }
+
       final Asset? resultAsset = await _fileMediaRepository.saveImageWithFile(
         filePath,
         title: title,
         relativePath: relativePath,
       );
-      return resultAsset != null;
+
+      if (resultAsset == null) {
+        _log.severe('Failed to save image through PhotoManager');
+        return false;
+      }
+
+      _log.info('Image saved successfully: $title');
+      _log.info('Saved asset ID: ${resultAsset.id}');
+
+      return true;
     } catch (error, stack) {
-      _log.severe("Error saving image", error, stack);
+      _log.severe("Comprehensive error saving image", error, stack);
       return false;
     } finally {
-      if (await File(filePath).exists()) {
-        await File(filePath).delete();
+     
+      try {
+        if (await File(filePath).exists()) {
+          await File(filePath).delete();
+          _log.info('Temporary download file deleted: $filePath');
+        }
+      } catch (e) {
+        _log.severe('Error deleting temporary file: $e');
       }
     }
   }
@@ -82,23 +126,91 @@ class DownloadService {
     final filePath = await task.filePath();
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
-    final file = File(filePath);
+    
+    _log.info('Attempting to save video: $title');
+    _log.info('Source file path: $filePath');
+
     try {
+     
+      final isDuplicate = await _isFileDuplicate(filePath, title);
+      if (isDuplicate) {
+        _log.info('Duplicate file detected. Skipping save: $title');
+        return true; 
+      }
+
+      final sourceFile = File(filePath);
+      
+      
+      if (!await sourceFile.exists()) {
+        _log.severe('Source file does not exist: $filePath');
+        return false;
+      }
+
+      
+      try {
+        final fileSize = await sourceFile.length();
+        _log.info('Source file size: $fileSize bytes');
+      } catch (e) {
+        _log.severe('Cannot read source file size: $e');
+      }
+
+      
       final Asset? resultAsset = await _fileMediaRepository.saveVideo(
-        file,
+        sourceFile,
         title: title,
         relativePath: relativePath,
       );
-      return resultAsset != null;
+
+      if (resultAsset == null) {
+        _log.severe('Failed to save video through PhotoManager');
+        return false;
+      }
+
+      _log.info('Video saved successfully: $title');
+      _log.info('Saved asset ID: ${resultAsset.id}');
+
+      return true;
     } catch (error, stack) {
-      _log.severe("Error saving video", error, stack);
+      _log.severe("Comprehensive error saving video", error, stack);
       return false;
     } finally {
-      if (await file.exists()) {
-        await file.delete();
+      
+      try {
+        if (await File(filePath).exists()) {
+          await File(filePath).delete();
+          _log.info('Temporary download file deleted: $filePath');
+        }
+      } catch (e) {
+        _log.severe('Error deleting temporary file: $e');
       }
     }
   }
+
+  // Future<String> _getUniqueDestinationPath(String filename, String? relativePath) async {
+  //   final baseDirectory = Platform.isAndroid 
+  //     ? '/storage/emulated/0/DCIM/Immich' 
+  //     : '${Platform.environment['HOME']}/Pictures/Immich';
+
+   
+  //   await Directory(baseDirectory).create(recursive: true);
+
+    
+  //   final filenameWithoutExtension = filename.split('.').first;
+  //   final extension = filename.split('.').last;
+
+    
+  //   String destinationPath = '$baseDirectory/$filename';
+
+    
+  //   int counter = 1;
+  //   while (await File(destinationPath).exists()) {
+      
+  //     destinationPath = '$baseDirectory/${filenameWithoutExtension} ($counter).$extension';
+  //     counter++;
+  //   }
+
+  //   return destinationPath;
+  // }
 
   Future<bool> saveLivePhotos(
     Task task,
@@ -159,6 +271,14 @@ class DownloadService {
   }
 
   Future<void> download(Asset asset) async {
+    final assetHash = await _calculateAssetHash(asset);
+
+    final existingLocalFile = await _findLocalFileWithHash(assetHash);
+    if (existingLocalFile != null) {
+      _log.info('File with hash $assetHash already exists. Skipping download.');
+      return;
+    }
+
     if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
       await _downloadRepository.download(
         _buildDownloadTask(
@@ -196,6 +316,50 @@ class DownloadService {
     }
   }
 
+  Future<String?> _calculateAssetHash(Asset asset) async {
+    try {
+      
+      return asset.remoteId; 
+    } catch (e) {
+      _log.severe('Error calculating asset hash', e);
+      return null;
+    }
+  }
+
+  Future<File?> _findLocalFileWithHash(String? hash) async {
+    if (hash == null) return null;
+
+    final deviceAlbumPath = Platform.isAndroid 
+      ? '/storage/emulated/0/DCIM/Immich' 
+      : '${Platform.environment['HOME']}/Pictures/Immich';
+
+    final directory = Directory(deviceAlbumPath);
+    if (!await directory.exists()) return null;
+
+    final files = await directory.list(recursive: true).toList();
+    for (var fileSystemEntity in files) {
+      if (fileSystemEntity is File) {
+        final bytes = await fileSystemEntity.readAsBytes();
+        final fileHash = sha256.convert(bytes).toString();
+        if (fileHash == hash) {
+          return fileSystemEntity;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Future<bool> _fileExistsWithHash(String filePath, String expectedHash) async {
+  //   final file = File(filePath);
+  //   if (!await file.exists()) {
+  //     return false;
+  //   }
+
+  //   final bytes = await file.readAsBytes();
+  //   final fileHash = sha256.convert(bytes).toString();
+  //   return fileHash == expectedHash;
+  // }
+
   DownloadTask _buildDownloadTask(
     String id,
     String filename, {
@@ -216,6 +380,147 @@ class DownloadService {
       metaData: metadata ?? '',
     );
   }
+}
+
+Future<bool> _isFileDuplicate(String filePath, String filename) async {
+  final sourceFile = File(filePath);
+  
+  if (!await sourceFile.exists()) {
+    
+    return false;
+  }
+
+  
+  String? sourceHash;
+  try {
+    final sourceBytes = await sourceFile.readAsBytes();
+    sourceHash = sha256.convert(sourceBytes).toString();
+    
+  } catch (e) {
+    
+    return false;
+  }
+
+  
+  final searchDirectory = Platform.isAndroid 
+    ? '/storage/emulated/0/DCIM/Immich' 
+    : '${Platform.environment['HOME']}/Pictures/Immich';
+
+  final directory = Directory(searchDirectory);
+  if (!await directory.exists()) {
+    
+    return false;
+  }
+
+  
+  final files = await directory.list(recursive: true).toList();
+  
+  for (var fileEntity in files) {
+    if (fileEntity is File) {
+      final existingFilePath = fileEntity.path;
+      final existingFileName = existingFilePath.split('/').last;
+      
+     
+      if (_areFilenamesSimilar(existingFileName, filename)) {
+        
+        try {
+          final existingBytes = await fileEntity.readAsBytes();
+          final existingHash = sha256.convert(existingBytes).toString();
+          
+         
+          
+          if (existingHash == sourceHash) {
+            
+            return true;
+          } else {
+            return false;
+          }
+        } catch (e) {
+          
+          return false;
+        }
+      }
+
+      // Separate hash check
+      try {
+        final existingBytes = await fileEntity.readAsBytes();
+        final existingHash = sha256.convert(existingBytes).toString();
+        
+        if (existingHash == sourceHash) {
+         
+          return true;
+        }
+      } catch (e) {
+        return false;
+      }
+    }
+  }
+
+  
+  return false;
+}
+
+bool _areFilenamesSimilar(String existingFileName, String newFileName) {
+  
+  final existingName = existingFileName.split('.').first.toLowerCase();
+  final newName = newFileName.split('.').first.toLowerCase();
+  final existingExt = existingFileName.split('.').last.toLowerCase();
+  final newExt = newFileName.split('.').last.toLowerCase();
+
+  
+  final exactMatch = existingName == newName && existingExt == newExt;
+  
+  
+  final numberedMatch = RegExp(r'^' + RegExp.escape(newName) + r'\s*\(\d+\)$').hasMatch(existingName);
+  
+  
+  final similarityThreshold = 0.8;
+  final similarityScore = _calculateStringSimilarity(existingName, newName);
+  final extensionMatch = existingExt == newExt;
+
+
+
+  return exactMatch || 
+         numberedMatch || 
+         (similarityScore >= similarityThreshold && extensionMatch);
+}
+
+double _calculateStringSimilarity(String s1, String s2) {
+  
+  if (s1 == s2) return 1.0;
+  if (s1.isEmpty || s2.isEmpty) return 0.0;
+
+  final len1 = s1.length;
+  final len2 = s2.length;
+  final maxLen = max(len1, len2);
+
+  final distance = _levenshteinDistance(s1, s2);
+  return 1.0 - (distance / maxLen);
+}
+
+int _levenshteinDistance(String s1, String s2) {
+  final m = s1.length;
+  final n = s2.length;
+  final dp = List.generate(m + 1, (_) => List.filled(n + 1, 0));
+
+  for (var i = 0; i <= m; i++) {
+    dp[i][0] = i;
+  }
+  for (var j = 0; j <= n; j++) {
+    dp[0][j] = j;
+  }
+
+  for (var i = 1; i <= m; i++) {
+    for (var j = 1; j <= n; j++) {
+      final cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+      dp[i][j] = min(
+        min(dp[i - 1][j] + 1, dp[i][j - 1] + 1),
+        dp[i - 1][j - 1] + cost,
+      );
+    }
+  }
+
+  return dp[m][n];
 }
 
 TaskRecord _findTaskRecord(
