@@ -135,7 +135,7 @@ export interface IDelayedJob extends IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: 'upload' | 'library-import' | 'sidecar-write' | 'copy';
   notify?: boolean;
 }
 

@@ -1,5 +1,5 @@
 import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
-import { cpSync, existsSync } from 'node:fs';
+import { cpSync, existsSync, unlinkSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -600,6 +600,88 @@ describe('/libraries', () => {
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets).toEqual(assetsBefore);
+    });
+
+    describe('xmp metadata', async () => {
+      it('should import metadata from file.xmp', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z', // This time comes from the xmp file, not from the image
+          }),
+        ]);
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef`);
+      });
+
+      it('should import metadata from file.ext.xmp', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z', // This time comes from the xmp file, not from the image
+          }),
+        ]);
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef`);
+      });
+
+      it('should import metadata in file.ext.xmp before file.xmp if both exist', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z', // This time comes from the xmp file, not from the image
+          }),
+        ]);
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef`);
+      });
     });
   });
 
