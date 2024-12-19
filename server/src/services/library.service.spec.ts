@@ -422,10 +422,9 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.METADATA_EXTRACTION,
+            name: JobName.SIDECAR_DISCOVERY,
             data: {
               id: assetStub.image.id,
-              source: 'upload',
             },
           },
         ],
@@ -467,10 +466,9 @@ describe(LibraryService.name, () => {
       expect(jobMock.queue.mock.calls).toEqual([
         [
           {
-            name: JobName.METADATA_EXTRACTION,
+            name: JobName.SIDECAR_DISCOVERY,
             data: {
               id: assetStub.image.id,
-              source: 'upload',
             },
           },
         ],

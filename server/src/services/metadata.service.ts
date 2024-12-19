@@ -148,22 +148,12 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction({ id, source }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
-    this.logger.verbose(`Extracting metadata for asset ${id}`);
-
+  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
-
-    if (source === 'library-import') {
-      await this.processSidecar(id, false);
-    }
-
     const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
-
     if (!asset) {
       return JobStatus.FAILED;
     }
-
-    this.logger.verbose(`Sidecar path: ${asset.sidecarPath}`);
 
     const stats = await this.storageRepository.stat(asset.originalPath);
 
@@ -708,7 +698,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
+    if (!isSync && (!asset.isVisible || asset.sidecarPath) && !asset.isExternal) {
       return JobStatus.FAILED;
     }
 
@@ -730,9 +720,15 @@ export class MetadataService extends BaseService {
       sidecarPath = sidecarPathWithoutExt;
     }
 
+    if (asset.isExternal) {
+      if (sidecarPath !== asset.sidecarPath) {
+        await this.assetRepository.update({ id: asset.id, sidecarPath });
+      }
+      return JobStatus.SUCCESS;
+    }
+
     if (sidecarPath) {
       await this.assetRepository.update({ id: asset.id, sidecarPath });
-      this.logger.verbose(`Sidecar discovered at ${sidecarPath} for asset ${asset.id} at `);
       return JobStatus.SUCCESS;
     }
 
