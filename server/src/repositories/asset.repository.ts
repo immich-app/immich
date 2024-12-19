@@ -180,6 +180,20 @@ export class AssetRepository implements IAssetRepository {
     return assets.map((asset) => asset.deviceAssetId);
   }
 
+  async getByTagId(ownerId: string, tagId: string): Promise<string[]> {
+    const assets = await this.repository.find({
+      select: {
+        tags: true,
+      },
+      where: {
+        ownerId,
+        tags: [{ id: tagId }],
+      },
+    });
+
+    return assets.map((asset) => asset.id);
+  }
+
   getByUserId(
     pagination: PaginationOptions,
     userId: string,
