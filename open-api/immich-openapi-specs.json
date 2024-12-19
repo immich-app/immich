@@ -8363,6 +8363,7 @@
       },
       "AssetMediaSize": {
         "enum": [
+          "fullsize",
           "preview",
           "thumbnail"
         ],
@@ -10089,6 +10090,7 @@
       "PathType": {
         "enum": [
           "original",
+          "fullsize",
           "preview",
           "thumbnail",
           "encoded_video",
@@ -11793,6 +11795,9 @@
           "extractEmbedded": {
             "type": "boolean"
           },
+          "fullsizePreview": {
+            "type": "boolean"
+          },
           "preview": {
             "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
           },
@@ -11803,6 +11808,7 @@
         "required": [
           "colorspace",
           "extractEmbedded",
+          "fullsizePreview",
           "preview",
           "thumbnail"
         ],

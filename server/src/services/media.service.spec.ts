@@ -269,7 +269,7 @@ describe(MediaService.name, () => {
       });
 
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
-      expect(moveMock.create).toHaveBeenCalledTimes(2);
+      expect(moveMock.create).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -627,15 +627,13 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+      const convertedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(convertedPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
       });
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image is too small', async () => {
@@ -646,15 +644,18 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
+      const convertedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({ size: 1440 }),
+        convertedPath,
+      );
+      expect(convertedPath).toMatch(/-converted\.jpeg$/);
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
       expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
-        size: 1440,
       });
-      const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image not found', async () => {
@@ -667,7 +668,6 @@ describe(MediaService.name, () => {
       expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
-        size: 1440,
       });
       expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
     });
@@ -683,7 +683,6 @@ describe(MediaService.name, () => {
       expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
-        size: 1440,
       });
       expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
     });
@@ -701,7 +700,12 @@ describe(MediaService.name, () => {
         expect.objectContaining({ processInvalidImages: true }),
       );
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        expect.objectContaining({ processInvalidImages: true }),
+        'upload/thumbs/user-id/as/se/asset-id-converted.jpeg',
+      );
       expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         expect.objectContaining({ processInvalidImages: true }),

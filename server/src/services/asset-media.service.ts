@@ -208,10 +208,18 @@ export class AssetMediaService extends BaseService {
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
 
-    const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
+    const { thumbnailFile, previewFile, fullsizeFile } = getAssetFiles(asset.files);
     let filepath = previewFile?.path;
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
+    } else if (size === AssetMediaSize.FULLSIZE) {
+      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
+      // eslint-disable-next-line unicorn/prefer-ternary
+      if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
+        filepath = asset.originalPath;
+      } else {
+        filepath = fullsizeFile?.path ?? previewFile?.path;
+      }
     }
 
     if (!filepath) {

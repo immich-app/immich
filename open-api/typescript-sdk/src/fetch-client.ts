@@ -1131,6 +1131,7 @@ export type SystemConfigGeneratedImageDto = {
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
     extractEmbedded: boolean;
+    fullsizePreview: boolean;
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
@@ -2362,9 +2363,7 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
-    closestAssetId?: string;
-    closestPersonId?: string;
+export function getAllPeople({ page, size, withHidden }: {
     page?: number;
     size?: number;
     withHidden?: boolean;
@@ -2373,8 +2372,6 @@ export function getAllPeople({ closestAssetId, closestPersonId, page, size, with
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
-        closestAssetId,
-        closestPersonId,
         page,
         size,
         withHidden
@@ -3464,6 +3461,7 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum AssetMediaSize {
+    Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
 }
@@ -3514,6 +3512,7 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
+    Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",

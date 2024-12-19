@@ -547,6 +547,9 @@ export class SystemConfigImageDto {
 
   @ValidateBoolean()
   extractEmbedded!: boolean;
+
+  @ValidateBoolean()
+  fullsizePreview!: boolean;
 }
 
 class SystemConfigTrashDto {

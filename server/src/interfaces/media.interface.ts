@@ -1,4 +1,5 @@
 import { Writable } from 'node:stream';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { ExifOrientation, ImageFormat, TranscodeTarget, VideoCodec } from 'src/enum';
 
 export const IMediaRepository = 'IMediaRepository';
@@ -30,11 +31,11 @@ interface DecodeImageOptions {
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
-  size: number;
+  size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 
@@ -137,7 +138,8 @@ export interface VideoInterfaces {
 
 export interface IMediaRepository {
   // image
-  extract(input: string, output: string): Promise<boolean>;
+  extract(input: string, output: string, withExif?: boolean): Promise<boolean>;
+  writeExif(tags: Partial<ExifEntity>, output: string): Promise<boolean>;
   decodeImage(input: string, options: DecodeToBufferOptions): Promise<ImageBuffer>;
   generateThumbnail(input: string, options: GenerateThumbnailOptions, outputFile: string): Promise<void>;
   generateThumbnail(input: Buffer, options: GenerateThumbnailFromBufferOptions, outputFile: string): Promise<void>;
