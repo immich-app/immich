@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
@@ -96,7 +96,7 @@
           />
         </div>
 
-        {#if !$page.url.pathname.includes('/admin') && showUploadButton}
+        {#if !page.url.pathname.includes('/admin') && showUploadButton}
           <LinkButton onclick={onUploadClick} class="hidden lg:block">
             <div class="flex gap-2">
               <Icon path={mdiTrayArrowUp} size="1.5em" />

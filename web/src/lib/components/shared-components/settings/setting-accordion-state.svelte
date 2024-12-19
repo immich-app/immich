@@ -8,13 +8,13 @@
 <script lang="ts">
   import { writable, type Writable } from 'svelte/store';
   import { createContext } from '$lib/utils/context';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { handlePromiseError } from '$lib/utils';
   import { goto } from '$app/navigation';
   import type { Snippet } from 'svelte';
 
   const getParamValues = (param: string) => {
-    return new Set(($page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
+    return new Set((page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
   };
 
   interface Props {
@@ -28,7 +28,7 @@
 
   $effect(() => {
     if (queryParam && $state) {
-      const searchParams = new URLSearchParams($page.url.searchParams);
+      const searchParams = new URLSearchParams(page.url.searchParams);
       if ($state.size > 0) {
         searchParams.set(queryParam, [...$state].join(' '));
       } else {

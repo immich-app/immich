@@ -29,7 +29,7 @@
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.5",
     "@sveltejs/enhanced-img": "^0.4.0",
-    "@sveltejs/kit": "^2.7.2",
+    "@sveltejs/kit": "^2.12.0",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/svelte": "^5.2.4",
