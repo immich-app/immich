@@ -41,6 +41,7 @@ import 'package:immich_mobile/pages/library/favorite.page.dart';
 import 'package:immich_mobile/pages/library/trash.page.dart';
 import 'package:immich_mobile/pages/login/change_password.page.dart';
 import 'package:immich_mobile/pages/login/login.page.dart';
+import 'package:immich_mobile/pages/onboarding/onboarding.page.dart';
 import 'package:immich_mobile/pages/onboarding/permission_onboarding.page.dart';
 import 'package:immich_mobile/pages/photos/memory.page.dart';
 import 'package:immich_mobile/pages/photos/photos.page.dart';
@@ -90,7 +91,8 @@ class AppRouter extends RootStackRouter {
 
   @override
   late final List<AutoRoute> routes = [
-    AutoRoute(page: SplashScreenRoute.page, initial: true),
+    AutoRoute(page: OnboardingRoute.page, initial: true),
+    AutoRoute(page: SplashScreenRoute.page),
     AutoRoute(
       page: PermissionOnboardingRoute.page,
       guards: [_authGuard, _duplicateGuard],
