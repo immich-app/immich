@@ -1,0 +1,25 @@
+From e267bc9bab8b3873dba57323ddcd9a9d09a1211e Mon Sep 17 00:00:00 2001
+From: mertalev <101130780+mertalev@users.noreply.github.com>
+Date: Fri, 20 Dec 2024 00:59:21 -0500
+Subject: [PATCH] fix: avoid race condition for rocm conv algo caching
+
+---
+ onnxruntime/core/providers/rocm/nn/conv.cc | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/onnxruntime/core/providers/rocm/nn/conv.cc b/onnxruntime/core/providers/rocm/nn/conv.cc
+index d7f47d07a8..ec438287ac 100644
+--- a/onnxruntime/core/providers/rocm/nn/conv.cc
++++ b/onnxruntime/core/providers/rocm/nn/conv.cc
+@@ -278,6 +278,8 @@ Status Conv<T, NHWC>::UpdateState(OpKernelContext* context, bool bias_expected)
+       HIP_CALL_THROW(hipMemsetAsync(s_.b_zero, 0, malloc_size, Stream(context)));
+     }
+ 
++    // lock is needed to avoid race condition during algo search
++    std::lock_guard<OrtMutex> lock(s_.mutex);
+     if (!s_.cached_benchmark_fwd_results.contains(x_dims_miopen)) {
+       miopenConvAlgoPerf_t perf;
+       int algo_count = 1;
+-- 
+2.43.0
+
