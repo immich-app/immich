@@ -15,6 +15,7 @@
   import { t } from 'svelte-i18n';
   import { handleError } from '$lib/utils/handle-error';
   import { onMount } from 'svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface Props {
     editedFace: AssetFaceResponseDto;
@@ -34,7 +35,10 @@
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { people } = await getAllPeople({ withHidden: true, closestAssetId: editedFace.id });
+      const { people } = await getAllPeople({
+        withHidden: true,
+        closestAssetId: sortFaces ? editedFace.id : undefined,
+      });
       allPeople = people;
     } catch (error) {
       handleError(error, $t('errors.cant_get_faces'));
@@ -52,6 +56,7 @@
   let searchedPeople: PersonResponseDto[] = $state([]);
   let searchFaces = $state(false);
   let searchName = $state('');
+  let sortFaces = $state(true);
 
   let showPeople = $derived(searchName ? searchedPeople : allPeople.filter((person) => !person.isHidden));
 
@@ -115,6 +120,9 @@
       </div>
       <CircleIconButton icon={mdiClose} title={$t('cancel_search')} onclick={() => (searchFaces = false)} />
     {/if}
+  </div>
+  <div class="flex w-full justify-center">
+    <SettingSwitch bind:checked={sortFaces} onToggle={loadPeople} title={$t('sort_people_by_similarity')} />
   </div>
   <div class="px-4 py-4 text-sm">
     <h2 class="mb-8 mt-4 uppercase">{$t('all_people')}</h2>
