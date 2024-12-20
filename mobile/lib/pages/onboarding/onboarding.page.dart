@@ -223,56 +223,59 @@ class OnboardingGalleryPermission extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
+    return Padding(
       padding: const EdgeInsets.all(24.0),
-      physics: const ClampingScrollPhysics(),
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(
-              Icons.perm_media_outlined,
-              size: 48,
-              color: context.primaryColor.withAlpha(250),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.perm_media_outlined,
+                size: 24,
+                color: context.primaryColor.withAlpha(250),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                "Gallery Permission",
+                style: context.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "We use the read and write permission of the media gallery for the following actions",
+            style: context.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w400,
+              color: context.colorScheme.onSurface.withAlpha(220),
             ),
-          ],
-        ),
-        const SizedBox(height: 32),
-        Text(
-          "Gallery Permission",
-          style: context.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w600,
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          "We need the read and write permission of the media gallery for the following actions",
-          style: context.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w400,
-            color: context.colorScheme.onSurface.withAlpha(220),
-          ),
-        ),
-        const SizedBox(height: 40),
-        const BulletList([
-          'Display the local videos and images',
-          'Read the file content to upload to your Immich instance',
-          'Remove the media from the device on your request',
-        ]),
-        const SizedBox(height: 64),
-        SizedBox(
-          height: 48,
-          child: ElevatedButton(
-            onPressed: onNextPage,
-            child: const Text(
-              'OK',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+          const SizedBox(height: 40),
+          const BulletList([
+            'Display the local videos and images',
+            'Read the file content to upload to your Immich instance',
+            'Remove media from the device on your request',
+          ]),
+          const Spacer(),
+          SizedBox(
+            height: 48,
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onNextPage,
+              child: const Text(
+                'OK',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
