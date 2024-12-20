@@ -21,7 +21,7 @@ FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS builder-rocm
 
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
+RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.12-venv
 # Install same version as the Dockerfile provided by onnxruntime
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3-linux-x86_64.sh && \
     chmod +x cmake-3.27.3-linux-x86_64.sh && \
