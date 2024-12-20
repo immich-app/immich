@@ -23,7 +23,7 @@ WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
 # Install same version as the Dockerfile provided by onnxruntime
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3-linux-x86_64.sh && \
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3-linux-x86_64.sh && \
     chmod +x cmake-3.27.3-linux-x86_64.sh && \
     mkdir -p /code/cmake-3.27.3-linux-x86_64 && \
     ./cmake-3.27.3-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.27.3-linux-x86_64 && \
@@ -37,8 +37,8 @@ WORKDIR /code/onnxruntime
 # EDIT PR
 # While there's still this PR open, we need to compile on the branch of the PR
 # https://github.com/microsoft/onnxruntime/pull/19567
-COPY ./rocm-PR19567.patch /tmp/
-RUN git apply /tmp/rocm-PR19567.patch
+COPY ./0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch /tmp/
+RUN git apply /tmp/0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch
 # END EDIT PR
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # I ran into a compilation error when parallelizing the build
@@ -77,10 +77,10 @@ FROM prod-cpu AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
     apt-get remove wget -yqq && \
