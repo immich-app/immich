@@ -18,7 +18,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   final ShareService _shareService;
   final AlbumService _albumService;
 
- 
   final Set<String> _downloadingAssets = {};
 
   DownloadStateNotifier(
@@ -144,7 +143,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   void downloadAsset(Asset asset, BuildContext context) async {
-    
     if (_downloadingAssets.contains(asset.remoteId)) {
       ImmichToast.show(
         context: context,
@@ -156,7 +154,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     }
 
     try {
-      
       _downloadingAssets.add(asset.remoteId!);
 
       await _downloadService.download(asset);
@@ -168,7 +165,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
         gravity: ToastGravity.BOTTOM,
       );
     } finally {
-      
       _downloadingAssets.remove(asset.remoteId);
     }
   }

@@ -63,27 +63,24 @@ class DownloadService {
     final filePath = await task.filePath();
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
-    
+
     _log.info('Attempting to save image: $title');
     _log.info('Source file path: $filePath');
 
     try {
-      
       final isDuplicate = await _isFileDuplicate(filePath, title);
       if (isDuplicate) {
         _log.info('Duplicate file detected. Skipping save: $title');
-        return true; 
+        return true;
       }
 
       final sourceFile = File(filePath);
-      
-      
+
       if (!await sourceFile.exists()) {
         _log.severe('Source file does not exist: $filePath');
         return false;
       }
 
-      
       try {
         final fileSize = await sourceFile.length();
         _log.info('Source file size: $fileSize bytes');
@@ -110,7 +107,6 @@ class DownloadService {
       _log.severe("Comprehensive error saving image", error, stack);
       return false;
     } finally {
-     
       try {
         if (await File(filePath).exists()) {
           await File(filePath).delete();
@@ -126,27 +122,24 @@ class DownloadService {
     final filePath = await task.filePath();
     final title = task.filename;
     final relativePath = Platform.isAndroid ? 'DCIM/Immich' : null;
-    
+
     _log.info('Attempting to save video: $title');
     _log.info('Source file path: $filePath');
 
     try {
-     
       final isDuplicate = await _isFileDuplicate(filePath, title);
       if (isDuplicate) {
         _log.info('Duplicate file detected. Skipping save: $title');
-        return true; 
+        return true;
       }
 
       final sourceFile = File(filePath);
-      
-      
+
       if (!await sourceFile.exists()) {
         _log.severe('Source file does not exist: $filePath');
         return false;
       }
 
-      
       try {
         final fileSize = await sourceFile.length();
         _log.info('Source file size: $fileSize bytes');
@@ -154,7 +147,6 @@ class DownloadService {
         _log.severe('Cannot read source file size: $e');
       }
 
-      
       final Asset? resultAsset = await _fileMediaRepository.saveVideo(
         sourceFile,
         title: title,
@@ -174,7 +166,6 @@ class DownloadService {
       _log.severe("Comprehensive error saving video", error, stack);
       return false;
     } finally {
-      
       try {
         if (await File(filePath).exists()) {
           await File(filePath).delete();
@@ -187,24 +178,20 @@ class DownloadService {
   }
 
   // Future<String> _getUniqueDestinationPath(String filename, String? relativePath) async {
-  //   final baseDirectory = Platform.isAndroid 
-  //     ? '/storage/emulated/0/DCIM/Immich' 
+  //   final baseDirectory = Platform.isAndroid
+  //     ? '/storage/emulated/0/DCIM/Immich'
   //     : '${Platform.environment['HOME']}/Pictures/Immich';
 
-   
   //   await Directory(baseDirectory).create(recursive: true);
 
-    
   //   final filenameWithoutExtension = filename.split('.').first;
   //   final extension = filename.split('.').last;
 
-    
   //   String destinationPath = '$baseDirectory/$filename';
 
-    
   //   int counter = 1;
   //   while (await File(destinationPath).exists()) {
-      
+
   //     destinationPath = '$baseDirectory/${filenameWithoutExtension} ($counter).$extension';
   //     counter++;
   //   }
@@ -318,8 +305,7 @@ class DownloadService {
 
   Future<String?> _calculateAssetHash(Asset asset) async {
     try {
-      
-      return asset.remoteId; 
+      return asset.remoteId;
     } catch (e) {
       _log.severe('Error calculating asset hash', e);
       return null;
@@ -329,9 +315,9 @@ class DownloadService {
   Future<File?> _findLocalFileWithHash(String? hash) async {
     if (hash == null) return null;
 
-    final deviceAlbumPath = Platform.isAndroid 
-      ? '/storage/emulated/0/DCIM/Immich' 
-      : '${Platform.environment['HOME']}/Pictures/Immich';
+    final deviceAlbumPath = Platform.isAndroid
+        ? '/storage/emulated/0/DCIM/Immich'
+        : '${Platform.environment['HOME']}/Pictures/Immich';
 
     final directory = Directory(deviceAlbumPath);
     if (!await directory.exists()) return null;
@@ -384,59 +370,46 @@ class DownloadService {
 
 Future<bool> _isFileDuplicate(String filePath, String filename) async {
   final sourceFile = File(filePath);
-  
+
   if (!await sourceFile.exists()) {
-    
     return false;
   }
 
-  
   String? sourceHash;
   try {
     final sourceBytes = await sourceFile.readAsBytes();
     sourceHash = sha256.convert(sourceBytes).toString();
-    
   } catch (e) {
-    
     return false;
   }
 
-  
-  final searchDirectory = Platform.isAndroid 
-    ? '/storage/emulated/0/DCIM/Immich' 
-    : '${Platform.environment['HOME']}/Pictures/Immich';
+  final searchDirectory = Platform.isAndroid
+      ? '/storage/emulated/0/DCIM/Immich'
+      : '${Platform.environment['HOME']}/Pictures/Immich';
 
   final directory = Directory(searchDirectory);
   if (!await directory.exists()) {
-    
     return false;
   }
 
-  
   final files = await directory.list(recursive: true).toList();
-  
+
   for (var fileEntity in files) {
     if (fileEntity is File) {
       final existingFilePath = fileEntity.path;
       final existingFileName = existingFilePath.split('/').last;
-      
-     
+
       if (_areFilenamesSimilar(existingFileName, filename)) {
-        
         try {
           final existingBytes = await fileEntity.readAsBytes();
           final existingHash = sha256.convert(existingBytes).toString();
-          
-         
-          
+
           if (existingHash == sourceHash) {
-            
             return true;
           } else {
             return false;
           }
         } catch (e) {
-          
           return false;
         }
       }
@@ -445,9 +418,8 @@ Future<bool> _isFileDuplicate(String filePath, String filename) async {
       try {
         final existingBytes = await fileEntity.readAsBytes();
         final existingHash = sha256.convert(existingBytes).toString();
-        
+
         if (existingHash == sourceHash) {
-         
           return true;
         }
       } catch (e) {
@@ -456,37 +428,30 @@ Future<bool> _isFileDuplicate(String filePath, String filename) async {
     }
   }
 
-  
   return false;
 }
 
 bool _areFilenamesSimilar(String existingFileName, String newFileName) {
-  
   final existingName = existingFileName.split('.').first.toLowerCase();
   final newName = newFileName.split('.').first.toLowerCase();
   final existingExt = existingFileName.split('.').last.toLowerCase();
   final newExt = newFileName.split('.').last.toLowerCase();
 
-  
   final exactMatch = existingName == newName && existingExt == newExt;
-  
-  
-  final numberedMatch = RegExp(r'^' + RegExp.escape(newName) + r'\s*\(\d+\)$').hasMatch(existingName);
-  
-  
+
+  final numberedMatch = RegExp(r'^' + RegExp.escape(newName) + r'\s*\(\d+\)$')
+      .hasMatch(existingName);
+
   final similarityThreshold = 0.8;
   final similarityScore = _calculateStringSimilarity(existingName, newName);
   final extensionMatch = existingExt == newExt;
 
-
-
-  return exactMatch || 
-         numberedMatch || 
-         (similarityScore >= similarityThreshold && extensionMatch);
+  return exactMatch ||
+      numberedMatch ||
+      (similarityScore >= similarityThreshold && extensionMatch);
 }
 
 double _calculateStringSimilarity(String s1, String s2) {
-  
   if (s1 == s2) return 1.0;
   if (s1.isEmpty || s2.isEmpty) return 0.0;
 
