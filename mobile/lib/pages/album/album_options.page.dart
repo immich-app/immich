@@ -7,22 +7,25 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
 class AlbumOptionsPage extends HookConsumerWidget {
-  final Album album;
-
-  const AlbumOptionsPage({super.key, required this.album});
+  const AlbumOptionsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final album = ref.watch(currentAlbumProvider);
+    if (album == null) {
+      return const SizedBox();
+    }
+
     final sharedUsers = useState(album.sharedUsers.toList());
     final owner = album.owner.value;
     final userId = ref.watch(authProvider).userId;

@@ -3847,6 +3847,24 @@
         "operationId": "getAllPeople",
         "parameters": [
           {
+            "name": "closestAssetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "closestPersonId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "required": false,
             "in": "query",
@@ -7436,7 +7454,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.122.2",
+    "version": "1.123.0",
     "contact": {}
   },
   "tags": [],

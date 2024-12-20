@@ -83,7 +83,11 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [{ take: 10, skip: 10 }, DummyValue.UUID] })
-  getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions): Paginated<PersonEntity> {
+  async getAllForUser(
+    pagination: PaginationOptions,
+    userId: string,
+    options?: PersonSearchOptions,
+  ): Paginated<PersonEntity> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
       .innerJoin('person.faces', 'face')
@@ -97,10 +101,22 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy('person.createdAt')
       .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id');
+    if (options?.closestFaceAssetId) {
+      const innerQueryBuilder = this.faceSearchRepository
+        .createQueryBuilder('face_search')
+        .select('embedding', 'embedding')
+        .where('"face_search"."faceId" = "person"."faceAssetId"');
+      const faceSelectQueryBuilder = this.faceSearchRepository
+        .createQueryBuilder('face_search')
+        .select('embedding', 'embedding')
+        .where('"face_search"."faceId" = :faceId', { faceId: options.closestFaceAssetId });
+      queryBuilder
+        .orderBy('(' + innerQueryBuilder.getQuery() + ') <=> (' + faceSelectQueryBuilder.getQuery() + ')')
+        .setParameters(faceSelectQueryBuilder.getParameters());
+    }
     if (!options?.withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
-
     return paginatedBuilder(queryBuilder, {
       mode: PaginationMode.LIMIT_OFFSET,
       ...pagination,

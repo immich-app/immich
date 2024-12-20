@@ -27,7 +27,6 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { websocketEvents } from '$lib/stores/websocket';
@@ -58,6 +57,9 @@
   import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -76,8 +78,7 @@
     handlePromiseError(assetStore.updateOptions(assetStoreOptions));
   });
 
-  const assetInteractionStore = createAssetInteractionStore();
-  const { selectedAssets, isMultiSelectState } = assetInteractionStore;
+  const assetInteraction = new AssetInteraction();
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
@@ -121,8 +122,8 @@
     if ($showAssetViewer || viewMode === PersonPageViewMode.SUGGEST_MERGE) {
       return;
     }
-    if ($isMultiSelectState) {
-      assetInteractionStore.clearMultiselect();
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
       return;
     } else {
       await goto(previousRoute);
@@ -147,8 +148,8 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets([...$selectedAssets].map((a) => a.id));
-    assetInteractionStore.clearMultiselect();
+    $assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
 
@@ -192,7 +193,7 @@
       handleError(error, $t('errors.unable_to_set_feature_photo'));
     }
 
-    assetInteractionStore.clearMultiselect();
+    assetInteraction.clearMultiselect();
 
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -334,14 +335,11 @@
       handlePromiseError(updateAssetCount());
     }
   });
-
-  let isAllArchive = $derived([...$selectedAssets].every((asset) => asset.isArchived));
-  let isAllFavorite = $derived([...$selectedAssets].every((asset) => asset.isFavorite));
 </script>
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={[...$selectedAssets].map((a) => a.id)}
+    assetIds={assetInteraction.selectedAssetsArray.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}
@@ -372,15 +370,18 @@
 {/if}
 
 <header>
-  {#if $isMultiSelectState}
-    <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
       <CreateSharedLink />
-      <SelectAllAssets {assetStore} {assetInteractionStore} />
+      <SelectAllAssets {assetStore} {assetInteraction} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
@@ -390,7 +391,14 @@
         />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <ArchiveAction
+          menuItem
+          unarchive={assetInteraction.isAllArchived}
+          onArchive={(assetIds) => $assetStore.removeAssets(assetIds)}
+        />
+        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
         <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
@@ -447,7 +455,7 @@
     <AssetGrid
       enableRouting={true}
       {assetStore}
-      {assetInteractionStore}
+      {assetInteraction}
       isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
       singleSelect={viewMode === PersonPageViewMode.SELECT_PERSON}
       onSelect={handleSelectFeaturePhoto}

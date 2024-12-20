@@ -3,21 +3,22 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/utils/immich_app_theme.dart';
+import 'package:immich_mobile/providers/theme.provider.dart';
+import 'package:immich_mobile/theme/theme_data.dart';
 
 /// Overrides the theme below the widget tree to use the theme data based on the
 /// map settings instead of the one from the app settings
-class MapThemeOveride extends StatefulHookConsumerWidget {
+class MapThemeOverride extends StatefulHookConsumerWidget {
   final ThemeMode? themeMode;
   final Widget Function(AsyncValue<String> style) mapBuilder;
 
-  const MapThemeOveride({required this.mapBuilder, this.themeMode, super.key});
+  const MapThemeOverride({required this.mapBuilder, this.themeMode, super.key});
 
   @override
-  ConsumerState createState() => _MapThemeOverideState();
+  ConsumerState createState() => _MapThemeOverrideState();
 }
 
-class _MapThemeOverideState extends ConsumerState<MapThemeOveride>
+class _MapThemeOverrideState extends ConsumerState<MapThemeOverride>
     with WidgetsBindingObserver {
   late ThemeMode _theme;
   bool _isDarkTheme = false;

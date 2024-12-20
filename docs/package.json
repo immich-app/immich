@@ -36,7 +36,6 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "~3.5.2",
-    "@tsconfig/docusaurus": "^2.0.2",
     "prettier": "^3.2.4",
     "typescript": "^5.1.6"
   },
@@ -56,6 +55,6 @@
     "node": ">=20"
   },
   "volta": {
-    "node": "22.11.0"
+    "node": "22.12.0"
   }
 }

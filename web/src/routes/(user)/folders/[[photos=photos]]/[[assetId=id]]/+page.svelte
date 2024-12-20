@@ -3,7 +3,6 @@
   import { page } from '$app/stores';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
@@ -17,6 +16,7 @@
   import type { PageData } from './$types';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -31,7 +31,7 @@
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
   let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
 
-  const assetInteractionStore = createAssetInteractionStore();
+  const assetInteraction = new AssetInteraction();
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -42,7 +42,7 @@
   };
 
   const getLink = (path: string) => {
-    const url = new URL(AppRoute.FOLDERS, window.location.href);
+    const url = new URL(AppRoute.FOLDERS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
     }
@@ -80,7 +80,7 @@
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
           assets={data.pathAssets}
-          {assetInteractionStore}
+          {assetInteraction}
           {viewport}
           disableAssetSelect={true}
           showAssetName={true}

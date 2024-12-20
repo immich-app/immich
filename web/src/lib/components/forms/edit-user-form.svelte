@@ -1,7 +1,7 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
-  import { serverInfo } from '$lib/stores/server-info.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
   import { mdiAccountEditOutline } from '@mdi/js';
@@ -28,8 +28,6 @@
     onEditSuccess,
   }: Props = $props();
 
-  let error: string;
-  let success: string;
   let quotaSize = $state(user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
 
   const previousQutoa = user.quotaSizeInBytes;
@@ -37,7 +35,8 @@
   let quotaSizeWarning = $derived(
     previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
       !!quotaSize &&
-      convertToBytes(Number(quotaSize), ByteUnit.GiB) > $serverInfo.diskSizeRaw,
+      userInteraction.serverInfo &&
+      convertToBytes(Number(quotaSize), ByteUnit.GiB) > userInteraction.serverInfo.diskSizeRaw,
   );
 
   const editUser = async () => {
@@ -148,14 +147,6 @@
         </a>
       </p>
     </div>
-
-    {#if error}
-      <p class="ml-4 text-sm text-red-400">{error}</p>
-    {/if}
-
-    {#if success}
-      <p class="ml-4 text-sm text-immich-primary">{success}</p>
-    {/if}
   </form>
 
   {#snippet stickyBottom()}

@@ -12,17 +12,24 @@
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiAlert } from '@mdi/js';
+  import { userInteraction } from '$lib/stores/user.svelte';
 
   const { serverVersion, connected } = websocketStore;
 
   let isOpen = $state(false);
-
   let info: ServerAboutResponseDto | undefined = $state();
   let versions: ServerVersionHistoryResponseDto[] = $state([]);
 
   onMount(async () => {
+    if (userInteraction.aboutInfo && userInteraction.versions && $serverVersion) {
+      info = userInteraction.aboutInfo;
+      versions = userInteraction.versions;
+      return;
+    }
     await requestServerInfo();
     [info, versions] = await Promise.all([getAboutInfo(), getVersionHistory()]);
+    userInteraction.aboutInfo = info;
+    userInteraction.versions = versions;
   });
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
   let version = $derived(
