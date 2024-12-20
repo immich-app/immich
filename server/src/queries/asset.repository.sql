@@ -248,7 +248,7 @@ where
   and "assets"."isVisible" = $2
   and "deletedAt" is null
 order by
-  "createdAt" asc
+  "createdAt"
 limit
   $3
 offset
@@ -367,33 +367,60 @@ limit
 
 -- AssetRepository.getAllForUserFullSync
 select
+  "assets".*,
+  to_jsonb("exif") as "exifInfo",
+  to_jsonb("stacked_assets") as "stack"
 from
   "assets"
+  left join "exif" on "assets"."id" = "exif"."assetId"
+  left join lateral (
+    select
+      "asset_stack".*,
+      (
+        select
+          count(*) as "assetCount"
+        where
+          "asset_stack"."id" = "assets"."stackId"
+      ) as "assetCount"
+    from
+      "asset_stack"
+    where
+      "assets"."stackId" = "asset_stack"."id"
+  ) as "stacked_assets" on true
 where
-  "ownerId" = $1::uuid
+  "assets"."ownerId" = $1::uuid
   and "isVisible" = $2
   and "updatedAt" <= $3
-  and "id" > $4
+  and "assets"."id" > $4
 order by
-  "id" asc
+  "assets"."id"
 limit
   $5
 
 -- AssetRepository.getChangedDeltaSync
 select
   "assets".*,
-  (
+  to_jsonb("exif") as "exifInfo",
+  to_jsonb("stacked_assets") as "stack"
+from
+  "assets"
+  left join "exif" on "assets"."id" = "exif"."assetId"
+  left join lateral (
     select
-      count(*) as "stackedAssetsCount"
+      "asset_stack".*,
+      (
+        select
+          count(*) as "assetCount"
+        where
+          "asset_stack"."id" = "assets"."stackId"
+      ) as "assetCount"
     from
       "asset_stack"
     where
-      "asset_stack"."id" = "assets"."stackId"
-  ) as "stackedAssetsCount"
-from
-  "assets"
+      "assets"."stackId" = "asset_stack"."id"
+  ) as "stacked_assets" on true
 where
-  "ownerId" = any ($1::uuid [])
+  "assets"."ownerId" = any ($1::uuid [])
   and "isVisible" = $2
   and "updatedAt" > $3
 limit

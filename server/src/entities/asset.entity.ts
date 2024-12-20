@@ -179,39 +179,42 @@ export class AssetEntity {
   duplicateId!: string | null;
 }
 
-export const withExif = <O>(qb: SelectQueryBuilder<DB, 'assets', O>) => {
+export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('exif', 'assets.id', 'exif.assetId')
     .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo'));
-};
+}
 
-export const withExifInner = <O>(qb: SelectQueryBuilder<DB, 'assets', O>) => {
+export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .innerJoin('exif', 'assets.id', 'exif.assetId')
     .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo'));
-};
+}
 
-export const withSmartSearch = <O>(qb: SelectQueryBuilder<DB, 'assets', O>, options?: { inner: boolean }) => {
-  const join = options?.inner
-    ? qb.innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-    : qb.leftJoin('smart_search', 'assets.id', 'smart_search.assetId');
-  return join.select(sql<number[]>`smart_search.embedding`.as('embedding'));
-};
+export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
+  return qb
+    .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
+    .select(sql<number[]>`smart_search.embedding`.as('embedding'));
+}
 
-export const withFaces = (eb: ExpressionBuilder<DB, 'assets'>) =>
-  jsonArrayFrom(eb.selectFrom('asset_faces').selectAll().whereRef('asset_faces.assetId', '=', 'assets.id')).as('faces');
+export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
+  return jsonArrayFrom(eb.selectFrom('asset_faces').selectAll().whereRef('asset_faces.assetId', '=', 'assets.id')).as(
+    'faces',
+  );
+}
 
-export const withFiles = (eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileType) =>
-  jsonArrayFrom(
+export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileType) {
+  return jsonArrayFrom(
     eb
       .selectFrom('asset_files')
       .selectAll()
       .whereRef('asset_files.assetId', '=', 'assets.id')
       .$if(!!type, (qb) => qb.where('type', '=', type!)),
   ).as('files');
+}
 
-export const withFacesAndPeople = (eb: ExpressionBuilder<DB, 'assets'>) =>
-  eb
+export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
+  return eb
     .selectFrom('asset_faces')
     .leftJoin('person', 'person.id', 'asset_faces.personId')
     .whereRef('asset_faces.assetId', '=', 'assets.id')
@@ -234,10 +237,11 @@ export const withFacesAndPeople = (eb: ExpressionBuilder<DB, 'assets'>) =>
         .as('faces'),
     )
     .as('faces');
+}
 
 /** Adds a `has_people` CTE that can be inner joined on to filter out assets */
-export const hasPeopleCte = (db: Kysely<DB>, personIds: string[]) =>
-  db.with('has_people', (qb) =>
+export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
+  return db.with('has_people', (qb) =>
     qb
       .selectFrom('asset_faces')
       .select('assetId')
@@ -245,66 +249,67 @@ export const hasPeopleCte = (db: Kysely<DB>, personIds: string[]) =>
       .groupBy('assetId')
       .having((eb) => eb.fn.count('personId'), '>=', personIds.length),
   );
+}
 
-export const hasPeople = (db: Kysely<DB>, personIds?: string[]) =>
-  personIds && personIds.length > 0
+export function hasPeople(db: Kysely<DB>, personIds?: string[]) {
+  return personIds && personIds.length > 0
     ? hasPeopleCte(db, personIds).selectFrom('assets').innerJoin('has_people', 'has_people.assetId', 'assets.id')
     : db.selectFrom('assets');
+}
 
-export const withOwner = (eb: ExpressionBuilder<DB, 'assets'>) =>
-  jsonObjectFrom(eb.selectFrom('users').selectAll().whereRef('users.id', '=', 'assets.ownerId')).as('owner');
+export function withOwner(eb: ExpressionBuilder<DB, 'assets'>) {
+  return jsonObjectFrom(eb.selectFrom('users').selectAll().whereRef('users.id', '=', 'assets.ownerId')).as('owner');
+}
 
-export const withLibrary = (eb: ExpressionBuilder<DB, 'assets'>) =>
-  jsonObjectFrom(eb.selectFrom('libraries').selectAll().whereRef('libraries.id', '=', 'assets.libraryId')).as(
+export function withLibrary(eb: ExpressionBuilder<DB, 'assets'>) {
+  return jsonObjectFrom(eb.selectFrom('libraries').selectAll().whereRef('libraries.id', '=', 'assets.libraryId')).as(
     'library',
   );
+}
 
-type Stacked = SelectQueryBuilder<
-  DB & { stacked: Selectable<Assets> },
-  'assets' | 'asset_stack' | 'stacked',
-  { assets: Selectable<Assets>[] }
->;
+export function withStackedAssets<O>(qb: SelectQueryBuilder<DB, 'assets' | 'asset_stack', O>) {
+  return qb
+    .innerJoinLateral(
+      (eb: ExpressionBuilder<DB, 'assets' | 'asset_stack'>) =>
+        eb
+          .selectFrom('assets as stacked')
+          .select((eb) => eb.fn<Selectable<Assets>[]>('array_agg', [eb.table('stacked')]).as('assets'))
+          .whereRef('asset_stack.id', '=', 'stacked.stackId')
+          .whereRef('asset_stack.primaryAssetId', '!=', 'stacked.id')
+          .as('s'),
+      (join) =>
+        join.on((eb) =>
+          eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
+        ),
+    )
+    .select('s.assets');
+}
 
-type StackExpression = (eb: Stacked) => Stacked;
-
-export const withStack = <O>(
+export function withStack<O>(
   qb: SelectQueryBuilder<DB, 'assets', O>,
-  { assets }: { assets?: boolean | StackExpression },
-) =>
-  qb
+  { assets, count }: { assets: boolean; count: boolean },
+) {
+  return qb
     .leftJoinLateral(
       (eb) =>
         eb
           .selectFrom('asset_stack')
           .selectAll('asset_stack')
           .whereRef('assets.stackId', '=', 'asset_stack.id')
-          .$if(!!assets, (qb) =>
-            qb
-              .innerJoinLateral(
-                (eb: ExpressionBuilder<DB, 'assets' | 'asset_stack'>) =>
-                  eb
-                    .selectFrom('assets as stacked')
-                    .select((eb) => eb.fn<Selectable<Assets>[]>('array_agg', [eb.table('stacked')]).as('assets'))
-                    .whereRef('asset_stack.id', '=', 'stacked.stackId')
-                    .whereRef('asset_stack.primaryAssetId', '!=', 'stacked.id')
-                    .$if(typeof assets === 'function', assets as StackExpression)
-                    .as('s'),
-                (join) =>
-                  join.on((eb) =>
-                    eb.or([
-                      eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')),
-                      eb('assets.stackId', 'is', null),
-                    ]),
-                  ),
-              )
-              .select('s.assets'),
+          .$if(assets, withStackedAssets)
+          .$if(count, (qb) =>
+            // There is no `selectNoFrom` method for expression builders
+            qb.select(
+              sql`(select count(*) as "assetCount" where "asset_stack"."id" = "assets"."stackId")`.as('assetCount'),
+            ),
           )
           .as('stacked_assets'),
       (join) => join.onTrue(),
     )
     .select((eb) => eb.fn('to_jsonb', [eb.table('stacked_assets')]).as('stack'));
+}
 
-export const withAlbums = <O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId }: { albumId?: string }) => {
+export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId }: { albumId?: string }) {
   return qb
     .select((eb) =>
       jsonArrayFrom(
@@ -330,16 +335,17 @@ export const withAlbums = <O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId
         ),
       ),
     );
-};
+}
 
-export const withTags = (eb: ExpressionBuilder<DB, 'assets'>) =>
-  jsonArrayFrom(
+export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
+  return jsonArrayFrom(
     eb
       .selectFrom('tags')
       .selectAll('tags')
       .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
       .whereRef('assets.id', '=', 'tag_asset.assetsId'),
   ).as('tags');
+}
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 

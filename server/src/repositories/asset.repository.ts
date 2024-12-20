@@ -164,8 +164,8 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
-      .$if(!!smartSearch, (qb) => withSmartSearch(qb))
-      .$if(!!stack, (qb) => withStack(qb, { assets: stack!.assets }))
+      .$if(!!smartSearch, withSmartSearch)
+      .$if(!!stack, (qb) => withStack(qb, { assets: !!stack!.assets, count: false }))
       .$if(!!tags, (qb) => qb.select(withTags))
       .execute();
 
@@ -181,7 +181,7 @@ export class AssetRepository implements IAssetRepository {
       .select(withFacesAndPeople)
       .select(withTags)
       .$call(withExif)
-      .$call((qb) => withStack(qb, { assets: true }))
+      .$call((qb) => withStack(qb, { assets: true, count: false }))
       .where('assets.id', '=', anyUuid(ids))
       .execute() as any as Promise<AssetEntity[]>;
   }
@@ -290,7 +290,7 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
       .$if(!!smartSearch, withSmartSearch)
-      .$if(!!stack, (qb) => withStack(qb, { assets: stack!.assets }))
+      .$if(!!stack, (qb) => withStack(qb, { assets: !!stack!.assets, count: false }))
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
       .limit(1)
@@ -455,7 +455,7 @@ export class AssetRepository implements IAssetRepository {
       .where('deletedAt', 'is', null)
       .limit(pagination.take + 1)
       .offset(pagination.skip ?? 0)
-      .orderBy('createdAt', 'asc')
+      .orderBy('createdAt')
       .execute();
 
     return paginationHelper(items as any as AssetEntity[], pagination.take);
@@ -586,7 +586,7 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
       .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
       .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-      .$if(!!options.withStacked, (qb) => withStack(qb, { assets: true })) // TODO: optimize this; it's a huge performance hit
+      .$if(!!options.withStacked, (qb) => withStack(qb, { assets: true, count: false })) // TODO: optimize this; it's a huge performance hit
       .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
       .$if(options.isDuplicate !== undefined, (qb) =>
         qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
@@ -687,12 +687,12 @@ export class AssetRepository implements IAssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
-      .$call((qb) => withStack(qb, { assets: false }))
-      .where('ownerId', '=', asUuid(ownerId))
+      .$call((qb) => withStack(qb, { assets: false, count: true }))
+      .where('assets.ownerId', '=', asUuid(ownerId))
       .where('isVisible', '=', true)
       .where('updatedAt', '<=', updatedUntil)
-      .$if(!!lastId, (qb) => qb.where('id', '>', lastId!))
-      .orderBy('id', 'asc')
+      .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
+      .orderBy('assets.id')
       .limit(limit)
       .execute() as any as Promise<AssetEntity[]>;
   }
@@ -703,8 +703,8 @@ export class AssetRepository implements IAssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
-      .$call((qb) => withStack(qb, { assets: false }))
-      .where('ownerId', '=', anyUuid(options.userIds))
+      .$call((qb) => withStack(qb, { assets: false, count: true }))
+      .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('isVisible', '=', true)
       .where('updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
