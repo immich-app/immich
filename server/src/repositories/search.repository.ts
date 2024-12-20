@@ -6,6 +6,7 @@ import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
+import { AssetType } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateSearch,
@@ -71,12 +72,9 @@ export class SearchRepository implements ISearchRepository {
   searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
-    return builder
-      .where('assets.id', '>', uuid)
-      .orderBy('assets.id')
-      .limit(size)
-      .unionAll(() => builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size))
-      .execute() as any as Promise<AssetEntity[]>;
+    const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
+    const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
+    return sql`${lessThan} union all ${greaterThan}`.execute(this.db) as any as Promise<AssetEntity[]>;
   }
 
   @GenerateSql({
@@ -112,8 +110,10 @@ export class SearchRepository implements ISearchRepository {
   @GenerateSql({
     params: [
       {
+        assetId: DummyValue.UUID,
         embedding: Array.from({ length: 512 }, Math.random),
         maxDistance: 0.6,
+        type: AssetType.IMAGE,
         userIds: [DummyValue.UUID],
       },
     ],
@@ -134,7 +134,7 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.deletedAt', 'is', null)
           .where('assets.isVisible', '=', true)
           .where('assets.type', '=', type)
-          .where('assets.id', '!=', assetId)
+          .where('assets.id', '!=', asUuid(assetId))
           .orderBy(sql`smart_search.embedding <=> ${vector}`)
           .limit(64),
       )

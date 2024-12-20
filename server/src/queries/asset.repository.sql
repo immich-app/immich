@@ -9,12 +9,16 @@ with
           make_date(year::int, $1::int, $2::int) as "date"
         from
           generate_series(
-            $3,
-            extract(
-              year
+            (
+              select
+                date_part(
+                  'year',
+                  min((("localDateTime" at time zone 'UTC')::date))
+                )::int
               from
-                current_date
-            ) - 1
+                assets
+            ),
+            date_part('year', current_date)::int - 1
           ) as "year"
       )
     select
@@ -31,20 +35,20 @@ with
         where
           "asset_job_status"."previewAt" is not null
           and (assets."localDateTime" at time zone 'UTC')::date = today.date
-          and "assets"."ownerId" = any ($4::uuid [])
-          and "assets"."isVisible" = $5
-          and "assets"."isArchived" = $6
+          and "assets"."ownerId" = any ($3::uuid [])
+          and "assets"."isVisible" = $4
+          and "assets"."isArchived" = $5
           and exists (
             select
             from
               "asset_files"
             where
               "assetId" = "assets"."id"
-              and "asset_files"."type" = $7
+              and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
         limit
-          $8
+          $7
       ) as "a" on true
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
@@ -60,7 +64,7 @@ group by
 order by
   ("localDateTime" at time zone 'UTC')::date desc
 limit
-  $9
+  $8
 
 -- AssetRepository.getByIds
 select
@@ -208,6 +212,17 @@ where
 limit
   $4
 
+-- AssetRepository.getByChecksums
+select
+  "id",
+  "checksum",
+  "deletedAt"
+from
+  "assets"
+where
+  "ownerId" = $1::uuid
+  and "checksum" in ($2)
+
 -- AssetRepository.getUploadAssetIdByChecksum
 select
   "id"
@@ -274,6 +289,52 @@ where
 order by
   "assets"."localDateTime" desc
 
+-- AssetRepository.getDuplicates
+with
+  "duplicates" as (
+    select
+      "duplicateId",
+      jsonb_agg("assets") as "assets"
+    from
+      "assets"
+    where
+      "ownerId" = $1::uuid
+      and "duplicateId" is not null
+      and "deletedAt" is null
+      and "isVisible" = $2
+    group by
+      "duplicateId"
+  ),
+  "unique" as (
+    select
+      "duplicateId"
+    from
+      "duplicates"
+    where
+      jsonb_array_length("assets") = $3
+  ),
+  "removed_unique" as (
+    update "assets"
+    set
+      "duplicateId" = $4
+    from
+      "unique"
+    where
+      "assets"."duplicateId" = "unique"."duplicateId"
+  )
+select
+  *
+from
+  "duplicates"
+where
+  not exists (
+    select
+    from
+      "unique"
+    where
+      "unique"."duplicateId" = "duplicates"."duplicateId"
+  )
+
 -- AssetRepository.getAssetIdByCity
 with
   "cities" as (
@@ -317,3 +378,23 @@ order by
   "id" asc
 limit
   $5
+
+-- AssetRepository.getChangedDeltaSync
+select
+  "assets".*,
+  (
+    select
+      count(*) as "stackedAssetsCount"
+    from
+      "asset_stack"
+    where
+      "asset_stack"."id" = "assets"."stackId"
+  ) as "stackedAssetsCount"
+from
+  "assets"
+where
+  "ownerId" = any ($1::uuid [])
+  and "isVisible" = $2
+  and "updatedAt" > $3
+limit
+  $4

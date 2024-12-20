@@ -92,15 +92,18 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<DayOfYearAssets[]> {
-    // TODO: CREATE INDEX idx_local_date_time ON public.assets ((("localDateTime" at time zone 'UTC')::date));
-    // TODO: drop IDX_day_of_month and IDX_month
     return this.db
       .with('res', (qb) =>
         qb
           .with('today', (qb) =>
             qb
               .selectFrom((eb) =>
-                eb.fn('generate_series', [eb.val(1970), sql`extract(year from current_date) - 1`]).as('year'),
+                eb
+                  .fn('generate_series', [
+                    sql`(select date_part('year', min((("localDateTime" at time zone 'UTC')::date)))::int from assets)`,
+                    sql`date_part('year', current_date)::int - 1`,
+                  ])
+                  .as('year'),
               )
               .select((eb) => eb.fn('make_date', [sql`year::int`, sql`${month}::int`, sql`${day}::int`]).as('date')),
           )
@@ -348,7 +351,7 @@ export class AssetRepository implements IAssetRepository {
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BUFFER] })
+  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.BUFFER]] })
   getByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]> {
     return this.db
       .selectFrom('assets')
@@ -576,7 +579,6 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })
   async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
-    // TODO: CREATE INDEX idx_local_date_time_month ON public.assets (date_trunc('MONTH', "localDateTime" at time zone 'UTC'));
     return hasPeople(this.db, options.personId ? [options.personId] : undefined)
       .selectAll('assets')
       .$call(withExif)
@@ -601,7 +603,7 @@ export class AssetRepository implements IAssetRepository {
       .execute() as any as Promise<AssetEntity[]>;
   }
 
-  @GenerateSql({ params: [{ userIds: [DummyValue.UUID, DummyValue.UUID] }] })
+  @GenerateSql({ params: [DummyValue.UUID] })
   getDuplicates(userId: string): Promise<DuplicateGroup[]> {
     return (
       this.db
@@ -692,7 +694,7 @@ export class AssetRepository implements IAssetRepository {
       .execute() as any as Promise<AssetEntity[]>;
   }
 
-  @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE }] })
+  @GenerateSql({ params: [{ userIds: [DummyValue.UUID], updatedAfter: DummyValue.DATE, limit: 100 }] })
   async getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]> {
     return this.db
       .selectFrom('assets')
@@ -711,7 +713,6 @@ export class AssetRepository implements IAssetRepository {
       .execute() as any as Promise<AssetEntity[]>;
   }
 
-  @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFile(file: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>): Promise<void> {
     const value = { ...file, assetId: asUuid(file.assetId) };
     await this.db
@@ -725,7 +726,6 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFiles(files: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
     if (files.length === 0) {
       return;

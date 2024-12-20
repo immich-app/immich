@@ -20,6 +20,47 @@ limit
 offset
   $7
 
+-- SearchRepository.searchRandom
+(
+  select
+    "assets".*
+  from
+    "assets"
+    inner join "exif" on "assets"."id" = "exif"."assetId"
+  where
+    "assets"."fileCreatedAt" >= $1
+    and "exif"."lensModel" = $2
+    and "assets"."ownerId" = any ($3::uuid [])
+    and "assets"."isFavorite" = $4
+    and "assets"."isArchived" = $5
+    and "assets"."deletedAt" is null
+    and "assets"."id" < $6
+  order by
+    "assets"."id"
+  limit
+    $7
+)
+union all
+(
+  select
+    "assets".*
+  from
+    "assets"
+    inner join "exif" on "assets"."id" = "exif"."assetId"
+  where
+    "assets"."fileCreatedAt" >= $8
+    and "exif"."lensModel" = $9
+    and "assets"."ownerId" = any ($10::uuid [])
+    and "assets"."isFavorite" = $11
+    and "assets"."isArchived" = $12
+    and "assets"."deletedAt" is null
+    and "assets"."id" > $13
+  order by
+    "assets"."id"
+  limit
+    $14
+)
+
 -- SearchRepository.searchSmart
 select
   "assets".*
@@ -40,6 +81,34 @@ limit
   $7
 offset
   $8
+
+-- SearchRepository.searchDuplicates
+with
+  "cte" as (
+    select
+      "assets"."id" as "assetId",
+      "assets"."duplicateId",
+      smart_search.embedding <= > $1::vector as "distance"
+    from
+      "assets"
+      inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
+    where
+      "assets"."ownerId" = any ($2::uuid [])
+      and "assets"."deletedAt" is null
+      and "assets"."isVisible" = $3
+      and "assets"."type" = $4
+      and "assets"."id" != $5::uuid
+    order by
+      smart_search.embedding <= > $6::vector
+    limit
+      $7
+  )
+select
+  *
+from
+  "cte"
+where
+  "cte"."distance" <= $8
 
 -- SearchRepository.searchFaces
 with
