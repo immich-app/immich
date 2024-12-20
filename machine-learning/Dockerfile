@@ -37,8 +37,8 @@ WORKDIR /code/onnxruntime
 # EDIT PR
 # While there's still this PR open, we need to compile on the branch of the PR
 # https://github.com/microsoft/onnxruntime/pull/19567
-COPY ./rocm-PR19567.patch /tmp/
-RUN git apply /tmp/rocm-PR19567.patch
+COPY ./0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch /tmp/
+RUN git apply /tmp/0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch
 # END EDIT PR
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # I ran into a compilation error when parallelizing the build
