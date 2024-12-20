@@ -42,6 +42,9 @@ class OnboardingPage extends HookConsumerWidget {
             OnboardingGalleryPermission(
               onNextPage: () => toNextPage(),
             ),
+            OnboardingLocationPermission(
+              onNextPage: () => toNextPage(),
+            ),
           ],
         ),
       ),
@@ -225,57 +228,111 @@ class OnboardingGalleryPermission extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.perm_media_outlined,
-                size: 24,
-                color: context.primaryColor.withAlpha(250),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                "Gallery Permission",
-                style: context.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: context.primaryColor,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
+      child: PermissionInfoTemplate(
+        icon: Icons.perm_media_outlined,
+        title: "Gallery Permission",
+        subtitle:
             "We use the read and write permission of the media gallery for the following actions",
-            style: context.textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w400,
-              color: context.colorScheme.onSurface.withAlpha(220),
+        descriptionList: [
+          'Display the local videos and images',
+          'Read the file content to upload to your Immich instance',
+          'Remove media from the device on your request',
+        ],
+        onConfirm: onNextPage,
+      ),
+    );
+  }
+}
+
+class OnboardingLocationPermission extends StatelessWidget {
+  final VoidCallback onNextPage;
+
+  const OnboardingLocationPermission({super.key, required this.onNextPage});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: PermissionInfoTemplate(
+        icon: Icons.location_on_outlined,
+        title: "Location Permission",
+        subtitle:
+            "We use the always on, precise location access for the following actions",
+        descriptionList: [
+          'Display the local videos and images',
+          'Read the file content to upload to your Immich instance',
+          'Remove media from the device on your request',
+        ],
+        onConfirm: onNextPage,
+      ),
+    );
+  }
+}
+
+class PermissionInfoTemplate extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final List<String> descriptionList;
+  final VoidCallback onConfirm;
+  final IconData icon;
+
+  const PermissionInfoTemplate({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.descriptionList,
+    required this.onConfirm,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: context.primaryColor.withAlpha(250),
             ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: context.textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: context.primaryColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Text(
+          subtitle,
+          style: context.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w400,
+            color: context.colorScheme.onSurface.withAlpha(220),
           ),
-          const SizedBox(height: 40),
-          const BulletList([
-            'Display the local videos and images',
-            'Read the file content to upload to your Immich instance',
-            'Remove media from the device on your request',
-          ]),
-          const Spacer(),
-          SizedBox(
-            height: 48,
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: onNextPage,
-              child: const Text(
-                'OK',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+        ),
+        const SizedBox(height: 40),
+        BulletList(descriptionList),
+        const Spacer(),
+        SizedBox(
+          height: 48,
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: onConfirm,
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
