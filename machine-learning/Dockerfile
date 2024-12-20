@@ -19,11 +19,11 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 26.3Gb of disk space required to pull this image
 # https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
-FROM rocm/dev-ubuntu-22.04:6.1.2-complete as builder-rocm
+FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS builder-rocm
 
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
+RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.12-venv
 # Install same version as the Dockerfile provided by onnxruntime
 RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3-linux-x86_64.sh && \
     chmod +x cmake-3.27.3-linux-x86_64.sh && \
@@ -34,21 +34,17 @@ RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.
 ENV PATH /code/cmake-3.27.3-linux-x86_64/bin:${PATH}
 
 # Prepare onnxruntime repository & build onnxruntime
-RUN git clone --single-branch --branch v1.18.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
+# Note: cannot upgrade from 1.19.2 as of writing until upstream updates the ROCm CI
+RUN git clone --single-branch --branch v1.19.2 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
-# EDIT PR
-# While there's still this PR open, we need to compile on the branch of the PR
-# https://github.com/microsoft/onnxruntime/pull/19567
+# Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
 COPY ./0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch /tmp/
 RUN git apply /tmp/0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch
-# END EDIT PR
+
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
-# I ran into a compilation error when parallelizing the build
-# I used 12 threads to build onnxruntime, but it needs more than 16GB of RAM, and that's the amount of RAM I have on my machine
-# I lowered the number of threads to 8, and it worked
-# Even with 12 threads, the compilation took more than 1,5 hours to fail
-RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 9 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.18.1 --use_rocm --rocm_home=/opt/rocm
+# Note: the `parallel` setting uses a substantial amount of RAM
+RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 13 --cmake_extra_defines\
+    ONNXRUNTIME_VERSION=1.19.2 --use_rocm --rocm_home=/opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
@@ -115,6 +111,9 @@ COPY --from=builder-armnn \
     /opt/ann/libann.s[o] \
     /opt/ann/build.sh \
     /opt/armnn/
+
+FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS prod-rocm
+
 
 FROM prod-${DEVICE} AS prod
 
