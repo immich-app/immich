@@ -685,6 +685,9 @@ export class AssetRepository implements IAssetRepository {
     const { ownerId, lastId, updatedUntil, limit } = options;
     return this.db
       .selectFrom('assets')
+      .selectAll('assets')
+      .$call(withExif)
+      .$call((qb) => withStack(qb, { assets: false }))
       .where('ownerId', '=', asUuid(ownerId))
       .where('isVisible', '=', true)
       .where('updatedAt', '<=', updatedUntil)
@@ -699,13 +702,8 @@ export class AssetRepository implements IAssetRepository {
     return this.db
       .selectFrom('assets')
       .selectAll('assets')
-      .select((eb) =>
-        eb
-          .selectFrom('asset_stack')
-          .select((eb) => eb.fn.countAll().as('stackedAssetsCount'))
-          .whereRef('asset_stack.id', '=', 'assets.stackId')
-          .as('stackedAssetsCount'),
-      )
+      .$call(withExif)
+      .$call((qb) => withStack(qb, { assets: false }))
       .where('ownerId', '=', anyUuid(options.userIds))
       .where('isVisible', '=', true)
       .where('updatedAt', '>', options.updatedAfter)
