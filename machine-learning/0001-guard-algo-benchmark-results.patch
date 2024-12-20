@@ -1,0 +1,58 @@
+From 1f5d6323fa69ee16feab25f8e1398c1aed03ee08 Mon Sep 17 00:00:00 2001
+From: mertalev <101130780+mertalev@users.noreply.github.com>
+Date: Sun, 29 Dec 2024 14:07:51 -0500
+Subject: [PATCH] guard algo benchmark results
+
+---
+ onnxruntime/core/providers/rocm/nn/conv.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/onnxruntime/core/providers/rocm/nn/conv.h b/onnxruntime/core/providers/rocm/nn/conv.h
+index bc9846203e..0086e064f1 100644
+--- a/onnxruntime/core/providers/rocm/nn/conv.h
++++ b/onnxruntime/core/providers/rocm/nn/conv.h
+@@ -52,6 +52,7 @@ class lru_unordered_map {
+   lru_unordered_map(size_t max_size) : max_size_(max_size) {}
+ 
+   void insert(const Key& key, const T& value) {
++    std::lock_guard<std::mutex> guard(mutex_);
+     auto it = items_.find(key);
+     if (it != items_.end()) {
+       it->second.value = value;
+@@ -69,6 +70,7 @@ class lru_unordered_map {
+   }
+ 
+   T& at(const Key& key) {
++    std::lock_guard<std::mutex> guard(mutex_);
+     auto it = items_.find(key);
+     if (it == items_.end()) {
+       throw std::out_of_range("There is no such key in cache");
+@@ -78,14 +80,17 @@ class lru_unordered_map {
+   }
+ 
+   bool contains(const Key& key) const {
++    std::lock_guard<std::mutex> guard(mutex_);
+     return items_.find(key) != items_.end();
+   }
+ 
+   size_t size() const {
++    std::lock_guard<std::mutex> guard(mutex_);
+     return items_.size();
+   }
+ 
+   void clear() {
++    std::lock_guard<std::mutex> guard(mutex_);
+     items_.clear();
+     lru_list_.clear();
+   }
+@@ -106,6 +111,7 @@ class lru_unordered_map {
+   size_t max_size_;
+   std::unordered_map<Key, value_type, Hash, KeyEqual, MapAllocator> items_;
+   list_type lru_list_;
++  mutable std::mutex mutex_;
+ };
+ 
+ // cached miopen descriptors
+-- 
+2.43.0
+
