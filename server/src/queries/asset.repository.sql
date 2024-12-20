@@ -13,7 +13,7 @@ with
               select
                 date_part(
                   'year',
-                  min((("localDateTime" at time zone 'UTC')::date))
+                  min(("localDateTime" at time zone 'UTC')::date)
                 )::int
               from
                 assets

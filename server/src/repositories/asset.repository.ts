@@ -100,7 +100,7 @@ export class AssetRepository implements IAssetRepository {
               .selectFrom((eb) =>
                 eb
                   .fn('generate_series', [
-                    sql`(select date_part('year', min((("localDateTime" at time zone 'UTC')::date)))::int from assets)`,
+                    sql`(select date_part('year', min(("localDateTime" at time zone 'UTC')::date))::int from assets)`,
                     sql`date_part('year', current_date)::int - 1`,
                   ])
                   .as('year'),
