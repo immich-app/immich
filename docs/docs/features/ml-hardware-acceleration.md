@@ -11,7 +11,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - ARM NN (Mali)
 - CUDA (NVIDIA GPUs with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher)
-- ROCM (AMD GPUs)
+- ROCm (AMD GPUs)
 - OpenVINO (Intel GPUs such as Iris Xe and Arc)
 
 ## Limitations
@@ -42,9 +42,9 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - The installed driver must be >= 535 (it must support CUDA 12.2).
 - On Linux (except for WSL2), you also need to have [NVIDIA Container Toolkit][nvct] installed.
 
-#### ROCM
+#### ROCm
 
-- The GPU must be supported by ROCM (or use `HSA_OVERRIDE_GFX_VERSION=<a supported version, ie 10.3.0>`)
+- The GPU must be supported by ROCm. If it isn't officially supported, you can attempt to use the `HSA_OVERRIDE_GFX_VERSION` environmental variable: `HSA_OVERRIDE_GFX_VERSION=<a supported version, e.g. 10.3.0>`.
 
 #### OpenVINO
 
