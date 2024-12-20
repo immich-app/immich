@@ -13,14 +13,15 @@
   import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { AppRoute } from '$lib/constants';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import { AppRoute, Theme } from '$lib/constants';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import { onMount } from 'svelte';
+  import { Logo } from '@immich/ui';
+  import { colorTheme } from '$lib/stores/preferences.store';
 
   interface Props {
     showUploadButton?: boolean;
@@ -44,6 +45,8 @@
   onMount(async () => {
     info = userInteraction.aboutInfo ?? (await getAboutInfo());
   });
+
+  let isDark = $derived($colorTheme.value === Theme.DARK);
 </script>
 
 <svelte:window bind:innerWidth />
@@ -58,7 +61,7 @@
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
     <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
-      <ImmichLogo width="55%" noText={innerWidth < 768} />
+      <Logo variant={innerWidth < 768 ? 'icon' : 'inline'} theme={isDark ? 'dark' : 'light'} />
     </a>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">

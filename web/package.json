@@ -26,6 +26,7 @@
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.8.0",
     "@faker-js/faker": "^9.0.0",
+    "@immich/ui": "^0.7.0",
     "@socket.io/component-emitter": "^3.1.0",
     "@sveltejs/adapter-static": "^3.0.5",
     "@sveltejs/enhanced-img": "^0.4.0",

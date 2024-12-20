@@ -1,15 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { AppRoute } from '$lib/constants';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login } from '@immich/sdk';
+  import { Alert, Button, Field, Input, PasswordInput } from '@immich/ui';
   import { onMount } from 'svelte';
-  import { fade } from 'svelte/transition';
-  import Button from '../elements/buttons/button.svelte';
-  import PasswordField from '../shared-components/password-field.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -99,42 +96,25 @@
 </script>
 
 {#if !oauthLoading && $featureFlags.passwordLogin}
-  <form {onsubmit} class="mt-5 flex flex-col gap-5">
+  <form {onsubmit} class="mt-5 flex flex-col gap-5 text-dark">
     {#if errorMessage}
-      <p class="text-red-400" transition:fade>
-        {errorMessage}
-      </p>
+      <Alert color="danger" title={errorMessage} />
     {/if}
 
-    <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="email">{$t('email')}</label>
-      <input
-        class="immich-form-input"
-        id="email"
-        name="email"
-        type="email"
-        autocomplete="email"
-        bind:value={email}
-        required
+    <Field label={$t('email')}>
+      <Input name="email" type="email" autocomplete="email" bind:value={email} />
+    </Field>
+
+    <Field label={$t('password')}>
+      <PasswordInput
+        bind:value={password}
+        autocomplete="current-password"
+        showLabel={$t('show_password')}
+        hideLabel={$t('hide_password')}
       />
-    </div>
+    </Field>
 
-    <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="password">{$t('password')}</label>
-      <PasswordField id="password" bind:password autocomplete="current-password" />
-    </div>
-
-    <div class="my-5 flex w-full">
-      <Button type="submit" size="lg" fullwidth disabled={loading}>
-        {#if loading}
-          <span class="h-6">
-            <LoadingSpinner />
-          </span>
-        {:else}
-          {$t('to_login')}
-        {/if}
-      </Button>
-    </div>
+    <Button type="submit" size="large" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
   </form>
 {/if}
 
@@ -151,27 +131,20 @@
   {/if}
   <div class="my-5 flex flex-col gap-5">
     {#if oauthError}
-      <p class="text-center text-red-400" transition:fade>{oauthError}</p>
+      <Alert color="danger" title={oauthError} />
     {/if}
     <Button
-      type="button"
-      disabled={loading || oauthLoading}
-      size="lg"
-      fullwidth
+      loading={loading || oauthLoading}
+      size="large"
+      fullWidth
       color={$featureFlags.passwordLogin ? 'secondary' : 'primary'}
       onclick={handleOAuthLogin}
     >
-      {#if oauthLoading}
-        <span class="h-6">
-          <LoadingSpinner />
-        </span>
-      {:else}
-        {$serverConfig.oauthButtonText}
-      {/if}
+      {$serverConfig.oauthButtonText}
     </Button>
   </div>
 {/if}
 
 {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
-  <p class="p-4 text-center dark:text-immich-dark-fg">{$t('login_has_been_disabled')}</p>
+  <Alert color="warning" title={$t('login_has_been_disabled')} />
 {/if}
