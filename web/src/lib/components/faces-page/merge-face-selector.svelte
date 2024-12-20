@@ -34,10 +34,14 @@
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
 
-  onMount(async () => {
-    const data = await getAllPeople({ withHidden: false, closestPersonId: person.id });
+  let sortFaces = $state(true);
+
+  const handleSearch = async () => {
+    const data = await getAllPeople({ withHidden: false, closestPersonId: sortFaces ? person.id : undefined });
     people = data.people;
-  });
+  };
+
+  onMount(handleSearch);
 
   const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
@@ -149,8 +153,7 @@
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>
       </div>
-
-      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} bind:sortFaces {handleSearch} />
     </section>
   </section>
 </section>

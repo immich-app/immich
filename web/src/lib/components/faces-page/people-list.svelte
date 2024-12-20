@@ -3,15 +3,18 @@
   import FaceThumbnail from './face-thumbnail.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import { t } from 'svelte-i18n';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface Props {
+    sortFaces: boolean;
     screenHeight: number;
     people: PersonResponseDto[];
     peopleToNotShow: PersonResponseDto[];
     onSelect: (person: PersonResponseDto) => void;
+    handleSearch: () => void;
   }
 
-  let { screenHeight, people, peopleToNotShow, onSelect }: Props = $props();
+  let { sortFaces = $bindable(true), screenHeight, people, peopleToNotShow, onSelect, handleSearch }: Props = $props();
 
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
 
@@ -26,6 +29,11 @@
 
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
   <SearchPeople type="searchBar" placeholder={$t('search_people')} bind:searchName={name} bind:searchedPeopleLocal />
+</div>
+
+<div class=" w-40 sm:w-48 md:w-96 mb-8">
+  <SettingSwitch onToggle={handleSearch} bind:checked={sortFaces} title={$t('sort_people_by_similarity')}
+  ></SettingSwitch>
 </div>
 
 <div
