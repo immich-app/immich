@@ -17,7 +17,7 @@ RUN mkdir /opt/armnn && \
 
 # Warning: 26.3Gb of disk space required to pull this image
 # https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
-FROM rocm/dev-ubuntu-22.04:6.1.2-complete as builder-rocm
+FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS builder-rocm
 
 WORKDIR /code
 
@@ -32,7 +32,7 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3
 ENV PATH /code/cmake-3.27.3-linux-x86_64/bin:${PATH}
 
 # Prepare onnxruntime repository & build onnxruntime
-RUN git clone --single-branch --branch v1.18.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
+RUN git clone --single-branch --branch v1.20.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
 # EDIT PR
 # While there's still this PR open, we need to compile on the branch of the PR
@@ -46,7 +46,7 @@ RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # I lowered the number of threads to 8, and it worked
 # Even with 12 threads, the compilation took more than 1,5 hours to fail
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 9 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.18.1 --use_rocm --rocm_home=/opt/rocm
+    ONNXRUNTIME_VERSION=1.20.1 --use_rocm --rocm_home=/opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
@@ -117,7 +117,7 @@ COPY --from=builder-armnn \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM rocm/dev-ubuntu-22.04:6.1.2-complete AS prod-rocm
+FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS prod-rocm
 
 
 FROM prod-${DEVICE} AS prod
