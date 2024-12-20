@@ -146,6 +146,11 @@ export interface UpsertFileOptions {
 
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
+export interface DayOfYearAssets {
+  yearsAgo: number;
+  assets: AssetEntity[];
+}
+
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
@@ -156,7 +161,7 @@ export interface IAssetRepository {
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]>;
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
-  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
+  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<DayOfYearAssets[]>;
   getByChecksum(options: { ownerId: string; checksum: Buffer; libraryId?: string }): Promise<AssetEntity | null>;
   getByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;

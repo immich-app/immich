@@ -585,52 +585,57 @@ SELECT DISTINCT
   ON ("exif"."country") "exif"."country" AS "country"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
+  AND "exif"."country" != ''
+  AND "exif"."country" IS NOT NULL
 
 -- SearchRepository.getStates
 SELECT DISTINCT
   ON ("exif"."state") "exif"."state" AS "state"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."country" = $2
+  AND "exif"."state" != ''
+  AND "exif"."state" IS NOT NULL
 
 -- SearchRepository.getCities
 SELECT DISTINCT
   ON ("exif"."city") "exif"."city" AS "city"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."country" = $2
-  AND "exif"."state" = $3
+  AND "exif"."city" != ''
+  AND "exif"."city" IS NOT NULL
 
 -- SearchRepository.getCameraMakes
 SELECT DISTINCT
   ON ("exif"."make") "exif"."make" AS "make"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."model" = $2
+  AND "exif"."make" != ''
+  AND "exif"."make" IS NOT NULL
 
 -- SearchRepository.getCameraModels
 SELECT DISTINCT
   ON ("exif"."model") "exif"."model" AS "model"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."make" = $2
+  AND "exif"."model" != ''
+  AND "exif"."model" IS NOT NULL
