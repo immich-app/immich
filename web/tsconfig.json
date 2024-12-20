@@ -13,5 +13,6 @@
     "target": "es2022",
     "types": ["vitest/globals"]
   },
-  "extends": "./.svelte-kit/tsconfig.json"
+  "extends": "./.svelte-kit/tsconfig.json",
+  "files": ["./vitest.config.js"]
 }

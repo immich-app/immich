@@ -43,13 +43,4 @@ export default defineConfig({
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
   },
-  test: {
-    include: ['src/**/*.{test,spec}.{js,ts}'],
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: ['./src/test-data/setup.ts'],
-    sequence: {
-      hooks: 'list',
-    },
-  },
 });
