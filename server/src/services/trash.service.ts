@@ -18,7 +18,7 @@ export class TrashService extends BaseService {
     await this.trashRepository.restoreAll(ids);
     await this.eventRepository.emit('assets.restore', { assetIds: ids, userId: auth.user.id });
 
-    this.logger.log(`Restored ${ids.length} assets from trash`);
+    this.logger.log(`Restored ${ids.length} asset(s) from trash`);
 
     return { count: ids.length };
   }
@@ -26,7 +26,7 @@ export class TrashService extends BaseService {
   async restore(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.restore(auth.user.id);
     if (count > 0) {
-      this.logger.log(`Restored ${count} assets from trash`);
+      this.logger.log(`Restored ${count} asset(s) from trash`);
     }
     return { count };
   }
@@ -52,7 +52,7 @@ export class TrashService extends BaseService {
     );
 
     for await (const assetIds of assetPagination) {
-      this.logger.debug(`Queueing ${assetIds.length} assets for deletion from the trash`);
+      this.logger.debug(`Queueing ${assetIds.length} asset(s) for deletion from the trash`);
       count += assetIds.length;
       await this.jobRepository.queueAll(
         assetIds.map((assetId) => ({
@@ -65,7 +65,7 @@ export class TrashService extends BaseService {
       );
     }
 
-    this.logger.log(`Queued ${count} assets for deletion from the trash`);
+    this.logger.log(`Queued ${count} asset(s) for deletion from the trash`);
 
     return JobStatus.SUCCESS;
   }
