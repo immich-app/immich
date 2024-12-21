@@ -34,9 +34,7 @@
   let hasSelection = $derived(selectedPeople.length > 0);
   let peopleToNotShow = $derived([...selectedPeople, person]);
 
-  let sortFaces = $state(true);
-
-  const handleSearch = async () => {
+  const handleSearch = async (sortFaces: boolean = false) => {
     const data = await getAllPeople({ withHidden: false, closestPersonId: sortFaces ? person.id : undefined });
     people = data.people;
   };
@@ -153,7 +151,7 @@
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>
       </div>
-      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} bind:sortFaces {handleSearch} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
     </section>
   </section>
 </section>
