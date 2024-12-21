@@ -52,7 +52,7 @@ export class TrashService extends BaseService {
     );
 
     for await (const assetIds of assetPagination) {
-      this.logger.debug(`Queueing ${assetIds.length} assets for deletion from the trash`);
+      this.logger.debug(`Queueing ${assetIds.length} asset(s) for deletion from the trash`);
       count += assetIds.length;
       await this.jobRepository.queueAll(
         assetIds.map((assetId) => ({

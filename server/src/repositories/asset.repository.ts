@@ -5,6 +5,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType, PaginationMode } from 'src/enum';
 import {
   AssetBuilderOptions,
@@ -29,9 +30,11 @@ import {
 } from 'src/interfaces/asset.interface';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { searchAssetBuilder } from 'src/utils/database';
+import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginate, paginatedBuilder } from 'src/utils/pagination';
 import {
   Brackets,
+  DataSource,
   FindOptionsOrder,
   FindOptionsRelations,
   FindOptionsSelect,
@@ -41,6 +44,7 @@ import {
   MoreThan,
   Not,
   Repository,
+  UpdateResult,
 } from 'typeorm';
 
 const truncateMap: Record<TimeBucketSize, string> = {
@@ -60,6 +64,7 @@ export class AssetRepository implements IAssetRepository {
     @InjectRepository(AssetFileEntity) private fileRepository: Repository<AssetFileEntity>,
     @InjectRepository(ExifEntity) private exifRepository: Repository<ExifEntity>,
     @InjectRepository(AssetJobStatusEntity) private jobStatusRepository: Repository<AssetJobStatusEntity>,
+    private dataSource: DataSource,
   ) {}
 
   async upsertExif(exif: Partial<ExifEntity>): Promise<void> {
@@ -72,6 +77,10 @@ export class AssetRepository implements IAssetRepository {
 
   create(asset: AssetCreate): Promise<AssetEntity> {
     return this.repository.save(asset);
+  }
+
+  createAll(assets: AssetCreate[]): Promise<AssetEntity[]> {
+    return this.repository.save(assets);
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], { day: 1, month: 1 }] })
@@ -188,14 +197,6 @@ export class AssetRepository implements IAssetRepository {
     return this.getAll(pagination, { ...options, userIds: [userId] });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null> {
-    return this.repository.findOne({
-      where: { library: { id: libraryId }, originalPath },
-      withDeleted: true,
-    });
-  }
-
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.STRING]] })
   @ChunkedArray({ paramIndex: 1 })
   async getPathsNotInLibrary(libraryId: string, originalPaths: string[]): Promise<string[]> {
@@ -215,6 +216,20 @@ export class AssetRepository implements IAssetRepository {
     let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
     builder = searchAssetBuilder(builder, options);
     builder.orderBy('asset.createdAt', options.orderDirection ?? 'ASC');
+    return paginatedBuilder<AssetEntity>(builder, {
+      mode: PaginationMode.SKIP_TAKE,
+      skip: pagination.skip,
+      take: pagination.take,
+    });
+  }
+
+  getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+    const builder = this.repository
+      .createQueryBuilder('asset')
+      .select('asset.id')
+      .where('asset.libraryId = :libraryId', { libraryId })
+      .withDeleted();
+
     return paginatedBuilder<AssetEntity>(builder, {
       mode: PaginationMode.SKIP_TAKE,
       skip: pagination.skip,
@@ -725,5 +740,55 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ assetId: DummyValue.UUID, type: AssetFileType.PREVIEW, path: '/path/to/file' }] })
   async upsertFiles(files: { assetId: string; type: AssetFileType; path: string }[]): Promise<void> {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
+  }
+
+  updateOffline(library: LibraryEntity): Promise<UpdateResult> {
+    const paths = library.importPaths.map((importPath) => `${importPath}%`).join('|');
+    const exclusions = library.exclusionPatterns.map((pattern) => globToSqlPattern(pattern)).join('|');
+    return this.repository
+      .createQueryBuilder()
+      .update()
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where({ isOffline: false })
+      .andWhere({ libraryId: library.id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('originalPath NOT SIMILAR TO :paths', {
+            paths,
+          }).orWhere('originalPath SIMILAR TO :exclusions', {
+            exclusions,
+          });
+        }),
+      )
+      .execute();
+  }
+
+  async getNewPaths(libraryId: string, paths: string[]): Promise<string[]> {
+    const rawSql = `
+    WITH unnested_paths AS (
+      SELECT unnest($1::text[]) AS path
+    )
+    SELECT unnested_paths.path AS path
+    FROM unnested_paths
+    WHERE not exists(
+      SELECT 1
+      FROM assets
+      WHERE "originalPath" = unnested_paths.path AND
+      "libraryId" = $2
+    );
+  `;
+
+    return this.repository
+      .query(rawSql, [paths, libraryId])
+      .then((result) => result.map((row: { path: string }) => row.path));
+  }
+
+  async getAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
+    let builder = this.repository.createQueryBuilder('asset').leftJoinAndSelect('asset.files', 'files');
+    builder = searchAssetBuilder(builder, options);
+    return builder.getCount();
   }
 }

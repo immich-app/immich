@@ -84,8 +84,8 @@ export enum JobName {
   // library management
   LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
   LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
-  LIBRARY_SYNC_FILE = 'library-sync-file',
-  LIBRARY_SYNC_ASSET = 'library-sync-asset',
+  LIBRARY_SYNC_FILES = 'library-sync-files',
+  LIBRARY_SYNC_ASSETS = 'library-sync-assets',
   LIBRARY_DELETE = 'library-delete',
   LIBRARY_QUEUE_SYNC_ALL = 'library-queue-sync-all',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
@@ -135,7 +135,7 @@ export interface IDelayedJob extends IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'sidecar-write' | 'copy';
+  source?: 'upload' | 'library-import' | 'sidecar-write' | 'copy';
   notify?: boolean;
 }
 
@@ -143,18 +143,24 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
-export interface ILibraryFileJob extends IEntityJob {
+export interface ILibraryFileJob {
+  libraryId: string;
   ownerId: string;
-  assetPath: string;
+  assetPaths: string[];
 }
 
-export interface ILibraryAssetJob extends IEntityJob {
+export interface ILibraryBulkIdsJob {
+  libraryId: string;
+  assetIds: string[];
+}
+
+export interface IBulkEntityJob {
+  ids: string[];
+}
+
+export interface ILibraryAssetsJob extends IBulkEntityJob {
   importPaths: string[];
   exclusionPatterns: string[];
-}
-
-export interface IBulkEntityJob extends IBaseJob {
-  ids: string[];
 }
 
 export interface IDeleteFilesJob extends IBaseJob {
@@ -284,10 +290,10 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
-  | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
-  | { name: JobName.LIBRARY_SYNC_ASSET; data: ILibraryAssetJob }
+  | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }

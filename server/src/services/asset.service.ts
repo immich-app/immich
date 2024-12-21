@@ -249,7 +249,12 @@ export class AssetService extends BaseService {
 
     const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
     const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
-    if (deleteOnDisk) {
+
+    if (deleteOnDisk && !asset.isOffline) {
+      /* We don't want to delete an offline asset because it is either...
+           ...missing from disk => don't delete the file since it doesn't exist where we expect
+           ...outside of any import path => don't delete the file since we're not responsible for it
+           ...matching an exclusion pattern => don't delete the file since it's excluded */
       files.push(asset.sidecarPath, asset.originalPath);
     }
 

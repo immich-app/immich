@@ -1,10 +1,11 @@
 import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
-import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect } from 'typeorm';
+import { FindOptionsOrder, FindOptionsRelations, FindOptionsSelect, UpdateResult } from 'typeorm';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -155,6 +156,7 @@ export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
   create(asset: AssetCreate): Promise<AssetEntity>;
+  createAll(assets: AssetCreate[]): Promise<AssetEntity[]>;
   getByIds(
     ids: string[],
     relations?: FindOptionsRelations<AssetEntity>,
@@ -176,9 +178,9 @@ export interface IAssetRepository {
   getWithout(pagination: PaginationOptions, property: WithoutProperty): Paginated<AssetEntity>;
   getRandom(userIds: string[], count: number): Promise<AssetEntity[]>;
   getLastUpdatedAssetForAlbumId(albumId: string): Promise<AssetEntity | null>;
-  getByLibraryIdAndOriginalPath(libraryId: string, originalPath: string): Promise<AssetEntity | null>;
   deleteAll(ownerId: string): Promise<void>;
   getAll(pagination: PaginationOptions, options?: AssetSearchOptions): Paginated<AssetEntity>;
+  getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity>;
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getLivePhotoCount(motionId: string): Promise<number>;
   updateAll(ids: string[], options: Partial<AssetUpdateAllOptions>): Promise<void>;
@@ -197,4 +199,7 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
+  updateOffline(library: LibraryEntity): Promise<UpdateResult>;
+  getNewPaths(libraryId: string, paths: string[]): Promise<string[]>;
+  getAssetCount(options: AssetSearchOptions): Promise<number | undefined>;
 }

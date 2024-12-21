@@ -57,10 +57,10 @@ export class LibraryController {
     return this.service.validate(id, dto);
   }
 
-  @Get(':id/statistics')
+  @Get(':id/count')
   @Authenticated({ permission: Permission.LIBRARY_STATISTICS, admin: true })
-  getLibraryStatistics(@Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
-    return this.service.getStatistics(id);
+  getAssetCount(@Param() { id }: UUIDParamDto): Promise<number> {
+    return this.service.getAssetCount(id);
   }
 
   @Post(':id/scan')
