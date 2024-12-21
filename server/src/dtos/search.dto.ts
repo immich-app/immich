@@ -162,7 +162,7 @@ export class MetadataSearchDto extends RandomSearchDto {
 
   @IsEnum(AssetOrder)
   @Optional()
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder, default: AssetOrder.DESC })
   order?: AssetOrder;
 
   @IsInt()
