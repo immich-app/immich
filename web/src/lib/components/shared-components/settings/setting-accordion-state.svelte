@@ -9,8 +9,7 @@
   import { writable, type Writable } from 'svelte/store';
   import { createContext } from '$lib/utils/context';
   import { page } from '$app/state';
-  import { handlePromiseError } from '$lib/utils';
-  import { goto } from '$app/navigation';
+  import { replaceState } from '$app/navigation';
   import type { Snippet } from 'svelte';
 
   const getParamValues = (param: string) => {
@@ -35,7 +34,7 @@
         searchParams.delete(queryParam);
       }
 
-      handlePromiseError(goto(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true }));
+      replaceState(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true });
     }
   });
 </script>
