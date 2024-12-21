@@ -6,12 +6,12 @@
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
 
   interface Props {
-    sortFaces: boolean;
+    sortFaces?: boolean;
     screenHeight: number;
     people: PersonResponseDto[];
     peopleToNotShow: PersonResponseDto[];
     onSelect: (person: PersonResponseDto) => void;
-    handleSearch: () => void;
+    handleSearch?: () => void;
   }
 
   let { sortFaces = $bindable(true), screenHeight, people, peopleToNotShow, onSelect, handleSearch }: Props = $props();
@@ -30,12 +30,18 @@
 <div class=" w-40 sm:w-48 md:w-96 h-14 mb-8">
   <SearchPeople type="searchBar" placeholder={$t('search_people')} bind:searchName={name} bind:searchedPeopleLocal />
 </div>
-
-<div class=" w-40 sm:w-48 md:w-96 mb-8">
-  <SettingSwitch onToggle={handleSearch} bind:checked={sortFaces} title={$t('sort_people_by_similarity')}
-  ></SettingSwitch>
-</div>
-
+{#if handleSearch}
+  <div class=" w-40 sm:w-48 md:w-96 mb-8">
+    <SettingSwitch
+      onToggle={(checked) => {
+        sortFaces = checked;
+        handleSearch();
+      }}
+      bind:checked={sortFaces}
+      title={$t('sort_people_by_similarity')}
+    ></SettingSwitch>
+  </div>
+{/if}
 <div
   class="immich-scrollbar overflow-y-auto rounded-3xl bg-gray-200 p-10 dark:bg-immich-dark-gray"
   style:max-height={screenHeight - 400 + 'px'}

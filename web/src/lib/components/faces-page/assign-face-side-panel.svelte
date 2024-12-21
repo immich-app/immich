@@ -121,10 +121,17 @@
       <CircleIconButton icon={mdiClose} title={$t('cancel_search')} onclick={() => (searchFaces = false)} />
     {/if}
   </div>
-  <div class="flex w-full justify-center">
-    <SettingSwitch bind:checked={sortFaces} onToggle={loadPeople} title={$t('sort_people_by_similarity')} />
-  </div>
   <div class="px-4 py-4 text-sm">
+    <div class="flex w-full justify-center">
+      <SettingSwitch
+        bind:checked={sortFaces}
+        onToggle={async (checked) => {
+          sortFaces = checked;
+          await loadPeople();
+        }}
+        title={$t('sort_people_by_similarity')}
+      />
+    </div>
     <h2 class="mb-8 mt-4 uppercase">{$t('all_people')}</h2>
     {#if isShowLoadingPeople}
       <div class="flex w-full justify-center">
