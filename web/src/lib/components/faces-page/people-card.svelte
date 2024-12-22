@@ -8,12 +8,15 @@
     mdiCalendarEditOutline,
     mdiDotsVertical,
     mdiEyeOffOutline,
+    mdiHeart,
+    mdiHeartOutline,
   } from '@mdi/js';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import MenuOption from '../shared-components/context-menu/menu-option.svelte';
   import { t } from 'svelte-i18n';
   import { focusOutside } from '$lib/actions/focus-outside';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
 
   interface Props {
     person: PersonResponseDto;
@@ -22,9 +25,18 @@
     onSetBirthDate: () => void;
     onMergePeople: () => void;
     onHidePerson: () => void;
+    onToggleFavorite: () => void;
   }
 
-  let { person, preload = false, onChangeName, onSetBirthDate, onMergePeople, onHidePerson }: Props = $props();
+  let {
+    person,
+    preload = false,
+    onChangeName,
+    onSetBirthDate,
+    onMergePeople,
+    onHidePerson,
+    onToggleFavorite,
+  }: Props = $props();
 
   let showVerticalDots = $state(false);
 </script>
@@ -51,6 +63,11 @@
         title={person.name}
         widthStyle="100%"
       />
+      {#if person.isFavorite}
+        <div class="absolute bottom-2 left-2 z-10">
+          <Icon path={mdiHeart} size="24" class="text-white" />
+        </div>
+      {/if}
     </div>
     {#if person.name}
       <span
@@ -76,6 +93,11 @@
         <MenuOption onClick={onChangeName} icon={mdiAccountEditOutline} text={$t('change_name')} />
         <MenuOption onClick={onSetBirthDate} icon={mdiCalendarEditOutline} text={$t('set_date_of_birth')} />
         <MenuOption onClick={onMergePeople} icon={mdiAccountMultipleCheckOutline} text={$t('merge_people')} />
+        <MenuOption
+          onClick={onToggleFavorite}
+          icon={person.isFavorite ? mdiHeart : mdiHeartOutline}
+          text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+        />
       </ButtonContextMenu>
     </div>
   {/if}

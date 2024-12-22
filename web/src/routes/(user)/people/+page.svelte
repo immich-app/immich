@@ -223,6 +223,29 @@
     }
   };
 
+  const handleToggleFavorite = async (detail: PersonResponseDto) => {
+    try {
+      const updatedPerson = await updatePerson({
+        id: detail.id,
+        personUpdateDto: { isFavorite: !detail.isFavorite },
+      });
+
+      people = people.map((person: PersonResponseDto) => {
+        if (person.id === updatedPerson.id) {
+          return updatedPerson;
+        }
+        return person;
+      });
+
+      notificationController.show({
+        message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
+    }
+  };
+
   const handleMergePeople = async (detail: PersonResponseDto) => {
     await goto(
       `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
@@ -413,6 +436,7 @@
           onSetBirthDate={() => handleSetBirthDate(person)}
           onMergePeople={() => handleMergePeople(person)}
           onHidePerson={() => handleHidePerson(person)}
+          onToggleFavorite={() => handleToggleFavorite(person)}
         />
       {/snippet}
     </PeopleInfiniteScroll>
