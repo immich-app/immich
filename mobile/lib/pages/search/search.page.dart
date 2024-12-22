@@ -441,19 +441,15 @@ class SearchPage extends HookConsumerWidget {
     }
 
     handleTextSubmitted(String value) {
-      if (value.isEmpty) {
-        return;
-      }
-
       if (isContextualSearch.value) {
         filter.value = filter.value.copyWith(
-          filename: null,
+          filename: '',
           context: value,
         );
       } else {
         filter.value = filter.value.copyWith(
           filename: value,
-          context: null,
+          context: '',
         );
       }
 
