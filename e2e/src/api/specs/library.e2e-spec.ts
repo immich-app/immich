@@ -1,5 +1,5 @@
 import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
-import { cpSync, existsSync } from 'node:fs';
+import { cpSync, existsSync, rmSync, unlinkSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -406,65 +406,93 @@ describe('/libraries', () => {
     it('should reimport a modified file', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
+        importPaths: [`${testAssetDirInternal}/temp/reimport`],
       });
 
-      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+      utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_001);
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_001);
 
       const { status } = await request(app)
         .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ refreshModifiedFiles: true });
+        .send();
       expect(status).toBe(204);
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
-        model: 'NIKON D750',
       });
-      expect(assets.count).toBe(1);
+
+      expect(assets.count).toEqual(1);
+
+      const asset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(asset).toEqual(
+        expect.objectContaining({
+          originalFileName: 'asset.jpg',
+          exifInfo: expect.objectContaining({
+            model: 'NIKON D750',
+          }),
+        }),
+      );
+
+      utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
     });
 
     it('should not reimport unmodified files', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
+        importPaths: [`${testAssetDirInternal}/temp/reimport`],
       });
 
-      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+      utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-      await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
       const { status } = await request(app)
         .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ refreshModifiedFiles: true });
+        .send();
       expect(status).toBe(204);
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
-        model: 'NIKON D750',
       });
-      expect(assets.count).toBe(0);
+
+      expect(assets.count).toEqual(1);
+
+      const asset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(asset).toEqual(
+        expect.objectContaining({
+          originalFileName: 'asset.jpg',
+          exifInfo: expect.not.objectContaining({
+            model: 'NIKON D750',
+          }),
+        }),
+      );
+
+      utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
     });
 
     it('should set an asset offline if its file is missing', async () => {
@@ -600,6 +628,298 @@ describe('/libraries', () => {
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets).toEqual(assetsBefore);
+    });
+
+    describe('xmp metadata', async () => {
+      it('should import metadata from file.xmp', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should import metadata from file.ext.xmp', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should import metadata in file.ext.xmp before file.xmp if both exist', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.xmp to file.ext.xmp when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.ext.xmp to file.xmp when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.ext.xmp to file metadata', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-07-20T17:27:12.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.xmp to file metadata', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-07-20T17:27:12.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
     });
   });
 

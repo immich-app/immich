@@ -396,12 +396,6 @@ export class LibraryService extends BaseService {
 
     const pathHash = this.cryptoRepository.hashSha1(`path:${assetPath}`);
 
-    // TODO: doesn't xmp replace the file extension? Will need investigation
-    let sidecarPath: string | null = null;
-    if (await this.storageRepository.checkFileExists(`${assetPath}.xmp`, R_OK)) {
-      sidecarPath = `${assetPath}.xmp`;
-    }
-
     const assetType = mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE;
 
     const mtime = stat.mtime;
@@ -418,8 +412,6 @@ export class LibraryService extends BaseService {
       localDateTime: mtime,
       type: assetType,
       originalFileName: parse(assetPath).base,
-
-      sidecarPath,
       isExternal: true,
     });
 
@@ -431,7 +423,11 @@ export class LibraryService extends BaseService {
   async queuePostSyncJobs(asset: AssetEntity) {
     this.logger.debug(`Queueing metadata extraction for: ${asset.originalPath}`);
 
-    await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: asset.id, source: 'upload' } });
+    // We queue a sidecar discovery which, in turn, queues metadata extraction
+    await this.jobRepository.queue({
+      name: JobName.SIDECAR_DISCOVERY,
+      data: { id: asset.id },
+    });
   }
 
   async queueScan(id: string) {
