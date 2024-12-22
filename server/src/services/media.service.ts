@@ -229,7 +229,8 @@ export class MediaService extends BaseService {
     const imageIsWebSupported = mimeTypes.isWebSupportedImage(asset.originalFileName);
     const imageIsRaw = mimeTypes.isRaw(asset.originalFileName);
 
-    const shouldConvertFullsize = !imageIsWebSupported && image.fullsizePreview;
+    const { enabled: enableFullsizeImage, ...fullsizeImageOptions } = image.fullsize;
+    const shouldConvertFullsize = !imageIsWebSupported && enableFullsizeImage;
     const shouldExtractEmbedded = imageIsRaw && image.extractEmbedded;
     const decodeOptions: DecodeToBufferOptions = {
       colorspace,
@@ -240,7 +241,8 @@ export class MediaService extends BaseService {
     let useExtracted = false;
     let decodeInputPath: string = asset.originalPath;
     // Converted or extracted image from non-web-supported formats (e.g. RAW)
-    let fullsizePath: string | undefined;
+    let fullsizePath: string = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
+
     if (shouldConvertFullsize) {
       // unset size to decode fullsize image
       decodeOptions.size = undefined;
@@ -269,8 +271,6 @@ export class MediaService extends BaseService {
             extractedPath,
           );
         }
-      } else {
-        fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
       }
     }
 
@@ -285,7 +285,7 @@ export class MediaService extends BaseService {
         !useExtracted && // did not extract a usable image from RAW
         this.mediaRepository.generateThumbnail(
           data,
-          { ...image.preview, ...thumbnailOptions, size: undefined },
+          { ...fullsizeImageOptions, ...thumbnailOptions, size: undefined },
           fullsizePath,
         ),
     ]);

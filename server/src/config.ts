@@ -12,7 +12,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-import { ImageOptions } from 'src/types';
+import { FullsizeImageOptions, ImageOptions } from 'src/types';
 
 export interface SystemConfig {
   backup: {
@@ -112,7 +112,7 @@ export interface SystemConfig {
     preview: ImageOptions;
     colorspace: Colorspace;
     extractEmbedded: boolean;
-    fullsizePreview: boolean;
+    fullsize: FullsizeImageOptions;
   };
   newVersionCheck: {
     enabled: boolean;
@@ -282,7 +282,11 @@ export const defaults = Object.freeze<SystemConfig>({
     },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
-    fullsizePreview: false,
+    fullsize: {
+      enabled: false,
+      format: ImageFormat.JPEG,
+      quality: 80,
+    },
   },
   newVersionCheck: {
     enabled: true,

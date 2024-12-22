@@ -49,6 +49,12 @@ export interface CropOptions {
   height: number;
 }
 
+export interface FullsizeImageOptions {
+  format: ImageFormat;
+  quality: number;
+  enabled: boolean;
+}
+
 export interface ImageOptions {
   format: ImageFormat;
   quality: number;
