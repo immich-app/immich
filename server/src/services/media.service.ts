@@ -241,11 +241,12 @@ export class MediaService extends BaseService {
     let useExtracted = false;
     let decodeInputPath: string = asset.originalPath;
     // Converted or extracted image from non-web-supported formats (e.g. RAW)
-    let fullsizePath: string = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
+    let fullsizePath: string | undefined;
 
     if (shouldConvertFullsize) {
       // unset size to decode fullsize image
       decodeOptions.size = undefined;
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
     }
 
     if (shouldExtractEmbedded) {
