@@ -44,7 +44,7 @@ test.describe('Photo Viewer', () => {
     const { x, y, width, height } = box!;
     await page.mouse.move(x + width / 2, y + height / 2);
     await page.mouse.wheel(0, -1);
-    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('original');
+    await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('fullsize');
   });
 
   test('reloads photo when checksum changes', async ({ page }) => {
