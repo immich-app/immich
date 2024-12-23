@@ -32,6 +32,7 @@ export interface UploadOptionsDto {
   dryRun?: boolean;
   skipHash?: boolean;
   delete?: boolean;
+  deleteDuplicates?: boolean;
   album?: boolean;
   albumName?: string;
   includeHidden?: boolean;
@@ -67,7 +68,7 @@ export const upload = async (paths: string[], baseOptions: BaseOptions, options:
   const { newFiles, duplicates } = await checkForDuplicates(scanFiles, options);
   const newAssets = await uploadFiles(newFiles, options);
   await updateAlbums([...newAssets, ...duplicates], options);
-  await deleteFiles(newFiles, options);
+  await deleteFiles({ newFiles, duplicates }, options);
 };
 
 const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
@@ -300,13 +301,17 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   return response.json();
 };
 
-const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<void> => {
+const deleteFiles = async ({ files: string[], duplicates: string[] } , options: UploadOptionsDto): Promise<void> => {
   if (!options.delete) {
     return;
   }
 
   if (options.dryRun) {
-    console.log(`Would have deleted ${files.length} local asset${s(files.length)}`);
+    console.log(`Would have deleted ${files.length} new local asset${s(files.length)}`);
+
+    if (options.deleteDuplicates) {
+      console.log(`Would have deleted ${duplicates.length} duplicate local asset${s(duplicates.length)}`);
+    }
     return;
   }
 
@@ -325,6 +330,27 @@ const deleteFiles = async (files: string[], options: UploadOptionsDto): Promise<
     }
   } finally {
     deletionProgress.stop();
+  }
+
+  
+  if (!options.deleteDuplicates) {
+    return;
+  }
+  console.log('Deleting assets which are duplicates...');
+
+  const deletionProgressDupe = new SingleBar(
+    { format: 'Deleting local assets | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
+    Presets.shades_classic,
+  );
+  deletionProgressDupe.start(duplicates.length, 0);
+
+  try {
+    for (const assetBatch of chunk(duplicates, options.concurrency)) {
+      await Promise.all(assetBatch.map((input: string) => unlink(input)));
+      deletionProgressDupe.update(assetBatch.length);
+    }
+  } finally {
+    deletionProgressDupe.stop();
   }
 };
 
