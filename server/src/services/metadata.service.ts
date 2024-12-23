@@ -589,11 +589,6 @@ export class MetadataService extends BaseService {
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
-      // When a file is copied (but not moved) before being uploaded to immich, the target file creation
-      // date is set at the current timestamp, while the modification date remains untouched, so if the
-      // user copied the asset while he did not modified the file (like cropping, rotating and more), then
-      // we use the modification timestamp as it's still the original date. If the user modified the asset,
-      // then there is no other solution except a further manual fix.
       this.logger.warn(
         `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
       );
