@@ -274,6 +274,40 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should take the file modification date when missing exif and earliest than creation date', async () => {
+      const fileCreatedAt = new Date('2022-01-01T00:00:00.000Z');
+      const fileModifiedAt = new Date('2021-01-01T00:00:00.000Z');
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, fileCreatedAt, fileModifiedAt }]);
+      mockReadTags();
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: fileModifiedAt }));
+      expect(assetMock.update).toHaveBeenCalledWith({
+        id: assetStub.image.id,
+        duration: null,
+        fileCreatedAt: fileModifiedAt,
+        localDateTime: fileModifiedAt,
+      });
+    });
+
+    it('should take the file creation date when missing exif and earliest than modification date', async () => {
+      const fileCreatedAt = new Date('2021-01-01T00:00:00.000Z');
+      const fileModifiedAt = new Date('2022-01-01T00:00:00.000Z');
+      assetMock.getByIds.mockResolvedValue([{ ...assetStub.image, fileCreatedAt, fileModifiedAt }]);
+      mockReadTags();
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(expect.objectContaining({ dateTimeOriginal: fileCreatedAt }));
+      expect(assetMock.update).toHaveBeenCalledWith({
+        id: assetStub.image.id,
+        duration: null,
+        fileCreatedAt,
+        localDateTime: fileCreatedAt,
+      });
+    });
+
     it('should account for the server being in a non-UTC timezone', async () => {
       process.env.TZ = 'America/Los_Angeles';
       assetMock.getByIds.mockResolvedValue([assetStub.sidecar]);
