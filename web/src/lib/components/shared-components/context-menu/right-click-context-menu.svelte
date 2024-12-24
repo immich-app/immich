@@ -29,6 +29,7 @@
     const contextMenuEvent = new MouseEvent('contextmenu', {
       bubbles: true,
       cancelable: true,
+      // eslint-disable-next-line unicorn/prefer-global-this
       view: window,
       clientX: event.x,
       clientY: event.y,

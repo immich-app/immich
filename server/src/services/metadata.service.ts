@@ -698,7 +698,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
+    if (!isSync && (!asset.isVisible || asset.sidecarPath) && !asset.isExternal) {
       return JobStatus.FAILED;
     }
 
@@ -718,6 +718,13 @@ export class MetadataService extends BaseService {
       sidecarPath = sidecarPathWithExt;
     } else if (sidecarPathWithoutExtExists) {
       sidecarPath = sidecarPathWithoutExt;
+    }
+
+    if (asset.isExternal) {
+      if (sidecarPath !== asset.sidecarPath) {
+        await this.assetRepository.update({ id: asset.id, sidecarPath });
+      }
+      return JobStatus.SUCCESS;
     }
 
     if (sidecarPath) {

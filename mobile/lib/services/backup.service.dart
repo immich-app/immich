@@ -313,15 +313,12 @@ class BackupService {
             );
           }
         } else {
-          if (asset.type == AssetType.video) {
-            file = await asset.local!.originFile;
-          } else {
-            file = await asset.local!.originFile
+          file =
+              await asset.local!.originFile.timeout(const Duration(seconds: 5));
+
+          if (asset.local!.isLivePhoto) {
+            livePhotoFile = await asset.local!.originFileWithSubtype
                 .timeout(const Duration(seconds: 5));
-            if (asset.local!.isLivePhoto) {
-              livePhotoFile = await asset.local!.originFileWithSubtype
-                  .timeout(const Duration(seconds: 5));
-            }
           }
         }
 

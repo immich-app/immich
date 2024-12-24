@@ -1,5 +1,6 @@
 import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
+import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
@@ -33,7 +34,7 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { t } from 'svelte-i18n';
+import { t, type Translations } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
@@ -120,7 +121,8 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
     return;
   }
   const $t = get(t);
-  notificationController.show({
+  // for reasons beyond me <ComponentProps<typeof FormatBoldMessage>> doesn't work, even though it's (afaik) exactly this object
+  notificationController.show<{ key: Translations; values: InterpolationValues }>({
     type: NotificationType.Info,
     timeout: 5000,
     component: {
@@ -549,7 +551,7 @@ export const delay = async (ms: number) => {
 };
 
 export const canCopyImageToClipboard = (): boolean => {
-  return !!(navigator.clipboard && window.ClipboardItem);
+  return !!(navigator.clipboard && globalThis.ClipboardItem);
 };
 
 const imgToBlob = async (imageElement: HTMLImageElement) => {

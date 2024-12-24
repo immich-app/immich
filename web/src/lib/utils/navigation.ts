@@ -9,7 +9,7 @@ export type AssetGridRouteSearchParams = {
   at: string | null | undefined;
 };
 export const isExternalUrl = (url: string): boolean => {
-  return new URL(url, window.location.href).origin !== window.location.origin;
+  return new URL(url, globalThis.location.href).origin !== globalThis.location.origin;
 };
 
 export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(user)/photos/[[assetId=id]]');

@@ -107,7 +107,7 @@
   };
 
   const onCopyShortcut = (event: KeyboardEvent) => {
-    if (window.getSelection()?.type === 'Range') {
+    if (globalThis.getSelection()?.type === 'Range') {
       return;
     }
     event.preventDefault();

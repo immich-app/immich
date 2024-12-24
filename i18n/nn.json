@@ -1,3 +1,33 @@
 {
-  "about": "Oppdater"
+  "about": "Om",
+  "account": "Konto",
+  "account_settings": "Kontoinnstillingar",
+  "acknowledge": "Godkjenn",
+  "action": "Handling",
+  "actions": "Handlingar",
+  "active": "Aktiv",
+  "activity": "Aktivitet",
+  "activity_changed": "Aktivitet er {enabled, select, true {aktivert} other {deaktivert}}",
+  "add": "Legg til",
+  "add_a_description": "Legg til ei skildring",
+  "add_a_location": "Legg til ein stad",
+  "add_a_name": "Legg til eit namn",
+  "add_a_title": "Legg til ein tittel",
+  "add_exclusion_pattern": "Legg til ekskluderingsmønster",
+  "add_import_path": "Legg til sti for importering",
+  "add_location": "Legg til stad",
+  "add_more_users": "Legg til fleire brukarar",
+  "add_partner": "Legg til partnar",
+  "add_path": "Legg til sti",
+  "add_photos": "Legg til bilete",
+  "add_to": "Legg til...",
+  "add_to_album": "Legg til album",
+  "add_to_shared_album": "Legg til delt album",
+  "add_url": "Legg til URL",
+  "added_to_archive": "Lagt til arkiv",
+  "added_to_favorites": "Lagt til favorittar",
+  "added_to_favorites_count": "Lagt {count, number} til favorittar",
+  "admin": {
+    "confirm_delete_library": "Er du sikker på at du vil slette biblioteket {library}?"
+  }
 }

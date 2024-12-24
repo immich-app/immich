@@ -24,6 +24,6 @@ export const getActivationKey = async (licenseKey: string): Promise<string> => {
 export const getLicenseLink = (license: ImmichProduct) => {
   const url = new URL('/', PUBLIC_IMMICH_BUY_HOST);
   url.searchParams.append('productId', license);
-  url.searchParams.append('instanceUrl', get(serverConfig).externalDomain || window.origin);
+  url.searchParams.append('instanceUrl', get(serverConfig).externalDomain || globalThis.origin);
   return url.href;
 };

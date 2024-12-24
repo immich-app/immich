@@ -57,11 +57,11 @@
       handleError(error, $t('error_loading_image'));
     });
 
-    window.addEventListener('mousemove', handleMouseMove);
+    globalThis.addEventListener('mousemove', handleMouseMove);
   });
 
   onDestroy(() => {
-    window.removeEventListener('mousemove', handleMouseMove);
+    globalThis.removeEventListener('mousemove', handleMouseMove);
     resetCropStore();
     resetGlobalCropStore();
   });

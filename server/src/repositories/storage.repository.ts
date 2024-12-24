@@ -214,7 +214,7 @@ export class StorageRepository implements IStorageRepository {
   }
 
   private asGlob(pathToCrawl: string): string {
-    const escapedPath = escapePath(pathToCrawl);
+    const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
     const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
     return `${escapedPath}/**/${extensions}`;
   }

@@ -43,7 +43,7 @@
   let { keys = $bindable([]), sessions = $bindable([]) }: Props = $props();
 
   let oauthOpen =
-    oauth.isCallback(window.location) ||
+    oauth.isCallback(globalThis.location) ||
     $page.url.searchParams.get(QueryParameter.OPEN_SETTING) === OpenSettingQueryParameterValue.OAUTH;
 </script>
 

@@ -19,7 +19,7 @@
     type ScrollTargetListener,
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
-  import type { AlbumResponseDto, AssetResponseDto } from '@immich/sdk';
+  import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
   import { throttle } from 'lodash-es';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
@@ -52,6 +52,7 @@
     showArchiveIcon?: boolean;
     isShared?: boolean;
     album?: AlbumResponseDto | null;
+    person?: PersonResponseDto | null;
     isShowDeleteConfirmation?: boolean;
     onSelect?: (asset: AssetResponseDto) => void;
     onEscape?: () => void;
@@ -70,6 +71,7 @@
     showArchiveIcon = false,
     isShared = false,
     album = null,
+    person = null,
     isShowDeleteConfirmation = $bindable(false),
     onSelect = () => {},
     onEscape = () => {},
@@ -914,6 +916,7 @@
         preloadAssets={$preloadAssets}
         {isShared}
         {album}
+        {person}
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}

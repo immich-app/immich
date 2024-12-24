@@ -69,6 +69,7 @@
     }
     showLoadingSpinner = true;
 
+    // eslint-disable-next-line unicorn/prefer-global-this
     const searchTimeout = window.setTimeout(() => {
       if (searchWord === '') {
         places = [];

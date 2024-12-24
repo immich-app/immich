@@ -49,7 +49,7 @@ export const GetLoginDetails = createParamDecorator((data, context: ExecutionCon
   const userAgent = UAParser(request.headers['user-agent']);
 
   return {
-    clientIp: request.ip,
+    clientIp: request.ip ?? '',
     isSecure: request.secure,
     deviceType: userAgent.browser.name || userAgent.device.type || (request.headers.devicemodel as string) || '',
     deviceOS: userAgent.os.name || (request.headers.devicetype as string) || '',

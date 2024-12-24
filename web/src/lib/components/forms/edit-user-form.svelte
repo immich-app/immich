@@ -28,8 +28,6 @@
     onEditSuccess,
   }: Props = $props();
 
-  let error: string;
-  let success: string;
   let quotaSize = $state(user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
 
   const previousQutoa = user.quotaSizeInBytes;
@@ -149,14 +147,6 @@
         </a>
       </p>
     </div>
-
-    {#if error}
-      <p class="ml-4 text-sm text-red-400">{error}</p>
-    {/if}
-
-    {#if success}
-      <p class="ml-4 text-sm text-immich-primary">{success}</p>
-    {/if}
   </form>
 
   {#snippet stickyBottom()}

@@ -1,6 +1,6 @@
 <script lang="ts">
+  import type { InterpolationValues } from '$lib/components/i18n/format-message';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
-  import type { InterpolationValues } from '$lib/components/i18n/format-message.svelte';
   import type { Translations } from 'svelte-i18n';
 
   interface Props {
