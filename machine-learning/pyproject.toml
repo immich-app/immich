@@ -4,7 +4,7 @@ version = "1.123.0"
 description = ""
 authors = ["Hau Tran <alex.tran1502@gmail.com>"]
 readme = "README.md"
-packages = [{include = "app"}]
+packages = [{ include = "app" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
@@ -45,7 +45,10 @@ onnxruntime = "^1.15.0"
 optional = true
 
 [tool.poetry.group.cuda.dependencies]
-onnxruntime-gpu = {version = "^1.17.0", source = "cuda12"}
+onnxruntime-gpu = [
+    { version = "^1.17.0", source = "cuda12", markers = "platform_machine == 'x86_64'" },
+    { python = "3.11", path = "onnxruntime_gpu-1.18.0-cp311-cp311-manylinux_aarch64.whl", markers = "platform_machine == 'aarch64'" }
+]
 
 [tool.poetry.group.openvino]
 optional = true

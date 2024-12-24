@@ -2105,6 +2105,28 @@ sympy = "*"
 
 [[package]]
 name = "onnxruntime-gpu"
+version = "1.18.0"
+description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
+optional = false
+python-versions = "*"
+files = [
+    {file = "onnxruntime_gpu-1.18.0-cp311-cp311-manylinux_aarch64.whl", hash = "sha256:7bdd6c373611235e43c8707fa528539327ff17a969448adf956ddf177d5fc8e7"},
+]
+
+[package.dependencies]
+coloredlogs = "*"
+flatbuffers = "*"
+numpy = ">=1.26.4"
+packaging = "*"
+protobuf = "*"
+sympy = "*"
+
+[package.source]
+type = "file"
+url = "onnxruntime_gpu-1.18.0-cp311-cp311-manylinux_aarch64.whl"
+
+[[package]]
+name = "onnxruntime-gpu"
 version = "1.19.2"
 description = "ONNX Runtime is a runtime accelerator for Machine Learning models"
 optional = false
@@ -3731,4 +3753,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "b690d5fbd141da3947f4f1dc029aba1b95e7faafd723166f2c4bdc47a66c095e"
+content-hash = "d2366474494c1563b6fa736f951d3ee73125516694df9f45b4284254f4bbfe82"
