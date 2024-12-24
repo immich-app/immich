@@ -62,8 +62,14 @@ const AlbumSchema = CollectionSchema(
       name: r'shared',
       type: IsarType.bool,
     ),
-    r'startDate': PropertySchema(
+    r'sortOrder': PropertySchema(
       id: 9,
+      name: r'sortOrder',
+      type: IsarType.byte,
+      enumMap: _AlbumsortOrderEnumValueMap,
+    ),
+    r'startDate': PropertySchema(
+      id: 10,
       name: r'startDate',
       type: IsarType.dateTime,
     )
@@ -131,7 +137,7 @@ const AlbumSchema = CollectionSchema(
   getId: _albumGetId,
   getLinks: _albumGetLinks,
   attach: _albumAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _albumEstimateSize(
@@ -171,7 +177,8 @@ void _albumSerialize(
   writer.writeString(offsets[6], object.name);
   writer.writeString(offsets[7], object.remoteId);
   writer.writeBool(offsets[8], object.shared);
-  writer.writeDateTime(offsets[9], object.startDate);
+  writer.writeByte(offsets[9], object.sortOrder.index);
+  writer.writeDateTime(offsets[10], object.startDate);
 }
 
 Album _albumDeserialize(
@@ -190,7 +197,9 @@ Album _albumDeserialize(
     name: reader.readString(offsets[6]),
     remoteId: reader.readStringOrNull(offsets[7]),
     shared: reader.readBool(offsets[8]),
-    startDate: reader.readDateTimeOrNull(offsets[9]),
+    sortOrder: _AlbumsortOrderValueEnumMap[reader.readByteOrNull(offsets[9])] ??
+        SortOrder.desc,
+    startDate: reader.readDateTimeOrNull(offsets[10]),
   );
   object.id = id;
   return object;
@@ -222,11 +231,23 @@ P _albumDeserializeProp<P>(
     case 8:
       return (reader.readBool(offset)) as P;
     case 9:
+      return (_AlbumsortOrderValueEnumMap[reader.readByteOrNull(offset)] ??
+          SortOrder.desc) as P;
+    case 10:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _AlbumsortOrderEnumValueMap = {
+  'asc': 0,
+  'desc': 1,
+};
+const _AlbumsortOrderValueEnumMap = {
+  0: SortOrder.asc,
+  1: SortOrder.desc,
+};
 
 Id _albumGetId(Album object) {
   return object.id;
@@ -1191,6 +1212,59 @@ extension AlbumQueryFilter on QueryBuilder<Album, Album, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterFilterCondition> sortOrderEqualTo(
+      SortOrder value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'sortOrder',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> sortOrderGreaterThan(
+    SortOrder value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'sortOrder',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> sortOrderLessThan(
+    SortOrder value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'sortOrder',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterFilterCondition> sortOrderBetween(
+    SortOrder lower,
+    SortOrder upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'sortOrder',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterFilterCondition> startDateIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1513,6 +1587,18 @@ extension AlbumQuerySortBy on QueryBuilder<Album, Album, QSortBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> sortBySortOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortOrder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> sortBySortOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortOrder', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> sortByStartDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startDate', Sort.asc);
@@ -1648,6 +1734,18 @@ extension AlbumQuerySortThenBy on QueryBuilder<Album, Album, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Album, Album, QAfterSortBy> thenBySortOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortOrder', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Album, Album, QAfterSortBy> thenBySortOrderDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'sortOrder', Sort.desc);
+    });
+  }
+
   QueryBuilder<Album, Album, QAfterSortBy> thenByStartDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startDate', Sort.asc);
@@ -1719,6 +1817,12 @@ extension AlbumQueryWhereDistinct on QueryBuilder<Album, Album, QDistinct> {
     });
   }
 
+  QueryBuilder<Album, Album, QDistinct> distinctBySortOrder() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'sortOrder');
+    });
+  }
+
   QueryBuilder<Album, Album, QDistinct> distinctByStartDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'startDate');
@@ -1785,6 +1889,12 @@ extension AlbumQueryProperty on QueryBuilder<Album, Album, QQueryProperty> {
   QueryBuilder<Album, bool, QQueryOperations> sharedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'shared');
+    });
+  }
+
+  QueryBuilder<Album, SortOrder, QQueryOperations> sortOrderProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'sortOrder');
     });
   }
 

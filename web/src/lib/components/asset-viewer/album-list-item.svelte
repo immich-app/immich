@@ -4,15 +4,19 @@
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import AlbumListItemDetails from './album-list-item-details.svelte';
 
-  export let album: AlbumResponseDto;
-  export let searchQuery = '';
-  export let onAlbumClick: () => void;
+  interface Props {
+    album: AlbumResponseDto;
+    searchQuery?: string;
+    onAlbumClick: () => void;
+  }
 
-  let albumNameArray: string[] = ['', '', ''];
+  let { album, searchQuery = '', onAlbumClick }: Props = $props();
+
+  let albumNameArray: string[] = $state(['', '', '']);
 
   // This part of the code is responsible for splitting album name into 3 parts where part 2 is the search query
   // It is used to highlight the search query in the album name
-  $: {
+  $effect(() => {
     let { albumName } = album;
     let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
     let findLength = searchQuery.length;
@@ -21,12 +25,12 @@
       albumName.slice(findIndex, findIndex + findLength),
       albumName.slice(findIndex + findLength),
     ];
-  }
+  });
 </script>
 
 <button
   type="button"
-  on:click={onAlbumClick}
+  onclick={onAlbumClick}
   class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
 >
   <span class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">

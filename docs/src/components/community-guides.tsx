@@ -35,18 +35,23 @@ const guides: CommunityGuidesProps[] = [
   },
   {
     title: 'Google Photos import + albums',
-    description: 'Import your Google Photos files into Immich and add your albums',
+    description: 'Import your Google Photos files into Immich and add your albums.',
     url: 'https://github.com/immich-app/immich/discussions/1340',
   },
   {
     title: 'Access Immich with custom domain',
-    description: 'Access your local Immich installation over the internet using your own domain',
+    description: 'Access your local Immich installation over the internet using your own domain.',
     url: 'https://github.com/ppr88/immich-guides/blob/main/open-immich-custom-domain.md',
   },
   {
     title: 'Nginx caching map server',
-    description: 'Increase privacy by using nginx as a caching proxy in front of a map tile server',
+    description: 'Increase privacy by using nginx as a caching proxy in front of a map tile server.',
     url: 'https://github.com/pcouy/pcouy.github.io/blob/main/_posts/2024-08-30-proxying-a-map-tile-server-for-increased-privacy.md',
+  },
+  {
+    title: 'fail2ban setup instructions',
+    description: 'How to configure an existing fail2ban installation to block incorrect login attempts.',
+    url: 'https://github.com/immich-app/immich/discussions/3243#discussioncomment-6681948',
   },
 ];
 

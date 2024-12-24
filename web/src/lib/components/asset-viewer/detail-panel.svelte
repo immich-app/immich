@@ -46,10 +46,14 @@
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
-  export let asset: AssetResponseDto;
-  export let albums: AlbumResponseDto[] = [];
-  export let currentAlbum: AlbumResponseDto | null = null;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    albums?: AlbumResponseDto[];
+    currentAlbum?: AlbumResponseDto | null;
+    onClose: () => void;
+  }
+
+  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -60,11 +64,11 @@
     return { width, height };
   };
 
-  let showAssetPath = false;
-  let showEditFaces = false;
-  let previousId: string;
+  let showAssetPath = $state(false);
+  let showEditFaces = $state(false);
+  let previousId: string | undefined = $state();
 
-  $: {
+  $effect(() => {
     if (!previousId) {
       previousId = asset.id;
     }
@@ -72,9 +76,9 @@
       showEditFaces = false;
       previousId = asset.id;
     }
-  }
+  });
 
-  $: isOwner = $user?.id === asset.ownerId;
+  let isOwner = $derived($user?.id === asset.ownerId);
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
@@ -85,27 +89,30 @@
     }
   };
 
-  $: handlePromiseError(handleNewAsset(asset));
+  $effect(() => {
+    handlePromiseError(handleNewAsset(asset));
+  });
 
-  $: latlng = (() => {
-    const lat = asset.exifInfo?.latitude;
-    const lng = asset.exifInfo?.longitude;
+  let latlng = $derived(
+    (() => {
+      const lat = asset.exifInfo?.latitude;
+      const lng = asset.exifInfo?.longitude;
 
-    if (lat && lng) {
-      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
-    }
-  })();
+      if (lat && lng) {
+        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
+      }
+    })(),
+  );
 
-  $: people = asset.people || [];
-  $: showingHiddenPeople = false;
-
-  $: unassignedFaces = asset.unassignedFaces || [];
-
-  $: timeZone = asset.exifInfo?.timeZone;
-  $: dateTime =
+  let people = $state(asset.people || []);
+  let unassignedFaces = $state(asset.unassignedFaces || []);
+  let showingHiddenPeople = $state(false);
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime);
+      : fromLocalDateTime(asset.localDateTime),
+  );
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -127,7 +134,7 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  let isShowChangeDate = false;
+  let isShowChangeDate = $state(false);
 
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
@@ -141,7 +148,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
@@ -154,7 +161,7 @@
         <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
             {#if $user?.isAdmin}
-              <p>{$t('admin.asset_offline_description')}</p>
+              {$t('admin.asset_offline_description')}
             {:else}
               {$t('asset_offline_description')}
             {/if}
@@ -190,7 +197,7 @@
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
               buttonSize="32"
-              on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+              onclick={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
           <CircleIconButton
@@ -199,7 +206,7 @@
             padding="1"
             size="20"
             buttonSize="32"
-            on:click={() => (showEditFaces = true)}
+            onclick={() => (showEditFaces = true)}
           />
         </div>
       </div>
@@ -212,10 +219,10 @@
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
-              on:focus={() => ($boundingBoxesArray = people[index].faces)}
-              on:blur={() => ($boundingBoxesArray = [])}
-              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
-              on:mouseleave={() => ($boundingBoxesArray = [])}
+              onfocus={() => ($boundingBoxesArray = people[index].faces)}
+              onblur={() => ($boundingBoxesArray = [])}
+              onmouseover={() => ($boundingBoxesArray = people[index].faces)}
+              onmouseleave={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
                 <ImageThumbnail
@@ -278,7 +285,7 @@
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -345,43 +352,45 @@
       </Portal>
     {/if}
 
-    {#if asset.exifInfo?.fileSizeInByte}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiImageOutline} size="24" /></div>
+    <div class="flex gap-4 py-4">
+      <div><Icon path={mdiImageOutline} size="24" /></div>
 
-        <div>
-          <p class="break-all flex place-items-center gap-2">
-            {asset.originalFileName}
-            {#if isOwner}
-              <CircleIconButton
-                icon={mdiInformationOutline}
-                title={$t('show_file_location')}
-                size="16"
-                padding="2"
-                on:click={toggleAssetPath}
-              />
-            {/if}
+      <div>
+        <p class="break-all flex place-items-center gap-2">
+          {asset.originalFileName}
+          {#if isOwner}
+            <CircleIconButton
+              icon={mdiInformationOutline}
+              title={$t('show_file_location')}
+              size="16"
+              padding="2"
+              onclick={toggleAssetPath}
+            />
+          {/if}
+        </p>
+        {#if showAssetPath}
+          <p class="text-xs opacity-50 break-all pb-2" transition:slide={{ duration: 250 }}>
+            {asset.originalPath}
           </p>
+        {/if}
+        {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">
-            {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
+            {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
               {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                 <p>
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
+                {@const { width, height } = getDimensions(asset.exifInfo)}
+                <p>{width} x {height}</p>
               {/if}
-              {@const { width, height } = getDimensions(asset.exifInfo)}
-              <p>{width} x {height}</p>
             {/if}
-            <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {#if asset.exifInfo?.fileSizeInByte}
+              <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {/if}
           </div>
-          {#if showAssetPath}
-            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
-              {asset.originalPath}
-            </p>
-          {/if}
-        </div>
+        {/if}
       </div>
-    {/if}
+    </div>
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
@@ -426,8 +435,7 @@
         </div>
       {/await}
     {:then component}
-      <svelte:component
-        this={component.default}
+      <component.default
         mapMarkers={[
           {
             lat: latlng.lat,
@@ -444,7 +452,7 @@
         useLocationPin
         onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
-        <svelte:fragment slot="popup" let:marker>
+        {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
@@ -456,8 +464,8 @@
               {$t('open_in_openstreetmap')}
             </a>
           </div>
-        </svelte:fragment>
-      </svelte:component>
+        {/snippet}
+      </component.default>
     {/await}
   </div>
 {/if}

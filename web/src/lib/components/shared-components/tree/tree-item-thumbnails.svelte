@@ -1,9 +1,13 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
 
-  export let items: string[] = [];
-  export let icon: string;
-  export let onClick: (path: string) => void;
+  interface Props {
+    items?: string[];
+    icon: string;
+    onClick: (path: string) => void;
+  }
+
+  let { items = [], icon, onClick }: Props = $props();
 </script>
 
 {#if items.length > 0}
@@ -13,7 +17,7 @@
     {#each items as item}
       <button
         class="flex flex-col place-items-center gap-2 py-2 px-4 hover:bg-immich-primary/10 dark:hover:bg-immich-primary/40 rounded-xl"
-        on:click={() => onClick(item)}
+        onclick={() => onClick(item)}
         title={item}
         type="button"
       >

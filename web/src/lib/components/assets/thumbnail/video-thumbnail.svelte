@@ -7,31 +7,47 @@
   import { generateId } from '$lib/utils/generate-id';
   import { onDestroy } from 'svelte';
 
-  export let assetStore: AssetStore | undefined = undefined;
-  export let url: string;
-  export let durationInSeconds = 0;
-  export let enablePlayback = false;
-  export let playbackOnIconHover = false;
-  export let showTime = true;
-  export let curve = false;
-  export let playIcon = mdiPlayCircleOutline;
-  export let pauseIcon = mdiPauseCircleOutline;
+  interface Props {
+    assetStore?: AssetStore | undefined;
+    url: string;
+    durationInSeconds?: number;
+    enablePlayback?: boolean;
+    playbackOnIconHover?: boolean;
+    showTime?: boolean;
+    curve?: boolean;
+    playIcon?: string;
+    pauseIcon?: string;
+  }
+
+  let {
+    assetStore = undefined,
+    url,
+    durationInSeconds = 0,
+    enablePlayback = $bindable(false),
+    playbackOnIconHover = false,
+    showTime = true,
+    curve = false,
+    playIcon = mdiPlayCircleOutline,
+    pauseIcon = mdiPauseCircleOutline,
+  }: Props = $props();
 
   const componentId = generateId();
-  let remainingSeconds = durationInSeconds;
-  let loading = true;
-  let error = false;
-  let player: HTMLVideoElement;
+  let remainingSeconds = $state(durationInSeconds);
+  let loading = $state(true);
+  let error = $state(false);
+  let player: HTMLVideoElement | undefined = $state();
 
-  $: if (!enablePlayback) {
-    // Reset remaining time when playback is disabled.
-    remainingSeconds = durationInSeconds;
+  $effect(() => {
+    if (!enablePlayback) {
+      // Reset remaining time when playback is disabled.
+      remainingSeconds = durationInSeconds;
 
-    if (player) {
-      // Cancel video buffering.
-      player.src = '';
+      if (player) {
+        // Cancel video buffering.
+        player.src = '';
+      }
     }
-  }
+  });
   const onMouseEnter = () => {
     if (assetStore) {
       assetStore.taskManager.queueScrollSensitiveTask({
@@ -78,8 +94,8 @@
     </span>
   {/if}
 
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <span class="pr-2 pt-2" on:mouseenter={onMouseEnter} on:mouseleave={onMouseLeave}>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <span class="pr-2 pt-2" onmouseenter={onMouseEnter} onmouseleave={onMouseLeave}>
     {#if enablePlayback}
       {#if loading}
         <LoadingSpinner />
@@ -103,17 +119,24 @@
     autoplay
     loop
     src={url}
-    on:play={() => {
+    onplay={() => {
       loading = false;
       error = false;
     }}
-    on:error={() => {
+    onerror={() => {
+      if (!player?.src) {
+        // Do not show error when the URL is empty.
+        return;
+      }
       error = true;
       loading = false;
     }}
-    on:timeupdate={({ currentTarget }) => {
+    ontimeupdate={({ currentTarget }) => {
       const remaining = currentTarget.duration - currentTarget.currentTime;
-      remainingSeconds = Math.min(Math.ceil(remaining), durationInSeconds);
+      remainingSeconds = Math.min(
+        Math.ceil(Number.isNaN(remaining) ? Number.POSITIVE_INFINITY : remaining),
+        durationInSeconds,
+      );
     }}
-  />
+  ></video>
 {/if}

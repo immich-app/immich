@@ -16,9 +16,12 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Validate,
   ValidateBy,
   ValidateIf,
   ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
   buildMessage,
   isDateString,
 } from 'class-validator';
@@ -156,15 +159,19 @@ export const ValidateBoolean = (options?: BooleanOptions) => {
   return applyDecorators(...decorators);
 };
 
-export function validateCronExpression(expression: string) {
-  try {
-    new CronJob(expression, () => {});
-  } catch {
-    return false;
+@ValidatorConstraint({ name: 'cronValidator' })
+class CronValidator implements ValidatorConstraintInterface {
+  validate(expression: string): boolean {
+    try {
+      new CronJob(expression, () => {});
+      return true;
+    } catch {
+      return false;
+    }
   }
-
-  return true;
 }
+
+export const IsCronExpression = () => Validate(CronValidator, { message: 'Invalid cron expression' });
 
 type IValue = { value: unknown };
 

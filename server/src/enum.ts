@@ -335,6 +335,7 @@ export enum MetadataKey {
   SHARED_ROUTE = 'shared_route',
   API_KEY_SECURITY = 'api_key',
   EVENT_CONFIG = 'event_config',
+  JOB_CONFIG = 'job_config',
   TELEMETRY_ENABLED = 'telemetry_enabled',
 }
 
@@ -371,4 +372,15 @@ export enum ImmichTelemetry {
   IO = 'io',
   REPO = 'repo',
   JOB = 'job',
+}
+
+export enum ExifOrientation {
+  Horizontal = 1,
+  MirrorHorizontal = 2,
+  Rotate180 = 3,
+  MirrorVertical = 4,
+  MirrorHorizontalRotate270CW = 5,
+  Rotate90CW = 6,
+  MirrorHorizontalRotate90CW = 7,
+  Rotate270CW = 8,
 }

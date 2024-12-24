@@ -28,9 +28,7 @@ export enum WithoutProperty {
   EXIF = 'exif',
   SMART_SEARCH = 'smart-search',
   DUPLICATE = 'duplicate',
-  OBJECT_TAGS = 'object-tags',
   FACES = 'faces',
-  PERSON = 'person',
   SIDECAR = 'sidecar',
 }
 
@@ -94,7 +92,6 @@ export type AssetWithoutRelations = Omit<
   | 'library'
   | 'exifInfo'
   | 'sharedLinks'
-  | 'smartInfo'
   | 'smartSearch'
   | 'tags'
 >;
@@ -149,6 +146,11 @@ export interface UpsertFileOptions {
 
 export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
 
+export interface DayOfYearAssets {
+  yearsAgo: number;
+  assets: AssetEntity[];
+}
+
 export const IAssetRepository = 'IAssetRepository';
 
 export interface IAssetRepository {
@@ -159,7 +161,7 @@ export interface IAssetRepository {
     select?: FindOptionsSelect<AssetEntity>,
   ): Promise<AssetEntity[]>;
   getByIdsWithAllRelations(ids: string[]): Promise<AssetEntity[]>;
-  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<AssetEntity[]>;
+  getByDayOfYear(ownerIds: string[], monthDay: MonthDay): Promise<DayOfYearAssets[]>;
   getByChecksum(options: { ownerId: string; checksum: Buffer; libraryId?: string }): Promise<AssetEntity | null>;
   getByChecksums(userId: string, checksums: Buffer[]): Promise<AssetEntity[]>;
   getUploadAssetIdByChecksum(ownerId: string, checksum: Buffer): Promise<string | undefined>;
@@ -190,7 +192,6 @@ export interface IAssetRepository {
   upsertExif(exif: Partial<ExifEntity>): Promise<void>;
   upsertJobStatus(...jobStatus: Partial<AssetJobStatusEntity>[]): Promise<void>;
   getAssetIdByCity(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
-  getAssetIdByTag(userId: string, options: AssetExploreFieldOptions): Promise<SearchExploreItem<string>>;
   getDuplicates(options: AssetBuilderOptions): Promise<AssetEntity[]>;
   getAllForUserFullSync(options: AssetFullSyncOptions): Promise<AssetEntity[]>;
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;

@@ -1,11 +1,18 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type Color = 'primary' | 'secondary';
   export type Rounded = false | true | 'full';
 </script>
 
 <script lang="ts">
-  export let color: Color = 'primary';
-  export let rounded: Rounded = true;
+  import type { Snippet } from 'svelte';
+
+  interface Props {
+    color?: Color;
+    rounded?: Rounded;
+    children?: Snippet;
+  }
+
+  let { color = 'primary', rounded = true, children }: Props = $props();
 
   const colorClasses: Record<Color, string> = {
     primary: 'text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary',
@@ -20,5 +27,5 @@
   class:rounded-md={rounded === true}
   class:rounded-full={rounded === 'full'}
 >
-  <slot />
+  {@render children?.()}
 </span>

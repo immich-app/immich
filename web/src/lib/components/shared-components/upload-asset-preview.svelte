@@ -20,7 +20,11 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  export let uploadAsset: UploadAsset;
+  interface Props {
+    uploadAsset: UploadAsset;
+  }
+
+  let { uploadAsset }: Props = $props();
 
   const handleDismiss = (uploadAsset: UploadAsset) => {
     uploadAssetsStore.removeItem(uploadAsset.id);
@@ -74,16 +78,16 @@
         >
           <Icon path={mdiOpenInNew} size="20" />
         </a>
-        <button type="button" on:click={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
+        <button type="button" onclick={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
           <Icon path={mdiClose} size="20" />
         </button>
       </div>
     {:else if uploadAsset.state === UploadState.ERROR}
       <div class="flex items-center justify-between gap-1">
-        <button type="button" on:click={() => handleRetry(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
+        <button type="button" onclick={() => handleRetry(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
           <Icon path={mdiRestart} size="20" />
         </button>
-        <button type="button" on:click={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
+        <button type="button" onclick={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
           <Icon path={mdiClose} size="20" />
         </button>
       </div>
@@ -92,7 +96,7 @@
 
   {#if uploadAsset.state === UploadState.STARTED}
     <div class="text-black relative mt-[5px] h-[15px] w-full rounded-md bg-gray-300 dark:bg-immich-dark-gray">
-      <div class="h-[15px] rounded-md bg-immich-primary transition-all" style={`width: ${uploadAsset.progress}%`} />
+      <div class="h-[15px] rounded-md bg-immich-primary transition-all" style={`width: ${uploadAsset.progress}%`}></div>
       <p class="absolute top-0 h-full w-full text-center text-[10px]">
         {#if uploadAsset.message}
           {uploadAsset.message}

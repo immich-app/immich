@@ -1,13 +1,16 @@
 <script lang="ts">
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
 
-  export let alt;
-  export let preload = false;
-  export let src: string;
-  let className = '';
-  export { className as class };
+  interface Props {
+    alt?: string;
+    preload?: boolean;
+    src: string;
+    class?: string;
+  }
 
-  let isBroken = false;
+  let { alt, preload = false, src, class: className = '' }: Props = $props();
+
+  let isBroken = $state(false);
 </script>
 
 {#if isBroken}
@@ -15,7 +18,7 @@
 {:else}
   <img
     {alt}
-    on:error={() => (isBroken = true)}
+    onerror={() => (isBroken = true)}
     class="size-full rounded-xl object-cover aspect-square {className}"
     data-testid="album-image"
     draggable="false"

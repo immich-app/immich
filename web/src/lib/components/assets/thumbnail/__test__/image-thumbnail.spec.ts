@@ -3,9 +3,9 @@ import { render } from '@testing-library/svelte';
 
 describe('ImageThumbnail component', () => {
   beforeAll(() => {
-    Object.defineProperty(HTMLImageElement.prototype, 'complete', {
-      value: true,
-    });
+    Element.prototype.animate = vi.fn().mockImplementation(() => ({
+      cancel: () => {},
+    }));
   });
 
   it('shows thumbhash while image is loading', () => {

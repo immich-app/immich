@@ -83,6 +83,17 @@ const projects: CommunityProjectProps[] = [
     description: 'Power tools for organizing your immich library.',
     url: 'https://github.com/varun-raj/immich-power-tools',
   },
+  {
+    title: 'Immich Public Proxy',
+    description:
+      'Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.',
+    url: 'https://github.com/alangrainger/immich-public-proxy',
+  },
+  {
+    title: 'Immich Kodi',
+    description: 'Unofficial Kodi plugin for Immich.',
+    url: 'https://github.com/vladd11/immich-kodi',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {

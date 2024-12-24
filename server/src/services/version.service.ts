@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import semver, { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
 import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
@@ -48,6 +48,7 @@ export class VersionService extends BaseService {
     await this.jobRepository.queue({ name: JobName.VERSION_CHECK, data: {} });
   }
 
+  @OnJob({ name: JobName.VERSION_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleVersionCheck(): Promise<JobStatus> {
     try {
       this.logger.debug('Running version check');

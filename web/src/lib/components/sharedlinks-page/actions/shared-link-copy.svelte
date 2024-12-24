@@ -7,8 +7,12 @@
   import { mdiContentCopy } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let link: SharedLinkResponseDto;
-  export let menuItem = false;
+  interface Props {
+    link: SharedLinkResponseDto;
+    menuItem?: boolean;
+  }
+
+  let { link, menuItem = false }: Props = $props();
 
   const handleCopy = async () => {
     await copyToClipboard(makeSharedLinkUrl($serverConfig.externalDomain, link.key));
@@ -18,5 +22,5 @@
 {#if menuItem}
   <MenuOption text={$t('copy_link')} icon={mdiContentCopy} onClick={handleCopy} />
 {:else}
-  <CircleIconButton title={$t('copy_link')} icon={mdiContentCopy} on:click={handleCopy} />
+  <CircleIconButton title={$t('copy_link')} icon={mdiContentCopy} onclick={handleCopy} />
 {/if}

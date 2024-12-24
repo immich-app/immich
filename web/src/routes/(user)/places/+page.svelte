@@ -9,7 +9,11 @@
   import { t } from 'svelte-i18n';
   import { getAssetThumbnailUrl } from '$lib/utils';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   type AssetWithCity = AssetResponseDto & {
     exifInfo: {
@@ -17,10 +21,10 @@
     };
   };
 
-  $: places = data.items.filter((item): item is AssetWithCity => !!item.exifInfo?.city);
-  $: hasPlaces = places.length > 0;
+  let places = $derived(data.items.filter((item): item is AssetWithCity => !!item.exifInfo?.city));
+  let hasPlaces = $derived(places.length > 0);
 
-  let innerHeight: number;
+  let innerHeight: number = $state(0);
 </script>
 
 <svelte:window bind:innerHeight />

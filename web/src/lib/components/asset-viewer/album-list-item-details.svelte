@@ -2,7 +2,11 @@
   import type { AlbumResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let album: AlbumResponseDto;
+  interface Props {
+    album: AlbumResponseDto;
+  }
+
+  let { album }: Props = $props();
 </script>
 
 <span>{$t('items_count', { values: { count: album.assetCount } })}</span>

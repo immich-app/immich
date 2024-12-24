@@ -97,7 +97,7 @@ class DownloadTaskTile extends StatelessWidget {
 
     return SizedBox(
       key: const ValueKey('download_progress'),
-      width: MediaQuery.of(context).size.width - 32,
+      width: context.width - 32,
       child: Card(
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(

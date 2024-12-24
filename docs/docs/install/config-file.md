@@ -26,7 +26,6 @@ The default configuration looks like this:
     "bframes": -1,
     "refs": 0,
     "gopSize": 0,
-    "npl": 0,
     "temporalAQ": false,
     "cqMode": "auto",
     "twoPass": false,
@@ -35,6 +34,13 @@ The default configuration looks like this:
     "tonemap": "hable",
     "accel": "disabled",
     "accelDecode": false
+  },
+  "backup": {
+    "database": {
+      "enabled": true,
+      "cronExpression": "0 02 * * *",
+      "keepLastAmount": 14
+    }
   },
   "job": {
     "backgroundTask": {
@@ -77,7 +83,7 @@ The default configuration looks like this:
   },
   "machineLearning": {
     "enabled": true,
-    "url": "http://immich-machine-learning:3003",
+    "urls": ["http://immich-machine-learning:3003"],
     "clip": {
       "enabled": true,
       "modelName": "ViT-B-32__openai"

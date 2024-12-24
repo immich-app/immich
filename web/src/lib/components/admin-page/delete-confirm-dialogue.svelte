@@ -7,13 +7,17 @@
   import { deleteUserAdmin, type UserResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let user: UserResponseDto;
-  export let onSuccess: () => void;
-  export let onFail: () => void;
-  export let onCancel: () => void;
+  interface Props {
+    user: UserResponseDto;
+    onSuccess: () => void;
+    onFail: () => void;
+    onCancel: () => void;
+  }
 
-  let forceDelete = false;
-  let deleteButtonDisabled = false;
+  let { user, onSuccess, onFail, onCancel }: Props = $props();
+
+  let forceDelete = $state(false);
+  let deleteButtonDisabled = $state(false);
   let userIdInput: string = '';
 
   const handleDeleteUser = async () => {
@@ -47,12 +51,14 @@
   {onCancel}
   disabled={deleteButtonDisabled}
 >
-  <svelte:fragment slot="prompt">
+  {#snippet promptSnippet()}
     <div class="flex flex-col gap-4">
       {#if forceDelete}
         <p>
-          <FormatMessage key="admin.user_delete_immediately" values={{ user: user.name }} let:message>
-            <b>{message}</b>
+          <FormatMessage key="admin.user_delete_immediately" values={{ user: user.name }}>
+            {#snippet children({ message })}
+              <b>{message}</b>
+            {/snippet}
           </FormatMessage>
         </p>
       {:else}
@@ -60,9 +66,10 @@
           <FormatMessage
             key="admin.user_delete_delay"
             values={{ user: user.name, delay: $serverConfig.userDeleteDelay }}
-            let:message
           >
-            <b>{message}</b>
+            {#snippet children({ message })}
+              <b>{message}</b>
+            {/snippet}
           </FormatMessage>
         </p>
       {/if}
@@ -73,7 +80,7 @@
           label={$t('admin.user_delete_immediately_checkbox')}
           labelClass="text-sm dark:text-immich-dark-fg"
           bind:checked={forceDelete}
-          on:change={() => {
+          onchange={() => {
             deleteButtonDisabled = forceDelete;
           }}
         />
@@ -92,9 +99,9 @@
           aria-describedby="confirm-user-desc"
           name="confirm-user-id"
           type="text"
-          on:input={handleConfirm}
+          oninput={handleConfirm}
         />
       {/if}
     </div>
-  </svelte:fragment>
+  {/snippet}
 </ConfirmDialog>
