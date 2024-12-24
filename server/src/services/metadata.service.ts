@@ -589,7 +589,7 @@ export class MetadataService extends BaseService {
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
-      this.logger.warn(
+      this.logger.debug(
         `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
       );
       // eslint-disable-next-line unicorn/prefer-math-min-max
