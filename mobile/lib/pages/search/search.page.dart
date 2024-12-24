@@ -464,6 +464,7 @@ class SearchPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(right: 14.0),
             child: IconButton(
+              key: const Key('contextual_search_button'),
               icon: isContextualSearch.value
                   ? const Icon(Icons.abc_rounded)
                   : const Icon(Icons.image_search_rounded),
@@ -492,6 +493,7 @@ class SearchPage extends HookConsumerWidget {
             ),
           ),
           child: TextField(
+            key: const Key('search_text_field'),
             controller: textSearchController,
             decoration: InputDecoration(
               contentPadding: prefilter != null
@@ -547,6 +549,7 @@ class SearchPage extends HookConsumerWidget {
             child: SizedBox(
               height: 50,
               child: ListView(
+                key: const Key('search_filter_chip_list'),
                 shrinkWrap: true,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -576,6 +579,7 @@ class SearchPage extends HookConsumerWidget {
                     currentFilter: dateRangeCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
+                    key: const Key('media_type_chip'),
                     icon: Icons.video_collection_outlined,
                     onTap: showMediaTypePicker,
                     label: 'search_filter_media_type'.tr(),
