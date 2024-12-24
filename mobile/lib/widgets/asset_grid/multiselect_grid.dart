@@ -433,6 +433,7 @@ class MultiselectGrid extends HookConsumerWidget {
               ),
           if (selectionEnabledHook.value)
             ControlBottomAppBar(
+              key: const ValueKey("controlBottomAppBar"),
               onShare: onShareAssets,
               onFavorite: favoriteEnabled ? onFavoriteAssets : null,
               onArchive: archiveEnabled ? onArchiveAsset : null,

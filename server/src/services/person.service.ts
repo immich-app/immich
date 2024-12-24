@@ -55,16 +55,25 @@ import { IsNull } from 'typeorm';
 @Injectable()
 export class PersonService extends BaseService {
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
-    const { withHidden = false, page, size } = dto;
+    const { withHidden = false, closestAssetId, closestPersonId, page, size } = dto;
+    let closestFaceAssetId = closestAssetId;
     const pagination = {
       take: size,
       skip: (page - 1) * size,
     };
 
+    if (closestPersonId) {
+      const person = await this.personRepository.getById(closestPersonId);
+      if (!person?.faceAssetId) {
+        throw new NotFoundException('Person not found');
+      }
+      closestFaceAssetId = person.faceAssetId;
+    }
     const { machineLearning } = await this.getConfig({ withCache: false });
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
       minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
+      closestFaceAssetId,
     });
     const { total, hidden } = await this.personRepository.getNumberOfPeople(auth.user.id);
 

@@ -8,11 +8,15 @@ Hardware and software requirements for Immich:
 
 ## Software
 
-- [Docker](https://docs.docker.com/engine/install/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+Immich requires [**Docker**](https://docs.docker.com/get-started/get-docker/) with the **Docker Compose plugin**:
+
+- **Docker Engine**: This CLI variant is suitable for Linux servers (or Windows via WSL2).
+- **Docker Desktop**: This GUI variant is suitable for Linux desktop (or Windows or macOS).
+
+The Compose plugin will be installed by both Docker Engine and Desktop by following the linked installation guides; it can also be [separately installed](https://docs.docker.com/compose/install/).
 
 :::note
-Immich requires the command `docker compose` - the similarly named `docker-compose` is [deprecated](https://docs.docker.com/compose/migrate/) and is no longer compatible with Immich.
+Immich requires the command `docker compose`; the similarly named `docker-compose` is [deprecated](https://docs.docker.com/compose/migrate/) and is no longer supported by Immich.
 :::
 
 ## Hardware
