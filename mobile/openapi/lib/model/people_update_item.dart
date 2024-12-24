@@ -16,6 +16,7 @@ class PeopleUpdateItem {
     this.birthDate,
     this.featureFaceAssetId,
     required this.id,
+    this.isFavorite,
     this.isHidden,
     this.name,
   });
@@ -34,6 +35,14 @@ class PeopleUpdateItem {
 
   /// Person id.
   String id;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
 
   /// Person visibility
   ///
@@ -58,6 +67,7 @@ class PeopleUpdateItem {
     other.birthDate == birthDate &&
     other.featureFaceAssetId == featureFaceAssetId &&
     other.id == id &&
+    other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name;
 
@@ -67,11 +77,12 @@ class PeopleUpdateItem {
     (birthDate == null ? 0 : birthDate!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (id.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, id=$id, isHidden=$isHidden, name=$name]';
+  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -86,6 +97,11 @@ class PeopleUpdateItem {
     //  json[r'featureFaceAssetId'] = null;
     }
       json[r'id'] = this.id;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
+    }
     if (this.isHidden != null) {
       json[r'isHidden'] = this.isHidden;
     } else {
@@ -111,6 +127,7 @@ class PeopleUpdateItem {
         birthDate: mapDateTime(json, r'birthDate', r''),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         id: mapValueOfType<String>(json, r'id')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),
       );

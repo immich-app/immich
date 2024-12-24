@@ -31,6 +31,7 @@ const responseDto: PersonResponseDto = {
   thumbnailPath: '/path/to/thumbnail.jpg',
   isHidden: false,
   updatedAt: expect.any(Date),
+  isFavorite: false,
 };
 
 const statistics = { assets: 3 };
@@ -124,6 +125,35 @@ describe(PersonService.name, () => {
       expect(personMock.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
         minimumFaceCount: 3,
         withHidden: true,
+      });
+    });
+
+    it('should get all visible people and favorites should be first in the array', async () => {
+      personMock.getAllForUser.mockResolvedValue({
+        items: [personStub.isFavorite, personStub.withName],
+        hasNextPage: false,
+      });
+      personMock.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
+      await expect(sut.getAll(authStub.admin, { withHidden: false, page: 1, size: 10 })).resolves.toEqual({
+        hasNextPage: false,
+        total: 2,
+        hidden: 1,
+        people: [
+          {
+            id: 'person-4',
+            name: '',
+            birthDate: null,
+            thumbnailPath: '/path/to/thumbnail.jpg',
+            isHidden: false,
+            isFavorite: true,
+            updatedAt: expect.any(Date),
+          },
+          responseDto,
+        ],
+      });
+      expect(personMock.getAllForUser).toHaveBeenCalledWith({ skip: 0, take: 10 }, authStub.admin.user.id, {
+        minimumFaceCount: 3,
+        withHidden: false,
       });
     });
   });
@@ -243,6 +273,16 @@ describe(PersonService.name, () => {
       await expect(sut.update(authStub.admin, 'person-1', { isHidden: false })).resolves.toEqual(responseDto);
 
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: false });
+      expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
+    });
+
+    it('should update a person favorite status', async () => {
+      personMock.update.mockResolvedValue(personStub.withName);
+      accessMock.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
+
+      await expect(sut.update(authStub.admin, 'person-1', { isFavorite: true })).resolves.toEqual(responseDto);
+
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: true });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
