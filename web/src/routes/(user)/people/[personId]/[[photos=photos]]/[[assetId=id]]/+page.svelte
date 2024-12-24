@@ -454,6 +454,7 @@
   {#key person.id}
     <AssetGrid
       enableRouting={true}
+      {person}
       {assetStore}
       {assetInteraction}
       isSelectionMode={viewMode === PersonPageViewMode.SELECT_PERSON}
