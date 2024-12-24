@@ -53,17 +53,6 @@
 </script>
 
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
-  <div class="text-sm">
-    <p>
-      <!-- <FormatMessage key="tag_not_found_question">
-        {#snippet children({ message })}
-          <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
-            {message}
-          </a>
-        {/snippet}
-      </FormatMessage> -->
-    </p>
-  </div>
   <form {onsubmit} autocomplete="off" id="create-tag-form">
     <div class="my-4 flex flex-col gap-2">
       <Combobox

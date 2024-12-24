@@ -36,7 +36,13 @@
     options?: ComboBoxOption[];
     selectedOption?: ComboBoxOption | undefined;
     placeholder?: string;
+    /**
+     * whether creating new items is allowed.
+     */
     allowCreate?: boolean;
+    /**
+     * select first matching option on enter key.
+     */
     defaultFirstOption?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
   }
