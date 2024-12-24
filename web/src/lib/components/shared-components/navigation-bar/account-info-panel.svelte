@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
@@ -90,7 +90,7 @@
           size="sm"
           shadow={false}
           border
-          aria-current={$page.url.pathname.includes('/admin') ? 'page' : undefined}
+          aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon path={mdiWrench} size="18" ariaHidden />

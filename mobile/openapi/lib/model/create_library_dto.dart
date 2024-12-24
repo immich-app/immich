@@ -13,15 +13,15 @@ part of openapi.api;
 class CreateLibraryDto {
   /// Returns a new [CreateLibraryDto] instance.
   CreateLibraryDto({
-    this.exclusionPatterns = const [],
-    this.importPaths = const [],
+    this.exclusionPatterns = const {},
+    this.importPaths = const {},
     this.name,
     required this.ownerId,
   });
 
-  List<String> exclusionPatterns;
+  Set<String> exclusionPatterns;
 
-  List<String> importPaths;
+  Set<String> importPaths;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -53,8 +53,8 @@ class CreateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'exclusionPatterns'] = this.exclusionPatterns;
-      json[r'importPaths'] = this.importPaths;
+      json[r'exclusionPatterns'] = this.exclusionPatterns.toList(growable: false);
+      json[r'importPaths'] = this.importPaths.toList(growable: false);
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -74,11 +74,11 @@ class CreateLibraryDto {
 
       return CreateLibraryDto(
         exclusionPatterns: json[r'exclusionPatterns'] is Iterable
-            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toSet()
+            : const {},
         importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            ? (json[r'importPaths'] as Iterable).cast<String>().toSet()
+            : const {},
         name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
       );

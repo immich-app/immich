@@ -29,7 +29,7 @@
     // click runs before bind
     const previouslyEnabled = config.oauth.mobileOverrideEnabled;
     if (!previouslyEnabled && !config.oauth.mobileRedirectUri) {
-      config.oauth.mobileRedirectUri = window.location.origin + '/api/oauth/mobile-redirect';
+      config.oauth.mobileRedirectUri = globalThis.location.origin + '/api/oauth/mobile-redirect';
     }
   };
 

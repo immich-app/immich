@@ -16,5 +16,5 @@ function fake_cancelIdleCallback(id: number) {
   return clearTimeout(id);
 }
 
-export const idleCB = window.requestIdleCallback || fake_requestIdleCallback;
-export const cancelIdleCB = window.cancelIdleCallback || fake_cancelIdleCallback;
+export const idleCB = globalThis.requestIdleCallback || fake_requestIdleCallback;
+export const cancelIdleCB = globalThis.cancelIdleCallback || fake_cancelIdleCallback;
