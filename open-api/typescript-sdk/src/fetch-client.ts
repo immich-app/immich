@@ -1131,7 +1131,6 @@ export type SystemConfigGeneratedImageDto = {
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
     extractEmbedded: boolean;
-    fullsizePreview: boolean;
     preview: SystemConfigGeneratedImageDto;
     thumbnail: SystemConfigGeneratedImageDto;
 };
@@ -3465,7 +3464,6 @@ export enum AssetJobName {
     TranscodeVideo = "transcode-video"
 }
 export enum AssetMediaSize {
-    Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
 }
@@ -3516,7 +3514,6 @@ export enum PathEntityType {
 }
 export enum PathType {
     Original = "original",
-    Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail",
     EncodedVideo = "encoded_video",
