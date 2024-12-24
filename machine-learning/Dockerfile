@@ -15,6 +15,36 @@ RUN mkdir /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
+# Warning: 26.3Gb of disk space required to pull this image
+# https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
+FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS builder-rocm
+
+WORKDIR /code
+
+RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.12-venv
+# Install same version as the Dockerfile provided by onnxruntime
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3-linux-x86_64.sh && \
+    chmod +x cmake-3.27.3-linux-x86_64.sh && \
+    mkdir -p /code/cmake-3.27.3-linux-x86_64 && \
+    ./cmake-3.27.3-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.27.3-linux-x86_64 && \
+    rm cmake-3.27.3-linux-x86_64.sh
+
+ENV PATH /code/cmake-3.27.3-linux-x86_64/bin:${PATH}
+
+# Prepare onnxruntime repository & build onnxruntime
+# Note: cannot upgrade from 1.19.2 as of writing until upstream updates the ROCm CI
+RUN git clone --single-branch --branch v1.19.2 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
+WORKDIR /code/onnxruntime
+# Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
+COPY ./0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch /tmp/
+RUN git apply /tmp/0001-fix-avoid-race-condition-for-rocm-conv-algo-caching.patch
+
+RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
+# Note: the `parallel` setting uses a substantial amount of RAM
+RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 13 --cmake_extra_defines\
+    ONNXRUNTIME_VERSION=1.19.2 --use_rocm --rocm_home=/opt/rocm
+RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
+
 FROM builder-${DEVICE} AS builder
 
 ARG DEVICE
@@ -32,6 +62,9 @@ RUN poetry config installer.max-workers 10 && \
 RUN python3 -m venv /opt/venv
 
 COPY poetry.lock pyproject.toml ./
+RUN if [ "$DEVICE" = "rocm" ]; then \
+    poetry add /opt/onnxruntime_rocm-*.whl; \
+    fi
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
 FROM python:3.11-slim-bookworm@sha256:370c586a6ffc8c619e6d652f81c094b34b14b8f2fb9251f092de23f16e299b78 AS prod-cpu
@@ -40,10 +73,10 @@ FROM prod-cpu AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
-    wget https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
-    wget https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-core_1.0.17384.11_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17384.11/intel-igc-opencl_1.0.17384.11_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/intel-opencl-icd_24.31.30508.7_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/24.31.30508.7/libigdgmm12_22.4.1_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
     apt-get remove wget -yqq && \
@@ -80,11 +113,15 @@ COPY --from=builder-armnn \
     /opt/ann/build.sh \
     /opt/armnn/
 
+FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS prod-rocm
+
+
 FROM prod-${DEVICE} AS prod
+
 ARG DEVICE
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
