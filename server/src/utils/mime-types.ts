@@ -54,6 +54,20 @@ const image: Record<string, string[]> = {
   '.webp': ['image/webp'],
 };
 
+/**
+ * list of supported image extensions from https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types excluding svg
+ * @TODO share with the client
+ * @see {@link web/src/lib/utils/asset-utils.ts#L329}
+ **/
+const webSupportedImageMimeTypes = new Set([
+  'image/apng',
+  'image/avif',
+  'image/gif',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+]);
+
 const profileExtensions = new Set(['.avif', '.dng', '.heic', '.heif', '.jpeg', '.jpg', '.png', '.webp', '.svg']);
 const profile: Record<string, string[]> = Object.fromEntries(
   Object.entries(image).filter(([key]) => profileExtensions.has(key)),
@@ -98,6 +112,7 @@ export const mimeTypes = {
 
   isAsset: (filename: string) => isType(filename, image) || isType(filename, video),
   isImage: (filename: string) => isType(filename, image),
+  isWebSupportedImage: (filename: string) => webSupportedImageMimeTypes.has(lookup(filename)),
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),

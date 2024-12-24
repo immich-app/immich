@@ -25,6 +25,7 @@ const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType
 };
 
 export const getAssetFiles = (files?: AssetFileEntity[]) => ({
+  fullsizeFile: getFileByType(files, AssetFileType.FULLSIZE),
   previewFile: getFileByType(files, AssetFileType.PREVIEW),
   thumbnailFile: getFileByType(files, AssetFileType.THUMBNAIL),
 });

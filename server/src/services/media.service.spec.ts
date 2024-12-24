@@ -1,4 +1,5 @@
 import { SystemConfig } from 'src/config';
+import { AssetMediaSize } from 'src/dtos/asset-media.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import {
@@ -269,18 +270,26 @@ describe(MediaService.name, () => {
       });
 
       await expect(sut.handleAssetMigration({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
-      expect(moveMock.create).toHaveBeenCalledTimes(2);
+      expect(moveMock.create).toHaveBeenCalledTimes(3);
     });
   });
 
   describe('handleGenerateThumbnails', () => {
     let rawBuffer: Buffer;
+    let fullsizeBuffer: Buffer;
     let rawInfo: RawImageInfo;
 
     beforeEach(() => {
+      fullsizeBuffer = Buffer.from('embedded image data');
       rawBuffer = Buffer.from('image data');
       rawInfo = { width: 100, height: 100, channels: 3 };
-      mediaMock.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo });
+      mediaMock.decodeImage.mockImplementation((path) =>
+        Promise.resolve(
+          path.includes(AssetMediaSize.FULLSIZE)
+            ? { data: fullsizeBuffer, info: rawInfo }
+            : { data: rawBuffer, info: rawInfo },
+        ),
+      );
     });
 
     it('should skip thumbnail generation if asset not found', async () => {
@@ -627,15 +636,13 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
+      const convertedPath = mediaMock.extract.mock.lastCall?.[1].toString();
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(convertedPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
       });
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image is too small', async () => {
@@ -646,15 +653,15 @@ describe(MediaService.name, () => {
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
+      const extractedPath = mediaMock.extract.mock.lastCall?.[1].toString();
+      expect(extractedPath).toMatch(/-fullsize\.jpeg$/);
+
       expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
       expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
         size: 1440,
       });
-      const extractedPath = mediaMock.extract.mock.calls.at(-1)?.[1].toString();
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(storageMock.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image not found', async () => {
@@ -721,6 +728,128 @@ describe(MediaService.name, () => {
 
       expect(mediaMock.getImageDimensions).not.toHaveBeenCalled();
       vi.unstubAllEnvs();
+    });
+
+    it('should generate full-size preview using embedded JPEG from RAW images when extractEmbedded is true', async () => {
+      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: true } });
+      mediaMock.extract.mockResolvedValue(true);
+      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      assetMock.getById.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      const extractedPath = mediaMock.extract.mock.lastCall?.[1].toString();
+      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(extractedPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        fullsizeBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          size: 1440,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
+    it('should generate full-size preview directly from RAW images when extractEmbedded is false', async () => {
+      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
+      mediaMock.extract.mockResolvedValue(true);
+      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      assetMock.getById.mockResolvedValue(assetStub.imageDng);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      );
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          size: 1440,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-preview.jpeg',
+      );
+    });
+
+    it('should generate full-size preview from non-web-friendly images', async () => {
+      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      mediaMock.extract.mockResolvedValue(true);
+      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
+      assetMock.getById.mockResolvedValue(assetStub.imageHif);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.JPEG,
+          quality: 80,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      );
+    });
+
+    it('should skip generating full-size preview for web-friendly images', async () => {
+      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      mediaMock.extract.mockResolvedValue(true);
+      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      assetMock.getById.mockResolvedValue(assetStub.image);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
+      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+        colorspace: Colorspace.SRGB,
+        processInvalidImages: false,
+        size: 1440,
+      });
+
+      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mediaMock.generateThumbnail).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
+      );
     });
   });
 

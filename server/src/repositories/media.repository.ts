@@ -1,19 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { exiftool } from 'exiftool-vendored';
+import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
+import { ExifEntity } from 'src/entities/exif.entity';
 import { Colorspace, LogLevel } from 'src/enum';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
-  IMediaRepository,
   ImageDimensions,
+  IMediaRepository,
   ProbeOptions,
   TranscodeCommand,
   VideoInfo,
@@ -44,6 +45,11 @@ export class MediaRepository implements IMediaRepository {
 
   async extract(input: string, output: string): Promise<boolean> {
     try {
+      // remove existing output file if it exists
+      // as exiftool-vendord does not support overwriting via "-w!" flag
+      // and throws "1 files could not be read" error when the output file exists
+      await fs.unlink(output).catch(() => null);
+      this.logger.debug('Extracting JPEG from RAW image:', input);
       await exiftool.extractJpgFromRaw(input, output);
     } catch (error: any) {
       this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
@@ -54,8 +60,45 @@ export class MediaRepository implements IMediaRepository {
         return false;
       }
     }
-
     return true;
+  }
+
+  async writeExif(tags: ExifEntity, output: string): Promise<boolean> {
+    try {
+      const tagsToWrite: WriteTags = {
+        ExifImageWidth: tags.exifImageWidth,
+        ExifImageHeight: tags.exifImageHeight,
+        DateTimeOriginal: tags.dateTimeOriginal && ExifDateTime.fromMillis(tags.dateTimeOriginal.getTime()),
+        ModifyDate: tags.modifyDate && ExifDateTime.fromMillis(tags.modifyDate.getTime()),
+        TimeZone: tags.timeZone,
+        GPSLatitude: tags.latitude,
+        GPSLongitude: tags.longitude,
+        ProjectionType: tags.projectionType,
+        City: tags.city,
+        Country: tags.country,
+        Make: tags.make,
+        Model: tags.model,
+        LensModel: tags.lensModel,
+        Fnumber: tags.fNumber?.toFixed(1),
+        FocalLength: tags.focalLength?.toFixed(1),
+        ISO: tags.iso,
+        ExposureTime: tags.exposureTime,
+        ProfileDescription: tags.profileDescription,
+        ColorSpace: tags.colorspace,
+        Rating: tags.rating,
+        // specially convert Orientation to numeric Orientation# for exiftool
+        'Orientation#': tags.orientation ? Number(tags.orientation) : undefined,
+      };
+
+      await exiftool.write(output, tagsToWrite, {
+        ignoreMinorErrors: true,
+        writeArgs: ['-overwrite_original'],
+      });
+      return true;
+    } catch (error: any) {
+      this.logger.warn(`Could not write exif data to image: ${error.message}`);
+      return false;
+    }
   }
 
   decodeImage(input: string, options: DecodeToBufferOptions) {
@@ -98,7 +141,10 @@ export class MediaRepository implements IMediaRepository {
       pipeline = pipeline.extract(options.crop);
     }
 
-    return pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
+    if (options.size !== undefined) {
+      pipeline = pipeline.resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true });
+    }
+    return pipeline;
   }
 
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
