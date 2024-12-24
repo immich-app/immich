@@ -168,4 +168,5 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(options: Insertable<AssetFiles>): Promise<void>;
   upsertFiles(options: Insertable<AssetFiles>[]): Promise<void>;
+  deleteFiles(assetIds: string | string[]): Promise<void>;
 }

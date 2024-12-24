@@ -203,6 +203,10 @@ export class MediaService extends BaseService {
     if (fullsizeFile && fullsizeFile.path !== generated.fullsizePath) {
       this.logger.debug(`Deleting old fullsize preview image for asset ${asset.id}`);
       pathsToDelete.push(fullsizeFile.path);
+      if (!generated.fullsizePath) {
+        // did not generate a new fullsize image, delete the existing record
+        await this.assetRepository.deleteFiles(fullsizeFile.id);
+      }
     }
 
     if (pathsToDelete.length > 0) {

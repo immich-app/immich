@@ -831,4 +831,9 @@ export class AssetRepository implements IAssetRepository {
       )
       .execute();
   }
+
+  @GenerateSql({ params: [[DummyValue.UUID, DummyValue.UUID]] })
+  async deleteFiles(assetIds: string | string[]): Promise<void> {
+    await this.fileRepository.delete(assetIds);
+  }
 }
