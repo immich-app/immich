@@ -36,6 +36,14 @@
     options?: ComboBoxOption[];
     selectedOption?: ComboBoxOption | undefined;
     placeholder?: string;
+    /**
+     * whether creating new items is allowed.
+     */
+    allowCreate?: boolean;
+    /**
+     * select first matching option on enter key.
+     */
+    defaultFirstOption?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
   }
 
@@ -45,6 +53,8 @@
     options = [],
     selectedOption = $bindable(),
     placeholder = '',
+    allowCreate = false,
+    defaultFirstOption = false,
     onSelect = () => {},
   }: Props = $props();
 
@@ -141,7 +151,7 @@
   const onInput: FormEventHandler<HTMLInputElement> = (event) => {
     openDropdown();
     searchQuery = event.currentTarget.value;
-    selectedIndex = undefined;
+    selectedIndex = defaultFirstOption ? 0 : undefined;
     optionRefs[0]?.scrollIntoView({ block: 'nearest' });
   };
 
@@ -221,9 +231,15 @@
     searchQuery = selectedOption ? selectedOption.label : '';
   });
 
-  let filteredOptions = $derived(
-    options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
+  let filteredOptions = $derived.by(() => {
+    const _options = options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    if (allowCreate && searchQuery !== '' && _options.filter((option) => option.label === searchQuery).length === 0) {
+      _options.unshift({ label: searchQuery, value: searchQuery });
+    }
+
+    return _options;
+  });
   let position = $derived(calculatePosition(bounds));
   let dropdownDirection: 'bottom' | 'top' = $derived(getComboboxDirection(bounds, visualViewport));
 </script>
@@ -352,7 +368,7 @@
           id={`${listboxId}-${0}`}
           onclick={() => closeDropdown()}
         >
-          {$t('no_results')}
+          {allowCreate ? searchQuery : $t('no_results')}
         </li>
       {/if}
       {#each filteredOptions as option, index (option.id || option.label)}
