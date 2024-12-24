@@ -102,7 +102,7 @@ export class PersonResponseDto {
   @PropertyLifecycle({ addedAt: 'v1.107.0' })
   updatedAt?: Date;
   @ApiProperty()
-  @PropertyLifecycle({ addedAt: 'DEV' })
+  @PropertyLifecycle({ addedAt: 'v1.124.0' })
   isFavorite?: boolean;
 }
 
