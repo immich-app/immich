@@ -204,7 +204,7 @@ describe('getEnv', () => {
     it('should return default network options', () => {
       const { network } = getEnv();
       expect(network).toEqual({
-        trustedProxies: [],
+        trustedProxies: ['linklocal', 'uniquelocal'],
       });
     });
 
