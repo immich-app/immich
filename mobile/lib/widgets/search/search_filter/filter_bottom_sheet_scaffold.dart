@@ -24,7 +24,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
       if (expanded != null && expanded == true) {
         return Expanded(child: child);
       }
-      return child;
+      return Flexible(child: child);
     }
 
     return SafeArea(
@@ -44,20 +44,25 @@ class FilterBottomSheetScaffold extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
-                  onPressed: () {
-                    onClear();
-                    context.pop();
-                  },
-                  child: const Text('action_common_clear').tr(),
+                Flexible(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      onClear();
+                      context.pop();
+                    },
+                    child: const Text('action_common_clear').tr(),
+                  ),
                 ),
                 const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () {
-                    onSearch();
-                    context.pop();
-                  },
-                  child: const Text('search_filter_apply').tr(),
+                Flexible(
+                  child: ElevatedButton(
+                    key: const Key('search_filter_apply'),
+                    onPressed: () {
+                      onSearch();
+                      context.pop();
+                    },
+                    child: const Text('search_filter_apply').tr(),
+                  ),
                 ),
               ],
             ),
