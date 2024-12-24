@@ -44,6 +44,10 @@ export interface UploadFile {
   size: number;
 }
 
+export interface AssetMediaRedirectResponse {
+  targetSize: AssetMediaSize | 'original';
+}
+
 @Injectable()
 export class AssetMediaService extends BaseService {
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
@@ -201,7 +205,11 @@ export class AssetMediaService extends BaseService {
     });
   }
 
-  async viewThumbnail(auth: AuthDto, id: string, dto: AssetMediaOptionsDto): Promise<ImmichFileResponse> {
+  async viewThumbnail(
+    auth: AuthDto,
+    id: string,
+    dto: AssetMediaOptionsDto,
+  ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
     await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
@@ -212,12 +220,14 @@ export class AssetMediaService extends BaseService {
     if (size === AssetMediaSize.THUMBNAIL && thumbnailFile) {
       filepath = thumbnailFile.path;
     } else if (size === AssetMediaSize.FULLSIZE) {
-      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
-      // eslint-disable-next-line unicorn/prefer-ternary
       if (mimeTypes.isWebSupportedImage(asset.originalPath)) {
-        filepath = asset.originalPath;
-      } else {
-        filepath = fullsizeFile?.path ?? previewFile?.path;
+        // use original file for web supported images
+        return { targetSize: 'original' };
+      }
+      if (!fullsizeFile) {
+        // downgrade to preview if fullsize is not available.
+        // e.g. disabled or not yet (re)generated
+        return { targetSize: AssetMediaSize.PREVIEW };
       }
     }
 
