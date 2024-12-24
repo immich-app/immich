@@ -1,5 +1,5 @@
 {
-  "about": "Frissítés",
+  "about": "Az Immich-ről",
   "account": "Fiók",
   "account_settings": "Fiók Beállítások",
   "acknowledge": "Megértettem",
@@ -1141,6 +1141,7 @@
   "server_version": "Szerver Verzió",
   "set": "Beállít",
   "set_as_album_cover": "Beállítás albumborítóként",
+  "set_as_featured_photo": "Beállítás kiemelt fotónak",
   "set_as_profile_picture": "Beállítás profilképként",
   "set_date_of_birth": "Születési dátum beállítása",
   "set_profile_picture": "Profilkép beállítása",
@@ -1196,6 +1197,7 @@
   "sort_items": "Elemek száma",
   "sort_modified": "Módosítás dátuma",
   "sort_oldest": "Legrégebbi fénykép",
+  "sort_people_by_similarity": "Emberek hasonlóság szerinti rendezése",
   "sort_recent": "Legújabb fénykép",
   "sort_title": "Cím",
   "source": "Forrás",
