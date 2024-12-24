@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiChevronDown, mdiChevronLeft } from '@mdi/js';
   import { resolveRoute } from '$app/paths';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -32,7 +32,7 @@
   let routePath = $derived(resolveRoute(routeId, {}));
 
   $effect(() => {
-    isSelected = ($page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
+    isSelected = (page.route.id?.match(/^\/(admin|\(user\))\/[^/]*/) || [])[0] === routeId;
   });
 </script>
 

@@ -64,10 +64,7 @@
     for (const candidate of sharedWith) {
       const existIndex = partners.findIndex((p) => candidate.id === p.user.id);
 
-      if (existIndex >= 0) {
-        partners[existIndex].sharedWithMe = true;
-        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
-      } else {
+      if (existIndex === -1) {
         partners = [
           ...partners,
           {
@@ -77,6 +74,9 @@
             inTimeline: candidate.inTimeline ?? false,
           },
         ];
+      } else {
+        partners[existIndex].sharedWithMe = true;
+        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
       }
     }
   };
