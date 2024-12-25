@@ -592,8 +592,7 @@ export class MetadataService extends BaseService {
       this.logger.debug(
         `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
       );
-      // eslint-disable-next-line unicorn/prefer-math-min-max
-      const earliestDate = asset.fileModifiedAt < asset.fileCreatedAt ? asset.fileModifiedAt : asset.fileCreatedAt;
+      const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
     }
@@ -611,6 +610,10 @@ export class MetadataService extends BaseService {
       localDateTime,
       modifyDate,
     };
+  }
+
+  private earliestDate(a: Date, b: Date) {
+    return new Date(Math.min(a.valueOf(), b.valueOf()))
   }
 
   private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {
