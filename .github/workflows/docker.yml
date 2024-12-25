@@ -116,7 +116,7 @@ jobs:
         uses: docker/setup-qemu-action@v3.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.7.1
+        uses: docker/setup-buildx-action@v3.8.0
 
       # - name: Login to Docker Hub
       #   # Only push to Docker Hub when making a release
@@ -207,7 +207,7 @@ jobs:
         uses: docker/setup-qemu-action@v3.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.7.1
+        uses: docker/setup-buildx-action@v3.8.0
 
       # - name: Login to Docker Hub
       #   # Only push to Docker Hub when making a release

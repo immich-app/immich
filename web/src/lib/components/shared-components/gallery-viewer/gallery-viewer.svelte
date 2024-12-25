@@ -5,7 +5,6 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import type { Viewport } from '$lib/stores/assets.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
@@ -22,10 +21,11 @@
   import Portal from '../portal/portal.svelte';
   import { handlePromiseError } from '$lib/utils';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     assets: AssetResponseDto[];
-    assetInteractionStore: AssetInteractionStore;
+    assetInteraction: AssetInteraction;
     disableAssetSelect?: boolean;
     showArchiveIcon?: boolean;
     viewport: Viewport;
@@ -38,7 +38,7 @@
 
   let {
     assets = $bindable(),
-    assetInteractionStore = $bindable(),
+    assetInteraction,
     disableAssetSelect = false,
     showArchiveIcon = false,
     viewport,
@@ -51,11 +51,8 @@
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
-  const { assetSelectionCandidates, assetSelectionStart, selectedAssets, isMultiSelectState } = assetInteractionStore;
-
   let showShortcuts = $state(false);
   let currentViewAssetIndex = 0;
-  let isMultiSelectionMode = $derived($selectedAssets.size > 0);
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
 
@@ -66,11 +63,11 @@
   };
 
   const selectAllAssets = () => {
-    assetInteractionStore.selectAssets(assets);
+    assetInteraction.selectAssets(assets);
   };
 
   const deselectAllAssets = () => {
-    cancelMultiselect(assetInteractionStore);
+    cancelMultiselect(assetInteraction);
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -91,23 +88,23 @@
     if (!asset) {
       return;
     }
-    const deselect = $selectedAssets.has(asset);
+    const deselect = assetInteraction.selectedAssets.has(asset);
 
     // Select/deselect already loaded assets
     if (deselect) {
-      for (const candidate of $assetSelectionCandidates || []) {
-        assetInteractionStore.removeAssetFromMultiselectGroup(candidate);
+      for (const candidate of assetInteraction.assetSelectionCandidates) {
+        assetInteraction.removeAssetFromMultiselectGroup(candidate);
       }
-      assetInteractionStore.removeAssetFromMultiselectGroup(asset);
+      assetInteraction.removeAssetFromMultiselectGroup(asset);
     } else {
-      for (const candidate of $assetSelectionCandidates || []) {
-        assetInteractionStore.selectAsset(candidate);
+      for (const candidate of assetInteraction.assetSelectionCandidates) {
+        assetInteraction.selectAsset(candidate);
       }
-      assetInteractionStore.selectAsset(asset);
+      assetInteraction.selectAsset(asset);
     }
 
-    assetInteractionStore.clearAssetSelectionCandidates();
-    assetInteractionStore.setAssetSelectionStart(deselect ? null : asset);
+    assetInteraction.clearAssetSelectionCandidates();
+    assetInteraction.setAssetSelectionStart(deselect ? null : asset);
   };
 
   const handleSelectAssetCandidates = (asset: AssetResponseDto | null) => {
@@ -122,7 +119,7 @@
       return;
     }
 
-    const startAsset = $assetSelectionStart;
+    const startAsset = assetInteraction.assetSelectionStart;
     if (!startAsset) {
       return;
     }
@@ -134,17 +131,17 @@
       [start, end] = [end, start];
     }
 
-    assetInteractionStore.setAssetSelectionCandidates(assets.slice(start, end + 1));
+    assetInteraction.setAssetSelectionCandidates(assets.slice(start, end + 1));
   };
 
   const onSelectStart = (e: Event) => {
-    if ($isMultiSelectState && shiftKeyIsDown) {
+    if (assetInteraction.selectionActive && shiftKeyIsDown) {
       e.preventDefault();
     }
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = Array.from($selectedAssets).some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.selectedAssetsArray.some((asset) => asset.isTrashed);
 
     if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
@@ -168,11 +165,11 @@
       (assetIds) => (assets = assets.filter((asset) => !assetIds.includes(asset.id))),
       idsSelectedAssets,
     );
-    assetInteractionStore.clearMultiselect();
+    assetInteraction.clearMultiselect();
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(Array.from($selectedAssets), !isAllArchived);
+    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
     if (ids) {
       assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
@@ -191,7 +188,7 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
       ];
 
-      if ($isMultiSelectState) {
+      if (assetInteraction.selectionActive) {
         shortcuts.push(
           { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
@@ -266,14 +263,13 @@
   };
 
   const assetMouseEventHandler = (asset: AssetResponseDto | null) => {
-    if ($isMultiSelectState) {
+    if (assetInteraction.selectionActive) {
       handleSelectAssetCandidates(asset);
     }
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let idsSelectedAssets = $derived([...$selectedAssets].map(({ id }) => id));
-  let isAllArchived = $derived([...$selectedAssets].every((asset) => asset.isArchived));
+  let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
   let geometry = $derived(
     (() => {
@@ -297,13 +293,13 @@
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
-      assetInteractionStore.clearAssetSelectionCandidates();
+      assetInteraction.clearAssetSelectionCandidates();
     }
   });
 
   $effect(() => {
     if (!shiftKeyIsDown) {
-      assetInteractionStore.clearAssetSelectionCandidates();
+      assetInteraction.clearAssetSelectionCandidates();
     }
   });
 
@@ -318,7 +314,7 @@
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
-    size={idsSelectedAssets.length}
+    size={assetInteraction.selectedAssets.size}
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
   />
@@ -340,7 +336,7 @@
         <Thumbnail
           readonly={disableAssetSelect}
           onClick={(asset) => {
-            if (isMultiSelectionMode) {
+            if (assetInteraction.selectionActive) {
               handleSelectAssets(asset);
               return;
             }
@@ -351,8 +347,8 @@
           onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           {showArchiveIcon}
           {asset}
-          selected={$selectedAssets.has(asset)}
-          selectionCandidate={$assetSelectionCandidates.has(asset)}
+          selected={assetInteraction.selectedAssets.has(asset)}
+          selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}
         />

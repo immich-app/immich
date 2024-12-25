@@ -16,7 +16,6 @@
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
@@ -26,6 +25,7 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -36,7 +36,7 @@
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
 
-  const assetInteractionStore = createAssetInteractionStore();
+  const assetInteraction = new AssetInteraction();
 
   const buildMap = (tags: TagResponseDto[]) => {
     return Object.fromEntries(tags.map((tag) => [tag.value, tag]));
@@ -63,7 +63,7 @@
   };
 
   const getLink = (path: string) => {
-    const url = new URL(AppRoute.TAGS, window.location.href);
+    const url = new URL(AppRoute.TAGS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
     }
@@ -198,7 +198,7 @@
 
   <section class="mt-2 h-full">
     {#if tag}
-      <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNARCHIVE}>
+      <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
           <TreeItemThumbnails items={data.children} icon={mdiTag} onClick={handleNavigation} />
         {/snippet}

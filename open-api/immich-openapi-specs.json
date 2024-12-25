@@ -1424,7 +1424,6 @@
     },
     "/assets/bulk-upload-check": {
       "post": {
-        "description": "Checks if assets exist by checksums",
         "operationId": "checkBulkUpload",
         "parameters": [],
         "requestBody": {
@@ -1460,6 +1459,7 @@
             "api_key": []
           }
         ],
+        "summary": "Checks if assets exist by checksums",
         "tags": [
           "Assets"
         ]
@@ -1467,7 +1467,6 @@
     },
     "/assets/device/{deviceId}": {
       "get": {
-        "description": "Get all asset of a device that are in the database, ID only.",
         "operationId": "getAllUserAssetsByDeviceId",
         "parameters": [
           {
@@ -1505,6 +1504,7 @@
             "api_key": []
           }
         ],
+        "summary": "Get all asset of a device that are in the database, ID only.",
         "tags": [
           "Assets"
         ]
@@ -1512,7 +1512,6 @@
     },
     "/assets/exist": {
       "post": {
-        "description": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "operationId": "checkExistingAssets",
         "parameters": [],
         "requestBody": {
@@ -1548,6 +1547,7 @@
             "api_key": []
           }
         ],
+        "summary": "Checks if multiple assets exist on the server and returns all existing - used by background backup",
         "tags": [
           "Assets"
         ]
@@ -1903,7 +1903,6 @@
         ]
       },
       "put": {
-        "description": "Replace the asset with new file, without changing its id",
         "operationId": "replaceAsset",
         "parameters": [
           {
@@ -1957,6 +1956,7 @@
             "api_key": []
           }
         ],
+        "summary": "Replace the asset with new file, without changing its id",
         "tags": [
           "Assets"
         ],
@@ -3846,6 +3846,24 @@
       "get": {
         "operationId": "getAllPeople",
         "parameters": [
+          {
+            "name": "closestAssetId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "closestPersonId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
           {
             "name": "page",
             "required": false,
@@ -7436,7 +7454,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.122.3",
+    "version": "1.123.0",
     "contact": {}
   },
   "tags": [],
@@ -7474,6 +7492,7 @@
             "items": {
               "$ref": "#/components/schemas/Permission"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -7554,7 +7573,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/ReactionType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReactionType"
+              }
+            ]
           }
         },
         "required": [
@@ -7581,7 +7604,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/ReactionType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReactionType"
+              }
+            ]
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7613,6 +7640,7 @@
             "items": {
               "$ref": "#/components/schemas/AlbumUserAddDto"
             },
+            "minItems": 1,
             "type": "array"
           }
         },
@@ -7681,7 +7709,11 @@
             "type": "string"
           },
           "order": {
-            "$ref": "#/components/schemas/AssetOrder"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ]
           },
           "owner": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -7741,7 +7773,12 @@
       "AlbumUserAddDto": {
         "properties": {
           "role": {
-            "$ref": "#/components/schemas/AlbumUserRole"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ],
+            "default": "editor"
           },
           "userId": {
             "format": "uuid",
@@ -7756,7 +7793,11 @@
       "AlbumUserCreateDto": {
         "properties": {
           "role": {
-            "$ref": "#/components/schemas/AlbumUserRole"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
           },
           "userId": {
             "format": "uuid",
@@ -7772,7 +7813,11 @@
       "AlbumUserResponseDto": {
         "properties": {
           "role": {
-            "$ref": "#/components/schemas/AlbumUserRole"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
           },
           "user": {
             "$ref": "#/components/schemas/UserResponseDto"
@@ -8069,7 +8114,11 @@
             "nullable": true
           },
           "sourceType": {
-            "$ref": "#/components/schemas/SourceType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceType"
+              }
+            ]
           }
         },
         "required": [
@@ -8140,7 +8189,11 @@
             "type": "integer"
           },
           "sourceType": {
-            "$ref": "#/components/schemas/SourceType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceType"
+              }
+            ]
           }
         },
         "required": [
@@ -8236,7 +8289,11 @@
             "type": "array"
           },
           "name": {
-            "$ref": "#/components/schemas/AssetJobName"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetJobName"
+              }
+            ]
           }
         },
         "required": [
@@ -8334,7 +8391,11 @@
             "type": "string"
           },
           "status": {
-            "$ref": "#/components/schemas/AssetMediaStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetMediaStatus"
+              }
+            ]
           }
         },
         "required": [
@@ -8472,7 +8533,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "unassignedFaces": {
             "items": {
@@ -8585,7 +8650,11 @@
       "AvatarResponse": {
         "properties": {
           "color": {
-            "$ref": "#/components/schemas/UserAvatarColor"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ]
           }
         },
         "required": [
@@ -8596,7 +8665,11 @@
       "AvatarUpdate": {
         "properties": {
           "color": {
-            "$ref": "#/components/schemas/UserAvatarColor"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ]
           }
         },
         "type": "object"
@@ -8687,6 +8760,7 @@
             "items": {
               "type": "string"
             },
+            "minItems": 1,
             "type": "array"
           },
           "deviceId": {
@@ -8753,13 +8827,17 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "importPaths": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "name": {
             "type": "string"
@@ -9228,10 +9306,18 @@
             "type": "string"
           },
           "entityType": {
-            "$ref": "#/components/schemas/PathEntityType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PathEntityType"
+              }
+            ]
           },
           "pathType": {
-            "$ref": "#/components/schemas/PathType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PathType"
+              }
+            ]
           },
           "pathValue": {
             "type": "string"
@@ -9293,7 +9379,11 @@
       "JobCommandDto": {
         "properties": {
           "command": {
-            "$ref": "#/components/schemas/JobCommand"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/JobCommand"
+              }
+            ]
           },
           "force": {
             "type": "boolean"
@@ -9338,7 +9428,11 @@
       "JobCreateDto": {
         "properties": {
           "name": {
-            "$ref": "#/components/schemas/ManualJobName"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ManualJobName"
+              }
+            ]
           }
         },
         "required": [
@@ -9526,6 +9620,7 @@
         "properties": {
           "email": {
             "example": "testuser@email.com",
+            "format": "email",
             "type": "string"
           },
           "password": {
@@ -9699,7 +9794,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/MemoryType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryType"
+              }
+            ]
           }
         },
         "required": [
@@ -9764,7 +9863,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/MemoryType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MemoryType"
+              }
+            ]
           },
           "updatedAt": {
             "format": "date-time",
@@ -9893,7 +9996,11 @@
             "type": "string"
           },
           "order": {
-            "$ref": "#/components/schemas/AssetOrder"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ]
           },
           "originalFileName": {
             "type": "string"
@@ -9944,7 +10051,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "updatedAfter": {
             "format": "date-time",
@@ -10028,7 +10139,11 @@
       "PartnerResponseDto": {
         "properties": {
           "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ]
           },
           "email": {
             "type": "string"
@@ -10546,7 +10661,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "updatedAfter": {
             "format": "date-time",
@@ -11214,7 +11333,11 @@
             "type": "boolean"
           },
           "type": {
-            "$ref": "#/components/schemas/SharedLinkType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedLinkType"
+              }
+            ]
           }
         },
         "required": [
@@ -11299,7 +11422,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/SharedLinkType"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SharedLinkType"
+              }
+            ]
           },
           "userId": {
             "type": "string"
@@ -11332,6 +11459,7 @@
         "properties": {
           "email": {
             "example": "testuser@email.com",
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -11448,7 +11576,11 @@
             "type": "string"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetTypeEnum"
+              }
+            ]
           },
           "updatedAfter": {
             "format": "date-time",
@@ -11489,6 +11621,7 @@
               "format": "uuid",
               "type": "string"
             },
+            "minItems": 2,
             "type": "array"
           }
         },
@@ -11629,7 +11762,11 @@
       "SystemConfigFFmpegDto": {
         "properties": {
           "accel": {
-            "$ref": "#/components/schemas/TranscodeHWAccel"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranscodeHWAccel"
+              }
+            ]
           },
           "accelDecode": {
             "type": "boolean"
@@ -11658,7 +11795,11 @@
             "type": "integer"
           },
           "cqMode": {
-            "$ref": "#/components/schemas/CQMode"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CQMode"
+              }
+            ]
           },
           "crf": {
             "maximum": 51,
@@ -11684,13 +11825,21 @@
             "type": "integer"
           },
           "targetAudioCodec": {
-            "$ref": "#/components/schemas/AudioCodec"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AudioCodec"
+              }
+            ]
           },
           "targetResolution": {
             "type": "string"
           },
           "targetVideoCodec": {
-            "$ref": "#/components/schemas/VideoCodec"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VideoCodec"
+              }
+            ]
           },
           "temporalAQ": {
             "type": "boolean"
@@ -11700,10 +11849,18 @@
             "type": "integer"
           },
           "tonemap": {
-            "$ref": "#/components/schemas/ToneMapping"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ToneMapping"
+              }
+            ]
           },
           "transcode": {
-            "$ref": "#/components/schemas/TranscodePolicy"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TranscodePolicy"
+              }
+            ]
           },
           "twoPass": {
             "type": "boolean"
@@ -11748,7 +11905,11 @@
       "SystemConfigGeneratedImageDto": {
         "properties": {
           "format": {
-            "$ref": "#/components/schemas/ImageFormat"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ImageFormat"
+              }
+            ]
           },
           "quality": {
             "maximum": 100,
@@ -11770,7 +11931,11 @@
       "SystemConfigImageDto": {
         "properties": {
           "colorspace": {
-            "$ref": "#/components/schemas/Colorspace"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Colorspace"
+              }
+            ]
           },
           "extractEmbedded": {
             "type": "boolean"
@@ -11888,7 +12053,11 @@
             "type": "boolean"
           },
           "level": {
-            "$ref": "#/components/schemas/LogLevel"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LogLevel"
+              }
+            ]
           }
         },
         "required": [
@@ -11917,6 +12086,7 @@
             "type": "string"
           },
           "urls": {
+            "format": "uri",
             "items": {
               "format": "uri",
               "type": "string"
@@ -11937,12 +12107,14 @@
       "SystemConfigMapDto": {
         "properties": {
           "darkStyle": {
+            "format": "uri",
             "type": "string"
           },
           "enabled": {
             "type": "boolean"
           },
           "lightStyle": {
+            "format": "uri",
             "type": "string"
           }
         },
@@ -12017,6 +12189,7 @@
             "type": "boolean"
           },
           "mobileRedirectUri": {
+            "format": "uri",
             "type": "string"
           },
           "profileSigningAlgorithm": {
@@ -12079,6 +12252,7 @@
       "SystemConfigServerDto": {
         "properties": {
           "externalDomain": {
+            "format": "uri",
             "type": "string"
           },
           "loginPageMessage": {
@@ -12335,6 +12509,7 @@
       "TagCreateDto": {
         "properties": {
           "color": {
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           },
           "name": {
@@ -12390,6 +12565,7 @@
         "properties": {
           "color": {
             "nullable": true,
+            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           }
         },
@@ -12552,7 +12728,11 @@
             "type": "boolean"
           },
           "order": {
-            "$ref": "#/components/schemas/AssetOrder"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssetOrder"
+              }
+            ]
           }
         },
         "type": "object"
@@ -12560,7 +12740,11 @@
       "UpdateAlbumUserDto": {
         "properties": {
           "role": {
-            "$ref": "#/components/schemas/AlbumUserRole"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AlbumUserRole"
+              }
+            ]
           }
         },
         "required": [
@@ -12607,13 +12791,17 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "importPaths": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "name": {
             "type": "string"
@@ -12679,6 +12867,7 @@
       "UserAdminCreateDto": {
         "properties": {
           "email": {
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -12722,7 +12911,11 @@
       "UserAdminResponseDto": {
         "properties": {
           "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ]
           },
           "createdAt": {
             "format": "date-time",
@@ -12777,7 +12970,11 @@
             "type": "boolean"
           },
           "status": {
-            "$ref": "#/components/schemas/UserStatus"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserStatus"
+              }
+            ]
           },
           "storageLabel": {
             "nullable": true,
@@ -12812,6 +13009,7 @@
       "UserAdminUpdateDto": {
         "properties": {
           "email": {
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -12949,7 +13147,11 @@
       "UserResponseDto": {
         "properties": {
           "avatarColor": {
-            "$ref": "#/components/schemas/UserAvatarColor"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserAvatarColor"
+              }
+            ]
           },
           "email": {
             "type": "string"
@@ -12989,6 +13191,7 @@
       "UserUpdateMeDto": {
         "properties": {
           "email": {
+            "format": "email",
             "type": "string"
           },
           "name": {
@@ -13017,13 +13220,17 @@
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           },
           "importPaths": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "maxItems": 128,
+            "type": "array",
+            "uniqueItems": true
           }
         },
         "type": "object"

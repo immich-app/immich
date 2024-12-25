@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
@@ -7,6 +7,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleLogout } from '$lib/utils/auth';
   import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
   import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
@@ -38,17 +39,17 @@
     await handleLogout(redirectUri);
   };
 
-  let aboutInfo: ServerAboutResponseDto | undefined = $state();
+  let info: ServerAboutResponseDto | undefined = $state();
 
   onMount(async () => {
-    aboutInfo = await getAboutInfo();
+    info = userInteraction.aboutInfo ?? (await getAboutInfo());
   });
 </script>
 
 <svelte:window bind:innerWidth />
 
-{#if shouldShowHelpPanel && aboutInfo}
-  <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} info={aboutInfo} />
+{#if shouldShowHelpPanel && info}
+  <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
 {/if}
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
@@ -95,7 +96,7 @@
           />
         </div>
 
-        {#if !$page.url.pathname.includes('/admin') && showUploadButton}
+        {#if !page.url.pathname.includes('/admin') && showUploadButton}
           <LinkButton onclick={onUploadClick} class="hidden lg:block">
             <div class="flex gap-2">
               <Icon path={mdiTrayArrowUp} size="1.5em" />

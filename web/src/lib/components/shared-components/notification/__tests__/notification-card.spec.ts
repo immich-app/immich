@@ -5,10 +5,10 @@ import { NotificationType } from '../notification';
 import NotificationCard from '../notification-card.svelte';
 
 describe('NotificationCard component', () => {
-  let sut: RenderResult<NotificationCard>;
+  let sut: RenderResult<typeof NotificationCard>;
 
   it('disposes timeout if already removed from the DOM', () => {
-    vi.spyOn(window, 'clearTimeout');
+    vi.spyOn(globalThis, 'clearTimeout');
 
     sut = render(NotificationCard, {
       notification: {
@@ -21,7 +21,7 @@ describe('NotificationCard component', () => {
     });
 
     cleanup();
-    expect(window.clearTimeout).toHaveBeenCalledTimes(1);
+    expect(globalThis.clearTimeout).toHaveBeenCalledTimes(1);
   });
 
   it('shows message and title', () => {

@@ -2,7 +2,7 @@
   import { run } from 'svelte/legacy';
 
   import { afterNavigate, beforeNavigate } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
@@ -35,7 +35,7 @@
 
   const changeTheme = (theme: ThemeSetting) => {
     if (theme.system) {
-      theme.value = window.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+      theme.value = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
     }
 
     if (theme.value === Theme.LIGHT) {
@@ -52,22 +52,22 @@
   };
 
   const getMyImmichLink = () => {
-    return new URL($page.url.pathname + $page.url.search, 'https://my.immich.app');
+    return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
   };
 
   onMount(() => {
     const element = document.querySelector('#stencil');
     element?.remove();
     // if the browser theme changes, changes the Immich theme too
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
+    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
   });
 
   onDestroy(() => {
     document.removeEventListener('change', handleChangeTheme);
   });
 
-  if (isSharedLinkRoute($page.route?.id)) {
-    setKey($page.params.key);
+  if (isSharedLinkRoute(page.route?.id)) {
+    setKey(page.params.key);
   }
 
   beforeNavigate(({ from, to }) => {
@@ -95,33 +95,33 @@
 </script>
 
 <svelte:head>
-  <title>{$page.data.meta?.title || 'Web'} - Immich</title>
+  <title>{page.data.meta?.title || 'Web'} - Immich</title>
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="currentColor" />
   <AppleHeader />
 
-  {#if $page.data.meta}
-    <meta name="description" content={$page.data.meta.description} />
+  {#if page.data.meta}
+    <meta name="description" content={page.data.meta.description} />
 
     <!-- Facebook Meta Tags -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={$page.data.meta.title} />
-    <meta property="og:description" content={$page.data.meta.description} />
-    {#if $page.data.meta.imageUrl}
+    <meta property="og:title" content={page.data.meta.title} />
+    <meta property="og:description" content={page.data.meta.description} />
+    {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.origin).href}
+        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
       />
     {/if}
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={$page.data.meta.title} />
-    <meta name="twitter:description" content={$page.data.meta.description} />
-    {#if $page.data.meta.imageUrl}
+    <meta name="twitter:title" content={page.data.meta.title} />
+    <meta name="twitter:description" content={page.data.meta.description} />
+    {#if page.data.meta.imageUrl}
       <meta
         name="twitter:image"
-        content={new URL($page.data.meta.imageUrl, $serverConfig.externalDomain || window.location.origin).href}
+        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
       />
     {/if}
   {/if}
@@ -142,8 +142,8 @@
   }}
 />
 
-{#if $page.data.error}
-  <Error error={$page.data.error}></Error>
+{#if page.data.error}
+  <Error error={page.data.error}></Error>
 {:else}
   {@render children?.()}
 {/if}

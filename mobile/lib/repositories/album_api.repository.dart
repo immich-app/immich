@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
@@ -56,7 +57,13 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
     String? thumbnailAssetId,
     String? description,
     bool? activityEnabled,
+    SortOrder? sortOrder,
   }) async {
+    AssetOrder? order;
+    if (sortOrder != null) {
+      order = sortOrder == SortOrder.asc ? AssetOrder.asc : AssetOrder.desc;
+    }
+
     final response = await checkNull(
       _api.updateAlbumInfo(
         albumId,
@@ -65,9 +72,11 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
           albumThumbnailAssetId: thumbnailAssetId,
           description: description,
           isActivityEnabled: activityEnabled,
+          order: order,
         ),
       ),
     );
+
     return _toAlbum(response);
   }
 
@@ -152,6 +161,7 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
       startDate: dto.startDate,
       endDate: dto.endDate,
       activityEnabled: dto.isActivityEnabled,
+      sortOrder: dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc,
     );
     album.remoteAssetCount = dto.assetCount;
     album.owner.value = User.fromSimpleUserDto(dto.owner);

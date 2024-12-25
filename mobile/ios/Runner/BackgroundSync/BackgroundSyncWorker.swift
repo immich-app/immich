@@ -86,7 +86,7 @@ class BackgroundSyncWorker {
             result(false)
             break
         default:
-            result(FlutterError())
+            result(FlutterError()) 
             self.complete(UIBackgroundFetchResult.failed)
         }
     }

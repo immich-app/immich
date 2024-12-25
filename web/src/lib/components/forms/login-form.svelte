@@ -33,9 +33,9 @@
       return;
     }
 
-    if (oauth.isCallback(window.location)) {
+    if (oauth.isCallback(globalThis.location)) {
       try {
-        await oauth.login(window.location);
+        await oauth.login(globalThis.location);
         await onSuccess();
         return;
       } catch (error) {
@@ -46,9 +46,9 @@
     }
 
     try {
-      if ($featureFlags.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(window.location)) {
+      if ($featureFlags.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) {
         await goto(`${AppRoute.AUTH_LOGIN}?autoLaunch=0`, { replaceState: true });
-        await oauth.authorize(window.location);
+        await oauth.authorize(globalThis.location);
         return;
       }
     } catch (error) {
@@ -85,7 +85,7 @@
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    const success = await oauth.authorize(window.location);
+    const success = await oauth.authorize(globalThis.location);
     if (!success) {
       oauthLoading = false;
       oauthError = $t('errors.unable_to_login_with_oauth');
