@@ -212,8 +212,14 @@ class DownloadService {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('permission_onboarding_request').tr(),
-            content: const Text('permission_onboarding_permission_denied').tr(),
+            title: const Text(
+              'permission_onboarding_request',
+              textAlign: TextAlign.center,
+            ).tr(),
+            content: const Text(
+              'permission_onboarding_permission_denied',
+              textAlign: TextAlign.center,
+            ).tr(),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
