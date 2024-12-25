@@ -106,6 +106,8 @@ custom_lint:
         - lib/widgets/search/search_filter/{camera_picker,location_picker,people_picker}.dart
         - lib/services/auth.service.dart # on ApiException
         - test/services/auth.service_test.dart # on ApiException
+        # allow import from test
+        - test/**.dart
 
 dart_code_metrics:
   metrics:
