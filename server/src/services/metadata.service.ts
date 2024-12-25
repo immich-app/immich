@@ -613,7 +613,7 @@ export class MetadataService extends BaseService {
   }
 
   private earliestDate(a: Date, b: Date) {
-    return new Date(Math.min(a.valueOf(), b.valueOf()))
+    return new Date(Math.min(a.valueOf(), b.valueOf()));
   }
 
   private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {
