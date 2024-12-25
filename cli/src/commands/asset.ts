@@ -12,13 +12,18 @@ import {
   getSupportedMediaTypes,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
+import { Matcher, watch as watchFs } from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
+import micromatch from 'micromatch';
 import { Stats, createReadStream } from 'node:fs';
 import { stat, unlink } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
-import { BaseOptions, authenticate, crawl, sha1 } from 'src/utils';
+import { BaseOptions, Batcher, authenticate, crawl, sha1 } from 'src/utils';
+
+const UPLOAD_WATCH_BATCH_SIZE = 100;
+const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
 
 const s = (count: number) => (count === 1 ? '' : 's');
 
@@ -36,6 +41,7 @@ export interface UploadOptionsDto {
   albumName?: string;
   includeHidden?: boolean;
   concurrency: number;
+  watch?: boolean;
 }
 
 class UploadFile extends File {
@@ -55,19 +61,82 @@ class UploadFile extends File {
   }
 }
 
+const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
+  const { newFiles, duplicates } = await checkForDuplicates(files, options);
+  const newAssets = await uploadFiles(newFiles, options);
+  await updateAlbums([...newAssets, ...duplicates], options);
+  await deleteFiles(newFiles, options);
+};
+
+const startWatch = async (paths: string[], options: UploadOptionsDto) => {
+  const watcherIgnored: Matcher[] = [];
+  const { image, video } = await getSupportedMediaTypes();
+  const extensions = new Set([...image, ...video]);
+
+  if (options.ignore) {
+    watcherIgnored.push((path) => micromatch.contains(path, `**/${options.ignore}`));
+  }
+  watcherIgnored.push((path, stats) => {
+    if (stats?.isDirectory()) {
+      return false;
+    }
+    const ext = path.split('.').pop()?.toLowerCase();
+    return !extensions.has(ext ?? '');
+  });
+
+  const pathsBatcher = new Batcher<string>({
+    batchSize: UPLOAD_WATCH_BATCH_SIZE,
+    debounceTimeMs: UPLOAD_WATCH_DEBOUNCE_TIME_MS,
+    onBatch: async (paths: string[]) => {
+      const uniquePaths = [...new Set(paths)];
+      await uploadBatch(uniquePaths, options);
+    },
+  });
+
+  const fsWatchListener = async (path: string) => {
+    console.log(`Change detected: ${path}`);
+    pathsBatcher.add(path);
+  };
+  const fsWatcher = watchFs(paths, {
+    ignoreInitial: true,
+    ignored: watcherIgnored,
+    awaitWriteFinish: true,
+    depth: options.recursive ? undefined : 1,
+    persistent: true,
+  })
+    .on('add', fsWatchListener)
+    .on('change', fsWatchListener)
+    .on('error', (error) => console.error(`Watcher error: ${error}`));
+
+  process.on('SIGINT', async () => {
+    console.log('Exiting...');
+    await fsWatcher.close();
+    process.exit();
+  });
+};
+
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
   await authenticate(baseOptions);
 
   const scanFiles = await scan(paths, options);
+
   if (scanFiles.length === 0) {
-    console.log('No files found, exiting');
-    return;
+    if (options.watch) {
+      console.log('No files found initially.');
+    } else {
+      console.log('No files found, exiting');
+      return;
+    }
   }
 
-  const { newFiles, duplicates } = await checkForDuplicates(scanFiles, options);
-  const newAssets = await uploadFiles(newFiles, options);
-  await updateAlbums([...newAssets, ...duplicates], options);
-  await deleteFiles(newFiles, options);
+  if (options.watch) {
+    console.log('Watching for changes...');
+    await startWatch(paths, options);
+    // watcher does not handle the initial scan
+    // as the scan() is a more efficient quick start with batched results
+  }
+
+  await uploadBatch(scanFiles, options);
 };
 
 const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {

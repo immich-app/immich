@@ -69,6 +69,9 @@ program
       .default(4),
   )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
+  .addOption(
+    new Option('--watch', 'Watch for changes and upload automatically').env('IMMICH_WATCH_CHANGES').default(false),
+  )
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => upload(paths, program.opts(), options));
 
