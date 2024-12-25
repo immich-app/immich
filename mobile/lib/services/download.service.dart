@@ -13,6 +13,9 @@ import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/download.dart';
 import 'package:logging/logging.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
+import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 final downloadServiceProvider = Provider(
   (ref) => DownloadService(
@@ -158,7 +161,11 @@ class DownloadService {
     return await FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> download(Asset asset) async {
+  Future<void> download(Asset asset, {BuildContext? context}) async {
+    if (!await _handlePermission(context)) {
+      return;
+    }
+
     if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
       await _downloadRepository.download(
         _buildDownloadTask(
@@ -194,6 +201,53 @@ class DownloadService {
         ),
       );
     }
+  }
+
+  Future<bool> _handlePermission(BuildContext? context) async {
+    final permission = await ph.Permission.photos.status;
+    if (permission.isDenied || permission.isPermanentlyDenied) {
+      if (context == null) return false;
+
+      final bool? shouldRequest = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('permission_onboarding_request').tr(),
+            content: const Text('permission_onboarding_permission_denied').tr(),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('cancel').tr(),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  permission.isPermanentlyDenied
+                      ? 'permission_onboarding_go_to_settings'
+                      : 'permission_onboarding_grant_permission',
+                ).tr(),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (shouldRequest == true) {
+        if (permission.isPermanentlyDenied) {
+          await ph.openAppSettings();
+          return false;
+        }
+
+        final result = await ph.Permission.photos.request();
+        if (!result.isGranted) {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   DownloadTask _buildDownloadTask(
