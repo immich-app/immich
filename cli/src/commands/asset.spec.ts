@@ -3,10 +3,12 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Action, checkBulkUpload, defaults, Reason } from '@immich/sdk';
+import { Action, checkBulkUpload, defaults, getSupportedMediaTypes, Reason } from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
 
-import { checkForDuplicates, getAlbumName, uploadFiles, UploadOptionsDto } from './asset';
+import { checkForDuplicates, getAlbumName, startWatch, uploadFiles, UploadOptionsDto } from 'src/commands/asset';
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 vi.mock('@immich/sdk');
 
@@ -197,5 +199,46 @@ describe('checkForDuplicates', () => {
       duplicates: [],
       newFiles: [],
     });
+  });
+});
+
+describe('startWatch', () => {
+  it('should start watching a directory and upload new files', async () => {
+    vi.restoreAllMocks();
+    const testFolder = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'test-startWatch-'));
+    const testFilePath = path.join(testFolder, 'test.jpg');
+    const checkBulkUploadMocked = vi.mocked(checkBulkUpload);
+    checkBulkUploadMocked.mockResolvedValue({
+      results: [
+        {
+          action: Action.Accept,
+          id: testFilePath,
+        },
+      ],
+    });
+    vi.mocked(getSupportedMediaTypes).mockResolvedValue({
+      image: ['jpg'],
+      sidecar: ['xmp'],
+      video: ['mp4'],
+    });
+    try {
+      await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
+      await sleep(100); // to debounce the watcher from considering the test file as a existing file
+      await fs.promises.writeFile(testFilePath, 'testjpg');
+
+      await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
+      expect(getSupportedMediaTypes).toHaveBeenCalled();
+      expect(checkBulkUpload).toHaveBeenCalledWith({
+        assetBulkUploadCheckDto: {
+          assets: [
+            expect.objectContaining({
+              id: testFilePath,
+            }),
+          ],
+        },
+      });
+    } finally {
+      await fs.promises.rm(testFolder, { recursive: true, force: true });
+    }
   });
 });
