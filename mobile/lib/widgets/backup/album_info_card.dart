@@ -1,16 +1,20 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class AlbumInfoCard extends HookConsumerWidget {
@@ -33,13 +37,35 @@ class AlbumInfoCard extends HookConsumerWidget {
 
     final isDarkTheme = context.isDarkTheme;
 
+    final previewAsset = useState<Asset?>(null);
+    getPreviewAsset() async {
+      var assets = await ref.read(albumMediaRepositoryProvider).getAssets(
+            album.album.localId!,
+            start: 0,
+            end: 1,
+          );
+      if (context.mounted && assets.isNotEmpty) {
+        previewAsset.value = assets[0];
+      }
+    }
+
+    useEffect(
+      () {
+        getPreviewAsset();
+        return null;
+      },
+      [],
+    );
+
     ColorFilter selectedFilter = ColorFilter.mode(
       context.primaryColor.withAlpha(100),
       BlendMode.darken,
     );
     ColorFilter excludedFilter =
         ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
-    ColorFilter unselectedFilter =
+    ColorFilter? noFilter =
+        const ColorFilter.mode(Colors.black, BlendMode.dst);
+    ColorFilter? unselectedFilter =
         const ColorFilter.mode(Colors.black, BlendMode.color);
 
     buildSelectedTextBox() {
@@ -76,13 +102,13 @@ class AlbumInfoCard extends HookConsumerWidget {
       return const SizedBox();
     }
 
-    buildImageFilter() {
+    buildImageFilter(bool hasImage) {
       if (isSelected) {
         return selectedFilter;
       } else if (isExcluded) {
         return excludedFilter;
       } else {
-        return unselectedFilter;
+        return hasImage ? noFilter : unselectedFilter;
       }
     }
 
@@ -142,16 +168,24 @@ class AlbumInfoCard extends HookConsumerWidget {
               child: Stack(
                 clipBehavior: Clip.hardEdge,
                 children: [
+
                   ColorFiltered(
-                    colorFilter: buildImageFilter(),
-                    child: const Image(
-                      width: double.infinity,
-                      height: double.infinity,
-                      image: AssetImage(
-                        'assets/immich-logo.png',
-                      ),
-                      fit: BoxFit.cover,
-                    ),
+                    colorFilter: buildImageFilter(previewAsset.value != null),
+                    child: previewAsset.value != null
+                        ? ImmichThumbnail(
+                            asset: previewAsset.value,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                          )
+                        : const Image(
+                            width: double.infinity,
+                            height: double.infinity,
+                            image: AssetImage(
+                              'assets/immich-logo.png',
+                            ),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                   Positioned(
                     bottom: 10,
