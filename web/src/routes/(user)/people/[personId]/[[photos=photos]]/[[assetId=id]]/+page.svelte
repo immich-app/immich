@@ -74,8 +74,12 @@
   const assetStore = new AssetStore(assetStoreOptions);
 
   $effect(() => {
+    const change = assetStoreOptions.personId !== data.person.id;
     assetStoreOptions.personId = data.person.id;
     handlePromiseError(assetStore.updateOptions(assetStoreOptions));
+    if (change) {
+      assetStore.triggerUpdate();
+    }
   });
 
   const assetInteraction = new AssetInteraction();
