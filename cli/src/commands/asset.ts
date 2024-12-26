@@ -83,13 +83,6 @@ export const startWatch = async (
   if (options.ignore) {
     watcherIgnored.push((path) => micromatch.contains(path, `**/${options.ignore}`));
   }
-  watcherIgnored.push((path, stats) => {
-    if (stats?.isDirectory()) {
-      return true;
-    }
-    const ext = path.split('.').pop()?.toLowerCase();
-    return !extensions.has(ext ?? '');
-  });
 
   const pathsBatcher = new Batcher<string>({
     batchSize,
@@ -100,13 +93,21 @@ export const startWatch = async (
     },
   });
 
-  const fsWatchListener = async (path: string) => {
+  const fsWatchListener = async (path: string, stats?: Stats) => {
+    if (stats?.isDirectory()) {
+      return;
+    }
+    const ext = path.split('.').pop()?.toLowerCase();
+    if (!extensions.has(ext ?? '')) {
+      return;
+    }
     console.log(`Change detected: ${path}`);
     pathsBatcher.add(path);
   };
   const fsWatcher = watchFs(paths, {
     ignoreInitial: true,
     ignored: watcherIgnored,
+    alwaysStat: true,
     awaitWriteFinish: true,
     depth: options.recursive ? undefined : 1,
     persistent: true,
