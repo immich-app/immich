@@ -22,8 +22,8 @@ import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
 import { BaseOptions, Batcher, authenticate, crawl, sha1 } from 'src/utils';
 
-const UPLOAD_WATCH_BATCH_SIZE = 100;
-const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
+export const UPLOAD_WATCH_BATCH_SIZE = 100;
+export const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
 
 const s = (count: number) => (count === 1 ? '' : 's');
 
@@ -68,7 +68,14 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   await deleteFiles(newFiles, options);
 };
 
-const startWatch = async (paths: string[], options: UploadOptionsDto) => {
+export const startWatch = async (
+  paths: string[],
+  options: UploadOptionsDto,
+  {
+    batchSize = UPLOAD_WATCH_BATCH_SIZE,
+    debounceTimeMs = UPLOAD_WATCH_DEBOUNCE_TIME_MS,
+  }: { batchSize?: number; debounceTimeMs?: number } = {},
+) => {
   const watcherIgnored: Matcher[] = [];
   const { image, video } = await getSupportedMediaTypes();
   const extensions = new Set([...image, ...video]);
@@ -78,15 +85,15 @@ const startWatch = async (paths: string[], options: UploadOptionsDto) => {
   }
   watcherIgnored.push((path, stats) => {
     if (stats?.isDirectory()) {
-      return false;
+      return true;
     }
     const ext = path.split('.').pop()?.toLowerCase();
     return !extensions.has(ext ?? '');
   });
 
   const pathsBatcher = new Batcher<string>({
-    batchSize: UPLOAD_WATCH_BATCH_SIZE,
-    debounceTimeMs: UPLOAD_WATCH_DEBOUNCE_TIME_MS,
+    batchSize,
+    debounceTimeMs,
     onBatch: async (paths: string[]) => {
       const uniquePaths = [...new Set(paths)];
       await uploadBatch(uniquePaths, options);
