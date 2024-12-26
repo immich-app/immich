@@ -41,6 +41,7 @@ export interface UploadOptionsDto {
   albumName?: string;
   includeHidden?: boolean;
   concurrency: number;
+  progress?: boolean;
   watch?: boolean;
 }
 
@@ -162,7 +163,7 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-export const checkForDuplicates = async (files: string[], { concurrency, skipHash }: UploadOptionsDto) => {
+export const checkForDuplicates = async (files: string[], { concurrency, skipHash, progress }: UploadOptionsDto) => {
   if (skipHash) {
     console.log('Skipping hash check, assuming all files are new');
     return { newFiles: files, duplicates: [] };
@@ -173,8 +174,12 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     Presets.shades_classic,
   );
 
-  const hashProgressBar = multiBar.create(files.length, 0, { message: 'Hashing files          ' });
-  const checkProgressBar = multiBar.create(files.length, 0, { message: 'Checking for duplicates' });
+  const hashProgressBar = progress
+    ? multiBar.create(files.length, 0, { message: 'Hashing files          ' })
+    : undefined;
+  const checkProgressBar = progress
+    ? multiBar.create(files.length, 0, { message: 'Checking for duplicates' })
+    : undefined;
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
@@ -194,7 +199,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         }
       }
 
-      checkProgressBar.increment(assets.length);
+      checkProgressBar?.increment(assets.length);
     },
     { concurrency, retry: 3 },
   );
@@ -214,7 +219,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
         void checkBulkUploadQueue.push(batch);
       }
 
-      hashProgressBar.increment();
+      hashProgressBar?.increment();
       return results;
     },
     { concurrency, retry: 3 },
