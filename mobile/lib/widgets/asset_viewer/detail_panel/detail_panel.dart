@@ -9,12 +9,14 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 
 class DetailPanel extends HookConsumerWidget {
   final Asset asset;
+  final ScrollController? scrollController;
 
-  const DetailPanel({super.key, required this.asset});
+  const DetailPanel({super.key, required this.asset, this.scrollController});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView(
+      controller: scrollController,
       shrinkWrap: true,
       children: [
         Padding(
