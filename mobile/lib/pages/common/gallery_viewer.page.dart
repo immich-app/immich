@@ -127,18 +127,29 @@ class GalleryViewerPage extends HookConsumerWidget {
         context: context,
         useSafeArea: true,
         builder: (context) {
-          return FractionallySizedBox(
-            heightFactor: 0.75,
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: context.viewInsets.bottom,
-              ),
-              child: ref
-                      .watch(appSettingsServiceProvider)
-                      .getSetting<bool>(AppSettingsEnum.advancedTroubleshooting)
-                  ? AdvancedBottomSheet(assetDetail: asset)
-                  : DetailPanel(asset: asset),
-            ),
+          return DraggableScrollableSheet(
+            minChildSize: 0.5,
+            maxChildSize: 1,
+            initialChildSize: 0.75,
+            expand: false,
+            builder: (context, scrollController) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  bottom: context.viewInsets.bottom,
+                ),
+                child: ref.watch(appSettingsServiceProvider).getSetting<bool>(
+                          AppSettingsEnum.advancedTroubleshooting,
+                        )
+                    ? AdvancedBottomSheet(
+                        assetDetail: asset,
+                        scrollController: scrollController,
+                      )
+                    : DetailPanel(
+                        asset: asset,
+                        scrollController: scrollController,
+                      ),
+              );
+            },
           );
         },
       );
