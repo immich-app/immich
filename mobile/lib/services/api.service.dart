@@ -10,6 +10,7 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
+/// Create dns_query_service.dart
 import 'dns_query_service.dart';
 
 class ApiService implements Authentication {
@@ -85,6 +86,7 @@ class ApiService implements Authentication {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
+    // Check for server URL
     if (!Uri.tryParse(serverUrl)?.hasAbsolutePath ?? false) {
       throw ApiException(400, "Invalid server URL: $serverUrl");
     }
