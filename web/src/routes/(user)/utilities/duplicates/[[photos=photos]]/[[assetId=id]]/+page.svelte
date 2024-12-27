@@ -12,7 +12,7 @@
   import { deleteAssets, updateAssets } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { suggestDuplicateByFileSize } from '$lib/utils';
+  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
   import { stackAssets } from '$lib/utils/asset-utils';
@@ -103,7 +103,7 @@
   };
 
   const handleDeduplicateAll = async () => {
-    const idsToKeep = duplicates.map((group) => suggestDuplicateByFileSize(group.assets)).map((asset) => asset?.id);
+    const idsToKeep = duplicates.map((group) => suggestDuplicate(group.assets)).map((asset) => asset?.id);
     const idsToDelete = duplicates.flatMap((group, i) =>
       group.assets.map((asset) => asset.id).filter((asset) => asset !== idsToKeep[i]),
     );
