@@ -11,7 +11,6 @@
   let { onSuccess }: Props = $props();
 
   let errorMessage: string = $state('');
-  let success: string;
 
   let password = $state('');
   let passwordConfirm = $state('');
@@ -59,9 +58,6 @@
     <p class="text-sm text-red-400">{errorMessage}</p>
   {/if}
 
-  {#if success}
-    <p class="text-sm text-immich-primary">{success}</p>
-  {/if}
   <div class="my-5 flex w-full">
     <Button type="submit" size="lg" fullwidth>{$t('to_change_password')}</Button>
   </div>

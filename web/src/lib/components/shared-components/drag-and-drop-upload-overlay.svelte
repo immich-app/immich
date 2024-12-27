@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { shouldIgnoreEvent } from '$lib/actions/shortcut';
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler } from '$lib/utils/file-uploader';
@@ -8,8 +8,8 @@
   import { fade } from 'svelte/transition';
   import ImmichLogo from './immich-logo.svelte';
 
-  let albumId = $derived(isAlbumsRoute($page.route?.id) ? $page.params.albumId : undefined);
-  let isShare = $derived(isSharedLinkRoute($page.route?.id));
+  let albumId = $derived(isAlbumsRoute(page.route?.id) ? page.params.albumId : undefined);
+  let isShare = $derived(isSharedLinkRoute(page.route?.id));
 
   let dragStartTarget: EventTarget | null = $state(null);
 

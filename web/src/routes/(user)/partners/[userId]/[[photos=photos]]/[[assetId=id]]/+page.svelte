@@ -31,7 +31,10 @@
 
 <main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
   {#if assetInteraction.selectionActive}
-    <AssetSelectControlBar assets={assetInteraction.selectedAssets} clearSelect={assetInteraction.clearMultiselect}>
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
       <CreateSharedLink />
       <ButtonContextMenu icon={mdiPlus} title={$t('add')}>
         <AddToAlbum />
