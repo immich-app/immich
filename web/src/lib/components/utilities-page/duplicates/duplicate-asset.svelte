@@ -105,7 +105,8 @@
         {/if}
       {/await}
       -
-      {getExifCount(asset)} {$t('exif')}
+      {getExifCount(asset)}
+      {$t('exif')}
     </span>
   </div>
 </div>

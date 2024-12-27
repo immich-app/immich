@@ -2,7 +2,6 @@ import { getExifCount } from '$lib/utils/exif-utils';
 import type { AssetResponseDto } from '@immich/sdk';
 
 describe('getting the exif count', () => {
-
   it('returns 0 when exifInfo is undefined', () => {
     const asset = {};
     expect(getExifCount(asset as AssetResponseDto)).toBe(0);
@@ -27,5 +26,4 @@ describe('getting the exif count', () => {
     const asset = { exifInfo: { fileSizeInByte: 200, rating: 5, fNumber: 1, description: 'test' } };
     expect(getExifCount(asset as AssetResponseDto)).toBe(4);
   });
-
 });
