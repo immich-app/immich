@@ -74,6 +74,7 @@
   const assetStore = new AssetStore(assetStoreOptions);
 
   $effect(() => {
+    // Check to trigger rebuild the timeline when navigating between people from the info panel
     const change = assetStoreOptions.personId !== data.person.id;
     assetStoreOptions.personId = data.person.id;
     handlePromiseError(assetStore.updateOptions(assetStoreOptions));
