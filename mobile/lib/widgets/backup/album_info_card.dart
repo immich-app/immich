@@ -39,7 +39,7 @@ class AlbumInfoCard extends HookConsumerWidget {
 
     final previewAsset = useState<Asset?>(null);
     getPreviewAsset() async {
-      var assets = await ref.read(albumMediaRepositoryProvider).getAssets(
+      final assets = await ref.read(albumMediaRepositoryProvider).getAssets(
             album.album.localId!,
             start: 0,
             end: 1,
