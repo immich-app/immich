@@ -403,6 +403,67 @@ describe('/libraries', () => {
       utils.removeImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
     });
 
+    const annoyingChars = [
+      "'",
+      '"',
+      '`',
+      '*',
+      '{',
+      '}',
+      ',',
+      '(',
+      ')',
+      '[',
+      ']',
+      '?',
+      '!',
+      '@',
+      '#',
+      '$',
+      '%',
+      '^',
+      '&',
+      '=',
+      '+',
+      '~',
+      '|',
+      '<',
+      '>',
+      ';',
+      ':',
+      '/', // We never got backslashes to work
+    ];
+
+    it.each(annoyingChars)('should scan multiple import paths with %s', async (char) => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/folder${char}1`, `${testAssetDirInternal}/temp/folder${char}2`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ originalPath: expect.stringContaining(`folder${char}1/asset1.png`) }),
+          expect.objectContaining({ originalPath: expect.stringContaining(`folder${char}2/asset2.png`) }),
+        ]),
+      );
+
+      utils.removeImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
+    });
+
     it('should reimport a modified file', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
