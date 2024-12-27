@@ -32,7 +32,7 @@ async function bootstrap() {
 
   logger.setContext('Bootstrap');
   app.useLogger(logger);
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal', ...network.trustedProxies]);
+  app.set('trust proxy', ['loopback', ...network.trustedProxies]);
   app.set('etag', 'strong');
   app.use(cookieParser());
   app.use(json({ limit: '10mb' }));
