@@ -111,7 +111,10 @@
                 { value: VideoCodec.Vp9, text: 'VP9' },
                 { value: VideoCodec.Av1, text: 'AV1' },
               ]}
-              isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
+              isEdited={!isEqual(
+                sortBy(config.ffmpeg.acceptedVideoCodecs),
+                sortBy(savedConfig.ffmpeg.acceptedVideoCodecs),
+              )}
             />
 
             <SettingCheckboxes
@@ -126,7 +129,10 @@
                 { value: AudioCodec.Libopus, text: 'Opus' },
                 { value: AudioCodec.PcmS16Le, text: 'PCM (16 bit)' },
               ]}
-              isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
+              isEdited={!isEqual(
+                sortBy(config.ffmpeg.acceptedAudioCodecs),
+                sortBy(savedConfig.ffmpeg.acceptedAudioCodecs),
+              )}
             />
 
             <SettingCheckboxes
@@ -140,7 +146,10 @@
                 { value: VideoContainer.Ogg, text: 'Ogg' },
                 { value: VideoContainer.Webm, text: 'WebM' },
               ]}
-              isEdited={!isEqual(sortBy(config.ffmpeg.acceptedContainers), sortBy(savedConfig.ffmpeg.acceptedContainers))}
+              isEdited={!isEqual(
+                sortBy(config.ffmpeg.acceptedContainers),
+                sortBy(savedConfig.ffmpeg.acceptedContainers),
+              )}
             />
           </div>
         </SettingAccordion>
