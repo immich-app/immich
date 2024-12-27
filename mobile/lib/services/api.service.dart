@@ -10,6 +10,8 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
+import 'dns_query_service.dart';
+
 class ApiService implements Authentication {
   late ApiClient _apiClient;
 
@@ -83,6 +85,9 @@ class ApiService implements Authentication {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
+    if (!Uri.tryParse(serverUrl)?.hasAbsolutePath ?? false) {
+      throw ApiException(400, "Invalid server URL: $serverUrl");
+    }
     final url = sanitizeUrl(serverUrl);
 
     if (!await _isEndpointAvailable(serverUrl)) {
@@ -97,7 +102,23 @@ class ApiService implements Authentication {
     return url;
   }
 
+  final DnsQueryService _dnsQueryService = DnsQueryService();
+
+  /// Resolves the server endpoint and sets the base path for the API client.
+  /// 
+  /// If DNS resolution fails, it falls back to the original server URL.
+  /// Logs the resolution process for debugging.
   Future<bool> _isEndpointAvailable(String serverUrl) async {
+    final parsedUri = Uri.parse(serverUrl);
+    final domain = parsedUri.host;
+
+    final resolvedUrl = await _dnsQueryService.resolveDns(domain);
+    if (resolvedUrl != null) {
+      serverUrl = resolvedUrl;
+    } else {
+      _log.info("DNS resolution failed for domain: $domain, original serverUrl: $serverUrl");
+    }
+    
     if (!serverUrl.endsWith('/api')) {
       serverUrl += '/api';
     }
@@ -117,6 +138,7 @@ class ApiService implements Authentication {
       );
       return false;
     }
+    _log.info('Resolved URL: $resolvedUrl, Final server URL: $serverUrl');
     return true;
   }
 
@@ -143,7 +165,7 @@ class ApiService implements Authentication {
         return endpoint;
       }
     } catch (e) {
-      debugPrint("Could not locate /.well-known/immich at $baseUrl");
+      _log.warning("Could not locate /.well-known/immich at $baseUrl");
     }
 
     return "";
@@ -157,16 +179,20 @@ class ApiService implements Authentication {
   Future<void> setDeviceInfoHeader() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
-    if (Platform.isIOS) {
-      final iosInfo = await deviceInfoPlugin.iosInfo;
-      authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
-      authenticationApi.apiClient.addDefaultHeader('deviceType', 'iOS');
-    } else {
-      final androidInfo = await deviceInfoPlugin.androidInfo;
-      authenticationApi.apiClient
-          .addDefaultHeader('deviceModel', androidInfo.model);
-      authenticationApi.apiClient.addDefaultHeader('deviceType', 'Android');
+    try {
+      if (Platform.isIOS) {
+        final iosInfo = await deviceInfoPlugin.iosInfo;
+        authenticationApi.apiClient
+            .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
+        authenticationApi.apiClient.addDefaultHeader('deviceType', 'iOS');
+      } else {
+        final androidInfo = await deviceInfoPlugin.androidInfo;
+        authenticationApi.apiClient
+            .addDefaultHeader('deviceModel', androidInfo.model);
+        authenticationApi.apiClient.addDefaultHeader('deviceType', 'Android');
+      }
+    } catch (e) {
+      _log.warning('Failed to set device info headers: $e');
     }
   }
 
