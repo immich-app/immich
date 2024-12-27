@@ -255,7 +255,10 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   return { newFiles, duplicates };
 };
 
-export const uploadFiles = async (files: string[], { dryRun, concurrency }: UploadOptionsDto): Promise<Asset[]> => {
+export const uploadFiles = async (
+  files: string[],
+  { dryRun, concurrency, progress }: UploadOptionsDto,
+): Promise<Asset[]> => {
   if (files.length === 0) {
     console.log('All assets were already uploaded, nothing to do.');
     return [];
@@ -275,12 +278,20 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
     return files.map((filepath) => ({ id: '', filepath }));
   }
 
-  const uploadProgress = new SingleBar(
-    { format: 'Uploading assets | {bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}' },
-    Presets.shades_classic,
-  );
-  uploadProgress.start(totalSize, 0);
-  uploadProgress.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
+  let uploadProgress: SingleBar | undefined;
+
+  if (progress) {
+    uploadProgress = new SingleBar(
+      {
+        format: 'Uploading assets | {bar} | {percentage}% | ETA: {eta_formatted} | {value_formatted}/{total_formatted}',
+      },
+      Presets.shades_classic,
+    );
+  } else {
+    console.log(`Uploading ${files.length} asset${s(files.length)} (${byteSize(totalSize)})`);
+  }
+  uploadProgress?.start(totalSize, 0);
+  uploadProgress?.update({ value_formatted: 0, total_formatted: byteSize(totalSize) });
 
   let duplicateCount = 0;
   let duplicateSize = 0;
@@ -306,7 +317,7 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
         successSize += stats.size ?? 0;
       }
 
-      uploadProgress.update(successSize, { value_formatted: byteSize(successSize + duplicateSize) });
+      uploadProgress?.update(successSize, { value_formatted: byteSize(successSize + duplicateSize) });
 
       return response;
     },
@@ -319,7 +330,7 @@ export const uploadFiles = async (files: string[], { dryRun, concurrency }: Uplo
 
   await queue.drained();
 
-  uploadProgress.stop();
+  uploadProgress?.stop();
 
   console.log(`Successfully uploaded ${successCount} new asset${s(successCount)} (${byteSize(successSize)})`);
   if (duplicateCount > 0) {
