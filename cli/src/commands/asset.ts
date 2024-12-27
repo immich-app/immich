@@ -169,17 +169,19 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
     return { newFiles: files, duplicates: [] };
   }
 
-  const multiBar = new MultiBar(
-    { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
-    Presets.shades_classic,
-  );
+  let multiBar: MultiBar | undefined;
 
-  const hashProgressBar = progress
-    ? multiBar.create(files.length, 0, { message: 'Hashing files          ' })
-    : undefined;
-  const checkProgressBar = progress
-    ? multiBar.create(files.length, 0, { message: 'Checking for duplicates' })
-    : undefined;
+  if (progress) {
+    multiBar = new MultiBar(
+      { format: '{message} | {bar} | {percentage}% | ETA: {eta}s | {value}/{total} assets' },
+      Presets.shades_classic,
+    );
+  } else {
+    console.log(`Received ${files.length} files, hashing...`);
+  }
+
+  const hashProgressBar = multiBar?.create(files.length, 0, { message: 'Hashing files          ' });
+  const checkProgressBar = multiBar?.create(files.length, 0, { message: 'Checking for duplicates' });
 
   const newFiles: string[] = [];
   const duplicates: Asset[] = [];
@@ -237,7 +239,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
 
   await checkBulkUploadQueue.drained();
 
-  multiBar.stop();
+  multiBar?.stop();
 
   console.log(`Found ${newFiles.length} new files and ${duplicates.length} duplicate${s(duplicates.length)}`);
 
