@@ -98,7 +98,7 @@ export const startWatch = async (
     if (stats?.isDirectory()) {
       return;
     }
-    const ext = path.split('.').pop()?.toLowerCase();
+    const ext = '.' + path.split('.').pop()?.toLowerCase();
     if (!extensions.has(ext ?? '')) {
       return;
     }
