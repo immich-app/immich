@@ -17,7 +17,7 @@ class AlbumPreviewPage extends HookConsumerWidget {
     final assets = useState<List<Asset>>([]);
 
     getAssetsInAlbum() async {
-      var results = await ref
+      final results = await ref
           .read(albumMediaRepositoryProvider)
           .getAssets(album.localId!);
       if (context.mounted) {
