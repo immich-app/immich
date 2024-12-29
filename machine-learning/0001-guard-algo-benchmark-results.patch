@@ -1,4 +1,4 @@
-From dbc1e115a2c3c05f676dcfeb85895ed67000a348 Mon Sep 17 00:00:00 2001
+From 1f5d6323fa69ee16feab25f8e1398c1aed03ee08 Mon Sep 17 00:00:00 2001
 From: mertalev <101130780+mertalev@users.noreply.github.com>
 Date: Sun, 29 Dec 2024 14:07:51 -0500
 Subject: [PATCH] guard algo benchmark results
@@ -8,7 +8,7 @@ Subject: [PATCH] guard algo benchmark results
  1 file changed, 6 insertions(+)
 
 diff --git a/onnxruntime/core/providers/rocm/nn/conv.h b/onnxruntime/core/providers/rocm/nn/conv.h
-index bc9846203e..b1cd2a449d 100644
+index bc9846203e..0086e064f1 100644
 --- a/onnxruntime/core/providers/rocm/nn/conv.h
 +++ b/onnxruntime/core/providers/rocm/nn/conv.h
 @@ -52,6 +52,7 @@ class lru_unordered_map {
@@ -49,7 +49,7 @@ index bc9846203e..b1cd2a449d 100644
    size_t max_size_;
    std::unordered_map<Key, value_type, Hash, KeyEqual, MapAllocator> items_;
    list_type lru_list_;
-+  std::mutex mutex_;
++  mutable std::mutex mutex_;
  };
  
  // cached miopen descriptors
