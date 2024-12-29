@@ -94,6 +94,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Unofficial Kodi plugin for Immich.',
     url: 'https://github.com/vladd11/immich-kodi',
   },
+  {
+    title: 'Immich Desktop Client',
+    description: 'Continuously sync assets from your PC to your Immich server.',
+    url: 'https://github.com/CookieDude24/immich-desktop-client',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
