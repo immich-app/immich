@@ -38,7 +38,7 @@ WORKDIR /code/onnxruntime
 COPY ./0001-guard-algo-benchmark-results.patch /tmp/
 RUN git apply /tmp/0001-guard-algo-benchmark-results.patch
 
-RUN ./dockerfiles/scripts/install_common_deps.sh
+RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 13 --cmake_extra_defines\
     ONNXRUNTIME_VERSION=1.19.2 --use_rocm --rocm_home=/opt/rocm
