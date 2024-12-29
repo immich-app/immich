@@ -17,7 +17,7 @@ RUN mkdir /opt/armnn && \
 
 # Warning: 26.3Gb of disk space required to pull this image
 # https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
-FROM rocm/dev-ubuntu-22.04:6.2.4-complete AS builder-rocm
+FROM rocm/dev-ubuntu-22.04:6.1.2-complete AS builder-rocm
 
 WORKDIR /code
 
