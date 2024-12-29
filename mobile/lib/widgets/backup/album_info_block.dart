@@ -17,13 +17,20 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-const double previewWidth = 60;
-const double previewHeight = 60;
+enum AlbumInfoBlockMode { grid, list }
 
-class AlbumInfoListTile extends HookConsumerWidget {
+const double tilePreviewWidth = 60;
+const double tilePreviewHeight = 60;
+
+class AlbumInfoBlock extends HookConsumerWidget {
   final AvailableAlbum album;
+  final AlbumInfoBlockMode mode;
 
-  const AlbumInfoListTile({super.key, required this.album});
+  const AlbumInfoBlock({
+    super.key,
+    required this.album,
+    required this.mode,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,10 +43,10 @@ class AlbumInfoListTile extends HookConsumerWidget {
         .getSetting(AppSettingsEnum.syncAlbums);
 
     final isDarkTheme = context.isDarkTheme;
-    
+
     final previewAsset = useState<Asset?>(null);
     getPreviewAsset() async {
-      var assets = await ref.read(albumMediaRepositoryProvider).getAssets(
+      final assets = await ref.read(albumMediaRepositoryProvider).getAssets(
             album.album.localId!,
             start: 0,
             end: 1,
@@ -65,19 +72,8 @@ class AlbumInfoListTile extends HookConsumerWidget {
         ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
     ColorFilter? noFilter =
         const ColorFilter.mode(Colors.black, BlendMode.dst);
-    ColorFilter? unselectedFilter=
+    ColorFilter? unselectedFilter =
         const ColorFilter.mode(Colors.black, BlendMode.color);
-
-
-    buildImageFilter(bool hasImage) {
-      if (isSelected) {
-        return selectedFilter;
-      } else if (isExcluded) {
-        return excludedFilter;
-      } else {
-        return hasImage ? noFilter : unselectedFilter;
-      }
-    }
 
     buildSelectedTextBox() {
       if (isSelected) {
@@ -113,6 +109,16 @@ class AlbumInfoListTile extends HookConsumerWidget {
       return const SizedBox();
     }
 
+    buildImageFilter(bool hasImage) {
+      if (isSelected) {
+        return selectedFilter;
+      } else if (isExcluded) {
+        return excludedFilter;
+      } else {
+        return hasImage ? noFilter : unselectedFilter;
+      }
+    }
+
     buildTileColor() {
       if (isSelected) {
         return context.isDarkTheme
@@ -127,20 +133,23 @@ class AlbumInfoListTile extends HookConsumerWidget {
       }
     }
 
+
     buildImage() {
+      final width = mode == AlbumInfoBlockMode.grid ? double.infinity : tilePreviewWidth;
+      final height = mode == AlbumInfoBlockMode.grid ? double.infinity : tilePreviewHeight;
       return ColorFiltered(
         colorFilter: buildImageFilter(previewAsset.value != null),
         child: previewAsset.value != null
             ? ImmichThumbnail(
                 asset: previewAsset.value,
-                width: previewWidth,
-                height: previewHeight,
+                width: width,
+                height: height,
                 fit: BoxFit.cover,
               )
-            : const Image(
-                width: previewWidth,
-                height: previewHeight,
-                image: AssetImage(
+            : Image(
+                width: width,
+                height: height,
+                image: const AssetImage(
                   'assets/immich-logo.png',
                 ),
                 fit: BoxFit.cover,
@@ -148,30 +157,96 @@ class AlbumInfoListTile extends HookConsumerWidget {
       );
     }
 
-    return GestureDetector(
-      onDoubleTap: () {
-        ref.watch(hapticFeedbackProvider.notifier).selectionClick();
-
-        if (isExcluded) {
-          // Remove from exclude album list
-          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
-        } else {
-          // Add to exclude album list
-
-          if (album.id == 'isAll' || album.name == 'Recents') {
-            ImmichToast.show(
-              context: context,
-              msg: 'Cannot exclude album contains all assets',
-              toastType: ToastType.error,
-              gravity: ToastGravity.BOTTOM,
-            );
-            return;
-          }
-
-          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
-        }
-      },
-      child: ListTile(
+    buildBlock() {
+      if (mode == AlbumInfoBlockMode.grid) {
+        return Card(
+          clipBehavior: Clip.hardEdge,
+          margin: const EdgeInsets.all(1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // if you need this
+            side: BorderSide(
+              color: isDarkTheme
+                  ? const Color.fromARGB(255, 37, 35, 35)
+                  : const Color(0xFFC9C9C9),
+              width: 1,
+            ),
+          ),
+          elevation: 0,
+          borderOnForeground: false,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    buildImage(),
+                    Positioned(
+                      bottom: 10,
+                      right: 25,
+                      child: buildSelectedTextBox(),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 25,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            album.name,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: context.primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: Text(
+                              album.assetCount.toString() +
+                                  (album.isAll
+                                      ? " (${'backup_all'.tr()})"
+                                      : ""),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        context.pushRoute(
+                          AlbumPreviewRoute(album: album.album),
+                        );
+                      },
+                      icon: Icon(
+                        Icons.image_outlined,
+                        color: context.primaryColor,
+                        size: 24,
+                      ),
+                      splashRadius: 25,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+      
+      return ListTile(
         tileColor: buildTileColor(),
         contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
         onTap: () {
@@ -194,8 +269,7 @@ class AlbumInfoListTile extends HookConsumerWidget {
           ),
         ),
         subtitle: Text(album.assetCount.toString()),
-        trailing: 
-        Row(
+        trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             buildSelectedTextBox(),
@@ -214,7 +288,45 @@ class AlbumInfoListTile extends HookConsumerWidget {
             ),
           ],
         ),
-      ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () {
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
+
+        if (isSelected) {
+          ref.read(backupProvider.notifier).removeAlbumForBackup(album);
+        } else {
+          ref.read(backupProvider.notifier).addAlbumForBackup(album);
+          if (syncAlbum) {
+            ref.read(albumProvider.notifier).createSyncAlbum(album.name);
+          }
+        }
+      },
+      onDoubleTap: () {
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
+
+        if (isExcluded) {
+          // Remove from exclude album list
+          ref.read(backupProvider.notifier).removeExcludedAlbumForBackup(album);
+        } else {
+          // Add to exclude album list
+
+          if (album.id == 'isAll' || album.name == 'Recents') {
+            ImmichToast.show(
+              context: context,
+              msg: 'Cannot exclude album contains all assets',
+              toastType: ToastType.error,
+              gravity: ToastGravity.BOTTOM,
+            );
+            return;
+          }
+
+          ref.read(backupProvider.notifier).addExcludedAlbumForBackup(album);
+        }
+      },
+      child: buildBlock(),
     );
   }
 }
