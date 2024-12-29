@@ -23,7 +23,7 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_USERNAME: ${DB_DATABASE_NAME}
-      TZ: $TZ
+      TZ: ${TZ}
     ports:
       - '2283:2283'
     depends_on:
