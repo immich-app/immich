@@ -22,8 +22,8 @@ import path, { basename } from 'node:path';
 import { Queue } from 'src/queue';
 import { BaseOptions, Batcher, authenticate, crawl, sha1 } from 'src/utils';
 
-export const UPLOAD_WATCH_BATCH_SIZE = 100;
-export const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
+const UPLOAD_WATCH_BATCH_SIZE = 100;
+const UPLOAD_WATCH_DEBOUNCE_TIME_MS = 10_000;
 
 const s = (count: number) => (count === 1 ? '' : 's');
 
