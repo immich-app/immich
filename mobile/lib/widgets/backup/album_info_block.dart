@@ -70,8 +70,7 @@ class AlbumInfoBlock extends HookConsumerWidget {
     );
     ColorFilter excludedFilter =
         ColorFilter.mode(Colors.red.withAlpha(75), BlendMode.darken);
-    ColorFilter? noFilter =
-        const ColorFilter.mode(Colors.black, BlendMode.dst);
+    ColorFilter? noFilter = const ColorFilter.mode(Colors.black, BlendMode.dst);
     ColorFilter? unselectedFilter =
         const ColorFilter.mode(Colors.black, BlendMode.color);
 
@@ -133,10 +132,11 @@ class AlbumInfoBlock extends HookConsumerWidget {
       }
     }
 
-
     buildImage() {
-      final width = mode == AlbumInfoBlockMode.grid ? double.infinity : tilePreviewWidth;
-      final height = mode == AlbumInfoBlockMode.grid ? double.infinity : tilePreviewHeight;
+      final width =
+          mode == AlbumInfoBlockMode.grid ? double.infinity : tilePreviewWidth;
+      final height =
+          mode == AlbumInfoBlockMode.grid ? double.infinity : tilePreviewHeight;
       return ColorFiltered(
         colorFilter: buildImageFilter(previewAsset.value != null),
         child: previewAsset.value != null
@@ -245,7 +245,7 @@ class AlbumInfoBlock extends HookConsumerWidget {
           ),
         );
       }
-      
+
       return ListTile(
         tileColor: buildTileColor(),
         contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
