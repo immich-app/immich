@@ -19,6 +19,7 @@ FROM builder-cpu AS builder-rknn
 
 # Warning: 26.3Gb of disk space required to pull this image
 # https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
+# 6.2 or later fails to build as of writing
 FROM rocm/dev-ubuntu-22.04:6.1.2-complete AS builder-rocm
 
 WORKDIR /code
@@ -34,11 +35,12 @@ RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.
 ENV PATH /code/cmake-3.27.3-linux-x86_64/bin:${PATH}
 
 # Prepare onnxruntime repository & build onnxruntime
+# 1.20.1 fails to build as of writing
 RUN git clone --single-branch --branch v1.19.2 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
 # Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
-COPY ./0001-guard-algo-benchmark-results.patch /tmp/
-RUN git apply /tmp/0001-guard-algo-benchmark-results.patch
+COPY ./0001-fix-rocm-conv-thread-safety.patch /tmp/
+RUN git apply /tmp/0001-fix-rocm-conv-thread-safety.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
@@ -111,7 +113,7 @@ COPY --from=builder-armnn \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM rocm/dev-ubuntu-24.04:6.2.4-complete AS prod-rocm
+FROM rocm/dev-ubuntu-22.04:6.1.2-complete AS prod-rocm
 
 
 FROM prod-${DEVICE} AS prod
