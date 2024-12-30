@@ -94,7 +94,7 @@ export const startWatch = async (
     },
   });
 
-  const fsWatchListener = async (path: string, stats?: Stats) => {
+  const onFile = async (path: string, stats?: Stats) => {
     if (stats?.isDirectory()) {
       return;
     }
@@ -113,8 +113,8 @@ export const startWatch = async (
     depth: options.recursive ? undefined : 1,
     persistent: true,
   })
-    .on('add', fsWatchListener)
-    .on('change', fsWatchListener)
+    .on('add', onFile)
+    .on('change', onFile)
     .on('error', (error) => console.error(`Watcher error: ${error}`));
 
   process.on('SIGINT', async () => {
