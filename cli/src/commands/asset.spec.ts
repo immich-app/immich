@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, MockedFunction, vi } from 'vitest';
 
 import { Action, checkBulkUpload, defaults, getSupportedMediaTypes, Reason } from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
@@ -202,42 +202,110 @@ describe('checkForDuplicates', () => {
 });
 
 describe('startWatch', () => {
-  it('should start watching a directory and upload new files', async () => {
+  let testFolder: string;
+  let checkBulkUploadMocked: MockedFunction<typeof checkBulkUpload>;
+
+  beforeEach(async () => {
     vi.restoreAllMocks();
-    const testFolder = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'test-startWatch-'));
-    const testFilePath = path.join(testFolder, 'test.jpg');
-    const checkBulkUploadMocked = vi.mocked(checkBulkUpload);
-    checkBulkUploadMocked.mockResolvedValue({
-      results: [
-        {
-          action: Action.Accept,
-          id: testFilePath,
-        },
-      ],
-    });
+
     vi.mocked(getSupportedMediaTypes).mockResolvedValue({
       image: ['.jpg'],
       sidecar: ['.xmp'],
       video: ['.mp4'],
     });
-    try {
-      await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
-      await sleep(100); // to debounce the watcher from considering the test file as a existing file
-      await fs.promises.writeFile(testFilePath, 'testjpg');
 
-      await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
-      expect(getSupportedMediaTypes).toHaveBeenCalled();
-      expect(checkBulkUpload).toHaveBeenCalledWith({
-        assetBulkUploadCheckDto: {
-          assets: [
-            expect.objectContaining({
-              id: testFilePath,
-            }),
-          ],
-        },
-      });
-    } finally {
-      await fs.promises.rm(testFolder, { recursive: true, force: true });
-    }
+    testFolder = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'test-startWatch-'));
+    checkBulkUploadMocked = vi.mocked(checkBulkUpload);
+    checkBulkUploadMocked.mockResolvedValue({
+      results: [],
+    });
+  });
+
+  it('should start watching a directory and upload new files', async () => {
+    const testFilePath = path.join(testFolder, 'test.jpg');
+
+    await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
+    await sleep(100); // to debounce the watcher from considering the test file as a existing file
+    await fs.promises.writeFile(testFilePath, 'testjpg');
+
+    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
+    expect(checkBulkUpload).toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: [
+          expect.objectContaining({
+            id: testFilePath,
+          }),
+        ],
+      },
+    });
+  });
+
+  it('should filter out unsupported files', async () => {
+    const testFilePath = path.join(testFolder, 'test.jpg');
+    const unsupportedFilePath = path.join(testFolder, 'test.txt');
+
+    await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
+    await sleep(100); // to debounce the watcher from considering the test file as a existing file
+    await fs.promises.writeFile(testFilePath, 'testjpg');
+    await fs.promises.writeFile(unsupportedFilePath, 'testtxt');
+
+    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
+    expect(checkBulkUpload).toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: expect.arrayContaining([
+          expect.objectContaining({
+            id: testFilePath,
+          }),
+        ]),
+      },
+    });
+
+    expect(checkBulkUpload).not.toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: expect.arrayContaining([
+          expect.objectContaining({
+            id: unsupportedFilePath,
+          }),
+        ]),
+      },
+    });
+  });
+
+  it('should filger out ignored patterns', async () => {
+    const testFilePath = path.join(testFolder, 'test.jpg');
+    const ignoredPattern = 'ignored';
+    const ignoredFolder = path.join(testFolder, ignoredPattern);
+    await fs.promises.mkdir(ignoredFolder, { recursive: true });
+    const ignoredFilePath = path.join(ignoredFolder, 'ignored.jpg');
+
+    await startWatch([testFolder], { concurrency: 1, ignore: ignoredPattern }, { batchSize: 1, debounceTimeMs: 10 });
+    await sleep(100); // to debounce the watcher from considering the test file as a existing file
+    await fs.promises.writeFile(testFilePath, 'testjpg');
+    await fs.promises.writeFile(ignoredFilePath, 'ignoredjpg');
+
+    await vi.waitUntil(() => checkBulkUploadMocked.mock.calls.length > 0, 3000);
+    expect(checkBulkUpload).toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: expect.arrayContaining([
+          expect.objectContaining({
+            id: testFilePath,
+          }),
+        ]),
+      },
+    });
+
+    expect(checkBulkUpload).not.toHaveBeenCalledWith({
+      assetBulkUploadCheckDto: {
+        assets: expect.arrayContaining([
+          expect.objectContaining({
+            id: ignoredFilePath,
+          }),
+        ]),
+      },
+    });
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(testFolder, { recursive: true, force: true });
   });
 });
