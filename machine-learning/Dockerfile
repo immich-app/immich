@@ -32,7 +32,7 @@ RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.
 ENV PATH /code/cmake-3.27.3-linux-x86_64/bin:${PATH}
 
 # Prepare onnxruntime repository & build onnxruntime
-RUN git clone --single-branch --branch v1.20.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
+RUN git clone --single-branch --branch v1.19.2 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
 # Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
 COPY ./0001-fix-rocm-conv-thread-safety.patch /tmp/
@@ -41,7 +41,7 @@ RUN git apply /tmp/0001-fix-rocm-conv-thread-safety.patch
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 13 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.20.1 --use_rocm --rocm_home=/opt/rocm
+    ONNXRUNTIME_VERSION=1.19.2 --use_rocm --rocm_home=/opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
