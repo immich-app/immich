@@ -216,9 +216,9 @@ describe('startWatch', () => {
       ],
     });
     vi.mocked(getSupportedMediaTypes).mockResolvedValue({
-      image: ['jpg'],
-      sidecar: ['xmp'],
-      video: ['mp4'],
+      image: ['.jpg'],
+      sidecar: ['.xmp'],
+      video: ['.mp4'],
     });
     try {
       await startWatch([testFolder], { concurrency: 1 }, { batchSize: 1, debounceTimeMs: 10 });
