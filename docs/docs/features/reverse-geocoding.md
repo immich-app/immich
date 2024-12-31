@@ -1,6 +1,6 @@
 # Reverse Geocoding
 
-Immich supports [Reverse Geocoding](https://en.wikipedia.org/wiki/Reverse_geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
+Immich supports local [Reverse Geocoding](https://en.wikipedia.org/wiki/Reverse_geocoding) using data from the [GeoNames](https://www.geonames.org/) geographical database.
 
 ## Extraction
 
@@ -10,5 +10,6 @@ During Exif Extraction, assets with latitudes and longitudes are reverse geocode
 
 Data from a reverse geocode is displayed in the image details, and used in [Smart Search](/docs/features/smart-search.md).
 
-<img src={require('./img/reverse-geocoding-mobile1.png').default} width='33%' title='Reverse Geocoding' />
-<img src={require('./img/reverse-geocoding-mobile2.png').default} width='33%' title='Reverse Geocoding' />
+<img src={require('./img/reverse-geocoding-mobile3.jpeg').default} width='33%' title='Reverse Geocoding' />
+<img src={require('./img/reverse-geocoding-mobile1.jpeg').default} width='33%' title='Reverse Geocoding' />
+<img src={require('./img/reverse-geocoding-mobile2.jpeg').default} width='33%' title='Reverse Geocoding' />

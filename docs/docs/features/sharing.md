@@ -1,6 +1,8 @@
-# Shared Albums & Assets
+# Sharing
 
-## Shared Albums
+Immich supports local sharing, with users on the same Immich instance and public sharing via public links.
+
+## Shared albums
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -15,9 +17,11 @@ When sharing shared albums, whats shared is:
 ## Shared Album Features
 
 - Download all assets as zip file (Web only).
-  :::info Archive size limited.
-  If the size of the album exceeds 4GB, the archive files will by default be divided into 4GB each. This can be changed on the user settings page.
-  :::
+
+:::info Archive size limited.
+If the size of the album exceeds 4GB, the archive files will by default be divided into 4GB each. This can be changed on the user settings page.
+:::
+
 - Add a description to the album (Web only).
 - Slideshow view (Web only).
 - Add or remove photos to an album.
