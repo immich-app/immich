@@ -100,7 +100,7 @@ You can choose to disable a certain type of machine learning, for example smart 
 
 ### Smart Search
 
-The [smart search](/docs/features/smart-search) settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
+The [smart search](/docs/features/searching) settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
 Smart Search job on all images to fully apply the change.
 
 :::info Internet connection
