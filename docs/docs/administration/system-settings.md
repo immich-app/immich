@@ -1,10 +1,6 @@
 # System Settings
 
-On the system settings page, the administrator can manage global settings for the Immich instance.
-
-:::note
-Viewing and modifying the system settings is restricted to the Administrator.
-:::
+The admin user can settings for the Immich instance.
 
 :::tip
 You can always return to the default settings by clicking the `Reset to default` button.

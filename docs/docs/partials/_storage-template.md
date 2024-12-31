@@ -12,11 +12,18 @@ Year/Year-Month-Day/Filename.Extension
 
 If you want to change the storage template during the initial setup, first enable the feature.
 
-<img src={require('./img/enable-storage-template.png').default} width="100%" title="Enable Storage Template Setting" />
+<img src={require('./img/enable-storage-template.png').default} width="80%" title="Enable Storage Template Setting" />
 
 Then, customize your storage template.
+80
+<img src={require('./img/storage-template.png').default} width="80%" title="Storage Template Setting" />
 
-<img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
+:::info
+`Storage Template Migration` job can be run after enabling the feature or changing the content of template, in order to apply the change to the existing library.
+
+<img src={require('./img/storage-template-migration-job.png').default} width="80%" title="Storage Template Setting" />
+
+:::
 
 :::tip
 If an asset is in multiple albums, `{{album}}` will be set to the name of the album which was most recently created. By default, special characters will be converted to an HTML entity (for example, `&` -> `&amp;`). To prevent this, wrap the variable in an extra set of braces (for example, `{{{album}}}`). You can learn more about this [here](https://handlebarsjs.com/guide/expressions.html#html-escaping) and [here](https://github.com/immich-app/immich/issues/4917).
