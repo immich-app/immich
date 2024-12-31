@@ -1,4 +1,4 @@
-# Supported formats
+# Supported Media Formats
 
 Immich supports a number of image and video formats, the most common of which are outlined here.
 

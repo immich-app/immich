@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Search
+# Searching
 
 Immich uses Postgres as its search database for both metadata and contextual CLIP search.
 

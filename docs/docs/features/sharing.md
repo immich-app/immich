@@ -2,255 +2,50 @@
 
 Immich supports local sharing, with users on the same Immich instance and public sharing via public links.
 
-## Shared albums
+## Local sharing
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@theme/TabItem';
+### Albums
 
-Album sharing allows you to share assets with other users or with people from around the world via a link or invitation (for system users).
+Albums can be shared between users on the same Immich instance. The shared users can view and add their own photos and videos to the shared album.
 
-When sharing shared albums, whats shared is:
+After creating an album, you can access the sharing options by clicking on the share icon. When sharing an album, you can select the users you want to share the album with and assign them permissions either as editors (read-write) or viewers (read-only).
 
-- The selected assets.
-- Metadata of the assets (Can be removed by sharing via link).
+#### Web
 
-## Shared Album Features
+<img src={require('./img/shared-album.jpeg').default} width='60%' title='Shared album option' caption='ok' />
 
-- Download all assets as zip file (Web only).
+<img src={require('./img/shared-album-user-selection.png').default} width='30%' height='100%' title='Shared album user selection' />
 
-:::info Archive size limited.
-If the size of the album exceeds 4GB, the archive files will by default be divided into 4GB each. This can be changed on the user settings page.
-:::
+#### Mobile App
 
-- Add a description to the album (Web only).
-- Slideshow view (Web only).
-- Add or remove photos to an album.
-- Comment on the album (for system users only).
+<img src={require('./img/shared-album-mobile.jpeg').default} width='33%' title='Shared album option' />
 
-:::info
-When you create an album and it is not shared with anyone, it will be added to the Albums category.
-:::
+### Partners
 
-<Tabs>
-  <TabItem value="Computer" label="Computer" default>
+Partner sharing allows you to share your _entire_ library with other users of your choice. They can then view your library and download the assets.
 
-### Create a Shared Album
+You can read this guide to learn more about [partner sharing](/docs/features/partner-sharing).
 
-1. Select the assets (Shift can be used for multiple selection).
-2. Click on the + on the top right -> add to a shared album.
-3. Name the new album and add the album.
+## Public sharing
 
-## Sharing Between Users
+You can create a public link to share a group of photos or videos, or an album, with anyone. The public link can be shared via email, social media, or any other method. There are a varierity of options to customize the public link, such as setting an expiration date, password protection, and more. Public shared link is handy when you want to share a group of photos or videos with someone who doesn't have an Immich account and allow the shared user to upload their photos or videos to your account.
 
-### Shared Album Options
+The public shared link is generated with a random URL, which act as the secrect of the link to avoid the link being guessed by unwanted access, for example
 
-- Add or remove users from the album.
-  :::info remove user(s)
-  When a user is removed from the album, the photos he uploaded will still appear in the album.
-  :::
-- Enable or disable comments & likes.
-- Replace the album cover.
-- Display order (newest first / oldest first).
+```
+https://immich.yourdomain.com/share/JUckRMxlgpo7F9BpyqGk_cZEwDzaU_U5LU5_oNZp1ETIBa9dpQ0b5ghNm_22QVJfn3k
+```
 
-To change these settings click on the 3 dots on the right -> options.
+### Creating a public share link
 
-:::info Known bug
-Currently it is not possible to remove people through the options.
-This is a [known problem and it has a temporary solution](https://github.com/immich-app/immich/issues/7954)
-:::
+You can create a public share link by selecting the photos or videos, or from the share icon on an album.
 
-## Share Album via Link
+<img src={require('./img/public-shared-link-individual.jpeg').default} width='60%' title='Creating public shared link from selection' />
 
-:::info
-When wanting to share with people outside the home network via a link, Immich needs to be exposed to the world wide web, read more to [learn the ways to do this](/docs/guides/remote-access.md).
-:::
+<img src={require('./img/public-shared-link-album.png').default} width='30%' title='Creating public shared link from album' />
 
-1. Enter the shared album.
-2. Click on the share icon.
-3. Click on Create link.
+### Customizing the public share link
 
-You can edit the link properties, options include;
+You can customize the public share link by setting an expiration date, password protection, allow what actions can be performed on the shared assets, and more.
 
-- **Description -** adding a description to the album (optional)
-- **Password -** adding a password to the album (optional), it is required to activate Require password.
-- **Show metadata -** whether to show metadata to whoever the link will be shared with (optional).
-- **Allow public user to download -** whether to allow whoever has the link to download all the images or a certain image (optional).
-- **Allow public user to upload -** whether to allow whoever has the link to upload assets to the album (optional).
-  :::info
-  Whoever has the link and have uploaded files cannot delete them.
-  :::
-- **Expire after -** adding an expiration date to the link (optional).
-
-## Share Specific Assets
-
-A user can share specific assets without linking them to a specific album.
-In order to do this:
-
-1. Go to the timeline
-2. Select the assets (Shift can be used for multiple selection)
-3. Click the share button
-
-:::info
-Assets shared in this way will not be displayed in the Sharing category, in order to expect to remove or change the link settings of assets shared in this way, you must use the Manage generated links option.
-:::
-
-:::tip
-For temporary sharing, you can add an expiration date to assets shared this way.
-:::
-
-## Manage generated links
-
-A user can copy, delete and change the link settings he created for specific albums or assets, in order to do so;
-
-1. Go to the Immich home page.
-2. Select the Sharing category.
-3. On the top right, select Shared links.
-
-:::info remove links/users.
-When making a shared album private, the added photos will **still** be saved in the album.
-:::
-
-## Activity
-
-:::info
-Activity is not visible when sharing an album via external link.
-New users added to the album will be able to see previous activity.
-:::
-
-### Add a Comment or Like to the Album
-
-1. Enter the shared album.
-2. From the bottom right you can add comment(s) or delete old comments.
-3. To add a like (heart) to the album, click the heart button to the left of the "say something" button.
-
-#### Add a Comment or Like to a Specific Photo
-
-:::info Activity
-Activity of a comment or heart on a specific photo will appear in the general activity of the album.
-:::
-
-1. Enter the shared album.
-2. Enter the picture.
-3. From the bottom right you can add comment(s) or delete old comments.
-4. To add a like (heart) to the album, click the heart button to the left of the "say something" button.
-
-### Viewing Activity in the Album
-
-To view album activity on comments or likes
-
-1. Enter the shared album
-2. On the bottom right click on the message icon
-
-</TabItem>
-  <TabItem value="Mobile" label="Mobile">
-
-:::note mobile app
-Some of the features are not available on mobile, to understand what the full features of shared albums are, it is recommended to additionally read the explanation for the computer version.
-:::
-
-### Create a Shared Album
-
-1. Select the assets.
-2. Swipe up and click on Create new album.
-3. Name the new album and add the album.
-
-## Sharing Between Users
-
-#### Add or remove users from the album
-
-:::info remove user(s)
-When a user is removed from the album, the photos he uploaded will still appear in the album.
-:::
-
-After creating the album, click the Add User button and select the user you want to share with.
-
-### Shared Album Options
-
-- Enable or disable comments & likes.
-- Add or remove users
-
-To change these settings click on the 3 dots on the top right -> options.
-
-## Share Album via Link
-
-:::info
-When wanting to share with people outside the home network via a link, Immich needs to be exposed to the world wide web, read more to [learn the ways to do this](/docs/guides/remote-access.md).
-:::
-
-1. Enter the shared album.
-2. Click 3 dots on the top right.
-3. Click on Share.
-
-You can edit the link properties, options include;
-
-- **Description -** adding a description to the album (optional)
-- **Password -** adding a password to the album (optional)
-- **Show metadata -** whether to show metadata to whoever the link will be shared with (optional).
-- **Allow public user to download -** whether to allow whoever has the link to download all the images or a certain image (optional).
-- **Allow public user to upload -** whether to allow whoever has the link to upload assets to the album (optional).
-  ::: info
-  whoever has the link and have uploaded files cannot delete them.
-  :::
-- **Expire after -** adding an expiration date to the link (optional).
-
-## Share Specific Assets
-
-A user can share specific assets without linking them to a specific album.
-in order to do so;
-
-1. Go to the timeline
-2. Select the assets.
-3. Click the share button
-
-:::info
-Assets shared in this way will not be displayed in the Sharing category, in order to expect to remove or change the link settings of assets shared in this way, you must use the Manage generated links option.
-:::
-
-:::tip
-For temporary sharing, you can add an expiration date to assets shared this way.
-:::
-
-## Manage generated links
-
-A user can copy, delete and change the link settings he created for specific albums or assets, in order to do so;
-
-1. Go to Sharing category.
-2. Select Shared links at the top right.
-
-:::info remove links/users.
-When making a shared album private, the added photos will **still** be saved in the album.
-:::
-
-## Activity
-
-:::info
-Activity is not visible when sharing an album via external link.
-New users added to the album will be able to see previous activity.
-:::
-
-### Add a Comment or Like to the Album
-
-1. Enter the shared album.
-2. From the top right you can add comment(s) or delete old comments.
-3. To add a like (heart) to the album, click the heart button to the right of the "say something" button.
-
-#### Add a Comment or Like to a Specific Photo
-
-:::info Activity
-Activity of a comment or heart on a specific photo will appear in the general activity of the album.
-:::
-
-1. Enter the shared album.
-2. Enter the picture.
-3. From the top right you can add comment(s) or delete old comments.
-4. To add a like (heart) to the album, click the heart button to the right of the "say something" button.
-
-### Viewing Activity in the Album
-
-To view album activity on comments or likes
-
-1. Enter the shared album
-2. On the top right click on the message icon
-
-</TabItem>
-</Tabs>
+<img src={require('./img/public-shared-link-form.png').default} width='33%' title='Creating public shared link from album' />

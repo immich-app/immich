@@ -34,7 +34,7 @@ Partner shared photos can be displayed in the main timeline. This feature can be
 
 ### Web
 
-Account Settings -> Sharing -> Show in timeline
+The option can be found at `Account Settings > Partner Sharing > Show in timeline`
 
 <img src={require('./img/partner-sharing-5.png').default} width="70%" title='Partner Sharing for the web interface' />
 
