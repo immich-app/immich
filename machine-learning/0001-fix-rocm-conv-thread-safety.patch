@@ -126,7 +126,7 @@ index 7447113fdf..495aafa200 100644
        y_data = reinterpret_cast<HipT*>(p.Y->MutableData<T>());
  
 -      if (!s_.cached_benchmark_bwd_results.contains(x_dims)) {
-+      const std::size_t algo_key = HashConvAlgoKey(x_dims_miopen, w_dims);
++      const std::size_t algo_key = HashConvAlgoKey(x_dims, w_dims);
 +      if (!s_.cached_benchmark_bwd_results.contains(algo_key)) {
          IAllocatorUniquePtr<void> algo_search_workspace = GetScratchBuffer<void>(AlgoSearchWorkspaceSize, context->GetComputeStream());
  
