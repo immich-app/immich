@@ -10,8 +10,8 @@ Hardware and software requirements for Immich:
 
 Immich requires [**Docker**](https://docs.docker.com/get-started/get-docker/) with the **Docker Compose plugin**:
 
-- **Docker Engine**: This CLI variant is suitable for Linux servers (or Windows via WSL2).
-- **Docker Desktop**: This GUI variant is suitable for Linux desktop (or Windows or macOS).
+- **Docker Engine**: This CLI variant is designed for Linux servers (or Windows via WSL2).
+- **Docker Desktop**: This GUI variant is **not recommended**, but is available for Windows or macOS (please see OS requirements below).
 
 The Compose plugin will be installed by both Docker Engine and Desktop by following the linked installation guides; it can also be [separately installed](https://docs.docker.com/compose/install/).
 
