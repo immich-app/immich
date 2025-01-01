@@ -215,7 +215,7 @@ export type PersonWithFacesResponseDto = {
     birthDate: string | null;
     faces: AssetFaceWithoutPersonResponseDto[];
     id: string;
-    /** This property was added in DEV */
+    /** This property was added in v1.124.0 */
     isFavorite?: boolean;
     isHidden: boolean;
     name: string;
@@ -494,7 +494,7 @@ export type DuplicateResponseDto = {
 export type PersonResponseDto = {
     birthDate: string | null;
     id: string;
-    /** This property was added in DEV */
+    /** This property was added in v1.124.0 */
     isFavorite?: boolean;
     isHidden: boolean;
     name: string;
