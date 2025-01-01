@@ -118,6 +118,7 @@ describe(PersonService.name, () => {
             birthDate: null,
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: true,
+            isFavorite: false,
             updatedAt: expect.any(Date),
           },
         ],
@@ -141,7 +142,7 @@ describe(PersonService.name, () => {
         people: [
           {
             id: 'person-4',
-            name: '',
+            name: personStub.isFavorite.name,
             birthDate: null,
             thumbnailPath: '/path/to/thumbnail.jpg',
             isHidden: false,
@@ -258,6 +259,7 @@ describe(PersonService.name, () => {
         birthDate: '1976-06-30',
         thumbnailPath: '/path/to/thumbnail.jpg',
         isHidden: false,
+        isFavorite: false,
         updatedAt: expect.any(Date),
       });
       expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: '1976-06-30' });
@@ -282,7 +284,7 @@ describe(PersonService.name, () => {
 
       await expect(sut.update(authStub.admin, 'person-1', { isFavorite: true })).resolves.toEqual(responseDto);
 
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isHidden: true });
+      expect(personMock.update).toHaveBeenCalledWith({ id: 'person-1', isFavorite: true });
       expect(accessMock.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
     });
 
@@ -417,6 +419,7 @@ describe(PersonService.name, () => {
       ).resolves.toEqual({
         birthDate: personStub.noName.birthDate,
         isHidden: personStub.noName.isHidden,
+        isFavorite: personStub.noName.isFavorite,
         id: personStub.noName.id,
         name: personStub.noName.name,
         thumbnailPath: personStub.noName.thumbnailPath,
