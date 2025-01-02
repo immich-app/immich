@@ -26,6 +26,7 @@ It is not recommended to directly backup the `DB_DATA_LOCATION` folder. Doing so
 ### Automatic Database Backups
 
 For convenience, Immich will automatically create database backups by default. The backups are stored in `UPLOAD_LOCATION/backups`.  
+As mentioned above, you should make your own backup of these together with the asset folders as noted below.  
 You can adjust the schedule and amount of kept backups in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
 By default, Immich will keep the last 14 backups and create a new backup every day at 2:00 AM.
 
