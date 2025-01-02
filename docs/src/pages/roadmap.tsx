@@ -75,6 +75,8 @@ import {
   mdiVideo,
   mdiWeb,
   mdiDatabaseOutline,
+  mdiLinkEdit,
+  mdiMovieOpenPlayOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
