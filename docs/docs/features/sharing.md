@@ -12,13 +12,13 @@ After creating an album, you can access the sharing options by clicking on the s
 
 #### Web
 
-<img src={require('./img/shared-album.jpeg').default} width='60%' title='Shared album option' caption='ok' />
+<img src={require('./img/shared-album.webp').default} width='60%' title='Shared album option' caption='ok' />
 
-<img src={require('./img/shared-album-user-selection.png').default} width='30%' height='100%' title='Shared album user selection' />
+<img src={require('./img/shared-album-user-selection.webp').default} width='30%' height='100%' title='Shared album user selection' />
 
 #### Mobile App
 
-<img src={require('./img/shared-album-mobile.jpeg').default} width='33%' title='Shared album option' />
+<img src={require('./img/shared-album-mobile.webp').default} width='33%' title='Shared album option' />
 
 ### Partners
 

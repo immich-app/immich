@@ -6,12 +6,12 @@ You can enable this feature under [`Account Settings > Features > Folder View`](
 
 ## Enable folder view
 
-<img src={require('./img/folder-view-enable.png').default} width="80%" title='Folder view enable' />
+<img src={require('./img/folder-view-enable.webp').default} width="80%" title='Folder view enable' />
 
 ## Usage
 
 You can then navigate to the view from the sidebar to explore the folders and files in your library.
 
-<img src={require('./img/folder-access.png').default} width="30%" title='Folder view access' />
+<img src={require('./img/folder-access.webp').default} width="30%" title='Folder view access' />
 
-<img src={require('./img/folder-view-1.jpeg').default} width="100%" title='Folder view' />
+<img src={require('./img/folder-view-1.webp').default} width="100%" title='Folder view' />

@@ -48,4 +48,4 @@ When a new asset is uploaded it kicks off a series of jobs, which include metada
 
 Additionally, some jobs run on a schedule, which is every night at midnight. This schedule, with the exception of [External Libraries](/docs/features/libraries) scanning, cannot be changed.
 
-<img src={require('./img/admin-jobs.png').default} width="60%" title="Admin jobs" />
+<img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />
