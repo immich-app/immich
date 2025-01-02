@@ -75,12 +75,15 @@ import {
   mdiVideo,
   mdiWeb,
   mdiDatabaseOutline,
+  mdiLinkEdit,
+  mdiMovieOpenPlayOutline,
 } from '@mdi/js';
 import Layout from '@theme/Layout';
 import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
+  'v1.122.0': new Date(2024, 11, 5),
   'v1.120.0': new Date(2024, 10, 6),
   'v1.114.0': new Date(2024, 8, 6),
   'v1.113.0': new Date(2024, 7, 30),
@@ -218,7 +221,7 @@ const roadmap: Item[] = [
     iconColor: 'sandybrown',
     title: 'Private/locked photos',
     description: 'Private assets with extra protections',
-    getDateLabel: () => 'Planned for 2024',
+    getDateLabel: () => 'Planned for 2025',
   },
   {
     done: false,
@@ -226,7 +229,7 @@ const roadmap: Item[] = [
     iconColor: 'cornflowerblue',
     title: 'Better background backups',
     description: 'Rework background backups to be more reliable',
-    getDateLabel: () => 'Planned for 2024',
+    getDateLabel: () => 'Planned for 2025',
   },
   {
     done: false,
@@ -234,11 +237,25 @@ const roadmap: Item[] = [
     iconColor: 'rebeccapurple',
     title: 'Auto stacking',
     description: 'Auto stack burst photos',
-    getDateLabel: () => 'Planned for 2024',
+    getDateLabel: () => 'Planned for 2025',
   },
 ];
 
 const milestones: Item[] = [
+  withRelease({
+    icon: mdiLinkEdit,
+    iconColor: 'crimson',
+    title: 'Automatic URL switching',
+    description: 'The mobile app now supports automatic switching between different server URLs',
+    release: 'v1.122.0',
+  }),
+  withRelease({
+    icon: mdiMovieOpenPlayOutline,
+    iconColor: 'darksalmon',
+    title: 'Native video player',
+    description: 'HDR videos are now fully supported using the Immich native video player',
+    release: 'v1.122.0',
+  }),
   withRelease({
     icon: mdiDatabaseOutline,
     iconColor: 'brown',

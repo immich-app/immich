@@ -1,10 +1,6 @@
 # System Settings
 
-On the system settings page, the administrator can manage global settings for the Immich instance.
-
-:::note
-Viewing and modifying the system settings is restricted to the Administrator.
-:::
+The admin user can manage settings for the Immich instance here.
 
 :::tip
 You can always return to the default settings by clicking the `Reset to default` button.
@@ -104,8 +100,7 @@ You can choose to disable a certain type of machine learning, for example smart 
 
 ### Smart Search
 
-The [smart search](/docs/features/smart-search) settings are designed to allow the search tool to be used using [CLIP](https://openai.com/research/clip) models that [can be changed](/docs/FAQ#can-i-use-a-custom-clip-model), different models will necessarily give better results but may consume more processing power, when changing a model it is mandatory to re-run the
-Smart Search job on all images to fully apply the change.
+The [smart search](/docs/features/searching) settings allow you to change the [CLIP model](https://openai.com/research/clip). Larger models will typically provide [more accurate search results](https://github.com/immich-app/immich/discussions/11862) but consume more processing power and RAM. When [changing the CLIP model](/docs/FAQ#can-i-use-a-custom-clip-model) it is mandatory to re-run the Smart Search job on all images to fully apply the change.
 
 :::info Internet connection
 Changing models requires a connection to the Internet to download the model.
