@@ -13,7 +13,7 @@ Install Immich using Portainer's Stack feature.
 5. Replace `.env` with `stack.env` for all containers that need to use environment variables in the web editor.
 
 <img
-src={require('./img/dot-env.png').default}
+src={require('./img/dot-env.webp').default}
 width="50%"
 style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
@@ -22,7 +22,7 @@ alt="Dot Env Example"
 8. Click on "**Advanced Mode**" in the **Environment Variables** section.
 
 <img
-src={require('./img/env-1.png').default}
+src={require('./img/env-1.webp').default}
 width="50%"
 style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
@@ -32,7 +32,7 @@ alt="Dot Env Example"
 10. Switch back to "**Simple Mode**".
 
 <img
-src={require('./img/env-2.png').default}
+src={require('./img/env-2.webp').default}
 width="50%"
 style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
