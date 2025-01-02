@@ -6,17 +6,17 @@ Immich supports hierarchical tags, with the ability to read existing tags from t
 
 You can enable this feature from the [`Account Settings > Features > Tags`](https://my.immich.app/user-settings?isOpen=feature+tags).
 
-<img src={require('./img/tag-enable.png').default} width="50%" title='Tag view enable' />
+<img src={require('./img/tag-enable.webp').default} width="50%" title='Tag view enable' />
 
 ## Creating tags
 
 Tags can be created and added to a photo or a video by clicking on the `+ Add` button at the bottom of the info panel.
 
-<img src={require('./img/tag-creation.png').default} width="40%" title='Tag view enable' />
+<img src={require('./img/tag-creation.webp').default} width="40%" title='Tag view enable' />
 
 The tag prompt will appear, and you find and select a tag, or type in a new tag to create it.
 
-<img src={require('./img/tag-form.png').default} width="40%" title='Tag form' />
+<img src={require('./img/tag-form.webp').default} width="40%" title='Tag form' />
 
 ## Viewing tags
 

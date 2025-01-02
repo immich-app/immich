@@ -170,4 +170,4 @@ immich upload --include-hidden --recursive directory/
 
 The API key can be obtained in the user setting panel on the web interface.
 
-![Obtain Api Key](./img/obtain-api-key.png)
+![Obtain Api Key](./img/obtain-api-key.webp)

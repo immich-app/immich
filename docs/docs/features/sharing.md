@@ -42,10 +42,10 @@ You can create a public share link by selecting the photos or videos, or from th
 
 <img src={require('./img/public-shared-link-individual.jpeg').default} width='60%' title='Creating public shared link from selection' />
 
-<img src={require('./img/public-shared-link-album.png').default} width='30%' title='Creating public shared link from album' />
+<img src={require('./img/public-shared-link-album.webp').default} width='30%' title='Creating public shared link from album' />
 
 ### Customizing the public share link
 
 You can customize the public share link by setting an expiration date, password protection, allow what actions can be performed on the shared assets, and more.
 
-<img src={require('./img/public-shared-link-form.png').default} width='33%' title='Creating public shared link from album' />
+<img src={require('./img/public-shared-link-form.webp').default} width='33%' title='Creating public shared link from album' />

@@ -12,16 +12,16 @@ Year/Year-Month-Day/Filename.Extension
 
 If you want to change the storage template during the initial setup, first enable the feature.
 
-<img src={require('./img/enable-storage-template.png').default} width="80%" title="Enable Storage Template Setting" />
+<img src={require('./img/enable-storage-template.webp').default} width="80%" title="Enable Storage Template Setting" />
 
 Then, customize your storage template.
 
-<img src={require('./img/storage-template.png').default} width="80%" title="Storage Template Setting" />
+<img src={require('./img/storage-template.webp').default} width="80%" title="Storage Template Setting" />
 
 :::info
 The `Storage Template Migration` job can be run after enabling this feature or changing the template, in order to apply the changes to the existing library.
 
-<img src={require('./img/storage-template-migration-job.png').default} width="80%" title="Storage Template Setting" />
+<img src={require('./img/storage-template-migration-job.webp').default} width="80%" title="Storage Template Setting" />
 
 :::
 

@@ -39,7 +39,7 @@ Some search examples:
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='Advanced search filters' />
 
-<img src={require('./img/search-ex-1.png').default} width="70%" title='Search Example 1' />
+<img src={require('./img/search-ex-1.webp').default} width="70%" title='Search Example 1' />
 
 </TabItem>
   <TabItem value="Mobile" label="Mobile">

@@ -6,9 +6,9 @@ Immich supports uploading photos and videos from your mobile device to the serve
 
 You can enable the settings by accessing the upload options from the upload page
 
-<img src={require('./img/backup-settings-access.png').default} width="50%" title="Backup option selection" />
+<img src={require('./img/backup-settings-access.webp').default} width="50%" title="Backup option selection" />
 
-<img src={require('./img/background-foreground-backup.png').default} width="50%" title="Foreground&Background Backup" />
+<img src={require('./img/background-foreground-backup.webp').default} width="50%" title="Foreground&Background Backup" />
 
 ## Foreground backup
 
@@ -36,7 +36,7 @@ If background backup is enabled. The app will periodically check if there are an
 - You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.
 
 <div style={{textAlign: 'center'}}>
-<img src={require('./img/background-app-refresh.png').default} width="30%" title="background-app-refresh" />
+<img src={require('./img/background-app-refresh.webp').default} width="30%" title="background-app-refresh" />
 </div>
 
 :::
