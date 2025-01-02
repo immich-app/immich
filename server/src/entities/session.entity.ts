@@ -1,10 +1,11 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('sessions')
 export class SessionEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column({ select: false })
   token!: string;
@@ -13,17 +14,17 @@ export class SessionEntity {
   userId!: string;
 
   @ManyToOne(() => UserEntity, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  user!: UserEntity;
+  user!: NonAttribute<UserEntity>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @Column({ default: '' })
-  deviceType!: string;
+  deviceType!: Generated<string>;
 
   @Column({ default: '' })
-  deviceOS!: string;
+  deviceOS!: Generated<string>;
 }

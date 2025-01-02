@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
@@ -15,59 +16,59 @@ import {
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column({ default: '' })
-  name!: string;
+  name!: Generated<string>;
 
   @Column({ default: false })
-  isAdmin!: boolean;
+  isAdmin!: Generated<boolean>;
 
   @Column({ unique: true })
   email!: string;
 
   @Column({ type: 'varchar', unique: true, default: null })
-  storageLabel!: string | null;
+  storageLabel!: Generated<string> | null;
 
   @Column({ default: '', select: false })
-  password?: string;
+  password?: Generated<string>;
 
   @Column({ default: '' })
-  oauthId!: string;
+  oauthId!: Generated<string>;
 
   @Column({ default: '' })
-  profileImagePath!: string;
+  profileImagePath!: Generated<string>;
 
   @Column({ default: true })
-  shouldChangePassword!: boolean;
+  shouldChangePassword!: Generated<boolean>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt!: Date | null;
 
   @Column({ type: 'varchar', default: UserStatus.ACTIVE })
-  status!: UserStatus;
+  status!: Generated<UserStatus>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @OneToMany(() => TagEntity, (tag) => tag.user)
-  tags!: TagEntity[];
+  tags!: NonAttribute<TagEntity[]>;
 
   @OneToMany(() => AssetEntity, (asset) => asset.owner)
-  assets!: AssetEntity[];
+  assets!: NonAttribute<AssetEntity[]>;
 
   @Column({ type: 'bigint', nullable: true })
   quotaSizeInBytes!: number | null;
 
   @Column({ type: 'bigint', default: 0 })
-  quotaUsageInBytes!: number;
+  quotaUsageInBytes!: Generated<number>;
 
   @OneToMany(() => UserMetadataEntity, (metadata) => metadata.user)
-  metadata!: UserMetadataEntity[];
+  metadata!: NonAttribute<UserMetadataEntity[]>;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  profileChangedAt!: Date;
+  profileChangedAt!: Generated<Date>;
 }

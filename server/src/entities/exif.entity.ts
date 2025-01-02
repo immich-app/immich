@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column.js';
@@ -7,14 +8,14 @@ import { Entity } from 'typeorm/decorator/entity/Entity.js';
 export class ExifEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn()
-  asset?: AssetEntity;
+  asset!: NonAttribute<AssetEntity>;
 
   @PrimaryColumn()
   assetId!: string;
 
   /* General info */
   @Column({ type: 'text', default: '' })
-  description!: string; // or caption
+  description!: Generated<string>; // or caption
 
   @Column({ type: 'integer', nullable: true })
   exifImageWidth!: number | null;

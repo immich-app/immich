@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { MemoryType } from 'src/enum';
@@ -22,19 +23,19 @@ export interface MemoryData {
 @Entity('memories')
 export class MemoryEntity<T extends MemoryType = MemoryType> {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner!: NonAttribute<UserEntity>;
 
   @Column()
   ownerId!: string;
@@ -47,7 +48,7 @@ export class MemoryEntity<T extends MemoryType = MemoryType> {
 
   /** unless set to true, will be automatically deleted in the future */
   @Column({ default: false })
-  isSaved!: boolean;
+  isSaved!: Generated<boolean>;
 
   /** memories are sorted in ascending order by this value */
   @Column({ type: 'timestamptz' })
@@ -59,5 +60,5 @@ export class MemoryEntity<T extends MemoryType = MemoryType> {
 
   @ManyToMany(() => AssetEntity)
   @JoinTable()
-  assets!: AssetEntity[];
+  assets!: NonAttribute<AssetEntity[]>;
 }

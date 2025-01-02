@@ -4,8 +4,8 @@ import { Insertable, Kysely, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';
-import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/entities';
 import {
   AssetEntity,
   hasPeople,

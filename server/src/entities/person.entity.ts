@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
@@ -15,38 +16,38 @@ import {
 @Check(`"birthDate" <= CURRENT_DATE`)
 export class PersonEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @Column()
   ownerId!: string;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner!: NonAttribute<UserEntity>;
 
   @Column({ default: '' })
-  name!: string;
+  name!: Generated<string>;
 
   @Column({ type: 'date', nullable: true })
   birthDate!: string | null;
 
   @Column({ default: '' })
-  thumbnailPath!: string;
+  thumbnailPath!: Generated<string>;
 
   @Column({ nullable: true })
   faceAssetId!: string | null;
 
   @ManyToOne(() => AssetFaceEntity, { onDelete: 'SET NULL', nullable: true })
-  faceAsset!: AssetFaceEntity | null;
+  faceAsset!: NonAttribute<AssetFaceEntity | null>;
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.person)
-  faces!: AssetFaceEntity[];
+  faces!: NonAttribute<AssetFaceEntity[]>;
 
   @Column({ default: false })
-  isHidden!: boolean;
+  isHidden!: Generated<boolean>;
 }

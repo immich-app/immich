@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import {
@@ -15,17 +16,17 @@ import {
 @Entity('libraries')
 export class LibraryEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column()
   name!: string;
 
   @OneToMany(() => AssetEntity, (asset) => asset.library)
   @JoinTable()
-  assets!: AssetEntity[];
+  assets!: NonAttribute<AssetEntity[]>;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner!: NonAttribute<UserEntity>;
 
   @Column()
   ownerId!: string;
@@ -37,10 +38,10 @@ export class LibraryEntity {
   exclusionPatterns!: string[];
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;

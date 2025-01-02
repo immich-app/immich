@@ -1,5 +1,5 @@
 import { Insertable, Updateable } from 'kysely';
-import { AssetFiles, AssetJobStatus, Assets, Exif } from 'src/db';
+import { AssetFiles, AssetJobStatus, Assets, Exif } from 'src/entities';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';

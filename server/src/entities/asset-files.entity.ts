@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType } from 'src/enum';
 import {
@@ -15,20 +16,20 @@ import {
 @Entity('asset_files')
 export class AssetFileEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Index('IDX_asset_files_assetId')
   @Column()
   assetId!: string;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  asset?: AssetEntity;
+  asset!: NonAttribute<AssetEntity>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @Column()
   type!: AssetFileType;

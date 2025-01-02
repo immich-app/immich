@@ -1,3 +1,4 @@
+import type { Generated, NonAttribute } from 'kysely-typeorm';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
@@ -19,48 +20,48 @@ import {
 @Entity('albums')
 export class AlbumEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner!: NonAttribute<UserEntity>;
 
   @Column()
   ownerId!: string;
 
   @Column({ default: 'Untitled Album' })
-  albumName!: string;
+  albumName!: Generated<string>;
 
   @Column({ type: 'text', default: '' })
-  description!: string;
+  description!: Generated<string>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt!: Date | null;
 
   @ManyToOne(() => AssetEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
-  albumThumbnailAsset!: AssetEntity | null;
+  albumThumbnailAsset!: NonAttribute<AssetEntity | null>;
 
   @Column({ comment: 'Asset ID to be used as thumbnail', nullable: true })
   albumThumbnailAssetId!: string | null;
 
   @OneToMany(() => AlbumUserEntity, ({ album }) => album, { cascade: true, onDelete: 'CASCADE' })
-  albumUsers!: AlbumUserEntity[];
+  albumUsers!: NonAttribute<AlbumUserEntity[]>;
 
   @ManyToMany(() => AssetEntity, (asset) => asset.albums)
   @JoinTable({ synchronize: false })
-  assets!: AssetEntity[];
+  assets!: NonAttribute<AssetEntity[]>;
 
   @OneToMany(() => SharedLinkEntity, (link) => link.album)
-  sharedLinks!: SharedLinkEntity[];
+  sharedLinks!: NonAttribute<SharedLinkEntity[]>;
 
   @Column({ default: true })
-  isActivityEnabled!: boolean;
+  isActivityEnabled!: Generated<boolean>;
 
   @Column({ type: 'varchar', default: AssetOrder.DESC })
-  order!: AssetOrder;
+  order!: Generated<AssetOrder>;
 }

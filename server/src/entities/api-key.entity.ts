@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { Permission } from 'src/enum';
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
@@ -5,7 +6,7 @@ import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, Up
 @Entity('api_keys')
 export class APIKeyEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column()
   name!: string;
@@ -14,7 +15,7 @@ export class APIKeyEntity {
   key?: string;
 
   @ManyToOne(() => UserEntity, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  user?: UserEntity;
+  user!: NonAttribute<UserEntity>;
 
   @Column()
   userId!: string;
@@ -23,8 +24,8 @@ export class APIKeyEntity {
   permissions!: Permission[];
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 }

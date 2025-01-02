@@ -1,3 +1,4 @@
+import type { Generated, NonAttribute } from 'kysely-typeorm';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -17,13 +18,13 @@ import {
 @Check(`("comment" IS NULL AND "isLiked" = true) OR ("comment" IS NOT NULL AND "isLiked" = false)`)
 export class ActivityEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @Column()
   albumId!: string;
@@ -35,17 +36,17 @@ export class ActivityEntity {
   assetId!: string | null;
 
   @Column({ type: 'text', default: null })
-  comment!: string | null;
+  comment!: Generated<string> | null;
 
   @Column({ type: 'boolean', default: false })
-  isLiked!: boolean;
+  isLiked!: Generated<boolean>;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: true })
-  asset!: AssetEntity | null;
+  asset!: NonAttribute<AssetEntity | null>;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  user!: UserEntity;
+  user!: NonAttribute<UserEntity>;
 
   @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  album!: AlbumEntity;
+  album!: NonAttribute<AlbumEntity>;
 }

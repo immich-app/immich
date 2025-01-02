@@ -1,3 +1,4 @@
+import { NonAttribute } from 'kysely-typeorm';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
@@ -5,7 +6,7 @@ import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'type
 export class FaceSearchEntity {
   @OneToOne(() => AssetFaceEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'faceId', referencedColumnName: 'id' })
-  face?: AssetFaceEntity;
+  face?: NonAttribute<AssetFaceEntity>;
 
   @PrimaryColumn()
   faceId!: string;

@@ -1,3 +1,4 @@
+import type { Generated, NonAttribute } from 'kysely-typeorm';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AlbumUserRole } from 'src/enum';
@@ -16,12 +17,12 @@ export class AlbumUserEntity {
 
   @JoinColumn({ name: 'albumsId' })
   @ManyToOne(() => AlbumEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  album!: AlbumEntity;
+  album!: NonAttribute<AlbumEntity>;
 
   @JoinColumn({ name: 'usersId' })
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  user!: UserEntity;
+  user!: NonAttribute<UserEntity>;
 
   @Column({ type: 'varchar', default: AlbumUserRole.EDITOR })
-  role!: AlbumUserRole;
+  role!: Generated<AlbumUserRole>;
 }

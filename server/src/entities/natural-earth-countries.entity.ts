@@ -1,9 +1,10 @@
+import { GeneratedAlways } from 'kysely-typeorm';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('naturalearth_countries', { synchronize: false })
 export class NaturalEarthCountriesEntity {
   @PrimaryGeneratedColumn('identity', { generatedIdentity: 'ALWAYS' })
-  id!: number;
+  id!: GeneratedAlways<number>;
 
   @Column({ type: 'varchar', length: 50 })
   admin!: string;
@@ -21,7 +22,7 @@ export class NaturalEarthCountriesEntity {
 @Entity('naturalearth_countries_tmp', { synchronize: false })
 export class NaturalEarthCountriesTempEntity {
   @PrimaryGeneratedColumn('identity', { generatedIdentity: 'ALWAYS' })
-  id!: number;
+  id!: GeneratedAlways<number>;
 
   @Column({ type: 'varchar', length: 50 })
   admin!: string;

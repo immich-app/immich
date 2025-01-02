@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirectionExpression, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/entities';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetType } from 'src/enum';
@@ -221,7 +221,7 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.isVisible', '=', true)
           .where('assets.isArchived', '=', false)
-          .where('assets.type', '=', 'IMAGE')
+          .where('assets.type', '=', AssetType.IMAGE)
           .where('assets.deletedAt', 'is', null)
           .orderBy('city')
           .limit(1);
@@ -238,7 +238,7 @@ export class SearchRepository implements ISearchRepository {
                 .where('assets.ownerId', '=', anyUuid(userIds))
                 .where('assets.isVisible', '=', true)
                 .where('assets.isArchived', '=', false)
-                .where('assets.type', '=', 'IMAGE')
+                .where('assets.type', '=', AssetType.IMAGE)
                 .where('assets.deletedAt', 'is', null)
                 .whereRef('exif.city', '>', 'cte.city')
                 .orderBy('city')

@@ -1,3 +1,4 @@
+import { Generated } from 'kysely-typeorm';
 import { DatabaseAction, EntityType } from 'src/enum';
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -5,7 +6,7 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 
 @Index('IDX_ownerId_createdAt', ['ownerId', 'createdAt'])
 export class AuditEntity {
   @PrimaryGeneratedColumn('increment')
-  id!: number;
+  id!: Generated<number>;
 
   @Column()
   entityType!: EntityType;
@@ -20,5 +21,5 @@ export class AuditEntity {
   ownerId!: string;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 }

@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 
@@ -11,18 +12,18 @@ export class PartnerEntity {
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'sharedById' })
-  sharedBy!: UserEntity;
+  sharedBy!: NonAttribute<UserEntity>;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', eager: true })
   @JoinColumn({ name: 'sharedWithId' })
-  sharedWith!: UserEntity;
+  sharedWith!: NonAttribute<UserEntity>;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @Column({ type: 'boolean', default: false })
-  inTimeline!: boolean;
+  inTimeline!: Generated<boolean>;
 }

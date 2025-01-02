@@ -1,3 +1,4 @@
+import { Generated } from 'kysely-typeorm';
 import { PathType } from 'src/enum';
 import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 
@@ -8,7 +9,7 @@ import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 @Unique('UQ_newPath', ['newPath'])
 export class MoveEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column({ type: 'varchar' })
   entityId!: string;

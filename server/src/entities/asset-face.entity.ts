@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -9,7 +10,7 @@ import { Column, Entity, Index, ManyToOne, OneToOne, PrimaryGeneratedColumn } fr
 @Index(['personId', 'assetId'])
 export class AssetFaceEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column()
   assetId!: string;
@@ -18,36 +19,36 @@ export class AssetFaceEntity {
   personId!: string | null;
 
   @OneToOne(() => FaceSearchEntity, (faceSearchEntity) => faceSearchEntity.face, { cascade: ['insert'] })
-  faceSearch?: FaceSearchEntity;
+  faceSearch!: NonAttribute<FaceSearchEntity>;
 
   @Column({ default: 0, type: 'int' })
-  imageWidth!: number;
+  imageWidth!: Generated<number>;
 
   @Column({ default: 0, type: 'int' })
-  imageHeight!: number;
+  imageHeight!: Generated<number>;
 
   @Column({ default: 0, type: 'int' })
-  boundingBoxX1!: number;
+  boundingBoxX1!: Generated<number>;
 
   @Column({ default: 0, type: 'int' })
-  boundingBoxY1!: number;
+  boundingBoxY1!: Generated<number>;
 
   @Column({ default: 0, type: 'int' })
-  boundingBoxX2!: number;
+  boundingBoxX2!: Generated<number>;
 
   @Column({ default: 0, type: 'int' })
-  boundingBoxY2!: number;
+  boundingBoxY2!: Generated<number>;
 
   @Column({ default: SourceType.MACHINE_LEARNING, type: 'enum', enum: SourceType })
-  sourceType!: SourceType;
+  sourceType!: Generated<SourceType>;
 
   @ManyToOne(() => AssetEntity, (asset) => asset.faces, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  asset!: AssetEntity;
+  asset!: NonAttribute<AssetEntity>;
 
   @ManyToOne(() => PersonEntity, (person) => person.faces, {
     onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
     nullable: true,
   })
-  person!: PersonEntity | null;
+  person!: NonAttribute<PersonEntity | null>;
 }

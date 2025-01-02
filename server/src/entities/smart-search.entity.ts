@@ -1,3 +1,4 @@
+import { NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
@@ -5,7 +6,7 @@ import { Column, Entity, Index, JoinColumn, OneToOne, PrimaryColumn } from 'type
 export class SmartSearchEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', nullable: true })
   @JoinColumn({ name: 'assetId', referencedColumnName: 'id' })
-  asset?: AssetEntity;
+  asset!: NonAttribute<AssetEntity>;
 
   @PrimaryColumn()
   assetId!: string;

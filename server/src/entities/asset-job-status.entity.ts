@@ -1,3 +1,4 @@
+import { NonAttribute } from 'kysely-typeorm';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
@@ -5,7 +6,7 @@ import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 export class AssetJobStatusEntity {
   @OneToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   @JoinColumn()
-  asset!: AssetEntity;
+  asset!: NonAttribute<AssetEntity>;
 
   @PrimaryColumn()
   assetId!: string;

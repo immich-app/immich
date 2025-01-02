@@ -1,3 +1,4 @@
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserEntity } from 'src/entities/user.entity';
@@ -17,7 +18,7 @@ import {
 @Unique('UQ_sharedlink_key', ['key'])
 export class SharedLinkEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column({ type: 'varchar', nullable: true })
   description!: string | null;
@@ -29,7 +30,7 @@ export class SharedLinkEntity {
   userId!: string;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  user!: UserEntity;
+  user!: NonAttribute<UserEntity>;
 
   @Index('IDX_sharedlink_key')
   @Column({ type: 'bytea' })
@@ -45,20 +46,20 @@ export class SharedLinkEntity {
   expiresAt!: Date | null;
 
   @Column({ type: 'boolean', default: false })
-  allowUpload!: boolean;
+  allowUpload!: Generated<boolean>;
 
   @Column({ type: 'boolean', default: true })
-  allowDownload!: boolean;
+  allowDownload!: Generated<boolean>;
 
   @Column({ type: 'boolean', default: true })
-  showExif!: boolean;
+  showExif!: Generated<boolean>;
 
   @ManyToMany(() => AssetEntity, (asset) => asset.sharedLinks, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  assets!: AssetEntity[];
+  assets!: NonAttribute<AssetEntity[]>;
 
   @Index('IDX_sharedlink_albumId')
   @ManyToOne(() => AlbumEntity, (album) => album.sharedLinks, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  album?: AlbumEntity;
+  album!: NonAttribute<AlbumEntity>;
 
   @Column({ type: 'varchar', nullable: true })
   albumId!: string | null;

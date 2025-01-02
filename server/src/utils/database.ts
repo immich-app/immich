@@ -1,6 +1,6 @@
 import { Expression, RawBuilder, sql, ValueExpression } from 'kysely';
 import { InsertObject } from 'node_modules/kysely/dist/cjs';
-import { DB } from 'src/db';
+import { DB } from 'src/entities';
 import { Between, DataSource, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 
 /**

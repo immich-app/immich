@@ -1,3 +1,4 @@
+import { NonAttribute } from 'kysely-typeorm';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserAvatarColor, UserMetadataKey } from 'src/enum';
 import { HumanReadableSize } from 'src/utils/bytes';
@@ -9,7 +10,7 @@ export class UserMetadataEntity<T extends keyof UserMetadata = UserMetadataKey> 
   userId!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.metadata, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  user!: UserEntity;
+  user!: NonAttribute<UserEntity>;
 
   @PrimaryColumn({ type: 'varchar' })
   key!: T;

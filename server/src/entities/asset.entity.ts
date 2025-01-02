@@ -1,6 +1,7 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, Selectable, SelectQueryBuilder, sql } from 'kysely';
+import { Generated, NonAttribute } from 'kysely-typeorm';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { Assets, DB } from 'src/db';
+import { Assets, DB } from 'src/entities';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
@@ -51,19 +52,19 @@ export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 // For all assets, each originalpath must be unique per user and library
 export class AssetEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id!: Generated<string>;
 
   @Column()
   deviceAssetId!: string;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner!: NonAttribute<UserEntity>;
 
   @Column()
   ownerId!: string;
 
   @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  library?: LibraryEntity | null;
+  library!: NonAttribute<LibraryEntity | null>;
 
   @Column({ nullable: true })
   libraryId?: string | null;
@@ -75,25 +76,25 @@ export class AssetEntity {
   type!: AssetType;
 
   @Column({ type: 'enum', enum: AssetStatus, default: AssetStatus.ACTIVE })
-  status!: AssetStatus;
+  status!: Generated<AssetStatus>;
 
   @Column()
   originalPath!: string;
 
   @OneToMany(() => AssetFileEntity, (assetFile) => assetFile.asset)
-  files!: AssetFileEntity[];
+  files!: NonAttribute<AssetFileEntity[]>;
 
   @Column({ type: 'bytea', nullable: true })
   thumbhash!: Buffer | null;
 
   @Column({ type: 'varchar', nullable: true, default: '' })
-  encodedVideoPath!: string | null;
+  encodedVideoPath!: Generated<string> | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
-  createdAt!: Date;
+  createdAt!: Generated<Date>;
 
   @UpdateDateColumn({ type: 'timestamptz' })
-  updatedAt!: Date;
+  updatedAt!: Generated<Date>;
 
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt!: Date | null;
@@ -109,16 +110,16 @@ export class AssetEntity {
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
-  isFavorite!: boolean;
+  isFavorite!: Generated<boolean>;
 
   @Column({ type: 'boolean', default: false })
-  isArchived!: boolean;
+  isArchived!: Generated<boolean>;
 
   @Column({ type: 'boolean', default: false })
-  isExternal!: boolean;
+  isExternal!: Generated<boolean>;
 
   @Column({ type: 'boolean', default: false })
-  isOffline!: boolean;
+  isOffline!: Generated<boolean>;
 
   @Column({ type: 'bytea' })
   @Index()
@@ -128,11 +129,11 @@ export class AssetEntity {
   duration!: string | null;
 
   @Column({ type: 'boolean', default: true })
-  isVisible!: boolean;
+  isVisible!: Generated<boolean>;
 
   @ManyToOne(() => AssetEntity, { nullable: true, onUpdate: 'CASCADE', onDelete: 'SET NULL' })
   @JoinColumn()
-  livePhotoVideo!: AssetEntity | null;
+  livePhotoVideo!: NonAttribute<AssetEntity | null>;
 
   @Column({ nullable: true })
   livePhotoVideoId!: string | null;
@@ -145,34 +146,34 @@ export class AssetEntity {
   sidecarPath!: string | null;
 
   @OneToOne(() => ExifEntity, (exifEntity) => exifEntity.asset)
-  exifInfo?: ExifEntity;
+  exifInfo!: NonAttribute<ExifEntity>;
 
   @OneToOne(() => SmartSearchEntity, (smartSearchEntity) => smartSearchEntity.asset)
-  smartSearch?: SmartSearchEntity;
+  smartSearch!: NonAttribute<SmartSearchEntity>;
 
   @ManyToMany(() => TagEntity, (tag) => tag.assets, { cascade: true })
   @JoinTable({ name: 'tag_asset', synchronize: false })
-  tags!: TagEntity[];
+  tags!: NonAttribute<TagEntity[]>;
 
   @ManyToMany(() => SharedLinkEntity, (link) => link.assets, { cascade: true })
   @JoinTable({ name: 'shared_link__asset' })
-  sharedLinks!: SharedLinkEntity[];
+  sharedLinks!: NonAttribute<SharedLinkEntity[]>;
 
   @ManyToMany(() => AlbumEntity, (album) => album.assets, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  albums?: AlbumEntity[];
+  albums!: NonAttribute<AlbumEntity[]>;
 
   @OneToMany(() => AssetFaceEntity, (assetFace) => assetFace.asset)
-  faces!: AssetFaceEntity[];
+  faces!: NonAttribute<AssetFaceEntity[]>;
 
   @Column({ nullable: true })
   stackId?: string | null;
 
   @ManyToOne(() => StackEntity, { nullable: true, onDelete: 'SET NULL', onUpdate: 'CASCADE' })
   @JoinColumn()
-  stack?: StackEntity | null;
+  stack!: NonAttribute<StackEntity | null>;
 
   @OneToOne(() => AssetJobStatusEntity, (jobStatus) => jobStatus.asset, { nullable: true })
-  jobStatus?: AssetJobStatusEntity;
+  jobStatus!: NonAttribute<AssetJobStatusEntity>;
 
   @Index('IDX_assets_duplicateId')
   @Column({ type: 'uuid', nullable: true })

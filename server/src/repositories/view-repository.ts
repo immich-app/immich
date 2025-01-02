@@ -1,7 +1,7 @@
 import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { DB } from 'src/entities';
 import { AssetEntity, withExif } from 'src/entities/asset.entity';
 import { IViewRepository } from 'src/interfaces/view.interface';
 import { asUuid } from 'src/utils/database';
