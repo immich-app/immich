@@ -17,4 +17,4 @@ At the end of creating your app passwords, a password will be displayed; save it
 
 Entering your credential in Immich's email notification settings at `Administration -> Settings -> Notification Settings`
 
-<img src={require('./img/email-settings.png').default} width="80%" title="SMTP settings" />
+<img src={require('./img/email-settings.webp').default} width="80%" title="SMTP settings" />

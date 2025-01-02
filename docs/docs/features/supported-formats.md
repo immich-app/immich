@@ -1,4 +1,4 @@
-# Supported formats
+# Supported Media Formats
 
 Immich supports a number of image and video formats, the most common of which are outlined here.
 
@@ -15,9 +15,9 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 | `GIF`     | `.gif`                        | :white_check_mark: |                 |
 | `HEIC`    | `.heic`                       | :white_check_mark: |                 |
 | `HEIF`    | `.heif`                       | :white_check_mark: |                 |
-| `JPEG`    | `.jpeg` `.jpg` `.jpe` `.insp` | :white_check_mark: |                 |
+| `JPEG`    | `.webp` `.jpg` `.jpe` `.insp` | :white_check_mark: |                 |
 | `JPEG XL` | `.jxl`                        | :white_check_mark: |                 |
-| `PNG`     | `.png`                        | :white_check_mark: |                 |
+| `PNG`     | `.webp`                       | :white_check_mark: |                 |
 | `PSD`     | `.psd`                        | :white_check_mark: | Adobe Photoshop |
 | `RAW`     | `.raw`                        | :white_check_mark: |                 |
 | `RW2`     | `.rw2`                        | :white_check_mark: |                 |
