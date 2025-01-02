@@ -8,11 +8,18 @@ Partner sharing includes:
 - Access to all metadata, including GPS information.
 - Access to share assets via shared links, albums, etc.
 
+Partner sharing does _not_ include:
+
+- Already existing partner albums
+- If an asset is favorited
+- People and facial recognition data
+
 :::note
 
 - Partner sharing is one-way. To view your partner's assets, they must also share them with you.
-- Partner sharing may result in displaying duplicate assets on the main timeline.
-  :::
+- Partner sharing may result in displaying duplicate assets on the main timeline, as duplicates are only detected on a per-user basis.
+
+:::
 
 ## Sharing with a Partner
 
@@ -34,7 +41,7 @@ Partner shared photos can be displayed in the main timeline. This feature can be
 
 ### Web
 
-The option can be found at `Account Settings > Partner Sharing > Show in timeline`
+The option can be found at [`Account Settings > Partner Sharing > Show in timeline`](https://my.immich.app/user-settings?isOpen=partner-sharing)
 
 <img src={require('./img/partner-sharing-5.png').default} width="70%" title='Partner Sharing for the web interface' />
 

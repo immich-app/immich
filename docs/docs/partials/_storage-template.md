@@ -15,11 +15,11 @@ If you want to change the storage template during the initial setup, first enabl
 <img src={require('./img/enable-storage-template.png').default} width="80%" title="Enable Storage Template Setting" />
 
 Then, customize your storage template.
-80
+
 <img src={require('./img/storage-template.png').default} width="80%" title="Storage Template Setting" />
 
 :::info
-`Storage Template Migration` job can be run after enabling the feature or changing the content of template, in order to apply the change to the existing library.
+The `Storage Template Migration` job can be run after enabling this feature or changing the template, in order to apply the changes to the existing library.
 
 <img src={require('./img/storage-template-migration-job.png').default} width="80%" title="Storage Template Setting" />
 

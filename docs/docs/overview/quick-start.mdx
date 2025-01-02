@@ -56,26 +56,23 @@ You can select the **Jobs** tab to see Immich processing your photos.
 
 <img src={require('/docs/guides/img/jobs-tab.png').default} title="Jobs tab" width={300} />
 
-## Familiar with database backup and restore process
+## Review the database backup and restore process
 
-Immich has a built-in database backup and restore feature. You can refer to the
+Immich has built-in database backups. You can refer to the
 [database backup](/docs/administration/backup-and-restore) for more information.
+
+:::danger
+The database only contains metadata and user information. You must setup manual backups of the images and videos stored in `UPLOAD_LOCATION`.
+:::
 
 ## Where to go from here?
 
-You may decide you'd like to install the server a different way;
-the Install category on the left menu provides many options.
+You may decide you'd like to install the server a different way; the Install category on the left menu provides many options.
 
-You may decide you'd like to add the _rest_ of your photos from Google Photos,
-even those not on your mobile device, via Google Takeout.
-You can use [immich-go](https://github.com/simulot/immich-go) for this.
+You may decide you'd like to add the _rest_ of your photos from Google Photos, even those not on your mobile device, via Google Takeout. You can use [immich-go](https://github.com/simulot/immich-go) for this.
 
-You may want to
-[upload photos from your own archive](/docs/features/command-line-interface).
+You may want to [upload photos from your own archive](/docs/features/command-line-interface).
 
-You may want to incorporate an immutable archive of photos from an
-[External Library](/docs/features/libraries);
-there's a [Guide](/docs/guides/external-library) for that.
+You may want to incorporate a pre-existing archive of photos from an [External Library](/docs/features/libraries); there's a [guide](/docs/guides/external-library) for that.
 
-You may want your mobile device to
-[back photos up to your server automatically](/docs/features/automatic-backup).
+You may want your mobile device to [back photos up to your server automatically](/docs/features/automatic-backup).

@@ -79,7 +79,7 @@ Read the [Post Installation](/docs/install/post-install.mdx) steps or setup opti
 
 ### Upgrading
 
-:::tip Read the release notes
+:::danger Read the release notes
 Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
 
 You can see versions that had breaking changes [here][breaking].
@@ -95,7 +95,7 @@ docker compose pull && docker compose up -d
 
 To clean up disk space, the old version's obsolete container images can be deleted with the following command:
 
-```bash title="Clean up unused Docker's images"
+```bash title="Clean up unused Docker images"
 docker image prune
 ```
 

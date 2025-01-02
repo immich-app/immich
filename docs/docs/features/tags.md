@@ -4,7 +4,7 @@ Immich supports hierarchical tags, with the ability to read existing tags from t
 
 ## Enable tags feature
 
-You can enable this feature from the `Account Settings > Features > Tags`.
+You can enable this feature from the [`Account Settings > Features > Tags`](https://my.immich.app/user-settings?isOpen=feature+tags).
 
 <img src={require('./img/tag-enable.png').default} width="50%" title='Tag view enable' />
 
@@ -20,6 +20,6 @@ The tag prompt will appear, and you find and select a tag, or type in a new tag 
 
 ## Viewing tags
 
-You can navigate to the `Tags` view from the side navigation bar or from clicking on the tag in the info panel.
+You can navigate to the `Tags` view from the side navigation bar or by clicking on the tag in the info panel.
 
 <img src={require('./img/tag-view.jpeg').default} width="80%" title='Tag form' />
