@@ -1,4 +1,4 @@
-# Hardware-Accelerated Machine Learning [Experimental]
+# Hardware-Accelerated Machine Learning
 
 This feature allows you to use a GPU to accelerate machine learning tasks, such as Smart Search and Facial Recognition, while reducing CPU load.
 As this is a new feature, it is still experimental and may not work on all systems.

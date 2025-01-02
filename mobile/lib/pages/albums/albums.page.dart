@@ -255,9 +255,13 @@ class AlbumsPage extends HookConsumerWidget {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            subtitle: sorted[index].ownerId == userId
+                            subtitle: sorted[index].ownerId != null
                                 ? Text(
-                                    '${sorted[index].assetCount} items',
+                                    '${(sorted[index].assetCount == 1 ? 'album_thumbnail_card_item'.tr(
+                                        args: ['${sorted[index].assetCount}'],
+                                      ) : 'album_thumbnail_card_items'.tr(
+                                        args: ['${sorted[index].assetCount}'],
+                                      ))} • ${sorted[index].ownerId != userId ? 'album_thumbnail_shared_by'.tr(args: [sorted[index].ownerName!]) : 'album_thumbnail_owned'.tr()}',
                                     overflow: TextOverflow.ellipsis,
                                     style:
                                         context.textTheme.bodyMedium?.copyWith(
@@ -265,21 +269,7 @@ class AlbumsPage extends HookConsumerWidget {
                                           .colorScheme.onSurfaceSecondary,
                                     ),
                                   )
-                                : sorted[index].ownerName != null
-                                    ? Text(
-                                        '${sorted[index].assetCount} items • ${'album_thumbnail_shared_by'.tr(
-                                          args: [
-                                            sorted[index].ownerName!,
-                                          ],
-                                        )}',
-                                        overflow: TextOverflow.ellipsis,
-                                        style: context.textTheme.bodyMedium
-                                            ?.copyWith(
-                                          color: context
-                                              .colorScheme.onSurfaceSecondary,
-                                        ),
-                                      )
-                                    : null,
+                                : null,
                             onTap: () => context.pushRoute(
                               AlbumViewerRoute(albumId: sorted[index].id),
                             ),

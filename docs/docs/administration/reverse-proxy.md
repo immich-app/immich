@@ -6,6 +6,10 @@ Users can deploy a custom reverse proxy that forwards requests to Immich. This w
 The Repair page can take a long time to load. To avoid server timeouts or errors, we recommend specifying a timeout of at least 10 minutes on your proxy server.
 :::
 
+:::caution
+Immich does not support being served on a sub-path such as `location /immich {`. It has to be served on the root path of a (sub)domain.
+:::
+
 ### Nginx example config
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.

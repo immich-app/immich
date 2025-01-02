@@ -9,10 +9,18 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-html,
-button {
-  font-family: 'Be Vietnam Pro', sans-serif;
+body {
+  font-family: 'Be Vietnam Pro', serif;
   font-optical-sizing: auto;
+  /* font-size: 1.125rem;
+  ascent-override: 106.25%;
+  size-adjust: 106.25%; */
+}
+
+.breadcrumbs__link {
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 8px 16px 8px 16px;
 }
 
 img {
@@ -53,13 +61,18 @@ div[class^='announcementBar_'] {
 .menu__link {
   padding: 10px;
   padding-left: 16px;
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 24px;
+  margin-right: 16px;
 }
 
 .menu__list-item-collapsible {
   border-radius: 10px;
-  font-size: 15px;
+  margin-right: 16px;
+  border-radius: 24px;
+}
+
+.menu__link--active {
+  font-weight: 500;
 }
 
 code {
