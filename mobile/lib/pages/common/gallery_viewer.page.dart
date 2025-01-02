@@ -286,7 +286,7 @@ class GalleryViewerPage extends HookConsumerWidget {
         body: Stack(
           children: [
             PhotoViewGallery.builder(
-              key: ValueKey(isPlayingMotionVideo),
+              key: const ValueKey('gallery'),
               scaleStateChangedCallback: (state) {
                 final asset = ref.read(currentAssetProvider);
                 if (asset == null) {
