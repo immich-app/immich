@@ -83,7 +83,7 @@ import React from 'react';
 import { Item, Timeline } from '../components/timeline';
 
 const releases = {
-  'v1.122.0': new Date(2024, 12, 5),
+  'v1.122.0': new Date(2024, 11, 5),
   'v1.120.0': new Date(2024, 10, 6),
   'v1.114.0': new Date(2024, 8, 6),
   'v1.113.0': new Date(2024, 7, 30),
