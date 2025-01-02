@@ -726,4 +726,9 @@ export class AssetRepository implements IAssetRepository {
   async upsertFiles(files: { assetId: string; type: AssetFileType; path: string }[]): Promise<void> {
     await this.fileRepository.upsert(files, { conflictPaths: ['assetId', 'type'] });
   }
+
+  @GenerateSql({ params: [[DummyValue.UUID, DummyValue.UUID]] })
+  async deleteFiles(assetIds: string | string[]): Promise<void> {
+    await this.fileRepository.delete(assetIds);
+  }
 }

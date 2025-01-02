@@ -11,12 +11,13 @@ import {
   Post,
   Put,
   Query,
+  Req,
   Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import {
   AssetBulkUploadCheckResponseDto,
@@ -29,6 +30,7 @@ import {
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
   AssetMediaReplaceDto,
+  AssetMediaSize,
   CheckExistingAssetsDto,
   UploadFieldName,
 } from 'src/dtos/asset-media.dto';
@@ -39,7 +41,7 @@ import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor'
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
 import { AssetMediaService } from 'src/services/asset-media.service';
-import { sendFile } from 'src/utils/file';
+import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 
 @ApiTags('Assets')
@@ -119,10 +121,34 @@ export class AssetMediaController {
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @Query() dto: AssetMediaOptionsDto,
+    @Req() req: Request,
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.viewThumbnail(auth, id, dto), this.logger);
+    const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
+
+    if (viewThumbnailRes instanceof ImmichFileResponse) {
+      await sendFile(res, next, () => Promise.resolve(viewThumbnailRes), this.logger);
+    } else {
+      // viewThumbnailRes is a AssetMediaRedirectResponse
+      // which redirects to the original asset or a specific size to make better use of caching
+      const { targetSize } = viewThumbnailRes;
+      const [reqPath, reqSearch] = req.url.split('?');
+      let redirPath: string;
+      const redirSearchParams = new URLSearchParams(reqSearch);
+      if (targetSize === 'original') {
+        // relative path to this.downloadAsset
+        redirPath = 'original';
+        redirSearchParams.delete('size');
+      } else if (Object.values(AssetMediaSize).includes(targetSize)) {
+        redirPath = reqPath;
+        redirSearchParams.set('size', targetSize);
+      } else {
+        throw new Error('Invalid targetSize: ' + targetSize);
+      }
+      const finalRedirPath = redirPath + '?' + redirSearchParams.toString();
+      return res.redirect(finalRedirPath);
+    }
   }
 
   @Get(':id/video/playback')

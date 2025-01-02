@@ -1132,3 +1132,8 @@ RETURNING
   "id",
   "createdAt",
   "updatedAt"
+
+-- AssetRepository.deleteFiles
+DELETE FROM "asset_files"
+WHERE
+  "id" IN ($1, $2)
