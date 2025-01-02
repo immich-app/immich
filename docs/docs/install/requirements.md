@@ -6,22 +6,9 @@ sidebar_position: 10
 
 Hardware and software requirements for Immich:
 
-## Software
-
-Immich requires [**Docker**](https://docs.docker.com/get-started/get-docker/) with the **Docker Compose plugin**:
-
-- **Docker Engine**: This CLI variant is suitable for Linux servers (or Windows via WSL2).
-- **Docker Desktop**: This GUI variant is suitable for Linux desktop (or Windows or macOS).
-
-The Compose plugin will be installed by both Docker Engine and Desktop by following the linked installation guides; it can also be [separately installed](https://docs.docker.com/compose/install/).
-
-:::note
-Immich requires the command `docker compose`; the similarly named `docker-compose` is [deprecated](https://docs.docker.com/compose/migrate/) and is no longer supported by Immich.
-:::
-
 ## Hardware
 
-- **OS**: Recommended Linux operating system (Ubuntu, Debian, etc).
+- **OS**: Recommended Linux or \*nix operating system (Ubuntu, Debian, etc).
   - Non-Linux OSes tend to provide a poor Docker experience and are strongly discouraged.
     Our ability to assist with setup or troubleshooting on non-Linux OSes will be severely reduced.
     If you still want to try to use a non-Linux OS, you can set it up as follows:
@@ -38,6 +25,19 @@ The Postgres database files are typically between 1-3 GB in size.
 For this reason, the Postgres database (`DB_DATA_LOCATION`) should ideally use local SSD storage, and never a network share of any kind.
 Additionally, if Docker resource limits are used, the Postgres database requires at least 2GB of RAM.
 Windows users may run into issues with non-Unix-compatible filesystems, see below for more details.
+:::
+
+## Software
+
+Immich requires [**Docker**](https://docs.docker.com/get-started/get-docker/) with the **Docker Compose plugin**:
+
+- **Docker Engine**: This CLI variant is designed for Linux servers (or Windows via WSL2).
+- **Docker Desktop**: This GUI variant is **not recommended** for Linux, but is available for Windows or macOS.
+
+The Compose plugin will be installed by both Docker Engine and Desktop by following the linked installation guides; it can also be [separately installed](https://docs.docker.com/compose/install/).
+
+:::note
+Immich requires the command `docker compose`; the similarly named `docker-compose` is [deprecated](https://docs.docker.com/compose/migrate/) and is no longer supported by Immich.
 :::
 
 ### Special requirements for Windows users
