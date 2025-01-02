@@ -72,7 +72,7 @@
 
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 
-  <section class="mt-2">
+  <section class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar">
     <TreeItemThumbnails items={currentTreeItems} icon={mdiFolder} onClick={handleNavigation} />
 
     <!-- Assets -->
