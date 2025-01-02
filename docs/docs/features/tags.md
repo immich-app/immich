@@ -22,4 +22,4 @@ The tag prompt will appear, and you find and select a tag, or type in a new tag 
 
 You can navigate to the `Tags` view from the side navigation bar or by clicking on the tag in the info panel.
 
-<img src={require('./img/tag-view.jpeg').default} width="80%" title='Tag form' />
+<img src={require('./img/tag-view.webp').default} width="80%" title='Tag form' />

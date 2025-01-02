@@ -40,7 +40,7 @@ https://immich.yourdomain.com/share/JUckRMxlgpo7F9BpyqGk_cZEwDzaU_U5LU5_oNZp1ETI
 
 You can create a public share link by selecting the photos or videos, or from the share icon on an album.
 
-<img src={require('./img/public-shared-link-individual.jpeg').default} width='60%' title='Creating public shared link from selection' />
+<img src={require('./img/public-shared-link-individual.webp').default} width='60%' title='Creating public shared link from selection' />
 
 <img src={require('./img/public-shared-link-album.webp').default} width='30%' title='Creating public shared link from album' />
 
