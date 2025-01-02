@@ -10,13 +10,28 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
+  import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import CreateSharedLink from '$lib/components/photos-page/actions/create-shared-link.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
+  import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
+  import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
+  import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
+  import ChangeDate from '$lib/components/photos-page/actions/change-date-action.svelte';
+  import ChangeLocation from '$lib/components/photos-page/actions/change-location-action.svelte';
 
   interface Props {
     data: PageData;
@@ -50,7 +65,58 @@
   };
 
   const navigateToView = (path: string) => goto(getLink(path));
+
+  const triggerAssetUpdate = () => {};
+
+  const onAddToAlbum = (assetIds: string[]) => {
+    // if (terms.isNotInAlbum.toString() == 'true') {
+    //   const assetIdSet = new Set(assetIds);
+    //   searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+    // }
+  };
+
+  const onAssetDelete = (assetIds: string[]) => {
+    // const assetIdSet = new Set(assetIds);
+    // searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
+  };
+  const handleSelectAll = () => {
+    if (!data.pathAssets) {
+      return;
+    }
+
+    assetInteraction.selectAssets(data.pathAssets);
+  };
 </script>
+
+{#if assetInteraction.selectionActive}
+  <div class="fixed z-[910] top-0 left-0 w-full">
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => cancelMultiselect(assetInteraction)}
+    >
+      <CreateSharedLink />
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
+        <AddToAlbum {onAddToAlbum} />
+        <AddToAlbum shared {onAddToAlbum} />
+      </ButtonContextMenu>
+      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+        <DownloadAction menuItem />
+        <ChangeDate menuItem />
+        <ChangeLocation menuItem />
+        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
+        {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
+          <TagAction menuItem />
+        {/if}
+        <DeleteAssets menuItem {onAssetDelete} />
+        <hr />
+        <AssetJobActions />
+      </ButtonContextMenu>
+    </AssetSelectControlBar>
+  </div>
+{/if}
 
 <UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
@@ -78,13 +144,7 @@
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer
-          assets={data.pathAssets}
-          {assetInteraction}
-          {viewport}
-          disableAssetSelect={true}
-          showAssetName={true}
-        />
+        <GalleryViewer assets={data.pathAssets} {assetInteraction} {viewport} showAssetName={true} />
       </div>
     {/if}
   </section>
