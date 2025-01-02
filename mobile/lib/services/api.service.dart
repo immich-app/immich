@@ -10,12 +10,10 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
-/// Create dns_query_service.dart
-import 'dns_query_service.dart';
+import 'package:dns_query_service.dart';
 
 class ApiService implements Authentication {
   late ApiClient _apiClient;
-
   late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
   late OAuthApi oAuthApi;
@@ -34,7 +32,8 @@ class ApiService implements Authentication {
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
-
+  final DnsQueryService _dnsQueryService = DnsQueryService(); // Create DnsQueryService instance
+  
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     if (endpoint != null && endpoint.isNotEmpty) {
@@ -85,17 +84,25 @@ class ApiService implements Authentication {
   ///  host   - required
   ///  port   - optional (default: based on schema)
   ///  path   - optional
+  /// Resolve and set the API endpoint, with SRV record lookup based on domain
   Future<String> resolveEndpoint(String serverUrl) async {
-    // Check for server URL
-    if (!Uri.tryParse(serverUrl)?.hasAbsolutePath ?? false) {
-      throw ApiException(400, "Invalid server URL: $serverUrl");
-    }
     final url = sanitizeUrl(serverUrl);
 
     if (!await _isEndpointAvailable(serverUrl)) {
       throw ApiException(503, "Server is not reachable");
     }
 
+    // Get domain name from serverUrl
+    final domain = Uri.parse(serverUrl).host;
+
+    // Call DnsQueryService to fetch SRV records
+    try {
+      List<Map<String, dynamic>> srvRecords = await _dnsQueryService.fetchSrvRecords(domain);
+      _log.info('Fetched SRV records for domain $domain: $srvRecords');
+    } catch (e) {
+      _log.severe('Failed to fetch SRV records for domain $domain: $e');
+    }
+    
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
     if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
@@ -104,23 +111,7 @@ class ApiService implements Authentication {
     return url;
   }
 
-  final DnsQueryService _dnsQueryService = DnsQueryService();
-
-  /// Resolves the server endpoint and sets the base path for the API client.
-  /// 
-  /// If DNS resolution fails, it falls back to the original server URL.
-  /// Logs the resolution process for debugging.
   Future<bool> _isEndpointAvailable(String serverUrl) async {
-    final parsedUri = Uri.parse(serverUrl);
-    final domain = parsedUri.host;
-
-    final resolvedUrl = await _dnsQueryService.resolveDns(domain);
-    if (resolvedUrl != null) {
-      serverUrl = resolvedUrl;
-    } else {
-      _log.info("DNS resolution failed for domain: $domain, original serverUrl: $serverUrl");
-    }
-    
     if (!serverUrl.endsWith('/api')) {
       serverUrl += '/api';
     }
@@ -140,7 +131,6 @@ class ApiService implements Authentication {
       );
       return false;
     }
-    _log.info('Resolved URL: $resolvedUrl, Final server URL: $serverUrl');
     return true;
   }
 
@@ -167,7 +157,7 @@ class ApiService implements Authentication {
         return endpoint;
       }
     } catch (e) {
-      _log.warning("Could not locate /.well-known/immich at $baseUrl");
+      debugPrint("Could not locate /.well-known/immich at $baseUrl");
     }
 
     return "";
@@ -181,20 +171,16 @@ class ApiService implements Authentication {
   Future<void> setDeviceInfoHeader() async {
     DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
-    try {
-      if (Platform.isIOS) {
-        final iosInfo = await deviceInfoPlugin.iosInfo;
-        authenticationApi.apiClient
-            .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
-        authenticationApi.apiClient.addDefaultHeader('deviceType', 'iOS');
-      } else {
-        final androidInfo = await deviceInfoPlugin.androidInfo;
-        authenticationApi.apiClient
-            .addDefaultHeader('deviceModel', androidInfo.model);
-        authenticationApi.apiClient.addDefaultHeader('deviceType', 'Android');
-      }
-    } catch (e) {
-      _log.warning('Failed to set device info headers: $e');
+    if (Platform.isIOS) {
+      final iosInfo = await deviceInfoPlugin.iosInfo;
+      authenticationApi.apiClient
+          .addDefaultHeader('deviceModel', iosInfo.utsname.machine);
+      authenticationApi.apiClient.addDefaultHeader('deviceType', 'iOS');
+    } else {
+      final androidInfo = await deviceInfoPlugin.androidInfo;
+      authenticationApi.apiClient
+          .addDefaultHeader('deviceModel', androidInfo.model);
+      authenticationApi.apiClient.addDefaultHeader('deviceType', 'Android');
     }
   }
 
