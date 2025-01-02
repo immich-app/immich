@@ -77,7 +77,7 @@ There are a few different models available; the default is typically considered 
 
 ### Minimum detection score
 
-This setting affects whether a result from the face detecton model is filtered out as a false positive. It may seem tempting to set this low to detect more faces, but it can lead to false positives that are difficult to deal with and can harm facial recognition. It is strongly recommended not to go below 0.5 for this setting. Setting it to a very high number like 0.9 is also not recommended: the default is already biased toward precision, so a threshold that high leads to many undetected faces.
+This setting affects whether a result from the face detection model is filtered out as a false positive. It may seem tempting to set this low to detect more faces, but it can lead to false positives that are difficult to deal with and can harm facial recognition. It is strongly recommended not to go below 0.5 for this setting. Setting it to a very high number like 0.9 is also not recommended: the default is already biased toward precision, so a threshold that high leads to many undetected faces.
 
 After changing this setting, it will only apply to new face detection jobs. To apply the new setting to all assets, you need to re-run face detection for all assets.
 
