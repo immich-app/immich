@@ -268,6 +268,7 @@
   "favorites_page_title": "Favorites",
   "filename_search": "File name or extension",
   "filter": "Filter",
+  "folders": "Folders",
   "get_wifiname_error": "Could not get Wi-Fi name. Make sure you have granted the necessary permissions and are connected to a Wi-Fi network",
   "grant_permission": "Grant permission",
   "haptic_feedback_switch": "Enable haptic feedback",

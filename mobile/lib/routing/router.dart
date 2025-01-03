@@ -5,6 +5,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
@@ -15,6 +16,7 @@ import 'package:immich_mobile/pages/backup/backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/failed_backup_status.page.dart';
 import 'package:immich_mobile/pages/albums/albums.page.dart';
 import 'package:immich_mobile/pages/common/native_video_viewer.page.dart';
+import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/pages/library/local_albums.page.dart';
 import 'package:immich_mobile/pages/library/people/people_collection.page.dart';
 import 'package:immich_mobile/pages/library/places/places_collection.page.dart';
@@ -204,6 +206,11 @@ class AppRouter extends RootStackRouter {
     CustomRoute(
       page: PartnerRoute.page,
       guards: [_authGuard, _duplicateGuard],
+      transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: FolderRoute.page,
+      guards: [_authGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
     ),
     AutoRoute(
