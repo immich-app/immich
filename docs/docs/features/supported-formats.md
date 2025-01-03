@@ -34,7 +34,7 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 | `FLV`       | `.flv`                | :white_check_mark: |       |
 | `M4V`       | `.m4v`                | :white_check_mark: |       |
 | `MATROSKA`  | `.mkv`                | :white_check_mark: |       |
-| `MP2T`      | `.mts` `.m2ts`        | :white_check_mark: |       |
+| `MP2T`      | `.mts` `.m2ts` `.m2t` | :white_check_mark: |       |
 | `MP4`       | `.mp4` `.insv`        | :white_check_mark: |       |
 | `MPEG`      | `.mpg` `.mpe` `.mpeg` | :white_check_mark: |       |
 | `QUICKTIME` | `.mov`                | :white_check_mark: |       |
