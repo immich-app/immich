@@ -31,6 +31,9 @@
     mdiClose,
     mdiEye,
     mdiEyeOff,
+    mdiFolder,
+    mdiFolderEyeOutline,
+    mdiFolderOpen,
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
@@ -45,6 +48,8 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { page } from '$app/state';
+  import { includes } from 'lodash-es';
 
   interface Props {
     asset: AssetResponseDto;
@@ -130,6 +135,14 @@
       unassignedFaces = data?.unassignedFaces || [];
     });
     showEditFaces = false;
+  };
+
+  const getAssetFolderHref = (asset: AssetResponseDto) => {
+    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
+    // Remove the last part of the path to get the parent path
+    const assetParentPath = asset.originalPath.split('/').slice(0, -1).join('/');
+    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
+    return folderUrl.href;
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
@@ -391,6 +404,24 @@
         {/if}
       </div>
     </div>
+
+    {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb && !page.url.pathname.includes(AppRoute.FOLDERS)}
+      <a
+        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
+        href={getAssetFolderHref(asset)}
+        title={$t('go_to_folder')}
+        class:hover:dark:text-immich-dark-primary={isOwner}
+        class:hover:text-immich-primary={isOwner}
+      >
+        <div><Icon path={mdiFolderOpen} size="24" /></div>
+
+        <div>
+          <p class="text-pretty flex place-items-center gap-2">
+            {asset.originalPath.split('/').slice(0, -1).join('/')}
+          </p>
+        </div>
+      </a>
+    {/if}
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
