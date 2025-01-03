@@ -48,21 +48,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["", "-cuda", "-openvino", "-armnn"]
+        suffix: ['', '-cuda', '-rocm', '-openvino', '-armnn']
     steps:
-        - name: Login to GitHub Container Registry
-          uses: docker/login-action@v3
-          with:
-            registry: ghcr.io
-            username: ${{ github.repository_owner }}
-            password: ${{ secrets.GITHUB_TOKEN }}
-        - name: Re-tag image
-          run: |
-              REGISTRY_NAME="ghcr.io"
-              REPOSITORY=${{ github.repository_owner }}/immich-machine-learning
-              TAG_OLD=main${{ matrix.suffix }}
-              TAG_NEW=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
-              docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_NEW $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Re-tag image
+        run: |
+          REGISTRY_NAME="ghcr.io"
+          REPOSITORY=${{ github.repository_owner }}/immich-machine-learning
+          TAG_OLD=main${{ matrix.suffix }}
+          TAG_NEW=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
+          docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_NEW $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
 
   retag_server:
     name: Re-Tag Server
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: [""]
+        suffix: ['']
     steps:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -87,12 +87,11 @@ jobs:
           TAG_NEW=${{ github.event.number == 0 && github.ref_name ||  format('pr-{0}', github.event.number)  }}${{ matrix.suffix }}
           docker buildx imagetools create -t $REGISTRY_NAME/$REPOSITORY:$TAG_NEW $REGISTRY_NAME/$REPOSITORY:$TAG_OLD
 
-
   build_and_push_ml:
     name: Build and Push ML
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: mich
     env:
       image: immich-machine-learning
       context: machine-learning
@@ -108,6 +107,10 @@ jobs:
           - platforms: linux/amd64
             device: cuda
             suffix: -cuda
+
+          - platforms: linux/amd64
+            device: rocm
+            suffix: -rocm
 
           - platforms: linux/amd64
             device: openvino
@@ -191,7 +194,6 @@ jobs:
             BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
             BUILD_SOURCE_REF=${{ github.ref_name }}
             BUILD_SOURCE_COMMIT=${{ github.sha }}
-
 
   build_and_push_server:
     name: Build and Push Server
