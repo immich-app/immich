@@ -45,18 +45,12 @@ import {
 } from 'src/interfaces/asset.interface';
 import { MapMarker, MapMarkerSearchOptions } from 'src/interfaces/map.interface';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/interfaces/search.interface';
-import { anyUuid, asUuid, introspectTables, mapUpsertColumns } from 'src/utils/database';
+import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
-import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
-  constructor(
-    @InjectKysely() private db: Kysely<DB>,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {
-    introspectTables(this.dataSource, 'exif', 'asset_job_status', 'asset_files');
-  }
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async upsertExif(exif: Insertable<Exif>): Promise<void> {
     const value = { ...exif, assetId: asUuid(exif.assetId) };

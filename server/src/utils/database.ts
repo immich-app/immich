@@ -1,7 +1,7 @@
 import { Expression, RawBuilder, sql, ValueExpression } from 'kysely';
 import { InsertObject } from 'node_modules/kysely/dist/cjs';
 import { DB } from 'src/db';
-import { Between, DataSource, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 
 /**
  * Allows optional values unlike the regular Between and uses MoreThanOrEqual
@@ -17,28 +17,16 @@ export function OptionalBetween<T>(from?: T, to?: T) {
   }
 }
 
+// populated by the database repository at bootstrap
 export const UPSERT_COLUMNS = {} as { [T in keyof DB]: { [K in keyof DB[T]]: RawBuilder<unknown> } };
-/** Any repository that upserts to a table using `mapUpsertColumns` should call this method in its constructor with that table. */
-export const introspectTables = (dataSource: DataSource, ...tables: (keyof DB)[]) => {
-  for (const table of tables) {
-    if (table in UPSERT_COLUMNS) {
-      continue;
-    }
-
-    const metadata = dataSource.manager.connection.getMetadata(table);
-    UPSERT_COLUMNS[table] = Object.fromEntries(
-      metadata.ownColumns.map((column) => [column.propertyName, sql<string>`excluded.${sql.ref(column.propertyName)}`]),
-    ) as any;
-  }
-};
 
 /** Generates the columns for an upsert statement, excluding the conflict keys.
  * Assumes that all entries have the same keys. */
-export const mapUpsertColumns = <T extends keyof DB>(
+export function mapUpsertColumns<T extends keyof DB>(
   table: T,
   entry: InsertObject<DB, T>,
   conflictKeys: readonly (keyof DB[T])[],
-) => {
+) {
   const columns = UPSERT_COLUMNS[table] as { [K in keyof DB[T]]: RawBuilder<unknown> };
   const upsertColumns: Partial<Record<keyof typeof entry, RawBuilder<unknown>>> = {};
   for (const entryColumn in entry) {
@@ -48,7 +36,7 @@ export const mapUpsertColumns = <T extends keyof DB>(
   }
 
   return upsertColumns as Expand<Record<keyof typeof entry, ValueExpression<DB, T, any>>>;
-};
+}
 
 export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uuid`;
 
