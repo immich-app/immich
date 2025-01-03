@@ -33,7 +33,7 @@ class MetadataSearchDto {
     this.libraryId,
     this.make,
     this.model,
-    this.order,
+    this.order = AssetOrder.desc,
     this.originalFileName,
     this.originalPath,
     this.page,
@@ -186,13 +186,7 @@ class MetadataSearchDto {
 
   String? model;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetOrder? order;
+  AssetOrder order;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -406,7 +400,7 @@ class MetadataSearchDto {
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
-    (order == null ? 0 : order!.hashCode) +
+    (order.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
@@ -533,11 +527,7 @@ class MetadataSearchDto {
     } else {
     //  json[r'model'] = null;
     }
-    if (this.order != null) {
       json[r'order'] = this.order;
-    } else {
-    //  json[r'order'] = null;
-    }
     if (this.originalFileName != null) {
       json[r'originalFileName'] = this.originalFileName;
     } else {
@@ -662,7 +652,7 @@ class MetadataSearchDto {
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        order: AssetOrder.fromJson(json[r'order']),
+        order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
         page: num.parse('${json[r'page']}'),

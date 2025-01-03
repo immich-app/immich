@@ -8,23 +8,3 @@ FROM
 WHERE
   "tag_asset"."tagsId" = $1
   AND "tag_asset"."assetsId" IN ($2)
-
--- TagRepository.addAssetIds
-INSERT INTO
-  "tag_asset" ("assetsId", "tagsId")
-VALUES
-  ($1, $2)
-
--- TagRepository.removeAssetIds
-DELETE FROM "tag_asset"
-WHERE
-  (
-    "tagsId" = $1
-    AND "assetsId" IN ($2)
-  )
-
--- TagRepository.upsertAssetIds
-INSERT INTO
-  "tag_asset" ("assetsId", "tagsId")
-VALUES
-  ($1, $2)

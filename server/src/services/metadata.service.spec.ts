@@ -2,6 +2,7 @@ import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
@@ -200,7 +201,6 @@ describe(MetadataService.name, () => {
           exifInfo: { livePhotoCID: 'CID' } as ExifEntity,
         },
       ]);
-      assetMock.findLivePhotoMatch.mockResolvedValue(null);
 
       await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
         JobStatus.SKIPPED,
@@ -579,7 +579,6 @@ describe(MetadataService.name, () => {
         EmbeddedVideoType: 'MotionPhoto_Data',
       });
       cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
-      assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
       cryptoMock.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
       const video = randomBytes(512);
@@ -624,7 +623,6 @@ describe(MetadataService.name, () => {
         EmbeddedVideoType: 'MotionPhoto_Data',
       });
       cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
-      assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
       cryptoMock.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
       const video = randomBytes(512);
@@ -670,7 +668,6 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
-      assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
       cryptoMock.randomUUID.mockReturnValue(fileStub.livePhotoMotion.uuid);
       const video = randomBytes(512);
@@ -716,8 +713,9 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
-      assetMock.getByChecksum.mockResolvedValue(null);
-      assetMock.create.mockImplementation((asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }));
+      assetMock.create.mockImplementation(
+        (asset) => Promise.resolve({ ...assetStub.livePhotoMotionAsset, ...asset }) as Promise<AssetEntity>,
+      );
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);
 
@@ -789,7 +787,6 @@ describe(MetadataService.name, () => {
         MicroVideoOffset: 1,
       });
       cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
-      assetMock.getByChecksum.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
       const video = randomBytes(512);
       storageMock.readFile.mockResolvedValue(video);

@@ -450,19 +450,6 @@ WHERE
 ORDER BY
   "AlbumEntity"."createdAt" DESC
 
--- AlbumRepository.removeAsset
-DELETE FROM "albums_assets_assets"
-WHERE
-  "albums_assets_assets"."assetsId" = $1
-
--- AlbumRepository.removeAssetIds
-DELETE FROM "albums_assets_assets"
-WHERE
-  (
-    "albumsId" = $1
-    AND "assetsId" IN ($2)
-  )
-
 -- AlbumRepository.getAssetIds
 SELECT
   "albums_assets"."assetsId" AS "assetId"
@@ -471,52 +458,3 @@ FROM
 WHERE
   "albums_assets"."albumsId" = $1
   AND "albums_assets"."assetsId" IN ($2)
-
--- AlbumRepository.addAssetIds
-INSERT INTO
-  "albums_assets_assets" ("albumsId", "assetsId")
-VALUES
-  ($1, $2)
-
--- AlbumRepository.updateThumbnails
-UPDATE "albums"
-SET
-  "albumThumbnailAssetId" = (
-    SELECT
-      "album_assets"."assetsId"
-    FROM
-      "albums_assets_assets" "album_assets"
-      INNER JOIN "assets" "assets" ON "album_assets"."assetsId" = "assets"."id"
-      AND "assets"."deletedAt" IS NULL
-    WHERE
-      "album_assets"."albumsId" = "albums"."id"
-    ORDER BY
-      "assets"."fileCreatedAt" DESC
-    LIMIT
-      1
-  ),
-  "updatedAt" = CURRENT_TIMESTAMP
-WHERE
-  "albums"."albumThumbnailAssetId" IS NULL
-  AND EXISTS (
-    SELECT
-      1
-    FROM
-      "albums_assets_assets" "album_assets"
-      INNER JOIN "assets" "assets" ON "album_assets"."assetsId" = "assets"."id"
-      AND "assets"."deletedAt" IS NULL
-    WHERE
-      "album_assets"."albumsId" = "albums"."id"
-  )
-  OR "albums"."albumThumbnailAssetId" IS NOT NULL
-  AND NOT EXISTS (
-    SELECT
-      1
-    FROM
-      "albums_assets_assets" "album_assets"
-      INNER JOIN "assets" "assets" ON "album_assets"."assetsId" = "assets"."id"
-      AND "assets"."deletedAt" IS NULL
-    WHERE
-      "album_assets"."albumsId" = "albums"."id"
-      AND "albums"."albumThumbnailAssetId" = "album_assets"."assetsId"
-  )

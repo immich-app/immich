@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
+import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
+import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/interfaces/asset.interface';
@@ -166,7 +167,7 @@ export class MetadataService extends BaseService {
 
     const { width, height } = this.getImageDimensions(exifTags);
 
-    const exifData: Partial<ExifEntity> = {
+    const exifData: Insertable<Exif> = {
       assetId: asset.id,
 
       // dates

@@ -1,3 +1,5 @@
+import { PostgresJSDialect } from 'kysely-postgres-js';
+import postgres from 'postgres';
 import { ImmichEnvironment, ImmichWorker } from 'src/enum';
 import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
@@ -21,16 +23,24 @@ const envData: EnvData = {
 
   database: {
     config: {
-      connectionType: 'parts',
-      database: 'immich',
-      type: 'postgres',
-      host: 'database',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      name: 'immich',
-      synchronize: false,
-      migrationsRun: true,
+      kysely: {
+        dialect: new PostgresJSDialect({
+          postgres: postgres({ database: 'immich', host: 'database', port: 5432 }),
+        }),
+        log: ['error'],
+      },
+      typeorm: {
+        connectionType: 'parts',
+        database: 'immich',
+        type: 'postgres',
+        host: 'database',
+        port: 5432,
+        username: 'postgres',
+        password: 'postgres',
+        name: 'immich',
+        synchronize: false,
+        migrationsRun: true,
+      },
     },
 
     skipMigrations: false,
