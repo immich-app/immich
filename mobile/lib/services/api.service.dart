@@ -10,9 +10,10 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart';
 
+import 'package:dns_query_service.dart';
+
 class ApiService implements Authentication {
   late ApiClient _apiClient;
-
   late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
   late OAuthApi oAuthApi;
@@ -31,7 +32,8 @@ class ApiService implements Authentication {
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
-
+  final DnsQueryService _dnsQueryService = DnsQueryService(); // Create DnsQueryService instance
+  
   ApiService() {
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     if (endpoint != null && endpoint.isNotEmpty) {
@@ -82,6 +84,7 @@ class ApiService implements Authentication {
   ///  host   - required
   ///  port   - optional (default: based on schema)
   ///  path   - optional
+  /// Resolve and set the API endpoint, with SRV record lookup based on domain
   Future<String> resolveEndpoint(String serverUrl) async {
     final url = sanitizeUrl(serverUrl);
 
@@ -89,6 +92,17 @@ class ApiService implements Authentication {
       throw ApiException(503, "Server is not reachable");
     }
 
+    // Get domain name from serverUrl
+    final domain = Uri.parse(serverUrl).host;
+
+    // Call DnsQueryService to fetch SRV records
+    try {
+      List<Map<String, dynamic>> srvRecords = await _dnsQueryService.fetchSrvRecords(domain);
+      _log.info('Fetched SRV records for domain $domain: $srvRecords');
+    } catch (e) {
+      _log.severe('Failed to fetch SRV records for domain $domain: $e');
+    }
+    
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
     if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
