@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
+  import { goto, invalidate, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -46,6 +46,8 @@
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
   let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
 
+  $inspect(data).with(console.log);
+
   const assetInteraction = new AssetInteraction();
 
   onMount(async () => {
@@ -66,19 +68,11 @@
 
   const navigateToView = (path: string) => goto(getLink(path));
 
-  const triggerAssetUpdate = () => {};
-
-  const onAddToAlbum = (assetIds: string[]) => {
-    // if (terms.isNotInAlbum.toString() == 'true') {
-    //   const assetIdSet = new Set(assetIds);
-    //   searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
-    // }
+  const triggerAssetUpdate = async () => {
+    await foldersStore.refreshAssetsByPath(data.path);
+    await invalidateAll();
   };
 
-  const onAssetDelete = (assetIds: string[]) => {
-    // const assetIdSet = new Set(assetIds);
-    // searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
-  };
   const handleSelectAll = () => {
     if (!data.pathAssets) {
       return;
@@ -97,8 +91,8 @@
       <CreateSharedLink />
       <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum {onAddToAlbum} />
-        <AddToAlbum shared {onAddToAlbum} />
+        <AddToAlbum />
+        <AddToAlbum shared />
       </ButtonContextMenu>
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
 
@@ -110,7 +104,7 @@
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
-        <DeleteAssets menuItem {onAssetDelete} />
+        <DeleteAssets menuItem onAssetDelete={triggerAssetUpdate} />
         <hr />
         <AssetJobActions />
       </ButtonContextMenu>
