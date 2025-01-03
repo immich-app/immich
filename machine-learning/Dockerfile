@@ -17,7 +17,7 @@ RUN mkdir /opt/armnn && \
 
 FROM builder-${DEVICE} AS builder
 
-ARG DEVICE
+ARG DEVICE TARGETARCH
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=true \
@@ -32,7 +32,11 @@ RUN poetry config installer.max-workers 10 && \
 RUN python3 -m venv /opt/venv
 
 COPY poetry.lock pyproject.toml ./
-RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
+RUN if [ "$DEVICE" = "cuda" ] && [ "$TARGETARCH" = "arm64" ]; then \
+    # hack to work around poetry not setting the right filename for the wheel https://github.com/python-poetry/poetry/issues/4472
+    wget -q -O onnxruntime_gpu-1.18.0-cp311-cp311-manylinux_aarch64.whl https://nvidia.box.com/shared/static/fy55jvniujjbigr4gwkv8z1ma6ipgspg.whl; fi && \
+    poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev && \
+    if [ "$DEVICE" = "cuda" ] && [ "$TARGETARCH" = "arm64" ]; then rm onnxruntime_gpu-1.18.0-cp311-cp311-manylinux_aarch64.whl; fi
 
 FROM python:3.11-slim-bookworm@sha256:370c586a6ffc8c619e6d652f81c094b34b14b8f2fb9251f092de23f16e299b78 AS prod-cpu
 
@@ -49,12 +53,20 @@ RUN apt-get update && \
     apt-get remove wget -yqq && \
     rm -rf /var/lib/apt/lists/*
 
-FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
-
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda-amd64
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda-arm64
+RUN apt-get update && \
+    apt-get install --no-install-recommends -yqq libcudnn8 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+ENV LD_LIBRARY_PATH=/usr/local/cuda-12/compat:$LD_LIBRARY_PATH
+
+FROM prod-cuda-${TARGETARCH} AS prod-cuda
 
 COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
@@ -81,10 +93,10 @@ COPY --from=builder-armnn \
     /opt/armnn/
 
 FROM prod-${DEVICE} AS prod
-ARG DEVICE
+ARG DEVICE TARGETARCH
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini $(if ! { [ "$DEVICE" = "openvino" ] || { [ "$DEVICE" = "cuda" ] && [ "$TARGETARCH" = "arm64" ]; }; }; then echo "libmimalloc2.0"; fi) && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
