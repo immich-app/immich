@@ -95,6 +95,7 @@ export class PersonRepository implements IPersonRepository {
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
       .orderBy('person.isHidden', 'ASC')
+      .addOrderBy('person.isFavorite', 'DESC')
       .addOrderBy("NULLIF(person.name, '') IS NULL", 'ASC')
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')

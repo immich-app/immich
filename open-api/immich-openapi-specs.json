@@ -10279,6 +10279,9 @@
             "description": "Person id.",
             "type": "string"
           },
+          "isFavorite": {
+            "type": "boolean"
+          },
           "isHidden": {
             "description": "Person visibility",
             "type": "boolean"
@@ -10384,6 +10387,9 @@
             "nullable": true,
             "type": "string"
           },
+          "isFavorite": {
+            "type": "boolean"
+          },
           "isHidden": {
             "description": "Person visibility",
             "type": "boolean"
@@ -10404,6 +10410,10 @@
           },
           "id": {
             "type": "string"
+          },
+          "isFavorite": {
+            "description": "This property was added in v1.124.0",
+            "type": "boolean"
           },
           "isHidden": {
             "type": "boolean"
@@ -10452,6 +10462,9 @@
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
           },
+          "isFavorite": {
+            "type": "boolean"
+          },
           "isHidden": {
             "description": "Person visibility",
             "type": "boolean"
@@ -10478,6 +10491,10 @@
           },
           "id": {
             "type": "string"
+          },
+          "isFavorite": {
+            "description": "This property was added in v1.124.0",
+            "type": "boolean"
           },
           "isHidden": {
             "type": "boolean"

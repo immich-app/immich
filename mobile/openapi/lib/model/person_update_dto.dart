@@ -15,6 +15,7 @@ class PersonUpdateDto {
   PersonUpdateDto({
     this.birthDate,
     this.featureFaceAssetId,
+    this.isFavorite,
     this.isHidden,
     this.name,
   });
@@ -30,6 +31,14 @@ class PersonUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? featureFaceAssetId;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
 
   /// Person visibility
   ///
@@ -53,6 +62,7 @@ class PersonUpdateDto {
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
     other.birthDate == birthDate &&
     other.featureFaceAssetId == featureFaceAssetId &&
+    other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name;
 
@@ -61,11 +71,12 @@ class PersonUpdateDto {
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, isHidden=$isHidden, name=$name]';
+  String toString() => 'PersonUpdateDto[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,6 +89,11 @@ class PersonUpdateDto {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
     //  json[r'featureFaceAssetId'] = null;
+    }
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
     }
     if (this.isHidden != null) {
       json[r'isHidden'] = this.isHidden;
@@ -103,6 +119,7 @@ class PersonUpdateDto {
       return PersonUpdateDto(
         birthDate: mapDateTime(json, r'birthDate', r''),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),
       );
