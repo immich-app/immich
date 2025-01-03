@@ -377,12 +377,13 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <a
-            href={getAssetFolderHref(asset)}
-            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            transition:slide={{ duration: 250 }}
-          >
-            {asset.originalPath}
+          <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')}>
+            <p
+              class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+              transition:slide={{ duration: 250 }}
+            >
+              {asset.originalPath}
+            </p>
           </a>
         {/if}
         {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
