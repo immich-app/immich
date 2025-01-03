@@ -4,8 +4,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
@@ -19,9 +17,12 @@ class AlbumPreviewPage extends HookConsumerWidget {
     final assets = useState<List<Asset>>([]);
 
     getAssetsInAlbum() async {
-      assets.value = await ref
+      final results = await ref
           .read(albumMediaRepositoryProvider)
           .getAssets(album.localId!);
+      if (context.mounted) {
+        assets.value = results;
+      }
     }
 
     useEffect(
@@ -40,17 +41,6 @@ class AlbumPreviewPage extends HookConsumerWidget {
             Text(
               album.name,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                "ID ${album.id}",
-                style: TextStyle(
-                  fontSize: 10,
-                  color: context.colorScheme.onSurfaceSecondary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
             ),
           ],
         ),

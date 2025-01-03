@@ -8,8 +8,7 @@ import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/widgets/backup/album_info_card.dart';
-import 'package:immich_mobile/widgets/backup/album_info_list_tile.dart';
+import 'package:immich_mobile/widgets/backup/album_info_block.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
@@ -33,7 +32,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       [],
     );
 
-    buildAlbumSelectionList() {
+    buildAlbumSelection(AlbumInfoBlockMode mode) {
       if (albums.isEmpty) {
         return const SliverToBoxAdapter(
           child: Center(
@@ -44,43 +43,27 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
 
       return SliverPadding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
-        sliver: SliverList(
-          delegate: SliverChildBuilderDelegate(
-            ((context, index) {
-              return AlbumInfoListTile(
-                album: albums[index],
-              );
-            }),
-            childCount: albums.length,
-          ),
-        ),
-      );
-    }
-
-    buildAlbumSelectionGrid() {
-      if (albums.isEmpty) {
-        return const SliverToBoxAdapter(
-          child: Center(
-            child: ImmichLoadingIndicator(),
-          ),
-        );
-      }
-
-      return SliverPadding(
-        padding: const EdgeInsets.all(12.0),
-        sliver: SliverGrid.builder(
-          gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-            maxCrossAxisExtent: 300,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-          ),
-          itemCount: albums.length,
-          itemBuilder: ((context, index) {
-            return AlbumInfoCard(
-              album: albums[index],
-            );
-          }),
-        ),
+        sliver: mode == AlbumInfoBlockMode.grid
+            ? SliverGrid.builder(
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 300,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                ),
+                itemCount: albums.length,
+                itemBuilder: ((context, index) {
+                  return AlbumInfoBlock(
+                      album: albums[index], mode: AlbumInfoBlockMode.grid);
+                }),
+              )
+            : SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  ((context, index) {
+                    return AlbumInfoBlock(album: albums[index], mode: mode);
+                  }),
+                  childCount: albums.length,
+                ),
+              ),
       );
     }
 
@@ -284,11 +267,11 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
           SliverLayoutBuilder(
             builder: (context, constraints) {
-              if (constraints.crossAxisExtent > 600) {
-                return buildAlbumSelectionGrid();
-              } else {
-                return buildAlbumSelectionList();
-              }
+              return buildAlbumSelection(
+                constraints.crossAxisExtent > 600
+                    ? AlbumInfoBlockMode.grid
+                    : AlbumInfoBlockMode.list,
+              );
             },
           ),
         ],
