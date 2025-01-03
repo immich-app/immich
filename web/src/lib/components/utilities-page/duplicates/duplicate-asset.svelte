@@ -1,23 +1,105 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
-  import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline } from '@mdi/js';
+  import { getAllAlbums, type AssetResponseDto, type AlbumResponseDto } from '@immich/sdk';
+  import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline, mdiArchiveArrowDownOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { fromDateTimeOriginal, fromLocalDateTime } from '$lib/utils/timeline-util';
+  import { locale } from '$lib/stores/preferences.store';
+  import type { SelectedSyncData } from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
+  import { DateTime } from 'luxon';
+  import DuplicateAssetSelection from '$lib/components/utilities-page/duplicates/duplicate-asset-selection.svelte';
 
   interface Props {
     asset: AssetResponseDto;
+    descriptionHeight: number;
     isSelected: boolean;
+    isSynchronizeAlbumsActive: boolean;
+    isSynchronizeFavoritesActive: boolean;
+    isSynchronizeArchivesActive: boolean;
+    locationHeight: number;
+    selectedSyncData: SelectedSyncData;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
+    onSelectDate: (dateTime: DateTime) => void;
+    onSelectDescription: (description: string) => void;
+    onSelectLocation: (location: SelectedSyncData['location']) => void;
+    setAlbums: (albums: AlbumResponseDto[]) => void;
+    setDescriptionHeight: (height: number) => void;
+    setLocationHeight: (height: number) => void;
   }
 
-  let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+  let {
+    asset,
+    descriptionHeight,
+    isSelected,
+    isSynchronizeAlbumsActive,
+    isSynchronizeFavoritesActive,
+    isSynchronizeArchivesActive,
+    locationHeight,
+    selectedSyncData,
+    onSelectAsset,
+    onViewAsset,
+    onSelectDate,
+    onSelectDescription,
+    onSelectLocation,
+    setAlbums,
+    setDescriptionHeight,
+    setLocationHeight,
+  }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
+
+  selectedSyncData.isFavorite = selectedSyncData.isFavorite || asset.isFavorite;
+  selectedSyncData.isArchived = selectedSyncData.isArchived || asset.isArchived;
+
+  let descriptionItem = $state<DuplicateAssetSelection>();
+  let locationItem = $state<DuplicateAssetSelection>();
+  let albums: AlbumResponseDto[] = $state([]);
+  onMount(async () => {
+    setDescriptionHeight(descriptionItem.getHeight());
+    setLocationHeight(locationItem.getHeight());
+    albums = await getAllAlbums({ assetId: asset.id });
+    setAlbums(albums);
+  });
+
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
+      : fromLocalDateTime(asset.localDateTime),
+  );
+  let description = $derived(asset.exifInfo?.description);
+  let location = $derived({
+    latitude: asset.exifInfo?.latitude,
+    longitude: asset.exifInfo?.longitude,
+    city: asset.exifInfo?.city,
+    state: asset.exifInfo?.state,
+    country: asset.exifInfo?.country,
+  });
+  let displayedDateTime = $derived(isSelected && selectedSyncData?.dateTime ? selectedSyncData.dateTime : dateTime);
+  let displayedTimeZone = $derived(isSelected && selectedSyncData?.timeZone ? selectedSyncData.timeZone : timeZone);
+  let displayedLocation = $derived(isSelected && selectedSyncData?.location ? selectedSyncData.location : location);
+  let displayedDescription = $derived(
+    isSelected && selectedSyncData?.description ? selectedSyncData.description : description,
+  );
+  let displayedFavorite = $derived(
+    isSelected && isSynchronizeFavoritesActive && selectedSyncData?.isFavorite
+      ? selectedSyncData.isFavorite
+      : asset.isFavorite,
+  );
+  let displayedArchived = $derived(
+    isSelected && isSynchronizeArchivesActive && selectedSyncData?.isArchived
+      ? selectedSyncData.isArchived
+      : asset.isArchived,
+  );
+  let displayedAlbums = $derived(
+    isSelected && isSynchronizeAlbumsActive && selectedSyncData?.albums ? selectedSyncData.albums : albums,
+  );
 </script>
 
 <div
@@ -43,11 +125,22 @@
       />
 
       <!-- FAVORITE ICON -->
-      {#if asset.isFavorite}
-        <div class="absolute bottom-2 left-2">
-          <Icon path={mdiHeart} size="24" class="text-white" />
-        </div>
-      {/if}
+      <div class="absolute bottom-2 left-2">
+        {#if displayedFavorite}
+          {#if asset.isFavorite}
+            <Icon path={mdiHeart} size="24" class="text-white inline-block" />
+          {:else}
+            <Icon path={mdiHeart} size="24" color="red" class="text-white inline-block" />
+          {/if}
+        {/if}
+        {#if displayedArchived}
+          {#if asset.isArchived}
+            <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white inline-block" />
+          {:else}
+            <Icon path={mdiArchiveArrowDownOutline} size="24" color="red" class="text-white inline-block" />
+          {/if}
+        {/if}
+      </div>
 
       <!-- OVERLAY CHIP -->
       <div
@@ -93,16 +186,80 @@
   >
     <span class="break-all text-center">{asset.originalFileName}</span>
     <span>{getAssetResolution(asset)} - {getFileSize(asset)}</span>
-    <span>
-      {#await getAllAlbums({ assetId: asset.id })}
+    <span
+      style="padding: 3px;"
+      class="rounded-xl {isSelected &&
+      isSynchronizeAlbumsActive &&
+      displayedAlbums.length > 0 &&
+      selectedSyncData.albums !== albums
+        ? 'bg-red-300/90'
+        : ''}"
+    >
+      {#if !albums}
         {$t('scanning_for_album')}
-      {:then albums}
-        {#if albums.length === 0}
-          {$t('not_in_any_album')}
-        {:else}
-          {$t('in_albums', { values: { count: albums.length } })}
-        {/if}
-      {/await}
+      {:else if displayedAlbums.length === 0}
+        {$t('not_in_any_album')}
+      {:else}
+        {$t('in_albums', { values: { count: displayedAlbums.length } })}
+      {/if}
     </span>
+    <DuplicateAssetSelection
+      {isSelected}
+      selectedData={selectedSyncData.dateTime}
+      displayedData={displayedDateTime}
+      isSelectedEqualOriginal={selectedSyncData.dateTime?.ts === dateTime?.ts}
+      onClick={() => onSelectDate(displayedDateTime)}
+    >
+      {displayedDateTime.toLocaleString(
+        {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        },
+        { locale: $locale },
+      )}
+      {displayedDateTime.toLocaleString(
+        {
+          weekday: 'short',
+          hour: 'numeric',
+          minute: '2-digit',
+          timeZoneName: displayedTimeZone ? 'longOffset' : undefined,
+        },
+        { locale: $locale },
+      )}
+    </DuplicateAssetSelection>
+    <DuplicateAssetSelection
+      bind:this={locationItem}
+      {isSelected}
+      slotHeight={locationHeight}
+      selectedData={selectedSyncData?.location}
+      displayedData={displayedLocation?.city && displayedLocation?.state && displayedLocation?.country}
+      isSelectedEqualOriginal={selectedSyncData?.location?.latitude === location.latitude &&
+        selectedSyncData?.location?.longitude === location.longitude}
+      onClick={() => onSelectLocation(displayedLocation)}
+    >
+      {#if displayedLocation?.city}
+        <div class="text-sm">
+          <p>{displayedLocation.city}</p>
+        </div>
+      {/if}
+      {#if displayedLocation?.state}
+        <p>{displayedLocation.state}</p>
+      {/if}
+      {#if displayedLocation?.country}
+        <p>{displayedLocation.country}</p>
+      {/if}
+    </DuplicateAssetSelection>
+    <DuplicateAssetSelection
+      bind:this={descriptionItem}
+      {isSelected}
+      slotHeight={descriptionHeight}
+      selectedData={selectedSyncData.description}
+      displayedData={displayedDescription}
+      isSelectedEqualOriginal={selectedSyncData?.description === description}
+      onClick={() => onSelectDescription(displayedDescription)}
+    >
+      {displayedDescription}
+    </DuplicateAssetSelection>
   </div>
 </div>

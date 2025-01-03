@@ -12,19 +12,57 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
+  import { DateTime } from 'luxon';
 
   interface Props {
     assets: AssetResponseDto[];
-    onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
+    isSynchronizeAlbumsActive: boolean;
+    isSynchronizeArchivesActive: boolean;
+    isSynchronizeFavoritesActive: boolean;
+    onResolve: (duplicateAssetIds: string[], trashIds: string[], selectedDataToSync: SelectedSyncData) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, onResolve, onStack }: Props = $props();
+  let {
+    assets,
+    isSynchronizeAlbumsActive,
+    isSynchronizeArchivesActive,
+    isSynchronizeFavoritesActive,
+    onResolve,
+    onStack,
+  }: Props = $props();
+
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
+  let descriptionHeight = $state(0);
+  let locationHeight = $state(0);
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+  export interface SelectedSyncData {
+    dateTime: DateTime | null;
+    timeZone: string | null;
+    description: string | null;
+    location: {
+      latitude: number;
+      longitude: number;
+      city: string;
+      state: string;
+      country: string;
+    } | null;
+    albums: AssetResponseDto[];
+    isArchived: boolean | null;
+    isFavorite: boolean | null;
+  }
+  let selectedSyncData: SelectedSyncData = $state({
+    dateTime: null,
+    timeZone: null,
+    description: null,
+    location: null,
+    albums: [],
+    isArchived: null,
+    isFavorite: null,
+  });
 
   onMount(() => {
     const suggestedAsset = suggestDuplicateByFileSize(assets);
@@ -49,6 +87,25 @@
     }
   };
 
+  const onSelectDate = (dateTime: DateTime) => {
+    selectedSyncData.dateTime = selectedSyncData.dateTime?.ts === dateTime.ts ? null : dateTime;
+  };
+
+  const onSelectDescription = (description: string) => {
+    selectedSyncData.description = selectedSyncData.description === description ? null : description;
+  };
+
+  const onSelectLocation = (location: SelectedSyncData['location']) => {
+    if (
+      selectedSyncData.location?.longitude === location?.longitude &&
+      selectedSyncData.location?.latitude === location?.latitude
+    ) {
+      selectedSyncData.location = null;
+    } else {
+      selectedSyncData.location = location;
+    }
+  };
+
   const onSelectNone = () => {
     selectedAssetIds.clear();
   };
@@ -60,7 +117,7 @@
   const handleResolve = () => {
     const trashIds = assets.map((asset) => asset.id).filter((id) => !selectedAssetIds.has(id));
     const duplicateAssetIds = assets.map((asset) => asset.id);
-    onResolve(duplicateAssetIds, trashIds);
+    onResolve(duplicateAssetIds, trashIds, selectedSyncData);
   };
 
   const handleStack = () => {
@@ -89,8 +146,24 @@
       <DuplicateAsset
         {asset}
         {onSelectAsset}
+        {onSelectDate}
+        {onSelectDescription}
+        {onSelectLocation}
+        {selectedSyncData}
+        {descriptionHeight}
+        setDescriptionHeight={(height) =>
+          (descriptionHeight = height >= descriptionHeight ? height : descriptionHeight)}
+        {locationHeight}
+        setLocationHeight={(height) => (locationHeight = height >= locationHeight ? height : locationHeight)}
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
+        {isSynchronizeAlbumsActive}
+        {isSynchronizeFavoritesActive}
+        {isSynchronizeArchivesActive}
+        setAlbums={(albums) =>
+          (selectedSyncData.albums = selectedSyncData.albums
+            .concat(albums)
+            .filter((item, index, self) => index === self.findIndex((t) => t.id === item.id)))}
       />
     {/each}
   </div>
