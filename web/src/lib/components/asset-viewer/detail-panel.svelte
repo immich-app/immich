@@ -31,9 +31,6 @@
     mdiClose,
     mdiEye,
     mdiEyeOff,
-    mdiFolder,
-    mdiFolderEyeOutline,
-    mdiFolderOpen,
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
@@ -48,8 +45,6 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import { page } from '$app/state';
-  import { includes } from 'lodash-es';
 
   interface Props {
     asset: AssetResponseDto;
@@ -382,9 +377,13 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p class="text-xs opacity-50 break-all pb-2" transition:slide={{ duration: 250 }}>
+          <a
+            href={getAssetFolderHref(asset)}
+            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+            transition:slide={{ duration: 250 }}
+          >
             {asset.originalPath}
-          </p>
+          </a>
         {/if}
         {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">
@@ -404,24 +403,6 @@
         {/if}
       </div>
     </div>
-
-    {#if $preferences.folders.enabled && $preferences.folders.sidebarWeb && !page.url.pathname.includes(AppRoute.FOLDERS)}
-      <a
-        class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        href={getAssetFolderHref(asset)}
-        title={$t('go_to_folder')}
-        class:hover:dark:text-immich-dark-primary={isOwner}
-        class:hover:text-immich-primary={isOwner}
-      >
-        <div><Icon path={mdiFolderOpen} size="24" /></div>
-
-        <div>
-          <p class="text-pretty flex place-items-center gap-2">
-            {asset.originalPath.split('/').slice(0, -1).join('/')}
-          </p>
-        </div>
-      </a>
-    {/if}
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
