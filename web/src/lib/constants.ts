@@ -72,6 +72,7 @@ export const dateFormats = {
 
 export enum QueryParameter {
   ACTION = 'action',
+  NEXT_ROUTE = 'nextRoute',
   ID = 'id',
   IS_OPEN = 'isOpen',
   ONBOARDING_STEP = 'step',

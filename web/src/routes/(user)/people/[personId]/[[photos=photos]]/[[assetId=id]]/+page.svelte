@@ -88,6 +88,7 @@
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
   let previousRoute: string = $state(AppRoute.EXPLORE);
+  let afterMergeRoute: string | undefined = $state(undefined);
   let people: PersonResponseDto[] = [];
   let personMerge1: PersonResponseDto | undefined = $state();
   let personMerge2: PersonResponseDto | undefined = $state();
@@ -111,6 +112,11 @@
     const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
       previousRoute = getPreviousRoute;
+    }
+
+    const getAfterMergeRoute = $page.url.searchParams.get(QueryParameter.NEXT_ROUTE);
+    if (getAfterMergeRoute && !isExternalUrl(getAfterMergeRoute)) {
+      afterMergeRoute = getAfterMergeRoute;
     }
     if (action == 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
@@ -181,6 +187,10 @@
   };
 
   const handleMerge = async (person: PersonResponseDto) => {
+    if (afterMergeRoute) {
+      await goto(afterMergeRoute);
+      return;
+    }
     await updateAssetCount();
     await handleGoBack();
 

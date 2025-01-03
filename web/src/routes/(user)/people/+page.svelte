@@ -224,9 +224,11 @@
   };
 
   const handleMergePeople = async (detail: PersonResponseDto) => {
-    await goto(
-      `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
-    );
+    const url = new URL(`${AppRoute.PEOPLE}/${detail.id}`, window.location.href);
+    url.searchParams.append(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
+    url.searchParams.append(QueryParameter.PREVIOUS_ROUTE, AppRoute.PEOPLE);
+    url.searchParams.append(QueryParameter.NEXT_ROUTE, AppRoute.PEOPLE);
+    await goto(url);
   };
 
   const submitNameChange = async (event: Event) => {
