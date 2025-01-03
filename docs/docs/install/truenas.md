@@ -32,7 +32,7 @@ Immich requires seven datasets: `library`, `upload`, `thumbs`, `profile`, `video
 You can organize these as one parent with seven child datasets, for example `/mnt/tank/immich/library`, `/mnt/tank/immich/upload`, and so on.
 
 <img
-src={require('./img/truenas12.png').default}
+src={require('./img/truenas12.webp').default}
 width="30%"
 alt="Immich App Widget"
 className="border rounded-xl"
@@ -49,7 +49,7 @@ If the **library** dataset uses ACL it must have [ACL mode](https://www.truenas.
 To install the **Immich** application, go to **Apps**, click **Discover Apps**, either begin typing Immich into the search field or scroll down to locate the **Immich** application widget.
 
 <img
-src={require('./img/truenas01.png').default}
+src={require('./img/truenas01.webp').default}
 width="50%"
 alt="Immich App Widget"
 className="border rounded-xl"
@@ -60,7 +60,7 @@ Click on the widget to open the **Immich** application details screen.
 <br/><br/>
 
 <img
-src={require('./img/truenas02.png').default}
+src={require('./img/truenas02.webp').default}
 width="100%"
 alt="Immich App Details Screen"
 className="border rounded-xl"
@@ -76,7 +76,7 @@ To find specific fields click in the **Search Input Fields** search field, scrol
 ### Application Name and Version
 
 <img
-src={require('./img/truenas03.png').default}
+src={require('./img/truenas03.webp').default}
 width="100%"
 alt="Install Immich Screen"
 className="border rounded-xl"
@@ -92,7 +92,7 @@ The **Installed Applications** screen shows the option to update applications.
 ### Immich Configuration
 
 <img
-src={require('./img/truenas05.png').default}
+src={require('./img/truenas05.webp').default}
 width="40%"
 alt="Configuration Settings"
 className="border rounded-xl"
@@ -118,7 +118,7 @@ Leave **Additional Environment Variables** blank or see [Environment Variables](
 ### Network Configuration
 
 <img
-src={require('./img/truenas06.png').default}
+src={require('./img/truenas06.webp').default}
 width="40%"
 alt="Networking Settings"
 className="border rounded-xl"
@@ -136,7 +136,7 @@ Regardless of version, to avoid port conflicts, don't use [ports on this list](h
 Immich requires seven storage datasets.
 
 <img
-src={require('./img/truenas07.png').default}
+src={require('./img/truenas07.webp').default}
 width="20%"
 alt="Configure Storage ixVolumes"
 className="border rounded-xl"
@@ -149,7 +149,7 @@ The default setting for datasets is **ixVolume (dataset created automatically by
 For each Storage option select **Host Path (Path that already exists on the system)** and then select the matching dataset [created before installing the app](#setting-up-storage-datasets): **Immich Library Storage**: `library`, **Immich Uploads Storage**: `upload`, **Immich Thumbs Storage**: `thumbs`, **Immich Profile Storage**: `profile`, **Immich Video Storage**: `video`, **Immich Backups Storage**: `backups`, **Postgres Data Storage**: `pgData`.
 
 <img
-src={require('./img/truenas08.png').default}
+src={require('./img/truenas08.webp').default}
 width="40%"
 alt="Configure Storage Host Paths"
 className="border rounded-xl"
@@ -161,7 +161,7 @@ The image above has example values.
 ### Additional Storage [(External Libraries)](/docs/features/libraries)
 
 <img
-src={require('./img/truenas10.png').default}
+src={require('./img/truenas10.webp').default}
 width="40%"
 alt="Configure Storage Host Paths"
 className="border rounded-xl"
@@ -176,7 +176,7 @@ The **Host Path** is the location on the TrueNAS SCALE server where your externa
 ### Resources Configuration
 
 <img
-src={require('./img/truenas09.png').default}
+src={require('./img/truenas09.webp').default}
 width="40%"
 alt="Resource Limits"
 className="border rounded-xl"
@@ -203,7 +203,7 @@ The system opens the **Installed Applications** screen with the Immich app in th
 When the installation completes it changes to **Running**.
 
 <img
-src={require('./img/truenas04.png').default}
+src={require('./img/truenas04.webp').default}
 width="100%"
 alt="Immich Installed"
 className="border rounded-xl"
@@ -229,7 +229,7 @@ For more information on how to use the application once installed, please refer 
 You can set [Environment Variables](/docs/install/environment-variables) by clicking **Add** on the **Additional Environment Variables** option and filling in the **Name** and **Value**.
 
 <img
-src={require('./img/truenas11.png').default}
+src={require('./img/truenas11.webp').default}
 width="40%"
 alt="Environment Variables"
 className="border rounded-xl"

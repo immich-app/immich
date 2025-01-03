@@ -48,8 +48,4 @@ When a new asset is uploaded it kicks off a series of jobs, which include metada
 
 Additionally, some jobs run on a schedule, which is every night at midnight. This schedule, with the exception of [External Libraries](/docs/features/libraries) scanning, cannot be changed.
 
-:::info
-Storage Migration job can be run after changing the [Storage Template](/docs/administration/storage-template.mdx), in order to apply the change to the existing library.
-:::
-
 <img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />
