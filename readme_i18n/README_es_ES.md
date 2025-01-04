@@ -60,10 +60,10 @@ Puedes encontrar la documentación oficial, incluidas las guías de instalación
 
 Puedes acceder a la demostración web en <https://demo.immich.app>
 
-Para la aplicación móvil, puedes usar `https://demo.immich.app/api` en la `URL de la terminal del servidor`.
+Para la aplicación móvil, puedes usar `https://demo.immich.app/api` en la `URL del servidor`.
 
 ```bash title="Credenciales de la demo"
-Las Credenciales
+Credenciales
 correo: demo@immich.app
 contraseña: demo
 ```
