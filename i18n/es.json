@@ -1,5 +1,5 @@
 {
-  "about": "Acercade",
+  "about": "Acerca de",
   "account": "Cuenta",
   "account_settings": "Ajustes de la cuenta",
   "acknowledge": "De acuerdo",
@@ -1141,6 +1141,7 @@
   "server_version": "Versión del servidor",
   "set": "Establecer",
   "set_as_album_cover": "Establecer portada del álbum",
+  "set_as_featured_photo": "Establecer como foto destacada",
   "set_as_profile_picture": "Seleccionar como foto de perfil",
   "set_date_of_birth": "Establecer fecha de nacimiento",
   "set_profile_picture": "Establecer foto de perfil",
@@ -1196,6 +1197,7 @@
   "sort_items": "Número de archivos",
   "sort_modified": "Fecha de modificación",
   "sort_oldest": "Foto más antigua",
+  "sort_people_by_similarity": "Ordenar personas por similitud",
   "sort_recent": "Foto más reciente",
   "sort_title": "Título",
   "source": "Origen",
