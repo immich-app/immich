@@ -102,11 +102,17 @@ Especificaciones: Una VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de
 | Soporte sin conexión                                 | Sí     | No  |
 | Galería de solo lectura                              | Sí     | Sí  |
 
-## Contribuidores
+## Traducciones
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+Lea mas acerca de las traducciones [acá](https://immich.app/docs/developer/translations).
+
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
 </a>
+
+## Actividad del repositorio
+
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Historial de Estrellas
 
@@ -116,4 +122,10 @@ Especificaciones: Una VM de nivel gratuito de Oracle - Ámsterdam - CPU ARM64 de
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## Contribuidores
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>
