@@ -57,6 +57,7 @@ import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner_detail.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link_edit.page.dart';
+import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
@@ -67,6 +68,7 @@ import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:share_handler/share_handler.dart';
 
 part 'router.gr.dart';
 
@@ -275,6 +277,10 @@ class AppRouter extends RootStackRouter {
     ),
     AutoRoute(
       page: NativeVideoViewerRoute.page,
+      guards: [_authGuard, _duplicateGuard],
+    ),
+    AutoRoute(
+      page: ShareIntentRoute.page,
       guards: [_authGuard, _duplicateGuard],
     ),
   ];

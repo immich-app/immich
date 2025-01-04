@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/services/share_intent_service.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:share_handler/share_handler.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
@@ -210,31 +210,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
 
-    initPlatformState();
-  }
-
-  Future<void> initPlatformState() async {
-    final handler = ShareHandlerPlatform.instance;
-    final media = await handler.getInitialSharedMedia();
-    print("Initial Media: $media");
-
-    handler.sharedMediaStream.listen((SharedMedia media) {
-      if (!mounted) return;
-
-      print("Content: ${media.content}");
-      print("Attachement: ${media.attachments}");
-      if (media.attachments != null) {
-        for (var a in media.attachments!) {
-          print("Attachment: ${a?.path}: ${a?.type}");
-        }
-      }
-
-      print("Service Name: ${media.serviceName}");
-      print("Sender Identifier: ${media.senderIdentifier}");
-      print("Speakable Group Name: ${media.speakableGroupName}");
-      print("Image File Path: ${media.imageFilePath}");
-    });
-    if (!mounted) return;
+    ref.read(shareIntentServiceProvider).setup();
   }
 
   @override
