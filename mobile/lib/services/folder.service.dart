@@ -15,97 +15,89 @@ class FolderService {
 
   FolderService(this._folderApiRepository);
 
-  Future<AsyncValue<RootFolder>> getFolderStructure() async {
-    try {
-      final pathsResponse = await _folderApiRepository.getAllUniquePaths();
+  Future<RootFolder> getFolderStructure() async {
+    final paths = await _folderApiRepository.getAllUniquePaths();
 
-      List<String> paths = [];
-      if (pathsResponse is AsyncData<List<String>>) {
-        paths = pathsResponse.value;
+    // Create folder structure
+    Map<String, List<RecursiveFolder>> folderMap = {};
+
+    for (String fullPath in paths) {
+      if (fullPath == '/') continue;
+
+      // Ensure the path starts with a slash
+      if (!fullPath.startsWith('/')) {
+        fullPath = '/$fullPath';
       }
 
-      // Create folder structure
-      Map<String, List<RecursiveFolder>> folderMap = {};
+      List<String> segments = fullPath.split('/')
+        ..removeWhere((s) => s.isEmpty);
 
-      for (String fullPath in paths) {
-        if (fullPath == '/') continue;
+      String currentPath = '';
 
-        // Ensure the path starts with a slash
-        if (!fullPath.startsWith('/')) {
-          fullPath = '/$fullPath';
+      for (int i = 0; i < segments.length; i++) {
+        String parentPath = currentPath.isEmpty ? '_root_' : currentPath;
+        currentPath =
+            i == 0 ? '/${segments[i]}' : '$currentPath/${segments[i]}';
+
+        if (!folderMap.containsKey(parentPath)) {
+          folderMap[parentPath] = [];
         }
 
-        List<String> segments = fullPath.split('/')
-          ..removeWhere((s) => s.isEmpty);
-
-        String currentPath = '';
-
-        for (int i = 0; i < segments.length; i++) {
-          String parentPath = currentPath.isEmpty ? '_root_' : currentPath;
-          currentPath =
-              i == 0 ? '/${segments[i]}' : '$currentPath/${segments[i]}';
-
-          if (!folderMap.containsKey(parentPath)) {
-            folderMap[parentPath] = [];
-          }
-
-          if (!folderMap[parentPath]!.any((f) => f.name == segments[i])) {
-            folderMap[parentPath]!.add(
-              RecursiveFolder(
-                path: parentPath == '_root_' ? '' : parentPath,
-                name: segments[i],
-                assets: null,
-                subfolders: [],
-                folderService: this,
-              ),
-            );
-          }
+        if (!folderMap[parentPath]!.any((f) => f.name == segments[i])) {
+          folderMap[parentPath]!.add(
+            RecursiveFolder(
+              path: parentPath == '_root_' ? '' : parentPath,
+              name: segments[i],
+              // assets: null,
+              subfolders: [],
+            ),
+          );
         }
       }
-
-      void attachSubfolders(RecursiveFolder folder) {
-        String fullPath = folder.path.isEmpty
-            ? '/${folder.name}'
-            : '${folder.path}/${folder.name}';
-
-        if (folderMap.containsKey(fullPath)) {
-          folder.subfolders.addAll(folderMap[fullPath]!);
-          for (var subfolder in folder.subfolders) {
-            attachSubfolders(subfolder);
-          }
-        }
-      }
-
-      List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
-      for (var folder in rootSubfolders) {
-        attachSubfolders(folder);
-      }
-
-      return AsyncData(
-        RootFolder(
-          assets: null,
-          subfolders: rootSubfolders,
-        ),
-      );
-    } catch (e, stack) {
-      _log.severe("Failed to build folder structure", e, stack);
-      return AsyncError(e, stack);
     }
-  }
 
-  Future<AsyncValue<List<Asset>>> getFolderAssets(
-    RecursiveFolder folder,
-  ) async {
-    try {
-      final fullPath = folder.path == '/'
+    void attachSubfolders(RecursiveFolder folder) {
+      String fullPath = folder.path.isEmpty
           ? '/${folder.name}'
           : '${folder.path}/${folder.name}';
 
-      final result = await _folderApiRepository.getAssetsForPath(fullPath);
+      if (folderMap.containsKey(fullPath)) {
+        folder.subfolders.addAll(folderMap[fullPath]!);
+        for (var subfolder in folder.subfolders) {
+          attachSubfolders(subfolder);
+        }
+      }
+    }
+
+    List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
+    for (var folder in rootSubfolders) {
+      attachSubfolders(folder);
+    }
+
+    return RootFolder(
+      subfolders: rootSubfolders,
+    );
+  }
+
+  Future<List<Asset>> getFolderAssets(RootFolder folder) async {
+    try {
+      if (folder is RecursiveFolder) {
+        final fullPath = folder.path.isEmpty
+            ? '/${folder.name}'
+            : '${folder.path}/${folder.name}';
+        final result = await _folderApiRepository.getAssetsForPath(fullPath);
+        print("Assets for folder $fullPath: $result");
+        return result;
+      }
+      final result = await _folderApiRepository.getAssetsForPath('/');
+      print("Assets for root: $result");
       return result;
     } catch (e, stack) {
-      _log.severe("Failed to fetch assets for folder ${folder.name}", e, stack);
-      return AsyncError(e, stack);
+      _log.severe(
+          "Failed to fetch assets for folder ${folder is RecursiveFolder ? folder.name : "root"}",
+          e,
+          stack);
+      return [];
     }
   }
 }

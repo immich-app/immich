@@ -211,7 +211,7 @@ class AppRouter extends RootStackRouter {
     CustomRoute(
       page: FolderRoute.page,
       guards: [_authGuard],
-      transitionsBuilder: TransitionsBuilders.slideLeft,
+      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
     AutoRoute(
       page: PartnerDetailRoute.page,

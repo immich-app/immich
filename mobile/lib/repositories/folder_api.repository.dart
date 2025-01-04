@@ -20,26 +20,25 @@ class FolderApiRepository extends ApiRepository
   FolderApiRepository(this._api);
 
   @override
-  Future<AsyncValue<List<String>>> getAllUniquePaths() async {
+  Future<List<String>> getAllUniquePaths() async {
     try {
       final list = await _api.getUniqueOriginalPaths();
-      return list != null ? AsyncData(list) : const AsyncData([]);
+      return list ?? [];
     } catch (e, stack) {
       _log.severe("Failed to fetch unique original links", e, stack);
-      return AsyncError(e, stack);
+      return [];
     }
   }
 
   @override
-  Future<AsyncValue<List<Asset>>> getAssetsForPath(String? path) async {
+  Future<List<Asset>> getAssetsForPath(String? path) async {
     try {
       final list = await _api.getAssetsByOriginalPath(path ?? '/');
-      return list != null
-          ? AsyncData(list.map(Asset.remote).toList())
-          : const AsyncData([]);
+      print("Assets for path: $path -> $list");
+      return list != null ? list.map(Asset.remote).toList() : [];
     } catch (e, stack) {
       _log.severe("Failed to fetch Assets by original path", e, stack);
-      return AsyncError(e, stack);
+      return [];
     }
   }
 }

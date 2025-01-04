@@ -1,12 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/providers/folder.provider.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 @RoutePage()
 class FolderPage extends HookConsumerWidget {
@@ -26,63 +29,11 @@ class FolderPage extends HookConsumerWidget {
       ),
       body: folderState.when(
         data: (rootFolder) {
-          // if folder is null, the root folder is the current folder
-          RecursiveFolder? currentFolder = folder == null
-              ? null
-              : _findFolder(rootFolder, folder!.path, folder!.name);
-
-          if (currentFolder == null && folder != null) {
-            return Center(child: const Text("Folder not found").tr());
-          } else if (currentFolder == null) {
-            // display root folder
-            return ListView(
-              children: [
-                if (rootFolder.subfolders.isNotEmpty)
-                  ...rootFolder.subfolders.map(
-                    (subfolder) => ListTile(
-                      title: Text(subfolder.name),
-                      onTap: () =>
-                          context.pushRoute(FolderRoute(folder: subfolder)),
-                    ),
-                  ),
-                if (rootFolder.assets != null && rootFolder.assets!.isNotEmpty)
-                  ...rootFolder.assets!.map(
-                    (asset) => ListTile(
-                      title: Text(asset.name),
-                      subtitle: Text(asset.fileName),
-                    ),
-                  ),
-                if (rootFolder.subfolders.isEmpty &&
-                    (rootFolder.assets == null || rootFolder.assets!.isEmpty))
-                  Center(child: const Text("No subfolders or assets").tr()),
-              ],
-            );
+          if (folder == null) {
+            return FolderContent(folder: rootFolder);
+          } else {
+            return FolderContent(folder: folder!);
           }
-
-          return ListView(
-            children: [
-              if (currentFolder.subfolders.isNotEmpty)
-                ...currentFolder.subfolders.map(
-                  (subfolder) => ListTile(
-                    title: Text(subfolder.name),
-                    onTap: () =>
-                        context.pushRoute(FolderRoute(folder: subfolder)),
-                  ),
-                ),
-              if (currentFolder.assets != null &&
-                  currentFolder.assets!.isNotEmpty)
-                ...currentFolder.assets!.map(
-                  (asset) => ListTile(
-                    title: Text(asset.name),
-                    subtitle: Text(asset.fileName),
-                  ),
-                ),
-              if (currentFolder.subfolders.isEmpty &&
-                  (currentFolder.assets == null ||
-                      currentFolder.assets!.isEmpty))
-                Center(child: const Text("No subfolders or assets").tr()),
-            ],
-          );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) {
@@ -96,43 +47,56 @@ class FolderPage extends HookConsumerWidget {
       ),
     );
   }
+}
 
-  RecursiveFolder? _findFolder(
-    RootFolder rootFolder,
-    String path,
-    String name,
-  ) {
-    if ((path == '/' || path.isEmpty) &&
-        rootFolder.subfolders.any((f) => f.name == name)) {
-      return rootFolder.subfolders.firstWhere((f) => f.name == name);
+class FolderContent extends HookConsumerWidget {
+  final RootFolder? folder;
+  final List<Asset>? assets;
+
+  const FolderContent({super.key, this.folder, this.assets});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (folder == null) {
+      return Center(child: const Text("Folder not found").tr());
     }
 
-    for (var subfolder in rootFolder.subfolders) {
-      final result = _findFolderRecursive(subfolder, path, name);
-      if (result != null) {
-        return result;
-      }
-    }
+    final folderAssetsState = ref.watch(folderAssetsProvider(folder!));
 
-    return null;
-  }
-
-  RecursiveFolder? _findFolderRecursive(
-    RecursiveFolder folder,
-    String path,
-    String name,
-  ) {
-    if (folder.path == path && folder.name == name) {
-      return folder;
-    }
-
-    for (var subfolder in folder.subfolders) {
-      final result = _findFolderRecursive(subfolder, path, name);
-      if (result != null) {
-        return result;
-      }
-    }
-
-    return null;
+    return folderAssetsState.when(
+      data: (assets) {
+        return ListView(
+          children: [
+            if (folder!.subfolders.isNotEmpty)
+              ...folder!.subfolders.map(
+                (subfolder) => ListTile(
+                  leading: Icon(Icons.folder, color: context.primaryColor),
+                  title: Text(subfolder.name),
+                  onTap: () =>
+                      context.pushRoute(FolderRoute(folder: subfolder)),
+                ),
+              ),
+            if (assets.isNotEmpty)
+              ...assets.map(
+                (asset) => ListTile(
+                  title: Text(asset.name),
+                  subtitle: Text(asset.fileName),
+                ),
+              ),
+            if (folder!.subfolders.isEmpty && assets.isEmpty)
+              Center(child: const Text("No subfolders or assets").tr()),
+          ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) {
+        ImmichToast.show(
+          context: context,
+          msg: "Failed to load assets".tr(),
+          toastType: ToastType.error,
+        );
+        return Center(child: const Text("Failed to load assets").tr());
+      },
+    );
   }
 }
