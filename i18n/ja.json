@@ -1222,6 +1222,8 @@
   "user_purchase_settings_description": "購入を管理",
   "user_role_set": "{user} を{role}に設定しました",
   "user_usage_detail": "ユーザー使用状況の詳細",
+  "user_usage_stats": "アカウント利用状況統計",
+  "user_usage_stats_description": "アカウント利用状況統計を表示",
   "username": "ユーザー名",
   "users": "ユーザー",
   "utilities": "ユーティリティ",

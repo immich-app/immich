@@ -23,6 +23,7 @@
   "add_to": "Voeg na...",
   "add_to_album": "Voeg na album",
   "add_to_shared_album": "Voeg na gedeelde album",
+  "add_url": "Voeg URL by",
   "added_to_archive": "By argief gevoeg",
   "added_to_favorites": "By gunstelinge gevoeg",
   "added_to_favorites_count": "Het {count, number} by gunstelinge gevoeg",
@@ -52,6 +53,10 @@
     "cron_expression_description": "Stel die skanderingsinterval in met die cron-formaat. Vir meer inligting verwys asseblief na bv. <link>Crontab Guru</link>",
     "cron_expression_presets": "Cron uitdrukking voorafinstellings",
     "disable_login": "Deaktiveer aanmelding",
-    "duplicate_detection_job_description": "Begin masjienleer op bates om soortgelyke beelde op te spoor. Maak staat op Smart Search"
+    "duplicate_detection_job_description": "Begin masjienleer op bates om soortgelyke beelde op te spoor. Maak staat op Smart Search",
+    "exclusion_pattern_description": "Met uitsluitingspatrone kan jy lêers en vouers ignoreer wanneer jy jou biblioteek skandeer. Dit is nuttig as jy vouers het wat lêers bevat wat jy nie wil invoer nie, soos RAW-lêers.",
+    "external_library_created_at": "Eksterne biblioteek (geskep op {date})",
+    "external_library_management": "Eksterne Biblioteek-opsies",
+    "face_detection": "Gesigsopsporing"
   }
 }
