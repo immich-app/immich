@@ -8,7 +8,6 @@
   import { updateNumberOfComments } from '$lib/stores/activity.store';
   import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { AssetStore } from '$lib/stores/assets.store';
   import { isShowDetail } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { user } from '$lib/stores/user.store';
@@ -49,8 +48,9 @@
   import VideoViewer from './video-wrapper-viewer.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
 
+  type HasAsset = boolean;
+
   interface Props {
-    assetStore?: AssetStore | null;
     asset: AssetResponseDto;
     preloadAssets?: AssetResponseDto[];
     showNavigation?: boolean;
@@ -61,13 +61,13 @@
     onAction?: OnAction | undefined;
     reactions?: ActivityResponseDto[];
     onClose: (dto: { asset: AssetResponseDto }) => void;
-    onNext: () => void;
-    onPrevious: () => void;
+    onNext: () => Promise<HasAsset>;
+    onPrevious: () => Promise<HasAsset>;
+    onRandom: () => Promise<AssetResponseDto | null>;
     copyImage?: () => Promise<void>;
   }
 
   let {
-    assetStore = null,
     asset = $bindable(),
     preloadAssets = $bindable([]),
     showNavigation = true,
@@ -80,6 +80,7 @@
     onClose,
     onNext,
     onPrevious,
+    onRandom,
     copyImage = $bindable(),
   }: Props = $props();
 
@@ -271,22 +272,6 @@
     });
   };
 
-  const navigateAssetRandom = async () => {
-    if (!assetStore) {
-      return;
-    }
-
-    const asset = await assetStore.getRandomAsset();
-    if (!asset) {
-      return;
-    }
-
-    slideshowHistory.queue(asset);
-
-    setAsset(asset);
-    $restartSlideshowProgress = true;
-  };
-
   const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
     if (!order) {
       if ($slideshowState === SlideshowState.PlaySlideshow) {
@@ -296,23 +281,30 @@
       }
     }
 
+    e?.stopPropagation();
+
+    let hasNext = false;
+
     if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
-      return (order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next()) || navigateAssetRandom();
+      hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+      if (!hasNext) {
+        const asset = await onRandom();
+        if (asset) {
+          slideshowHistory.queue(asset);
+          hasNext = true;
+        }
+      }
+    } else {
+      hasNext = order === 'previous' ? await onPrevious() : await onNext();
     }
 
-    if ($slideshowState === SlideshowState.PlaySlideshow && assetStore) {
-      const hasNext =
-        order === 'previous' ? await assetStore.getPreviousAsset(asset) : await assetStore.getNextAsset(asset);
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
       if (hasNext) {
         $restartSlideshowProgress = true;
       } else {
         await handleStopSlideshow();
       }
     }
-
-    e?.stopPropagation();
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    order === 'previous' ? onPrevious() : onNext();
   };
 
   // const showEditorHandler = () => {
@@ -435,7 +427,7 @@
         {person}
         {stack}
         showDetailButton={enableDetailPanel}
-        showSlideshow={!!assetStore}
+        showSlideshow={true}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
         onAction={handleAction}
