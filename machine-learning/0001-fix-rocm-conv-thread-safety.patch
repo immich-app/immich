@@ -1,13 +1,13 @@
-From b78fa4d8950a9a3935a703f04f51b5cdb6ecd680 Mon Sep 17 00:00:00 2001
+From 350e3237eadb738a0d96295a62f2eed96653c315 Mon Sep 17 00:00:00 2001
 From: mertalev <101130780+mertalev@users.noreply.github.com>
 Date: Fri, 20 Dec 2024 00:59:21 -0500
 Subject: [PATCH 1/1] fix: avoid race condition for rocm conv algo caching
 
 ---
- onnxruntime/core/providers/rocm/nn/conv.cc          |  8 ++++----
- onnxruntime/core/providers/rocm/nn/conv.h           | 13 +++++++++++--
- .../core/providers/rocm/nn/conv_transpose.cc        |  8 ++++----
- 3 files changed, 19 insertions(+), 10 deletions(-)
+ onnxruntime/core/providers/rocm/nn/conv.cc         |  8 ++++----
+ onnxruntime/core/providers/rocm/nn/conv.h          | 14 ++++++++++++--
+ .../core/providers/rocm/nn/conv_transpose.cc       |  8 ++++----
+ 3 files changed, 20 insertions(+), 10 deletions(-)
 
 diff --git a/onnxruntime/core/providers/rocm/nn/conv.cc b/onnxruntime/core/providers/rocm/nn/conv.cc
 index d7f47d07a8..98b6b69212 100644
@@ -44,21 +44,22 @@ index d7f47d07a8..98b6b69212 100644
      s_.workspace_bytes = perf.memory;
    } else {
 diff --git a/onnxruntime/core/providers/rocm/nn/conv.h b/onnxruntime/core/providers/rocm/nn/conv.h
-index bc9846203e..875e20e433 100644
+index bc9846203e..b1ca5f8e4b 100644
 --- a/onnxruntime/core/providers/rocm/nn/conv.h
 +++ b/onnxruntime/core/providers/rocm/nn/conv.h
-@@ -43,6 +43,10 @@ struct vector_hash {
+@@ -43,6 +43,11 @@ struct vector_hash {
    }
  };
  
 +inline std::size_t HashConvAlgoKey(const TensorShapeVector& x_dims, const TensorShapeVector& w_dims) {
-+  return std::hash<vector_hash>()(x_dims) ^ std::hash<vector_hash>()(w_dims);
++  vector_hash vh;
++  return vh(x_dims) ^ vh(w_dims);
 +}
 +
  template <typename Key, typename T,
            typename Hash = std::hash<Key>,
            typename KeyEqual = std::equal_to<Key>,
-@@ -52,6 +56,7 @@ class lru_unordered_map {
+@@ -52,6 +57,7 @@ class lru_unordered_map {
    lru_unordered_map(size_t max_size) : max_size_(max_size) {}
  
    void insert(const Key& key, const T& value) {
@@ -66,7 +67,7 @@ index bc9846203e..875e20e433 100644
      auto it = items_.find(key);
      if (it != items_.end()) {
        it->second.value = value;
-@@ -69,6 +74,7 @@ class lru_unordered_map {
+@@ -69,6 +75,7 @@ class lru_unordered_map {
    }
  
    T& at(const Key& key) {
@@ -74,7 +75,7 @@ index bc9846203e..875e20e433 100644
      auto it = items_.find(key);
      if (it == items_.end()) {
        throw std::out_of_range("There is no such key in cache");
-@@ -78,6 +84,7 @@ class lru_unordered_map {
+@@ -78,6 +85,7 @@ class lru_unordered_map {
    }
  
    bool contains(const Key& key) const {
@@ -82,7 +83,7 @@ index bc9846203e..875e20e433 100644
      return items_.find(key) != items_.end();
    }
  
-@@ -86,6 +93,7 @@ class lru_unordered_map {
+@@ -86,6 +94,7 @@ class lru_unordered_map {
    }
  
    void clear() {
@@ -90,7 +91,7 @@ index bc9846203e..875e20e433 100644
      items_.clear();
      lru_list_.clear();
    }
-@@ -106,6 +114,7 @@ class lru_unordered_map {
+@@ -106,6 +115,7 @@ class lru_unordered_map {
    size_t max_size_;
    std::unordered_map<Key, value_type, Hash, KeyEqual, MapAllocator> items_;
    list_type lru_list_;
@@ -98,7 +99,7 @@ index bc9846203e..875e20e433 100644
  };
  
  // cached miopen descriptors
-@@ -148,8 +157,8 @@ struct MiopenConvState {
+@@ -148,8 +158,8 @@ struct MiopenConvState {
      decltype(AlgoPerfType().memory) memory;
    };
  
