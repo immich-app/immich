@@ -1,7 +1,7 @@
-From 60e2603045f220d560ed92e03c8804a806f5a325 Mon Sep 17 00:00:00 2001
+From b78fa4d8950a9a3935a703f04f51b5cdb6ecd680 Mon Sep 17 00:00:00 2001
 From: mertalev <101130780+mertalev@users.noreply.github.com>
 Date: Fri, 20 Dec 2024 00:59:21 -0500
-Subject: [PATCH] fix: avoid race condition for rocm conv algo caching
+Subject: [PATCH 1/1] fix: avoid race condition for rocm conv algo caching
 
 ---
  onnxruntime/core/providers/rocm/nn/conv.cc          |  8 ++++----
@@ -44,7 +44,7 @@ index d7f47d07a8..98b6b69212 100644
      s_.workspace_bytes = perf.memory;
    } else {
 diff --git a/onnxruntime/core/providers/rocm/nn/conv.h b/onnxruntime/core/providers/rocm/nn/conv.h
-index bc9846203e..0b07ee3f08 100644
+index bc9846203e..875e20e433 100644
 --- a/onnxruntime/core/providers/rocm/nn/conv.h
 +++ b/onnxruntime/core/providers/rocm/nn/conv.h
 @@ -43,6 +43,10 @@ struct vector_hash {
@@ -52,7 +52,7 @@ index bc9846203e..0b07ee3f08 100644
  };
  
 +inline std::size_t HashConvAlgoKey(const TensorShapeVector& x_dims, const TensorShapeVector& w_dims) {
-+  return std::hash<vector_hash>()(values.x_dims) ^ std::hash<vector_hash>()(values.w_dims);
++  return std::hash<vector_hash>()(x_dims) ^ std::hash<vector_hash>()(w_dims);
 +}
 +
  template <typename Key, typename T,
@@ -110,7 +110,7 @@ index bc9846203e..0b07ee3f08 100644
    // Some properties needed to support asymmetric padded Conv nodes
    bool post_slicing_required;
 diff --git a/onnxruntime/core/providers/rocm/nn/conv_transpose.cc b/onnxruntime/core/providers/rocm/nn/conv_transpose.cc
-index 7447113fdf..495aafa200 100644
+index 7447113fdf..dea9bf2a05 100644
 --- a/onnxruntime/core/providers/rocm/nn/conv_transpose.cc
 +++ b/onnxruntime/core/providers/rocm/nn/conv_transpose.cc
 @@ -76,7 +76,6 @@ Status ConvTranspose<T, NHWC>::DoConvTranspose(OpKernelContext* context, bool dy
