@@ -53,7 +53,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     final log = Logger('NativeVideoViewerPage');
 
-
     Future<VideoSource?> createSource() async {
       if (!context.mounted) {
         return null;
