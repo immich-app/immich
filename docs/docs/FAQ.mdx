@@ -447,6 +447,24 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
 
 </details>
 
+You can also scan the Postgres database file structure for errors:
+
+<details>
+<summary>Scan for file structure errors</summary>
+```bash
+docker exec -it immich_postgres pg_amcheck --username=postgres --heapallindexed --parent-check --rootdescend --progress --all --install-missing
+```
+
+A normal result will end something like this and return with an exit code of `0`:
+
+```bash
+7470/8832 relations (84%), 730829/734735 pages (99%)
+8425/8832 relations (95%), 734367/734735 pages (99%)
+8832/8832 relations (100%), 734735/734735 pages (100%)
+```
+
+</details>
+
 If corruption is detected, you should immediately make a backup before performing any other work in the database.
 To do so, you may need to set the `zero_damaged_pages=on` flag for the database server to allow `pg_dumpall` to succeed.
 After taking a backup, the recommended next step is to restore the database from a healthy backup before corruption was detected.
