@@ -527,6 +527,8 @@
   "settings_require_restart": "Please restart Immich to apply this setting",
   "setting_video_viewer_looping_subtitle": "Enable to automatically loop a video in the detail viewer.",
   "setting_video_viewer_looping_title": "Looping",
+  "setting_video_viewer_original_video_title": "Force original video",
+  "setting_video_viewer_original_video_subtitle": "Enable to force the original video to be played in the detail viewer.",
   "setting_video_viewer_title": "Videos",
   "share_add": "Add",
   "share_add_photos": "Add photos",
