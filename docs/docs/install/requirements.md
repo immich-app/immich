@@ -14,6 +14,9 @@ Hardware and software requirements for Immich:
     If you still want to try to use a non-Linux OS, you can set it up as follows:
     - Windows: [Docker Desktop on Windows](https://docs.docker.com/desktop/install/windows-install/) or [WSL 2](https://docs.docker.com/desktop/wsl/).
     - macOS: [Docker Desktop on Mac](https://docs.docker.com/desktop/install/mac-install/).
+  - Immich runs well in a virtualized environment when running in a full virtual machine.
+    The use of Docker in LXC containers is [not recommended](https://pve.proxmox.com/wiki/Linux_Container), but may be possible for advanced users.
+    If you have issues, we recommend that you switch to a supported VM deployment.
 - **RAM**: Minimum 4GB, recommended 6GB.
 - **CPU**: Minimum 2 cores, recommended 4 cores.
 - **Storage**: Recommended Unix-compatible filesystem (EXT4, ZFS, APFS, etc.) with support for user/group ownership and permissions.
