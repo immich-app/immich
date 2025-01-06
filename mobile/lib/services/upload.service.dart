@@ -20,9 +20,7 @@ final uploadServiceProvider = Provider(
 class UploadService {
   final IUploadRepository _uploadRepository;
   final Logger _log = Logger("UploadService");
-  void Function(TaskStatusUpdate)? onImageDownloadStatus;
-  void Function(TaskStatusUpdate)? onVideoDownloadStatus;
-  void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
+  void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
   UploadService(
@@ -37,67 +35,50 @@ class UploadService {
   }
 
   void _onUploadCallback(TaskStatusUpdate update) {
-    onImageDownloadStatus?.call(update);
+    onUploadStatus?.call(update);
   }
 
   Future<bool> cancelDownload(String id) async {
     return await FileDownloader().cancelTaskWithId(id);
   }
 
-  Future<void> upload(Asset asset) async {
-    if (asset.isImage && asset.livePhotoVideoId != null && Platform.isIOS) {
-      await _uploadRepository.upload(
-        _buildUploadTask(
-          asset.remoteId!,
-          asset.fileName,
-          group: downloadGroupLivePhoto,
-          metadata: LivePhotosMetadata(
-            part: LivePhotosPart.image,
-            id: asset.remoteId!,
-          ).toJson(),
-        ),
-      );
+  Future<void> upload(File file) async {
+    final filename = file.path.split('/').last;
+    // final id = uuid.v4();
+    final task = await _buildUploadTask(
+      'manual-mobile-upload-$filename',
+      file,
+    );
 
-      await _uploadRepository.upload(
-        _buildUploadTask(
-          asset.livePhotoVideoId!,
-          asset.fileName
-              .toUpperCase()
-              .replaceAll(RegExp(r"\.(JPG|HEIC)$"), '.MOV'),
-          group: downloadGroupLivePhoto,
-          metadata: LivePhotosMetadata(
-            part: LivePhotosPart.video,
-            id: asset.remoteId!,
-          ).toJson(),
-        ),
-      );
-    } else {
-      await _uploadRepository.upload(
-        _buildUploadTask(
-          asset.remoteId!,
-          asset.fileName,
-          group: asset.isImage ? downloadGroupImage : downloadGroupVideo,
-        ),
-      );
-    }
+    await _uploadRepository.upload(task);
   }
 
-  UploadTask _buildUploadTask(
+  Future<UploadTask> _buildUploadTask(
     String id,
-    String filename, {
+    File file, {
     Map<String, String>? fields,
     String? group,
     String? metadata,
-  }) {
+  }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
     final headers = ApiService.getRequestHeaders();
     final deviceId = Store.get(StoreKey.deviceId);
 
+    final (baseDirectory, directory, filename) =
+        await Task.split(filePath: file.path);
+    final stats = await file.stat();
+    final fileCreatedAt = stats.changed;
+    final fileModifiedAt = stats.modified;
+
     final fieldsMap = {
-      'deviceId': deviceId,
-      'assetId': id,
       'filename': filename,
+      'deviceAssetId': id,
+      'deviceId': deviceId,
+      'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
+      'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
+      'isFavorite': 'false',
+      'duration': 'TBD',
       if (fields != null) ...fields,
     };
 
@@ -108,6 +89,8 @@ class UploadService {
       headers: headers,
       filename: filename,
       fields: fieldsMap,
+      baseDirectory: baseDirectory,
+      directory: directory,
       fileField: 'assetData',
       updates: Updates.statusAndProgress,
       group: group ?? '',
