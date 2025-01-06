@@ -62,6 +62,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     acceptedVideoCodecs: [VideoCodec.H264],
     acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     maxBitrate: '0',
+    transcodeHDR: true,
     bframes: -1,
     refs: 0,
     gopSize: 0,
