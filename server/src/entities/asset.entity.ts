@@ -13,6 +13,7 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
+import { TimeBucketSize } from 'src/interfaces/asset.interface';
 import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
 import { anyUuid, asUuid } from 'src/utils/database';
 import {
@@ -345,6 +346,10 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
       .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
       .whereRef('assets.id', '=', 'tag_asset.assetsId'),
   ).as('tags');
+}
+
+export function truncatedDate<O>(size: TimeBucketSize) {
+  return sql<O>`date_trunc(${size}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
 }
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();

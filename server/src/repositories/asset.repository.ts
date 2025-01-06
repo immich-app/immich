@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
 import { Insertable, Kysely, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
@@ -11,6 +10,7 @@ import {
   hasPeople,
   hasPeopleCte,
   searchAssetBuilder,
+  truncatedDate,
   withAlbums,
   withExif,
   withFaces,
@@ -522,11 +522,7 @@ export class AssetRepository implements IAssetRepository {
         .with('assets', (qb) =>
           qb
             .selectFrom('assets')
-            .select((eb) =>
-              eb
-                .fn<Date>('date_trunc', [eb.val(options.size), sql`"localDateTime" at time zone 'UTC'`])
-                .as('timeBucket'),
-            )
+            .select(truncatedDate<Date>(options.size).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
@@ -588,11 +584,7 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
-      .where(
-        (eb) => eb.fn('date_trunc', [eb.val(options.size), sql`assets."localDateTime" at time zone 'UTC'`]),
-        '=',
-        timeBucket.replace(/^[+-]/, ''),
-      )
+      .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', 'desc')
       .execute() as any as Promise<AssetEntity[]>;
   }

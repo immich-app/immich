@@ -258,7 +258,7 @@ offset
 with
   "assets" as (
     select
-      date_trunc($1, "localDateTime" at time zone 'UTC') as "timeBucket"
+      date_trunc($1, "localDateTime" at time zone 'UTC') at time zone 'UTC' as "timeBucket"
     from
       "assets"
     where
@@ -285,7 +285,7 @@ from
 where
   "assets"."deletedAt" is null
   and "assets"."isVisible" = $1
-  and date_trunc($2, assets."localDateTime" at time zone 'UTC') = $3
+  and date_trunc($2, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $3
 order by
   "assets"."localDateTime" desc
 
