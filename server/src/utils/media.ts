@@ -159,9 +159,13 @@ export class BaseConfig implements VideoCodecSWConfig {
       options.push(`scale=${this.getScaling(videoStream)}`);
     }
 
-    options.push(...this.getToneMapping(videoStream));
-    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
-      options.push(`format=yuv420p`);
+    if (!this.config.transcodeHDR && videoStream.isHDR) {
+      options.push(`format=yuv420p10le`)
+    } else {
+      options.push(...this.getToneMapping(videoStream));
+      if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
+        options.push(`format=yuv420p`);
+      }
     }
 
     return options;
