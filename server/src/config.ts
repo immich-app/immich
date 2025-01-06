@@ -33,6 +33,7 @@ export interface SystemConfig {
     acceptedContainers: VideoContainer[];
     targetResolution: string;
     maxBitrate: string;
+    transcodeHDR: boolean;
     bframes: number;
     refs: number;
     gopSize: number;
@@ -182,6 +183,7 @@ export const defaults = Object.freeze<SystemConfig>({
     acceptedContainers: [VideoContainer.MOV, VideoContainer.OGG, VideoContainer.WEBM],
     targetResolution: '720',
     maxBitrate: '0',
+    transcodeHDR: true,
     bframes: -1,
     refs: 0,
     gopSize: 0,
