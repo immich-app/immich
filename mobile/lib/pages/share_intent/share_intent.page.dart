@@ -17,6 +17,28 @@ class ShareIntentPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    void upload() {
+      showDialog(
+        useSafeArea: true,
+        // barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            icon: const Icon(Icons.upload_rounded),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  context.pop();
+                },
+                child: const Text('Cancel'),
+              ),
+            ],
+            content: const LinearProgressIndicator(),
+          );
+        },
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Upload to Immich (${attachments.length})'),
@@ -33,7 +55,6 @@ class ShareIntentPage extends ConsumerWidget {
           final fileName = file.uri.pathSegments.last;
           final fileSize = formatHumanReadableBytes(file.lengthSync(), 2);
 
-          final isVideo = attachment.type == SharedAttachmentType.video;
           final isImage = attachment.type == SharedAttachmentType.image;
 
           return Padding(
@@ -45,30 +66,25 @@ class ShareIntentPage extends ConsumerWidget {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: Image.file(
-                      file,
-                      width: 64,
-                      height: 64,
-                      fit: BoxFit.cover, // Make image fit inside the leading
-                    ),
-                  ),
-                  if (isVideo)
-                    const Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Icon(
-                        Icons.videocam,
-                        color: Colors.white,
-                        size: 20,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(0, 0),
-                            blurRadius: 8.0,
-                            color: Colors.black45,
+                    child: isImage
+                        ? Image.file(
+                            file,
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit
+                                .cover, // Make image fit inside the leading
+                          )
+                        : const SizedBox(
+                            width: 64,
+                            height: 64,
+                            child: Center(
+                              child: Icon(
+                                Icons.videocam,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
+                  ),
                   if (isImage)
                     const Positioned(
                       top: 8,
@@ -111,9 +127,7 @@ class ShareIntentPage extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: ElevatedButton(
-            onPressed: () {
-              // Handle upload action
-            },
+            onPressed: upload,
             child: const Text('Upload'),
           ),
         ),
