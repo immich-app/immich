@@ -1439,7 +1439,7 @@ class SettingsSubRouteArgs {
 class ShareIntentRoute extends PageRouteInfo<ShareIntentRouteArgs> {
   ShareIntentRoute({
     Key? key,
-    required List<SharedAttachment?> attachments,
+    required List<ShareIntentAttachment> attachments,
     List<PageRouteInfo>? children,
   }) : super(
           ShareIntentRoute.name,
@@ -1472,7 +1472,7 @@ class ShareIntentRouteArgs {
 
   final Key? key;
 
-  final List<SharedAttachment?> attachments;
+  final List<ShareIntentAttachment> attachments;
 
   @override
   String toString() {

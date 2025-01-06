@@ -2,30 +2,52 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/asset_viewer/upload.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
-import 'package:share_handler/share_handler.dart';
 import 'package:immich_mobile/entities/store.entity.dart' as db_store;
 
 @RoutePage()
-class ShareIntentPage extends ConsumerWidget {
+class ShareIntentPage extends HookConsumerWidget {
   const ShareIntentPage({super.key, required this.attachments});
 
-  final List<SharedAttachment?> attachments;
+  final List<ShareIntentAttachment> attachments;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEndpoint =
         db_store.Store.get(db_store.StoreKey.serverEndpoint);
+    final candidates = ref.watch(shareIntentStateProvider);
+
+    useEffect(
+      () {
+        Future.microtask(() {
+          ref
+              .read(shareIntentStateProvider.notifier)
+              .addAttachments(attachments);
+        });
+        return () {};
+      },
+      const [],
+    );
+
+    void removeAttachment(ShareIntentAttachment attachment) {
+      ref.read(shareIntentStateProvider.notifier).removeAttachment(attachment);
+    }
+
+    void addAttachments(List<ShareIntentAttachment> attachments) {
+      ref.read(shareIntentStateProvider.notifier).addAttachments(attachments);
+    }
 
     void upload() {
       showDialog(
         useSafeArea: true,
-        // barrierDismissible: false,
+        barrierDismissible: false,
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -44,12 +66,23 @@ class ShareIntentPage extends ConsumerWidget {
       );
     }
 
+    bool isSelected(ShareIntentAttachment attachment) {
+      return candidates.contains(attachment);
+    }
+
+    void toggleSelection(ShareIntentAttachment attachment) {
+      if (isSelected(attachment)) {
+        removeAttachment(attachment);
+      } else {
+        addAttachments([attachment]);
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           children: [
-            Text('Upload to Immich (${attachments.length})'),
-            // server url
+            Text('Upload to Immich (${candidates.length})'),
             Text(
               currentEndpoint,
               style: context.textTheme.labelSmall?.copyWith(
@@ -63,23 +96,16 @@ class ShareIntentPage extends ConsumerWidget {
         itemCount: attachments.length,
         itemBuilder: (context, index) {
           final attachment = attachments[index];
-          if (attachment == null) {
-            return const SizedBox.shrink();
-          }
-
           final file = File(attachment.path);
           final fileName = file.uri.pathSegments.last;
           final fileSize = formatHumanReadableBytes(file.lengthSync(), 2);
-
-          final isImage = attachment.type == SharedAttachmentType.image;
+          final isImage = attachment.type == ShareIntentAttachmentType.image;
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16),
             child: LargeLeadingTile(
-              onTap: () async {
-                await ref.read(uploadStateProvider.notifier).upload(file);
-              },
-              selected: true,
+              onTap: () => toggleSelection(attachment),
+              selected: isSelected(attachment),
               leading: Stack(
                 children: [
                   ClipRRect(
@@ -89,8 +115,7 @@ class ShareIntentPage extends ConsumerWidget {
                             file,
                             width: 64,
                             height: 64,
-                            fit: BoxFit
-                                .cover, // Make image fit inside the leading
+                            fit: BoxFit.cover,
                           )
                         : const SizedBox(
                             width: 64,
@@ -127,15 +152,20 @@ class ShareIntentPage extends ConsumerWidget {
                 style: context.textTheme.titleSmall,
               ),
               subtitle: Text(
-                'Size: $fileSize',
+                fileSize,
                 style: context.textTheme.labelLarge,
               ),
               trailing: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Icon(
-                  Icons.check_circle_rounded,
-                  color: context.primaryColor,
-                ),
+                child: isSelected(attachment)
+                    ? Icon(
+                        Icons.check_circle_rounded,
+                        color: context.primaryColor,
+                      )
+                    : Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: context.colorScheme.onSurface.withAlpha(150),
+                      ),
               ),
             ),
           );

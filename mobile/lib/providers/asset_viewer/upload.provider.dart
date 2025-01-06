@@ -3,22 +3,37 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
-final uploadStateProvider = StateNotifierProvider<UploadStateNotifier, int>(
-  ((ref) => UploadStateNotifier(
+final shareIntentStateProvider = StateNotifierProvider.autoDispose<
+    ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
+  ((ref) => ShareIntentUploadStateNotifier(
         ref.watch(uploadServiceProvider),
       )),
 );
 
-class UploadStateNotifier extends StateNotifier<int> {
+class ShareIntentUploadStateNotifier
+    extends StateNotifier<List<ShareIntentAttachment>> {
   final UploadService _uploadService;
 
-  UploadStateNotifier(
+  ShareIntentUploadStateNotifier(
     this._uploadService,
-  ) : super(0) {
+  ) : super([]) {
     _uploadService.onUploadStatus = _uploadStatusCallback;
     _uploadService.onTaskProgress = _taskProgressCallback;
+  }
+
+  void addAttachments(List<ShareIntentAttachment> attachments) {
+    state = [...state, ...attachments];
+  }
+
+  void removeAttachment(ShareIntentAttachment attachment) {
+    state = state.where((element) => element != attachment).toList();
+  }
+
+  void clearAttachments() {
+    state = [];
   }
 
   void _uploadStatusCallback(TaskStatusUpdate update) {

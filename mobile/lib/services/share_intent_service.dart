@@ -1,34 +1,27 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
+import 'package:immich_mobile/repositories/share_handler.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:share_handler/share_handler.dart';
 
 final shareIntentServiceProvider = Provider(
   (ref) => ShareIntentService(
     ref.watch(appRouterProvider),
+    ref.watch(shareHandlerRepositoryProvider),
   ),
 );
 
 class ShareIntentService {
   final AppRouter router;
+  final ShareHandlerRepository shareHandlerRepository;
 
-  ShareIntentService(this.router);
+  ShareIntentService(this.router, this.shareHandlerRepository);
 
-  void setup() async {
-    final handler = ShareHandlerPlatform.instance;
-    final media = await handler.getInitialSharedMedia();
-
-    if (media?.attachments != null) {
-      navigateToShareIntentRoute(media!.attachments!);
-    }
-
-    handler.sharedMediaStream.listen((SharedMedia media) {
-      if (media.attachments != null) {
-        navigateToShareIntentRoute(media.attachments!);
-      }
-    });
+  Future<void> init() {
+    shareHandlerRepository.onSharedMedia = navigateToShareIntentRoute;
+    return shareHandlerRepository.init();
   }
 
-  void navigateToShareIntentRoute(List<SharedAttachment?> attachments) {
+  void navigateToShareIntentRoute(List<ShareIntentAttachment> attachments) {
     router.push(ShareIntentRoute(attachments: attachments));
   }
 }

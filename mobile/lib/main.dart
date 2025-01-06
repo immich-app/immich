@@ -212,7 +212,7 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
 
-    ref.read(shareIntentServiceProvider).setup();
+    ref.read(shareIntentServiceProvider).init();
   }
 
   @override
