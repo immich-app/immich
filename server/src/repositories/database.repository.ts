@@ -5,7 +5,6 @@ import { sql } from 'kysely';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
-import { entities } from 'src/entities';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
