@@ -3,12 +3,10 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/upload.interface.dart';
-import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/utils/download.dart';
+import 'package:immich_mobile/utils/upload.dart';
 import 'package:logging/logging.dart';
 
 final uploadServiceProvider = Provider(
@@ -38,7 +36,7 @@ class UploadService {
     onUploadStatus?.call(update);
   }
 
-  Future<bool> cancelDownload(String id) async {
+  Future<bool> cancelUpload(String id) async {
     return await FileDownloader().cancelTaskWithId(id);
   }
 
@@ -57,8 +55,6 @@ class UploadService {
     String id,
     File file, {
     Map<String, String>? fields,
-    String? group,
-    String? metadata,
   }) async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
     final url = Uri.parse('$serverEndpoint/assets').toString();
@@ -78,7 +74,7 @@ class UploadService {
       'fileCreatedAt': fileCreatedAt.toUtc().toIso8601String(),
       'fileModifiedAt': fileModifiedAt.toUtc().toIso8601String(),
       'isFavorite': 'false',
-      'duration': 'TBD',
+      'duration': '0',
       if (fields != null) ...fields,
     };
 
@@ -92,9 +88,8 @@ class UploadService {
       baseDirectory: baseDirectory,
       directory: directory,
       fileField: 'assetData',
+      group: uploadGroup,
       updates: Updates.statusAndProgress,
-      group: group ?? '',
-      metaData: metadata ?? '',
     );
   }
 }

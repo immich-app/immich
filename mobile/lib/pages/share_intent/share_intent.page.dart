@@ -6,8 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
+import 'package:immich_mobile/providers/asset_viewer/upload.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:share_handler/share_handler.dart';
+import 'package:immich_mobile/entities/store.entity.dart' as db_store;
 
 @RoutePage()
 class ShareIntentPage extends ConsumerWidget {
@@ -17,6 +19,9 @@ class ShareIntentPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final currentEndpoint =
+        db_store.Store.get(db_store.StoreKey.serverEndpoint);
+
     void upload() {
       showDialog(
         useSafeArea: true,
@@ -41,7 +46,18 @@ class ShareIntentPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Upload to Immich (${attachments.length})'),
+        title: Column(
+          children: [
+            Text('Upload to Immich (${attachments.length})'),
+            // server url
+            Text(
+              currentEndpoint,
+              style: context.textTheme.labelSmall?.copyWith(
+                color: context.colorScheme.onSurface.withAlpha(150),
+              ),
+            ),
+          ],
+        ),
       ),
       body: ListView.builder(
         itemCount: attachments.length,
@@ -60,7 +76,9 @@ class ShareIntentPage extends ConsumerWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16),
             child: LargeLeadingTile(
-              onTap: () {},
+              onTap: () async {
+                await ref.read(uploadStateProvider.notifier).upload(file);
+              },
               selected: true,
               leading: Stack(
                 children: [

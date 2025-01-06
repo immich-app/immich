@@ -108,10 +108,12 @@ Future<void> initApp() async {
     progressBar: true,
   );
 
-  FileDownloader().trackTasksInGroup(
+  await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,
   );
+
+  await FileDownloader().trackTasks();
 }
 
 Future<Isar> loadDb() async {
