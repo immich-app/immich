@@ -408,8 +408,8 @@ class AlbumService {
     }
   }
 
-  Future<Album?> getAlbumByName(String name, bool remoteOnly) =>
-      _albumRepository.getByName(name, remote: remoteOnly ? true : null);
+  Future<Album?> getAlbumByName(String name, {bool? remote, bool? shared}) =>
+      _albumRepository.getByName(name, remote: remote, shared: shared);
 
   ///
   /// Add the uploaded asset to the selected albums
@@ -419,7 +419,7 @@ class AlbumService {
     List<String> assetIds,
   ) async {
     for (final albumName in albumNames) {
-      Album? album = await getAlbumByName(albumName, true);
+      Album? album = await getAlbumByName(albumName, remote: true, shared: false);
       album ??= await createAlbum(albumName, []);
       if (album != null && album.remoteId != null) {
         await _albumApiRepository.addAssets(album.remoteId!, assetIds);
