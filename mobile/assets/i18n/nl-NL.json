@@ -527,6 +527,8 @@
   "settings_require_restart": "Start Immich opnieuw op om deze instelling toe te passen",
   "setting_video_viewer_looping_subtitle": "Schakel in om video's automatisch te herhalen in de detailweergave.",
   "setting_video_viewer_looping_title": "Herhalen",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "Video's",
   "share_add": "Toevoegen",
   "share_add_photos": "Foto's toevoegen",

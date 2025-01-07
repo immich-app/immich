@@ -527,6 +527,8 @@
   "settings_require_restart": "請重啓 Immich 以使設定生效",
   "setting_video_viewer_looping_subtitle": "對播放窗口中的短片開啓循環播放。",
   "setting_video_viewer_looping_title": "循環播放",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "短片",
   "share_add": "新增",
   "share_add_photos": "新增項目",
