@@ -24,7 +24,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
       if (expanded != null && expanded == true) {
         return Expanded(child: child);
       }
-      return Flexible(child: child);
+      return child;
     }
 
     return SafeArea(
