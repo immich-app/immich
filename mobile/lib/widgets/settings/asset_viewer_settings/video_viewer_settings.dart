@@ -15,6 +15,8 @@ class VideoViewerSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final useLoopVideo = useAppSettingsState(AppSettingsEnum.loopVideo);
+    final useOriginalVideo =
+        useAppSettingsState(AppSettingsEnum.loadOriginalVideo);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,6 +26,12 @@ class VideoViewerSettings extends HookConsumerWidget {
           valueNotifier: useLoopVideo,
           title: "setting_video_viewer_looping_title".tr(),
           subtitle: "setting_video_viewer_looping_subtitle".tr(),
+          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
+        ),
+        SettingsSwitchListTile(
+          valueNotifier: useOriginalVideo,
+          title: "setting_video_viewer_original_video_title".tr(),
+          subtitle: "setting_video_viewer_original_video_subtitle".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],

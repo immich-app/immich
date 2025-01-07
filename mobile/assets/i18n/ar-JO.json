@@ -527,6 +527,8 @@
   "settings_require_restart": "يرجى إعادة تشغيل لتطبيق هذا الإعداد",
   "setting_video_viewer_looping_subtitle": "تمكين تكرار مقطع فيديو تلقائيًا في عارض التفاصيل.",
   "setting_video_viewer_looping_title": "تكرار مقطع فيديو تلقائيًا",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "أشرطة فيديو",
   "share_add": "يضيف",
   "share_add_photos": "إضافة الصور",
