@@ -33,6 +33,7 @@ class ShareHandlerRepository implements IShareHandlerRepository {
     List<SharedAttachment?> attachments,
   ) {
     final payload = <ShareIntentAttachment>[];
+
     for (final attachment in attachments) {
       if (attachment == null) {
         continue;
@@ -46,6 +47,8 @@ class ShareHandlerRepository implements IShareHandlerRepository {
         ShareIntentAttachment(
           path: attachment.path,
           type: type,
+          status: UploadStatus.enqueued,
+          uploadProgress: 0.0,
         ),
       );
     }

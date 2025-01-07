@@ -1,9 +1,24 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:path/path.dart';
 
 enum ShareIntentAttachmentType {
   image,
   video,
+}
+
+enum UploadStatus {
+  enqueued,
+  running,
+  complete,
+  notFound,
+  failed,
+  canceled,
+  waitingtoRetry,
+  paused,
 }
 
 class ShareIntentAttachment {
@@ -11,18 +26,40 @@ class ShareIntentAttachment {
 
   // enum
   final ShareIntentAttachmentType type;
+
+  // enum
+  final UploadStatus status;
+
+  final double uploadProgress;
+
   ShareIntentAttachment({
     required this.path,
     required this.type,
+    required this.status,
+    this.uploadProgress = 0,
   });
+
+  File get file => File(path);
+
+  String get fileName => basename(file.path);
+
+  bool get isImage => type == ShareIntentAttachmentType.image;
+
+  bool get isVideo => type == ShareIntentAttachmentType.video;
+
+  String get fileSize => formatHumanReadableBytes(file.lengthSync(), 2);
 
   ShareIntentAttachment copyWith({
     String? path,
     ShareIntentAttachmentType? type,
+    UploadStatus? status,
+    double? uploadProgress,
   }) {
     return ShareIntentAttachment(
       path: path ?? this.path,
       type: type ?? this.type,
+      status: status ?? this.status,
+      uploadProgress: uploadProgress ?? this.uploadProgress,
     );
   }
 
@@ -30,6 +67,8 @@ class ShareIntentAttachment {
     return <String, dynamic>{
       'path': path,
       'type': type.index,
+      'status': status.index,
+      'uploadProgress': uploadProgress,
     };
   }
 
@@ -37,6 +76,8 @@ class ShareIntentAttachment {
     return ShareIntentAttachment(
       path: map['path'] as String,
       type: ShareIntentAttachmentType.values[map['type'] as int],
+      status: UploadStatus.values[map['status'] as int],
+      uploadProgress: map['uploadProgress'] as double,
     );
   }
 
@@ -44,18 +85,29 @@ class ShareIntentAttachment {
 
   factory ShareIntentAttachment.fromJson(String source) =>
       ShareIntentAttachment.fromMap(
-          json.decode(source) as Map<String, dynamic>);
+        json.decode(source) as Map<String, dynamic>,
+      );
 
   @override
-  String toString() => 'ShareIntentAttachment(path: $path, type: $type)';
+  String toString() {
+    return 'ShareIntentAttachment(path: $path, type: $type, status: $status, uploadProgress: $uploadProgress)';
+  }
 
   @override
   bool operator ==(covariant ShareIntentAttachment other) {
     if (identical(this, other)) return true;
 
-    return other.path == path && other.type == type;
+    return other.path == path &&
+        other.type == type &&
+        other.status == status &&
+        other.uploadProgress == uploadProgress;
   }
 
   @override
-  int get hashCode => path.hashCode ^ type.hashCode;
+  int get hashCode {
+    return path.hashCode ^
+        type.hashCode ^
+        status.hashCode ^
+        uploadProgress.hashCode;
+  }
 }

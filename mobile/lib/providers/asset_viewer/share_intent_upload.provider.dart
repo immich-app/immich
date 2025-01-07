@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
-final shareIntentStateProvider = StateNotifierProvider.autoDispose<
+final shareIntentUploadProvider = StateNotifierProvider.autoDispose<
     ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
   ((ref) => ShareIntentUploadStateNotifier(
         ref.watch(uploadServiceProvider),
@@ -36,7 +36,47 @@ class ShareIntentUploadStateNotifier
     state = [];
   }
 
+  void _updateUploadStatus(TaskStatusUpdate task, TaskStatus status) async {
+    if (status == TaskStatus.canceled) {
+      return;
+    }
+
+    final filePath = await task.task.filePath();
+    final target = state.firstWhere((element) => element.path == filePath);
+    final uploadStatus = switch (task.status) {
+      TaskStatus.complete => UploadStatus.complete,
+      TaskStatus.failed => UploadStatus.failed,
+      TaskStatus.canceled => UploadStatus.canceled,
+      TaskStatus.enqueued => UploadStatus.enqueued,
+      TaskStatus.running => UploadStatus.running,
+      TaskStatus.paused => UploadStatus.paused,
+      TaskStatus.notFound => UploadStatus.notFound,
+      TaskStatus.waitingToRetry => UploadStatus.waitingtoRetry
+    };
+
+    state = state.map((e) {
+      if (e.path == target.path) {
+        return e.copyWith(status: uploadStatus);
+      }
+      return e;
+    }).toList();
+
+    // state = state.copyWith(
+    //   taskProgress: <String, DownloadInfo>{}
+    //     ..addAll(state.taskProgress)
+    //     ..addAll({
+    //       taskId: DownloadInfo(
+    //         progress: state.taskProgress[taskId]?.progress ?? 0,
+    //         fileName: state.taskProgress[taskId]?.fileName ?? '',
+    //         status: status,
+    //       ),
+    //     }),
+    // );
+  }
+
   void _uploadStatusCallback(TaskStatusUpdate update) {
+    _updateUploadStatus(update, update.status);
+
     switch (update.status) {
       case TaskStatus.complete:
         if (update.responseStatusCode == 200) {

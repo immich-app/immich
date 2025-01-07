@@ -7,7 +7,7 @@ import 'package:immich_mobile/interfaces/upload.interface.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/upload.dart';
-import 'package:logging/logging.dart';
+// import 'package:logging/logging.dart';
 
 final uploadServiceProvider = Provider(
   (ref) => UploadService(
@@ -17,7 +17,7 @@ final uploadServiceProvider = Provider(
 
 class UploadService {
   final IUploadRepository _uploadRepository;
-  final Logger _log = Logger("UploadService");
+  // final Logger _log = Logger("UploadService");
   void Function(TaskStatusUpdate)? onUploadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
@@ -42,9 +42,9 @@ class UploadService {
 
   Future<void> upload(File file) async {
     final filename = file.path.split('/').last;
-    // final id = uuid.v4();
+
     final task = await _buildUploadTask(
-      'manual-mobile-upload-$filename',
+      filename,
       file,
     );
 
