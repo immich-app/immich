@@ -527,6 +527,8 @@
   "settings_require_restart": "Immichを再起動して設定を適用してください",
   "setting_video_viewer_looping_subtitle": "有効にすると詳細表示で動画がループします",
   "setting_video_viewer_looping_title": "ループ中",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "ビデオ",
   "share_add": "追加",
   "share_add_photos": "写真を追加",
