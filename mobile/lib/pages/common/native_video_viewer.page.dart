@@ -75,9 +75,14 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
         // Use a network URL for the video player controller
         final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+        final isOriginalVideo = ref
+            .read(appSettingsServiceProvider)
+            .getSetting<bool>(AppSettingsEnum.loadOriginalVideo);
+        final String postfixUrl =
+            isOriginalVideo ? 'original' : 'video/playback';
         final String videoUrl = asset.livePhotoVideoId != null
-            ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/video/playback'
-            : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
+            ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/$postfixUrl'
+            : '$serverEndpoint/assets/${asset.remoteId}/$postfixUrl';
 
         final source = await VideoSource.init(
           path: videoUrl,
