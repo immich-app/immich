@@ -44,25 +44,21 @@ class FilterBottomSheetScaffold extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Flexible(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      onClear();
-                      context.pop();
-                    },
-                    child: const Text('action_common_clear').tr(),
-                  ),
+                OutlinedButton(
+                  onPressed: () {
+                    onClear();
+                    context.pop();
+                  },
+                  child: const Text('action_common_clear').tr(),
                 ),
                 const SizedBox(width: 8),
-                Flexible(
-                  child: ElevatedButton(
-                    key: const Key('search_filter_apply'),
-                    onPressed: () {
-                      onSearch();
-                      context.pop();
-                    },
-                    child: const Text('search_filter_apply').tr(),
-                  ),
+                ElevatedButton(
+                  key: const Key('search_filter_apply'),
+                  onPressed: () {
+                    onSearch();
+                    context.pop();
+                  },
+                  child: const Text('search_filter_apply').tr(),
                 ),
               ],
             ),
