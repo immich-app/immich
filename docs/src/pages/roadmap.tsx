@@ -185,30 +185,6 @@ const withRelease = ({
 const roadmap: Item[] = [
   {
     done: false,
-    icon: mdiLockOutline,
-    iconColor: 'sandybrown',
-    title: 'Private/locked photos',
-    description: 'Private assets with extra protections',
-    getDateLabel: () => 'Planned for 2025',
-  },
-  {
-    done: false,
-    icon: mdiCloudUploadOutline,
-    iconColor: 'cornflowerblue',
-    title: 'Better background backups',
-    description: 'Rework background backups to be more reliable',
-    getDateLabel: () => 'Planned for 2025',
-  },
-  {
-    done: false,
-    icon: mdiCameraBurst,
-    iconColor: 'rebeccapurple',
-    title: 'Auto stacking',
-    description: 'Auto stack burst photos',
-    getDateLabel: () => 'Planned for 2025',
-  },
-  {
-    done: false,
     icon: mdiFlash,
     iconColor: 'gold',
     title: 'Workflows',
@@ -238,6 +214,30 @@ const roadmap: Item[] = [
     title: 'Stable release',
     description: 'Immich goes stable',
     getDateLabel: () => 'Planned for early 2025',
+  },
+  {
+    done: false,
+    icon: mdiLockOutline,
+    iconColor: 'sandybrown',
+    title: 'Private/locked photos',
+    description: 'Private assets with extra protections',
+    getDateLabel: () => 'Planned for 2025',
+  },
+  {
+    done: false,
+    icon: mdiCloudUploadOutline,
+    iconColor: 'cornflowerblue',
+    title: 'Better background backups',
+    description: 'Rework background backups to be more reliable',
+    getDateLabel: () => 'Planned for 2025',
+  },
+  {
+    done: false,
+    icon: mdiCameraBurst,
+    iconColor: 'rebeccapurple',
+    title: 'Auto stacking',
+    description: 'Auto stack burst photos',
+    getDateLabel: () => 'Planned for 2025',
   },
 ];
 

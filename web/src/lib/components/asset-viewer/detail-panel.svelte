@@ -132,6 +132,14 @@
     showEditFaces = false;
   };
 
+  const getAssetFolderHref = (asset: AssetResponseDto) => {
+    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
+    // Remove the last part of the path to get the parent path
+    const assetParentPath = asset.originalPath.split('/').slice(0, -1).join('/');
+    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
+    return folderUrl.href;
+  };
+
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
   let isShowChangeDate = $state(false);
@@ -369,9 +377,14 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p class="text-xs opacity-50 break-all pb-2" transition:slide={{ duration: 250 }}>
-            {asset.originalPath}
-          </p>
+          <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')}>
+            <p
+              class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+              transition:slide={{ duration: 250 }}
+            >
+              {asset.originalPath}
+            </p>
+          </a>
         {/if}
         {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">

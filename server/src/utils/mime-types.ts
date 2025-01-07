@@ -65,6 +65,7 @@ const video: Record<string, string[]> = {
   '.avi': ['video/avi', 'video/msvideo', 'video/vnd.avi', 'video/x-msvideo'],
   '.flv': ['video/x-flv'],
   '.insv': ['video/mp4'],
+  '.m2t': ['video/mp2t'],
   '.m2ts': ['video/mp2t'],
   '.m4v': ['video/x-m4v'],
   '.mkv': ['video/x-matroska'],
