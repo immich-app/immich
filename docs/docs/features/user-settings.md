@@ -1,21 +1,21 @@
 # User Settings
 
-![User Modal](./img/user-popup.png)
+Immich gives each user the ability to manage their own settings. This includes being able to update their profile, toggle certain feature, generate API keys, manage the logged in devices, a view of account usage statistics, and more.
 
-## User Profile
+<img src={require('./img/user-settings-3.webp').default} width="60%" title='User settings lists' />
 
-View your User ID and email, and update your first and last name.
+You can access the [user settings](https://my.immich.app/user-settings) by clicking on the user icon on the top right corner of the screen and selecting the `Account Settings` option.
 
-![User Profile](./img/user-profile.png)
+<img src={require('./img/user-settings-1.webp').default} width="33%" title='User settings location 1' />
 
-## Change Password
+<br/>
 
-Users can change their own passwords.
+<img src={require('./img/user-settings-2.webp').default} width="33%" title='User settings location 2' />
 
-![Change Password](./img/user-change-password.png)
+---
 
 :::tip Reset Password
-The admin can reset a password through the [User Management](/docs/administration/user-management.mdx) screen.
+The admin can reset a user password through the [User Management](/docs/administration/user-management.mdx) screen.
 :::
 
 :::tip Reset Admin Password

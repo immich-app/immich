@@ -30,27 +30,11 @@ wget -O .env https://github.com/immich-app/immich/releases/latest/download/examp
 
 You can alternatively download these two files from your browser and move them to the directory that you created, in which case ensure that you rename `example.env` to `.env`.
 
-:::info Optional Features
-If you intend to use hardware acceleration for transcoding or machine learning (ML), you can download now the config files you'll need, in the same way:
-
-```bash title="(Optional) Get hwaccel.transcoding.yml file"
-wget -O hwaccel.transcoding.yml https://github.com/immich-app/immich/releases/latest/download/hwaccel.transcoding.yml
-```
-
-```bash title="(Optional) Get hwaccel.ml.yml file"
-wget -O hwaccel.ml.yml https://github.com/immich-app/immich/releases/latest/download/hwaccel.ml.yml
-```
-
-:::
-
 ## Step 2 - Populate the .env file with custom values
 
-<details>
-  <summary>
-    Example <code>.env</code> content
-  </summary>
-  <CodeBlock language="bash">{ExampleEnv}</CodeBlock>
-</details>
+<CodeBlock language="bash" title="Default environmental variable content">
+  {ExampleEnv}
+</CodeBlock>
 
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets. It should be a new directory on the server with enough free space.
 - Consider changing `DB_PASSWORD` to a custom value. Postgres is not publically exposed, so this password is only used for local authentication.
@@ -58,22 +42,16 @@ wget -O hwaccel.ml.yml https://github.com/immich-app/immich/releases/latest/down
 - Set your timezone by uncommenting the `TZ=` line.
 - Populate custom database information if necessary.
 
-:::info Optional Features
-You can edit `docker-compose.yml` to add external libraries or enable hardware acceleration now by following [their guides](#setting-up-optional-features).
-:::
-
 ## Step 3 - Start the containers
 
-From the directory you created in Step 1 (which should now contain your customized `docker-compose.yml` and `.env` files), run this command:
+From the directory you created in Step 1 (which should now contain your customized `docker-compose.yml` and `.env` files), run the following command to start Immich as a background service:
 
-```bash title="Start the containers using docker compose command"
+```bash title="Start the containers"
 docker compose up -d
 ```
 
-This starts immich as a background service (per the `-d` flag), ensuring it restarts after system reboots or crashes (per the `restart` fields in `docker-compose.yml`).
-
 :::info Docker version
-If you get an error `unknown shorthand flag: 'd' in -d`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by following the complete [Docker Engine install](https://docs.docker.com/engine/install/) procedure for your distribution, crucially the "Uninstall old versions" and "Install using the apt/rpm repository" sections. These replace the distro's Docker packages with Docker's official ones.
+If you get an error such as `unknown shorthand flag: 'd' in -d` or `open <location of your .env file>: permission denied`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by following the complete [Docker Engine install](https://docs.docker.com/engine/install/) procedure for your distribution, crucially the "Uninstall old versions" and "Install using the apt/rpm repository" sections. These replace the distro's Docker packages with Docker's official ones.
 
 Note that the correct command really is `docker compose`, not `docker-compose`. If you try the latter on vanilla Ubuntu 22.04, it will fail in a different way:
 
@@ -89,28 +67,22 @@ See the previous paragraph about installing from the official Docker repository.
 If you get an error `can't set healthcheck.start_interval as feature require Docker Engine v25 or later`, it helps to comment out the line for `start_interval` in the `database` section of the `docker-compose.yml` file.
 :::
 
-:::tip
-For more information on how to use the application, please refer to the [Post Installation](/docs/install/post-install.mdx) guide.
-:::
-
-:::note GitHub Authentication
-Downloading container images might require you to authenticate to the GitHub Container Registry ([steps here][container-auth]).
-:::
-
 ## Next Steps
 
-### Setting Up Optional Features
+Read the [Post Installation](/docs/install/post-install.mdx) steps or setup optional features below.
 
-You can set up the following now:
+### Setting up optional features
 
-- [External Libraries](/docs/features/libraries.md)
-- [Hardware Transcoding](/docs/features/hardware-transcoding.md)
-- [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md)
+- [External Libraries](/docs/features/libraries.md): Adding your existing photo library to Immich
+- [Hardware Transcoding](/docs/features/hardware-transcoding.md): Speeding up video transcoding
+- [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md): Speeding up various machine learning tasks in Immich
 
 ### Upgrading
 
-:::danger Breaking Changes
-It is important to follow breaking updates to avoid problems. You can see versions that had breaking changes [here][breaking].
+:::danger Read the release notes
+Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
+
+You can see versions that had breaking changes [here][breaking].
 :::
 
 If `IMMICH_VERSION` is set, it will need to be updated to the latest or desired version.
@@ -123,13 +95,9 @@ docker compose pull && docker compose up -d
 
 To clean up disk space, the old version's obsolete container images can be deleted with the following command:
 
-```bash title="Delete all obsolete container images"
+```bash title="Clean up unused Docker images"
 docker image prune
 ```
-
-:::caution Automatic Updates
-Immich is currently under heavy development, which means you can expect [breaking changes][breaking] and bugs. Therefore, we recommend reading the release notes prior to updating and to take special care when using automated tools like [Watchtower][watchtower].
-:::
 
 [compose-file]: https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
 [env-file]: https://github.com/immich-app/immich/releases/latest/download/example.env

@@ -38,7 +38,7 @@
     children,
   }: Props = $props();
 
-  let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar p-2 pb-8' : 'scrollbar-hidden');
+  let scrollbarClass = $derived(scrollbar ? 'immich-scrollbar p-2' : 'scrollbar-hidden');
   let hasTitleClass = $derived(title ? 'top-16 h-[calc(100%-theme(spacing.16))]' : 'top-0 h-full');
 </script>
 

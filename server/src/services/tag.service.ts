@@ -49,7 +49,8 @@ export class TagService extends BaseService {
       throw new BadRequestException(`A tag with that name already exists`);
     }
 
-    const tag = await this.tagRepository.create({ userId, value, parent });
+    const { color } = dto;
+    const tag = await this.tagRepository.create({ userId, value, color, parent });
 
     return mapTag(tag);
   }

@@ -242,6 +242,9 @@ enum StoreKey<T> {
   preferredWifiName<String>(133, type: String),
   localEndpoint<String>(134, type: String),
   externalEndpointList<String>(135, type: String),
+
+  // Video settings
+  loadOriginalVideo<bool>(136, type: bool),
   ;
 
   const StoreKey(
