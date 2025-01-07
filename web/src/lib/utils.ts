@@ -16,13 +16,11 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
-  type AssetResponseDto,
   type PersonResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { sortBy } from 'lodash-es';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
@@ -261,7 +259,7 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return new URL(`share/${key}`, externalDomain || window.location.origin).href;
+  return new URL(`share/${key}`, externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {
@@ -283,7 +281,7 @@ export const oauth = {
     try {
       const redirectUri = location.href.split('?')[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      window.location.href = url;
+      globalThis.location.href = url;
       return true;
     } catch (error) {
       handleError(error, $t('errors.unable_to_login_with_oauth'));
@@ -330,10 +328,6 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
   } catch (error) {
     return [error, undefined];
   }
-};
-
-export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  return sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
 };
 
 // eslint-disable-next-line unicorn/prefer-code-point

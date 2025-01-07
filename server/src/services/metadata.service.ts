@@ -454,14 +454,14 @@ export class MetadataService extends BaseService {
         }
       } else {
         const motionAssetId = this.cryptoRepository.randomUUID();
-        const createdAt = asset.fileCreatedAt ?? asset.createdAt;
+        const dates = this.getDates(asset, tags);
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
-          fileCreatedAt: createdAt,
-          fileModifiedAt: asset.fileModifiedAt,
-          localDateTime: createdAt,
+          fileCreatedAt: dates.dateTimeOriginal,
+          fileModifiedAt: dates.modifyDate,
+          localDateTime: dates.localDateTime,
           checksum,
           ownerId: asset.ownerId,
           originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
@@ -593,9 +593,12 @@ export class MetadataService extends BaseService {
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
-      this.logger.warn(`Asset ${asset.id} has no valid date, falling back to asset.fileCreatedAt`);
-      dateTimeOriginal = asset.fileCreatedAt;
-      localDateTime = asset.fileCreatedAt;
+      this.logger.debug(
+        `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
+      );
+      const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
+      dateTimeOriginal = earliestDate;
+      localDateTime = earliestDate;
     }
 
     this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
@@ -611,6 +614,10 @@ export class MetadataService extends BaseService {
       localDateTime,
       modifyDate,
     };
+  }
+
+  private earliestDate(a: Date, b: Date) {
+    return new Date(Math.min(a.valueOf(), b.valueOf()));
   }
 
   private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {
@@ -702,7 +709,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!isSync && (!asset.isVisible || asset.sidecarPath)) {
+    if (!isSync && (!asset.isVisible || asset.sidecarPath) && !asset.isExternal) {
       return JobStatus.FAILED;
     }
 
@@ -722,6 +729,13 @@ export class MetadataService extends BaseService {
       sidecarPath = sidecarPathWithExt;
     } else if (sidecarPathWithoutExtExists) {
       sidecarPath = sidecarPathWithoutExt;
+    }
+
+    if (asset.isExternal) {
+      if (sidecarPath !== asset.sidecarPath) {
+        await this.assetRepository.update({ id: asset.id, sidecarPath });
+      }
+      return JobStatus.SUCCESS;
     }
 
     if (sidecarPath) {

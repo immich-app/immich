@@ -527,6 +527,8 @@
   "settings_require_restart": "Επανεκκινήστε το Immich για να εφαρμόσετε αυτήν τη ρύθμιση",
   "setting_video_viewer_looping_subtitle": "Ενεργοποιήστε για το αυτόματη συνεχής επανάληψη βίντεο στο πρόγραμμα προβολής λεπτομερειών.",
   "setting_video_viewer_looping_title": "Συνεχής Επανάληψη",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "Βίντεο",
   "share_add": "Πρόσθεση",
   "share_add_photos": "Προσθήκη φωτογραφιών",

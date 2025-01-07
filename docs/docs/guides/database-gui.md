@@ -36,7 +36,7 @@ Open [localhost:8888](http://localhost:8888) and login with the default credenti
 
 Right click on `Servers` and click on `Register >> Server..` then enter the values below in the `Connection` tab.
 
-<img src={require('./img/pgadmin-add-new-server.png').default} width="50%" title="new server option" />
+<img src={require('./img/pgadmin-add-new-server.webp').default} width="50%" title="new server option" />
 
 :::note
 The parameters used here match those specified in the example `.env` file. If you have changed your `.env` file, you'll need to adjust accordingly.

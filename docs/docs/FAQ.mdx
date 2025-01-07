@@ -49,6 +49,7 @@ The behaviors differ based on your device manufacturer and operating system, but
 On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
 
 - Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
+- Disable **Low Power Mode** when not needed, as this can prevent apps from running in the background.
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
 - Use the Immich app more often.
 
@@ -69,7 +70,8 @@ However, Immich will delete original files that have been trashed when the trash
 
 ### Why do my file names appear as a random string in the file manager?
 
-When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names. To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
+When Storage Template is off (default) Immich saves the file names in a random string (also known as random UUIDs) to prevent duplicate file names.
+To retrieve the original file names, you must enable the Storage Template and then run the STORAGE TEMPLATE MIGRATION job.
 It is recommended to read about [Storage Template](https://immich.app/docs/administration/storage-template) before activation.
 
 ### Can I add my existing photo library?
@@ -82,11 +84,20 @@ Template changes will only apply to _new_ assets. To retroactively apply the tem
 
 ### Why are only photos and not videos being uploaded to Immich?
 
-This often happens when using a reverse proxy (such as Nginx or Cloudflare tunnel) in front of Immich. Make sure to set your reverse proxy to allow large `POST` requests. In `nginx`, set `client_max_body_size 50000M;` or similar. Also, check the disk space of your reverse proxy. In some cases, proxies cache requests to disk before passing them on, and if disk space runs out, the request fails.
+This often happens when using a reverse proxy in front of Immich.
+Make sure to [set your reverse proxy](/docs/administration/reverse-proxy/) to allow large requests.
+Also, check the disk space of your reverse proxy.
+In some cases, proxies cache requests to disk before passing them on, and if disk space runs out, the request fails.
+
+If you are using Cloudflare Tunnel, please know that they set a maxiumum filesize of 100 MB that cannot be changed.
+At times, files larger than this may work, potentially up to 1 GB. However, the official limit is 100 MB.
+If you are having issues, we recommend switching to a different network deployment.
 
 ### Why are some photos stored in the file system with the wrong date?
 
-There are a few different scenarios that can lead to this situation. The solution is to rerun the storage migration job. The job is only automatically run once per asset after upload. If metadata extraction originally failed, the jobs were cleared/canceled, etc., the job may not have run automatically the first time.
+There are a few different scenarios that can lead to this situation. The solution is to rerun the storage migration job.
+The job is only automatically run once per asset after upload. If metadata extraction originally failed, the jobs were cleared/canceled, etc.,
+the job may not have run automatically the first time.
 
 ### How can I hide photos from the timeline?
 
@@ -116,7 +127,8 @@ Also, there are additional jobs for person (face) thumbnails.
 
 ### Why do files from WhatsApp not appear with the correct date?
 
-Files sent on WhatsApp are saved without metadata on the file. Therefore, Immich has no way of knowing the original date of the file when files are uploaded from WhatsApp, not the order of arrival on the device. [See #3527](https://github.com/immich-app/immich/issues/3527).
+Files sent on WhatsApp are saved without metadata on the file. Therefore, Immich has no way of knowing the original date of the file when files are uploaded from WhatsApp,
+not the order of arrival on the device. [See #9116](https://github.com/immich-app/immich/discussions/9116).
 
 ### What happens if an asset exists in more than one account?
 
@@ -191,7 +203,7 @@ Immich uses CLIP models. An ML model converts each image to an "embedding", whic
 
 ### How does facial recognition work?
 
-See [How Facial Recognition Works](/docs/features/facial-recognition#How-Facial-Recognition-Works) for details.
+See [How Facial Recognition Works](/docs/features/facial-recognition#how-facial-recognition-works) for details.
 
 ### How can I disable machine learning?
 
@@ -213,7 +225,7 @@ No, this is not supported. Only models listed in the [Hugging Face][huggingface]
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
-You can change to a multilingual CLIP model. See [here](/docs/features/smart-search#CLIP-model) for instructions.
+You can change to a multilingual CLIP model. See [here](/docs/features/searching#clip-model) for instructions.
 
 ### Does Immich support Facial Recognition for videos?
 
@@ -224,7 +236,7 @@ Scanning the entire video for faces may be implemented in the future.
 
 No.
 :::tip
-You can use [Smart Search](/docs/features/smart-search.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
+You can use [Smart Search](/docs/features/searching.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
 :::
 
 ### I'm getting a lot of "faces" that aren't faces, what can I do?
@@ -308,7 +320,7 @@ Do not exaggerate with the job concurrency because you're probably thoroughly ov
 
 ### My server shows Server Status Offline | Version Unknown. What can I do?
 
-You need to enable WebSockets on your reverse proxy.
+You need to [enable WebSockets](/docs/administration/reverse-proxy/) on your reverse proxy.
 
 ---
 
@@ -339,7 +351,7 @@ The non-root user/group needs read/write access to the volume mounts, including 
 The Docker Compose top level volume element does not support non-root access, all of the above volumes must be local volume mounts.
 :::
 
-For a further hardened system, you can add the following block to every container except for `immich_postgres`.
+For a further hardened system, you can add the following block to every container.
 
 <details>
 <summary>docker-compose.yml</summary>
@@ -388,22 +400,21 @@ If the error says the worker is exiting, then this is normal. This is a feature 
 
 There are a few reasons why this can happen.
 
-If the error mentions SIGKILL or error code 137, it most likely means the service is running out of memory. Consider either increasing the server's RAM or moving the service to a server with more RAM.
+If the error mentions SIGKILL or error code 137, it most likely means the service is running out of memory.
+Consider either increasing the server's RAM or moving the service to a server with more RAM.
 
-If it mentions SIGILL (note the lack of a K) or error code 132, it most likely means your server's CPU is incompatible. This is unlikely to occur on version 1.92.0 or later. Consider upgrading if your version of Immich is below that.
-
-If your version of Immich is below 1.92.0 and the crash occurs after logs about tracing or exporting a model, consider either upgrading or disabling the Tag Objects job.
+If it mentions SIGILL (note the lack of a K) or error code 132, it most likely means your server's CPU is incompatible with Immich.
 
 ## Database
 
 ### Why am I getting database ownership errors?
 
 If you get database errors such as `FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership` upon database startup, this is likely due to an issue with your filesystem.
-NTFS and ex/FAT/32 filesystems are not supported. See [here](/docs/install/environment-variables#supported-filesystems) for more details.
+NTFS and ex/FAT/32 filesystems are not supported. See [here](/docs/install/requirements#special-requirements-for-windows-users) for more details.
 
 ### How can I verify the integrity of my database?
 
-If you installed Immich using v1.104.0 or later, you likely have database checksums enabled by default. You can check this by running the following command.
+Database checksums are enabled by default for new installations since v1.104.0. You can check if they are enabled by running the following command.
 A result of `on` means that checksums are enabled.
 
 <details>
@@ -419,7 +430,7 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
 
 </details>
 
-If checksums are enabled, you can check the status of the database with the following command. A normal result is all zeroes.
+If checksums are enabled, you can check the status of the database with the following command. A normal result is all `0`s.
 
 <details>
 <summary>Check for database corruption</summary>
@@ -433,6 +444,24 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
  template1 |                 0 |
  template0 |                 0 |
 (4 rows)
+```
+
+</details>
+
+You can also scan the Postgres database file structure for errors:
+
+<details>
+<summary>Scan for file structure errors</summary>
+```bash
+docker exec -it immich_postgres pg_amcheck --username=postgres --heapallindexed --parent-check --rootdescend --progress --all --install-missing
+```
+
+A normal result will end something like this and return with an exit code of `0`:
+
+```bash
+7470/8832 relations (84%), 730829/734735 pages (99%)
+8425/8832 relations (95%), 734367/734735 pages (99%)
+8832/8832 relations (100%), 734735/734735 pages (100%)
 ```
 
 </details>

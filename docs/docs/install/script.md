@@ -2,15 +2,19 @@
 sidebar_position: 20
 ---
 
-# Install Script [Experimental]
+# Install script [Experimental]
 
 :::caution
 This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/docs/install/docker-compose.mdx).
 :::
 
-:::note
+## Requirements
+
+Follow the [requirements page](/docs/install/requirements) to get started.
+
 The install script only supports Linux operating systems and requires Docker to be already installed on the system.
-:::
+
+## Steps
 
 In the shell, from a directory of your choice, run the following command:
 

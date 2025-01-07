@@ -376,10 +376,13 @@ export class LibraryService extends BaseService {
   }
 
   async queuePostSyncJobs(assetIds: string[]) {
+    this.logger.debug(`Queuing metadata extraction for ${assetIds.length} asset(s)`);
+
+    // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queueAll(
       assetIds.map((assetId) => ({
-        name: JobName.METADATA_EXTRACTION,
-        data: { id: assetId, source: 'library-import' },
+        name: JobName.SIDECAR_DISCOVERY,
+        data: { id: assetId },
       })),
     );
   }

@@ -527,6 +527,8 @@
   "settings_require_restart": "설정을 적용하려면 Immich를 다시 시작하세요.",
   "setting_video_viewer_looping_subtitle": "상세 보기에서 동영상을 자동으로 반복합니다.",
   "setting_video_viewer_looping_title": "반복",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "동영상",
   "share_add": "추가",
   "share_add_photos": "사진 추가",

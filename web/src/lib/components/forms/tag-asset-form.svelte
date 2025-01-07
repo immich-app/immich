@@ -5,10 +5,8 @@
   import Combobox, { type ComboBoxOption } from '../shared-components/combobox.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { onMount } from 'svelte';
-  import { getAllTags, type TagResponseDto } from '@immich/sdk';
+  import { getAllTags, upsertTags, type TagResponseDto } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute } from '$lib/constants';
-  import FormatMessage from '$lib/components/i18n/format-message.svelte';
   import { SvelteSet } from 'svelte/reactivity';
 
   interface Props {
@@ -22,6 +20,7 @@
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedIds = $state(new SvelteSet<string>());
   let disabled = $derived(selectedIds.size === 0);
+  let allowCreate: boolean = $state(true);
 
   onMount(async () => {
     allTags = await getAllTags();
@@ -29,12 +28,18 @@
 
   const handleSubmit = () => onTag([...selectedIds]);
 
-  const handleSelect = (option?: ComboBoxOption) => {
+  const handleSelect = async (option?: ComboBoxOption) => {
     if (!option) {
       return;
     }
 
-    selectedIds.add(option.value);
+    if (option.id) {
+      selectedIds.add(option.value);
+    } else {
+      const [newTag] = await upsertTags({ tagUpsertDto: { tags: [option.label] } });
+      allTags.push(newTag);
+      selectedIds.add(newTag.id);
+    }
   };
 
   const handleRemove = (tag: string) => {
@@ -48,22 +53,13 @@
 </script>
 
 <FullScreenModal title={$t('tag_assets')} icon={mdiTag} onClose={onCancel}>
-  <div class="text-sm">
-    <p>
-      <FormatMessage key="tag_not_found_question">
-        {#snippet children({ message })}
-          <a href={AppRoute.TAGS} class="text-immich-primary dark:text-immich-dark-primary underline">
-            {message}
-          </a>
-        {/snippet}
-      </FormatMessage>
-    </p>
-  </div>
   <form {onsubmit} autocomplete="off" id="create-tag-form">
     <div class="my-4 flex flex-col gap-2">
       <Combobox
         onSelect={handleSelect}
         label={$t('tag')}
+        {allowCreate}
+        defaultFirstOption
         options={allTags.map((tag) => ({ id: tag.id, label: tag.value, value: tag.id }))}
         placeholder={$t('search_tags')}
       />

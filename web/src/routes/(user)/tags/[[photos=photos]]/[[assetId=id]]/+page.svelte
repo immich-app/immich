@@ -63,7 +63,7 @@
   };
 
   const getLink = (path: string) => {
-    const url = new URL(AppRoute.TAGS, window.location.href);
+    const url = new URL(AppRoute.TAGS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
     }
@@ -149,7 +149,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title} scrollbar={false}>
+<UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <SideBarSection>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
@@ -196,7 +196,7 @@
 
   <Breadcrumbs {pathSegments} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
-  <section class="mt-2 h-full">
+  <section class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar">
     {#if tag}
       <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
