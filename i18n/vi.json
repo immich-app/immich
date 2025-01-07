@@ -1287,7 +1287,7 @@
   "variables": "Các tham số",
   "version": "Phiên bản",
   "version_announcement_closing": "Bạn của bạn, Alex",
-  "version_announcement_message": "Chào bạn! Một phiên bản mới của Immich đã phát hành. Vui lòng dành thời gian để xem <link>danh sách thay đổi</link>  để đảm bảo cấu hình của bạn được cập nhật để tránh lỗi cấu hình sai, đặc biệt nếu bạn sử dụng WatchTower hoặc bất kỳ cơ chế tự động cập nhật Immich của bạn.",
+  "version_announcement_message": "Chào bạn! Một phiên bản mới của Immich đã phát hành. Vui lòng dành thời gian để xem <link>danh sách thay đổi</link> để đảm bảo cấu hình của bạn được cập nhật để tránh lỗi cấu hình sai, đặc biệt nếu bạn sử dụng WatchTower hoặc bất kỳ cơ chế tự động cập nhật Immich của bạn.",
   "version_history": "Lịch sử phiên bản",
   "version_history_item": "Đã cài đặt {version} vào {date}",
   "video": "Video",

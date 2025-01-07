@@ -527,6 +527,8 @@
   "settings_require_restart": "Пожалуйста, перезапустите приложение, чтобы изменения вступили в силу",
   "setting_video_viewer_looping_subtitle": "Включить циклическое воспроизведение видео",
   "setting_video_viewer_looping_title": "Циклическое воспроизведение",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "Видео",
   "share_add": "Добавить",
   "share_add_photos": "Добавить фото",

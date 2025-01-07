@@ -53,6 +53,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
+                  key: const Key('search_filter_apply'),
                   onPressed: () {
                     onSearch();
                     context.pop();

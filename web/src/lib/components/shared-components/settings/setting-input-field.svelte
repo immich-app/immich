@@ -63,7 +63,7 @@
   onMount(() => {
     if (autofocus) {
       tick()
-        .then(() => input?.focus())
+        .then(() => setTimeout(() => input?.focus(), 0))
         .catch((_) => {});
     }
   });

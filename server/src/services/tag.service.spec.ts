@@ -90,6 +90,18 @@ describe(TagService.name, () => {
         value: 'tag-1',
       });
     });
+
+    it('should create a new tag with optional color', async () => {
+      tagMock.create.mockResolvedValue(tagStub.color1);
+      await expect(sut.create(authStub.admin, { name: 'tag-1', color: '#000000' })).resolves.toEqual(
+        tagResponseStub.color1,
+      );
+      expect(tagMock.create).toHaveBeenCalledWith({
+        userId: authStub.admin.user.id,
+        value: 'tag-1',
+        color: '#000000',
+      });
+    });
   });
 
   describe('update', () => {

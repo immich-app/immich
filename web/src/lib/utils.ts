@@ -16,13 +16,11 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
-  type AssetResponseDto,
   type PersonResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { sortBy } from 'lodash-es';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 

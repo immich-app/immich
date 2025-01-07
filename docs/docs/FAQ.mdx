@@ -49,6 +49,7 @@ The behaviors differ based on your device manufacturer and operating system, but
 On iOS (iPhone and iPad), the operating system determines if a particular app can invoke background tasks based on multiple factors, most of which the Immich app has no control over. To increase the likelihood that the background backup task is run, follow the steps below:
 
 - Enable Background App Refresh for Immich in the iOS settings at `Settings > General > Background App Refresh`.
+- Disable **Low Power Mode** when not needed, as this can prevent apps from running in the background.
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
 - Use the Immich app more often.
 
@@ -202,7 +203,7 @@ Immich uses CLIP models. An ML model converts each image to an "embedding", whic
 
 ### How does facial recognition work?
 
-See [How Facial Recognition Works](/docs/features/facial-recognition#How-Facial-Recognition-Works) for details.
+See [How Facial Recognition Works](/docs/features/facial-recognition#how-facial-recognition-works) for details.
 
 ### How can I disable machine learning?
 
@@ -224,7 +225,7 @@ No, this is not supported. Only models listed in the [Hugging Face][huggingface]
 
 ### I want to be able to search in other languages besides English. How can I do that?
 
-You can change to a multilingual CLIP model. See [here](/docs/features/smart-search#CLIP-model) for instructions.
+You can change to a multilingual CLIP model. See [here](/docs/features/searching#clip-model) for instructions.
 
 ### Does Immich support Facial Recognition for videos?
 
@@ -235,7 +236,7 @@ Scanning the entire video for faces may be implemented in the future.
 
 No.
 :::tip
-You can use [Smart Search](/docs/features/smart-search.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
+You can use [Smart Search](/docs/features/searching.md) for this to some extent. For example, if you have a Golden Retriever and a Chihuahua, type these words in the smart search and watch the results.
 :::
 
 ### I'm getting a lot of "faces" that aren't faces, what can I do?
@@ -443,6 +444,24 @@ docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --
  template1 |                 0 |
  template0 |                 0 |
 (4 rows)
+```
+
+</details>
+
+You can also scan the Postgres database file structure for errors:
+
+<details>
+<summary>Scan for file structure errors</summary>
+```bash
+docker exec -it immich_postgres pg_amcheck --username=postgres --heapallindexed --parent-check --rootdescend --progress --all --install-missing
+```
+
+A normal result will end something like this and return with an exit code of `0`:
+
+```bash
+7470/8832 relations (84%), 730829/734735 pages (99%)
+8425/8832 relations (95%), 734367/734735 pages (99%)
+8832/8832 relations (100%), 734735/734735 pages (100%)
 ```
 
 </details>
