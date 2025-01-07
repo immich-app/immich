@@ -1,4 +1,4 @@
-# Hardware Transcoding [Experimental]
+# Hardware Transcoding
 
 This feature allows you to use a GPU to accelerate transcoding and reduce CPU load.
 Note that hardware transcoding produces significantly larger videos than software transcoding with similar settings, typically with lower quality. Using slow presets and preferring more efficient codecs can narrow this gap.

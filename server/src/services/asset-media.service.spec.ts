@@ -98,7 +98,21 @@ const validImages = [
   '.x3f',
 ];
 
-const validVideos = ['.3gp', '.avi', '.flv', '.m2ts', '.mkv', '.mov', '.mp4', '.mpg', '.mts', '.vob', '.webm', '.wmv'];
+const validVideos = [
+  '.3gp',
+  '.avi',
+  '.flv',
+  '.m2t',
+  '.m2ts',
+  '.mkv',
+  '.mov',
+  '.mp4',
+  '.mpg',
+  '.mts',
+  '.vob',
+  '.webm',
+  '.wmv',
+];
 
 const uploadTests = [
   {

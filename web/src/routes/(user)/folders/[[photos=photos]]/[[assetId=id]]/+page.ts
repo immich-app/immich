@@ -19,6 +19,10 @@ export const load = (async ({ params, url }) => {
   if (path) {
     await foldersStore.fetchAssetsByPath(path);
     pathAssets = foldersStore.assets[path] || null;
+  } else {
+    // If no path is provided, we we're at the root level
+    // We should bust the asset cache of the folder store, to make sure we don't show stale data
+    foldersStore.bustAssetCache();
   }
 
   let tree = buildTree(foldersStore.uniquePaths);
