@@ -432,11 +432,12 @@ export class MediaService extends BaseService {
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
     const isLargerThanTargetBitrate = stream.bitrate > this.parseBitrateToBps(ffmpegConfig.maxBitrate);
-    const supportedPixelFormats: string[] = ["yuv420p", "yuvj420p", "yuva420p", "yuv420p10le"]
+    const supportedPixelFormats: string[] = ['yuv420p', 'yuvj420p', 'yuva420p', 'yuv420p10le'];
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
     const isTargetDynamicRange = !ffmpegConfig.transcodeHDR || !stream.isHDR;
-    const isRequired = !isTargetVideoCodec || !isTargetDynamicRange || !supportedPixelFormats.includes(stream.pixelFormat);
+    const isRequired =
+      !isTargetVideoCodec || !isTargetDynamicRange || !supportedPixelFormats.includes(stream.pixelFormat);
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.DISABLED: {

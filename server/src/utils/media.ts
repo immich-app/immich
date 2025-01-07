@@ -160,7 +160,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
 
     if (!this.config.transcodeHDR && videoStream.isHDR) {
-      options.push(`format=yuv420p10le`)
+      options.push(`format=yuv420p10le`);
     } else {
       options.push(...this.getToneMapping(videoStream));
       if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
