@@ -14,9 +14,10 @@
   import type { PageData } from './$types';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { mdiCheckOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { mdiCheckOutline, mdiInformationOutline, mdiTrashCanOutline } from '@mdi/js';
   import { stackAssets } from '$lib/utils/asset-utils';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
+  import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { mdiKeyboard } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
@@ -25,9 +26,10 @@
   interface Props {
     data: PageData;
     isShowKeyboardShortcut?: boolean;
+    isShowDuplicateInfo?: boolean;
   }
 
-  let { data = $bindable(), isShowKeyboardShortcut = $bindable(false) }: Props = $props();
+  let { data = $bindable(), isShowKeyboardShortcut = $bindable(false), isShowDuplicateInfo = $bindable(false) }: Props = $props();
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -178,11 +180,21 @@
     </div>
   {/snippet}
 
-  <div class="mt-4">
+  <div class="">
     {#if duplicates && duplicates.length > 0}
-      <div class="mb-4 text-sm dark:text-white">
-        <p>{$t('duplicates_description')}</p>
+      <div class="flex items-center mb-2">
+        <div class="text-sm dark:text-white">
+          <p>{$t('duplicates_description')}</p>
+        </div>
+        <CircleIconButton
+          icon={mdiInformationOutline}
+          title={$t('deduplication_info')}
+          size="16"
+          padding="2"
+          onclick={() => (isShowDuplicateInfo = true)}
+        />
       </div>
+
       {#key duplicates[0].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[0].assets}
@@ -201,4 +213,7 @@
 
 {#if isShowKeyboardShortcut}
   <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
+{/if}
+{#if isShowDuplicateInfo}
+  <DuplicatesModal onClose={() => (isShowDuplicateInfo = false)} />
 {/if}

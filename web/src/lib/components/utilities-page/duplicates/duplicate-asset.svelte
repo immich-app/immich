@@ -6,7 +6,6 @@
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { getExifCount } from '$lib/utils/exif-utils';
 
   interface Props {
     asset: AssetResponseDto;
@@ -104,9 +103,6 @@
           {$t('in_albums', { values: { count: albums.length } })}
         {/if}
       {/await}
-      -
-      {getExifCount(asset)}
-      {$t('exif')}
     </span>
   </div>
 </div>

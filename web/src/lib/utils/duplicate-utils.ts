@@ -6,26 +6,25 @@ import { sortBy } from 'lodash-es';
  * Suggests the best duplicate asset to keep from a list of duplicates.
  *
  * The best asset is determined by the following criteria:
- *  - The asset with the largest file size
- *  - If there are multiple assets with the same file size, the asset with the most exif data
+ *  - Largest image file size in bytes
+ *  - Largest count of exif data
  *
  * @param assets List of duplicate assets
  * @returns The best asset to keep
  */
 export const suggestDuplicate = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  const assetsBySize = sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte ?? 0);
+  let duplicateAssets = sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte ?? 0);
 
-  // All assets with the same file size as the largest asset
-  const highestSizeAssets = assetsBySize.filter(
-    (asset) => asset.exifInfo?.fileSizeInByte === assetsBySize.at(-1)?.exifInfo?.fileSizeInByte,
+  // Update the list to only include assets with the largest file size
+  duplicateAssets = duplicateAssets.filter(
+    (asset) => asset.exifInfo?.fileSizeInByte === duplicateAssets.at(-1)?.exifInfo?.fileSizeInByte,
   );
 
-  // If there are multiple assets with the same file size, return the one with the most exif data
-  if (highestSizeAssets.length >= 2) {
-    const assetsByExifCount = sortBy(highestSizeAssets, getExifCount);
-    return assetsByExifCount.pop();
+  // If there are multiple assets with the same file size, sort the list by the count of exif data
+  if (duplicateAssets.length >= 2) {
+    duplicateAssets = sortBy(duplicateAssets, getExifCount);
   }
 
-  // Return the asset with the largest file size
-  return assetsBySize.pop();
+  // Return the last asset in the list
+  return duplicateAssets.pop();
 };
