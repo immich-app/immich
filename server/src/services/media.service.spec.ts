@@ -2323,9 +2323,9 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should tonemap when policy is required and video is hdr', async () => {
+    it('should tonemap when policy is required, video is hdr and transcodeHDR is enabled', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
+      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED, transcodeHDR: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -2343,9 +2343,9 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should tonemap when policy is optimal and video is hdr', async () => {
+    it('should tonemap when policy is optimal, video is hdr and transcodeHDR is enabled', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.videoStreamHDR);
-      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL } });
+      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.OPTIMAL, transcodeHDR: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(
@@ -2363,9 +2363,9 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should transcode when policy is required and video is not yuv420p', async () => {
-      mediaMock.probe.mockResolvedValue(probeStub.videoStream10Bit);
-      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
+    it('should transcode when policy is required and pixelformat is not supported', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.videoStreamYuv444p);
+      systemMock.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED, transcodeHDR: true } });
       assetMock.getByIds.mockResolvedValue([assetStub.video]);
       await sut.handleVideoConversion({ id: assetStub.video.id });
       expect(mediaMock.transcode).toHaveBeenCalledWith(

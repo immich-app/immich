@@ -182,6 +182,22 @@ export const probeStub = {
       },
     ],
   }),
+  videoStreamYuv444p: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        index: 0,
+        height: 480,
+        width: 480,
+        codecName: 'h264',
+        frameCount: 100,
+        rotation: 0,
+        isHDR: false,
+        bitrate: 0,
+        pixelFormat: 'yuv444p',
+      },
+    ],
+  }),
   audioStreamAac: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     audioStreams: [{ index: 1, codecName: 'aac', frameCount: 100 }],
