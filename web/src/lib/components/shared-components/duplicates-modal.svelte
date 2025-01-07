@@ -6,9 +6,7 @@
     onClose: () => void;
   }
 
-  let {
-    onClose,
-  }: Props = $props();
+  let { onClose }: Props = $props();
 </script>
 
 <FullScreenModal title={$t('deduplication_info')} width="auto" {onClose}>

@@ -29,7 +29,11 @@
     isShowDuplicateInfo?: boolean;
   }
 
-  let { data = $bindable(), isShowKeyboardShortcut = $bindable(false), isShowDuplicateInfo = $bindable(false) }: Props = $props();
+  let {
+    data = $bindable(),
+    isShowKeyboardShortcut = $bindable(false),
+    isShowDuplicateInfo = $bindable(false),
+  }: Props = $props();
 
   interface Shortcuts {
     general: ExplainedShortcut[];
