@@ -766,7 +766,7 @@ describe('/asset', () => {
       expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
     });
 
-    it('should move an asset to the trash', async () => {
+    it('should move an asset to trash', async () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
 
       const before = await utils.getAssetInfo(admin.accessToken, assetId);
@@ -780,6 +780,38 @@ describe('/asset', () => {
 
       const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(true);
+    });
+
+    it('should permanently delete an asset from trash', async () => {
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [assetId] })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      const trashed = await utils.getAssetInfo(admin.accessToken, assetId);
+      expect(trashed.isTrashed).toBe(true);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [assetId], force: true })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
+
+      {
+        const { status } = await request(app)
+          .get(`/assets/${assetId}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(400);
+      }
     });
 
     it('should clean up live photos', async () => {

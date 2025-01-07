@@ -4,7 +4,8 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { handlePromiseError, suggestDuplicateByFileSize } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
@@ -27,7 +28,7 @@
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
-    const suggestedAsset = suggestDuplicateByFileSize(assets);
+    const suggestedAsset = suggestDuplicate(assets);
 
     if (!suggestedAsset) {
       selectedAssetIds = new SvelteSet(assets[0].id);
