@@ -527,6 +527,8 @@
   "settings_require_restart": "Ennek a beállításnak az érvénybe lépéséhez indítsd újra az Immich-et",
   "setting_video_viewer_looping_subtitle": "Engedélyezi a videók folyamatosan ismételt lejátszását az elem megjelenítőben",
   "setting_video_viewer_looping_title": "Ismétlés",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "Videók",
   "share_add": "Hozzáadás",
   "share_add_photos": "Fotók hozzáadása",

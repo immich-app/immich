@@ -16,6 +16,26 @@ export type ShortcutOptions<T = HTMLElement> = {
   preventDefault?: boolean;
 };
 
+export const shortcutLabel = (shortcut: Shortcut) => {
+  let label = '';
+
+  if (shortcut.ctrl) {
+    label += 'Ctrl ';
+  }
+  if (shortcut.alt) {
+    label += 'Alt ';
+  }
+  if (shortcut.meta) {
+    label += 'Cmd ';
+  }
+  if (shortcut.shift) {
+    label += '⇧';
+  }
+  label += shortcut.key.toUpperCase();
+
+  return label;
+};
+
 /** Determines whether an event should be ignored. The event will be ignored if:
  *  - The element dispatching the event is not the same as the element which the event listener is attached to
  *  - The element dispatching the event is an input field
