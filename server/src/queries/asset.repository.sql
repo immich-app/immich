@@ -274,54 +274,6 @@ DELETE FROM "assets"
 WHERE
   "ownerId" = $1
 
--- AssetRepository.getByLibraryIdAndOriginalPath
-SELECT DISTINCT
-  "distinctAlias"."AssetEntity_id" AS "ids_AssetEntity_id"
-FROM
-  (
-    SELECT
-      "AssetEntity"."id" AS "AssetEntity_id",
-      "AssetEntity"."deviceAssetId" AS "AssetEntity_deviceAssetId",
-      "AssetEntity"."ownerId" AS "AssetEntity_ownerId",
-      "AssetEntity"."libraryId" AS "AssetEntity_libraryId",
-      "AssetEntity"."deviceId" AS "AssetEntity_deviceId",
-      "AssetEntity"."type" AS "AssetEntity_type",
-      "AssetEntity"."status" AS "AssetEntity_status",
-      "AssetEntity"."originalPath" AS "AssetEntity_originalPath",
-      "AssetEntity"."thumbhash" AS "AssetEntity_thumbhash",
-      "AssetEntity"."encodedVideoPath" AS "AssetEntity_encodedVideoPath",
-      "AssetEntity"."createdAt" AS "AssetEntity_createdAt",
-      "AssetEntity"."updatedAt" AS "AssetEntity_updatedAt",
-      "AssetEntity"."deletedAt" AS "AssetEntity_deletedAt",
-      "AssetEntity"."fileCreatedAt" AS "AssetEntity_fileCreatedAt",
-      "AssetEntity"."localDateTime" AS "AssetEntity_localDateTime",
-      "AssetEntity"."fileModifiedAt" AS "AssetEntity_fileModifiedAt",
-      "AssetEntity"."isFavorite" AS "AssetEntity_isFavorite",
-      "AssetEntity"."isArchived" AS "AssetEntity_isArchived",
-      "AssetEntity"."isExternal" AS "AssetEntity_isExternal",
-      "AssetEntity"."isOffline" AS "AssetEntity_isOffline",
-      "AssetEntity"."checksum" AS "AssetEntity_checksum",
-      "AssetEntity"."duration" AS "AssetEntity_duration",
-      "AssetEntity"."isVisible" AS "AssetEntity_isVisible",
-      "AssetEntity"."livePhotoVideoId" AS "AssetEntity_livePhotoVideoId",
-      "AssetEntity"."originalFileName" AS "AssetEntity_originalFileName",
-      "AssetEntity"."sidecarPath" AS "AssetEntity_sidecarPath",
-      "AssetEntity"."stackId" AS "AssetEntity_stackId",
-      "AssetEntity"."duplicateId" AS "AssetEntity_duplicateId"
-    FROM
-      "assets" "AssetEntity"
-      LEFT JOIN "libraries" "AssetEntity__AssetEntity_library" ON "AssetEntity__AssetEntity_library"."id" = "AssetEntity"."libraryId"
-    WHERE
-      (
-        ((("AssetEntity__AssetEntity_library"."id" = $1)))
-        AND ("AssetEntity"."originalPath" = $2)
-      )
-  ) "distinctAlias"
-ORDER BY
-  "AssetEntity_id" ASC
-LIMIT
-  1
-
 -- AssetRepository.getPathsNotInLibrary
 WITH
   paths AS (
