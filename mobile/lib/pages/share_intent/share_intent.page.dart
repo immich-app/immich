@@ -54,9 +54,7 @@ class ShareIntentPage extends HookConsumerWidget {
             icon: const Icon(Icons.upload_rounded),
             actions: [
               TextButton(
-                onPressed: () {
-                  context.pop();
-                },
+                onPressed: () => context.pop(),
                 child: const Text('Cancel'),
               ),
             ],
