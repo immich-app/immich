@@ -425,6 +425,7 @@ describe(LibraryService.name, () => {
             name: JobName.SIDECAR_DISCOVERY,
             data: {
               id: assetStub.image.id,
+              source: 'upload',
             },
           },
         ],
@@ -469,6 +470,7 @@ describe(LibraryService.name, () => {
             name: JobName.SIDECAR_DISCOVERY,
             data: {
               id: assetStub.image.id,
+              source: 'upload',
             },
           },
         ],

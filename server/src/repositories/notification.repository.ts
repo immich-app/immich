@@ -33,7 +33,7 @@ export class NotificationRepository implements INotificationRepository {
 
   async renderEmail(request: EmailRenderRequest): Promise<{ html: string; text: string }> {
     const component = this.render(request);
-    const html = await render(component, { pretty: true });
+    const html = await render(component, { pretty: false });
     const text = await render(component, { plainText: true });
     return { html, text };
   }

@@ -381,6 +381,7 @@ export class LibraryService extends BaseService {
       assetIds.map((assetId) => ({
         name: JobName.SIDECAR_DISCOVERY,
         data: { id: assetId },
+        source: 'upload',
       })),
     );
   }
