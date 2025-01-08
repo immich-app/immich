@@ -94,12 +94,14 @@ class LoginForm extends HookConsumerWidget {
         );
       }
 
-      // Automatically add /api to URL if missing
-      if (!serverUrl.endsWith('/api') || serverUrl.endsWith('/api/')) {
-        if (!serverUrl.endsWith('/')) {
-          serverUrl = String($sanitizedUrl + '/api');
-        }
-        serverUrl = String($sanitizedUrl + 'api');
+      // Automatically add /api to serverUrl if missing
+      serverUrl = serverUrl.trim();
+
+      // Check if the string ends with '/api/' and remove the trailing slash if it does or add '/api' if the string doesn't end with '/api'
+      if (serverUrl.endsWith('/api/')) {
+        serverUrl = serverUrl.substring(0, serverUrl.length - 1);
+      } else if (!serverUrl.endsWith('/api')) {
+        serverUrl = '$serverUrl/api';
       }
 
 
