@@ -1,4 +1,3 @@
-import { ADDED_IN_PREFIX } from 'src/constants';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity } from 'src/entities/library.entity';
 

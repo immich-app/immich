@@ -7,7 +7,6 @@ import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
-  LibraryStatsResponseDto,
   mapLibrary,
   UpdateLibraryDto,
   ValidateLibraryDto,
@@ -15,7 +14,6 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetStatus, AssetType, ImmichWorker } from 'src/enum';
 import { AssetCreate } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
@@ -358,8 +356,8 @@ export class LibraryService extends BaseService {
     const datePlaceholder = new Date('1900-01-01');
 
     return {
-      ownerId: ownerId,
-      libraryId: libraryId,
+      ownerId,
+      libraryId,
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
@@ -442,16 +440,18 @@ export class LibraryService extends BaseService {
     for (const asset of assets) {
       const action = await this.handleSyncAsset(asset);
       switch (action) {
-        case AssetSyncResult.OFFLINE:
+        case AssetSyncResult.OFFLINE: {
           assetIdsToOffline.push(asset.id);
           break;
-        case AssetSyncResult.UPDATE:
+        }
+        case AssetSyncResult.UPDATE: {
           assetIdsToUpdate.push(asset.id);
           break;
+        }
       }
     }
 
-    if (assetIdsToOffline.length) {
+    if (assetIdsToOffline.length > 0) {
       await this.assetRepository.updateAll(assetIdsToOffline, {
         isOffline: true,
         status: AssetStatus.TRASHED,
@@ -459,7 +459,7 @@ export class LibraryService extends BaseService {
       });
     }
 
-    if (assetIdsToUpdate.length) {
+    if (assetIdsToUpdate.length > 0) {
       //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
       await this.assetRepository.updateAll(assetIdsToUpdate, {
         isOffline: false,

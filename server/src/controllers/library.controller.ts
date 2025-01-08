@@ -3,7 +3,6 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
-  LibraryStatsResponseDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
