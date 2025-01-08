@@ -426,7 +426,7 @@ export class LibraryService extends BaseService {
     // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queue({
       name: JobName.SIDECAR_DISCOVERY,
-      data: { id: asset.id },
+      data: { id: asset.id, source: 'upload' },
     });
   }
 
