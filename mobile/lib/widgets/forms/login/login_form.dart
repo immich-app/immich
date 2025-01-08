@@ -94,6 +94,16 @@ class LoginForm extends HookConsumerWidget {
         );
       }
 
+      // Automatically add /api to URL
+      if (!serverUrl.endsWith('/api') && 
+          !serverUrl.endsWith('/api/')) {
+        if (!serverUrl.endsWith('/')) {
+          serverUrl = String($sanitizedUrl + '/api/');
+        }
+        serverUrl = String($sanitizedUrl + 'api/');
+      }
+
+
       try {
         isLoadingServer.value = true;
         final endpoint =
