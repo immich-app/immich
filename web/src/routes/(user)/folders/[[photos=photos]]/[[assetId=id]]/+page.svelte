@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -64,11 +64,8 @@
     return url.href;
   };
 
-  $effect(() => {
-    // Clear the asset selection when the path changes
-    // Reference the currentPath to trigger the effect
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    currentPath;
+  afterNavigate(() => {
+    // Clear the asset selection when we navigate (like going to another folder)
     cancelMultiselect(assetInteraction);
   });
 
