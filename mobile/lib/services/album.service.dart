@@ -212,7 +212,7 @@ class AlbumService {
     for (int round = 0;; round++) {
       final proposedName = "$baseName${round == 0 ? "" : " ($round)"}";
 
-      if (null == await _albumRepository.getByName(proposedName)) {
+      if (null == await _albumRepository.getByName(proposedName, owner: true)) {
         return proposedName;
       }
     }
@@ -408,8 +408,18 @@ class AlbumService {
     }
   }
 
-  Future<Album?> getAlbumByName(String name, {bool? remote, bool? shared}) =>
-      _albumRepository.getByName(name, remote: remote, shared: shared);
+  Future<Album?> getAlbumByName(
+    String name, {
+    bool? remote,
+    bool? shared,
+    bool? owner,
+  }) =>
+      _albumRepository.getByName(
+        name,
+        remote: remote,
+        shared: shared,
+        owner: owner,
+      );
 
   ///
   /// Add the uploaded asset to the selected albums
@@ -419,7 +429,7 @@ class AlbumService {
     List<String> assetIds,
   ) async {
     for (final albumName in albumNames) {
-      Album? album = await getAlbumByName(albumName, remote: true, shared: false);
+      Album? album = await getAlbumByName(albumName, remote: true, owner: true);
       album ??= await createAlbum(albumName, []);
       if (album != null && album.remoteId != null) {
         await _albumApiRepository.addAssets(album.remoteId!, assetIds);
