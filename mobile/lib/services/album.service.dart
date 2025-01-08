@@ -157,7 +157,7 @@ class AlbumService {
     return result;
   }
 
-  /// Checks remote albums (owned if `isShared` is false) for changes,
+  /// Checks remote albums for changes,
   /// updates the local database and returns `true` if there were any changes
   Future<bool> refreshRemoteAlbums() async {
     if (!_remoteCompleter.isCompleted) {
@@ -169,18 +169,14 @@ class AlbumService {
     bool changes = false;
     try {
       await _userService.refreshUsers();
-      final (sharedAlbum, ownedAlbum) = await (
-        _albumApiRepository.getAll(shared: true),
-        _albumApiRepository.getAll(shared: null)
-      ).wait;
+      final allAlbums = await _albumApiRepository.getAll();
 
       final albums = HashSet<Album>(
         equals: (a, b) => a.remoteId == b.remoteId,
         hashCode: (a) => a.remoteId.hashCode,
       );
 
-      albums.addAll(sharedAlbum);
-      albums.addAll(ownedAlbum);
+      albums.addAll(allAlbums);
 
       changes = await _syncService.syncRemoteAlbumsToDb(albums.toList());
     } finally {
