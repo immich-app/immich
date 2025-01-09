@@ -1,4 +1,5 @@
 import { ClassConstructor } from 'class-transformer';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { EmailImageAttachment } from 'src/interfaces/notification.interface';
 
 export enum QueueName {
@@ -135,7 +136,7 @@ export interface IDelayedJob extends IBaseJob {
 
 export interface IEntityJob extends IBaseJob {
   id: string;
-  source?: 'upload' | 'library-import' | 'sidecar-write' | 'copy';
+  source?: 'upload' | 'sidecar-write' | 'copy';
   notify?: boolean;
 }
 
@@ -147,11 +148,15 @@ export interface ILibraryFileJob {
   libraryId: string;
   ownerId: string;
   assetPaths: string[];
+  progressCounter?: number;
+  totalAssets?: number;
 }
 
 export interface ILibraryBulkIdsJob {
-  libraryId: string;
+  library: LibraryEntity;
   assetIds: string[];
+  progressCounter?: number;
+  totalAssets?: number;
 }
 
 export interface IBulkEntityJob {

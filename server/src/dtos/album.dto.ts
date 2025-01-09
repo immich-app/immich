@@ -165,8 +165,8 @@ export const mapAlbum = (entity: AlbumEntity, withAssets: boolean, auth?: AuthDt
   const hasSharedLink = entity.sharedLinks?.length > 0;
   const hasSharedUser = sharedUsers.length > 0;
 
-  let startDate = getAssetDateTime(assets.at(0));
-  let endDate = getAssetDateTime(assets.at(-1));
+  let startDate = getAssetDateTime(assets.at(0)) ?? undefined;
+  let endDate = getAssetDateTime(assets.at(-1)) ?? undefined;
   // Swap dates if start date is greater than end date.
   if (startDate && endDate && startDate > endDate) {
     [startDate, endDate] = [endDate, startDate];

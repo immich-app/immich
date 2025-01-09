@@ -14,6 +14,7 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetStatus, AssetType, ImmichWorker } from 'src/enum';
 import { AssetCreate } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
@@ -231,7 +232,15 @@ export class LibraryService extends BaseService {
       assetIds.push(...batchIds);
     }
 
-    this.logger.log(`Imported ${assetIds.length} file(s) into library ${job.libraryId}`);
+    let progressMessage = '';
+
+    if (job.progressCounter && job.totalAssets) {
+      progressMessage = `(${job.progressCounter} of ${job.totalAssets}) `;
+    } else {
+      progressMessage = `(${job.progressCounter} done so far) `;
+    }
+
+    this.logger.log(`Imported ${assetIds.length} ${progressMessage}file(s) into library ${job.libraryId}`);
 
     await this.queuePostSyncJobs(assetIds);
 
@@ -352,21 +361,19 @@ export class LibraryService extends BaseService {
   private processEntity(filePath: string, ownerId: string, libraryId: string): AssetCreate {
     const assetPath = path.normalize(filePath);
 
-    // This date will be set until metadata extraction runs
-    const datePlaceholder = new Date('1900-01-01');
-
     return {
       ownerId,
       libraryId,
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
+      // These dates are placeholders and will be read from disk during metadata extraction
+      fileCreatedAt: null,
+      fileModifiedAt: null,
+      localDateTime: null,
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
-      fileCreatedAt: datePlaceholder,
-      fileModifiedAt: datePlaceholder,
-      localDateTime: datePlaceholder,
       type: mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE,
       originalFileName: parse(assetPath).base,
       isExternal: true,
@@ -380,8 +387,7 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queueAll(
       assetIds.map((assetId) => ({
         name: JobName.SIDECAR_DISCOVERY,
-        data: { id: assetId },
-        source: 'upload',
+        data: { id: assetId, source: 'upload' },
       })),
     );
   }
@@ -434,15 +440,20 @@ export class LibraryService extends BaseService {
     const assets = await this.assetRepository.getByIds(job.assetIds);
 
     const assetIdsToOffline: string[] = [];
+    const assetIdsToOnline: string[] = [];
     const assetIdsToUpdate: string[] = [];
 
-    this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.libraryId}`);
+    this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.library.id}`);
 
     for (const asset of assets) {
-      const action = await this.handleSyncAsset(asset);
+      const action = await this.checkExistingAsset(asset, job.library);
       switch (action) {
         case AssetSyncResult.OFFLINE: {
           assetIdsToOffline.push(asset.id);
+          break;
+        }
+        case AssetSyncResult.ONLINE: {
+          assetIdsToOnline.push(asset.id);
           break;
         }
         case AssetSyncResult.UPDATE: {
@@ -452,39 +463,75 @@ export class LibraryService extends BaseService {
       }
     }
 
+    let progressMessage = '';
+
     if (assetIdsToOffline.length > 0) {
       await this.assetRepository.updateAll(assetIdsToOffline, {
         isOffline: true,
         status: AssetStatus.TRASHED,
         deletedAt: new Date(),
       });
+
+      progressMessage += `${assetIdsToOffline.length} offlined`;
     }
 
-    if (assetIdsToUpdate.length > 0) {
+    if (assetIdsToOnline.length > 0) {
       //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
-      await this.assetRepository.updateAll(assetIdsToUpdate, {
+      await this.assetRepository.updateAll(assetIdsToOnline, {
         isOffline: false,
         status: AssetStatus.ACTIVE,
         deletedAt: null,
       });
-      await this.queuePostSyncJobs(assetIdsToUpdate);
+      await this.queuePostSyncJobs(assetIdsToOnline);
+
+      if (progressMessage !== '') {
+        progressMessage + ', ';
+      }
+
+      progressMessage += `${assetIdsToOnline.length} onlined`;
     }
 
-    const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length;
+    if (assetIdsToUpdate.length > 0) {
+      //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
+      await this.queuePostSyncJobs(assetIdsToUpdate);
+
+      if (progressMessage !== '') {
+        progressMessage + ', ';
+      }
+
+      progressMessage += `${assetIdsToUpdate.length} updated`;
+    }
+
+    const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length - assetIdsToOnline.length;
+
+    if (remainingCount) {
+      if (progressMessage !== '') {
+        progressMessage + ', ';
+      }
+
+      progressMessage += `${remainingCount} unchanged`;
+    }
+
+    let cumulativeProgressMessage = '';
+
+    if (job.progressCounter && job.totalAssets) {
+      const cumulativePercentage = ((100 * job.progressCounter) / job.totalAssets).toFixed(1);
+
+      cumulativeProgressMessage = `(Total progress: ${job.progressCounter} of ${job.totalAssets}, ${cumulativePercentage} %) `;
+    }
 
     this.logger.log(
-      `Checked existing asset(s): ${assetIdsToOffline.length} offlined, ${assetIdsToUpdate.length} updated, ${remainingCount} unchanged of batch of ${assets.length} in library ${job.libraryId}.`,
+      `Checked existing asset(s): ${progressMessage} of current batch of ${assets.length} ${cumulativeProgressMessage}in library ${job.library.id}.`,
     );
 
     return JobStatus.SUCCESS;
   }
 
-  private async checkOfflineAsset(asset: AssetEntity) {
+  private async checkOfflineAsset(asset: AssetEntity, library: LibraryEntity): Promise<boolean> {
     if (!asset.libraryId) {
       return false;
     }
 
-    const library = await this.libraryRepository.get(asset.libraryId);
     if (!library) {
       return false;
     }
@@ -502,7 +549,7 @@ export class LibraryService extends BaseService {
     return true;
   }
 
-  private async handleSyncAsset(asset: AssetEntity): Promise<AssetSyncResult> {
+  private async checkExistingAsset(asset: AssetEntity, library: LibraryEntity): Promise<AssetSyncResult> {
     if (!asset) {
       return AssetSyncResult.DO_NOTHING;
     }
@@ -522,16 +569,31 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-    const isAssetModified = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    const isAssetTimeUpdated = asset.fileModifiedAt ? mtime.toISOString() !== asset.fileModifiedAt.toISOString() : true;
+
     let shouldAssetGoOnline = false;
 
     if (asset.isOffline && asset.status != AssetStatus.DELETED) {
       // Only perform the expensive check if the asset is offline
-      shouldAssetGoOnline = await this.checkOfflineAsset(asset);
+
+      // TODO: give more feedback on why asset was onlined
+      shouldAssetGoOnline = await this.checkOfflineAsset(asset, library);
+
+      if (shouldAssetGoOnline) {
+        this.logger.debug(`Asset is back online: ${asset.originalPath}`);
+
+        return AssetSyncResult.ONLINE;
+      } else {
+        this.logger.debug(`Asset is still offline: ${asset.originalPath}`);
+
+        return AssetSyncResult.DO_NOTHING;
+      }
     }
 
-    if (shouldAssetGoOnline || isAssetModified) {
-      this.logger.debug(`Asset was offline or modified, updating asset record ${asset.originalPath}`);
+    if (isAssetTimeUpdated) {
+      this.logger.verbose(
+        `Asset ${asset.originalPath} modification time changed from ${asset.fileModifiedAt?.toISOString()} to ${mtime.toISOString()}, queuing re-import`,
+      );
 
       return AssetSyncResult.UPDATE;
     }
@@ -566,6 +628,8 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
+    let assetsOnDiskCount = 0;
+
     const pathsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
@@ -576,27 +640,31 @@ export class LibraryService extends BaseService {
     let importCount = 0;
     let crawlCount = 0;
 
-    this.logger.log(`Starting crawl of ${validImportPaths.length} path(s) for library ${library.id}...`);
+    this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
     for await (const pathBatch of pathsOnDisk) {
       crawlCount += pathBatch.length;
-      this.logger.debug(
-        `Crawled ${pathBatch.length} file(s) for library ${library.id}, in total ${crawlCount} file(s) crawled so far`,
-      );
       const newPaths = await this.assetRepository.getNewPaths(library.id, pathBatch);
+
       if (newPaths.length > 0) {
         importCount += newPaths.length;
 
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SYNC_FILES,
-          data: { libraryId: library.id, ownerId: library.ownerId, assetPaths: newPaths },
+          data: {
+            libraryId: library.id,
+            ownerId: library.ownerId,
+            assetPaths: newPaths,
+            progressCounter: crawlCount,
+            totalAssets: assetsOnDiskCount,
+          },
         });
         this.logger.log(
-          `Crawled ${crawlCount} file(s) so far: ${newPaths.length} of current batch queued for import for ${library.id}...`,
+          `Crawled ${crawlCount} file(s) so far: ${newPaths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
         );
       } else {
         this.logger.log(
-          `Crawled ${crawlCount} file(s) so far: ${pathBatch.length} of current batch already in library ${library.id}...`,
+          `Crawled ${crawlCount} file(s) so far: All ${pathBatch.length} of current batch already in library ${library.id}...`,
         );
       }
     }
@@ -633,7 +701,7 @@ export class LibraryService extends BaseService {
     }
 
     this.logger.log(
-      `${assetCount} asset(s) in library ${library.id} will be checked against import paths and exclusion patterns...`,
+      `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
     const offlineResult = await this.assetRepository.updateOffline(library);
@@ -646,17 +714,15 @@ export class LibraryService extends BaseService {
 
     if (affectedAssetCount === assetCount) {
       this.logger.log(
-        `All ${assetCount} asset(s) in ${library.id} are outside of import paths and/or match an exclusion pattern, marked as offline`,
+        `All ${assetCount} asset(s) were offlined due to import paths and/or exclusion pattern(s) in ${library.id}`,
       );
 
       return JobStatus.SUCCESS;
-    } else if (affectedAssetCount !== assetCount && affectedAssetCount > 0) {
-      this.logger.log(
-        `${offlineResult.affected} asset(s) out of ${assetCount} were marked offline due to import paths and/or exclusion patterns for library ${library.id}`,
-      );
+    } else if (affectedAssetCount == 0) {
+      this.logger.log(`No assets were offlined due to import paths and/or exclusion pattern(s) in ${library.id} `);
     } else {
       this.logger.log(
-        `All ${assetCount} asset(s) in library ${library.id} were in an import path and none matched an exclusion pattern`,
+        `${offlineResult.affected} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
       );
     }
 
@@ -673,13 +739,17 @@ export class LibraryService extends BaseService {
       await this.jobRepository.queue({
         name: JobName.LIBRARY_SYNC_ASSETS,
         data: {
-          libraryId: library.id,
+          library,
           assetIds: assets.map((asset) => asset.id),
+          progressCounter: currentAssetCount,
+          totalAssets: assetCount,
         },
       });
 
+      const completePercentage = ((100 * currentAssetCount) / assetCount).toFixed(1);
+
       this.logger.log(
-        `Queued check of ${currentAssetCount} of ${assetCount} existing asset(s) so far in library ${library.id}`,
+        `Queued check of ${currentAssetCount} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
       );
     }
 

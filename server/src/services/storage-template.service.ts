@@ -310,7 +310,7 @@ export class StorageTemplateService extends BaseService {
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const zone = asset.exifInfo?.timeZone || systemTimeZone;
-    const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone });
+    const dt = DateTime.fromJSDate(asset.fileCreatedAt ?? asset.createdAt, { zone });
 
     for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);

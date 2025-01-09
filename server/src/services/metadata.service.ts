@@ -3,6 +3,7 @@ import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vend
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import _ from 'lodash';
 import { Duration } from 'luxon';
+import { file } from 'mock-fs/lib/filesystem';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
@@ -148,15 +149,11 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction({ id, source }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
+  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
     const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
     if (!asset) {
       return JobStatus.FAILED;
-    }
-
-    if (source === 'library-import') {
-      await this.processSidecar(id, false);
     }
 
     const stats = await this.storageRepository.stat(asset.originalPath);
@@ -165,7 +162,7 @@ export class MetadataService extends BaseService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
-    const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
+    const dates = await this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 
     const { width, height } = this.getImageDimensions(exifTags);
@@ -174,9 +171,9 @@ export class MetadataService extends BaseService {
       assetId: asset.id,
 
       // dates
-      dateTimeOriginal,
-      modifyDate,
-      timeZone,
+      dateTimeOriginal: dates.dateTimeOriginal,
+      modifyDate: dates.modifyDate,
+      timeZone: dates.timeZone,
 
       // gps
       latitude,
@@ -222,8 +219,9 @@ export class MetadataService extends BaseService {
     await this.assetRepository.update({
       id: asset.id,
       duration: exifTags.Duration?.toString() ?? null,
-      localDateTime,
+      localDateTime: dates.localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      fileModifiedAt: exifData.dateTimeOriginal ?? undefined,
     });
 
     await this.assetRepository.upsertJobStatus({
@@ -454,7 +452,7 @@ export class MetadataService extends BaseService {
         }
       } else {
         const motionAssetId = this.cryptoRepository.randomUUID();
-        const dates = this.getDates(asset, tags);
+        const dates = await this.getDates(asset, tags);
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
           libraryId: asset.libraryId,
@@ -572,7 +570,7 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: AssetEntity, exifTags: ImmichTags) {
+  private async getDates(asset: AssetEntity, exifTags: ImmichTags) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
     this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
 
@@ -590,25 +588,51 @@ export class MetadataService extends BaseService {
       this.logger.warn(`Asset ${asset.id} has no time zone information`);
     }
 
+    let fileCreatedAt = asset.fileCreatedAt;
+    let fileModifiedAt = asset.fileModifiedAt;
+
+    if (!fileCreatedAt || !fileModifiedAt) {
+      let stat;
+
+      // Throw error if the file does not exist
+      stat = await this.storageRepository.stat(asset.originalPath);
+
+      if (!fileCreatedAt) {
+        fileCreatedAt = stat.mtime;
+        this.logger.debug(
+          `No valid fileCreatedAt date found for asset ${asset.id}, read file creation date from filesystem: ${fileCreatedAt.toISOString()}`,
+        );
+      }
+
+      if (!fileModifiedAt) {
+        fileModifiedAt = stat.mtime;
+        this.logger.debug(
+          `No valid fileModifiedAt date found for asset ${asset.id}, read file modification date from filesystem: ${fileModifiedAt.toISOString()}`,
+        );
+      }
+    }
+
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
       this.logger.debug(
         `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
       );
-      const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
+      const earliestDate = this.earliestDate(fileModifiedAt, fileCreatedAt);
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
     }
 
-    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime?.toISOString()}`);
 
-    let modifyDate = asset.fileModifiedAt;
+    let modifyDate = fileModifiedAt;
     try {
       modifyDate = (exifTags.ModifyDate as ExifDateTime)?.toDate() ?? modifyDate;
     } catch {}
 
     return {
+      fileCreatedAt,
+      fileModifiedAt,
       dateTimeOriginal,
       timeZone,
       localDateTime,

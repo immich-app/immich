@@ -550,6 +550,8 @@ describe('/libraries', () => {
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
       cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
@@ -575,6 +577,8 @@ describe('/libraries', () => {
       expect(asset).toEqual(
         expect.objectContaining({
           originalFileName: 'asset.jpg',
+
+          // If the exif info contains the D750 model it means the asset was reimported which is not desired
           exifInfo: expect.not.objectContaining({
             model: 'NIKON D750',
           }),

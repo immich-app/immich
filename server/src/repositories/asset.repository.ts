@@ -91,6 +91,7 @@ export class AssetRepository implements IAssetRepository {
         `entity.ownerId IN (:...ownerIds)
       AND entity.isVisible = true
       AND entity.isArchived = false
+      AND entity.localDateTime IS NOT NULL
       AND EXTRACT(DAY FROM entity.localDateTime AT TIME ZONE 'UTC') = :day
       AND EXTRACT(MONTH FROM entity.localDateTime AT TIME ZONE 'UTC') = :month`,
         {
@@ -111,11 +112,13 @@ export class AssetRepository implements IAssetRepository {
     const groups: Record<number, DayOfYearAssets> = {};
     const currentYear = new Date().getFullYear();
     for (const asset of assets) {
-      const yearsAgo = currentYear - asset.localDateTime.getFullYear();
-      if (!groups[yearsAgo]) {
-        groups[yearsAgo] = { yearsAgo, assets: [] };
+      if (asset.localDateTime) {
+        const yearsAgo = currentYear - asset.localDateTime.getFullYear();
+        if (!groups[yearsAgo]) {
+          groups[yearsAgo] = { yearsAgo, assets: [] };
+        }
+        groups[yearsAgo].assets.push(asset);
       }
-      groups[yearsAgo].assets.push(asset);
     }
 
     return Object.values(groups);
