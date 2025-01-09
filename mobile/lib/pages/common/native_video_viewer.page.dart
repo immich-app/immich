@@ -18,6 +18,7 @@ import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
+import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
@@ -79,10 +80,18 @@ class NativeVideoViewerPage extends HookConsumerWidget {
             ? '$serverEndpoint/assets/${asset.livePhotoVideoId}/video/playback'
             : '$serverEndpoint/assets/${asset.remoteId}/video/playback';
 
+        var headers = ApiService.getRequestHeaders();
+        final serverInfo = ref.read(serverInfoProvider);
+        var type = VideoSourceType.network;
+        if(serverInfo.serverFeatures.streamingType == "hls") {
+          type = VideoSourceType.hls;
+        } else if(serverInfo.serverFeatures.streamingType == "dash") {
+          type = VideoSourceType.dash;
+        }
         final source = await VideoSource.init(
           path: videoUrl,
-          type: VideoSourceType.network,
-          headers: ApiService.getRequestHeaders(),
+          type: type,
+          headers: headers,
         );
         return source;
       } catch (error) {
