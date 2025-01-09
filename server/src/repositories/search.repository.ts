@@ -119,6 +119,7 @@ export class SearchRepository implements ISearchRepository {
       {
         takenAfter: DummyValue.DATE,
         embedding: Array.from({ length: 512 }, Math.random),
+        query: 'beach vacation',
         lensModel: DummyValue.STRING,
         withStacked: true,
         isFavorite: true,
@@ -128,23 +129,51 @@ export class SearchRepository implements ISearchRepository {
   })
   async searchSmart(
     pagination: SearchPaginationOptions,
-    { embedding, userIds, ...options }: SmartSearchOptions,
+    { embedding, query, userIds, ...options }: SmartSearchOptions,
   ): Paginated<AssetEntity> {
     let results: PaginationResult<AssetEntity> = { items: [], hasNextPage: false };
 
     await this.assetRepository.manager.transaction(async (manager) => {
-      let builder = manager.createQueryBuilder(AssetEntity, 'asset');
+      let builder = manager.createQueryBuilder(AssetEntity, 'asset').leftJoinAndSelect('asset.exifInfo', 'exif');
       builder = searchAssetBuilder(builder, options);
-      builder
-        .innerJoin('asset.smartSearch', 'search')
-        .andWhere('asset.ownerId IN (:...userIds )')
-        .orderBy('search.embedding <=> :embedding')
-        .setParameters({ userIds, embedding: asVector(embedding) });
+      builder.andWhere('asset.ownerId IN (:...userIds)');
+
+      const parameters: Record<string, any> = { userIds };
+
+      if (embedding) {
+        builder.innerJoin('asset.smartSearch', 'search').addSelect('search.embedding <=> :embedding', 'similarity');
+        parameters.embedding = asVector(embedding);
+      }
+
+      if (query) {
+        parameters.query = query;
+      }
+
+      if (query && embedding) {
+        builder.orderBy(
+          `
+          CASE WHEN to_tsvector('english', COALESCE(exif.description, '')) @@ plainto_tsquery('english', :query)
+          THEN
+            ts_rank(
+              to_tsvector('english', COALESCE(exif.description, '')),
+              plainto_tsquery('english', :query)
+            )
+          ELSE 0 END * 0.7 +
+          COALESCE((1 - (search.embedding <=> :embedding)), 0) * 0.3
+        `,
+          'DESC',
+        );
+      } else if (embedding) {
+        builder.orderBy('search.embedding <=> :embedding', 'ASC');
+      }
+
+      builder.setParameters(parameters);
 
       const runtimeConfig = this.getRuntimeConfig(pagination.size);
       if (runtimeConfig) {
         await manager.query(runtimeConfig);
       }
+
       results = await paginatedBuilder<AssetEntity>(builder, {
         mode: PaginationMode.LIMIT_OFFSET,
         skip: (pagination.page - 1) * pagination.size,
