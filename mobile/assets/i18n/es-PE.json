@@ -527,6 +527,8 @@
   "settings_require_restart": "Por favor, reinicia Immich para aplicar este ajuste",
   "setting_video_viewer_looping_subtitle": "Enable to automatically loop a video in the detail viewer.",
   "setting_video_viewer_looping_title": "Looping",
+  "setting_video_viewer_original_video_subtitle": "When streaming a video from the server, play the original even when a transcode is available. May lead to buffering. Videos available locally are played in original quality regardless of this setting.",
+  "setting_video_viewer_original_video_title": "Force original video",
   "setting_video_viewer_title": "Videos",
   "share_add": "Agregar",
   "share_add_photos": "Agregar fotos",

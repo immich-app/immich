@@ -188,7 +188,7 @@ export class AssetService extends BaseService {
           name: JobName.ASSET_DELETION,
           data: {
             id: asset.id,
-            deleteOnDisk: true,
+            deleteOnDisk: !asset.isOffline,
           },
         })),
       );
@@ -249,6 +249,7 @@ export class AssetService extends BaseService {
 
     const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
     const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
+
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
     }
