@@ -31,11 +31,11 @@ select
   count(*) as "count"
 from
   "activity"
-  left join "users" on "users"."id" = "activity"."userId"
+  inner join "users" on "users"."id" = "activity"."userId"
+  and "users"."deletedAt" is null
   left join "assets" on "assets"."id" = "activity"."assetId"
 where
   "activity"."assetId" = $1
   and "activity"."albumId" = $2
   and "activity"."isLiked" = $3
-  and "users"."deletedAt" is null
   and "assets"."deletedAt" is null
