@@ -26,6 +26,7 @@ class ServerFeaturesDto {
     required this.search,
     required this.sidecar,
     required this.smartSearch,
+    required this.streaming,
     required this.trash,
   });
 
@@ -55,6 +56,8 @@ class ServerFeaturesDto {
 
   bool smartSearch;
 
+  String streaming;
+
   bool trash;
 
   @override
@@ -72,6 +75,7 @@ class ServerFeaturesDto {
     other.search == search &&
     other.sidecar == sidecar &&
     other.smartSearch == smartSearch &&
+    other.streaming == streaming &&
     other.trash == trash;
 
   @override
@@ -90,10 +94,11 @@ class ServerFeaturesDto {
     (search.hashCode) +
     (sidecar.hashCode) +
     (smartSearch.hashCode) +
+    (streaming.hashCode) +
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, streaming=$streaming, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -110,6 +115,7 @@ class ServerFeaturesDto {
       json[r'search'] = this.search;
       json[r'sidecar'] = this.sidecar;
       json[r'smartSearch'] = this.smartSearch;
+      json[r'streaming'] = this.streaming;
       json[r'trash'] = this.trash;
     return json;
   }
@@ -136,6 +142,7 @@ class ServerFeaturesDto {
         search: mapValueOfType<bool>(json, r'search')!,
         sidecar: mapValueOfType<bool>(json, r'sidecar')!,
         smartSearch: mapValueOfType<bool>(json, r'smartSearch')!,
+        streaming: mapValueOfType<String>(json, r'streaming')!,
         trash: mapValueOfType<bool>(json, r'trash')!,
       );
     }
@@ -197,6 +204,7 @@ class ServerFeaturesDto {
     'search',
     'sidecar',
     'smartSearch',
+    'streaming',
     'trash',
   };
 }
