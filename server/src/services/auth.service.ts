@@ -308,7 +308,7 @@ export class AuthService extends BaseService {
   private async validateApiKey(key: string): Promise<AuthDto> {
     const hashedKey = this.cryptoRepository.hashSha256(key);
     const apiKey = await this.keyRepository.getKey(hashedKey);
-    if (apiKey?.user) {
+    if (apiKey) {
       return { user: apiKey.user, apiKey };
     }
 
