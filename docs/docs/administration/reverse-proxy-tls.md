@@ -1,4 +1,4 @@
-# Reverse Proxy
+# TLS Reverse Proxy
 
 Users can deploy a custom reverse proxy that forwards requests to Immich. This way, the reverse proxy can handle TLS termination, load balancing, or other advanced features. All reverse proxies between Immich and the user must forward all headers and set the `Host`, `X-Real-IP`, `X-Forwarded-Proto` and `X-Forwarded-For` headers to their appropriate values. Additionally, your reverse proxy should allow for big enough uploads. By following these practices, you ensure that all custom reverse proxies are fully compatible with Immich.
 
@@ -14,6 +14,7 @@ Immich does not support being served on a sub-path such as `location /immich {`.
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, `mydomain.com` to the domain used and `backend_url` to the path of the Immich server.
 
+`immich-tls.conf`
 ```nginx
 server {
     listen 443 ssl;
@@ -53,6 +54,7 @@ server {
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, `mydomain.com` to the domain used, `12345` to your new http access key and `backend_url` to the path of the Immich server.
 
+`immich-tls-header.conf`
 ```nginx
 server {
     listen 4000 ssl;
