@@ -1,3 +1,4 @@
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
@@ -61,13 +62,19 @@ describe(DatabaseService.name, () => {
           mockEnvData({
             database: {
               config: {
-                connectionType: 'parts',
-                type: 'postgres',
-                host: 'database',
-                port: 5432,
-                username: 'postgres',
-                password: 'postgres',
-                database: 'immich',
+                kysely: {
+                  dialect: expect.any(PostgresJSDialect),
+                  log: ['error'],
+                },
+                typeorm: {
+                  connectionType: 'parts',
+                  type: 'postgres',
+                  host: 'database',
+                  port: 5432,
+                  username: 'postgres',
+                  password: 'postgres',
+                  database: 'immich',
+                },
               },
               skipMigrations: false,
               vectorExtension: extension,
@@ -291,13 +298,19 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
-              connectionType: 'parts',
-              type: 'postgres',
-              host: 'database',
-              port: 5432,
-              username: 'postgres',
-              password: 'postgres',
-              database: 'immich',
+              kysely: {
+                dialect: expect.any(PostgresJSDialect),
+                log: ['error'],
+              },
+              typeorm: {
+                connectionType: 'parts',
+                type: 'postgres',
+                host: 'database',
+                port: 5432,
+                username: 'postgres',
+                password: 'postgres',
+                database: 'immich',
+              },
             },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTORS,
@@ -315,13 +328,19 @@ describe(DatabaseService.name, () => {
         mockEnvData({
           database: {
             config: {
-              connectionType: 'parts',
-              type: 'postgres',
-              host: 'database',
-              port: 5432,
-              username: 'postgres',
-              password: 'postgres',
-              database: 'immich',
+              kysely: {
+                dialect: expect.any(PostgresJSDialect),
+                log: ['error'],
+              },
+              typeorm: {
+                connectionType: 'parts',
+                type: 'postgres',
+                host: 'database',
+                port: 5432,
+                username: 'postgres',
+                password: 'postgres',
+                database: 'immich',
+              },
             },
             skipMigrations: true,
             vectorExtension: DatabaseExtension.VECTOR,

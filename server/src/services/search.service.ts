@@ -34,16 +34,10 @@ export class SearchService extends BaseService {
 
   async getExploreData(auth: AuthDto): Promise<SearchExploreItem<AssetResponseDto>[]> {
     const options = { maxFields: 12, minAssetsPerField: 5 };
-    const result = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
-    const results = [result];
-    const assetIds = new Set<string>(results.flatMap((field) => field.items.map((item) => item.data)));
-    const assets = await this.assetRepository.getByIdsWithAllRelations([...assetIds]);
-    const assetMap = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, mapAsset(asset)]));
-
-    return results.map(({ fieldName, items }) => ({
-      fieldName,
-      items: items.map(({ value, data }) => ({ value, data: assetMap.get(data) as AssetResponseDto })),
-    }));
+    const cities = await this.assetRepository.getAssetIdByCity(auth.user.id, options);
+    const assets = await this.assetRepository.getByIdsWithAllRelations(cities.items.map(({ data }) => data));
+    const items = assets.map((asset) => ({ value: asset.exifInfo!.city!, data: mapAsset(asset, { auth }) }));
+    return [{ fieldName: cities.fieldName, items }];
   }
 
   async searchMetadata(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
@@ -57,14 +51,13 @@ export class SearchService extends BaseService {
 
     const page = dto.page ?? 1;
     const size = dto.size || 250;
-    const enumToOrder = { [AssetOrder.ASC]: 'ASC', [AssetOrder.DESC]: 'DESC' } as const;
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {
         ...dto,
         checksum,
         userIds,
-        orderDirection: dto.order ? enumToOrder[dto.order] : 'DESC',
+        orderDirection: dto.order ?? AssetOrder.DESC,
       },
     );
 

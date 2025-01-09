@@ -4,6 +4,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@ne
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
+import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
 import { IWorker } from 'src/constants';
@@ -48,7 +49,7 @@ const imports = [
     inject: [ModuleRef],
     useFactory: (moduleRef: ModuleRef) => {
       return {
-        ...database.config,
+        ...database.config.typeorm,
         poolErrorHandler: (error) => {
           moduleRef.get(DatabaseService, { strict: false }).handleConnectionError(error);
         },
@@ -56,6 +57,7 @@ const imports = [
     },
   }),
   TypeOrmModule.forFeature(entities),
+  KyselyModule.forRoot(database.config.kysely),
 ];
 
 class BaseModule implements OnModuleInit, OnModuleDestroy {

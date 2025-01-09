@@ -74,29 +74,13 @@ export class AssetService extends BaseService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [id] });
 
-    const asset = await this.assetRepository.getById(
-      id,
-      {
-        exifInfo: true,
-        sharedLinks: true,
-        tags: true,
-        owner: true,
-        faces: {
-          person: true,
-        },
-        stack: {
-          assets: {
-            exifInfo: true,
-          },
-        },
-        files: true,
-      },
-      {
-        faces: {
-          boundingBoxX1: 'ASC',
-        },
-      },
-    );
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      owner: true,
+      faces: { person: true },
+      stack: { assets: true },
+      tags: true,
+    });
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -137,21 +121,11 @@ export class AssetService extends BaseService {
 
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
-    await this.assetRepository.update({ id, ...rest });
+    const asset = await this.assetRepository.update({ id, ...rest });
 
     if (previousMotion) {
       await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
     }
-
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      owner: true,
-      tags: true,
-      faces: {
-        person: true,
-      },
-      files: true,
-    });
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -202,9 +176,7 @@ export class AssetService extends BaseService {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {
-      faces: {
-        person: true,
-      },
+      faces: { person: true },
       library: true,
       stack: { assets: true },
       exifInfo: true,
