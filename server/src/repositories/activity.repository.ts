@@ -60,12 +60,11 @@ export class ActivityRepository implements IActivityRepository {
     const { count } = await this.db
       .selectFrom('activity')
       .select((eb) => eb.fn.countAll().as('count'))
-      .leftJoin('users', 'users.id', 'activity.userId')
+      .innerJoin('users', (join) => join.onRef('users.id', '=', 'activity.userId').on('users.deletedAt', 'is', null))
       .leftJoin('assets', 'assets.id', 'activity.assetId')
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
       .where('activity.albumId', '=', albumId)
       .where('activity.isLiked', '=', false)
-      .where('users.deletedAt', 'is', null)
       .where('assets.deletedAt', 'is', null)
       .executeTakeFirstOrThrow();
 
