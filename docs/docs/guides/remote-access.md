@@ -61,3 +61,48 @@ A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn
 
 - Complex configuration
 - Depending on your configuration, both the Immich web interface and API may be exposed to the internet. Immich is under very active development and the existence of severe security vulnerabilities cannot be ruled out.
+
+## Option 4: Internet Accessible Immich with TLS Reverse Proxy
+
+A reverse proxy is a service that sits between web servers and clients. In this option, the TLS reverse proxy will be accessible from the Internet; this means the TLS reverse proxy sits in front of the Immich web application. We will use the TLS reverse proxy to protect the Immich web application from any existing security vulnerabilities. In addition, using this option will give you a premium experience and allow you to use the Immich mobile app from anywhere your mobile device has an Internet connection.
+
+:::danger
+As of January 2025, the Immich mobile app does not fully support self-signed certificates. If you use a self-signed certificate, the mobile app will not be able to download images or view videos. [This is a known bug and there are no plans to fix it.](https://github.com/immich-app/immich/issues/15188)
+:::
+
+### Pros
+
+- No additional software needs (ie, VPN, etc) to be installed for the Immich mobile app
+- Upload large files, ie - avoiding [Cloudflare upload limits.](https://github.com/immich-app/immich/discussions/2357)
+- Protects the Immich web app from attacks
+
+### Cons
+
+- Complex configuration
+
+In this scenario I'm running Ubuntu 24 on a server at home.
+
+This guide has the following prerequisites:
+* Local DNS
+* Dynamic DNS Setup
+* Let's Encrypt SSL Certificate using Certbot
+* Immich listening on 2283
+*  
+
+A reverse proxy can either be hosted on the server itself or remotely. Clients can connect to the reverse proxy via https, and the proxy relays data to Immich. This setup makes most sense if you have your own domain and want to access your Immich instance just like any other website, from outside your LAN. You can also use a DDNS provider like DuckDNS or no-ip if you don't have a domain. This configuration allows the Immich Android and iphone apps to connect to your server without a VPN or tailscale app on the client side.
+
+If you're hosting your own reverse proxy, [Nginx](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/) is a great option. An example configuration for Nginx is provided [here](/docs/administration/reverse-proxy.md).
+
+You'll also need your own certificate to authenticate https connections. If you're making Immich publicly accessible, [Let's Encrypt](https://letsencrypt.org/) can provide a free certificate for your domain and is the recommended option. Alternatively, a [self-signed certificate](https://en.wikipedia.org/wiki/Self-signed_certificate) allows you to encrypt your connection to Immich, but it raises a security warning on the client's browser.
+
+A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn/glossary/reverse-proxy/) increases security by hiding the server IP address, which makes targeted attacks like [DDoS](https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/) harder.
+
+### Pros
+
+- No additional software needs to be installed client-side
+- If you only need access to the web interface remotely, it is possible to set up access controls that shield you from zero-day vulnerabilities on Immich. [Cloudflare Access](https://www.cloudflare.com/zero-trust/products/access/) has a generous free tier.
+
+### Cons
+
+- Complex configuration
+- Depending on your configuration, both the Immich web interface and API may be exposed to the internet. Immich is under very active development and the existence of severe security vulnerabilities cannot be ruled out.
