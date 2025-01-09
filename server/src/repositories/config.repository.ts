@@ -177,7 +177,7 @@ const getEnv = (): EnvData => {
     licensePublicKey: isProd ? productionKeys : stagingKeys,
 
     network: {
-      trustedProxies: dto.IMMICH_TRUSTED_PROXIES ?? [],
+      trustedProxies: dto.IMMICH_TRUSTED_PROXIES ?? ['linklocal', 'uniquelocal'],
     },
 
     otel: {

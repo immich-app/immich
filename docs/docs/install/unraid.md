@@ -53,19 +53,19 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
         <ul>
             <li>Comment out the database service</li>
             <img
-                src={require('./img/unraid02.png').default}
+                src={require('./img/unraid02.webp').default}
                 width="50%"
                 alt="Comment out database service in the compose file"
             />
             <li>Comment out the database dependency for <b>each service</b> <i>(example in screenshot below only shows 2 of the services - ensure you do this for all services)</i></li>
             <img
-                src={require('./img/unraid03.png').default}
+                src={require('./img/unraid03.webp').default}
                 width="50%"
                 alt="Comment out every reference to the database service in the compose file"
             />
             <li>Comment out the volumes</li>
             <img
-                src={require('./img/unraid04.png').default}
+                src={require('./img/unraid04.webp').default}
                 width="20%"
                 alt="Comment out database volume"
             />
@@ -111,7 +111,7 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
 
 <details >
     <summary>Using the FolderView plugin for organizing your Docker containers? Click me! Otherwise you're complete!</summary>
-    <p>If you are using the FolderView plugin go the Docker tab and select "<b>New Folder</b>".<br />Label it <i>"Immich"</i> and use this URL as the logo: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.png<br/>Then simply select all the Immich related containers before clicking "<b>Submit</b>"</p>
+    <p>If you are using the FolderView plugin go the Docker tab and select "<b>New Folder</b>".<br />Label it <i>"Immich"</i> and use this URL as the logo: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.webp<br/>Then simply select all the Immich related containers before clicking "<b>Submit</b>"</p>
     <img
         src={require('./img/unraid07.webp').default}
         width="80%"
@@ -134,14 +134,14 @@ For more information on how to use the application once installed, please refer 
 Updating is extremely easy however it's important to be aware that containers managed via the Docker Compose Manager plugin do not integrate with Unraid's native dockerman UI, the label "_update ready_" will always be present on containers installed via the Docker Compose Manager.
 
 <img
-src={require('./img/unraid09.png').default}
+src={require('./img/unraid09.webp').default}
 width="50%"
 alt="Docker Compose containers always say update ready, ignore it"
 />
 
 You should ignore the "_update ready_" on the Unraid WebUI and update when you receive the notification within the Immich WebUI.
 <img
-src={require('./img/unraid10.png').default}
+src={require('./img/unraid10.webp').default}
 width="50%"
 alt="Immich update notification"
 />
@@ -151,13 +151,13 @@ alt="Immich update notification"
    > Note: **Do not** select Compose Down first, it is unnecessary.
 3. Once complete you will see a "_Connection Closed_" message, select "**Done**".
    <img
-   src={require('./img/unraid11.png').default}
+   src={require('./img/unraid11.webp').default}
    width="50%"
    alt="Wait for Connection Closed and click Done"
    />
 4. Return back to the Immich WebUI and you will see the version has been updated to the latest
    <img
-   src={require('./img/unraid12.png').default}
+   src={require('./img/unraid12.webp').default}
    width="70%"
    alt="Wait for Connection Closed and click Done"
    />

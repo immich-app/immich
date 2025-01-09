@@ -47,6 +47,7 @@
   onClick={() => (showAlbumPicker = true)}
   text={shared ? $t('add_to_shared_album') : $t('add_to_album')}
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
+  shortcut={{ key: 'l', shift: shared }}
 />
 
 {#if showAlbumPicker}
