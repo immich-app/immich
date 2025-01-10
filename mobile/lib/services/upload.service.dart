@@ -7,6 +7,7 @@ import 'package:immich_mobile/interfaces/upload.interface.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/upload.dart';
+import 'package:path/path.dart';
 // import 'package:logging/logging.dart';
 
 final uploadServiceProvider = Provider(
@@ -41,10 +42,8 @@ class UploadService {
   }
 
   Future<void> upload(File file) async {
-    final filename = file.path.split('/').last;
-
     final task = await _buildUploadTask(
-      filename,
+      hash(file.path).toString(),
       file,
     );
 

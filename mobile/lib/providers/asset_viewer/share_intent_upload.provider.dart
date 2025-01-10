@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
@@ -41,8 +42,7 @@ class ShareIntentUploadStateNotifier
       return;
     }
 
-    final filePath = await task.task.filePath();
-    final target = state.firstWhere((element) => element.path == filePath);
+    final taskId = task.task.taskId;
     final uploadStatus = switch (task.status) {
       TaskStatus.complete => UploadStatus.complete,
       TaskStatus.failed => UploadStatus.failed,
@@ -54,24 +54,13 @@ class ShareIntentUploadStateNotifier
       TaskStatus.waitingToRetry => UploadStatus.waitingtoRetry
     };
 
-    state = state.map((e) {
-      if (e.path == target.path) {
-        return e.copyWith(status: uploadStatus);
-      }
-      return e;
-    }).toList();
-
-    // state = state.copyWith(
-    //   taskProgress: <String, DownloadInfo>{}
-    //     ..addAll(state.taskProgress)
-    //     ..addAll({
-    //       taskId: DownloadInfo(
-    //         progress: state.taskProgress[taskId]?.progress ?? 0,
-    //         fileName: state.taskProgress[taskId]?.fileName ?? '',
-    //         status: status,
-    //       ),
-    //     }),
-    // );
+    state = [
+      for (final attachment in state)
+        if (attachment.id == taskId.toInt())
+          attachment.copyWith(status: uploadStatus)
+        else
+          attachment,
+    ];
   }
 
   void _uploadStatusCallback(TaskStatusUpdate update) {
@@ -92,11 +81,20 @@ class ShareIntentUploadStateNotifier
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
-    debugPrint("[PROGRESS] $update");
     // Ignore if the task is cancled or completed
     if (update.progress == -2 || update.progress == -1) {
       return;
     }
+
+    final taskId = update.task.taskId;
+    print('Task progress: $taskId - ${update.progress}');
+    state = [
+      for (final attachment in state)
+        if (attachment.id == taskId.toInt())
+          attachment.copyWith(uploadProgress: update.progress)
+        else
+          attachment,
+    ];
   }
 
   Future<void> upload(File file) {

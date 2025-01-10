@@ -39,6 +39,8 @@ class ShareIntentAttachment {
     this.uploadProgress = 0,
   });
 
+  int get id => hash(path);
+
   File get file => File(path);
 
   String get fileName => basename(file.path);
@@ -97,17 +99,11 @@ class ShareIntentAttachment {
   bool operator ==(covariant ShareIntentAttachment other) {
     if (identical(this, other)) return true;
 
-    return other.path == path &&
-        other.type == type &&
-        other.status == status &&
-        other.uploadProgress == uploadProgress;
+    return other.path == path && other.type == type;
   }
 
   @override
   int get hashCode {
-    return path.hashCode ^
-        type.hashCode ^
-        status.hashCode ^
-        uploadProgress.hashCode;
+    return path.hashCode ^ type.hashCode;
   }
 }

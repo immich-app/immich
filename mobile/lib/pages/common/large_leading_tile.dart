@@ -15,6 +15,7 @@ class LargeLeadingTile extends StatelessWidget {
     this.borderRadius = 20.0,
     this.trailing,
     this.selected = false,
+    this.disabled = false,
   });
 
   final Widget leading;
@@ -25,12 +26,12 @@ class LargeLeadingTile extends StatelessWidget {
   final double borderRadius;
   final Widget? trailing;
   final bool selected;
-
+  final bool disabled;
   @override
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(borderRadius),
-      onTap: onTap,
+      onTap: disabled ? null : onTap,
       child: Container(
         decoration: BoxDecoration(
           color: selected
