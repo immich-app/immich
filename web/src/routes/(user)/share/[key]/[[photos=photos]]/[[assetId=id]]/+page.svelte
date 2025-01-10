@@ -5,6 +5,7 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
+  import PasswordField from '$lib/components/shared-components/password-field.svelte';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
@@ -26,6 +27,7 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
+  // let showPassword = $state(false);
   let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
@@ -80,8 +82,10 @@
         {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">
-        <form novalidate autocomplete="off" {onsubmit}>
-          <input type="password" class="immich-form-input mr-2" placeholder={$t('password')} bind:value={password} />
+        <form class="flex" novalidate autocomplete="off" {onsubmit}>
+          <div class="relative mr-2">
+            <PasswordField autocomplete='off' bind:password placeholder='Password'/>
+          </div>
           <Button type="submit">{$t('submit')}</Button>
         </form>
       </div>
