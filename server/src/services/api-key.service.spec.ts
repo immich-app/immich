@@ -49,10 +49,7 @@ describe(APIKeyService.name, () => {
 
     it('should throw an error if the api key does not have sufficient permissions', async () => {
       await expect(
-        sut.create(
-          { ...authStub.admin, apiKey: { ...keyStub.admin, permissions: [] } },
-          { permissions: [Permission.ASSET_READ] },
-        ),
+        sut.create({ ...authStub.admin, apiKey: keyStub.authKey }, { permissions: [Permission.ASSET_READ] }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
