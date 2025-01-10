@@ -5,6 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/memories/memory_bottom_info.dart';
@@ -13,6 +15,7 @@ import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
 @RoutePage()
+/// Expects [currentAssetProvider] to be set before navigating to this page
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
@@ -125,8 +128,15 @@ class MemoryPage extends HookConsumerWidget {
       );
     }
 
-    // Precache the next page right away if we are on the first page
+    // Precache the next page and set the current asset right away if we are on the first page
     if (currentAssetPage.value == 0) {
+      Future.delayed(const Duration(milliseconds: 1)).then((_) {
+        final asset = currentMemory.value.assets[0];
+        ref.read(currentAssetProvider.notifier).set(asset);
+        if (asset.isVideo || asset.isMotionPhoto) {
+          ref.read(videoPlaybackValueProvider.notifier).reset();
+        }
+      });
       Future.delayed(const Duration(milliseconds: 200))
           .then((_) => precacheAsset(1));
     }
@@ -135,6 +145,13 @@ class MemoryPage extends HookConsumerWidget {
       ref.read(hapticFeedbackProvider.notifier).selectionClick();
       currentAssetPage.value = otherIndex;
       updateProgressText();
+
+      final asset = currentMemory.value.assets[otherIndex];
+      ref.read(currentAssetProvider.notifier).set(asset);
+      if (asset.isVideo || asset.isMotionPhoto) {
+        ref.read(videoPlaybackValueProvider.notifier).reset();
+      }
+
       // Wait for page change animation to finish
       await Future.delayed(const Duration(milliseconds: 400));
       // And then precache the next asset
