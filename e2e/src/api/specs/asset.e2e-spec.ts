@@ -538,7 +538,7 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2023-11-20T01:11:00.000Z',
+          dateTimeOriginal: '2023-11-20T01:11:00+00:00',
         }),
       });
       expect(status).toEqual(200);
@@ -608,7 +608,7 @@ describe('/asset', () => {
       await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
       const assetInfo = await utils.getAssetInfo(user1.accessToken, id);
-      expect(assetInfo.exifInfo?.dateTimeOriginal).toBe('2024-07-11T10:32:52.000Z');
+      expect(assetInfo.exifInfo?.dateTimeOriginal).toBe('2024-07-11T10:32:52+00:00');
 
       const { status, body } = await request(app)
         .put(`/assets/${id}`)
@@ -618,7 +618,7 @@ describe('/asset', () => {
       expect(body).toMatchObject({
         id,
         exifInfo: expect.objectContaining({
-          dateTimeOriginal: '2023-11-20T01:11:00.000Z',
+          dateTimeOriginal: '2023-11-20T01:11:00+00:00',
         }),
       });
       expect(status).toEqual(200);
@@ -766,7 +766,7 @@ describe('/asset', () => {
       expect(body).toEqual(errorDto.badRequest('Not found or no asset.delete access'));
     });
 
-    it('should move an asset to the trash', async () => {
+    it('should move an asset to trash', async () => {
       const { id: assetId } = await utils.createAsset(admin.accessToken);
 
       const before = await utils.getAssetInfo(admin.accessToken, assetId);
@@ -780,6 +780,38 @@ describe('/asset', () => {
 
       const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(true);
+    });
+
+    it('should permanently delete an asset from trash', async () => {
+      const { id: assetId } = await utils.createAsset(admin.accessToken);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [assetId] })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      const trashed = await utils.getAssetInfo(admin.accessToken, assetId);
+      expect(trashed.isTrashed).toBe(true);
+
+      {
+        const { status } = await request(app)
+          .delete('/assets')
+          .send({ ids: [assetId], force: true })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForWebsocketEvent({ event: 'assetDelete', id: assetId });
+
+      {
+        const { status } = await request(app)
+          .get(`/assets/${assetId}`)
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+        expect(status).toBe(400);
+      }
     });
 
     it('should clean up live photos', async () => {
@@ -953,8 +985,6 @@ describe('/asset', () => {
             exifImageHeight: 1080,
             exifImageWidth: 1617,
             fileSizeInByte: 862_424,
-            latitude: null,
-            longitude: null,
           },
         },
       },
@@ -964,11 +994,9 @@ describe('/asset', () => {
           type: AssetTypeEnum.Image,
           originalFileName: 'el_torcal_rocks.jpg',
           exifInfo: {
-            dateTimeOriginal: '2012-08-05T11:39:59.000Z',
+            dateTimeOriginal: '2012-08-05T11:39:59+00:00',
             exifImageWidth: 512,
             exifImageHeight: 341,
-            latitude: null,
-            longitude: null,
             focalLength: 75,
             iso: 200,
             fNumber: 11,
@@ -976,7 +1004,6 @@ describe('/asset', () => {
             fileSizeInByte: 53_493,
             make: 'SONY',
             model: 'DSLR-A550',
-            orientation: null,
             description: 'SONY DSC',
           },
         },
@@ -991,8 +1018,6 @@ describe('/asset', () => {
             exifImageHeight: 1080,
             exifImageWidth: 1440,
             fileSizeInByte: 1_780_777,
-            latitude: null,
-            longitude: null,
           },
         },
       },
@@ -1003,7 +1028,7 @@ describe('/asset', () => {
           originalFileName: 'IMG_2682.heic',
           fileCreatedAt: '2019-03-21T16:04:22.348Z',
           exifInfo: {
-            dateTimeOriginal: '2019-03-21T16:04:22.348Z',
+            dateTimeOriginal: '2019-03-21T16:04:22.348+00:00',
             exifImageWidth: 4032,
             exifImageHeight: 3024,
             latitude: 41.2203,
@@ -1028,8 +1053,6 @@ describe('/asset', () => {
           exifInfo: {
             exifImageWidth: 800,
             exifImageHeight: 800,
-            latitude: null,
-            longitude: null,
             fileSizeInByte: 25_408,
           },
         },
@@ -1048,9 +1071,7 @@ describe('/asset', () => {
             focalLength: 18,
             iso: 100,
             fileSizeInByte: 9_057_784,
-            dateTimeOriginal: '2010-07-20T17:27:12.000Z',
-            latitude: null,
-            longitude: null,
+            dateTimeOriginal: '2010-07-20T17:27:12+00:00',
             orientation: '1',
           },
         },
@@ -1069,9 +1090,7 @@ describe('/asset', () => {
             focalLength: 85,
             iso: 200,
             fileSizeInByte: 15_856_335,
-            dateTimeOriginal: '2016-09-22T21:10:29.060Z',
-            latitude: null,
-            longitude: null,
+            dateTimeOriginal: '2016-09-22T21:10:29.06+00:00',
             orientation: '1',
             timeZone: 'UTC-4',
           },
@@ -1093,9 +1112,7 @@ describe('/asset', () => {
             focalLength: 35,
             iso: 400,
             fileSizeInByte: 19_587_072,
-            dateTimeOriginal: '2018-05-10T08:42:37.842Z',
-            latitude: null,
-            longitude: null,
+            dateTimeOriginal: '2018-05-10T08:42:37.842+00:00',
             orientation: '1',
           },
         },
@@ -1117,9 +1134,7 @@ describe('/asset', () => {
             iso: 100,
             lensModel: 'E PZ 18-105mm F4 G OSS',
             fileSizeInByte: 25_001_984,
-            dateTimeOriginal: '2016-09-27T10:51:44.000Z',
-            latitude: null,
-            longitude: null,
+            dateTimeOriginal: '2016-09-27T10:51:44+00:00',
             orientation: '1',
           },
         },
@@ -1141,9 +1156,7 @@ describe('/asset', () => {
             iso: 100,
             lensModel: 'E 25mm F2',
             fileSizeInByte: 49_512_448,
-            dateTimeOriginal: '2016-01-08T14:08:01.000Z',
-            latitude: null,
-            longitude: null,
+            dateTimeOriginal: '2016-01-08T14:08:01+00:00',
             orientation: '1',
           },
         },
@@ -1165,7 +1178,7 @@ describe('/asset', () => {
             iso: 80,
             lensModel: null,
             fileSizeInByte: 11_113_617,
-            dateTimeOriginal: '2015-12-27T09:55:40.000Z',
+            dateTimeOriginal: '2015-12-27T09:55:40+00:00',
             latitude: null,
             longitude: null,
             orientation: '1',
@@ -1189,7 +1202,7 @@ describe('/asset', () => {
             iso: 160,
             lensModel: null,
             fileSizeInByte: 13_551_312,
-            dateTimeOriginal: '2024-10-12T21:01:01.000Z',
+            dateTimeOriginal: '2024-10-12T21:01:01+00:00',
             latitude: null,
             longitude: null,
             orientation: '6',
@@ -1203,7 +1216,7 @@ describe('/asset', () => {
           originalFileName: 'Ricoh_GR3-450.DNG',
           fileCreatedAt: '2024-06-08T13:48:39.000Z',
           exifInfo: {
-            dateTimeOriginal: '2024-06-08T13:48:39.000Z',
+            dateTimeOriginal: '2024-06-08T13:48:39+00:00',
             exifImageHeight: 4064,
             exifImageWidth: 6112,
             exposureTime: '1/400',

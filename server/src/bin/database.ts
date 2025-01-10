@@ -8,4 +8,4 @@ const { database } = new ConfigRepository().getEnv();
  *
  * this export is ONLY to be used for TypeORM commands in package.json#scripts
  */
-export const dataSource = new DataSource({ ...database.config, host: 'localhost' });
+export const dataSource = new DataSource({ ...database.config.typeorm, host: 'localhost' });

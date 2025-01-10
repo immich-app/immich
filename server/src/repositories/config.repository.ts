@@ -2,8 +2,10 @@ import { Inject, Injectable, Optional } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { CLS_ID } from 'nestjs-cls';
 import { join, resolve } from 'node:path';
+import postgres from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
@@ -96,6 +98,33 @@ const getEnv = (): EnvData => {
     }
   }
 
+  const driverOptions = {
+    max: 10,
+    types: {
+      date: {
+        to: 1184,
+        from: [1082, 1114, 1184],
+        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
+        parse: (x: string) => new Date(x),
+      },
+      bigint: {
+        to: 20,
+        from: [20],
+        parse: (value: string) => Number.parseInt(value),
+        serialize: (value: number) => value.toString(),
+      },
+    },
+  };
+
+  const parts = {
+    connectionType: 'parts',
+    host: dto.DB_HOSTNAME || 'database',
+    port: dto.DB_PORT || 5432,
+    username: dto.DB_USERNAME || 'postgres',
+    password: dto.DB_PASSWORD || 'postgres',
+    database: dto.DB_DATABASE_NAME || 'immich',
+  } as const;
+
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
@@ -150,24 +179,23 @@ const getEnv = (): EnvData => {
 
     database: {
       config: {
-        type: 'postgres',
-        entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
-        migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
-        subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
-        migrationsRun: false,
-        synchronize: false,
-        connectTimeoutMS: 10_000, // 10 seconds
-        parseInt8: true,
-        ...(databaseUrl
-          ? { connectionType: 'url', url: databaseUrl }
-          : {
-              connectionType: 'parts',
-              host: dto.DB_HOSTNAME || 'database',
-              port: dto.DB_PORT || 5432,
-              username: dto.DB_USERNAME || 'postgres',
-              password: dto.DB_PASSWORD || 'postgres',
-              database: dto.DB_DATABASE_NAME || 'immich',
-            }),
+        typeorm: {
+          type: 'postgres',
+          entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
+          migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
+          subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
+          migrationsRun: false,
+          synchronize: false,
+          connectTimeoutMS: 10_000, // 10 seconds
+          parseInt8: true,
+          ...(databaseUrl ? { connectionType: 'url', url: databaseUrl } : parts),
+        },
+        kysely: {
+          dialect: new PostgresJSDialect({
+            postgres: databaseUrl ? postgres(databaseUrl, driverOptions) : postgres({ ...parts, ...driverOptions }),
+          }),
+          log: ['error'] as const,
+        },
       },
 
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,

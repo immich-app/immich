@@ -23,7 +23,6 @@ import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
 import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newTestService } from 'test/utils';
-import { QueryFailedError } from 'typeorm';
 import { Mocked } from 'vitest';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
@@ -384,8 +383,8 @@ describe(AssetMediaService.name, () => {
         originalName: 'asset_1.jpeg',
         size: 0,
       };
-      const error = new QueryFailedError('', [], new Error('unique key violation'));
-      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       assetMock.create.mockRejectedValue(error);
       assetMock.getUploadAssetIdByChecksum.mockResolvedValue(assetEntity.id);
@@ -411,8 +410,8 @@ describe(AssetMediaService.name, () => {
         originalName: 'asset_1.jpeg',
         size: 0,
       };
-      const error = new QueryFailedError('', [], new Error('unique key violation'));
-      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       assetMock.create.mockRejectedValue(error);
 
@@ -494,7 +493,6 @@ describe(AssetMediaService.name, () => {
 
     it('should throw an error if the asset is not found', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getById.mockResolvedValue(null);
 
       await expect(sut.downloadOriginal(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(NotFoundException);
 
@@ -526,7 +524,6 @@ describe(AssetMediaService.name, () => {
 
     it('should throw an error if the asset does not exist', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
-      assetMock.getById.mockResolvedValue(null);
 
       await expect(
         sut.viewThumbnail(authStub.admin, assetStub.image.id, { size: AssetMediaSize.PREVIEW }),
@@ -632,7 +629,6 @@ describe(AssetMediaService.name, () => {
 
     it('should throw an error if the asset does not exist', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
-      assetMock.getById.mockResolvedValue(null);
 
       await expect(sut.playbackVideo(authStub.admin, assetStub.image.id)).rejects.toBeInstanceOf(NotFoundException);
     });
@@ -684,8 +680,6 @@ describe(AssetMediaService.name, () => {
 
   describe('replaceAsset', () => {
     it('should error when update photo does not exist', async () => {
-      assetMock.getById.mockResolvedValueOnce(null);
-
       await expect(sut.replaceAsset(authStub.user1, 'id', replaceDto, fileStub.photo)).rejects.toThrow(
         'Not found or no asset.update access',
       );
@@ -799,8 +793,8 @@ describe(AssetMediaService.name, () => {
 
     it('should handle a photo with sidecar to duplicate photo ', async () => {
       const updatedFile = fileStub.photo;
-      const error = new QueryFailedError('', [], new Error('unique key violation'));
-      (error as any).constraint = ASSET_CHECKSUM_CONSTRAINT;
+      const error = new Error('unique key violation');
+      (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       assetMock.update.mockRejectedValue(error);
       assetMock.getById.mockResolvedValueOnce(sidecarAsset);
