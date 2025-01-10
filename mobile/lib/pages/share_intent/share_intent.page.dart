@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -68,7 +69,11 @@ class ShareIntentPage extends HookConsumerWidget {
       appBar: AppBar(
         title: Column(
           children: [
-            Text('Upload to Immich (${candidates.length})'),
+            const Text('upload_to_immich').tr(
+              args: [
+                candidates.length.toString(),
+              ],
+            ),
             Text(
               currentEndpoint,
               style: context.textTheme.labelMedium?.copyWith(
@@ -164,12 +169,29 @@ class ShareIntentPage extends HookConsumerWidget {
             height: 48,
             child: ElevatedButton(
               onPressed: isUploaded.value ? null : upload,
-              child: const Text('UPLOAD'),
+              child: isUploaded.value
+                  ? UploadingText(candidates: candidates)
+                  : const Text('upload').tr(),
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+class UploadingText extends StatelessWidget {
+  const UploadingText({super.key, required this.candidates});
+  final List<ShareIntentAttachment> candidates;
+
+  @override
+  Widget build(BuildContext context) {
+    final uploadedCount = candidates.where((element) {
+      return element.status == UploadStatus.complete;
+    }).length;
+
+    return const Text("shared_intent_upload_button_progress_text")
+        .tr(args: [uploadedCount.toString(), candidates.length.toString()]);
   }
 }
 
@@ -191,7 +213,7 @@ class UploadStatusIcon extends StatelessWidget {
       return Icon(
         Icons.check_circle_outline_rounded,
         color: context.colorScheme.onSurface.withAlpha(100),
-        semanticLabel: 'Not selected',
+        semanticLabel: 'not_selected'.tr(),
       );
     }
 
@@ -200,54 +222,59 @@ class UploadStatusIcon extends StatelessWidget {
         return Icon(
           Icons.check_circle_rounded,
           color: context.primaryColor,
-          semanticLabel: 'Enqueued',
+          semanticLabel: 'enqueued'.tr(),
         );
       case UploadStatus.running:
         return Stack(
           alignment: AlignmentDirectional.center,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 40,
               height: 40,
-              child: CircularProgressIndicator(
-                backgroundColor: Colors.grey,
-                strokeWidth: 3,
-                value: 0.5,
-                semanticsLabel: 'Uploading',
+              child: TweenAnimationBuilder(
+                tween: Tween<double>(begin: 0.0, end: progress),
+                duration: const Duration(milliseconds: 500),
+                builder: (context, value, _) => CircularProgressIndicator(
+                  backgroundColor: context.colorScheme.surfaceContainerLow,
+                  strokeWidth: 3,
+                  value: value,
+                  semanticsLabel: 'uploading'.tr(),
+                ),
               ),
             ),
             Text(
-              "${(progress * 100).toStringAsFixed(0)}%",
-              style: context.textTheme.labelMedium?.copyWith(
+              (progress * 100).toStringAsFixed(0),
+              style: context.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         );
       case UploadStatus.complete:
-        return const Icon(
+        return Icon(
           Icons.check_circle_rounded,
           color: Colors.green,
-          semanticLabel: 'Complete',
+          semanticLabel: 'completed'.tr(),
         );
       case UploadStatus.notFound:
       case UploadStatus.failed:
-        return const Icon(
+        return Icon(
           Icons.error_rounded,
           color: Colors.red,
-          semanticLabel: 'Failed',
+          semanticLabel: 'failed'.tr(),
         );
       case UploadStatus.canceled:
-        return const Icon(
+        return Icon(
           Icons.cancel_rounded,
           color: Colors.red,
+          semanticLabel: 'canceled'.tr(),
         );
       case UploadStatus.waitingtoRetry:
       case UploadStatus.paused:
         return Icon(
           Icons.pause_circle_rounded,
           color: context.primaryColor,
-          semanticLabel: 'Paused',
+          semanticLabel: 'paused'.tr(),
         );
     }
   }

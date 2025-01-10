@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
@@ -69,9 +69,11 @@ class ShareIntentUploadStateNotifier
     switch (update.status) {
       case TaskStatus.complete:
         if (update.responseStatusCode == 200) {
-          debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
+          kDebugMode
+              ? debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE")
+              : null;
         } else {
-          debugPrint("[COMPLETE] ${update.task.taskId}");
+          kDebugMode ? debugPrint("[COMPLETE] ${update.task.taskId}") : null;
         }
         break;
 
@@ -87,7 +89,6 @@ class ShareIntentUploadStateNotifier
     }
 
     final taskId = update.task.taskId;
-    print('Task progress: $taskId - ${update.progress}');
     state = [
       for (final attachment in state)
         if (attachment.id == taskId.toInt())
