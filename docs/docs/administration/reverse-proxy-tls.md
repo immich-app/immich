@@ -85,7 +85,7 @@ server {
     send_timeout       600s;
 
     # Check if the header 'X-Access-Key' contains the value '12345'
-    if ($http_x_access_key != "<12345>") {
+    if ($http_x_access_key != "12345") {
         return 403; # Deny access
     }
 
