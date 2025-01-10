@@ -301,8 +301,36 @@ describe('/libraries', () => {
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
+        libraryId: library.id,
       });
       expect(assets.count).toBe(1);
+    });
+
+    it('should process metadata and thumbnails for external asset', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/directoryA`],
+      });
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, {
+        originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
+        libraryId: library.id,
+      });
+      expect(assets.count).toBe(1);
+      const asset = assets.items[0];
+      expect(asset.exifInfo).not.toBe(null);
+      expect(asset.exifInfo?.dateTimeOriginal).not.toBe(null);
+      expect(asset.thumbhash).not.toBe(null);
     });
 
     it('should scan external library with exclusion pattern', async () => {

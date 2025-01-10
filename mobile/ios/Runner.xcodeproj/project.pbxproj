@@ -541,8 +541,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/RunnerProfile.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 186;
-				CUSTOM_GROUP_ID = group.app.immich.share;
+				CURRENT_PROJECT_VERSION = 187;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -685,8 +684,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 186;
-				CUSTOM_GROUP_ID = group.app.immich.share;
+				CURRENT_PROJECT_VERSION = 187;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
@@ -715,8 +713,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 186;
-				CUSTOM_GROUP_ID = group.app.immich.share;
+				CURRENT_PROJECT_VERSION = 187;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
