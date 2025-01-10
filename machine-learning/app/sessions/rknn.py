@@ -58,10 +58,7 @@ class RknnSession:
 
 
         # log.info(f"Running inference on RKNN model")
-
-        outputs = self.rknn.inference(inputs=[input_data])
-        if not outputs:
-            outputs = self.rknn.inference(inputs=[input_data], data_format='nchw')
+        outputs = self.rknn.inference(inputs=[input_data], data_format='nchw')
 
         # log.info("inputs:")
         # log.info(input_data)
