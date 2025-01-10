@@ -32,11 +32,14 @@ class ShareIntentAttachment {
 
   final double uploadProgress;
 
+  final int fileLength;
+
   ShareIntentAttachment({
     required this.path,
     required this.type,
     required this.status,
     this.uploadProgress = 0,
+    this.fileLength = 0,
   });
 
   int get id => hash(path);
@@ -49,7 +52,7 @@ class ShareIntentAttachment {
 
   bool get isVideo => type == ShareIntentAttachmentType.video;
 
-  String get fileSize => formatHumanReadableBytes(file.lengthSync(), 2);
+  String get fileSize => formatHumanReadableBytes(fileLength, 2);
 
   ShareIntentAttachment copyWith({
     String? path,

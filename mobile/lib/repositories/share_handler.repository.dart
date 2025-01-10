@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/share_handler.interface.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
@@ -43,12 +45,15 @@ class ShareHandlerRepository implements IShareHandlerRepository {
           ? ShareIntentAttachmentType.image
           : ShareIntentAttachmentType.video;
 
+      final fileLength = File(attachment.path).lengthSync();
+
       payload.add(
         ShareIntentAttachment(
           path: attachment.path,
           type: type,
           status: UploadStatus.enqueued,
           uploadProgress: 0.0,
+          fileLength: fileLength,
         ),
       );
     }
