@@ -174,7 +174,7 @@
   "client_cert_remove": "Remove",
   "client_cert_remove_msg": "Client certificate is removed",
   "client_cert_subtitle": "Supports PKCS12 (.p12, .pfx) format only. Certificate Import/Remove is available only before login",
-  "client_cert_title": "SSL Client Certificate (experimental)",
+  "client_cert_title": "SSL Client Certificate (Experimental)",
   "common_add_to_album": "Add to album",
   "common_change_password": "Change Password",
   "common_create_new_album": "Create new album",
