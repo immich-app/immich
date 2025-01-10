@@ -15,6 +15,7 @@ import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
 @RoutePage()
+
 /// Expects [currentAssetProvider] to be set before navigating to this page
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
@@ -128,15 +129,8 @@ class MemoryPage extends HookConsumerWidget {
       );
     }
 
-    // Precache the next page and set the current asset right away if we are on the first page
+    // Precache the next page right away if we are on the first page
     if (currentAssetPage.value == 0) {
-      Future.delayed(const Duration(milliseconds: 1)).then((_) {
-        final asset = currentMemory.value.assets[0];
-        ref.read(currentAssetProvider.notifier).set(asset);
-        if (asset.isVideo || asset.isMotionPhoto) {
-          ref.read(videoPlaybackValueProvider.notifier).reset();
-        }
-      });
       Future.delayed(const Duration(milliseconds: 200))
           .then((_) => precacheAsset(1));
     }
