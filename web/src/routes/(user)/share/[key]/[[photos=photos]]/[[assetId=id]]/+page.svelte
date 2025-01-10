@@ -5,6 +5,8 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
@@ -26,6 +28,7 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
+  let showPassword = $state(false);
   let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
@@ -81,7 +84,26 @@
       </div>
       <div class="mt-4">
         <form novalidate autocomplete="off" {onsubmit}>
-          <input type="password" class="immich-form-input mr-2" placeholder={$t('password')} bind:value={password} />
+          <span class="relative w-full mr-2">
+            <input 
+              type={showPassword ? 'text' : 'password'}
+              class="immich-form-input !pr-12"
+              placeholder={$t('password')}
+              bind:value={password}
+            />
+
+            {#if password.length > 0}
+              <button
+                type="button"
+                tabindex="-1"
+                class="absolute inset-y-0 end-0 px-4 text-gray-700 dark:text-gray-200"
+                onclick={() => (showPassword = !showPassword)}
+                title={showPassword ? $t('hide_password') : $t('show_password')}
+              >
+                <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />
+              </button>
+            {/if}
+            </span>
           <Button type="submit">{$t('submit')}</Button>
         </form>
       </div>
