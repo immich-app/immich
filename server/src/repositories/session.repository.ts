@@ -1,17 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SessionEntity } from 'src/entities/session.entity';
 import { ISessionRepository, SessionSearchOptions } from 'src/interfaces/session.interface';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SessionRepository implements ISessionRepository {
-  constructor(@InjectRepository(SessionEntity) private repository: Repository<SessionEntity>) {}
+  constructor(
+    @InjectRepository(SessionEntity) private repository: Repository<SessionEntity>,
+    @InjectKysely() private db: Kysely<DB>,
+  ) {}
 
-  @GenerateSql({ params: [DummyValue.DATE] })
+  @GenerateSql({ params: [{ updatedBefore: DummyValue.DATE }] })
   search(options: SessionSearchOptions): Promise<SessionEntity[]> {
-    return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore) } });
+    // return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore) } });
+
+    return this.db
+      .selectFrom('sessions')
+      .selectAll()
+      .where('sessions.updatedAt', '<=', options.updatedBefore)
+      .execute() as Promise<SessionEntity[]>;
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
