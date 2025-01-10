@@ -64,7 +64,7 @@ A remote reverse proxy like [Cloudflare](https://www.cloudflare.com/learning/cdn
 
 ## Option 4: Internet Accessible Immich with TLS Nginx Reverse Proxy
 
-A reverse proxy is a service that sits between web servers and clients. In this option, the TLS reverse proxy will be accessible from the Internet; this means the TLS reverse proxy sits in front of the Immich web application. We will use the TLS reverse proxy to protect the Immich web application from any existing security vulnerabilities. In addition, using this option will give you a premium experience which'll allow you to use the Immich mobile app from anywhere your mobile device has an Internet connection.
+A reverse proxy is a service that sits between web servers and clients. In this option, the TLS reverse proxy will be accessible from the Internet; this means the TLS reverse proxy sits in front of the Immich web application. We will use the TLS reverse proxy to protect the Immich web application from any existing security vulnerabilities. In addition, using this option will give you a premium experience which'll allow you to securely use the Immich mobile app from anywhere your mobile device has an Internet connection.
 
 :::caution
 As of January 2025, the Immich mobile app does NOT fully support self-signed certificates. If you use a self-signed certificate, the mobile app will not be able to download images or view videos. [This is a known bug and there are no plans to fix it.](https://github.com/immich-app/immich/issues/15188)
@@ -74,7 +74,7 @@ As of January 2025, the Immich mobile app does NOT fully support self-signed cer
 
 - Allows the Immich mobile app to securely connect to your Immich server WITHOUT a VPN or any additional client-side software
 - Upload large files, ie - avoiding [Cloudflare upload limits.](https://github.com/immich-app/immich/discussions/2357)
-- Protects the Immich web app from any and all vulnerabilities
+- Protects the Immich web app from any attackers and all vulnerabilities
 
 ### Cons
 
@@ -102,7 +102,7 @@ This guide has the following prerequisites:
 4. Use your mobile phone and connect to your local network. Lookup the address for immich.mydomain.com, it should return your internal IP address (ie, 192.168.10.20). Now switch to the public Internet by turning off WiFi and lookup the address for immich.mydomain.com, it should return your external IP address.
 5. Use Certbot DNS validation to get a free SSL certificate. In this case, my DNS provider is Linode and the command to get a SSL certificate for mydomain and *.mydomain.com is `certbot certonly --dns-linode --dns-linode-credentials /etc/letsencrypt/linode.conf -d mydomain.com -d '*.mydomain.com'`. [More information about Certbot DNS validation.](https://eff-certbot.readthedocs.io/en/stable/using.html#dns-plugins)
 6. Add nginx configurations. Review the [nginx configs here.](/docs/administration/reverse-proxy-tls.md) There you will see two config files - immich-tls.conf and immich-tls-header.conf. The immich-tls.conf creates a TLS reverse proxy that listens on port 443 and allows anyone on your local network who is using a browser to access Immich by visiting immich.mydomain.com. The immich-tls-header.conf creates a TLS reverse proxy that listens on port 4000 and is protected by a key; this is meant for use by the Immich mobile app only. Copy the files immich-tls.conf and immich-tls-header.conf to `/etc/nginx/conf.d/`.
-7. Be sure to update the values in the immich-tls.conf and immich-tls-header.conf files. Remember the key that you specified; you'll be using it later.
+7. Be sure to update the values in the immich-tls.conf and immich-tls-header.conf files. Remember the key that you specified; you'll be using it later. Only share this key with individuals you trust.
 8. Test your nginx changes by executing `nginx -t`. If everything is okay, go ahead and apply the changes using `systemctl reload nginx`.
 9. Using your mobile phone, turn on WiFi. Launch a browser and connect to https://immich.mydomain.com. It should load successfully.
 10. Again, using your mobile phone with WiFi, launch a browser and attempt to access https://immich.mydomain.com:4000/. You should receive a message `403 Forbidden`. This is expected and normal.
