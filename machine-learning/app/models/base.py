@@ -8,10 +8,9 @@ from typing import Any, ClassVar
 from huggingface_hub import snapshot_download
 
 import ann.ann
+import rknn.rknnpool
 from app.sessions.ort import OrtSession
 from app.sessions.rknn import RknnSession
-
-import rknn.rknnpool
 
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType

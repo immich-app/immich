@@ -1,8 +1,8 @@
 # This code is from leafqycc/rknn-multi-threaded
 # Following Apache License 2.0
 
+from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 supported_socs = ["rk3566", "rk3568", "rk3588"]
 

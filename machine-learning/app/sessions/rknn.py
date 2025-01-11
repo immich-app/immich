@@ -6,9 +6,9 @@ from typing import Any
 import numpy as np
 import onnxruntime as ort
 from numpy.typing import NDArray
-from rknn.rknnpool import rknnPoolExecutor
 
 from app.schemas import SessionNode
+from rknn.rknnpool import rknnPoolExecutor
 
 from ..config import log
 
