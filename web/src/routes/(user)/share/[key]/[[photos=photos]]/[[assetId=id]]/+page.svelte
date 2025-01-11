@@ -81,10 +81,8 @@
         {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">
-        <form class="flex" novalidate autocomplete="off" {onsubmit}>
-          <div class="relative mr-2">
-            <PasswordField autocomplete="off" bind:password placeholder="Password" />
-          </div>
+        <form class="flex gap-x-2" novalidate {onsubmit}>
+          <PasswordField autocomplete="off" bind:password placeholder="Password" />
           <Button type="submit">{$t('submit')}</Button>
         </form>
       </div>
