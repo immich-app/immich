@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Kysely } from 'kysely';
-import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -40,11 +39,27 @@ export class SessionRepository implements ISessionRepository {
 
     return this.db
       .selectFrom('sessions')
-      .select((eb) =>
-        jsonObjectFrom(
+      .innerJoinLateral(
+        (eb) =>
           eb
             .selectFrom('users')
-            .selectAll()
+            .select([
+              'id',
+              'email',
+              'createdAt',
+              'profileImagePath',
+              'isAdmin',
+              'shouldChangePassword',
+              'deletedAt',
+              'oauthId',
+              'updatedAt',
+              'storageLabel',
+              'name',
+              'quotaSizeInBytes',
+              'quotaUsageInBytes',
+              'status',
+              'profileChangedAt',
+            ])
             .select((eb) =>
               eb
                 .selectFrom('user_metadata')
@@ -53,9 +68,12 @@ export class SessionRepository implements ISessionRepository {
                 .as('metadata'),
             )
             .whereRef('users.id', '=', 'sessions.userId')
-            .where('users.deletedAt', 'is', null),
-        ).as('user'),
+            .where('users.deletedAt', 'is', null)
+            .as('user'),
+        (join) => join.onTrue(),
       )
+      .selectAll('sessions')
+      .select((eb) => eb.fn.toJson('user').as('user'))
       .where('sessions.token', '=', token)
       .executeTakeFirst() as unknown as Promise<SessionEntity | null>;
   }
