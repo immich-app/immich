@@ -59,6 +59,8 @@ optional = true
 [tool.poetry.group.armnn.dependencies]
 onnxruntime = "^1.15.0"
 
+[tool.poetry.group.rknn]
+optional = true
 
 [tool.poetry.group.rknn.dependencies]
 rknn-toolkit-lite2 = "^2.3.0"
