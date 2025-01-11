@@ -1,6 +1,7 @@
 # This code is from leafqycc/rknn-multi-threaded
 # Following Apache License 2.0
 
+import os
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 
@@ -10,8 +11,6 @@ try:
     from rknnlite.api import RKNNLite
 
     with open("/proc/device-tree/compatible") as f:
-        # Keep in mind that this is not in container by default.
-        # and this way of checking can't check if the rknpu driver is running or not.
         device_compatible_str = f.read()
         for soc in supported_socs:
             if soc in device_compatible_str:
@@ -19,6 +18,7 @@ try:
                 break
             else:
                 is_available = False
+    is_available = os.path.exists("/sys/kernel/debug/rknpu/load")
 except (FileNotFoundError, ImportError):
     is_available = False
 
