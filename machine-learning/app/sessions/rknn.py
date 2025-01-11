@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from app.schemas import SessionNode
 from rknn.rknnpool import rknnPoolExecutor
 
-from ..config import log
+from ..config import log, settings
 
 
 def runInfrence(rknn_lite, input):
@@ -23,7 +23,13 @@ class RknnSession:
     def __init__(self, model_path: Path | str):
         self.model_path = Path(model_path)
         self.ort_model_path = str(self.model_path).replace(".rknn", ".onnx")
-        self.tpe = 1 if "textual" in str(self.model_path) else 2
+        
+        if 'textual' in self.model_path.name:
+            self.tpe = settings.rknn_textual_threads
+        elif 'visual' in self.model_path.name:
+            self.tpe = settings.rknn_visual_threads
+        else:
+            self.tpe = settings.rknn_facial_detection_threads
 
         log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
         self.rknnpool = rknnPoolExecutor(rknnModel=self.model_path.as_posix(), TPEs=self.tpe, func=runInfrence)
