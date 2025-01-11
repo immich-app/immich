@@ -19,7 +19,8 @@
     "preserveWatchOutput": true,
     "baseUrl": "./",
     "jsx": "react",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "noErrorTruncation": true
   },
   "exclude": ["dist", "node_modules", "upload"]
 }

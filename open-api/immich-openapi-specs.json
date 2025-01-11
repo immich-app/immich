@@ -10000,7 +10000,8 @@
               {
                 "$ref": "#/components/schemas/AssetOrder"
               }
-            ]
+            ],
+            "default": "desc"
           },
           "originalFileName": {
             "type": "string"

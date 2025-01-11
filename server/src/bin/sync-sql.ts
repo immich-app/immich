@@ -4,6 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -73,13 +74,23 @@ class SqlGenerator {
     await rm(this.options.targetDir, { force: true, recursive: true });
     await mkdir(this.options.targetDir);
 
+    process.env.DB_HOSTNAME = 'localhost';
     const { database, otel } = new ConfigRepository().getEnv();
 
     const moduleFixture = await Test.createTestingModule({
       imports: [
+        KyselyModule.forRoot({
+          ...database.config.kysely,
+          log: (event) => {
+            if (event.level === 'query') {
+              this.sqlLogger.logQuery(event.query.sql);
+            } else if (event.level === 'error') {
+              this.sqlLogger.logQueryError(event.error as Error, event.query.sql);
+            }
+          },
+        }),
         TypeOrmModule.forRoot({
-          ...database.config,
-          host: 'localhost',
+          ...database.config.typeorm,
           entities,
           logging: ['query'],
           logger: this.sqlLogger,
