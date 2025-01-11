@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Kysely } from 'kysely';
+import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -28,14 +29,35 @@ export class SessionRepository implements ISessionRepository {
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string): Promise<SessionEntity | null> {
-    return this.repository.findOne({
-      where: { token },
-      relations: {
-        user: {
-          metadata: true,
-        },
-      },
-    });
+    // return this.repository.findOne({
+    //     where: { token },
+    //     relations: {
+    //       user: {
+    //         metadata: true,
+    //       },
+    //     },
+    //   });
+
+    return this.db
+      .selectFrom('sessions')
+      .select((eb) =>
+        jsonObjectFrom(
+          eb
+            .selectFrom('users')
+            .selectAll()
+            .select((eb) =>
+              eb
+                .selectFrom('user_metadata')
+                .whereRef('users.id', '=', 'user_metadata.userId')
+                .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
+                .as('metadata'),
+            )
+            .whereRef('users.id', '=', 'sessions.userId')
+            .where('users.deletedAt', 'is', null),
+        ).as('user'),
+      )
+      .where('sessions.token', '=', token)
+      .executeTakeFirst() as unknown as Promise<SessionEntity | null>;
   }
 
   getByUserId(userId: string): Promise<SessionEntity[]> {
