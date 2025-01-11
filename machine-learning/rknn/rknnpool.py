@@ -4,11 +4,12 @@
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-supported_socs = ["rk3566","rk3568","rk3588"]
+supported_socs = ["rk3566", "rk3568", "rk3588"]
 
 try:
     from rknnlite.api import RKNNLite
-    with open('/proc/device-tree/compatible') as f: 
+
+    with open("/proc/device-tree/compatible") as f:
         # Keep in mind that this is not in container by default.
         # and this way of checking can't check if the rknpu driver is running or not.
         device_compatible_str = f.read()
@@ -43,7 +44,7 @@ def initRKNNs(rknnModel="./rknnModel/yolov5s.rknn", TPEs=1):
     return rknn_list
 
 
-class rknnPoolExecutor():
+class rknnPoolExecutor:
     def __init__(self, rknnModel, TPEs, func):
         self.TPEs = TPEs
         self.queue = Queue()
@@ -53,8 +54,7 @@ class rknnPoolExecutor():
         self.num = 0
 
     def put(self, frame):
-        self.queue.put(self.pool.submit(
-            self.func, self.rknnPool[self.num % self.TPEs], frame))
+        self.queue.put(self.pool.submit(self.func, self.rknnPool[self.num % self.TPEs], frame))
         self.num += 1
 
     def get(self):

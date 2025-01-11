@@ -162,7 +162,7 @@ class InferenceModel(ABC):
     def _model_format_default(self) -> ModelFormat:
         if rknn.rknnpool.is_available and settings.rknn:
             return ModelFormat.RKNN
-        elif ann.ann.is_available and settings.ann :
+        elif ann.ann.is_available and settings.ann:
             return ModelFormat.ARMNN
         else:
             return ModelFormat.ONNX
