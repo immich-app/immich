@@ -1,44 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ExpressionBuilder, Kysely } from 'kysely';
+import { Insertable, Kysely, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
+import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { SessionEntity } from 'src/entities/session.entity';
+import { SessionEntity, withUser } from 'src/entities/session.entity';
 import { ISessionRepository, SessionSearchOptions } from 'src/interfaces/session.interface';
+import { asUuid } from 'src/utils/database';
 import { Repository } from 'typeorm';
-
-const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
-  return eb
-    .selectFrom('users')
-    .select([
-      'id',
-      'email',
-      'createdAt',
-      'profileImagePath',
-      'isAdmin',
-      'shouldChangePassword',
-      'deletedAt',
-      'oauthId',
-      'updatedAt',
-      'storageLabel',
-      'name',
-      'quotaSizeInBytes',
-      'quotaUsageInBytes',
-      'status',
-      'profileChangedAt',
-    ])
-    .select((eb) =>
-      eb
-        .selectFrom('user_metadata')
-        .whereRef('users.id', '=', 'user_metadata.userId')
-        .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
-        .as('metadata'),
-    )
-    .whereRef('users.id', '=', 'sessions.userId')
-    .where('users.deletedAt', 'is', null)
-    .as('user');
-};
 
 @Injectable()
 export class SessionRepository implements ISessionRepository {
@@ -80,16 +49,16 @@ export class SessionRepository implements ISessionRepository {
       .execute() as any as Promise<SessionEntity[]>;
   }
 
-  create<T extends Partial<SessionEntity>>(dto: T): Promise<T & { id: string }> {
-    return this.repository.save(dto);
+  create(dto: Insertable<Sessions>): Promise<SessionEntity> {
+    return this.db.insertInto('sessions').values(dto).returningAll().executeTakeFirst() as Promise<SessionEntity>;
   }
 
-  update<T extends Partial<SessionEntity>>(dto: T): Promise<T> {
-    return this.repository.save(dto);
+  update(dto: Updateable<Sessions>): Promise<SessionEntity> {
+    return this.db.updateTable('sessions').set(dto).returningAll().executeTakeFirst() as Promise<SessionEntity>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
-    await this.repository.delete({ id });
+    await this.db.deleteFrom('sessions').where('id', '=', asUuid(id)).execute();
   }
 }

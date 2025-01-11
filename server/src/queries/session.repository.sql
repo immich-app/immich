@@ -92,6 +92,6 @@ order by
   "sessions"."createdAt" desc
 
 -- SessionRepository.delete
-DELETE FROM "sessions"
-WHERE
-  "id" = $1
+delete from "sessions"
+where
+  "id" = $1::uuid
