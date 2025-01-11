@@ -24,9 +24,9 @@ class RknnSession:
         self.model_path = Path(model_path)
         self.ort_model_path = str(self.model_path).replace(".rknn", ".onnx")
         
-        if 'textual' in self.model_path.name:
+        if 'textual' in str(self.model_path):
             self.tpe = settings.rknn_textual_threads
-        elif 'visual' in self.model_path.name:
+        elif 'visual' in str(self.model_path):
             self.tpe = settings.rknn_visual_threads
         else:
             self.tpe = settings.rknn_facial_detection_threads
