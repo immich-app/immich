@@ -110,6 +110,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
 
 COPY --from=builder /opt/venv /opt/venv
 COPY ann/ann.py /usr/src/ann/ann.py
+COPY rknn/rknnpool.py /usr/src/rknn/rknnpool.py
 COPY start.sh log_conf.json gunicorn_conf.py ./
 COPY app .
 ENTRYPOINT ["tini", "--"]
