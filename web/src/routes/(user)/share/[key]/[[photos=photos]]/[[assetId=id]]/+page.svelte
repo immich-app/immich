@@ -5,7 +5,12 @@
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
+<<<<<<< HEAD
   import PasswordField from '$lib/components/shared-components/password-field.svelte';
+=======
+  import Icon from '$lib/components/elements/icon.svelte';
+  import { mdiEyeOffOutline, mdiEyeOutline } from '@mdi/js';
+>>>>>>> 2cf4cc3b92175ace5f2d54520faca09621e37f9d
   import { user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { getMySharedLink, SharedLinkType } from '@immich/sdk';
@@ -27,7 +32,11 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
+<<<<<<< HEAD
   // let showPassword = $state(false);
+=======
+  let showPassword = $state(false);
+>>>>>>> 2cf4cc3b92175ace5f2d54520faca09621e37f9d
   let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
@@ -82,10 +91,34 @@
         {$t('sharing_enter_password')}
       </div>
       <div class="mt-4">
+<<<<<<< HEAD
         <form class="flex" novalidate autocomplete="off" {onsubmit}>
           <div class="relative mr-2">
             <PasswordField autocomplete='off' bind:password placeholder='Password'/>
           </div>
+=======
+        <form novalidate autocomplete="off" {onsubmit}>
+          <span class="relative w-full mr-2">
+            <input 
+              type={showPassword ? 'text' : 'password'}
+              class="immich-form-input !pr-12"
+              placeholder={$t('password')}
+              bind:value={password}
+            />
+
+            {#if password.length > 0}
+              <button
+                type="button"
+                tabindex="-1"
+                class="absolute inset-y-0 end-0 px-4 text-gray-700 dark:text-gray-200"
+                onclick={() => (showPassword = !showPassword)}
+                title={showPassword ? $t('hide_password') : $t('show_password')}
+              >
+                <Icon path={showPassword ? mdiEyeOffOutline : mdiEyeOutline} size="1.25em" />
+              </button>
+            {/if}
+            </span>
+>>>>>>> 2cf4cc3b92175ace5f2d54520faca09621e37f9d
           <Button type="submit">{$t('submit')}</Button>
         </form>
       </div>
