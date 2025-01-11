@@ -11,12 +11,12 @@ export class VersionHistoryRepository implements IVersionHistoryRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql()
-  async getAll(): Promise<VersionHistoryEntity[]> {
+  getAll(): Promise<VersionHistoryEntity[]> {
     return this.db.selectFrom('version_history').selectAll().orderBy('createdAt', 'desc').execute();
   }
 
   @GenerateSql()
-  async getLatest(): Promise<VersionHistoryEntity | undefined> {
+  getLatest(): Promise<VersionHistoryEntity | undefined> {
     return this.db.selectFrom('version_history').selectAll().orderBy('createdAt', 'desc').executeTakeFirst();
   }
 
