@@ -11,6 +11,8 @@ import ann.ann
 from app.sessions.ort import OrtSession
 from app.sessions.rknn import RknnSession
 
+import rknn.rknnpool
+
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
 from ..sessions.ann import AnnSession
@@ -158,7 +160,7 @@ class InferenceModel(ABC):
 
     @property
     def _model_format_default(self) -> ModelFormat:
-        if settings.rknn:
+        if rknn.rknnpool.is_available and settings.rknn:
             return ModelFormat.RKNN
         elif ann.ann.is_available and settings.ann :
             return ModelFormat.ARMNN
