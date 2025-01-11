@@ -344,14 +344,13 @@ export class AuthService extends BaseService {
     const key = this.cryptoRepository.newPassword(32);
     const token = this.cryptoRepository.hashSha256(key);
 
-    const a = await this.sessionRepository.create({
+    await this.sessionRepository.create({
       token,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
       userId: user.id,
     });
 
-    console.log('session created', a);
     return mapLoginResponse(user, key);
   }
 
