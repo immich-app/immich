@@ -3,9 +3,9 @@ name: Docker
 on:
   workflow_dispatch:
   push:
-    branches: [rknn-toolkit2]
+    branches: [main]
   pull_request:
-    branches: [rknn-toolkit2]
+    branches: [main]
   release:
     types: [published]
 
@@ -104,9 +104,18 @@ jobs:
         include:
           - platforms: linux/amd64,linux/arm64
             device: cpu
+
+          - platforms: linux/amd64
+            device: cuda
+            suffix: -cuda
+
+          - platforms: linux/amd64
+            device: openvino
+            suffix: -openvino
+
           - platforms: linux/arm64
-            device: rknn
-            suffix: -rknn
+            device: armnn
+            suffix: -armnn
 
     steps:
       - name: Checkout
@@ -118,13 +127,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
 
-      # - name: Login to Docker Hub
-      #   # Only push to Docker Hub when making a release
-      #   if: ${{ github.event_name == 'release' }}
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        # Only push to Docker Hub when making a release
+        if: ${{ github.event_name == 'release' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -144,7 +153,7 @@ jobs:
             latest=false
           images: |
             name=ghcr.io/${{ github.repository_owner }}/${{env.image}}
-            # name=altran1502/${{env.image}},enable=${{ github.event_name == 'release' }}
+            name=altran1502/${{env.image}},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
             type=ref,event=branch,suffix=${{ matrix.suffix }}
@@ -209,13 +218,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
 
-      # - name: Login to Docker Hub
-      #   # Only push to Docker Hub when making a release
-      #   if: ${{ github.event_name == 'release' }}
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to Docker Hub
+        # Only push to Docker Hub when making a release
+        if: ${{ github.event_name == 'release' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -235,7 +244,7 @@ jobs:
             latest=false
           images: |
             name=ghcr.io/${{ github.repository_owner }}/${{env.image}}
-            # name=altran1502/${{env.image}},enable=${{ github.event_name == 'release' }}
+            name=altran1502/${{env.image}},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
             type=ref,event=branch,suffix=${{ matrix.suffix }}

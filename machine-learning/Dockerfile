@@ -8,8 +8,6 @@ FROM builder-cpu AS builder-cuda
 
 FROM builder-cpu AS builder-armnn
 
-FROM builder-cpu AS builder-rknn
-
 ENV ARMNN_PATH=/opt/armnn
 COPY ann /opt/ann
 RUN mkdir /opt/armnn && \
@@ -82,7 +80,6 @@ COPY --from=builder-armnn \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM prod-cpu AS prod-rknn
 FROM prod-${DEVICE} AS prod
 ARG DEVICE
 
