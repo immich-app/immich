@@ -83,7 +83,7 @@
       <div class="mt-4">
         <form class="flex" novalidate autocomplete="off" {onsubmit}>
           <div class="relative mr-2">
-            <PasswordField autocomplete='off' bind:password placeholder='Password'/>
+            <PasswordField autocomplete="off" bind:password placeholder="Password" />
           </div>
           <Button type="submit">{$t('submit')}</Button>
         </form>
