@@ -5,7 +5,8 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 
-supported_socs = ["rk3566", "rk3568", "rk3588"]
+supported_socs = ["rk3562", "rk3566", "rk3568", "rk3576", "rk3588"]
+coremask_supported_socs = ["rk3576","rk3588"]
 
 try:
     from rknnlite.api import RKNNLite
@@ -15,6 +16,7 @@ try:
         for soc in supported_socs:
             if soc in device_compatible_str:
                 is_available = True
+                soc_name = soc
                 break
             else:
                 is_available = False
@@ -29,7 +31,22 @@ def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
     if ret != 0:
         print("Load RKNN rknnModel failed")
         exit(ret)
-    ret = rknn_lite.init_runtime()
+    
+    if soc_name in coremask_supported_socs:
+        if id == 0:
+            core_mask = RKNNLite.NPU_CORE_0
+        elif id == 1:
+            core_mask = RKNNLite.NPU_CORE_1
+        elif id == 2:
+            core_mask = RKNNLite.NPU_CORE_2
+        elif id == -1:
+            core_mask = RKNNLite.NPU_CORE_0_1_2
+        else:
+            core_mask = None
+    else:
+        core_mask = None
+
+    ret = rknn_lite.init_runtime(core_mask=core_mask)
     if ret != 0:
         print("Init runtime environment failed")
         exit(ret)
