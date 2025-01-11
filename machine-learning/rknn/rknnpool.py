@@ -34,19 +34,18 @@ def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
     
     if soc_name in coremask_supported_socs:
         if id == 0:
-            core_mask = RKNNLite.NPU_CORE_0
+            ret = rknn_lite.init_runtime(core_mask=RKNNLite.NPU_CORE_0)
         elif id == 1:
-            core_mask = RKNNLite.NPU_CORE_1
+            ret = rknn_lite.init_runtime(core_mask=RKNNLite.NPU_CORE_1)
         elif id == 2:
-            core_mask = RKNNLite.NPU_CORE_2
+            ret = rknn_lite.init_runtime(core_mask=RKNNLite.NPU_CORE_2)
         elif id == -1:
-            core_mask = RKNNLite.NPU_CORE_0_1_2
+            ret = rknn_lite.init_runtime(core_mask=RKNNLite.NPU_CORE_0_1_2)
         else:
-            core_mask = None
+            ret = rknn_lite.init_runtime()
     else:
-        core_mask = None
+        ret = rknn_lite.init_runtime() # Please do not set this parameter on other platforms.
 
-    ret = rknn_lite.init_runtime(core_mask=core_mask)
     if ret != 0:
         print("Init runtime environment failed")
         exit(ret)
