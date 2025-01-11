@@ -27,7 +27,6 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
-  // let showPassword = $state(false);
   let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
