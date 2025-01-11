@@ -16,12 +16,8 @@ export class VersionHistoryRepository implements IVersionHistoryRepository {
   }
 
   @GenerateSql()
-  async getLatest(): Promise<VersionHistoryEntity | null> {
-    return this.db
-      .selectFrom('version_history')
-      .selectAll()
-      .orderBy('createdAt', 'desc')
-      .executeTakeFirst() as unknown as Promise<VersionHistoryEntity | null>;
+  async getLatest(): Promise<VersionHistoryEntity | undefined> {
+    return this.db.selectFrom('version_history').selectAll().orderBy('createdAt', 'desc').executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
