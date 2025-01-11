@@ -64,6 +64,7 @@ optional = true
 
 [tool.poetry.group.rknn.dependencies]
 rknn-toolkit-lite2 = "^2.3.0"
+onnxruntime = "^1.15.0"
 
 [[tool.poetry.source]]
 name = "cuda12"
