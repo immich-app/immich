@@ -16,8 +16,8 @@ try:
             if soc in device_compatible_str:
                 is_available = True
                 break
-        else:
-            is_available = False
+            else:
+                is_available = False
 except (FileNotFoundError, ImportError):
     is_available = False
 
