@@ -10,8 +10,8 @@ export type SessionSearchOptions = { updatedBefore: Date };
 export interface ISessionRepository {
   search(options: SessionSearchOptions): Promise<SessionEntity[]>;
   create(dto: Insertable<Sessions>): Promise<SessionEntity>;
-  update(dto: Updateable<Sessions>): Promise<SessionEntity>;
+  update(id: string, dto: Updateable<Sessions>): Promise<SessionEntity>;
   delete(id: string): Promise<void>;
-  getByToken(token: string): Promise<E | null>;
+  getByToken(token: string): Promise<E | undefined>;
   getByUserId(userId: string): Promise<E[]>;
 }
