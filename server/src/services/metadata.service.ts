@@ -509,10 +509,10 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: Partial<AssetFaceEntity>[] = [];
+    const facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: Partial<PersonEntity>[] = [];
+    const missing: (Partial<PersonEntity> & { ownerId: string })[] = [];
     const missingWithFaceAsset: Partial<PersonEntity>[] = [];
     for (const region of tags.RegionInfo.RegionList) {
       if (!region.Name) {

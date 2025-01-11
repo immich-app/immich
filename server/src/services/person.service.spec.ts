@@ -20,8 +20,7 @@ import { faceStub } from 'test/fixtures/face.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newTestService } from 'test/utils';
-import { IsNull } from 'typeorm';
+import { makeStream, newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const responseDto: PersonResponseDto = {
@@ -495,14 +494,8 @@ describe(PersonService.name, () => {
     });
 
     it('should delete existing people and faces if forced', async () => {
-      personMock.getAll.mockResolvedValue({
-        items: [faceStub.face1.person, personStub.randomPerson],
-        hasNextPage: false,
-      });
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream([faceStub.face1.person, personStub.randomPerson]));
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       assetMock.getAll.mockResolvedValue({
         items: [assetStub.image],
         hasNextPage: false,
@@ -544,18 +537,12 @@ describe(PersonService.name, () => {
 
     it('should queue missing assets', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({});
 
-      expect(personMock.getAllFaces).toHaveBeenCalledWith(
-        { skip: 0, take: 1000 },
-        { where: { personId: IsNull(), sourceType: SourceType.MACHINE_LEARNING } },
-      );
+      expect(personMock.getAllFaces).toHaveBeenCalledWith({ personId: null, sourceType: SourceType.MACHINE_LEARNING });
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -569,19 +556,13 @@ describe(PersonService.name, () => {
 
     it('should queue all assets', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream());
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({ force: true });
 
-      expect(personMock.getAllFaces).toHaveBeenCalledWith({ skip: 0, take: 1000 }, {});
+      expect(personMock.getAllFaces).toHaveBeenCalledWith(undefined);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -595,26 +576,17 @@ describe(PersonService.name, () => {
 
     it('should run nightly if new face has been added since last run', async () => {
       personMock.getLatestFaceDate.mockResolvedValue(new Date().toISOString());
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream());
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
 
       expect(systemMock.get).toHaveBeenCalledWith(SystemMetadataKey.FACIAL_RECOGNITION_STATE);
       expect(personMock.getLatestFaceDate).toHaveBeenCalledOnce();
-      expect(personMock.getAllFaces).toHaveBeenCalledWith({ skip: 0, take: 1000 }, {});
+      expect(personMock.getAllFaces).toHaveBeenCalledWith(undefined);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.FACIAL_RECOGNITION,
@@ -631,10 +603,7 @@ describe(PersonService.name, () => {
 
       systemMock.get.mockResolvedValue({ lastRun: lastRun.toISOString() });
       personMock.getLatestFaceDate.mockResolvedValue(new Date(lastRun.getTime() - 1).toISOString());
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       personMock.getAllWithoutFaces.mockResolvedValue([]);
 
       await sut.handleQueueRecognizeFaces({ force: true, nightly: true });
@@ -648,15 +617,8 @@ describe(PersonService.name, () => {
 
     it('should delete existing people if forced', async () => {
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0, paused: 0, completed: 0, failed: 0, delayed: 0 });
-      personMock.getAll.mockResolvedValue({
-        items: [faceStub.face1.person, personStub.randomPerson],
-        hasNextPage: false,
-      });
-      personMock.getAllFaces.mockResolvedValue({
-        items: [faceStub.face1],
-        hasNextPage: false,
-      });
-
+      personMock.getAll.mockReturnValue(makeStream([faceStub.face1.person, personStub.randomPerson]));
+      personMock.getAllFaces.mockReturnValue(makeStream([faceStub.face1]));
       personMock.getAllWithoutFaces.mockResolvedValue([personStub.randomPerson]);
 
       await sut.handleQueueRecognizeFaces({ force: true });
