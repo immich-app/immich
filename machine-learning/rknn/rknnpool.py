@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 supported_socs = ["rk3566","rk3568","rk3588"]
 
 try:
-    from rknn.api import RKNNLite
+    from rknnlite.api import RKNNLite
     with open('/proc/device-tree/compatible') as f: 
         # Keep in mind that this is not in container by default.
         # and this way of checking can't check if the rknpu driver is running or not.
