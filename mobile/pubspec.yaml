@@ -8,7 +8,7 @@ environment:
   sdk: '>=3.3.0 <4.0.0'
   flutter: 3.24.5
 
-isar_version: &isar_version 3.1.8 # define the version to be used
+isar_version: &isar_version 4.0.3 # define the version to be used
 
 dependencies:
   flutter:
