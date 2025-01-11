@@ -1,18 +1,16 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 import onnxruntime as ort
 from numpy.typing import NDArray
 from rknn.rknnpool import rknnPoolExecutor
 
-
-from app.models.constants import SUPPORTED_PROVIDERS
 from app.schemas import SessionNode
 
-from ..config import log, settings
+from ..config import log
 
 def runInfrence(rknn_lite, input):
     outputs = rknn_lite.inference(inputs=[input], data_format='nchw')
@@ -24,10 +22,12 @@ class RknnSession:
 
         self.model_path = Path(model_path)
         self.ort_model_path = str(self.model_path).replace(".rknn", ".onnx")
-        log.info(f"Loading RKNN model from {self.model_path} with {1 if 'textual' in str(self.model_path) else 2} threads.")
+        self.tpe = 1 if 'textual' in str(self.model_path) else 2
+
+        log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
         self.rknnpool = rknnPoolExecutor(
             rknnModel=self.model_path.as_posix(),
-            TPEs= 1 if 'textual' in str(self.model_path) else 2,
+            TPEs= self.tpe,
             func=runInfrence)
 
 
@@ -53,7 +53,7 @@ class RknnSession:
         self,
         output_names: list[str] | None,
         input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
-	run_options: Any = None,
+	    run_options: Any = None,
     ):
 
         input_data = [np.ascontiguousarray(v) for v in input_feed.values()][0]
