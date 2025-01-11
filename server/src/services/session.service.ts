@@ -31,6 +31,7 @@ export class SessionService extends BaseService {
 
   async getAll(auth: AuthDto): Promise<SessionResponseDto[]> {
     const sessions = await this.sessionRepository.getByUserId(auth.user.id);
+    console.log('sessions', sessions);
     return sessions.map((session) => mapSession(session, auth.session?.id));
   }
 

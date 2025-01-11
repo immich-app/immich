@@ -1,12 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Kysely } from 'kysely';
+import { ExpressionBuilder, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SessionEntity } from 'src/entities/session.entity';
 import { ISessionRepository, SessionSearchOptions } from 'src/interfaces/session.interface';
 import { Repository } from 'typeorm';
+
+const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
+  return eb
+    .selectFrom('users')
+    .select([
+      'id',
+      'email',
+      'createdAt',
+      'profileImagePath',
+      'isAdmin',
+      'shouldChangePassword',
+      'deletedAt',
+      'oauthId',
+      'updatedAt',
+      'storageLabel',
+      'name',
+      'quotaSizeInBytes',
+      'quotaUsageInBytes',
+      'status',
+      'profileChangedAt',
+    ])
+    .select((eb) =>
+      eb
+        .selectFrom('user_metadata')
+        .whereRef('users.id', '=', 'user_metadata.userId')
+        .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
+        .as('metadata'),
+    )
+    .whereRef('users.id', '=', 'sessions.userId')
+    .where('users.deletedAt', 'is', null)
+    .as('user');
+};
 
 @Injectable()
 export class SessionRepository implements ISessionRepository {
@@ -17,8 +49,6 @@ export class SessionRepository implements ISessionRepository {
 
   @GenerateSql({ params: [{ updatedBefore: DummyValue.DATE }] })
   search(options: SessionSearchOptions): Promise<SessionEntity[]> {
-    // return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore) } });
-
     return this.db
       .selectFrom('sessions')
       .selectAll()
@@ -28,69 +58,26 @@ export class SessionRepository implements ISessionRepository {
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByToken(token: string): Promise<SessionEntity | null> {
-    // return this.repository.findOne({
-    //     where: { token },
-    //     relations: {
-    //       user: {
-    //         metadata: true,
-    //       },
-    //     },
-    //   });
-
     return this.db
       .selectFrom('sessions')
-      .innerJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('users')
-            .select([
-              'id',
-              'email',
-              'createdAt',
-              'profileImagePath',
-              'isAdmin',
-              'shouldChangePassword',
-              'deletedAt',
-              'oauthId',
-              'updatedAt',
-              'storageLabel',
-              'name',
-              'quotaSizeInBytes',
-              'quotaUsageInBytes',
-              'status',
-              'profileChangedAt',
-            ])
-            .select((eb) =>
-              eb
-                .selectFrom('user_metadata')
-                .whereRef('users.id', '=', 'user_metadata.userId')
-                .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
-                .as('metadata'),
-            )
-            .whereRef('users.id', '=', 'sessions.userId')
-            .where('users.deletedAt', 'is', null)
-            .as('user'),
-        (join) => join.onTrue(),
-      )
+      .innerJoinLateral(withUser, (join) => join.onTrue())
       .selectAll('sessions')
       .select((eb) => eb.fn.toJson('user').as('user'))
       .where('sessions.token', '=', token)
       .executeTakeFirst() as unknown as Promise<SessionEntity | null>;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getByUserId(userId: string): Promise<SessionEntity[]> {
-    return this.repository.find({
-      where: {
-        userId,
-      },
-      relations: {
-        user: true,
-      },
-      order: {
-        updatedAt: 'desc',
-        createdAt: 'desc',
-      },
-    });
+    return this.db
+      .selectFrom('sessions')
+      .innerJoinLateral(withUser, (join) => join.onTrue())
+      .selectAll('sessions')
+      .select((eb) => eb.fn.toJson('user').as('user'))
+      .where('sessions.userId', '=', userId)
+      .orderBy('sessions.updatedAt', 'desc')
+      .orderBy('sessions.createdAt', 'desc')
+      .execute() as any as Promise<SessionEntity[]>;
   }
 
   create<T extends Partial<SessionEntity>>(dto: T): Promise<T & { id: string }> {
