@@ -55,6 +55,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - RKNPU driver V0.9.8 or later must be available in the host server
   - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
 - Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for RKNN specific settings
+
 ## Setup
 
 1. If you do not already have it, download the latest [`hwaccel.ml.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
