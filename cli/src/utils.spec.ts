@@ -6,6 +6,7 @@ interface Test {
   test: string;
   options: Omit<CrawlOptions, 'extensions'>;
   files: Record<string, boolean>;
+  skipOnWin32?: boolean;
 }
 
 const cwd = process.cwd();
@@ -56,6 +57,7 @@ const tests: Test[] = [
     files: {
       "/photo's/image.jpg": true,
     },
+    skipOnWin32: true, // single quote interferes with mockfs root on Windows
   },
   {
     test: 'should crawl a single file',
@@ -279,8 +281,12 @@ describe('crawl', () => {
   });
 
   describe('crawl', () => {
-    for (const { test, options, files } of tests) {
-      it(test, async () => {
+    for (const { test: name, options, files, skipOnWin32 } of tests) {
+      if (process.platform === 'win32' && skipOnWin32) {
+        test.skip(name);
+        continue;
+      }
+      it(name, async () => {
         // The file contents is the same as the path.
         mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, file])));
 
