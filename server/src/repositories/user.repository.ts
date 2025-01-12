@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserMetadata, UserMetadataEntity } from 'src/entities/user-metadata.entity';
@@ -12,23 +15,63 @@ import {
 } from 'src/interfaces/user.interface';
 import { IsNull, Not, Repository } from 'typeorm';
 
+const columns = [
+  'id',
+  'email',
+  'createdAt',
+  'profileImagePath',
+  'isAdmin',
+  'shouldChangePassword',
+  'deletedAt',
+  'oauthId',
+  'updatedAt',
+  'storageLabel',
+  'name',
+  'quotaSizeInBytes',
+  'quotaUsageInBytes',
+  'status',
+  'profileChangedAt',
+] as const;
+
 @Injectable()
 export class UserRepository implements IUserRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
     @InjectRepository(UserMetadataEntity) private metadataRepository: Repository<UserMetadataEntity>,
+    @InjectKysely() private db: Kysely<DB>,
   ) {}
 
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
   async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
     options = options || {};
-    return this.userRepository.findOne({
+    const oldUser = await this.userRepository.findOne({
       where: { id: userId },
       withDeleted: options.withDeleted,
       relations: {
         metadata: true,
       },
     });
+
+    console.log('Old User:', oldUser);
+
+    const newMethod = (await this.db
+      .selectFrom('users')
+      .select(columns)
+      .select((eb) =>
+        eb
+          .selectFrom('user_metadata')
+          .whereRef('users.id', '=', 'user_metadata.userId')
+          .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
+          .as('metadata') ,
+      )
+      .where('users.id', '=', userId)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirst()) as unknown as Promise<UserEntity | null>;
+
+    console.log('New User:', newMethod);
+
+    return newMethod;
   }
 
   @GenerateSql()

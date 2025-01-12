@@ -37,6 +37,12 @@ export class UserController {
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {}
 
+  @Get('tests')
+  @Authenticated()
+  tests(@Auth() auth: AuthDto) {
+    return this.service.test(auth);
+  }
+
   @Get()
   @Authenticated()
   searchUsers(@Auth() auth: AuthDto): Promise<UserResponseDto[]> {
