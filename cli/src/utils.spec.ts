@@ -50,12 +50,14 @@ const tests: Test[] = [
     },
   },
   {
-    test: 'should crawl a single folder with single quote',
+    test: 'should crawl folders with quotes',
     options: {
-      pathsToCrawl: ["/photo's/"],
+      pathsToCrawl: ["/photo's/", '/photo"s/', '/photo`s/'],
     },
     files: {
-      "/photo's/image.jpg": true,
+      "/photo's/image1.jpg": true,
+      '/photo"s/image2.jpg': true,
+      '/photo`s/image3.jpg': true,
     },
     skipOnWin32: true, // single quote interferes with mockfs root on Windows
   },
