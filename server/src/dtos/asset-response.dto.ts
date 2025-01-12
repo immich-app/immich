@@ -97,8 +97,17 @@ const mapStack = (entity: AssetEntity) => {
   return {
     id: entity.stack.id,
     primaryAssetId: entity.stack.primaryAssetId,
-    assetCount: entity.stack.assetCount ?? entity.stack.assets.length,
+    assetCount: entity.stack.assetCount ?? entity.stack.assets.length + 1,
   };
+};
+
+// if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
+const hexOrBufferToBase64 = (encoded: string | Buffer) => {
+  if (typeof encoded === 'string') {
+    return Buffer.from(encoded.slice(2), 'hex').toString('base64');
+  }
+
+  return encoded.toString('base64');
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
@@ -129,7 +138,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
-    thumbhash: entity.thumbhash?.toString('base64') ?? null,
+    thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
@@ -143,7 +152,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
-    checksum: entity.checksum.toString('base64'),
+    checksum: hexOrBufferToBase64(entity.checksum),
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,

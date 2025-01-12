@@ -5,5 +5,5 @@ export const IVersionHistoryRepository = 'IVersionHistoryRepository';
 export interface IVersionHistoryRepository {
   create(version: Omit<VersionHistoryEntity, 'id' | 'createdAt'>): Promise<VersionHistoryEntity>;
   getAll(): Promise<VersionHistoryEntity[]>;
-  getLatest(): Promise<VersionHistoryEntity | null>;
+  getLatest(): Promise<VersionHistoryEntity | undefined>;
 }

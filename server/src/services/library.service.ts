@@ -16,7 +16,6 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetStatus, AssetType, ImmichWorker } from 'src/enum';
-import { AssetCreate } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
@@ -224,23 +223,19 @@ export class LibraryService extends BaseService {
 
     const assetIds: string[] = [];
 
-    // Due to a typeorm limitation we must batch the inserts
-    const batchSize = 2000;
-    for (let i = 0; i < assetImports.length; i += batchSize) {
-      const batch = assetImports.slice(i, i + batchSize);
-      const batchIds = await this.assetRepository.createAll(batch).then((assets) => assets.map((asset) => asset.id));
-      assetIds.push(...batchIds);
-    }
+    await this.assetRepository
+      .createAll(assetImports)
+      .then((assets) => assetIds.push(...assets.map((asset) => asset.id)));
 
     let progressMessage = '';
 
     if (job.progressCounter && job.totalAssets) {
-      progressMessage = `(${job.progressCounter} of ${job.totalAssets}) `;
+      progressMessage = `(${job.progressCounter} of ${job.totalAssets})`;
     } else {
-      progressMessage = `(${job.progressCounter} done so far) `;
+      progressMessage = `(${job.progressCounter} done so far)`;
     }
 
-    this.logger.log(`Imported ${assetIds.length} ${progressMessage}file(s) into library ${job.libraryId}`);
+    this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
     await this.queuePostSyncJobs(assetIds);
 
@@ -358,7 +353,7 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private processEntity(filePath: string, ownerId: string, libraryId: string): AssetCreate {
+  private processEntity(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
 
     return {
@@ -377,6 +372,7 @@ export class LibraryService extends BaseService {
       type: mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE,
       originalFileName: parse(assetPath).base,
       isExternal: true,
+      livePhotoVideoId: null,
     };
   }
 
@@ -550,6 +546,8 @@ export class LibraryService extends BaseService {
   }
 
   private async checkExistingAsset(asset: AssetEntity, library: LibraryEntity): Promise<AssetSyncResult> {
+    this.logger.verbose(`Checking existing asset ${asset.originalPath} in library ${library.id}`);
+
     if (!asset) {
       return AssetSyncResult.DO_NOTHING;
     }
@@ -706,7 +704,12 @@ export class LibraryService extends BaseService {
 
     const offlineResult = await this.assetRepository.updateOffline(library);
 
-    const affectedAssetCount = offlineResult.affected;
+    if (offlineResult.numUpdatedRows > Number.MAX_SAFE_INTEGER) {
+      throw new InternalServerErrorException(`Affected asset count is too large: ${offlineResult.numUpdatedRows}`);
+    }
+
+    const affectedAssetCount = Number(offlineResult.numUpdatedRows);
+
     if (affectedAssetCount === undefined) {
       this.logger.error(`Unknown error occurred when updating offline status in ${library.id}`);
       return JobStatus.FAILED;
@@ -722,7 +725,7 @@ export class LibraryService extends BaseService {
       this.logger.log(`No assets were offlined due to import paths and/or exclusion pattern(s) in ${library.id} `);
     } else {
       this.logger.log(
-        `${offlineResult.affected} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
+        `${affectedAssetCount} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
       );
     }
 
@@ -734,6 +737,10 @@ export class LibraryService extends BaseService {
 
     let currentAssetCount = 0;
     for await (const assets of existingAssets) {
+      if (assets.length === 0) {
+        throw new InternalServerErrorException(`Failed to get assets for library ${job.id}`);
+      }
+
       currentAssetCount += assets.length;
 
       await this.jobRepository.queue({

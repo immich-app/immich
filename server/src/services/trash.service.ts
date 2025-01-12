@@ -5,7 +5,6 @@ import { TrashResponseDto } from 'src/dtos/trash.dto';
 import { Permission } from 'src/enum';
 import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
-import { usePagination } from 'src/utils/pagination';
 
 export class TrashService extends BaseService {
   async restoreAssets(auth: AuthDto, dto: BulkIdsDto): Promise<TrashResponseDto> {
@@ -46,27 +45,39 @@ export class TrashService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_TRASH_EMPTY, queue: QueueName.BACKGROUND_TASK })
   async handleQueueEmptyTrash() {
-    let count = 0;
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.trashRepository.getDeletedIds(pagination),
-    );
+    const assets = this.trashRepository.getDeletedIds();
 
-    for await (const assetIds of assetPagination) {
-      this.logger.debug(`Queueing ${assetIds.length} asset(s) for deletion from the trash`);
-      count += assetIds.length;
-      await this.jobRepository.queueAll(
-        assetIds.map((assetId) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: assetId,
-            deleteOnDisk: true,
-          },
-        })),
-      );
+    let count = 0;
+    const batch: string[] = [];
+    for await (const { id } of assets) {
+      batch.push(id);
+
+      if (batch.length === JOBS_ASSET_PAGINATION_SIZE) {
+        await this.handleBatch(batch);
+        count += batch.length;
+        batch.length = 0;
+      }
     }
+
+    await this.handleBatch(batch);
+    count += batch.length;
+    batch.length = 0;
 
     this.logger.log(`Queued ${count} asset(s) for deletion from the trash`);
 
     return JobStatus.SUCCESS;
+  }
+
+  private async handleBatch(ids: string[]) {
+    this.logger.debug(`Queueing ${ids.length} asset(s) for deletion from the trash`);
+    await this.jobRepository.queueAll(
+      ids.map((assetId) => ({
+        name: JobName.ASSET_DELETION,
+        data: {
+          id: assetId,
+          deleteOnDisk: true,
+        },
+      })),
+    );
   }
 }

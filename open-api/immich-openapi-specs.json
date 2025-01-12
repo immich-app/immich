@@ -8450,10 +8450,12 @@
           },
           "fileCreatedAt": {
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "fileModifiedAt": {
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "hasMetadata": {
@@ -8486,6 +8488,7 @@
           },
           "localDateTime": {
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "originalFileName": {
@@ -9972,7 +9975,8 @@
               {
                 "$ref": "#/components/schemas/AssetOrder"
               }
-            ]
+            ],
+            "default": "desc"
           },
           "originalFileName": {
             "type": "string"

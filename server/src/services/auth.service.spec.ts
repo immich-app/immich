@@ -405,7 +405,7 @@ describe('AuthService', () => {
 
   describe('validate - api key', () => {
     it('should throw an error if no api key is found', async () => {
-      keyMock.getKey.mockResolvedValue(null);
+      keyMock.getKey.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -417,7 +417,7 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if api key has insufficient permissions', async () => {
-      keyMock.getKey.mockResolvedValue({ ...keyStub.admin, permissions: [] });
+      keyMock.getKey.mockResolvedValue(keyStub.authKey);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -428,14 +428,14 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      keyMock.getKey.mockResolvedValue(keyStub.admin);
+      keyMock.getKey.mockResolvedValue(keyStub.authKey);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
-      ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.admin });
+      ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.authKey });
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });

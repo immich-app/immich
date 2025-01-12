@@ -52,9 +52,12 @@
         >
           <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} ariaHidden />
           {#if isLastSegment}
-            <p class="cursor-default">{segment}</p>
+            <p class="cursor-default whitespace-pre-wrap">{segment}</p>
           {:else}
-            <a class="underline hover:font-semibold" href={getLink(pathSegments.slice(0, index + 1).join('/'))}>
+            <a
+              class="underline hover:font-semibold whitespace-pre-wrap"
+              href={getLink(pathSegments.slice(0, index + 1).join('/'))}
+            >
               {segment}
             </a>
           {/if}

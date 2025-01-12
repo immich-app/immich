@@ -4,6 +4,7 @@ import { Mocked, vitest } from 'vitest';
 export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
   return {
     create: vitest.fn(),
+    createAll: vitest.fn(),
     upsertExif: vitest.fn(),
     upsertJobStatus: vitest.fn(),
     getByDayOfYear: vitest.fn(),
@@ -22,6 +23,8 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
     getAllByDeviceId: vitest.fn(),
     getLivePhotoCount: vitest.fn(),
+    getAllInLibrary: vitest.fn(),
+    getAssetCount: vitest.fn(),
     updateAll: vitest.fn(),
     updateDuplicates: vitest.fn(),
     getByLibraryIdAndOriginalPath: vitest.fn(),

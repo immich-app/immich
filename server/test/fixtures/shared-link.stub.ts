@@ -311,7 +311,11 @@ export const sharedLinkResponseStub = {
     allowUpload: false,
     allowDownload: false,
     showMetadata: false,
-    album: { ...albumResponse, startDate: assetResponse.fileCreatedAt, endDate: assetResponse.fileCreatedAt },
+    album: {
+      ...albumResponse,
+      startDate: assetResponse.fileCreatedAt ?? undefined,
+      endDate: assetResponse.fileCreatedAt ?? undefined,
+    },
     assets: [{ ...assetResponseWithoutMetadata, exifInfo: undefined }],
   }),
 };

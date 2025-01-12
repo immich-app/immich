@@ -71,10 +71,8 @@ export class BackupService extends BaseService {
   @OnJob({ name: JobName.BACKUP_DATABASE, queue: QueueName.BACKUP_DATABASE })
   async handleBackupDatabase(): Promise<JobStatus> {
     this.logger.debug(`Database Backup Started`);
-
-    const {
-      database: { config },
-    } = this.configRepository.getEnv();
+    const { database } = this.configRepository.getEnv();
+    const config = database.config.typeorm;
 
     const isUrlConnection = config.connectionType === 'url';
 

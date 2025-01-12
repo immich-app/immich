@@ -65,7 +65,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: ac78487
+      ref: '4530808'
 
   #image editing packages
   crop_image: ^1.0.13
