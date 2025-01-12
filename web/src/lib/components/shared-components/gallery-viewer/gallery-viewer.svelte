@@ -351,11 +351,12 @@
 
 {#if assets.length > 0}
   <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
-    {#each assets as asset, i (i)}
+    {#each assets as asset, i}
       <div
         class="absolute"
-        style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
-          .top}px; left: {geometry.boxes[i].left}px"
+        style="width: {geometry.getWidth(i)}px; height: {geometry.getHeight(i)}px; top: {geometry.getTop(
+          i,
+        )}px; left: {geometry.getLeft(i)}px"
         title={showAssetName ? asset.originalFileName : ''}
       >
         <Thumbnail

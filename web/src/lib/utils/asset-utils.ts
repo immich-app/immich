@@ -37,6 +37,7 @@ import { getJustifiedLayout, type LayoutOptions } from 'justified-layout-wasm';
 import { DateTime } from 'luxon';
 import { t, type Translations } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import { JustifiedLayout } from '../../../justified-layout/js';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
@@ -596,5 +597,5 @@ export function getJustifiedLayoutFromAssets(assets: AssetResponseDto[], options
     const { width, height } = getAssetRatio(assets[i]);
     aspectRatios[i] = width / height;
   }
-  return getJustifiedLayout(aspectRatios, options);
+  return new JustifiedLayout(aspectRatios, options);
 }

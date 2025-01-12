@@ -1,10 +1,10 @@
 import type { AssetBucket } from '$lib/stores/assets.store';
 import { locale } from '$lib/stores/preferences.store';
 import type { AssetResponseDto } from '@immich/sdk';
-import type { Layout } from 'justified-layout-wasm';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
+import type { JustifiedLayout } from '../../../justified-layout/js';
 
 export type DateGroup = {
   date: DateTime;
@@ -13,7 +13,7 @@ export type DateGroup = {
   height: number;
   heightActual: boolean;
   intersecting: boolean;
-  geometry: Layout;
+  geometry: JustifiedLayout;
   bucket: AssetBucket;
 };
 export type ScrubberListener = (
@@ -109,25 +109,6 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
       bucket,
     };
   });
-}
-
-export type LayoutBox = {
-  aspectRatio: number;
-  top: number;
-  width: number;
-  height: number;
-  left: number;
-  forcedAspectRatio?: boolean;
-};
-
-export function calculateWidth(boxes: LayoutBox[]): number {
-  let width = 0;
-  for (const box of boxes) {
-    if (box.top < 100) {
-      width = box.left + box.width;
-    }
-  }
-  return width;
 }
 
 export function findTotalOffset(element: HTMLElement, stop: HTMLElement) {

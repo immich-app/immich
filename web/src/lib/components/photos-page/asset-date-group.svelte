@@ -177,8 +177,7 @@
             style:height={dateGroup.geometry.containerHeight + 'px'}
             style:width={dateGroup.geometry.containerWidth + 'px'}
           >
-            {#each dateGroup.assets as asset, index (asset.id)}
-              {@const box = dateGroup.geometry.boxes[index]}
+            {#each dateGroup.assets as asset, i (asset.id)}
               {@const isSmallGroup = dateGroup.assets.length <= SMALL_GROUP_THRESHOLD}
               <!-- update ASSET_GRID_PADDING-->
               <div
@@ -191,10 +190,10 @@
                 }}
                 data-asset-id={asset.id}
                 class="absolute"
-                style:width={box.width + 'px'}
-                style:height={box.height + 'px'}
-                style:top={box.top + 'px'}
-                style:left={box.left + 'px'}
+                style:width={dateGroup.geometry.getWidth(i) + 'px'}
+                style:height={dateGroup.geometry.getHeight(i) + 'px'}
+                style:top={dateGroup.geometry.getTop(i) + 'px'}
+                style:left={dateGroup.geometry.getLeft(i) + 'px'}
               >
                 <Thumbnail
                   {dateGroup}
@@ -216,8 +215,8 @@
                   selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}
-                  thumbnailWidth={box.width}
-                  thumbnailHeight={box.height}
+                  thumbnailWidth={dateGroup.geometry.getWidth(i)}
+                  thumbnailHeight={dateGroup.geometry.getHeight(i)}
                   eagerThumbhash={isSmallGroup}
                 />
               </div>
