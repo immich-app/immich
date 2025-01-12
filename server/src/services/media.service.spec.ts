@@ -1138,6 +1138,22 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should default max bitrate to kbps if no unit is provided', async () => {
+      mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
+      systemMock.get.mockResolvedValue({ ffmpeg: { maxBitrate: '4500' } });
+      assetMock.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mediaMock.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v h264', '-maxrate 4500k', '-bufsize 9000k']),
+          twoPass: false,
+        }),
+      );
+    });
+
     it('should transcode in two passes for h264/h265 when enabled and max bitrate is above 0', async () => {
       mediaMock.probe.mockResolvedValue(probeStub.matroskaContainer);
       systemMock.get.mockResolvedValue({ ffmpeg: { twoPass: true, maxBitrate: '4500k' } });
