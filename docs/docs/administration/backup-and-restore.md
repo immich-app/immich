@@ -79,7 +79,7 @@ docker exec -it immich_postgres bash              # Enter the Docker shell and r
 # Check the database user if you deviated from the default. If your backup ends in `.gz`, replace `cat` with `gunzip`
 cat < '/dump.sql' \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| psql --dbmame=postgres --username=<DB_USERNAME> # Restore Backup
+| psql --dbname=postgres --username=<DB_USERNAME> # Restore Backup
 exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```
