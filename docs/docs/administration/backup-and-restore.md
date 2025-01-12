@@ -95,11 +95,13 @@ Some deployment methods make it difficult to start the database without also sta
 
 ## Filesystem
 
-Immich stores two types of content in the filesystem: (1) original, unmodified assets (photos and videos), and (2) generated content. Only the original content needs to be backed-up, which is stored in the following folders:
+Immich stores two types of content in the filesystem: (a) original, unmodified assets (photos and videos), and (b) generated content. We recommend backing up the entire contents of `UPLOAD_LOCATION`, but only the original content is critical, which is stored in the following folders:
 
 1. `UPLOAD_LOCATION/library`
 2. `UPLOAD_LOCATION/upload`
 3. `UPLOAD_LOCATION/profile`
+
+If you choose to back up only those folders, you will need to rerun the transcoding and thumbnail generation jobs for all assets after you restore from a backup.
 
 :::caution
 If you moved some of these folders onto a different storage device, such as `profile/`, make sure to adjust the backup path to match your setup
