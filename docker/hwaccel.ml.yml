@@ -13,6 +13,18 @@ services:
     volumes:
       - /lib/firmware/mali_csffw.bin:/lib/firmware/mali_csffw.bin:ro # Mali firmware for your chipset (not always required depending on the driver)
       - /usr/lib/libmali.so:/usr/lib/libmali.so:ro # Mali driver for your chipset (always required)
+  
+  rknn:
+    security_opt:
+      - systempaths=unconfined
+      - apparmor=unconfined
+    devices:
+      - /dev/rga:/dev/rga
+      - /dev/dri:/dev/dri
+      - /dev/dma_heap:/dev/dma_heap
+      - /dev/mpp_service:/dev/mpp_service
+    volumes:
+      - /sys/kernel/debug/:/sys/kernel/debug/:ro
 
   cpu: {}
 
