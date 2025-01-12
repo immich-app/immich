@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { mdiContentDuplicate } from '@mdi/js';
+  import { mdiAccountGroup, mdiContentDuplicate } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
@@ -16,5 +16,14 @@
       ><Icon path={mdiContentDuplicate} class="text-immich-primary dark:text-immich-dark-primary" size="24" />
     </span>
     {$t('review_duplicates')}
+  </a>
+
+  <p class="text-xs font-medium p-4">{$t('organize_people').toUpperCase()}</p>
+  <a
+    href={AppRoute.MERGE_FACES}
+    class="w-full hover:bg-gray-100 dark:hover:bg-immich-dark-gray flex items-center gap-4 p-4"
+  >
+    <span><Icon path={mdiAccountGroup} class="text-immich-primary dark:text-immich-dark-primary" size="24" /> </span>
+    {$t('merge_people')}
   </a>
 </div>

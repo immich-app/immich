@@ -46,6 +46,7 @@ export enum AppRoute {
 
   UTILITIES = '/utilities',
   DUPLICATES = '/utilities/duplicates',
+  MERGE_FACES = '/utilities/merge-faces',
 
   FOLDERS = '/folders',
   TAGS = '/tags',
