@@ -49,6 +49,15 @@ const tests: Test[] = [
     },
   },
   {
+    test: 'should crawl a single folder with single quote',
+    options: {
+      pathsToCrawl: ["/photo's/"],
+    },
+    files: {
+      "/photo's/image.jpg": true,
+    },
+  },
+  {
     test: 'should crawl a single file',
     options: {
       pathsToCrawl: ['/photos/image.jpg'],
