@@ -4,6 +4,8 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
+import topLevelAwait from 'vite-plugin-top-level-await';
+import wasm from 'vite-plugin-wasm';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -40,10 +42,15 @@ export default defineConfig({
       : undefined,
     enhancedImages(),
     svelteTesting(),
+    wasm(),
+    topLevelAwait(),
   ],
   optimizeDeps: {
-    entries: ['src/**/*.{svelte,ts,html}'],
+    exclude: ['justified-layout-wasm'],
   },
+  // optimizeDeps: {
+  //   entries: ['src/**/*.{svelte,ts,html}'],
+  // },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,

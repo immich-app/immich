@@ -33,6 +33,7 @@ import {
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
+import { getJustifiedLayout, type LayoutOptions } from 'justified-layout-wasm';
 import { DateTime } from 'luxon';
 import { t, type Translations } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -587,3 +588,13 @@ export const copyImageToClipboard = async (source: HTMLImageElement | string) =>
   const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
   await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 };
+
+export function getJustifiedLayoutFromAssets(assets: AssetResponseDto[], options: LayoutOptions) {
+  const aspectRatios = new Float32Array(assets.length);
+  // eslint-disable-next-line unicorn/no-for-loop
+  for (let i = 0; i < assets.length; i++) {
+    const { width, height } = getAssetRatio(assets[i]);
+    aspectRatios[i] = width / height;
+  }
+  return getJustifiedLayout(aspectRatios, options);
+}
