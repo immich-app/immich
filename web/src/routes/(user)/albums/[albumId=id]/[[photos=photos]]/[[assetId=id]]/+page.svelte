@@ -215,7 +215,10 @@
       viewMode = AlbumPageViewMode.VIEW;
       return;
     }
-
+    if (viewMode === AlbumPageViewMode.SELECT_THUMBNAIL) {
+      viewMode = AlbumPageViewMode.VIEW;
+      return;
+    }
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       await handleCloseSelectAssets();
       return;

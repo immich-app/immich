@@ -256,8 +256,6 @@ describe(LibraryService.name, () => {
         exclusionPatterns: [],
       };
 
-      assetMock.getById.mockResolvedValue(null);
-
       await expect(sut.handleSyncAsset(mockAssetJob)).resolves.toBe(JobStatus.SKIPPED);
 
       expect(assetMock.remove).not.toHaveBeenCalled();
@@ -394,7 +392,6 @@ describe(LibraryService.name, () => {
         assetPath: '/data/user1/photo.jpg',
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
@@ -425,6 +422,7 @@ describe(LibraryService.name, () => {
             name: JobName.SIDECAR_DISCOVERY,
             data: {
               id: assetStub.image.id,
+              source: 'upload',
             },
           },
         ],
@@ -438,7 +436,6 @@ describe(LibraryService.name, () => {
         assetPath: '/data/user1/video.mp4',
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.video);
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
 
@@ -469,6 +466,7 @@ describe(LibraryService.name, () => {
             name: JobName.SIDECAR_DISCOVERY,
             data: {
               id: assetStub.image.id,
+              source: 'upload',
             },
           },
         ],
@@ -482,7 +480,6 @@ describe(LibraryService.name, () => {
         assetPath: '/data/user1/photo.jpg',
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
       libraryMock.get.mockResolvedValue({ ...libraryStub.externalLibrary1, deletedAt: new Date() });
 
@@ -548,7 +545,6 @@ describe(LibraryService.name, () => {
         assetPath: '/data/user1/photo.jpg',
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(sut.handleSyncFile(mockLibraryJob)).resolves.toBe(JobStatus.FAILED);
@@ -567,7 +563,6 @@ describe(LibraryService.name, () => {
         assetPath: '/data/user1/photo.jpg',
       };
 
-      assetMock.getByLibraryIdAndOriginalPath.mockResolvedValue(null);
       assetMock.create.mockResolvedValue(assetStub.image);
 
       await expect(sut.handleSyncFile(mockLibraryJob)).resolves.toBe(JobStatus.SKIPPED);

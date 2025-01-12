@@ -364,7 +364,7 @@
       <div><Icon path={mdiImageOutline} size="24" /></div>
 
       <div>
-        <p class="break-all flex place-items-center gap-2">
+        <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
           {asset.originalFileName}
           {#if isOwner}
             <CircleIconButton
@@ -377,14 +377,14 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')}>
-            <p
-              class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
-              transition:slide={{ duration: 250 }}
-            >
+          <p
+            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+            transition:slide={{ duration: 250 }}
+          >
+            <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
-            </p>
-          </a>
+            </a>
+          </p>
         {/if}
         {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">

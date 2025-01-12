@@ -33,7 +33,10 @@ export async function* usePagination<T>(
   }
 }
 
-function paginationHelper<Entity extends ObjectLiteral>(items: Entity[], take: number): PaginationResult<Entity> {
+export function paginationHelper<Entity extends ObjectLiteral>(
+  items: Entity[],
+  take: number,
+): PaginationResult<Entity> {
   const hasNextPage = items.length > take;
   items.splice(take);
 

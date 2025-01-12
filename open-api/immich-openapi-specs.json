@@ -7454,7 +7454,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.123.0",
+    "version": "1.124.2",
     "contact": {}
   },
   "tags": [],
@@ -10000,7 +10000,8 @@
               {
                 "$ref": "#/components/schemas/AssetOrder"
               }
-            ]
+            ],
+            "default": "desc"
           },
           "originalFileName": {
             "type": "string"

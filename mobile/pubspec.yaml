@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.123.0+172
+version: 1.124.2+175
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -65,7 +65,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: ac78487
+      ref: '4530808'
 
   #image editing packages
   crop_image: ^1.0.13
