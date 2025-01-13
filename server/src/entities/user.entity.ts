@@ -76,9 +76,7 @@ export class UserEntity {
 }
 
 export const withMetadata = (eb: ExpressionBuilder<DB, 'users'>) => {
-  return eb
-    .selectFrom('user_metadata')
-    .whereRef('users.id', '=', 'user_metadata.userId')
-    .select((eb) => jsonArrayFrom(eb.table('user_metadata')).as('metadata'))
-    .as('metadata');
+  return jsonArrayFrom(
+    eb.selectFrom('user_metadata').selectAll('user_metadata').whereRef('users.id', '=', 'user_metadata.userId'),
+  ).as('metadata');
 };

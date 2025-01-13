@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
-import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -42,14 +41,13 @@ export class UserRepository implements IUserRepository {
   get(userId: string, options: UserFindOptions): Promise<UserEntity | undefined> {
     options = options || {};
 
-    return this.db
-      .selectFrom('users')
-      .leftJoin('user_metadata', 'user_metadata.userId', 'users.id')
-      .select(columns)
-      .select((eb) => jsonArrayFrom(eb.table('user_metadata')).as('metadata'))
-      .where('users.id', '=', userId)
-      .$if(!options.withDeleted, (qb) => qb.where('users.deletedAt', 'is', null))
-      .executeTakeFirst() as Promise<UserEntity | undefined>;
+    const query = this.db.selectFrom('users').select(columns).select(withMetadata).where('users.id', '=', userId);
+
+    if (options.withDeleted) {
+      query.where('users.deletedAt', 'is', null);
+    }
+
+    return query.executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql()
@@ -105,14 +103,13 @@ export class UserRepository implements IUserRepository {
   }
 
   getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
-    return this.db
-      .selectFrom('users')
-      .leftJoin('user_metadata', 'user_metadata.userId', 'users.id')
-      .select(columns)
-      .select((eb) => jsonArrayFrom(eb.table('user_metadata')).as('metadata'))
-      .$if(!withDeleted, (qb) => qb.where('deletedAt', 'is', null))
-      .orderBy('createdAt', 'desc')
-      .execute() as unknown as Promise<UserEntity[]>;
+    const query = this.db.selectFrom('users').select(columns).select(withMetadata).orderBy('createdAt', 'desc');
+
+    if (!withDeleted) {
+      query.where('deletedAt', 'is', null);
+    }
+
+    return query.execute() as unknown as Promise<UserEntity[]>;
   }
 
   async create(dto: Insertable<Users>): Promise<UserEntity> {
@@ -178,14 +175,14 @@ export class UserRepository implements IUserRepository {
           .filterWhere((eb) => eb.and([eb('assets.type', '=', 'VIDEO'), eb('assets.isVisible', '=', true)]))
           .as('videos'),
         eb.fn
-          .coalesce(eb.fn.sum('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), sql<number>`0`)
+          .coalesce(eb.fn.sum('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))
           .as('usage'),
         eb.fn
           .coalesce(
             eb.fn
               .sum('exif.fileSizeInByte')
               .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'IMAGE')])),
-            sql<number>`0`,
+            eb.lit(0),
           )
           .as('usagePhotos'),
         eb.fn
@@ -193,7 +190,7 @@ export class UserRepository implements IUserRepository {
             eb.fn
               .sum('exif.fileSizeInByte')
               .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'VIDEO')])),
-            sql<number>`0`,
+            eb.lit(0),
           )
           .as('usageVideos'),
       ])
@@ -225,18 +222,20 @@ export class UserRepository implements IUserRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async syncUsage(id?: string) {
-    await this.db
-      .updateTable('users')
-      .set({
-        quotaUsageInBytes: (eb) =>
-          eb
-            .selectFrom('assets')
-            .leftJoin('exif', 'exif.assetId', 'assets.id')
-            .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), sql<number>`0`).as('usage'))
-            .where((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.ownerId', '=', eb.ref('users.id'))])),
-        updatedAt: new Date(),
-      })
-      .$if(id != undefined, (eb) => eb.where('users.id', '=', asUuid(id!)))
-      .execute();
+    const query = this.db.updateTable('users').set({
+      quotaUsageInBytes: (eb) =>
+        eb
+          .selectFrom('assets')
+          .leftJoin('exif', 'exif.assetId', 'assets.id')
+          .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
+          .where((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.ownerId', '=', eb.ref('users.id'))])),
+      updatedAt: new Date(),
+    });
+
+    if (id != undefined) {
+      query.where('users.id', '=', asUuid(id));
+    }
+
+    await query.execute();
   }
 }
