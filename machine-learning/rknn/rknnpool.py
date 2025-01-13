@@ -4,6 +4,8 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
+import numpy as np
+from numpy.typing import NDArray
 
 supported_socs = ["rk3562", "rk3566", "rk3568", "rk3576", "rk3588"]
 coremask_supported_socs = ["rk3576","rk3588"]
@@ -63,7 +65,7 @@ def initRKNNs(rknnModel="./rknnModel/yolov5s.rknn", TPEs=1):
 
 
 class rknnPoolExecutor:
-    def __init__(self, rknnModel, TPEs, func):
+    def __init__(self, rknnModel: str, TPEs: int, func):
         self.TPEs = TPEs
         self.queue = Queue()
         self.rknnPool = initRKNNs(rknnModel, TPEs)
@@ -71,17 +73,17 @@ class rknnPoolExecutor:
         self.func = func
         self.num = 0
 
-    def put(self, frame):
+    def put(self, frame) -> None:
         self.queue.put(self.pool.submit(self.func, self.rknnPool[self.num % self.TPEs], frame))
         self.num += 1
 
-    def get(self):
+    def get(self) -> list[list[NDArray[np.float32]], bool]:
         if self.queue.empty():
             return None, False
         fut = self.queue.get()
         return fut.result(), True
 
-    def release(self):
+    def release(self) -> None:
         self.pool.shutdown()
         for rknn_lite in self.rknnPool:
             rknn_lite.release()
