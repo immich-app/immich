@@ -1,8 +1,6 @@
 <script lang="ts">
   import type { PageData } from './$types';
-  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { page } from '$app/stores';
-  import { onMount } from 'svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { AppRoute } from '$lib/constants';
@@ -73,21 +71,6 @@
       });
     }
   };
-
-  onMount(async () => {
-    const { people: similarPeople } = await getAllPeople({
-      withHidden: false,
-      closestPersonId: data.person.id,
-    });
-    // Filter out the person we searched for since we don't want to merge with themselves
-    const selfIndex = similarPeople.findIndex((person) => person.id === data.person.id);
-    if (selfIndex !== -1) {
-      similarPeople.splice(selfIndex, 1);
-    }
-    people = similarPeople;
-  });
-
-  let people: PersonResponseDto[] = $state([]);
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -102,7 +85,7 @@
   {/snippet}
   <div class="flex flex-col gap-4">
     <div class="flex flex-wrap gap-1 p-4">
-      {#each people as person, index}
+      {#each data.similarPeople as person, index}
         <div
           class="flex-1 aspect-square min-w-48 group relative focus-visible:outline-none flex overflow-hidden bg-immich-primary/20 dark:bg-immich-dark-primary/20"
           onclick={() => selectedPeople.size > 0 && toggleSelection(person.id)}
