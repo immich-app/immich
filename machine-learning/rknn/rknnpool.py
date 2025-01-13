@@ -20,9 +20,11 @@ try:
                 break
             else:
                 is_available = False
+                soc_name = None
     is_available = os.path.exists("/sys/kernel/debug/rknpu/load")
 except (FileNotFoundError, ImportError):
     is_available = False
+    soc_name = None
 
 
 def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
