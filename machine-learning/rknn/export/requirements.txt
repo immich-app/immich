@@ -1,0 +1,1 @@
+rknn-toolkit2==2.3.0
