@@ -167,11 +167,11 @@ export class UserRepository implements IUserRepository {
       .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes as quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
-          .count('assets.id')
+          .countAll()
           .filterWhere((eb) => eb.and([eb('assets.type', '=', 'IMAGE'), eb('assets.isVisible', '=', true)]))
           .as('photos'),
         eb.fn
-          .count('assets.id')
+          .countAll()
           .filterWhere((eb) => eb.and([eb('assets.type', '=', 'VIDEO'), eb('assets.isVisible', '=', true)]))
           .as('videos'),
         eb.fn
@@ -228,7 +228,8 @@ export class UserRepository implements IUserRepository {
           .selectFrom('assets')
           .leftJoin('exif', 'exif.assetId', 'assets.id')
           .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
-          .where((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.ownerId', '=', eb.ref('users.id'))])),
+          .where('assets.libraryId', 'is', null)
+          .where('assets.ownerId', '=', eb.ref('users.id')),
       updatedAt: new Date(),
     });
 
