@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { UserMetadata, UserMetadataEntity } from 'src/entities/user-metadata.entity';
+import { UserMetadata } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
 import {
   IUserRepository,
@@ -14,7 +12,6 @@ import {
   UserStatsQueryResponse,
 } from 'src/interfaces/user.interface';
 import { asUuid } from 'src/utils/database';
-import { Repository } from 'typeorm';
 
 const columns = [
   'id',
@@ -36,12 +33,7 @@ const columns = [
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
-    @InjectRepository(UserMetadataEntity) private metadataRepository: Repository<UserMetadataEntity>,
-    @InjectKysely() private db: Kysely<DB>,
-  ) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
   get(userId: string, options: UserFindOptions): Promise<UserEntity | undefined> {
