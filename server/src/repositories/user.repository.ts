@@ -52,17 +52,21 @@ export class UserRepository implements IUserRepository {
 
   @GenerateSql()
   getAdmin(): Promise<UserEntity | undefined> {
-    return this.db.selectFrom('users').select(columns).where('isAdmin', '=', true).executeTakeFirst() as Promise<
-      UserEntity | undefined
-    >;
+    return this.db
+      .selectFrom('users')
+      .select(columns)
+      .where('users.isAdmin', '=', true)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql()
   async hasAdmin(): Promise<boolean> {
     const admin = (await this.db
       .selectFrom('users')
-      .select('id')
-      .where('isAdmin', '=', true)
+      .select('users.id')
+      .where('users.isAdmin', '=', true)
+      .where('users.deletedAt', 'is', null)
       .executeTakeFirst()) as UserEntity;
 
     return !!admin;
@@ -75,6 +79,7 @@ export class UserRepository implements IUserRepository {
       .select(columns)
       .$if(!!withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
+      .where('users.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
@@ -83,22 +88,26 @@ export class UserRepository implements IUserRepository {
     return this.db
       .selectFrom('users')
       .select(columns)
-      .where('storageLabel', '=', storageLabel)
+      .where('users.storageLabel', '=', storageLabel)
+      .where('users.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
   getByOAuthId(oauthId: string): Promise<UserEntity | undefined> {
-    return this.db.selectFrom('users').select(columns).where('oauthId', '=', oauthId).executeTakeFirst() as Promise<
-      UserEntity | undefined
-    >;
+    return this.db
+      .selectFrom('users')
+      .select(columns)
+      .where('users.oauthId', '=', oauthId)
+      .where('users.deletedAt', 'is', null)
+      .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   getDeletedUsers(): Promise<UserEntity[]> {
     return this.db
       .selectFrom('users')
       .select(columns)
-      .where('deletedAt', 'is not', null)
+      .where('users.deletedAt', 'is not', null)
       .execute() as unknown as Promise<UserEntity[]>;
   }
 
@@ -124,8 +133,8 @@ export class UserRepository implements IUserRepository {
     return this.db
       .updateTable('users')
       .set(dto)
-      .where('id', '=', asUuid(id))
-      .where('deletedAt', 'is', null)
+      .where('users.id', '=', asUuid(id))
+      .where('users.deletedAt', 'is', null)
       .returning(columns)
       .returning(withMetadata)
       .executeTakeFirst() as unknown as Promise<UserEntity>;
@@ -217,21 +226,25 @@ export class UserRepository implements IUserRepository {
       .updateTable('users')
       .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${delta}`, updatedAt: new Date() })
       .where('id', '=', asUuid(id))
+      .where('users.deletedAt', 'is', null)
       .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async syncUsage(id?: string) {
-    const query = this.db.updateTable('users').set({
-      quotaUsageInBytes: (eb) =>
-        eb
-          .selectFrom('assets')
-          .leftJoin('exif', 'exif.assetId', 'assets.id')
-          .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
-          .where('assets.libraryId', 'is', null)
-          .where('assets.ownerId', '=', eb.ref('users.id')),
-      updatedAt: new Date(),
-    });
+    const query = this.db
+      .updateTable('users')
+      .set({
+        quotaUsageInBytes: (eb) =>
+          eb
+            .selectFrom('assets')
+            .leftJoin('exif', 'exif.assetId', 'assets.id')
+            .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
+            .where('assets.libraryId', 'is', null)
+            .where('assets.ownerId', '=', eb.ref('users.id')),
+        updatedAt: new Date(),
+      })
+      .where('users.deletedAt', 'is', null);
 
     if (id != undefined) {
       query.where('users.id', '=', asUuid(id));

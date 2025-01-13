@@ -21,14 +21,19 @@ select
     select
       coalesce(json_agg(agg), '[]')
     from
-      "user_metadata" as agg
+      (
+        select
+          "user_metadata".*
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
   ) as "metadata"
 from
   "users"
-  left join "user_metadata" on "user_metadata"."userId" = "users"."id"
 where
   "users"."id" = $1
-  and "users"."deletedAt" is null
 
 -- UserRepository.getAdmin
 select
@@ -50,15 +55,17 @@ select
 from
   "users"
 where
-  "isAdmin" = $1
+  "users"."isAdmin" = $1
+  and "users"."deletedAt" is null
 
 -- UserRepository.hasAdmin
 select
-  "id"
+  "users"."id"
 from
   "users"
 where
-  "isAdmin" = $1
+  "users"."isAdmin" = $1
+  and "users"."deletedAt" is null
 
 -- UserRepository.getByEmail
 select
@@ -81,6 +88,7 @@ from
   "users"
 where
   "email" = $1
+  and "users"."deletedAt" is null
 
 -- UserRepository.getByStorageLabel
 select
@@ -102,7 +110,8 @@ select
 from
   "users"
 where
-  "storageLabel" = $1
+  "users"."storageLabel" = $1
+  and "users"."deletedAt" is null
 
 -- UserRepository.getByOAuthId
 select
@@ -124,21 +133,22 @@ select
 from
   "users"
 where
-  "oauthId" = $1
+  "users"."oauthId" = $1
+  and "users"."deletedAt" is null
 
 -- UserRepository.getUserStats
 select
   "users"."id" as "userId",
   "users"."name" as "userName",
   "users"."quotaSizeInBytes" as "quotaSizeInBytes",
-  count("assets"."id") filter (
+  count(*) filter (
     where
       (
         "assets"."type" = $1
         and "assets"."isVisible" = $2
       )
   ) as "photos",
-  count("assets"."id") filter (
+  count(*) filter (
     where
       (
         "assets"."type" = $3
@@ -190,6 +200,7 @@ set
   "updatedAt" = $2
 where
   "id" = $3::uuid
+  and "users"."deletedAt" is null
 
 -- UserRepository.syncUsage
 update "users"
@@ -201,11 +212,9 @@ set
       "assets"
       left join "exif" on "exif"."assetId" = "assets"."id"
     where
-      (
-        "assets"."libraryId" is null
-        and "assets"."ownerId" = "users"."id"
-      )
+      "assets"."libraryId" is null
+      and "assets"."ownerId" = "users"."id"
   ),
   "updatedAt" = $1
 where
-  "users"."id" = $2::uuid
+  "users"."deletedAt" is null
