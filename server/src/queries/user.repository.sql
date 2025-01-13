@@ -34,6 +34,7 @@ from
   "users"
 where
   "users"."id" = $1
+  and "users"."deletedAt" is null
 
 -- UserRepository.getAdmin
 select
@@ -218,3 +219,4 @@ set
   "updatedAt" = $1
 where
   "users"."deletedAt" is null
+  and "users"."id" = $2::uuid

@@ -41,11 +41,12 @@ export class UserRepository implements IUserRepository {
   get(userId: string, options: UserFindOptions): Promise<UserEntity | undefined> {
     options = options || {};
 
-    const query = this.db.selectFrom('users').select(columns).select(withMetadata).where('users.id', '=', userId);
-
-    if (options.withDeleted) {
-      query.where('users.deletedAt', 'is', null);
-    }
+    const query = this.db
+      .selectFrom('users')
+      .select(columns)
+      .select(withMetadata)
+      .where('users.id', '=', userId)
+      .$if(!!!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null));
 
     return query.executeTakeFirst() as Promise<UserEntity | undefined>;
   }
@@ -112,11 +113,13 @@ export class UserRepository implements IUserRepository {
   }
 
   getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
-    const query = this.db.selectFrom('users').select(columns).select(withMetadata).orderBy('createdAt', 'desc');
-
-    if (!withDeleted) {
-      query.where('deletedAt', 'is', null);
-    }
+    console.log(withDeleted);
+    const query = this.db
+      .selectFrom('users')
+      .select(columns)
+      .select(withMetadata)
+      .$if(!!!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .orderBy('createdAt', 'desc');
 
     return query.execute() as unknown as Promise<UserEntity[]>;
   }
@@ -244,11 +247,8 @@ export class UserRepository implements IUserRepository {
             .where('assets.ownerId', '=', eb.ref('users.id')),
         updatedAt: new Date(),
       })
-      .where('users.deletedAt', 'is', null);
-
-    if (id != undefined) {
-      query.where('users.id', '=', asUuid(id));
-    }
+      .where('users.deletedAt', 'is', null)
+      .$if(id != undefined, (eb) => eb.where('users.id', '=', asUuid(id!)));
 
     await query.execute();
   }
