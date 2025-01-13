@@ -69,7 +69,8 @@ class InferenceModel(ABC):
 
     def _download(self) -> None:
         ignore_patterns = [] if self.model_format == ModelFormat.ARMNN else ["*.armnn"]
-        if self.model_format != ModelFormat.RKNN: ignore_patterns.append("*.rknn")
+        if self.model_format != ModelFormat.RKNN:
+            ignore_patterns.append("*.rknn")
         snapshot_download(
             f"immich-app/{clean_name(self.model_name)}",
             cache_dir=self.cache_dir,
