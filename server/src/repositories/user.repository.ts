@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB, Users } from 'src/db';
+import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserMetadata } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
@@ -31,6 +31,8 @@ const columns = [
   'status',
   'profileChangedAt',
 ] as const;
+
+type Upsert = Insertable<DbUserMetadata>;
 
 @Injectable()
 export class UserRepository implements IUserRepository {
@@ -135,12 +137,12 @@ export class UserRepository implements IUserRepository {
   async upsertMetadata<T extends keyof UserMetadata>(id: string, { key, value }: { key: T; value: UserMetadata[T] }) {
     await this.db
       .insertInto('user_metadata')
-      .values({ userId: id, key, value: JSON.stringify(value) })
+      .values({ userId: id, key, value } as Upsert)
       .onConflict((oc) =>
         oc.columns(['userId', 'key']).doUpdateSet({
           key,
-          value: JSON.stringify(value),
-        }),
+          value,
+        } as Upsert),
       )
       .execute();
   }
