@@ -30,26 +30,28 @@ export class SessionEntity {
   deviceOS!: string;
 }
 
+const userColumns = [
+  'id',
+  'email',
+  'createdAt',
+  'profileImagePath',
+  'isAdmin',
+  'shouldChangePassword',
+  'deletedAt',
+  'oauthId',
+  'updatedAt',
+  'storageLabel',
+  'name',
+  'quotaSizeInBytes',
+  'quotaUsageInBytes',
+  'status',
+  'profileChangedAt',
+] as const;
+
 export const withUser = (eb: ExpressionBuilder<DB, 'sessions'>) => {
   return eb
     .selectFrom('users')
-    .select([
-      'id',
-      'email',
-      'createdAt',
-      'profileImagePath',
-      'isAdmin',
-      'shouldChangePassword',
-      'deletedAt',
-      'oauthId',
-      'updatedAt',
-      'storageLabel',
-      'name',
-      'quotaSizeInBytes',
-      'quotaUsageInBytes',
-      'status',
-      'profileChangedAt',
-    ])
+    .select(userColumns)
     .select((eb) =>
       eb
         .selectFrom('user_metadata')
