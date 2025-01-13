@@ -182,6 +182,8 @@ from
   "users"
   left join "assets" on "assets"."ownerId" = "users"."id"
   left join "exif" on "exif"."assetId" = "assets"."id"
+where
+  "assets"."deletedAt" is null
 group by
   "users"."id"
 order by
