@@ -1,19 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Kysely } from 'kysely';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
+import { DB, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { UserMetadata, UserMetadataEntity } from 'src/entities/user-metadata.entity';
-import { UserEntity } from 'src/entities/user.entity';
+import { UserEntity, withMetadata } from 'src/entities/user.entity';
 import {
   IUserRepository,
   UserFindOptions,
   UserListFilter,
   UserStatsQueryResponse,
 } from 'src/interfaces/user.interface';
-import { IsNull, Not, Repository } from 'typeorm';
+import { asUuid } from 'src/utils/database';
+import { Repository } from 'typeorm';
 
 const columns = [
   'id',
@@ -43,103 +44,124 @@ export class UserRepository implements IUserRepository {
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
-  async get(userId: string, options: UserFindOptions): Promise<UserEntity | null> {
+  get(userId: string, options: UserFindOptions): Promise<UserEntity | undefined> {
     options = options || {};
-    const oldUser = await this.userRepository.findOne({
-      where: { id: userId },
-      withDeleted: options.withDeleted,
-      relations: {
-        metadata: true,
-      },
-    });
 
-    console.log('Old User:', oldUser);
-
-    const newMethod = (await this.db
+    return this.db
       .selectFrom('users')
       .select(columns)
-      .select((eb) =>
-        eb
-          .selectFrom('user_metadata')
-          .whereRef('users.id', '=', 'user_metadata.userId')
-          .select((eb) => eb.fn('array_agg', [eb.table('user_metadata')]).as('metadata'))
-          .as('metadata') ,
-      )
+      .select(withMetadata)
       .where('users.id', '=', userId)
-      .where('users.deletedAt', 'is', null)
-      .executeTakeFirst()) as unknown as Promise<UserEntity | null>;
-
-    console.log('New User:', newMethod);
-
-    return newMethod;
+      .$if(!options.withDeleted, (qb) => qb.where('users.deletedAt', 'is', null))
+      .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql()
-  async getAdmin(): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { isAdmin: true } });
+  getAdmin(): Promise<UserEntity | undefined> {
+    return this.db.selectFrom('users').select(columns).where('isAdmin', '=', true).executeTakeFirst() as Promise<
+      UserEntity | undefined
+    >;
   }
 
   @GenerateSql()
   async hasAdmin(): Promise<boolean> {
-    return this.userRepository.exists({ where: { isAdmin: true } });
+    const admin = (await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('isAdmin', '=', true)
+      .executeTakeFirst()) as UserEntity;
+
+    return !!admin;
   }
 
   @GenerateSql({ params: [DummyValue.EMAIL] })
-  async getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null> {
-    const builder = this.userRepository.createQueryBuilder('user').where({ email });
-
-    if (withPassword) {
-      builder.addSelect('user.password');
-    }
-
-    return builder.getOne();
+  getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | undefined> {
+    return this.db
+      .selectFrom('users')
+      .select(columns)
+      .$if(!!withPassword, (eb) => eb.select('password'))
+      .where('email', '=', email)
+      .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  async getByStorageLabel(storageLabel: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { storageLabel } });
+  getByStorageLabel(storageLabel: string): Promise<UserEntity | undefined> {
+    return this.db
+      .selectFrom('users')
+      .select(columns)
+      .where('storageLabel', '=', storageLabel)
+      .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  async getByOAuthId(oauthId: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { oauthId } });
+  getByOAuthId(oauthId: string): Promise<UserEntity | undefined> {
+    return this.db.selectFrom('users').select(columns).where('oauthId', '=', oauthId).executeTakeFirst() as Promise<
+      UserEntity | undefined
+    >;
   }
 
-  async getDeletedUsers(): Promise<UserEntity[]> {
-    return this.userRepository.find({ withDeleted: true, where: { deletedAt: Not(IsNull()) } });
+  getDeletedUsers(): Promise<UserEntity[]> {
+    return this.db
+      .selectFrom('users')
+      .select(columns)
+      .where('deletedAt', 'is not', null)
+      .execute() as unknown as Promise<UserEntity[]>;
   }
 
-  async getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
-    return this.userRepository.find({
-      withDeleted,
-      order: {
-        createdAt: 'DESC',
-      },
-      relations: {
-        metadata: true,
-      },
-    });
+  getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
+    return this.db
+      .selectFrom('users')
+      .select(columns)
+      .select(withMetadata)
+      .$if(!withDeleted, (qb) => qb.where('deletedAt', 'is', null))
+      .orderBy('createdAt', 'desc')
+      .execute() as unknown as Promise<UserEntity[]>;
   }
 
-  create(user: Partial<UserEntity>): Promise<UserEntity> {
-    return this.save(user);
+  async create(dto: Insertable<Users>): Promise<UserEntity> {
+    return this.db
+      .insertInto('users')
+      .values(dto)
+      .returning(columns)
+      .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
 
-  // TODO change to (user: Partial<UserEntity>)
-  update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
-    return this.save({ ...user, id });
+  update(id: string, dto: Updateable<Users>): Promise<UserEntity> {
+    return this.db
+      .updateTable('users')
+      .set(dto)
+      .where('id', '=', asUuid(id))
+      .where('deletedAt', 'is', null)
+      .returning(columns)
+      .returning(withMetadata)
+      .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
 
   async upsertMetadata<T extends keyof UserMetadata>(id: string, { key, value }: { key: T; value: UserMetadata[T] }) {
-    await this.metadataRepository.upsert({ userId: id, key, value }, { conflictPaths: { userId: true, key: true } });
+    await this.db
+      .insertInto('user_metadata')
+      .values({ userId: id, key, value: JSON.stringify(value) })
+      .onConflict((oc) =>
+        oc.columns(['userId', 'key']).doUpdateSet({
+          key,
+          value: JSON.stringify(value),
+        }),
+      )
+      .execute();
   }
 
   async deleteMetadata<T extends keyof UserMetadata>(id: string, key: T) {
-    await this.metadataRepository.delete({ userId: id, key });
+    await this.db.deleteFrom('user_metadata').where('userId', '=', id).where('key', '=', key).execute();
   }
 
-  async delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
-    return hard ? this.userRepository.remove(user) : this.userRepository.softRemove(user);
+  delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
+    return hard
+      ? (this.db.deleteFrom('users').where('id', '=', user.id).execute() as unknown as Promise<UserEntity>)
+      : (this.db
+          .updateTable('users')
+          .set({ deletedAt: new Date() })
+          .where('id', '=', user.id)
+          .execute() as unknown as Promise<UserEntity>);
   }
 
   @GenerateSql()
@@ -180,41 +202,27 @@ export class UserRepository implements IUserRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.NUMBER] })
   async updateUsage(id: string, delta: number): Promise<void> {
-    await this.userRepository.increment({ id }, 'quotaUsageInBytes', delta);
+    await this.db
+      .updateTable('users')
+      .set({ quotaUsageInBytes: sql`"quotaUsageInBytes" + ${delta}`, updatedAt: new Date() })
+      .where('id', '=', asUuid(id))
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async syncUsage(id?: string) {
-    // we can't use parameters with getQuery, hence the template string
-    const subQuery = this.assetRepository
-      .createQueryBuilder('assets')
-      .select('COALESCE(SUM(exif."fileSizeInByte"), 0)')
-      .leftJoin('assets.exifInfo', 'exif')
-      .where('assets.ownerId = users.id')
-      .andWhere(`assets.libraryId IS NULL`)
-      .withDeleted();
-
-    const query = this.userRepository
-      .createQueryBuilder('users')
-      .leftJoin('users.assets', 'assets')
-      .update()
-      .set({ quotaUsageInBytes: () => `(${subQuery.getQuery()})` });
-
-    if (id) {
-      query.where('users.id = :id', { id });
-    }
-
-    await query.execute();
-  }
-
-  private async save(user: Partial<UserEntity>) {
-    const { id } = await this.userRepository.save(user);
-    return this.userRepository.findOneOrFail({
-      where: { id },
-      withDeleted: true,
-      relations: {
-        metadata: true,
-      },
-    });
+    await this.db
+      .updateTable('users')
+      .set({
+        quotaUsageInBytes: (eb) =>
+          eb
+            .selectFrom('assets')
+            .leftJoin('exif', 'exif.assetId', 'assets.id')
+            .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), sql<number>`0`).as('usage'))
+            .where((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.ownerId', '=', eb.ref('users.id'))])),
+        updatedAt: new Date(),
+      })
+      .$if(id != undefined, (eb) => eb.where('users.id', '=', asUuid(id!)))
+      .execute();
   }
 }
