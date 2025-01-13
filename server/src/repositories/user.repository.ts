@@ -113,7 +113,6 @@ export class UserRepository implements IUserRepository {
   }
 
   getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
-    console.log(withDeleted);
     const query = this.db
       .selectFrom('users')
       .select(columns)
