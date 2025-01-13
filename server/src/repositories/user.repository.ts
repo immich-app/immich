@@ -41,14 +41,13 @@ export class UserRepository implements IUserRepository {
   get(userId: string, options: UserFindOptions): Promise<UserEntity | undefined> {
     options = options || {};
 
-    const query = this.db
+    return this.db
       .selectFrom('users')
       .select(columns)
       .select(withMetadata)
       .where('users.id', '=', userId)
-      .$if(!!!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null));
-
-    return query.executeTakeFirst() as Promise<UserEntity | undefined>;
+      .$if(!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
   @GenerateSql()
@@ -63,12 +62,12 @@ export class UserRepository implements IUserRepository {
 
   @GenerateSql()
   async hasAdmin(): Promise<boolean> {
-    const admin = (await this.db
+    const admin = await this.db
       .selectFrom('users')
       .select('users.id')
       .where('users.isAdmin', '=', true)
       .where('users.deletedAt', 'is', null)
-      .executeTakeFirst()) as UserEntity;
+      .executeTakeFirst();
 
     return !!admin;
   }
@@ -113,14 +112,13 @@ export class UserRepository implements IUserRepository {
   }
 
   getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
-    const query = this.db
+    return this.db
       .selectFrom('users')
       .select(columns)
       .select(withMetadata)
-      .$if(!!!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
-      .orderBy('createdAt', 'desc');
-
-    return query.execute() as unknown as Promise<UserEntity[]>;
+      .$if(!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
+      .orderBy('createdAt', 'desc')
+      .execute() as unknown as Promise<UserEntity[]>;
   }
 
   async create(dto: Insertable<Users>): Promise<UserEntity> {
