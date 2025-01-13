@@ -9,11 +9,7 @@ export class TrashRepository implements ITrashRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   getDeletedIds(): AsyncIterableIterator<{ id: string }> {
-    return this.db
-      .selectFrom('assets')
-      .select(['id'])
-      .where((eb) => eb.or([eb('status', '=', AssetStatus.DELETED), eb('isOffline', '=', true)]))
-      .stream();
+    return this.db.selectFrom('assets').select(['id']).where('status', '=', AssetStatus.DELETED).stream();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -33,7 +29,7 @@ export class TrashRepository implements ITrashRepository {
     const { numUpdatedRows } = await this.db
       .updateTable('assets')
       .where('ownerId', '=', userId)
-      .where((eb) => eb.or([eb('status', '=', AssetStatus.TRASHED), eb('isOffline', '=', true)]))
+      .where('status', '=', AssetStatus.TRASHED)
       .set({ status: AssetStatus.DELETED })
       .executeTakeFirst();
 

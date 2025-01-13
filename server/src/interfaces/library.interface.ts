@@ -7,7 +7,7 @@ export enum AssetSyncResult {
   DO_NOTHING,
   UPDATE,
   OFFLINE,
-  ONLINE,
+  CHECK_OFFLINE,
 }
 
 export interface ILibraryRepository {

@@ -15,10 +15,7 @@ set
   "status" = $1
 where
   "ownerId" = $2
-  and (
-    "status" = $3
-    or "isOffline" = $4
-  )
+  and "status" = $3
 
 -- TrashRepository.restoreAll
 update "assets"

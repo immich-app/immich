@@ -744,7 +744,7 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
-  async updateOffline(library: LibraryEntity): Promise<UpdateResult> {
+  async detectOfflineExternalAssets(library: LibraryEntity): Promise<UpdateResult> {
     const paths = library.importPaths.map((importPath) => `${importPath}%`);
     const exclusions = library.exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
 
@@ -755,6 +755,7 @@ export class AssetRepository implements IAssetRepository {
         deletedAt: new Date(),
       })
       .where('isOffline', '=', false)
+      .where('isExternal', '=', true)
       .where('libraryId', '=', asUuid(library.id))
       .where((eb) =>
         eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
@@ -762,7 +763,7 @@ export class AssetRepository implements IAssetRepository {
       .executeTakeFirstOrThrow();
   }
 
-  async getNewPaths(libraryId: string, paths: string[]): Promise<string[]> {
+  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
     const result = await this.db
       .selectFrom(
         this.db
@@ -783,7 +784,8 @@ export class AssetRepository implements IAssetRepository {
               .selectFrom('assets')
               .select('originalPath')
               .whereRef('assets.originalPath', '=', sql.ref('unnested_paths.path'))
-              .where('libraryId', '=', asUuid(libraryId)),
+              .where('libraryId', '=', asUuid(libraryId))
+              .where('isExternal', '=', true),
           ),
         ),
       )

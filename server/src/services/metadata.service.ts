@@ -598,7 +598,7 @@ export class MetadataService extends BaseService {
     if (timeZone) {
       this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
     } else {
-      this.logger.warn(`Asset ${asset.id} has no time zone information`);
+      this.logger.verbose(`Asset ${asset.id} has no time zone information`);
     }
 
     let fileCreatedAt = asset.fileCreatedAt;

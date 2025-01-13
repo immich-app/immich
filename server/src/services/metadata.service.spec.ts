@@ -270,6 +270,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: sidecarDate,
+        fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
         localDateTime: sidecarDate,
       });
     });
@@ -287,6 +288,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: fileModifiedAt,
+        fileModifiedAt,
         localDateTime: fileModifiedAt,
       });
     });
@@ -304,6 +306,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt,
+        fileModifiedAt,
         localDateTime: fileCreatedAt,
       });
     });
@@ -338,6 +341,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: assetStub.image.createdAt,
+        fileModifiedAt: assetStub.image.createdAt,
         localDateTime: new Date('2023-02-23T05:06:29.716Z'),
       });
     });
@@ -360,6 +364,7 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
+        fileModifiedAt: new Date('2023-02-22T05:06:29.716Z'),
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
     });
@@ -786,6 +791,7 @@ describe(MetadataService.name, () => {
         MicroVideo: 1,
         MicroVideoOffset: 1,
       });
+      storageMock.stat.mockResolvedValue({ mtime: new Date('1970-01-01T00:00:00.000-11:30') } as Stats);
       cryptoMock.hashSha1.mockReturnValue(randomBytes(512));
       assetMock.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
       const video = randomBytes(512);
@@ -861,6 +867,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: dateForTest,
+        fileModifiedAt: dateForTest,
         localDateTime: dateForTest,
       });
     });

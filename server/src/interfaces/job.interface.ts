@@ -1,5 +1,4 @@
 import { ClassConstructor } from 'class-transformer';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { EmailImageAttachment } from 'src/interfaces/notification.interface';
 
 export enum QueueName {
@@ -88,6 +87,7 @@ export enum JobName {
   LIBRARY_SYNC_FILES = 'library-sync-files',
   LIBRARY_SYNC_ASSETS = 'library-sync-assets',
   LIBRARY_DELETE = 'library-delete',
+  LIBRARY_ASSET_REMOVAL = 'handle-library-file-deletion',
   LIBRARY_QUEUE_SYNC_ALL = 'library-queue-sync-all',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
@@ -146,14 +146,15 @@ export interface IAssetDeleteJob extends IEntityJob {
 
 export interface ILibraryFileJob {
   libraryId: string;
-  ownerId: string;
   assetPaths: string[];
   progressCounter?: number;
   totalAssets?: number;
 }
 
 export interface ILibraryBulkIdsJob {
-  library: LibraryEntity;
+  libraryId: string;
+  importPaths: string[];
+  exclusionPatterns: string[];
   assetIds: string[];
   progressCounter?: number;
   totalAssets?: number;
@@ -161,11 +162,6 @@ export interface ILibraryBulkIdsJob {
 
 export interface IBulkEntityJob {
   ids: string[];
-}
-
-export interface ILibraryAssetsJob extends IBulkEntityJob {
-  importPaths: string[];
-  exclusionPatterns: string[];
 }
 
 export interface IDeleteFilesJob extends IBaseJob {
@@ -300,6 +296,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
   | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
+  | { name: JobName.LIBRARY_ASSET_REMOVAL; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 

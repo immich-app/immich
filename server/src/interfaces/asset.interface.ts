@@ -170,7 +170,7 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
-  updateOffline(library: LibraryEntity): Promise<UpdateResult>;
-  getNewPaths(libraryId: string, paths: string[]): Promise<string[]>;
+  detectOfflineExternalAssets(library: LibraryEntity): Promise<UpdateResult>;
+  filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]>;
   getAssetCount(options: AssetSearchOptions): Promise<number | undefined>;
 }

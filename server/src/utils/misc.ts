@@ -291,16 +291,6 @@ const convertTokenToSqlPattern = (token: any): string => {
     case 'dot': {
       return '.';
     }
-    case 'bracket': {
-      return `[${token.value}]`;
-    }
-    case 'negate': {
-      return `[^${token.value}]`;
-    }
-    case 'brace': {
-      const options = token.value.split(',');
-      return `(${options.join('|')})`;
-    }
     default: {
       return '';
     }

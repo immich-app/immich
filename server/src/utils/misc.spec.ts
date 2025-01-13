@@ -59,7 +59,8 @@ describe('globToSqlPattern', () => {
     ['**/*.tif', '%/%.tif'],
     ['**/*.jp?', '%/%.jp_'],
     ['**/@eaDir/**', '%/@eaDir/%'],
-    ['**/._*', `%/.\\_%`],
+    ['**/._*', `%/._%`],
+    ['/absolute/path/**', `/absolute/path/%`],
   ];
 
   it.each(testCases)('should convert %s to %s', (input, expected) => {
