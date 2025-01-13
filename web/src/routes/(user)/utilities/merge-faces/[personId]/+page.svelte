@@ -83,82 +83,80 @@
       </Button>
     </div>
   {/snippet}
-  <div class="flex flex-col gap-4">
-    <div class="flex flex-wrap gap-1 p-4">
-      {#each data.similarPeople as person, index}
+  <div class="flex flex-wrap gap-1 p-4">
+    {#each data.similarPeople as person, index}
+      <div
+        class="flex-1 aspect-square min-w-48 group relative focus-visible:outline-none flex overflow-hidden bg-immich-primary/20 dark:bg-immich-dark-primary/20"
+        onclick={() => selectedPeople.size > 0 && toggleSelection(person.id)}
+        onkeypress={(e) => selectedPeople.size > 0 && e.key === 'Enter' && toggleSelection(person.id)}
+        role="button"
+        tabindex="0"
+      >
         <div
-          class="flex-1 aspect-square min-w-48 group relative focus-visible:outline-none flex overflow-hidden bg-immich-primary/20 dark:bg-immich-dark-primary/20"
-          onclick={() => selectedPeople.size > 0 && toggleSelection(person.id)}
-          onkeypress={(e) => selectedPeople.size > 0 && e.key === 'Enter' && toggleSelection(person.id)}
-          role="button"
-          tabindex="0"
+          class="absolute h-full w-full select-none bg-transparent transition-transform"
+          class:scale-[0.85]={selectedPeople.has(person.id)}
+          class:rounded-xl={selectedPeople.has(person.id)}
         >
-          <div
-            class="absolute h-full w-full select-none bg-transparent transition-transform"
-            class:scale-[0.85]={selectedPeople.has(person.id)}
-            class:rounded-xl={selectedPeople.has(person.id)}
-          >
-            <ImageThumbnail
-              preload={index < 20}
-              shadow
-              url={getPeopleThumbnailUrl(person)}
-              altText={person.name}
-              widthStyle="100%"
-              hiddenIconClass="text-white group-hover:text-black transition-colors"
-              curve={selectedPeople.has(person.id)}
-            />
-            {#if selectedPeople.size === 0}
-              <a href="{AppRoute.PEOPLE}/{person.id}" class="absolute inset-0" aria-label="View {person.name}">
-                <div
-                  class="absolute z-10 inset-0 bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
-                ></div>
-              </a>
-            {:else}
+          <ImageThumbnail
+            preload={index < 20}
+            shadow
+            url={getPeopleThumbnailUrl(person)}
+            altText={person.name}
+            widthStyle="100%"
+            hiddenIconClass="text-white group-hover:text-black transition-colors"
+            curve={selectedPeople.has(person.id)}
+          />
+          {#if selectedPeople.size === 0}
+            <a href="{AppRoute.PEOPLE}/{person.id}" class="absolute inset-0" aria-label="View {person.name}">
               <div
                 class="absolute z-10 inset-0 bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
               ></div>
-            {/if}
-          </div>
-
-          {#if selectedPeople.has(person.id)}
-            <button
-              type="button"
-              onclick={(e) => {
-                e.stopPropagation();
-                toggleSelection(person.id);
-              }}
-              class="z-50 absolute top-2 left-2 p-2 focus:outline-none"
-              role="checkbox"
-              aria-checked={true}
-              aria-label="Deselect {person.name}"
-            >
-              <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
-                <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
-              </div>
-            </button>
+            </a>
           {:else}
-            <button
-              type="button"
-              onclick={(e) => {
-                e.stopPropagation();
-                toggleSelection(person.id);
-              }}
-              class="z-50 absolute top-2 left-2 p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity"
-              role="checkbox"
-              aria-checked={false}
-              aria-label="Select {person.name}"
-            >
-              <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
-            </button>
-          {/if}
-
-          {#if person.name}
-            <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
-              {person.name}
-            </span>
+            <div
+              class="absolute z-10 inset-0 bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
+            ></div>
           {/if}
         </div>
-      {/each}
-    </div>
+
+        {#if selectedPeople.has(person.id)}
+          <button
+            type="button"
+            onclick={(e) => {
+              e.stopPropagation();
+              toggleSelection(person.id);
+            }}
+            class="z-50 absolute top-2 left-2 p-2 focus:outline-none"
+            role="checkbox"
+            aria-checked={true}
+            aria-label="Deselect {person.name}"
+          >
+            <div class="rounded-full bg-[#D9DCEF] dark:bg-[#232932]">
+              <Icon path={mdiCheckCircle} size="24" class="text-immich-primary" />
+            </div>
+          </button>
+        {:else}
+          <button
+            type="button"
+            onclick={(e) => {
+              e.stopPropagation();
+              toggleSelection(person.id);
+            }}
+            class="z-50 absolute top-2 left-2 p-2 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity"
+            role="checkbox"
+            aria-checked={false}
+            aria-label="Select {person.name}"
+          >
+            <Icon path={mdiCheckCircle} size="24" class="text-white/80 hover:text-white" />
+          </button>
+        {/if}
+
+        {#if person.name}
+          <span class="absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white">
+            {person.name}
+          </span>
+        {/if}
+      </div>
+    {/each}
   </div>
 </UserPageLayout>
