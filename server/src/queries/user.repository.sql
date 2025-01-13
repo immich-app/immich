@@ -133,54 +133,59 @@ where
   "oauthId" = $1
 
 -- UserRepository.getUserStats
-SELECT
-  "users"."id" AS "userId",
-  "users"."name" AS "userName",
-  "users"."quotaSizeInBytes" AS "quotaSizeInBytes",
-  COUNT("assets"."id") FILTER (
-    WHERE
-      "assets"."type" = 'IMAGE'
-      AND "assets"."isVisible"
-  ) AS "photos",
-  COUNT("assets"."id") FILTER (
-    WHERE
-      "assets"."type" = 'VIDEO'
-      AND "assets"."isVisible"
-  ) AS "videos",
-  COALESCE(
-    SUM("exif"."fileSizeInByte") FILTER (
-      WHERE
-        "assets"."libraryId" IS NULL
+select
+  "users"."id" as "userId",
+  "users"."name" as "userName",
+  "users"."quotaSizeInBytes" as "quotaSizeInBytes",
+  count("assets"."id") filter (
+    where
+      (
+        "assets"."type" = $1
+        and "assets"."isVisible" = $2
+      )
+  ) as "photos",
+  count("assets"."id") filter (
+    where
+      (
+        "assets"."type" = $3
+        and "assets"."isVisible" = $4
+      )
+  ) as "videos",
+  coalesce(
+    sum("exif"."fileSizeInByte") filter (
+      where
+        "assets"."libraryId" is null
     ),
     0
-  ) AS "usage",
-  COALESCE(
-    SUM("exif"."fileSizeInByte") FILTER (
-      WHERE
-        "assets"."libraryId" IS NULL
-        AND "assets"."type" = 'IMAGE'
+  ) as "usage",
+  coalesce(
+    sum("exif"."fileSizeInByte") filter (
+      where
+        (
+          "assets"."libraryId" is null
+          and "assets"."type" = $5
+        )
     ),
     0
-  ) AS "usagePhotos",
-  COALESCE(
-    SUM("exif"."fileSizeInByte") FILTER (
-      WHERE
-        "assets"."libraryId" IS NULL
-        AND "assets"."type" = 'VIDEO'
+  ) as "usagePhotos",
+  coalesce(
+    sum("exif"."fileSizeInByte") filter (
+      where
+        (
+          "assets"."libraryId" is null
+          and "assets"."type" = $6
+        )
     ),
     0
-  ) AS "usageVideos"
-FROM
-  "users" "users"
-  LEFT JOIN "assets" "assets" ON "assets"."ownerId" = "users"."id"
-  AND ("assets"."deletedAt" IS NULL)
-  LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
-WHERE
-  "users"."deletedAt" IS NULL
-GROUP BY
+  ) as "usageVideos"
+from
+  "users"
+  left join "assets" on "assets"."ownerId" = "users"."id"
+  left join "exif" on "exif"."assetId" = "assets"."id"
+group by
   "users"."id"
-ORDER BY
-  "users"."createdAt" ASC
+order by
+  "users"."createdAt" asc
 
 -- UserRepository.updateUsage
 update "users"
@@ -191,21 +196,6 @@ where
   "id" = $3::uuid
 
 -- UserRepository.syncUsage
-UPDATE "users"
-SET
-  "quotaUsageInBytes" = (
-    SELECT
-      COALESCE(SUM(exif."fileSizeInByte"), 0)
-    FROM
-      "assets" "assets"
-      LEFT JOIN "exif" "exif" ON "exif"."assetId" = "assets"."id"
-    WHERE
-      "assets"."ownerId" = users.id
-      AND "assets"."libraryId" IS NULL
-  ),
-  "updatedAt" = CURRENT_TIMESTAMP
-WHERE
-  users.id = $1
 update "users"
 set
   "quotaUsageInBytes" = (

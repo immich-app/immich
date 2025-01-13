@@ -19,10 +19,6 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 
 @Injectable()
 export class UserService extends BaseService {
-  async test(auth: AuthDto) {
-    return this.userRepository.syncUsage('316e9bcc-36ab-466f-83c9-f07d0a41d383');
-  }
-
   async search(auth: AuthDto): Promise<UserResponseDto[]> {
     const config = await this.getConfig({ withCache: false });
 

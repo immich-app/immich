@@ -166,27 +166,44 @@ export class UserRepository implements IUserRepository {
 
   @GenerateSql()
   async getUserStats(): Promise<UserStatsQueryResponse[]> {
-    const stats = await this.userRepository
-      .createQueryBuilder('users')
-      .select('users.id', 'userId')
-      .addSelect('users.name', 'userName')
-      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'IMAGE' AND assets.isVisible)`, 'photos')
-      .addSelect(`COUNT(assets.id) FILTER (WHERE assets.type = 'VIDEO' AND assets.isVisible)`, 'videos')
-      .addSelect('COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL), 0)', 'usage')
-      .addSelect(
-        `COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL AND assets.type = 'IMAGE'), 0)`,
-        'usagePhotos',
-      )
-      .addSelect(
-        `COALESCE(SUM(exif.fileSizeInByte) FILTER (WHERE assets.libraryId IS NULL AND assets.type = 'VIDEO'), 0)`,
-        'usageVideos',
-      )
-      .addSelect('users.quotaSizeInBytes', 'quotaSizeInBytes')
-      .leftJoin('users.assets', 'assets')
-      .leftJoin('assets.exifInfo', 'exif')
+    const stats = (await this.db
+      .selectFrom('users')
+      .leftJoin('assets', 'assets.ownerId', 'users.id')
+      .leftJoin('exif', 'exif.assetId', 'assets.id')
+      .select(['users.id as userId', 'users.name as userName', 'users.quotaSizeInBytes as quotaSizeInBytes'])
+      .select((eb) => [
+        eb.fn
+          .count('assets.id')
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', 'IMAGE'), eb('assets.isVisible', '=', true)]))
+          .as('photos'),
+        eb.fn
+          .count('assets.id')
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', 'VIDEO'), eb('assets.isVisible', '=', true)]))
+          .as('videos'),
+        eb.fn
+          .coalesce(eb.fn.sum('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), sql<number>`0`)
+          .as('usage'),
+        eb.fn
+          .coalesce(
+            eb.fn
+              .sum('exif.fileSizeInByte')
+              .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'IMAGE')])),
+            sql<number>`0`,
+          )
+          .as('usagePhotos'),
+        eb.fn
+          .coalesce(
+            eb.fn
+              .sum('exif.fileSizeInByte')
+              .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'VIDEO')])),
+            sql<number>`0`,
+          )
+          .as('usageVideos'),
+      ])
+      .where('assets.deletedAt', 'is', null)
       .groupBy('users.id')
-      .orderBy('users.createdAt', 'ASC')
-      .getRawMany();
+      .orderBy('users.createdAt', 'asc')
+      .execute()) as UserStatsQueryResponse[];
 
     for (const stat of stats) {
       stat.photos = Number(stat.photos);

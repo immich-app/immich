@@ -7286,31 +7286,6 @@
         ]
       }
     },
-    "/users/tests": {
-      "get": {
-        "operationId": "tests",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Users"
-        ]
-      }
-    },
     "/users/{id}": {
       "get": {
         "operationId": "getUser",
