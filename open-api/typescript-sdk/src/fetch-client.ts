@@ -2093,22 +2093,22 @@ export function updateLibrary({ id, updateLibraryDto }: {
         body: updateLibraryDto
     })));
 }
-export function getAssetCount({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: number;
-    }>(`/libraries/${encodeURIComponent(id)}/count`, {
-        ...opts
-    }));
-}
 export function scanLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, {
         ...opts,
         method: "POST"
+    }));
+}
+export function getLibraryStatistics({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: number;
+    }>(`/libraries/${encodeURIComponent(id)}/statistics`, {
+        ...opts
     }));
 }
 export function validate({ id, validateLibraryDto }: {

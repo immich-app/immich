@@ -546,7 +546,7 @@ describe(AssetMediaService.name, () => {
         files: [
           {
             assetId: assetStub.image.id,
-            createdAt: assetStub.image.fileCreatedAt,
+            createdAt: assetStub.image.fileCreatedAt ?? new Date(),
             id: '42',
             path: '/path/to/preview',
             type: AssetFileType.THUMBNAIL,
@@ -566,7 +566,7 @@ describe(AssetMediaService.name, () => {
         files: [
           {
             assetId: assetStub.image.id,
-            createdAt: assetStub.image.fileCreatedAt,
+            createdAt: assetStub.image.fileCreatedAt ?? new Date(),
             id: '42',
             path: '/path/to/preview.jpg',
             type: AssetFileType.PREVIEW,

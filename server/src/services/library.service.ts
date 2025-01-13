@@ -229,11 +229,10 @@ export class LibraryService extends BaseService {
 
     let progressMessage = '';
 
-    if (job.progressCounter && job.totalAssets) {
-      progressMessage = `(${job.progressCounter} of ${job.totalAssets})`;
-    } else {
-      progressMessage = `(${job.progressCounter} done so far)`;
-    }
+    progressMessage =
+      job.progressCounter && job.totalAssets
+        ? `(${job.progressCounter} of ${job.totalAssets})`
+        : `(${job.progressCounter} done so far)`;
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
@@ -362,10 +361,9 @@ export class LibraryService extends BaseService {
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
-      // These dates are placeholders and will be read from disk during metadata extraction
-      fileCreatedAt: null,
-      fileModifiedAt: null,
-      localDateTime: null,
+      fileCreatedAt: new Date(),
+      fileModifiedAt: new Date(),
+      localDateTime: new Date(),
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
@@ -480,8 +478,8 @@ export class LibraryService extends BaseService {
       });
       await this.queuePostSyncJobs(assetIdsToOnline);
 
-      if (progressMessage !== '') {
-        progressMessage + ', ';
+      if (progressMessage) {
+        progressMessage += ', ';
       }
 
       progressMessage += `${assetIdsToOnline.length} onlined`;
@@ -491,8 +489,8 @@ export class LibraryService extends BaseService {
       //TODO: When we have asset status, we need to leave deletedAt as is when status is trashed
       await this.queuePostSyncJobs(assetIdsToUpdate);
 
-      if (progressMessage !== '') {
-        progressMessage + ', ';
+      if (progressMessage) {
+        progressMessage += ', ';
       }
 
       progressMessage += `${assetIdsToUpdate.length} updated`;
@@ -501,8 +499,8 @@ export class LibraryService extends BaseService {
     const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length - assetIdsToOnline.length;
 
     if (remainingCount) {
-      if (progressMessage !== '') {
-        progressMessage + ', ';
+      if (progressMessage) {
+        progressMessage += ', ';
       }
 
       progressMessage += `${remainingCount} unchanged`;
@@ -523,7 +521,7 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async checkOfflineAsset(asset: AssetEntity, library: LibraryEntity): Promise<boolean> {
+  private checkOfflineAsset(asset: AssetEntity, library: LibraryEntity): boolean {
     if (!asset.libraryId) {
       return false;
     }
@@ -567,7 +565,7 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-    const isAssetTimeUpdated = asset.fileModifiedAt ? mtime.toISOString() !== asset.fileModifiedAt.toISOString() : true;
+    const isAssetTimeUpdated = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
 
     let shouldAssetGoOnline = false;
 
@@ -575,7 +573,7 @@ export class LibraryService extends BaseService {
       // Only perform the expensive check if the asset is offline
 
       // TODO: give more feedback on why asset was onlined
-      shouldAssetGoOnline = await this.checkOfflineAsset(asset, library);
+      shouldAssetGoOnline = this.checkOfflineAsset(asset, library);
 
       if (shouldAssetGoOnline) {
         this.logger.debug(`Asset is back online: ${asset.originalPath}`);
@@ -590,7 +588,7 @@ export class LibraryService extends BaseService {
 
     if (isAssetTimeUpdated) {
       this.logger.verbose(
-        `Asset ${asset.originalPath} modification time changed from ${asset.fileModifiedAt?.toISOString()} to ${mtime.toISOString()}, queuing re-import`,
+        `Asset ${asset.originalPath} modification time changed from ${asset.fileModifiedAt?.toISOString()} to ${mtime.toISOString()}, queuing re-import. Creation time is ${asset.fileCreatedAt?.toISOString()}`,
       );
 
       return AssetSyncResult.UPDATE;
@@ -626,8 +624,6 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    let assetsOnDiskCount = 0;
-
     const pathsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
@@ -654,7 +650,6 @@ export class LibraryService extends BaseService {
             ownerId: library.ownerId,
             assetPaths: newPaths,
             progressCounter: crawlCount,
-            totalAssets: assetsOnDiskCount,
           },
         });
         this.logger.log(

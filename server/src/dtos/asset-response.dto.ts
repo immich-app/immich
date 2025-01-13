@@ -21,7 +21,7 @@ export class SanitizedAssetResponseDto {
   type!: AssetType;
   thumbhash!: string | null;
   originalMimeType?: string;
-  localDateTime!: Date | null;
+  localDateTime!: Date;
   duration!: string;
   livePhotoVideoId?: string | null;
   hasMetadata!: boolean;
@@ -36,8 +36,8 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   libraryId?: string | null;
   originalPath!: string;
   originalFileName!: string;
-  fileCreatedAt!: Date | null;
-  fileModifiedAt!: Date | null;
+  fileCreatedAt!: Date;
+  fileModifiedAt!: Date;
   updatedAt!: Date;
   isFavorite!: boolean;
   isArchived!: boolean;

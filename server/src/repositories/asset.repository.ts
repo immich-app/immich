@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CompiledQuery, Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';

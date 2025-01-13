@@ -17,7 +17,7 @@
     createLibrary,
     deleteLibrary,
     getAllLibraries,
-    getAssetCount,
+    getLibraryStatistics,
     getUserAdmin,
     scanLibrary,
     updateLibrary,
@@ -67,7 +67,7 @@
   };
 
   const refreshStats = async (listIndex: number) => {
-    assetCount[listIndex] = await getAssetCount({ id: libraries[listIndex].id });
+    assetCount[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
     owner[listIndex] = await getUserAdmin({ id: libraries[listIndex].ownerId });
   };
 

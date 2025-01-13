@@ -716,7 +716,7 @@ describe('/libraries', () => {
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
-      expect(assets).toEqual(assetsBefore);
+      expect(assets.items.map((asset) => asset.id)).toEqual(assetsBefore.items.map((asset) => asset.id));
     });
 
     describe('xmp metadata', async () => {
@@ -735,12 +735,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2000-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -761,12 +766,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2000-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -788,12 +798,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2000-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -824,12 +839,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2010-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2010-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -858,12 +878,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2000-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -892,12 +917,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2000-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -928,12 +958,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2010-09-27T12:35:33.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2010-09-27T12:35:33+00:00',
+            }),
           }),
         ]);
 
@@ -963,12 +998,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2010-07-20T17:27:12.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2010-07-20T17:27:12+00:00',
+            }),
           }),
         ]);
 
@@ -998,12 +1038,17 @@ describe('/libraries', () => {
         await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
         await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
+          libraryId: library.id,
+          withExif: true,
+        });
 
         expect(newAssets.items).toEqual([
           expect.objectContaining({
             originalFileName: 'glarus.nef',
-            fileCreatedAt: '2010-07-20T17:27:12.000Z',
+            exifInfo: expect.objectContaining({
+              dateTimeOriginal: '2010-07-20T17:27:12+00:00',
+            }),
           }),
         ]);
 

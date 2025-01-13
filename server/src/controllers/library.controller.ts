@@ -56,9 +56,9 @@ export class LibraryController {
     return this.service.validate(id, dto);
   }
 
-  @Get(':id/count')
+  @Get(':id/statistics')
   @Authenticated({ permission: Permission.LIBRARY_STATISTICS, admin: true })
-  getAssetCount(@Param() { id }: UUIDParamDto): Promise<number> {
+  getLibraryStatistics(@Param() { id }: UUIDParamDto): Promise<number> {
     return this.service.getAssetCount(id);
   }
 

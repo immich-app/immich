@@ -2853,9 +2853,44 @@
         ]
       }
     },
-    "/libraries/{id}/count": {
+    "/libraries/{id}/scan": {
+      "post": {
+        "operationId": "scanLibrary",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Libraries"
+        ]
+      }
+    },
+    "/libraries/{id}/statistics": {
       "get": {
-        "operationId": "getAssetCount",
+        "operationId": "getLibraryStatistics",
         "parameters": [
           {
             "name": "id",
@@ -2876,41 +2911,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Libraries"
-        ]
-      }
-    },
-    "/libraries/{id}/scan": {
-      "post": {
-        "operationId": "scanLibrary",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
             "description": ""
           }
         },
@@ -8450,12 +8450,10 @@
           },
           "fileCreatedAt": {
             "format": "date-time",
-            "nullable": true,
             "type": "string"
           },
           "fileModifiedAt": {
             "format": "date-time",
-            "nullable": true,
             "type": "string"
           },
           "hasMetadata": {
@@ -8488,7 +8486,6 @@
           },
           "localDateTime": {
             "format": "date-time",
-            "nullable": true,
             "type": "string"
           },
           "originalFileName": {

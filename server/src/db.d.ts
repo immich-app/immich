@@ -121,8 +121,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp | null;
-  fileModifiedAt: Timestamp | null;
+  fileCreatedAt: Timestamp;
+  fileModifiedAt: Timestamp;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
@@ -131,7 +131,7 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp | null;
+  localDateTime: Timestamp;
   originalFileName: string;
   originalPath: string;
   ownerId: string;
