@@ -19,19 +19,13 @@ select
   "profileChangedAt",
   (
     select
-      (
-        select
-          coalesce(json_agg(agg), '[]')
-        from
-          "user_metadata" as agg
-      ) as "metadata"
+      coalesce(json_agg(agg), '[]')
     from
-      "user_metadata"
-    where
-      "users"."id" = "user_metadata"."userId"
+      "user_metadata" as agg
   ) as "metadata"
 from
   "users"
+  left join "user_metadata" on "user_metadata"."userId" = "users"."id"
 where
   "users"."id" = $1
   and "users"."deletedAt" is null

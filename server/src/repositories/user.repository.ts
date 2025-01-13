@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
@@ -41,8 +42,9 @@ export class UserRepository implements IUserRepository {
 
     return this.db
       .selectFrom('users')
+      .leftJoin('user_metadata', 'user_metadata.userId', 'users.id')
       .select(columns)
-      .select(withMetadata)
+      .select((eb) => jsonArrayFrom(eb.table('user_metadata')).as('metadata'))
       .where('users.id', '=', userId)
       .$if(!options.withDeleted, (qb) => qb.where('users.deletedAt', 'is', null))
       .executeTakeFirst() as Promise<UserEntity | undefined>;
@@ -103,8 +105,9 @@ export class UserRepository implements IUserRepository {
   getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
     return this.db
       .selectFrom('users')
+      .leftJoin('user_metadata', 'user_metadata.userId', 'users.id')
       .select(columns)
-      .select(withMetadata)
+      .select((eb) => jsonArrayFrom(eb.table('user_metadata')).as('metadata'))
       .$if(!withDeleted, (qb) => qb.where('deletedAt', 'is', null))
       .orderBy('createdAt', 'desc')
       .execute() as unknown as Promise<UserEntity[]>;
