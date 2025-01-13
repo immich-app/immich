@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
-import { sql } from 'kysely';
+import { Kysely, sql } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
@@ -27,12 +28,17 @@ export class DatabaseRepository implements IDatabaseRepository {
   private readonly asyncLock = new AsyncLock();
 
   constructor(
+    @InjectKysely() private db: Kysely<DB>,
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
     @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
     this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(DatabaseRepository.name);
+  }
+
+  async shutdown() {
+    await this.db.destroy();
   }
 
   init() {
