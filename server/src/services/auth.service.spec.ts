@@ -354,7 +354,7 @@ describe('AuthService', () => {
 
   describe('validate - user token', () => {
     it('should throw if no token is found', async () => {
-      sessionMock.getByToken.mockResolvedValue(null);
+      sessionMock.getByToken.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-user-token': 'auth_token' },
@@ -399,7 +399,7 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toBeDefined();
-      expect(sessionMock.update.mock.calls[0][0]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
+      expect(sessionMock.update.mock.calls[0][1]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
     });
   });
 
