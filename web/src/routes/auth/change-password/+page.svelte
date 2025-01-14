@@ -1,11 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
-  import PasswordField from '$lib/components/shared-components/password-field.svelte';
   import { AppRoute } from '$lib/constants';
   import { resetSavedUser, user } from '$lib/stores/user.store';
   import { logout, updateMyUser } from '@immich/sdk';
+  import { Alert, Button, Field, HelperText, PasswordInput, Stack, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -35,32 +34,31 @@
 </script>
 
 <AuthPageLayout title={data.meta.title}>
-  {#snippet message()}
-    <p>
-      {$t('hi_user', { values: { name: $user.name, email: $user.email } })}
-      <br />
-      <br />
-      {$t('change_password_description')}
-    </p>
-  {/snippet}
+  <div class="m-4">
+    <Alert color="primary" size="small">
+      <Stack gap={4}>
+        <Text>{$t('hi_user', { values: { name: $user.name, email: $user.email } })}</Text>
+        <Text>{$t('change_password_description')}</Text>
+      </Stack>
+    </Alert>
+  </div>
 
-  <form onsubmit={onSubmit} method="post" class="mt-5 flex flex-col gap-5">
-    <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="password">{$t('new_password')}</label>
-      <PasswordField id="password" bind:password autocomplete="new-password" />
-    </div>
+  <form onsubmit={onSubmit} method="post" class="mx-4 mt-6">
+    <Stack gap={4} class="mt-4">
+      <Field label={$t('new_password')} required>
+        <PasswordInput bind:value={password} autocomplete="new-password" />
+      </Field>
 
-    <div class="flex flex-col gap-2">
-      <label class="immich-form-label" for="confirmPassword">{$t('confirm_password')}</label>
-      <PasswordField id="confirmPassword" bind:password={passwordConfirm} autocomplete="new-password" />
-    </div>
+      <Field label={$t('confirm_password')} required>
+        <PasswordInput bind:value={passwordConfirm} autocomplete="new-password" />
+        {#if errorMessage}
+          <HelperText color="danger">{errorMessage}</HelperText>
+        {/if}
+      </Field>
 
-    {#if errorMessage}
-      <p class="text-sm text-red-400">{errorMessage}</p>
-    {/if}
-
-    <div class="my-5 flex w-full">
-      <Button type="submit" size="lg" fullwidth disabled={!valid}>{$t('to_change_password')}</Button>
-    </div>
+      <div class="my-5 flex w-full">
+        <Button type="submit" size="large" shape="round" fullWidth disabled={!valid}>{$t('to_change_password')}</Button>
+      </div>
+    </Stack>
   </form>
 </AuthPageLayout>

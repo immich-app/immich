@@ -19,11 +19,21 @@
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import { run } from 'svelte/legacy';
+  import { setTranslations } from '@immich/ui';
   import '../app.css';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     children?: Snippet;
   }
+
+  $effect(() => {
+    setTranslations({
+      close: $t('close'),
+      showPassword: $t('show_password'),
+      hidePassword: $t('hide_password'),
+    });
+  });
 
   let { children }: Props = $props();
 
