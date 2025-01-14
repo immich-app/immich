@@ -5,7 +5,7 @@
 </script>
 
 <section class="flex h-screen w-screen place-content-center place-items-center">
-  <div class="flex max-w-[350px] flex-col place-items-center gap-8 text-center">
+  <div class="flex max-w-[350px] flex-col place-items-center gap-10 text-center">
     <div class="flex place-content-center place-items-center">
       <Logo variant="logo" class="text-center" size="landing" />
     </div>

@@ -11,11 +11,11 @@
 </script>
 
 <section class="min-w-screen flex min-h-screen items-center justify-center">
-  <Card color="secondary" class="w-full max-w-md">
-    <CardHeader>
+  <Card color="secondary" class="w-full max-w-xl border">
+    <CardHeader class="mt-6">
       <VStack>
         <Logo variant="icon" size="giant" />
-        <Heading size="large" color="primary">{title}</Heading>
+        <Heading size="large" class="font-semibold" color="primary">{title}</Heading>
       </VStack>
     </CardHeader>
     <CardBody>

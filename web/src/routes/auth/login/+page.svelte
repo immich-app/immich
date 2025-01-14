@@ -109,7 +109,7 @@
     {/if}
 
     {#if !oauthLoading && $featureFlags.passwordLogin}
-      <form {onsubmit} class="mt-5 flex flex-col gap-5 text-dark">
+      <form {onsubmit} class="mt-5 flex flex-col gap-5 text-dark mx-4">
         {#if errorMessage}
           <Alert color="danger" title={errorMessage} closable />
         {/if}
@@ -122,26 +122,27 @@
           <PasswordInput bind:value={password} autocomplete="current-password" />
         </Field>
 
-        <Button type="submit" size="large" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
+        <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
       </form>
     {/if}
 
     {#if $featureFlags.oauth}
       {#if $featureFlags.passwordLogin}
-        <div class="inline-flex w-full items-center justify-center">
+        <div class="inline-flex w-full items-center justify-center mt-4">
           <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
           <span
             class="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-immich-dark-gray dark:text-white"
           >
-            {$t('or')}
+            {$t('or').toUpperCase()}
           </span>
         </div>
       {/if}
-      <div class="my-5 flex flex-col gap-5">
+      <div class="my-5 flex flex-col gap-5 mx-4">
         {#if oauthError}
           <Alert color="danger" title={oauthError} closable />
         {/if}
         <Button
+          shape="round"
           loading={loading || oauthLoading}
           disabled={loading || oauthLoading}
           size="large"

@@ -47,11 +47,13 @@
 </script>
 
 <AuthPageLayout title={data.meta.title}>
-  <Alert color="primary">
-    <Text>{$t('admin.registration_description')}</Text>
-  </Alert>
+  <div class="mx-4 mt-4">
+    <Alert color="primary">
+      <Text>{$t('admin.registration_description')}</Text>
+    </Alert>
+  </div>
 
-  <form onsubmit={onSubmit} method="post" class="mt-5 flex flex-col gap-5 text-dark">
+  <form onsubmit={onSubmit} method="post" class="mt-5 flex flex-col gap-5 text-dark p-4">
     <Field label={$t('admin_email')} required>
       <Input bind:value={email} type="email" autocomplete="email" />
     </Field>
@@ -69,11 +71,11 @@
     </Field>
 
     {#if errorMessage}
-      <Alert color="danger" title={errorMessage} />
+      <Alert color="danger" title={errorMessage} size="medium" class="mt-4" />
     {/if}
 
     <div class="my-5 flex w-full">
-      <Button type="submit" size="large" fullWidth disabled={!valid}>{$t('sign_up')}</Button>
+      <Button type="submit" size="giant" shape="round" fullWidth disabled={!valid}>{$t('sign_up')}</Button>
     </div>
   </form>
 </AuthPageLayout>
