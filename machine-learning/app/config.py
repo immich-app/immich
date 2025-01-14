@@ -14,13 +14,36 @@ from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
 
+class ClipSettings(BaseModel):
+    model: str | None = None
+    textual: bool = True
+    visual: bool = True
+
+
+class FacialRecognitionSettings(BaseModel):
+    model: str | None = None
+    recognition: bool = True
+    detection: bool = True
+
+
 class PreloadModelData(BaseModel):
-    clip: str | None = None
-    facial_recognition: str | None = None
-    clip_textual: bool = True
-    clip_visual: bool = True
-    facial_recognition_detection: bool = True
-    facial_recognition_recognition: bool = True
+    clip: ClipSettings = ClipSettings()
+    facialRecognition: FacialRecognitionSettings = FacialRecognitionSettings()
+  
+    # Define fallback environment variables
+    clip_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
+    facial_recognition_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION")
+
+    # Root validator to use fallbacks
+    @root_validator(pre=True)
+    def set_models(cls, values):
+        # Set clip.model using fallback if clip.model is None
+        values['clip']['model'] = values.get('clip', {}).get('model') or values.get('clip_model_fallback')
+
+        # Set facialRecognition.model using fallback if facialRecognition.model is None
+        values['facialRecognition']['model'] = values.get('facialRecognition', {}).get('model') or values.get('facial_recognition_model_fallback')
+
+        return values
 
 
 class MaxBatchSize(BaseModel):
