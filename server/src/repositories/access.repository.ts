@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
@@ -18,7 +18,7 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { AlbumUserRole } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { Brackets, In, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -82,7 +82,7 @@ class ActivityAccess implements IActivityAccess {
       .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
       .where('albums.id', 'in', [...albumIds])
       .where('albums.isActivityEnabled', '=', true)
-      .where((qb) => qb.or([qb('albums.ownerId', '=', userId), qb('users.id', '=', userId)]))
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
       .where('albums.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
@@ -167,30 +167,31 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .createQueryBuilder('album')
-      .innerJoin('album.assets', 'asset')
-      .leftJoin('album.albumUsers', 'album_albumUsers_users')
-      .leftJoin('album_albumUsers_users.user', 'albumUsers')
-      .select('asset.id', 'assetId')
-      .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
-      .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
-        assetIds: [...assetIds],
-      })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
-        }),
+    return this.db
+      .selectFrom('albums')
+      .innerJoin('albums_assets_assets as albumAssets', 'albums.id', 'albumAssets.albumsId')
+      .innerJoin('assets', (join) =>
+        join.onRef('assets.id', '=', 'albumAssets.assetsId').on('assets.deletedAt', 'is', null),
       )
-      .getRawMany()
-      .then((rows) => {
+      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
+      .select(['assets.id', 'assets.livePhotoVideoId'])
+      .where(
+        sql`array["assets"."id", "assets"."livePhotoVideoId"]`,
+        '&&',
+        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      )
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
+      .where('albums.deletedAt', 'is', null)
+      .execute()
+      .then((assets) => {
         const allowedIds = new Set<string>();
-        for (const row of rows) {
-          if (row.assetId && assetIds.has(row.assetId)) {
-            allowedIds.add(row.assetId);
+        for (const asset of assets) {
+          if (asset.id && assetIds.has(asset.id)) {
+            allowedIds.add(asset.id);
           }
-          if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
-            allowedIds.add(row.livePhotoVideoId);
+          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+            allowedIds.add(asset.livePhotoVideoId);
           }
         }
         return allowedIds;
@@ -204,15 +205,12 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.assetRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...assetIds]),
-          ownerId: userId,
-        },
-        withDeleted: true,
-      })
+    return this.db
+      .selectFrom('assets')
+      .select('assets.id')
+      .where('assets.id', 'in', [...assetIds])
+      .where('assets.ownerId', '=', userId)
+      .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
@@ -223,16 +221,18 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.partnerRepository
-      .createQueryBuilder('partner')
-      .innerJoin('partner.sharedBy', 'sharedBy')
-      .innerJoin('sharedBy.assets', 'asset')
-      .select('asset.id', 'assetId')
-      .where('partner.sharedWithId = :userId', { userId })
-      .andWhere('asset.isArchived = false')
-      .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
-      .getRawMany()
-      .then((rows) => new Set(rows.map((row) => row.assetId)));
+    return this.db
+      .selectFrom('partners as partner')
+      .innerJoin('users as sharedBy', (join) =>
+        join.onRef('sharedBy.id', '=', 'partner.sharedById').on('sharedBy.deletedAt', 'is', null),
+      )
+      .innerJoin('assets', (join) => join.onRef('assets.id', '=', 'sharedBy.id').on('assets.deletedAt', 'is', null))
+      .select('assets.id')
+      .where('partner.sharedWithId', '=', userId)
+      .where('assets.isArchived', '=', false)
+      .where('assets.id', 'in', [...assetIds])
+      .execute()
+      .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })

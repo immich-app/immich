@@ -62,63 +62,56 @@ where
   and "albumUsers"."role" in ($3, $4)
 
 -- AccessRepository.album.checkSharedLinkAccess
-SELECT
-  "SharedLinkEntity"."albumId" AS "SharedLinkEntity_albumId",
-  "SharedLinkEntity"."id" AS "SharedLinkEntity_id"
-FROM
-  "shared_links" "SharedLinkEntity"
-WHERE
-  (
-    ("SharedLinkEntity"."id" = $1)
-    AND ("SharedLinkEntity"."albumId" IN ($2))
-  )
+select
+  "shared_links"."albumId"
+from
+  "shared_links"
+where
+  "shared_links"."id" = $1
+  and "shared_links"."albumId" in ($2)
 
 -- AccessRepository.asset.checkAlbumAccess
-SELECT
-  "asset"."id" AS "assetId",
-  "asset"."livePhotoVideoId" AS "livePhotoVideoId"
-FROM
-  "albums" "album"
-  INNER JOIN "albums_assets_assets" "album_asset" ON "album_asset"."albumsId" = "album"."id"
-  INNER JOIN "assets" "asset" ON "asset"."id" = "album_asset"."assetsId"
-  AND ("asset"."deletedAt" IS NULL)
-  LEFT JOIN "albums_shared_users_users" "album_albumUsers_users" ON "album_albumUsers_users"."albumsId" = "album"."id"
-  LEFT JOIN "users" "albumUsers" ON "albumUsers"."id" = "album_albumUsers_users"."usersId"
-  AND ("albumUsers"."deletedAt" IS NULL)
-WHERE
-  (
-    array["asset"."id", "asset"."livePhotoVideoId"] && array[$1]::uuid []
-    AND (
-      "album"."ownerId" = $2
-      OR "albumUsers"."id" = $2
-    )
+select
+  "assets"."id",
+  "assets"."livePhotoVideoId"
+from
+  "albums"
+  inner join "albums_assets_assets" as "albumAssets" on "albums"."id" = "albumAssets"."albumsId"
+  inner join "assets" on "assets"."id" = "albumAssets"."assetsId"
+  and "assets"."deletedAt" is null
+  left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
+  left join "users" on "users"."id" = "albumUsers"."usersId"
+  and "users"."deletedAt" is null
+where
+  array["assets"."id", "assets"."livePhotoVideoId"] && array[$1]::uuid []
+  and (
+    "albums"."ownerId" = $2
+    or "users"."id" = $3
   )
-  AND ("album"."deletedAt" IS NULL)
+  and "albums"."deletedAt" is null
 
 -- AccessRepository.asset.checkOwnerAccess
-SELECT
-  "AssetEntity"."id" AS "AssetEntity_id"
-FROM
-  "assets" "AssetEntity"
-WHERE
-  (
-    ("AssetEntity"."id" IN ($1))
-    AND ("AssetEntity"."ownerId" = $2)
-  )
+select
+  "assets"."id"
+from
+  "assets"
+where
+  "assets"."id" in ($1)
+  and "assets"."ownerId" = $2
 
 -- AccessRepository.asset.checkPartnerAccess
-SELECT
-  "asset"."id" AS "assetId"
-FROM
-  "partners" "partner"
-  INNER JOIN "users" "sharedBy" ON "sharedBy"."id" = "partner"."sharedById"
-  AND ("sharedBy"."deletedAt" IS NULL)
-  INNER JOIN "assets" "asset" ON "asset"."ownerId" = "sharedBy"."id"
-  AND ("asset"."deletedAt" IS NULL)
-WHERE
+select
+  "assets"."id"
+from
+  "partners" as "partner"
+  inner join "users" as "sharedBy" on "sharedBy"."id" = "partner"."sharedById"
+  and "sharedBy"."deletedAt" is null
+  inner join "assets" on "assets"."id" = "sharedBy"."id"
+  and "assets"."deletedAt" is null
+where
   "partner"."sharedWithId" = $1
-  AND "asset"."isArchived" = false
-  AND "asset"."id" IN ($2)
+  and "assets"."isArchived" = $2
+  and "assets"."id" in ($3)
 
 -- AccessRepository.asset.checkSharedLinkAccess
 SELECT
