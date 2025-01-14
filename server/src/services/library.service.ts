@@ -221,7 +221,6 @@ export class LibraryService extends BaseService {
   async handleSyncFiles(job: JobOf<JobName.LIBRARY_SYNC_FILES>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.libraryId);
     // We need to check if the library still exists as it could have been deleted after the scan was queued
-
     if (!library) {
       this.logger.debug(`Library ${job.libraryId} not found, skipping file import`);
       return JobStatus.FAILED;

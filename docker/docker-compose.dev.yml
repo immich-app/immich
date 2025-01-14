@@ -71,6 +71,7 @@ services:
       - ../web:/usr/src/app
       - ../i18n:/usr/src/i18n
       - ../open-api/:/usr/src/open-api/
+      # - ../../ui:/usr/ui
       - /usr/src/app/node_modules
     ulimits:
       nofile:

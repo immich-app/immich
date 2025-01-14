@@ -183,7 +183,7 @@ export class StorageCore {
         return;
       }
 
-      move = await this.moveRepository.update({ id: move.id, oldPath: actualPath, newPath });
+      move = await this.moveRepository.update(move.id, { id: move.id, oldPath: actualPath, newPath });
     } else {
       move = await this.moveRepository.create({ entityId, pathType, oldPath, newPath });
     }
@@ -225,7 +225,7 @@ export class StorageCore {
     }
 
     await this.savePath(pathType, entityId, newPath);
-    await this.moveRepository.delete(move);
+    await this.moveRepository.delete(move.id);
   }
 
   private async verifyNewPathContentsMatchesExpected(

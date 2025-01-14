@@ -7,6 +7,10 @@
   "minimumReleaseAge": "5 days",
   "packageRules": [
     {
+      "groupName": "@immich/ui",
+      "matchPackageNames": ["@immich/ui"]
+    },
+    {
       "matchFileNames": [
         "cli/**",
         "docs/**",
