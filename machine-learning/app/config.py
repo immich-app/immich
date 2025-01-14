@@ -17,6 +17,10 @@ from uvicorn.workers import UvicornWorker
 class PreloadModelData(BaseModel):
     clip: str | None = None
     facial_recognition: str | None = None
+    clip_textual: bool = True
+    clip_visual: bool = True
+    facial_recognition_detection: bool = True
+    facial_recognition_recognition: bool = True
 
 
 class MaxBatchSize(BaseModel):
