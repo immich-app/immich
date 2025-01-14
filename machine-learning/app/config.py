@@ -28,12 +28,10 @@ class PreloadModelData(BaseModel):
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
 
-    # Define fallback environment variables
     clip_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
     facial_recognition_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
 
-    def update_from_fallbacks(self) -> None:  # Add type annotation here
-        # Apply fallback to clip model
+    def update_from_fallbacks(self) -> None:
         if self.clip_model_fallback:
             self.clip.textual = self.clip_model_fallback
             self.clip.visual = self.clip_model_fallback
@@ -43,7 +41,6 @@ class PreloadModelData(BaseModel):
                 "MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
             )
 
-        # Apply fallback to facial recognition model
         if self.facial_recognition_model_fallback:
             self.facial_recognition.recognition = self.facial_recognition_model_fallback
             self.facial_recognition.detection = self.facial_recognition_model_fallback
