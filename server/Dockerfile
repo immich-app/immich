@@ -9,7 +9,6 @@ RUN npm ci && \
   # they're marked as optional dependencies, so we need to copy them manually after pruning
   rm -rf node_modules/@img/sharp-libvips* && \
   rm -rf node_modules/@img/sharp-linuxmusl-x64
-COPY server .
 ENV PATH="${PATH}:/usr/src/app/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
@@ -19,6 +18,7 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS prod
 
+COPY server .
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
