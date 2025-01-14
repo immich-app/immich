@@ -38,7 +38,7 @@ class PreloadModelData(BaseModel):
 
     # Root validator to use fallbacks
     @root_validator(pre=True)
-    def set_models(cls, values: dict[str, dict]) -> dict[str, dict]:
+    def set_models(cls, values: dict) -> dict:
         values["clip"]["model"] = values.get("clip", {}).get("model") or values.get("clip_model_fallback")
 
         values["facial_recognition"]["model"] = values.get("facial_recognition", {}).get("model") or values.get(
