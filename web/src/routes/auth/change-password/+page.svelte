@@ -51,9 +51,7 @@
 
       <Field label={$t('confirm_password')} required>
         <PasswordInput bind:value={passwordConfirm} autocomplete="new-password" />
-        {#if errorMessage}
-          <HelperText color="danger">{errorMessage}</HelperText>
-        {/if}
+        <HelperText color="danger">{errorMessage}</HelperText>
       </Field>
 
       <div class="my-5 flex w-full">
