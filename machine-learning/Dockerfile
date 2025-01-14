@@ -34,7 +34,7 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:de909939264a469f834cf89e4dd2ed6aca2ef0844f47ba0bf7f2b4661f5111a5 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82 AS prod-cpu
 
 FROM prod-cpu AS prod-openvino
 
