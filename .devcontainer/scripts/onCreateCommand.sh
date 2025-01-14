@@ -21,5 +21,5 @@ sudo apt-get install dcm
 dart --disable-analytics
 
 # Install immich
-cd /immich
+cd /immich || exit
 make install-all
