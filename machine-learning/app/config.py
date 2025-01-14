@@ -32,20 +32,16 @@ class PreloadModelData(BaseModel):
 
     # Define fallback environment variables
     clip_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
-    facial_recognition_model_fallback: str | None = Field(
-        None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
-    )
+    facial_recognition_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION")
 
     # Root validator to use fallbacks
     @root_validator(pre=True)
     def set_models(cls, values):
-        values["clip"]["model"] = values.get("clip", {}).get("model") or values.get(
-            "clip_model_fallback"
-        )
+        values["clip"]["model"] = values.get("clip", {}).get("model") or values.get("clip_model_fallback")
 
-        values["facial_recognition"]["model"] = values.get(
-            "facial_recognition", {}
-        ).get("model") or values.get("facial_recognition_model_fallback")
+        values["facial_recognition"]["model"] = values.get("facial_recognition", {}).get("model") or values.get(
+            "facial_recognition_model_fallback"
+        )
 
         return values
 
@@ -132,10 +128,7 @@ class CustomRichHandler(RichHandler):
         if record.exc_info is not None:
             tb = record.exc_info[2]
             while tb is not None:
-                if any(
-                    excluded in tb.tb_frame.f_code.co_filename
-                    for excluded in self.excluded
-                ):
+                if any(excluded in tb.tb_frame.f_code.co_filename for excluded in self.excluded):
                     tb.tb_frame.f_locals["_rich_traceback_omit"] = True
                 tb = tb.tb_next
 

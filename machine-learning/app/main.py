@@ -58,14 +58,8 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     try:
         if settings.request_threads > 0:
             # asyncio is a huge bottleneck for performance, so we use a thread pool to run blocking code
-            thread_pool = (
-                ThreadPoolExecutor(settings.request_threads)
-                if settings.request_threads > 0
-                else None
-            )
-            log.info(
-                f"Initialized request thread pool with {settings.request_threads} threads."
-            )
+            thread_pool = ThreadPoolExecutor(settings.request_threads) if settings.request_threads > 0 else None
+            log.info(f"Initialized request thread pool with {settings.request_threads} threads.")
         if settings.model_ttl > 0 and settings.model_ttl_poll_s > 0:
             asyncio.ensure_future(idle_shutdown_task())
         if settings.preload is not None:
@@ -85,15 +79,11 @@ async def preload_models(preload: PreloadModelData) -> None:
 
     if preload.clip.model is not None:
         if preload.clip.textual:
-            model = await model_cache.get(
-                preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH
-            )
+            model = await model_cache.get(preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH)
             await load(model)
 
         if preload.clip.visual:
-            model = await model_cache.get(
-                preload.clip, ModelType.VISUAL, ModelTask.SEARCH
-            )
+            model = await model_cache.get(preload.clip, ModelType.VISUAL, ModelTask.SEARCH)
             await load(model)
 
     if preload.facial_recognition.model is not None:
@@ -174,16 +164,12 @@ async def predict(
     return ORJSONResponse(response)
 
 
-async def run_inference(
-    payload: Image | str, entries: InferenceEntries
-) -> InferenceResponse:
+async def run_inference(payload: Image | str, entries: InferenceEntries) -> InferenceResponse:
     outputs: dict[ModelIdentity, Any] = {}
     response: InferenceResponse = {}
 
     async def _run_inference(entry: InferenceEntry) -> None:
-        model = await model_cache.get(
-            entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl
-        )
+        model = await model_cache.get(entry["name"], entry["type"], entry["task"], ttl=settings.model_ttl)
         inputs = [payload]
         for dep in model.depends:
             try:
@@ -237,9 +223,7 @@ async def load(model: InferenceModel) -> InferenceModel:
     try:
         return await run(_load, model)
     except (OSError, InvalidProtobuf, BadZipFile, NoSuchFile):
-        log.warning(
-            f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache."
-        )
+        log.warning(f"Failed to load {model.model_type.replace('_', ' ')} model '{model.model_name}'. Clearing cache.")
         model.clear_cache()
         return await run(_load, model)
 
