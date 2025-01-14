@@ -7,7 +7,7 @@
 <section class="flex h-screen w-screen place-content-center place-items-center">
   <div class="flex max-w-[350px] flex-col place-items-center gap-8 text-center">
     <div class="flex place-content-center place-items-center">
-      <Logo variant="logo" class="text-center" size="landing" />
+      <Logo variant="icon" class="text-center" size="landing" />
     </div>
     <Heading size="giant" color="primary">{$t('welcome_to_immich')}</Heading>
     <Button href={AppRoute.AUTH_REGISTER} size="giant" shape="round">
