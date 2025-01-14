@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20241224@sha256:6832c632c2a8cba5e20053ab694c9a8080e621841c784ed5d4675ef9dd203588 AS dev
+FROM ghcr.io/immich-app/base-server-dev:20250107@sha256:d00ab37e1c1ed87b799d6509fbc825a721ca0723c59c67955217826882017d38 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -9,7 +9,6 @@ RUN npm ci && \
   # they're marked as optional dependencies, so we need to copy them manually after pruning
   rm -rf node_modules/@img/sharp-libvips* && \
   rm -rf node_modules/@img/sharp-linuxmusl-x64
-COPY server .
 ENV PATH="${PATH}:/usr/src/app/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
@@ -19,6 +18,7 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS prod
 
+COPY server .
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
@@ -42,7 +42,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20241224@sha256:69da007c241a961d6927d3d03f1c83ef0ec5c70bf656bff3ced32546a777e6f6
+FROM ghcr.io/immich-app/base-server-prod:20250107@sha256:78e92f113103271d43a3b050370b21b31c3c14792d3d23b18b542581a440c72b
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

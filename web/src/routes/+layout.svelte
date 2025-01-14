@@ -1,30 +1,26 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { afterNavigate, beforeNavigate } from '$app/navigation';
   import { page } from '$app/state';
+  import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
+  import Error from '$lib/components/error.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-  import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
+  import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
   import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
   import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
   import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
-
   import { serverConfig } from '$lib/stores/server-config.store';
-
   import { user } from '$lib/stores/user.store';
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { copyToClipboard, setKey } from '$lib/utils';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import '../app.css';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
-  import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
-  import { t } from 'svelte-i18n';
-  import Error from '$lib/components/error.svelte';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { run } from 'svelte/legacy';
+  import '../app.css';
+
   interface Props {
     children?: Snippet;
   }
@@ -126,14 +122,6 @@
     {/if}
   {/if}
 </svelte:head>
-
-<noscript
-  class="absolute z-[1000] flex h-screen w-screen place-content-center place-items-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
->
-  <FullscreenContainer title={$t('welcome_to_immich')}>
-    To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
-  </FullscreenContainer>
-</noscript>
 
 <svelte:window
   use:shortcut={{

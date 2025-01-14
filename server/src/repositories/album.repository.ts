@@ -153,7 +153,6 @@ export class AlbumRepository implements IAlbumRepository {
     await this.repository.delete({ ownerId: userId });
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
   async removeAsset(assetId: string): Promise<void> {
     // Using dataSource, because there is no direct access to albums_assets_assets.
     await this.dataSource
@@ -164,7 +163,6 @@ export class AlbumRepository implements IAlbumRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   async removeAssetIds(albumId: string, assetIds: string[]): Promise<void> {
     if (assetIds.length === 0) {
@@ -207,7 +205,6 @@ export class AlbumRepository implements IAlbumRepository {
     return new Set(results.map(({ assetId }) => assetId));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
     await this.addAssets(this.dataSource.manager, albumId, assetIds);
   }
@@ -272,7 +269,6 @@ export class AlbumRepository implements IAlbumRepository {
    *
    * @returns Amount of updated album thumbnails or undefined when unknown
    */
-  @GenerateSql()
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
 
