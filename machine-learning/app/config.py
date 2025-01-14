@@ -45,7 +45,10 @@ class PreloadModelData(BaseModel):
         values['clip']['model'] = values.get('clip', {}).get('model') or values.get('clip_model_fallback')
 
         # Set facialRecognition.model using fallback if facialRecognition.model is None
-        values['facial_recognition']['model'] = values.get('facial_recognition', {}).get('model') or values.get('facial_recognition_model_fallback')
+        values['facial_recognition']['model'] = (
+            values.get('facial_recognition', {}).get('model') 
+            or values.get('facial_recognition_model_fallback')
+        )
 
         return values
 
