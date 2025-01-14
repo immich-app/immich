@@ -6,7 +6,7 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
@@ -36,16 +36,15 @@ class PreloadModelData(BaseModel):
         default=None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
     )
 
-    # Root validator to use fallbacks
-    @root_validator(pre=True)
-    def set_models(cls, values: dict) -> dict:
-        values["clip"]["model"] = values.get("clip", {}).get("model") or values.get("clip_model_fallback")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-        values["facial_recognition"]["model"] = values.get("facial_recognition", {}).get("model") or values.get(
-            "facial_recognition_model_fallback"
-        )
+        # Replace the values with fallbacks if necessary
+        if not self.clip.model and self.clip_model_fallback:
+            self.clip.model = self.clip_model_fallback
 
-        return values
+        if not self.facial_recognition.model and self.facial_recognition_model_fallback:
+            self.facial_recognition.model = self.facial_recognition_model_fallback
 
 
 class MaxBatchSize(BaseModel):
