@@ -25,8 +25,8 @@ select
   "albums"."id"
 from
   "albums"
-  left join "albums_shared_users_users" as "sharedAlbum" on "sharedAlbum"."albumsId" = "albums"."id"
-  left join "users" on "users"."id" = "sharedAlbum"."usersId"
+  left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
+  left join "users" on "users"."id" = "albumUsers"."usersId"
   and "users"."deletedAt" is null
 where
   "albums"."id" in ($1)
@@ -38,50 +38,28 @@ where
   and "albums"."deletedAt" is null
 
 -- AccessRepository.album.checkOwnerAccess
-SELECT
-  "AlbumEntity"."id" AS "AlbumEntity_id"
-FROM
-  "albums" "AlbumEntity"
-WHERE
-  (
-    (
-      ("AlbumEntity"."id" IN ($1))
-      AND ("AlbumEntity"."ownerId" = $2)
-    )
-  )
-  AND ("AlbumEntity"."deletedAt" IS NULL)
+select
+  "albums"."id"
+from
+  "albums"
+where
+  "albums"."id" in ($1)
+  and "albums"."ownerId" = $2
+  and "albums"."deletedAt" is null
 
 -- AccessRepository.album.checkSharedAlbumAccess
-SELECT
-  "AlbumEntity"."id" AS "AlbumEntity_id"
-FROM
-  "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumUsers" ON "AlbumEntity__AlbumEntity_albumUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "a641d58cf46d4a391ba060ac4dc337665c69ffea" ON "a641d58cf46d4a391ba060ac4dc337665c69ffea"."id" = "AlbumEntity__AlbumEntity_albumUsers"."usersId"
-  AND (
-    "a641d58cf46d4a391ba060ac4dc337665c69ffea"."deletedAt" IS NULL
-  )
-WHERE
-  (
-    (
-      ("AlbumEntity"."id" IN ($1))
-      AND (
-        (
-          (
-            (
-              (
-                "a641d58cf46d4a391ba060ac4dc337665c69ffea"."id" = $2
-              )
-            )
-          )
-          AND (
-            "AlbumEntity__AlbumEntity_albumUsers"."role" IN ($3, $4)
-          )
-        )
-      )
-    )
-  )
-  AND ("AlbumEntity"."deletedAt" IS NULL)
+select
+  "albums"."id"
+from
+  "albums"
+  left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
+  left join "users" on "users"."id" = "albumUsers"."usersId"
+  and "users"."deletedAt" is null
+where
+  "albums"."id" in ($1)
+  and "albums"."deletedAt" is null
+  and "users"."id" = $2
+  and "albumUsers"."role" in ($3, $4)
 
 -- AccessRepository.album.checkSharedLinkAccess
 SELECT

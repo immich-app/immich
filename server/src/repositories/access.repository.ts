@@ -78,8 +78,8 @@ class ActivityAccess implements IActivityAccess {
     return this.db
       .selectFrom('albums')
       .select('albums.id')
-      .leftJoin('albums_shared_users_users as sharedAlbum', 'sharedAlbum.albumsId', 'albums.id')
-      .leftJoin('users', (join) => join.onRef('users.id', '=', 'sharedAlbum.usersId').on('users.deletedAt', 'is', null))
+      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
       .where('albums.id', 'in', [...albumIds])
       .where('albums.isActivityEnabled', '=', true)
       .where((qb) => qb.or([qb('albums.ownerId', '=', userId), qb('users.id', '=', userId)]))
@@ -90,11 +90,7 @@ class ActivityAccess implements IActivityAccess {
 }
 
 class AlbumAccess implements IAlbumAccess {
-  constructor(
-    private albumRepository: Repository<AlbumEntity>,
-    private sharedLinkRepository: Repository<SharedLinkEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -103,14 +99,13 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...albumIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('albums')
+      .select('albums.id')
+      .where('albums.id', 'in', [...albumIds])
+      .where('albums.ownerId', '=', userId)
+      .where('albums.deletedAt', 'is', null)
+      .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
@@ -121,19 +116,19 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...albumIds]),
-          albumUsers: {
-            user: { id: userId },
-            // If editor access is needed we check for it, otherwise both are accepted
-            role:
-              access === AlbumUserRole.EDITOR ? AlbumUserRole.EDITOR : In([AlbumUserRole.EDITOR, AlbumUserRole.VIEWER]),
-          },
-        },
-      })
+    const accessRole =
+      access === AlbumUserRole.EDITOR ? [AlbumUserRole.EDITOR] : [AlbumUserRole.EDITOR, AlbumUserRole.VIEWER];
+
+    return this.db
+      .selectFrom('albums')
+      .select('albums.id')
+      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
+      .where('albums.id', 'in', [...albumIds])
+      .where('albums.deletedAt', 'is', null)
+      .where('users.id', '=', userId)
+      .where('albumUsers.role', 'in', [...accessRole])
+      .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
@@ -144,14 +139,12 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    return this.sharedLinkRepository
-      .find({
-        select: { albumId: true },
-        where: {
-          id: sharedLinkId,
-          albumId: In([...albumIds]),
-        },
-      })
+    return this.db
+      .selectFrom('shared_links')
+      .select('shared_links.albumId')
+      .where('shared_links.id', '=', sharedLinkId)
+      .where('shared_links.albumId', 'in', [...albumIds])
+      .execute()
       .then(
         (sharedLinks) => new Set(sharedLinks.flatMap((sharedLink) => (sharedLink.albumId ? [sharedLink.albumId] : []))),
       );
@@ -507,7 +500,7 @@ export class AccessRepository implements IAccessRepository {
     @InjectKysely() db: Kysely<DB>,
   ) {
     this.activity = new ActivityAccess(db);
-    this.album = new AlbumAccess(albumRepository, sharedLinkRepository, db);
+    this.album = new AlbumAccess(db);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository, db);
     this.authDevice = new AuthDeviceAccess(sessionRepository, db);
     this.memory = new MemoryAccess(memoryRepository, db);
