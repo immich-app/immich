@@ -99,6 +99,7 @@ export const DummyValue = {
   BUFFER: Buffer.from('abcdefghi'),
   DATE: new Date(),
   TIME_BUCKET: '2024-01-01T00:00:00.000Z',
+  BOOLEAN: true,
 };
 
 export const GENERATE_SQL_KEY = 'generate-sql-key';

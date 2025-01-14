@@ -4,6 +4,7 @@ import { Mocked, vitest } from 'vitest';
 export const newDatabaseRepositoryMock = (): Mocked<IDatabaseRepository> => {
   return {
     init: vitest.fn(),
+    shutdown: vitest.fn(),
     reconnect: vitest.fn(),
     getExtensionVersion: vitest.fn(),
     getExtensionVersionRange: vitest.fn(),
