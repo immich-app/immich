@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { ActivityEntity } from 'src/entities/activity.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
@@ -33,6 +36,7 @@ class ActivityAccess implements IActivityAccess {
   constructor(
     private activityRepository: Repository<ActivityEntity>,
     private albumRepository: Repository<AlbumEntity>,
+    private db: Kysely<DB>,
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -101,6 +105,7 @@ class AlbumAccess implements IAlbumAccess {
   constructor(
     private albumRepository: Repository<AlbumEntity>,
     private sharedLinkRepository: Repository<SharedLinkEntity>,
+    private db: Kysely<DB>,
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -171,6 +176,7 @@ class AssetAccess implements IAssetAccess {
     private assetRepository: Repository<AssetEntity>,
     private partnerRepository: Repository<PartnerEntity>,
     private sharedLinkRepository: Repository<SharedLinkEntity>,
+    private db: Kysely<DB>,
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -294,7 +300,10 @@ class AssetAccess implements IAssetAccess {
 }
 
 class AuthDeviceAccess implements IAuthDeviceAccess {
-  constructor(private sessionRepository: Repository<SessionEntity>) {}
+  constructor(
+    private sessionRepository: Repository<SessionEntity>,
+    private db: Kysely<DB>,
+  ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -316,7 +325,10 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
 }
 
 class StackAccess implements IStackAccess {
-  constructor(private stackRepository: Repository<StackEntity>) {}
+  constructor(
+    private stackRepository: Repository<StackEntity>,
+    private db: Kysely<DB>,
+  ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -338,7 +350,10 @@ class StackAccess implements IStackAccess {
 }
 
 class TimelineAccess implements ITimelineAccess {
-  constructor(private partnerRepository: Repository<PartnerEntity>) {}
+  constructor(
+    private partnerRepository: Repository<PartnerEntity>,
+    private db: Kysely<DB>,
+  ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -358,7 +373,10 @@ class TimelineAccess implements ITimelineAccess {
 }
 
 class MemoryAccess implements IMemoryAccess {
-  constructor(private memoryRepository: Repository<MemoryEntity>) {}
+  constructor(
+    private memoryRepository: Repository<MemoryEntity>,
+    private db: Kysely<DB>,
+  ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -383,6 +401,7 @@ class PersonAccess implements IPersonAccess {
   constructor(
     private assetFaceRepository: Repository<AssetFaceEntity>,
     private personRepository: Repository<PersonEntity>,
+    private db: Kysely<DB>,
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -425,7 +444,10 @@ class PersonAccess implements IPersonAccess {
 }
 
 class PartnerAccess implements IPartnerAccess {
-  constructor(private partnerRepository: Repository<PartnerEntity>) {}
+  constructor(
+    private partnerRepository: Repository<PartnerEntity>,
+    private db: Kysely<DB>,
+  ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -445,7 +467,10 @@ class PartnerAccess implements IPartnerAccess {
 }
 
 class TagAccess implements ITagAccess {
-  constructor(private tagRepository: Repository<TagEntity>) {}
+  constructor(
+    private tagRepository: Repository<TagEntity>,
+    private db: Kysely<DB>,
+  ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -491,16 +516,17 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
     @InjectRepository(StackEntity) stackRepository: Repository<StackEntity>,
     @InjectRepository(TagEntity) tagRepository: Repository<TagEntity>,
+    @InjectKysely() db: Kysely<DB>,
   ) {
-    this.activity = new ActivityAccess(activityRepository, albumRepository);
-    this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
-    this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
-    this.authDevice = new AuthDeviceAccess(sessionRepository);
-    this.memory = new MemoryAccess(memoryRepository);
-    this.person = new PersonAccess(assetFaceRepository, personRepository);
-    this.partner = new PartnerAccess(partnerRepository);
-    this.stack = new StackAccess(stackRepository);
-    this.tag = new TagAccess(tagRepository);
-    this.timeline = new TimelineAccess(partnerRepository);
+    this.activity = new ActivityAccess(activityRepository, albumRepository, db);
+    this.album = new AlbumAccess(albumRepository, sharedLinkRepository, db);
+    this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository, db);
+    this.authDevice = new AuthDeviceAccess(sessionRepository, db);
+    this.memory = new MemoryAccess(memoryRepository, db);
+    this.person = new PersonAccess(assetFaceRepository, personRepository, db);
+    this.partner = new PartnerAccess(partnerRepository, db);
+    this.stack = new StackAccess(stackRepository, db);
+    this.tag = new TagAccess(tagRepository, db);
+    this.timeline = new TimelineAccess(partnerRepository, db);
   }
 }
