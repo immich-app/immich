@@ -362,7 +362,7 @@ class TestRknnSession:
             [mock.call(f"Loaded RKNN model from {str(model_path).replace("model","rk3566")} with {tpe} threads.")]
         )
 
-    def test_run(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
+    def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
         rknn_session.return_value.load.return_value = 123
         np_spy = mocker.spy(np, "ascontiguousarray")
         mocker.patch("app.sessions.rknn.soc_name", "rk3566")
