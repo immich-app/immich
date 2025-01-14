@@ -107,14 +107,28 @@
     if (viewingAssetCursor < viewingAssets.length - 1) {
       await setAssetId(viewingAssets[++viewingAssetCursor]);
       await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      return true;
     }
+    return false;
   }
 
   async function navigatePrevious() {
     if (viewingAssetCursor > 0) {
       await setAssetId(viewingAssets[--viewingAssetCursor]);
       await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+      return true;
     }
+    return false;
+  }
+
+  async function navigateRandom() {
+    if (viewingAssets.length <= 0) {
+      return null;
+    }
+    const index = Math.floor(Math.random() * viewingAssets.length);
+    const asset = await setAssetId(viewingAssets[index]);
+    await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
+    return asset;
   }
 </script>
 
@@ -132,6 +146,7 @@
           showNavigation={viewingAssets.length > 1}
           onNext={navigateNext}
           onPrevious={navigatePrevious}
+          onRandom={navigateRandom}
           onClose={() => {
             assetViewingStore.showAssetViewer(false);
             handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));
