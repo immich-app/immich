@@ -6,6 +6,8 @@ Immich supports local [Reverse Geocoding](https://en.wikipedia.org/wiki/Reverse_
 
 During Exif Extraction, assets with latitudes and longitudes are reverse geocoded to determine their City, State, and Country.
 
+Note that if your assets already contain any of the IPTC tags (`City`, `Country-PrimaryLocationName`, `Province-State`), the reverse geocoding will not be performed and these tag values will be used instead
+
 ## Usage
 
 Data from a reverse geocode is displayed in the image details, and used in [Smart Search](/docs/features/searching.md).

@@ -364,6 +364,31 @@ describe(MetadataService.name, () => {
       });
     });
 
+    it('should use existing tags instead of geocoding', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
+      systemMock.get.mockResolvedValue({ reverseGeocoding: { enabled: true } });
+      mockReadTags({
+        GPSLatitude: assetStub.withLocation.exifInfo!.latitude!,
+        GPSLongitude: assetStub.withLocation.exifInfo!.longitude!,
+        City: 'City',
+        State: 'State',
+        Country: 'Country',
+      });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({ city: 'City', state: 'State', country: 'Country' }),
+      );
+      expect(assetMock.update).toHaveBeenCalledWith({
+        id: assetStub.withLocation.id,
+        duration: null,
+        fileCreatedAt: assetStub.withLocation.createdAt,
+        localDateTime: new Date('2023-02-22T05:06:29.716Z'),
+      });
+      expect(mapMock.reverseGeocode).not.toHaveBeenCalled();
+    });
+
     it('should discard latitude and longitude on null island', async () => {
       assetMock.getByIds.mockResolvedValue([assetStub.withLocation]);
       mockReadTags({

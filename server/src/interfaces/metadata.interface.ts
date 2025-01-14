@@ -14,6 +14,9 @@ type TagsWithWrongTypes =
   | 'Duration'
   | 'Description'
   | 'ImageDescription'
+  | 'City'
+  | 'State'
+  | 'Country'
   | 'RegionInfo'
   | 'TagsList'
   | 'Keywords'
@@ -39,6 +42,9 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   // Type is wrong, can also be number.
   Description?: StringOrNumber;
   ImageDescription?: StringOrNumber;
+  City?: StringOrNumber;
+  State?: StringOrNumber;
+  Country?: StringOrNumber;
 
   // Extended properties for image regions, such as faces
   RegionInfo?: {

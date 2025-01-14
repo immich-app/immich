@@ -629,6 +629,13 @@ export class MetadataService extends BaseService {
       longitude = null;
     }
 
+    const city = String(tags.City || '');
+    const state = String(tags.State || '');
+    const country = String(tags.Country || '');
+    if (city || state || country) {
+      return { city, state, country, latitude, longitude };
+    }
+
     let result: ReverseGeocodeResult = { country: null, state: null, city: null };
     if (reverseGeocoding.enabled && longitude && latitude) {
       result = await this.mapRepository.reverseGeocode({ latitude, longitude });
