@@ -180,7 +180,7 @@ export class LibraryService extends BaseService {
   }
 
   async getStatistics(id: string): Promise<number> {
-    const count = await this.assetRepository.getAssetCount({ libraryId: id });
+    const count = await this.assetRepository.getLibraryAssetCount({ libraryId: id });
     if (count == undefined) {
       throw new InternalServerErrorException(`Failed to get asset count for library ${id}`);
     }
@@ -682,7 +682,7 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const assetCount = await this.assetRepository.getAssetCount({ libraryId: job.id, withDeleted: true });
+    const assetCount = await this.assetRepository.getLibraryAssetCount({ libraryId: job.id, withDeleted: true });
 
     if (!assetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);

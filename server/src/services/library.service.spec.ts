@@ -227,7 +227,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.walk.mockImplementation(async function* generator() {});
       assetMock.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
-      assetMock.getAssetCount.mockResolvedValue(1);
+      assetMock.getLibraryAssetCount.mockResolvedValue(1);
       assetMock.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
 
       const response = await sut.handleQueueSyncAssets({ id: libraryStub.externalLibrary1.id });
@@ -240,7 +240,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibrary1);
       storageMock.walk.mockImplementation(async function* generator() {});
       assetMock.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
-      assetMock.getAssetCount.mockResolvedValue(0);
+      assetMock.getLibraryAssetCount.mockResolvedValue(0);
       assetMock.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(1) });
 
       const response = await sut.handleQueueSyncAssets({ id: libraryStub.externalLibrary1.id });
@@ -253,7 +253,7 @@ describe(LibraryService.name, () => {
       libraryMock.get.mockResolvedValue(libraryStub.externalLibraryWithImportPaths1);
       storageMock.walk.mockImplementation(async function* generator() {});
       assetMock.getAll.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
-      assetMock.getAssetCount.mockResolvedValue(1);
+      assetMock.getLibraryAssetCount.mockResolvedValue(1);
       assetMock.detectOfflineExternalAssets.mockResolvedValue({ numUpdatedRows: BigInt(0) });
       assetMock.getAllInLibrary.mockResolvedValue({ items: [assetStub.external], hasNextPage: false });
 
@@ -584,10 +584,10 @@ describe(LibraryService.name, () => {
 
   describe('getStatistics', () => {
     it('should return library statistics', async () => {
-      assetMock.getAssetCount.mockResolvedValue(10);
+      assetMock.getLibraryAssetCount.mockResolvedValue(10);
       await expect(sut.getStatistics(libraryStub.externalLibrary1.id)).resolves.toEqual(10);
 
-      expect(assetMock.getAssetCount).toHaveBeenCalledWith({ libraryId: libraryStub.externalLibrary1.id });
+      expect(assetMock.getLibraryAssetCount).toHaveBeenCalledWith({ libraryId: libraryStub.externalLibrary1.id });
     });
   });
 

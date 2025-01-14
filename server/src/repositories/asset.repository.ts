@@ -794,10 +794,14 @@ export class AssetRepository implements IAssetRepository {
     return result.map((row) => row.path as string);
   }
 
-  async getAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
-    const { count } = await searchAssetBuilder(this.db, options)
-      .select(sql`COUNT(*) OVER ()`.as('count'))
+  async getLibraryAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
+    const { count } = await this.db
+      .selectFrom('assets')
+      .select(sql`COUNT(*)`.as('count'))
+      .where('libraryId', '=', asUuid(options.libraryId!))
       .executeTakeFirstOrThrow();
+
+    console.log(count);
 
     return count as number;
   }
