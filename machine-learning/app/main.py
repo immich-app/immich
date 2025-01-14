@@ -78,16 +78,16 @@ async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: {preload}")
 
     if preload.clip.textual is not None:
-        model = await model_cache.get(preload.clip.model, ModelType.TEXTUAL, ModelTask.SEARCH)
+        model = await model_cache.get(preload.clip.textual, ModelType.TEXTUAL, ModelTask.SEARCH)
         await load(model)
 
     if preload.clip.visual is not None:
-        model = await model_cache.get(preload.clip.model, ModelType.VISUAL, ModelTask.SEARCH)
+        model = await model_cache.get(preload.clip.visual, ModelType.VISUAL, ModelTask.SEARCH)
         await load(model)
 
     if preload.facial_recognition.detection is not None:
         model = await model_cache.get(
-            preload.facial_recognition.model,
+            preload.facial_recognition.detection,
             ModelType.DETECTION,
             ModelTask.FACIAL_RECOGNITION,
         )
@@ -95,7 +95,7 @@ async def preload_models(preload: PreloadModelData) -> None:
 
     if preload.facial_recognition.recognition is not None:
         model = await model_cache.get(
-            preload.facial_recognition.model,
+            preload.facial_recognition.recognition,
             ModelType.RECOGNITION,
             ModelTask.FACIAL_RECOGNITION,
         )
