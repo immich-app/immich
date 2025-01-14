@@ -704,7 +704,8 @@ class TestCache:
 
         settings = Settings()
         assert settings.preload is not None
-        assert settings.preload.clip == "ViT-B-32__openai"
+        assert settings.preload.clip.textual == "ViT-B-32__openai"
+        assert settings.preload.clip.visual == "ViT-B-32__openai"
 
         model_cache = ModelCache()
         monkeypatch.setattr("app.main.model_cache", model_cache)
@@ -725,7 +726,8 @@ class TestCache:
 
         settings = Settings()
         assert settings.preload is not None
-        assert settings.preload.facial_recognition == "buffalo_s"
+        assert settings.preload.facial_recognition.detection == "buffalo_s"
+        assert settings.preload.facial_recognition.recognition == "buffalo_s"
 
         model_cache = ModelCache()
         monkeypatch.setattr("app.main.model_cache", model_cache)
@@ -745,8 +747,10 @@ class TestCache:
 
         settings = Settings()
         assert settings.preload is not None
-        assert settings.preload.clip == "ViT-B-32__openai"
-        assert settings.preload.facial_recognition == "buffalo_s"
+        assert settings.preload.clip.visual == "ViT-B-32__openai"
+        assert settings.preload.clip.textual == "ViT-B-32__openai"
+        assert settings.preload.facial_recognition.recognition == "buffalo_s"
+        assert settings.preload.facial_recognition.detection == "buffalo_s"
 
         model_cache = ModelCache()
         monkeypatch.setattr("app.main.model_cache", model_cache)

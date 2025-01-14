@@ -4,10 +4,9 @@ import os
 import sys
 from pathlib import Path
 from socket import socket
-from typing import Optional
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
@@ -25,18 +24,32 @@ class FacialRecognitionSettings(BaseModel):
     detection: str | None = None
 
 
-# Define str | None as a separate variable
-clip_model_fallback: str | None = None
-facial_recognition_model_fallback: str | None = None
-
-
 class PreloadModelData(BaseModel):
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
 
     # Define fallback environment variables
-    clip_model_fallback: Optional[str] = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
-    facial_recognition_model_fallback: Optional[str] = Field(None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION")
+    clip_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
+    facial_recognition_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
+
+    def update_from_fallbacks(self) -> None:  # Add type annotation here
+        # Apply fallback to clip model
+        if not self.clip.textual and self.clip_model_fallback:
+            self.clip.textual = self.clip_model_fallback
+            logger.warning("Deprecated environment variable: MACHINE_LEARNING_PRELOAD__CLIP. Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL instead.")
+
+        if not self.clip.visual and self.clip_model_fallback:
+            self.clip.visual = self.clip_model_fallback
+            logger.warning("Deprecated environment variable: MACHINE_LEARNING_PRELOAD__CLIP. Use MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead.")
+
+        # Apply fallback to facial recognition model
+        if not self.facial_recognition.recognition and self.facial_recognition_model_fallback:
+            self.facial_recognition.recognition = self.facial_recognition_model_fallback
+            logger.warning("Deprecated environment variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION instead.")
+
+        if not self.facial_recognition.detection and self.facial_recognition_model_fallback:
+            self.facial_recognition.detection = self.facial_recognition_model_fallback
+            logger.warning("Deprecated environment variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION instead.")
 
 
 class MaxBatchSize(BaseModel):
