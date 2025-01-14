@@ -34,33 +34,23 @@ class PreloadModelData(BaseModel):
 
     def update_from_fallbacks(self) -> None:  # Add type annotation here
         # Apply fallback to clip model
-        if not self.clip.textual and self.clip_model_fallback:
+        if self.clip_model_fallback:
             self.clip.textual = self.clip_model_fallback
-            log.warning(
-                "Deprecated env variable: MACHINE_LEARNING_PRELOAD__CLIP. "
-                "Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL instead."
-            )
-
-        if not self.clip.visual and self.clip_model_fallback:
             self.clip.visual = self.clip_model_fallback
             log.warning(
-                "Deprecated environment variable: MACHINE_LEARNING_PRELOAD__CLIP. "
-                "Use MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
+                "Deprecated env variable: MACHINE_LEARNING_PRELOAD__CLIP. "
+                "Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL and "
+                "MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
             )
 
         # Apply fallback to facial recognition model
-        if not self.facial_recognition.recognition and self.facial_recognition_model_fallback:
+        if self.facial_recognition_model_fallback:
             self.facial_recognition.recognition = self.facial_recognition_model_fallback
-            log.warning(
-                "Deprecated environment variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. "
-                "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION instead."
-            )
-
-        if not self.facial_recognition.detection and self.facial_recognition_model_fallback:
             self.facial_recognition.detection = self.facial_recognition_model_fallback
             log.warning(
                 "Deprecated environment variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. "
-                "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION instead."
+                "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION and "
+                "MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION instead."
             )
 
 
