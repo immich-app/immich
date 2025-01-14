@@ -15,7 +15,6 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { AlbumUserRole } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { Brackets, In, Repository } from 'typeorm';
 
 type IActivityAccess = IAccessRepository['activity'];
@@ -29,7 +28,6 @@ type IStackAccess = IAccessRepository['stack'];
 type ITagAccess = IAccessRepository['tag'];
 type ITimelineAccess = IAccessRepository['timeline'];
 
-@Instrumentation()
 @Injectable()
 class ActivityAccess implements IActivityAccess {
   constructor(

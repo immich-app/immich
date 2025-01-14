@@ -1,7 +1,7 @@
-# Hardware Transcoding [Experimental]
+# Hardware Transcoding
 
 This feature allows you to use a GPU to accelerate transcoding and reduce CPU load.
-Note that hardware transcoding is much less efficient for file sizes.
+Note that hardware transcoding produces significantly larger videos than software transcoding with similar settings, typically with lower quality. Using slow presets and preferring more efficient codecs can narrow this gap.
 As this is a new feature, it is still experimental and may not work on all systems.
 
 :::info
@@ -23,7 +23,7 @@ You do not need to redo any transcoding jobs after enabling hardware acceleratio
 - Raspberry Pi is currently not supported.
 - Two-pass mode is only supported for NVENC. Other APIs will ignore this setting.
 - By default, only encoding is currently hardware accelerated. This means the CPU is still used for software decoding and tone-mapping.
-  - NVENC and RKMPP can be fully accelerated by enabling hardware decoding in the video transcoding settings.
+  - You can benefit from end-to-end acceleration by enabling hardware decoding in the video transcoding settings.
 - Hardware dependent
   - Codec support varies, but H.264 and HEVC are usually supported.
     - Notably, NVIDIA and AMD GPUs do not support VP9 encoding.
@@ -49,7 +49,7 @@ For RKMPP to work:
 
 - You must have a supported Rockchip ARM SoC.
 - Only RK3588 supports hardware tonemapping, other SoCs use slower software tonemapping while still using hardware encoding.
-- Tonemapping requires `/usr/lib/aarch64-linux-gnu/libmali.so.1` to be present on your host system. Install [`libmali-valhall-g610-g6p0-gbm`][libmali-rockchip] and modify the [`hwaccel.transcoding.yml`][hw-file] file:
+- Tonemapping requires `/usr/lib/aarch64-linux-gnu/libmali.so.1` to be present on your host system. Install the [`libmali`][libmali-rockchip] release that corresponds to your Mali GPU (`libmali-valhall-g610-g13p0-gbm` on RK3588) and modify the [`hwaccel.transcoding.yml`][hw-file] file:
   - under `rkmpp` uncomment the 3 lines required for OpenCL tonemapping by removing the `#` symbol at the beginning of each line
   - `- /dev/mali0:/dev/mali0`
   - `- /etc/OpenCL:/etc/OpenCL:ro`
@@ -62,11 +62,14 @@ For RKMPP to work:
 1. If you do not already have it, download the latest [`hwaccel.transcoding.yml`][hw-file] file and ensure it's in the same folder as the `docker-compose.yml`.
 2. In the `docker-compose.yml` under `immich-server`, uncomment the `extends` section and change `cpu` to the appropriate backend.
 
-- For VAAPI on WSL2, be sure to use `vaapi-wsl` rather than `vaapi`
+   Note: For VAAPI on WSL2, be sure to use `vaapi-wsl` rather than `vaapi`
 
 3. Redeploy the `immich-server` container with these updated settings.
 4. In the Admin page under `Video transcoding settings`, change the hardware acceleration setting to the appropriate option and save.
-5. (Optional) If using a compatible backend, you may enable hardware decoding for optimal performance.
+
+   Note: For Jasper Lake and Elkhart Lake CPUs, you will need to set the `Hardware Acceleration` -> `Constant quality mode` to `CQP`
+
+5. (Optional) Enable hardware decoding for optimal performance.
 
 #### Single Compose File
 
@@ -89,16 +92,7 @@ immich-server:
   devices:
     - /dev/dri:/dev/dri
   volumes:
-    - ${UPLOAD_LOCATION}:/usr/src/app/upload
-    - /etc/localtime:/etc/localtime:ro
-  env_file:
-    - .env
-  ports:
-    - 2283:3001
-  depends_on:
-    - redis
-    - database
-  restart: always
+  ...
 ```
 
 Once this is done, you can continue to step 3 of "Basic Setup".

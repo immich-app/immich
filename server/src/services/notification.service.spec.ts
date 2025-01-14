@@ -7,8 +7,7 @@ import { AssetFileType, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { IJobRepository, INotifyAlbumUpdateJob, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { EmailTemplate, INotificationRepository } from 'src/interfaces/notification.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
@@ -16,14 +15,7 @@ import { NotificationService } from 'src/services/notification.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const configs = {
@@ -64,40 +56,32 @@ const configs = {
 };
 
 describe(NotificationService.name, () => {
+  let sut: NotificationService;
+
   let albumMock: Mocked<IAlbumRepository>;
   let assetMock: Mocked<IAssetRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let notificationMock: Mocked<INotificationRepository>;
-  let sut: NotificationService;
   let systemMock: Mocked<ISystemMetadataRepository>;
   let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    assetMock = newAssetRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    notificationMock = newNotificationRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    userMock = newUserRepositoryMock();
-
-    sut = new NotificationService(
-      eventMock,
-      systemMock,
-      notificationMock,
-      userMock,
-      jobMock,
-      loggerMock,
-      assetMock,
-      albumMock,
-    );
+    ({ sut, albumMock, assetMock, eventMock, jobMock, notificationMock, systemMock, userMock } =
+      newTestService(NotificationService));
   });
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should emit client and server events', () => {
+      const update = { oldConfig: defaults, newConfig: defaults };
+      expect(sut.onConfigUpdate(update)).toBeUndefined();
+      expect(eventMock.clientBroadcast).toHaveBeenCalledWith('on_config_update');
+      expect(eventMock.serverSend).toHaveBeenCalledWith('config.update', update);
+    });
   });
 
   describe('onConfigValidateEvent', () => {
@@ -142,6 +126,14 @@ describe(NotificationService.name, () => {
       await expect(sut.onConfigValidate({ oldConfig, newConfig })).resolves.not.toThrow();
       expect(notificationMock.verifySmtp).not.toHaveBeenCalled();
     });
+
+    it('should fail if smtp configuration is invalid', async () => {
+      const oldConfig = configs.smtpDisabled;
+      const newConfig = configs.smtpEnabled;
+
+      notificationMock.verifySmtp.mockRejectedValue(new Error('Failed validating smtp'));
+      await expect(sut.onConfigValidate({ oldConfig, newConfig })).rejects.toBeInstanceOf(Error);
+    });
   });
 
   describe('onAssetHide', () => {
@@ -155,7 +147,7 @@ describe(NotificationService.name, () => {
     it('should queue the generate thumbnail job', async () => {
       await sut.onAssetShow({ assetId: 'asset-id', userId: 'user-id' });
       expect(jobMock.queue).toHaveBeenCalledWith({
-        name: JobName.GENERATE_THUMBNAIL,
+        name: JobName.GENERATE_THUMBNAILS,
         data: { id: 'asset-id', notify: true },
       });
     });
@@ -178,10 +170,10 @@ describe(NotificationService.name, () => {
 
   describe('onAlbumUpdateEvent', () => {
     it('should queue notify album update event', async () => {
-      await sut.onAlbumUpdate({ id: '', updatedBy: '42' });
+      await sut.onAlbumUpdate({ id: 'album', recipientIds: ['42'] });
       expect(jobMock.queue).toHaveBeenCalledWith({
         name: JobName.NOTIFY_ALBUM_UPDATE,
-        data: { id: '', senderId: '42' },
+        data: { id: 'album', recipientIds: ['42'], delay: 300_000 },
       });
     });
   });
@@ -193,6 +185,18 @@ describe(NotificationService.name, () => {
         name: JobName.NOTIFY_ALBUM_INVITE,
         data: { id: '', recipientId: '42' },
       });
+    });
+  });
+
+  describe('onSessionDeleteEvent', () => {
+    it('should send a on_session_delete client event', () => {
+      vi.useFakeTimers();
+      sut.onSessionDelete({ sessionId: 'id' });
+      expect(eventMock.clientSend).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(500);
+
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_session_delete', 'id', 'id');
     });
   });
 
@@ -227,28 +231,28 @@ describe(NotificationService.name, () => {
   describe('onStackCreate', () => {
     it('should send connected clients an event', () => {
       sut.onStackCreate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackUpdate', () => {
     it('should send connected clients an event', () => {
       sut.onStackUpdate({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStackDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStackDelete({ stackId: 'stack-id', userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
   describe('onStacksDelete', () => {
     it('should send connected clients an event', () => {
       sut.onStacksDelete({ stackIds: ['stack-id'], userId: 'user-id' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id', []);
+      expect(eventMock.clientSend).toHaveBeenCalledWith('on_asset_stack_update', 'user-id');
     });
   });
 
@@ -508,32 +512,15 @@ describe(NotificationService.name, () => {
 
   describe('handleAlbumUpdate', () => {
     it('should skip if album could not be found', async () => {
-      await expect(sut.handleAlbumUpdate({ id: '', senderId: '' })).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleAlbumUpdate({ id: '', recipientIds: ['1'] })).resolves.toBe(JobStatus.SKIPPED);
       expect(userMock.get).not.toHaveBeenCalled();
     });
 
     it('should skip if owner could not be found', async () => {
       albumMock.getById.mockResolvedValue(albumStub.emptyWithValidThumbnail);
 
-      await expect(sut.handleAlbumUpdate({ id: '', senderId: '' })).resolves.toBe(JobStatus.SKIPPED);
+      await expect(sut.handleAlbumUpdate({ id: '', recipientIds: ['1'] })).resolves.toBe(JobStatus.SKIPPED);
       expect(systemMock.get).not.toHaveBeenCalled();
-    });
-
-    it('should filter out the sender', async () => {
-      albumMock.getById.mockResolvedValue({
-        ...albumStub.emptyWithValidThumbnail,
-        albumUsers: [
-          { user: { id: userStub.user1.id } } as AlbumUserEntity,
-          { user: { id: userStub.user2.id } } as AlbumUserEntity,
-        ],
-      });
-      userMock.get.mockResolvedValue(userStub.user1);
-      notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
-
-      await sut.handleAlbumUpdate({ id: '', senderId: userStub.user1.id });
-      expect(userMock.get).not.toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
-      expect(userMock.get).toHaveBeenCalledWith(userStub.user2.id, { withDeleted: false });
-      expect(notificationMock.renderEmail).toHaveBeenCalledOnce();
     });
 
     it('should skip recipient that could not be looked up', async () => {
@@ -544,7 +531,7 @@ describe(NotificationService.name, () => {
       userMock.get.mockResolvedValueOnce(userStub.user1);
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
 
-      await sut.handleAlbumUpdate({ id: '', senderId: '' });
+      await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
       expect(notificationMock.renderEmail).not.toHaveBeenCalled();
     });
@@ -567,7 +554,7 @@ describe(NotificationService.name, () => {
       });
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
 
-      await sut.handleAlbumUpdate({ id: '', senderId: '' });
+      await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
       expect(notificationMock.renderEmail).not.toHaveBeenCalled();
     });
@@ -590,7 +577,7 @@ describe(NotificationService.name, () => {
       });
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
 
-      await sut.handleAlbumUpdate({ id: '', senderId: '' });
+      await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
       expect(notificationMock.renderEmail).not.toHaveBeenCalled();
     });
@@ -603,10 +590,23 @@ describe(NotificationService.name, () => {
       userMock.get.mockResolvedValue(userStub.user1);
       notificationMock.renderEmail.mockResolvedValue({ html: '', text: '' });
 
-      await sut.handleAlbumUpdate({ id: '', senderId: '' });
+      await sut.handleAlbumUpdate({ id: '', recipientIds: [userStub.user1.id] });
       expect(userMock.get).toHaveBeenCalledWith(userStub.user1.id, { withDeleted: false });
       expect(notificationMock.renderEmail).toHaveBeenCalled();
       expect(jobMock.queue).toHaveBeenCalled();
+    });
+
+    it('should add new recipients for new images if job is already queued', async () => {
+      jobMock.removeJob.mockResolvedValue({ id: '1', recipientIds: ['2', '3', '4'] } as INotifyAlbumUpdateJob);
+      await sut.onAlbumUpdate({ id: '1', recipientIds: ['1', '2', '3'] } as INotifyAlbumUpdateJob);
+      expect(jobMock.queue).toHaveBeenCalledWith({
+        name: JobName.NOTIFY_ALBUM_UPDATE,
+        data: {
+          id: '1',
+          delay: 300_000,
+          recipientIds: ['1', '2', '3', '4'],
+        },
+      });
     });
   });
 
@@ -614,11 +614,6 @@ describe(NotificationService.name, () => {
     it('should skip if smtp notifications are disabled', async () => {
       systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: false } } });
       await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.SKIPPED);
-    });
-
-    it('should fail if email could not be sent', async () => {
-      systemMock.get.mockResolvedValue({ notifications: { smtp: { enabled: true } } });
-      await expect(sut.handleSendEmail({ html: '', subject: '', text: '', to: '' })).resolves.toBe(JobStatus.FAILED);
     });
 
     it('should send mail successfully', async () => {

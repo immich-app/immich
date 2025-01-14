@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   // Necessary for eslint
   /* eslint-disable @typescript-eslint/no-explicit-any */
   type T = any;
@@ -19,35 +19,43 @@
   import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/actions/click-outside';
   import { fly } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
 
-  let className = '';
-  export { className as class };
+  interface Props {
+    class?: string;
+    options: T[];
+    selectedOption?: any;
+    showMenu?: boolean;
+    controlable?: boolean;
+    hideTextOnSmallScreen?: boolean;
+    title?: string | undefined;
+    onSelect: (option: T) => void;
+    onClickOutside?: () => void;
+    render?: (item: T) => string | RenderedOption;
+  }
 
-  const dispatch = createEventDispatcher<{
-    select: T;
-    'click-outside': void;
-  }>();
-
-  export let options: T[];
-  export let selectedOption = options[0];
-  export let showMenu = false;
-  export let controlable = false;
-  export let hideTextOnSmallScreen = true;
-  export let title: string | undefined = undefined;
-
-  export let render: (item: T) => string | RenderedOption = String;
+  let {
+    class: className = '',
+    options,
+    selectedOption = $bindable(options[0]),
+    showMenu = $bindable(false),
+    controlable = false,
+    hideTextOnSmallScreen = true,
+    title = undefined,
+    onSelect,
+    onClickOutside = () => {},
+    render = String,
+  }: Props = $props();
 
   const handleClickOutside = () => {
     if (!controlable) {
       showMenu = false;
     }
 
-    dispatch('click-outside');
+    onClickOutside();
   };
 
   const handleSelectOption = (option: T) => {
-    dispatch('select', option);
+    onSelect(option);
     selectedOption = option;
 
     showMenu = false;
@@ -69,12 +77,12 @@
     }
   };
 
-  $: renderedSelectedOption = renderOption(selectedOption);
+  let renderedSelectedOption = $derived(renderOption(selectedOption));
 </script>
 
 <div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
   <!-- BUTTON TITLE -->
-  <LinkButton on:click={() => (showMenu = true)} fullwidth {title}>
+  <LinkButton onclick={() => (showMenu = true)} fullwidth {title}>
     <div class="flex place-items-center gap-2 text-sm">
       {#if renderedSelectedOption?.icon}
         <Icon path={renderedSelectedOption.icon} size="18" />
@@ -96,7 +104,7 @@
           type="button"
           class="grid grid-cols-[36px,1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
           disabled={renderedOption.disabled}
-          on:click={() => !renderedOption.disabled && handleSelectOption(option)}
+          onclick={() => !renderedOption.disabled && handleSelectOption(option)}
         >
           {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
@@ -106,7 +114,7 @@
               {renderedOption.title}
             </p>
           {:else}
-            <div />
+            <div></div>
             <p class="justify-self-start">
               {renderedOption.title}
             </p>

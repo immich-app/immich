@@ -1,53 +1,53 @@
-<script context="module" lang="ts">
-  export enum ProgressBarStatus {
-    Playing = 'playing',
-    Paused = 'paused',
-  }
-</script>
-
 <script lang="ts">
+  import { ProgressBarStatus } from '$lib/constants';
   import { handlePromiseError } from '$lib/utils';
 
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { tweened } from 'svelte/motion';
 
-  /**
-   * Autoplay on mount
-   * @default false
-   */
-  export let autoplay = false;
+  interface Props {
+    /**
+     * Autoplay on mount
+     * @default false
+     */
+    autoplay?: boolean;
+    /**
+     * Progress bar status
+     */
+    status?: ProgressBarStatus;
+    hidden?: boolean;
+    duration?: number;
+    onDone: () => void;
+    onPlaying?: () => void;
+    onPaused?: () => void;
+  }
 
-  /**
-   * Progress bar status
-   */
-  export let status: ProgressBarStatus = ProgressBarStatus.Paused;
+  let {
+    autoplay = false,
+    status = $bindable(),
+    hidden = false,
+    duration = 5,
+    onDone,
+    onPlaying = () => {},
+    onPaused = () => {},
+  }: Props = $props();
 
-  export let hidden = false;
-
-  export let duration = 5;
-
-  const onChange = async () => {
-    progress = setDuration(duration);
+  const onChange = async (progressDuration: number) => {
+    progress = setDuration(progressDuration);
     await play();
   };
 
   let progress = setDuration(duration);
 
-  // svelte 5, again....
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-  $: duration, handlePromiseError(onChange());
+  $effect(() => {
+    handlePromiseError(onChange(duration));
+  });
 
-  $: {
+  $effect(() => {
     if ($progress === 1) {
-      dispatch('done');
+      onDone();
     }
-  }
-
-  const dispatch = createEventDispatcher<{
-    done: void;
-    playing: void;
-    paused: void;
-  }>();
+  });
 
   onMount(async () => {
     if (autoplay) {
@@ -57,13 +57,13 @@
 
   export const play = async () => {
     status = ProgressBarStatus.Playing;
-    dispatch('playing');
+    onPlaying();
     await progress.set(1);
   };
 
   export const pause = async () => {
     status = ProgressBarStatus.Paused;
-    dispatch('paused');
+    onPaused();
     await progress.set($progress);
   };
 
@@ -88,5 +88,5 @@
 </script>
 
 {#if !hidden}
-  <span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`} />
+  <span class="absolute left-0 h-[3px] bg-immich-primary shadow-2xl" style:width={`${$progress * 100}%`}></span>
 {/if}

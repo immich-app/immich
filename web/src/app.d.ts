@@ -28,7 +28,7 @@ interface Element {
   requestFullscreen?(options?: FullscreenOptions): Promise<void>;
 }
 
-import type en from '$lib/i18n/en.json';
+import type en from '$i18n/en.json';
 import 'svelte-i18n';
 
 type NestedKeys<T, K = keyof T> = K extends keyof T & string

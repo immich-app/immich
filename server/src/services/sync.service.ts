@@ -1,32 +1,20 @@
-import { Inject } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetDeltaSyncDto, AssetDeltaSyncResponseDto, AssetFullSyncDto } from 'src/dtos/sync.dto';
 import { DatabaseAction, EntityType, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { requireAccess } from 'src/utils/access';
+import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { setIsEqual } from 'src/utils/set';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 
-export class SyncService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IPartnerRepository) private partnerRepository: IPartnerRepository,
-    @Inject(IAuditRepository) private auditRepository: IAuditRepository,
-  ) {}
-
+export class SyncService extends BaseService {
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id
     const userId = dto.userId || auth.user.id;
-    await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: [userId] });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
     const assets = await this.assetRepository.getAllForUserFullSync({
       ownerId: userId,
       updatedUntil: dto.updatedUntil,
@@ -50,7 +38,7 @@ export class SyncService {
       return FULL_SYNC;
     }
 
-    await requireAccess(this.access, { auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
+    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: dto.userIds });
 
     const limit = 10_000;
     const upserted = await this.assetRepository.getChangedDeltaSync({ limit, updatedAfter: dto.updatedAfter, userIds });

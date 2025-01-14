@@ -8,17 +8,15 @@
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
     createPerson,
-    getAllPeople,
     getFaces,
     reassignFacesById,
     AssetTypeEnum,
     type AssetFaceResponseDto,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { mdiAccountOff } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiArrowLeftThin, mdiMinus, mdiRestart } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { mdiAccountOff, mdiArrowLeftThin, mdiPencil, mdiRestart } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -29,26 +27,31 @@
   import { photoViewer } from '$lib/stores/assets.store';
   import { t } from 'svelte-i18n';
 
-  export let assetId: string;
-  export let assetType: AssetTypeEnum;
+  interface Props {
+    assetId: string;
+    assetType: AssetTypeEnum;
+    onClose: () => void;
+    onRefresh: () => void;
+  }
+
+  let { assetId, assetType, onClose, onRefresh }: Props = $props();
 
   // keep track of the changes
   let peopleToCreate: string[] = [];
   let assetFaceGenerated: string[] = [];
 
   // faces
-  let peopleWithFaces: AssetFaceResponseDto[] = [];
-  let selectedPersonToReassign: Record<string, PersonResponseDto> = {};
-  let selectedPersonToCreate: Record<string, string> = {};
-  let editedFace: AssetFaceResponseDto;
+  let peopleWithFaces: AssetFaceResponseDto[] = $state([]);
+  let selectedPersonToReassign: Record<string, PersonResponseDto> = $state({});
+  let selectedPersonToCreate: Record<string, string> = $state({});
+  let editedFace: AssetFaceResponseDto | undefined = $state();
 
   // loading spinners
-  let isShowLoadingDone = false;
-  let isShowLoadingPeople = false;
+  let isShowLoadingDone = $state(false);
+  let isShowLoadingPeople = $state(false);
 
   // search people
-  let showSelectedFaces = false;
-  let allPeople: PersonResponseDto[] = [];
+  let showSelectedFaces = $state(false);
 
   // timers
   let loaderLoadingDoneTimeout: ReturnType<typeof setTimeout>;
@@ -56,16 +59,9 @@
 
   const thumbnailWidth = '90px';
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    refresh: void;
-  }>();
-
   async function loadPeople() {
     const timeout = setTimeout(() => (isShowLoadingPeople = true), timeBeforeShowLoadingSpinner);
     try {
-      const { people } = await getAllPeople({ withHidden: true });
-      allPeople = people;
       peopleWithFaces = await getFaces({ id: assetId });
     } catch (error) {
       handleError(error, $t('errors.cant_get_faces'));
@@ -85,7 +81,7 @@
     ) {
       clearTimeout(loaderLoadingDoneTimeout);
       clearTimeout(automaticRefreshTimeout);
-      dispatch('refresh');
+      onRefresh();
     }
   };
 
@@ -98,22 +94,12 @@
     return b.every((valueB) => a.includes(valueB));
   };
 
-  const handleBackButton = () => {
-    dispatch('close');
-  };
-
   const handleReset = (id: string) => {
     if (selectedPersonToReassign[id]) {
       delete selectedPersonToReassign[id];
-
-      // trigger reactivity
-      selectedPersonToReassign = selectedPersonToReassign;
     }
     if (selectedPersonToCreate[id]) {
       delete selectedPersonToCreate[id];
-
-      // trigger reactivity
-      selectedPersonToCreate = selectedPersonToCreate;
     }
   };
 
@@ -153,21 +139,21 @@
     isShowLoadingDone = false;
     if (peopleToCreate.length === 0) {
       clearTimeout(loaderLoadingDoneTimeout);
-      dispatch('refresh');
+      onRefresh();
     } else {
-      automaticRefreshTimeout = setTimeout(() => dispatch('refresh'), 15_000);
+      automaticRefreshTimeout = setTimeout(onRefresh, 15_000);
     }
   };
 
   const handleCreatePerson = (newFeaturePhoto: string | null) => {
-    if (newFeaturePhoto) {
+    if (newFeaturePhoto && editedFace) {
       selectedPersonToCreate[editedFace.id] = newFeaturePhoto;
     }
     showSelectedFaces = false;
   };
 
   const handleReassignFace = (person: PersonResponseDto | null) => {
-    if (person) {
+    if (person && editedFace) {
       selectedPersonToReassign[editedFace.id] = person;
     }
     showSelectedFaces = false;
@@ -185,14 +171,14 @@
 >
   <div class="flex place-items-center justify-between gap-2">
     <div class="flex items-center gap-2">
-      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} on:click={handleBackButton} />
+      <CircleIconButton icon={mdiArrowLeftThin} title={$t('back')} onclick={onClose} />
       <p class="flex text-lg text-immich-fg dark:text-immich-dark-fg">{$t('edit_faces')}</p>
     </div>
     {#if !isShowLoadingDone}
       <button
         type="button"
         class="justify-self-end rounded-lg p-2 hover:bg-immich-dark-primary hover:dark:bg-immich-dark-primary/50"
-        on:click={() => handleEditFaces()}
+        onclick={() => handleEditFaces()}
       >
         {$t('done')}
       </button>
@@ -215,9 +201,9 @@
               role="button"
               tabindex={index}
               class="absolute left-0 top-0 h-[90px] w-[90px] cursor-default"
-              on:focus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              on:mouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
-              on:mouseleave={() => ($boundingBoxesArray = [])}
+              onfocus={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+              onmouseover={() => ($boundingBoxesArray = [peopleWithFaces[index]])}
+              onmouseleave={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
                 {#if selectedPersonToCreate[face.id]}
@@ -299,17 +285,17 @@
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
-                    on:click={() => handleReset(face.id)}
+                    onclick={() => handleReset(face.id)}
                   />
                 {:else}
                   <CircleIconButton
                     color="primary"
-                    icon={mdiMinus}
+                    icon={mdiPencil}
                     title={$t('select_new_face')}
                     size="18"
                     padding="1"
                     class="absolute left-1/2 top-1/2 translate-x-[-50%] translate-y-[-50%] transform"
-                    on:click={() => handleFacePicker(face)}
+                    onclick={() => handleFacePicker(face)}
                   />
                 {/if}
               </div>
@@ -330,14 +316,13 @@
   </div>
 </section>
 
-{#if showSelectedFaces}
+{#if showSelectedFaces && editedFace}
   <AssignFaceSidePanel
-    {allPeople}
     {editedFace}
     {assetId}
     {assetType}
-    on:close={() => (showSelectedFaces = false)}
-    on:createPerson={(event) => handleCreatePerson(event.detail)}
-    on:reassign={(event) => handleReassignFace(event.detail)}
+    onClose={() => (showSelectedFaces = false)}
+    onCreatePerson={handleCreatePerson}
+    onReassign={handleReassignFace}
   />
 {/if}

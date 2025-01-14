@@ -37,7 +37,6 @@ class AssetResponseDto {
     required this.ownerId,
     this.people = const [],
     this.resized,
-    this.smartInfo,
     this.stack,
     this.tags = const [],
     required this.thumbhash,
@@ -121,14 +120,6 @@ class AssetResponseDto {
   ///
   bool? resized;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  SmartInfoResponseDto? smartInfo;
-
   AssetStackResponseDto? stack;
 
   List<TagResponseDto> tags;
@@ -167,7 +158,6 @@ class AssetResponseDto {
     other.ownerId == ownerId &&
     _deepEquality.equals(other.people, people) &&
     other.resized == resized &&
-    other.smartInfo == smartInfo &&
     other.stack == stack &&
     _deepEquality.equals(other.tags, tags) &&
     other.thumbhash == thumbhash &&
@@ -202,7 +192,6 @@ class AssetResponseDto {
     (ownerId.hashCode) +
     (people.hashCode) +
     (resized == null ? 0 : resized!.hashCode) +
-    (smartInfo == null ? 0 : smartInfo!.hashCode) +
     (stack == null ? 0 : stack!.hashCode) +
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
@@ -211,7 +200,7 @@ class AssetResponseDto {
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, smartInfo=$smartInfo, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -267,11 +256,6 @@ class AssetResponseDto {
     } else {
     //  json[r'resized'] = null;
     }
-    if (this.smartInfo != null) {
-      json[r'smartInfo'] = this.smartInfo;
-    } else {
-    //  json[r'smartInfo'] = null;
-    }
     if (this.stack != null) {
       json[r'stack'] = this.stack;
     } else {
@@ -293,6 +277,7 @@ class AssetResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -321,7 +306,6 @@ class AssetResponseDto {
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
         resized: mapValueOfType<bool>(json, r'resized'),
-        smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
         stack: AssetStackResponseDto.fromJson(json[r'stack']),
         tags: TagResponseDto.listFromJson(json[r'tags']),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),

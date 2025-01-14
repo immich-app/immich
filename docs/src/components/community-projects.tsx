@@ -83,27 +83,43 @@ const projects: CommunityProjectProps[] = [
     description: 'Power tools for organizing your immich library.',
     url: 'https://github.com/varun-raj/immich-power-tools',
   },
+  {
+    title: 'Immich Public Proxy',
+    description:
+      'Share your Immich photos and albums in a safe way without exposing your Immich instance to the public.',
+    url: 'https://github.com/alangrainger/immich-public-proxy',
+  },
+  {
+    title: 'Immich Kodi',
+    description: 'Unofficial Kodi plugin for Immich.',
+    url: 'https://github.com/vladd11/immich-kodi',
+  },
+  {
+    title: 'Immich Downloader',
+    description: 'Downloads a configurable number of random photos based on people or album ID.',
+    url: 'https://github.com/jon6fingrs/immich-dl',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {
   return (
-    <section className="flex flex-col gap-4 justify-between dark:bg-immich-dark-gray bg-immich-gray dark:border-0 border-gray-200 border border-solid rounded-2xl p-4">
+    <section className="flex flex-col gap-4 justify-between dark:bg-immich-dark-gray bg-immich-gray dark:border-0 border-gray-200 border border-solid rounded-2xl px-4 py-6">
       <div className="flex flex-col gap-2">
-        <p className="m-0 items-start flex gap-2">
+        <p className="m-0 items-start flex gap-2 text-2xl font-bold text-immich-primary dark:text-immich-dark-primary">
           <span>{title}</span>
         </p>
 
         <p className="m-0 text-sm text-gray-600 dark:text-gray-300">{description}</p>
-        <p className="m-0 text-sm text-gray-600 dark:text-gray-300">
+        <p className="m-0 text-sm text-gray-600 dark:text-gray-300 my-4">
           <a href={url}>{url}</a>
         </p>
       </div>
       <div className="flex">
         <Link
-          className="px-4 py-2 bg-immich-primary/10 dark:bg-gray-300  rounded-full hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
+          className="px-4 py-2 bg-immich-primary/10 dark:bg-gray-300 rounded-xl text-sm hover:no-underline text-immich-primary dark:text-immich-dark-bg font-semibold"
           to={url}
         >
-          View Project
+          View Link
         </Link>
       </div>
     </section>

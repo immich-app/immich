@@ -22,7 +22,7 @@ Copy the entire `immich-server` block as a new service and make the following ch
 -   container_name: immich_server
 ...
 -   ports:
--     - 2283:3001
+-     - 2283:2283
 + immich-microservices:
 +   container_name: immich_microservices
 ```
@@ -47,9 +47,5 @@ services:
 When a new asset is uploaded it kicks off a series of jobs, which include metadata extraction, thumbnail generation, machine learning tasks, and storage template migration, if enabled. To view the status of a job navigate to the Administration -> Jobs page.
 
 Additionally, some jobs run on a schedule, which is every night at midnight. This schedule, with the exception of [External Libraries](/docs/features/libraries) scanning, cannot be changed.
-
-:::info
-Storage Migration job can be run after changing the [Storage Template](/docs/administration/storage-template.mdx), in order to apply the change to the existing library.
-:::
 
 <img src={require('./img/admin-jobs.webp').default} width="60%" title="Admin jobs" />

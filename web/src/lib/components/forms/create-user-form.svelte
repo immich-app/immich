@@ -1,36 +1,44 @@
 <script lang="ts">
-  import { serverInfo } from '$lib/stores/server-info.store';
-  import { handleError } from '$lib/utils/handle-error';
-  import { createUserAdmin } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import PasswordField from '../shared-components/password-field.svelte';
-  import Slider from '../elements/slider.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { t } from 'svelte-i18n';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { ByteUnit, convertToBytes } from '$lib/utils/byte-units';
+  import { handleError } from '$lib/utils/handle-error';
+  import { createUserAdmin } from '@immich/sdk';
+  import { t } from 'svelte-i18n';
+  import Button from '../elements/buttons/button.svelte';
+  import Slider from '../elements/slider.svelte';
+  import PasswordField from '../shared-components/password-field.svelte';
 
-  export let onClose: () => void;
+  interface Props {
+    onClose: () => void;
+    onSubmit: () => void;
+    onCancel: () => void;
+    oauthEnabled?: boolean;
+  }
 
-  let error: string;
-  let success: string;
+  let { onClose, onSubmit, onCancel, oauthEnabled = false }: Props = $props();
 
-  let email = '';
-  let password = '';
-  let confirmPassword = '';
-  let name = '';
-  let shouldChangePassword = true;
-  let notify = true;
+  let error = $state('');
+  let success = $state('');
 
-  let canCreateUser = false;
-  let quotaSize: number | undefined;
-  let isCreatingUser = false;
+  let email = $state('');
+  let password = $state('');
+  let confirmPassword = $state('');
+  let name = $state('');
+  let shouldChangePassword = $state(true);
+  let notify = $state(true);
 
-  $: quotaSizeInBytes = quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null;
-  $: quotaSizeWarning = quotaSizeInBytes && quotaSizeInBytes > $serverInfo.diskSizeRaw;
+  let canCreateUser = $state(false);
+  let quotaSize: number | undefined = $state();
+  let isCreatingUser = $state(false);
 
-  $: {
+  let quotaSizeInBytes = $derived(quotaSize ? convertToBytes(quotaSize, ByteUnit.GiB) : null);
+  let quotaSizeWarning = $derived(
+    quotaSizeInBytes && userInteraction.serverInfo && quotaSizeInBytes > userInteraction.serverInfo.diskSizeRaw,
+  );
+
+  $effect(() => {
     if (password !== confirmPassword && confirmPassword.length > 0) {
       error = $t('password_does_not_match');
       canCreateUser = false;
@@ -38,11 +46,7 @@
       error = '';
       canCreateUser = true;
     }
-  }
-  const dispatch = createEventDispatcher<{
-    submit: void;
-    cancel: void;
-  }>();
+  });
 
   async function registerUser() {
     if (canCreateUser && !isCreatingUser) {
@@ -63,7 +67,7 @@
 
         success = $t('new_user_created');
 
-        dispatch('submit');
+        onSubmit();
 
         return;
       } catch (error) {
@@ -73,10 +77,15 @@
       }
     }
   }
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await registerUser();
+  };
 </script>
 
 <FullScreenModal title={$t('create_new_user')} showLogo {onClose}>
-  <form on:submit|preventDefault={registerUser} autocomplete="off" id="create-new-user-form">
+  <form {onsubmit} autocomplete="off" id="create-new-user-form">
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" bind:value={email} type="email" required />
@@ -93,12 +102,17 @@
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="password">{$t('password')}</label>
-      <PasswordField id="password" bind:password autocomplete="new-password" />
+      <PasswordField id="password" bind:password autocomplete="new-password" required={!oauthEnabled} />
     </div>
 
     <div class="my-4 flex flex-col gap-2">
       <label class="immich-form-label" for="confirmPassword">{$t('confirm_password')}</label>
-      <PasswordField id="confirmPassword" bind:password={confirmPassword} autocomplete="new-password" />
+      <PasswordField
+        id="confirmPassword"
+        bind:password={confirmPassword}
+        autocomplete="new-password"
+        required={!oauthEnabled}
+      />
     </div>
 
     <div class="my-4 flex place-items-center justify-between gap-2">
@@ -131,8 +145,9 @@
       <p class="text-sm text-immich-primary">{success}</p>
     {/if}
   </form>
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => dispatch('cancel')}>{$t('cancel')}</Button>
+
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     <Button type="submit" disabled={isCreatingUser} fullwidth form="create-new-user-form">{$t('create')}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

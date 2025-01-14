@@ -6,6 +6,7 @@ interface Test {
   test: string;
   options: Omit<CrawlOptions, 'extensions'>;
   files: Record<string, boolean>;
+  skipOnWin32?: boolean;
 }
 
 const cwd = process.cwd();
@@ -47,6 +48,18 @@ const tests: Test[] = [
     files: {
       '/photos/image.jpg': true,
     },
+  },
+  {
+    test: 'should crawl folders with quotes',
+    options: {
+      pathsToCrawl: ["/photo's/", '/photo"s/', '/photo`s/'],
+    },
+    files: {
+      "/photo's/image1.jpg": true,
+      '/photo"s/image2.jpg': true,
+      '/photo`s/image3.jpg': true,
+    },
+    skipOnWin32: true, // single quote interferes with mockfs root on Windows
   },
   {
     test: 'should crawl a single file',
@@ -115,17 +128,7 @@ const tests: Test[] = [
       '/albums/image3.jpg': true,
     },
   },
-  {
-    test: 'should support globbing paths',
-    options: {
-      pathsToCrawl: ['/photos*'],
-    },
-    files: {
-      '/photos1/image1.jpg': true,
-      '/photos2/image2.jpg': true,
-      '/images/image3.jpg': false,
-    },
-  },
+
   {
     test: 'should crawl a single path without trailing slash',
     options: {
@@ -280,8 +283,12 @@ describe('crawl', () => {
   });
 
   describe('crawl', () => {
-    for (const { test, options, files } of tests) {
-      it(test, async () => {
+    for (const { test: name, options, files, skipOnWin32 } of tests) {
+      if (process.platform === 'win32' && skipOnWin32) {
+        test.skip(name);
+        continue;
+      }
+      it(name, async () => {
         // The file contents is the same as the path.
         mockfs(Object.fromEntries(Object.keys(files).map((file) => [file, file])));
 

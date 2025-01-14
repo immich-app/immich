@@ -34,6 +34,9 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
               trashDays: 30,
               oauthButtonText: '',
               externalDomain: '',
+              mapLightStyleUrl:
+                  'https://tiles.immich.cloud/v1/style/light.json',
+              mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
             ),
             serverDiskInfo: const ServerDiskInfo(
               diskAvailable: "0",
@@ -56,7 +59,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     await getServerConfig();
   }
 
-  getServerVersion() async {
+  Future<void> getServerVersion() async {
     try {
       final serverVersion = await _serverInfoService.getServerVersion();
 

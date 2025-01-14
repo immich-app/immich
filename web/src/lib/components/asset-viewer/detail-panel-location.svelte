@@ -7,10 +7,14 @@
   import { mdiMapMarkerOutline, mdiPencil } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let isOwner: boolean;
-  export let asset: AssetResponseDto;
+  interface Props {
+    isOwner: boolean;
+    asset: AssetResponseDto;
+  }
 
-  let isShowChangeLocation = false;
+  let { isOwner, asset = $bindable() }: Props = $props();
+
+  let isShowChangeLocation = $state(false);
 
   async function handleConfirmChangeLocation(gps: { lng: number; lat: number }) {
     isShowChangeLocation = false;
@@ -30,7 +34,7 @@
   <button
     type="button"
     class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-    on:click={() => (isOwner ? (isShowChangeLocation = true) : null)}
+    onclick={() => (isOwner ? (isShowChangeLocation = true) : null)}
     title={isOwner ? $t('edit_location') : ''}
     class:hover:dark:text-immich-dark-primary={isOwner}
     class:hover:text-immich-primary={isOwner}
@@ -65,7 +69,7 @@
   <button
     type="button"
     class="flex w-full text-left justify-between place-items-start gap-4 py-4 rounded-lg hover:dark:text-immich-dark-primary hover:text-immich-primary"
-    on:click={() => (isShowChangeLocation = true)}
+    onclick={() => (isShowChangeLocation = true)}
     title={$t('add_location')}
   >
     <div class="flex gap-4">
@@ -81,10 +85,6 @@
 
 {#if isShowChangeLocation}
   <Portal>
-    <ChangeLocation
-      {asset}
-      on:confirm={({ detail: gps }) => handleConfirmChangeLocation(gps)}
-      on:cancel={() => (isShowChangeLocation = false)}
-    />
+    <ChangeLocation {asset} onConfirm={handleConfirmChangeLocation} onCancel={() => (isShowChangeLocation = false)} />
   </Portal>
 {/if}

@@ -29,93 +29,101 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_uk_UA.md">Українська</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
+  <br>
   <a href="README_ar_JO.md">العربية</a>
+  <a href="README_vi_VN.md">Tiếng Việt</a>
+  <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
 ## Предупреждение
 
 - ⚠️ Этот проект находится **в очень активной** разработке.
-- ⚠️ Ожидайте множество ошибок и глобальных изменений.
+- ⚠️ Ожидайте недоработки и глобальные изменения.
 - ⚠️ **Не используйте это приложение как единственное хранилище своих фото и видео.**
 - ⚠️ Всегда следуйте [плану резервного копирования «3-2-1»](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/ "Стратегии резервного копирования: Почему стратегия резервного копирования «3-2-1» — лучшая") для ваших драгоценных фотографий и видео!
+
+
+> [!NOTE]
+> Инструкции по установке и документация по ссылке https://immich.app/
 
 ## Содержание
 
 - [Официальная документация](https://immich.app/docs)
+- [Введение](https://immich.app/docs/overview/introduction)
+- [Установка](https://immich.app/docs/install/requirements)
 - [План разработки](https://github.com/orgs/immich-app/projects/1)
 - [Демо](#demo)
 - [Возможности](#features)
-- [Введение](https://immich.app/docs/overview/introduction)
-- [Установка](https://immich.app/docs/install/requirements)
-- [Гид по доработке проекта](https://immich.app/docs/overview/support-the-project)
-
-## Документация
-
-Вы можете прочитать инструкции по установке и остальную документацию [здесь](https://immich.app/)
+- [Перевод](https://immich.app/docs/developer/translations)
+- [Гид по участию и поддержке проекта](https://immich.app/docs/overview/support-the-project)
 
 ## Демо
 
-Вы можете опробовать [демонстрационную версию](https://demo.immich.app/).
+Вы можете опробовать [Web демонстрационную версию](https://demo.immich.app/)
 
-Для мобильного приложения вы можете использовать адрес `https://demo.immich.app/api` в поле `Server Endpoint URL`.
+В мобильном приложении укажите `https://demo.immich.app/api` в поле `URL-адрес сервера`
 
-```bash title="Демо доступ"
-Реквизиты доступа
-логин/почта: demo@immich.app
-пароль: demo
+### Данные для входа
+
+| Email           | Пароль   |
+| --------------- | -------- |
+| demo@immich.app | demo     |
+
 ```
-
+Характеристики демо-сервера: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
 ```
-Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
-```
-
-## Активность
-
-![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
 
 ## Возможности
 
+| Возможности                                            | Приложение | Веб |
+| :----------------------------------------------------- | ---------- | --- |
+| Загрузка, просмотр видео и фото                        | Да         | Да  |
+| Автоматический бекап при запуске приложения            | Да         | Н/Д |
+| Предотвращение дупликации данных                       | Да         | Да  |
+| Выбор альбома (-ов) для бекапа                         | Да         | Н/Д |
+| Скачивание фото и видео с сервера на устройство        | Да         | Да  |
+| Поддержка нескольких аккаунтов пользователей           | Да         | Да  |
+| Альбомы и общие альбомы                                | Да         | Да  |
+| Прокручиваемая/перетаскиваемая полоса прокрутки        | Да         | Да  |
+| Поддержка raw-форматов                                 | Да         | Да  |
+| Просмотр метаданных (EXIF, map)                        | Да         | Да  |
+| Поиск до метаданным, объектам, лицам и CLIP            | Да         | Да  |
+| Функции администрирования (управление пользователями)  | Нет        | Да  |
+| Фоновое резервное копирование                          | Да         | Н/Д |
+| Виртуальная прокрутка                                  | Да         | Да  |
+| Поддержка OAuth                                        | Да         | Да  |
+| API Ключи                                              | Н/Д        | Да  |
+| LivePhoto/MotionPhoto воспроизведение и бекап          | Да         | Да  |
+| Отображение 360° изображений                           | Нет        | Да  |
+| Настраиваемая структура хранилища                      | Да         | Да  |
+| Общий доступ к контенту                                | Нет        | Да  |
+| Архив и избранное                                      | Да         | Да  |
+| Мировая карта                                          | Да         | Да  |
+| Совместное использование                               | Да         | Да  |
+| Распознавание и группировка по лицам                   | Да         | Да  |
+| Воспоминания (в этот день x лет назад)                 | Да         | Да  |
+| Работа без интернета                                   | Да         | Нет |
+| Галереи только для просмотра                           | Да         | Да  |
+| Коллажи                                                | Да         | Да  |
+| Метки (теги)                                           | Нет        | Да  |
+| Просмотр папкой                                        | Нет        | Да  |
 
-| Возможности                                         | Приложение | Веб |
-| --------------------------------------------------- | ---------- | --- |
-| Загрузка на сервер и просмотр видео и фото          | Да         | Да  |
-| Автоматический бекап, когда приложение открыто      | Да         | Н/Д |
-| Предотвращение дупликации данных                    | Да         | Да  |
-| Выбор альбома (-ов) для бекапа                      | Да         | Н/Д |
-| Скачивание с сервера фото и видео на устройство     | Да         | Да  |
-| Поддержка нескольких пользователей                  | Да         | Да  |
-| Альбомы и общие альбомы                             | Да         | Да  |
-| Прокручиваемая/перетаскиваемая полоса прокрутки     | Да         | Да  |
-| Поддержка raw-форматов                              | Да         | Да  |
-| Просмотр метаданных (EXIF, map)                     | Да         | Да  |
-| Поиск до метаданным, объектам, лицам и CLIP         | Да         | Да  |
-| Административные функции (управление пользователями)| Нет        | Да  |
-| Фоновое резервное копирование                       | Да         | Н/Д |
-| Виртуальная прокрутка                               | Да         | Да  |
-| Поддержка OAuth                                     | Да         | Да  |
-| Ключи API                                           | Н/Д        | Да  |
-| LivePhoto/MotionPhoto воспроизведение и бекап       | Да         | Да  |
-| Поддержка отображения изображений 360°              | Нет        | Да  |
-| Настраиваемая структура хранилища                   | Да         | Да  |
-| Общий доступ к контенту                             | Нет        | Да  |
-| Архив и избранное                                   | Да         | Да  |
-| Мировая карта                                       | Да         | Да  |
-| Совместное использование                            | Да         | Да  |
-| Распознавание и группировка по лицам                | Да         | Да  |
-| Воспоминания (в этот день x лет назад)              | Да         | Да  |
-| Работа без интернета                                | Да         | Нет |
-| Галереи только для просмотра                        | Да         | Да  |
-| Коллажи                                             | Да         | Да  |
+## Перевод
 
-## Авторы
+Всё про перевод проекта [Здесь](https://immich.app/docs/developer/translations).
 
-<a href="https://github.com/alextran1502/immich/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
+<a href="https://hosted.weblate.org/engage/immich/">
+<img src="https://hosted.weblate.org/widget/immich/immich/multi-auto.svg" alt="Translation status" />
 </a>
 
-## Star History
+## Активность репозитория
+
+![Activities](https://repobeats.axiom.co/api/embed/9e86d9dc3ddd137161f2f6d2e758d7863b1789cb.svg "Repobeats analytics image")
+
+## История звёзд
 
 <a href="https://star-history.com/#immich-app/immich&Date">
  <picture>
@@ -123,4 +131,10 @@ Spec: Free-tier Oracle VM - Amsterdam - 2.4Ghz quad-core ARM64 CPU, 24GB RAM
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" />
    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=immich-app/immich&type=Date" width="100%" />
  </picture>
+</a>
+
+## Участники
+
+<a href="https://github.com/alextran1502/immich/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=immich-app/immich" width="100%"/>
 </a>

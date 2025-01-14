@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:ui';
@@ -9,7 +8,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -71,8 +69,8 @@ class EditImagePage extends ConsumerWidget {
             imageData,
             title: "${p.withoutExtension(asset.fileName)}_edited.jpg",
           );
-      await ref.read(albumProvider.notifier).getDeviceAlbums();
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      await ref.read(albumProvider.notifier).refreshDeviceAlbums();
+      context.navigator.popUntil((route) => route.isFirst);
       ImmichToast.show(
         durationInSecond: 3,
         context: context,
@@ -91,9 +89,6 @@ class EditImagePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Image imageWidget =
-        Image(image: ImmichImage.imageProvider(asset: asset));
-
     return Scaffold(
       appBar: AppBar(
         title: Text("edit_image_title".tr()),
@@ -104,8 +99,7 @@ class EditImagePage extends ConsumerWidget {
             color: context.primaryColor,
             size: 24,
           ),
-          onPressed: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+          onPressed: () => context.navigator.popUntil((route) => route.isFirst),
         ),
         actions: <Widget>[
           TextButton(
@@ -125,8 +119,8 @@ class EditImagePage extends ConsumerWidget {
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.7,
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxHeight: context.height * 0.7,
+            maxWidth: context.width * 0.9,
           ),
           child: Container(
             decoration: BoxDecoration(
@@ -157,24 +151,48 @@ class EditImagePage extends ConsumerWidget {
           color: context.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(30),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            IconButton(
-              icon: Icon(
-                Platform.isAndroid
-                    ? Icons.crop_rotate_rounded
-                    : Icons.crop_rotate_rounded,
-                color: Theme.of(context).iconTheme.color,
-                size: 25,
-              ),
-              onPressed: () {
-                context.pushRoute(
-                  CropImageRoute(asset: asset, image: imageWidget),
-                );
-              },
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.crop_rotate_rounded,
+                    color: context.themeData.iconTheme.color,
+                    size: 25,
+                  ),
+                  onPressed: () {
+                    context.pushRoute(
+                      CropImageRoute(asset: asset, image: image),
+                    );
+                  },
+                ),
+                Text("crop".tr(), style: context.textTheme.displayMedium),
+              ],
             ),
-            Text("crop".tr(), style: context.textTheme.displayMedium),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.filter,
+                    color: context.themeData.iconTheme.color,
+                    size: 25,
+                  ),
+                  onPressed: () {
+                    context.pushRoute(
+                      FilterImageRoute(
+                        asset: asset,
+                        image: image,
+                      ),
+                    );
+                  },
+                ),
+                Text("filter".tr(), style: context.textTheme.displayMedium),
+              ],
+            ),
           ],
         ),
       ),

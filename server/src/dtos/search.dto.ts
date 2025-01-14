@@ -101,12 +101,6 @@ class BaseSearchDto {
 
   @IsInt()
   @Min(1)
-  @Type(() => Number)
-  @Optional()
-  page?: number;
-
-  @IsInt()
-  @Min(1)
   @Max(1000)
   @Type(() => Number)
   @Optional()
@@ -119,7 +113,15 @@ class BaseSearchDto {
   personIds?: string[];
 }
 
-export class MetadataSearchDto extends BaseSearchDto {
+export class RandomSearchDto extends BaseSearchDto {
+  @ValidateBoolean({ optional: true })
+  withStacked?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  withPeople?: boolean;
+}
+
+export class MetadataSearchDto extends RandomSearchDto {
   @ValidateUUID({ optional: true })
   id?: string;
 
@@ -132,12 +134,6 @@ export class MetadataSearchDto extends BaseSearchDto {
   @IsNotEmpty()
   @Optional()
   checksum?: string;
-
-  @ValidateBoolean({ optional: true })
-  withStacked?: boolean;
-
-  @ValidateBoolean({ optional: true })
-  withPeople?: boolean;
 
   @IsString()
   @IsNotEmpty()
@@ -166,14 +162,26 @@ export class MetadataSearchDto extends BaseSearchDto {
 
   @IsEnum(AssetOrder)
   @Optional()
-  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder })
+  @ApiProperty({ enumName: 'AssetOrder', enum: AssetOrder, default: AssetOrder.DESC })
   order?: AssetOrder;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  page?: number;
 }
 
 export class SmartSearchDto extends BaseSearchDto {
   @IsString()
   @IsNotEmpty()
   query!: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  @Optional()
+  page?: number;
 }
 
 export class SearchPlacesDto {

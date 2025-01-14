@@ -1,5 +1,3 @@
-<svelte:options accessors />
-
 <script lang="ts">
   import {
     NotificationType,
@@ -13,12 +11,17 @@
   import type { SettingsResetOptions } from './admin-settings';
   import { t } from 'svelte-i18n';
 
-  export let config: SystemConfigDto;
+  interface Props {
+    config: SystemConfigDto;
+    children: import('svelte').Snippet<[{ savedConfig: SystemConfigDto; defaultConfig: SystemConfigDto }]>;
+  }
 
-  let savedConfig: SystemConfigDto;
-  let defaultConfig: SystemConfigDto;
+  let { config = $bindable(), children }: Props = $props();
 
-  const handleReset = async (options: SettingsResetOptions) => {
+  let savedConfig: SystemConfigDto | undefined = $state();
+  let defaultConfig: SystemConfigDto | undefined = $state();
+
+  export const handleReset = async (options: SettingsResetOptions) => {
     await (options.default ? resetToDefault(options.configKeys) : reset(options.configKeys));
   };
 
@@ -26,7 +29,8 @@
     let systemConfigDto = {
       ...savedConfig,
       ...update,
-    };
+    } as SystemConfigDto;
+
     if (isEqual(systemConfigDto, savedConfig)) {
       return;
     }
@@ -59,6 +63,10 @@
   };
 
   const resetToDefault = (configKeys: Array<keyof SystemConfigDto>) => {
+    if (!defaultConfig) {
+      return;
+    }
+
     for (const key of configKeys) {
       config = { ...config, [key]: defaultConfig[key] };
     }
@@ -75,5 +83,5 @@
 </script>
 
 {#if savedConfig && defaultConfig}
-  <slot {handleReset} {handleSave} {savedConfig} {defaultConfig} />
+  {@render children({ savedConfig, defaultConfig })}
 {/if}

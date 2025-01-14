@@ -39,7 +39,7 @@ attach-server:
 renovate:
   LOG_LEVEL=debug npx renovate --platform=local --repository-cache=reset
 
-MODULES = e2e server web cli sdk
+MODULES = e2e server web cli sdk docs
 
 audit-%:
 	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) audit fix
@@ -48,11 +48,9 @@ install-%:
 build-cli: build-sdk
 build-web: build-sdk
 build-%: install-%
-	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run | grep 'build' >/dev/null \
-		&& npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run build || true
+	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run build
 format-%:
-	npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run | grep 'format:fix' >/dev/null \
-		&& npm --prefix $(subst sdk,open-api/typescript-sdk,$*) run format:fix || true
+	npm --prefix $* run format:fix
 lint-%:
 	npm --prefix $* run lint:fix
 check-%:
@@ -66,15 +64,27 @@ test-e2e:
 	docker compose -f ./e2e/docker-compose.yml build
 	npm --prefix e2e run test
 	npm --prefix e2e run test:web
+test-medium:
+	docker run \
+    --rm \
+    -v ./server/src:/usr/src/app/src \
+    -v ./server/test:/usr/src/app/test \
+    -v ./server/vitest.config.medium.mjs:/usr/src/app/vitest.config.medium.mjs \
+    -v ./server/tsconfig.json:/usr/src/app/tsconfig.json \
+    -e NODE_ENV=development \
+    immich-server:latest \
+    -c "npm ci && npm run test:medium -- --run"
+test-medium-dev:
+	docker exec -it immich_server /bin/sh -c "npm run test:medium"
 
-build-all: $(foreach M,$(MODULES),build-$M) ;
+build-all: $(foreach M,$(filter-out e2e,$(MODULES)),build-$M) ;
 install-all: $(foreach M,$(MODULES),install-$M) ;
-check-all: $(foreach M,$(MODULES),check-$M) ;
-lint-all: $(foreach M,$(MODULES),lint-$M) ;
-format-all: $(foreach M,$(MODULES),format-$M) ;
+check-all: $(foreach M,$(filter-out sdk cli docs,$(MODULES)),check-$M) ;
+lint-all: $(foreach M,$(filter-out sdk docs,$(MODULES)),lint-$M) ;
+format-all: $(foreach M,$(filter-out sdk,$(MODULES)),format-$M) ;
 audit-all:  $(foreach M,$(MODULES),audit-$M) ;
 hygiene-all: lint-all format-all check-all sql audit-all;
-test-all: $(foreach M,$(MODULES),test-$M) ;
+test-all: $(foreach M,$(filter-out sdk docs,$(MODULES)),test-$M) ;
 
 clean:
 	find . -name "node_modules" -type d -prune -exec rm -rf '{}' +

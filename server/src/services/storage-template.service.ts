@@ -1,38 +1,51 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
-import { SystemConfig } from 'src/config';
-import {
-  supportedDayTokens,
-  supportedHourTokens,
-  supportedMinuteTokens,
-  supportedMonthTokens,
-  supportedSecondTokens,
-  supportedWeekTokens,
-  supportedYearTokens,
-} from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
-import { OnEmit } from 'src/decorators';
+import { StorageCore } from 'src/cores/storage.core';
+import { OnEvent, OnJob } from 'src/decorators';
+import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType } from 'src/entities/move.entity';
-import { AssetType } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { DatabaseLock, IDatabaseRepository } from 'src/interfaces/database.interface';
+import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
+import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
-import { IEntityJob, JOBS_ASSET_PAGINATION_SIZE, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { BaseService } from 'src/services/base.service';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
+
+const storageTokens = {
+  secondOptions: ['s', 'ss', 'SSS'],
+  minuteOptions: ['m', 'mm'],
+  dayOptions: ['d', 'dd'],
+  weekOptions: ['W', 'WW'],
+  hourOptions: ['h', 'hh', 'H', 'HH'],
+  yearOptions: ['y', 'yy'],
+  monthOptions: ['M', 'MM', 'MMM', 'MMMM'],
+};
+
+const storagePresets = [
+  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{MM}}/{{filename}}',
+  '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+  '{{y}}/{{MMM}}/{{filename}}',
+  '{{y}}/{{MMMM}}/{{filename}}',
+  '{{y}}/{{MM}}/{{dd}}/{{filename}}',
+  '{{y}}/{{MMMM}}/{{dd}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MMM}}-{{dd}}/{{filename}}',
+  '{{y}}-{{MMMM}}-{{dd}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}/{{filename}}',
+  '{{y}}/{{y}}-{{WW}}/{{filename}}',
+  '{{y}}/{{y}}-{{MM}}-{{dd}}/{{assetId}}',
+  '{{y}}/{{y}}-{{MM}}/{{assetId}}',
+  '{{y}}/{{y}}-{{WW}}/{{assetId}}',
+  '{{album}}/{{filename}}',
+];
 
 export interface MoveAssetMetadata {
   storageLabel: string | null;
@@ -47,9 +60,7 @@ interface RenderMetadata {
 }
 
 @Injectable()
-export class StorageTemplateService {
-  private configCore: SystemConfigCore;
-  private storageCore: StorageCore;
+export class StorageTemplateService extends BaseService {
   private _template: {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
@@ -63,33 +74,21 @@ export class StorageTemplateService {
     return this._template;
   }
 
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IMoveRepository) moveRepository: IMoveRepository,
-    @Inject(IPersonRepository) personRepository: IPersonRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ICryptoRepository) cryptoRepository: ICryptoRepository,
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(StorageTemplateService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-    this.configCore.config$.subscribe((config) => this.onConfig(config));
-    this.storageCore = StorageCore.create(
-      assetRepository,
-      cryptoRepository,
-      moveRepository,
-      personRepository,
-      storageRepository,
-      systemMetadataRepository,
-      this.logger,
-    );
+  @OnEvent({ name: 'config.init' })
+  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    const template = newConfig.storageTemplate.template;
+    if (!this._template || template !== this.template.raw) {
+      this.logger.debug(`Compiling new storage template: ${template}`);
+      this._template = this.compile(template);
+    }
   }
 
-  @OnEmit({ event: 'config.validate' })
+  @OnEvent({ name: 'config.update', server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.onConfigInit({ newConfig });
+  }
+
+  @OnEvent({ name: 'config.validate' })
   onConfigValidate({ newConfig }: ArgOf<'config.validate'>) {
     try {
       const { compiled } = this.compile(newConfig.storageTemplate.template);
@@ -110,8 +109,13 @@ export class StorageTemplateService {
     }
   }
 
-  async handleMigrationSingle({ id }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: true });
+  getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
+    return { ...storageTokens, presetOptions: storagePresets };
+  }
+
+  @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
+  async handleMigrationSingle({ id }: JobOf<JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE>): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: true });
     const storageTemplateEnabled = config.storageTemplate.enabled;
     if (!storageTemplateEnabled) {
       return JobStatus.SKIPPED;
@@ -139,9 +143,10 @@ export class StorageTemplateService {
     return JobStatus.SUCCESS;
   }
 
+  @OnJob({ name: JobName.STORAGE_TEMPLATE_MIGRATION, queue: QueueName.STORAGE_TEMPLATE_MIGRATION })
   async handleMigration(): Promise<JobStatus> {
     this.logger.log('Starting storage template migration');
-    const { storageTemplate } = await this.configCore.getConfig({ withCache: true });
+    const { storageTemplate } = await this.getConfig({ withCache: true });
     const { enabled } = storageTemplate;
     if (!enabled) {
       this.logger.log('Storage template migration disabled, skipping');
@@ -283,14 +288,6 @@ export class StorageTemplateService {
     }
   }
 
-  private onConfig(config: SystemConfig) {
-    const template = config.storageTemplate.template;
-    if (!this._template || template !== this.template.raw) {
-      this.logger.debug(`Compiling new storage template: ${template}`);
-      this._template = this.compile(template);
-    }
-  }
-
   private compile(template: string) {
     return {
       raw: template,
@@ -315,17 +312,7 @@ export class StorageTemplateService {
     const zone = asset.exifInfo?.timeZone || systemTimeZone;
     const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
-    const dateTokens = [
-      ...supportedYearTokens,
-      ...supportedMonthTokens,
-      ...supportedWeekTokens,
-      ...supportedDayTokens,
-      ...supportedHourTokens,
-      ...supportedMinuteTokens,
-      ...supportedSecondTokens,
-    ];
-
-    for (const token of dateTokens) {
+    for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
     }
 

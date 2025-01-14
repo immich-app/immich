@@ -18,7 +18,7 @@ export class JobCommandDto {
   command!: JobCommand;
 
   @ValidateBoolean({ optional: true })
-  force!: boolean;
+  force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
 }
 
 export class JobCreateDto {
@@ -97,4 +97,7 @@ export class AllJobStatusResponseDto implements Record<QueueName, JobStatusDto> 
 
   @ApiProperty({ type: JobStatusDto })
   [QueueName.NOTIFICATION]!: JobStatusDto;
+
+  @ApiProperty({ type: JobStatusDto })
+  [QueueName.BACKUP_DATABASE]!: JobStatusDto;
 }

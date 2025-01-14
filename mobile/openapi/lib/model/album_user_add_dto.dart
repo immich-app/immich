@@ -13,17 +13,11 @@ part of openapi.api;
 class AlbumUserAddDto {
   /// Returns a new [AlbumUserAddDto] instance.
   AlbumUserAddDto({
-    this.role,
+    this.role = AlbumUserRole.editor,
     required this.userId,
   });
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AlbumUserRole? role;
+  AlbumUserRole role;
 
   String userId;
 
@@ -35,7 +29,7 @@ class AlbumUserAddDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (role == null ? 0 : role!.hashCode) +
+    (role.hashCode) +
     (userId.hashCode);
 
   @override
@@ -43,11 +37,7 @@ class AlbumUserAddDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.role != null) {
       json[r'role'] = this.role;
-    } else {
-    //  json[r'role'] = null;
-    }
       json[r'userId'] = this.userId;
     return json;
   }
@@ -56,11 +46,12 @@ class AlbumUserAddDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AlbumUserAddDto? fromJson(dynamic value) {
+    upgradeDto(value, "AlbumUserAddDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return AlbumUserAddDto(
-        role: AlbumUserRole.fromJson(json[r'role']),
+        role: AlbumUserRole.fromJson(json[r'role']) ?? AlbumUserRole.editor,
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

@@ -1,20 +1,28 @@
+import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { JobItem, QueueName } from 'src/interfaces/job.interface';
 
 export const IEventRepository = 'IEventRepository';
 
-type EmitEventMap = {
+type EventMap = {
   // app events
-  'app.bootstrap': ['api' | 'microservices'];
+  'app.bootstrap': [];
   'app.shutdown': [];
 
+  'config.init': [{ newConfig: SystemConfig }];
   // config events
-  'config.update': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
+  'config.update': [
+    {
+      newConfig: SystemConfig;
+      oldConfig: SystemConfig;
+    },
+  ];
   'config.validate': [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  'album.update': [{ id: string; updatedBy: string }];
+  'album.update': [{ id: string; recipientIds: string[] }];
   'album.invite': [{ id: string; userId: string }];
 
   // asset events
@@ -30,6 +38,8 @@ type EmitEventMap = {
   'assets.delete': [{ assetIds: string[]; userId: string }];
   'assets.restore': [{ assetIds: string[]; userId: string }];
 
+  'job.start': [QueueName, JobItem];
+
   // session events
   'session.delete': [{ sessionId: string }];
 
@@ -43,69 +53,62 @@ type EmitEventMap = {
 
   // user events
   'user.signup': [{ notify: boolean; id: string; tempPassword?: string }];
+
+  // websocket events
+  'websocket.connect': [{ userId: string }];
 };
 
-export type EmitEvent = keyof EmitEventMap;
-export type EmitHandler<T extends EmitEvent> = (...args: ArgsOf<T>) => Promise<void> | void;
-export type ArgOf<T extends EmitEvent> = EmitEventMap[T][0];
-export type ArgsOf<T extends EmitEvent> = EmitEventMap[T];
+export const serverEvents = ['config.update'] as const;
+export type ServerEvents = (typeof serverEvents)[number];
 
-export enum ClientEvent {
-  UPLOAD_SUCCESS = 'on_upload_success',
-  USER_DELETE = 'on_user_delete',
-  ASSET_DELETE = 'on_asset_delete',
-  ASSET_TRASH = 'on_asset_trash',
-  ASSET_UPDATE = 'on_asset_update',
-  ASSET_HIDDEN = 'on_asset_hidden',
-  ASSET_RESTORE = 'on_asset_restore',
-  ASSET_STACK_UPDATE = 'on_asset_stack_update',
-  PERSON_THUMBNAIL = 'on_person_thumbnail',
-  SERVER_VERSION = 'on_server_version',
-  CONFIG_UPDATE = 'on_config_update',
-  NEW_RELEASE = 'on_new_release',
-  SESSION_DELETE = 'on_session_delete',
-}
+export type EmitEvent = keyof EventMap;
+export type EmitHandler<T extends EmitEvent> = (...args: ArgsOf<T>) => Promise<void> | void;
+export type ArgOf<T extends EmitEvent> = EventMap[T][0];
+export type ArgsOf<T extends EmitEvent> = EventMap[T];
 
 export interface ClientEventMap {
-  [ClientEvent.UPLOAD_SUCCESS]: AssetResponseDto;
-  [ClientEvent.USER_DELETE]: string;
-  [ClientEvent.ASSET_DELETE]: string;
-  [ClientEvent.ASSET_TRASH]: string[];
-  [ClientEvent.ASSET_UPDATE]: AssetResponseDto;
-  [ClientEvent.ASSET_HIDDEN]: string;
-  [ClientEvent.ASSET_RESTORE]: string[];
-  [ClientEvent.ASSET_STACK_UPDATE]: string[];
-  [ClientEvent.PERSON_THUMBNAIL]: string;
-  [ClientEvent.SERVER_VERSION]: ServerVersionResponseDto;
-  [ClientEvent.CONFIG_UPDATE]: Record<string, never>;
-  [ClientEvent.NEW_RELEASE]: ReleaseNotification;
-  [ClientEvent.SESSION_DELETE]: string;
+  on_upload_success: [AssetResponseDto];
+  on_user_delete: [string];
+  on_asset_delete: [string];
+  on_asset_trash: [string[]];
+  on_asset_update: [AssetResponseDto];
+  on_asset_hidden: [string];
+  on_asset_restore: [string[]];
+  on_asset_stack_update: string[];
+  on_person_thumbnail: [string];
+  on_server_version: [ServerVersionResponseDto];
+  on_config_update: [];
+  on_new_release: [ReleaseNotification];
+  on_session_delete: [string];
 }
 
-export enum ServerEvent {
-  CONFIG_UPDATE = 'config.update',
-  WEBSOCKET_CONNECT = 'websocket.connect',
-}
+export type EventItem<T extends EmitEvent> = {
+  event: T;
+  handler: EmitHandler<T>;
+  server: boolean;
+};
 
-export interface ServerEventMap {
-  [ServerEvent.CONFIG_UPDATE]: null;
-  [ServerEvent.WEBSOCKET_CONNECT]: { userId: string };
+export enum BootstrapEventPriority {
+  // Database service should be initialized before anything else, most other services need database access
+  DatabaseService = -200,
+  // Initialise config after other bootstrap services, stop other services from using config on bootstrap
+  SystemConfig = 100,
 }
 
 export interface IEventRepository {
-  on<T extends keyof EmitEventMap>(event: T, handler: EmitHandler<T>): void;
-  emit<T extends keyof EmitEventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
+  setup(options: { services: ClassConstructor<unknown>[] }): void;
+  emit<T extends keyof EventMap>(event: T, ...args: ArgsOf<T>): Promise<void>;
 
   /**
    * Send to connected clients for a specific user
    */
-  clientSend<E extends keyof ClientEventMap>(event: E, room: string, data: ClientEventMap[E]): void;
+  clientSend<E extends keyof ClientEventMap>(event: E, room: string, ...data: ClientEventMap[E]): void;
   /**
    * Send to all connected clients
    */
-  clientBroadcast<E extends keyof ClientEventMap>(event: E, data: ClientEventMap[E]): void;
+  clientBroadcast<E extends keyof ClientEventMap>(event: E, ...data: ClientEventMap[E]): void;
   /**
-   * Notify listeners in this and connected processes. Subscribe to an event with `@OnServerEvent`
+   * Send to all connected servers
    */
-  serverSend<E extends keyof ServerEventMap>(event: E, data: ServerEventMap[E]): boolean;
+  serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void;
 }

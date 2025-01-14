@@ -18,13 +18,17 @@
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let jobs: AllJobStatusResponseDto;
+  let { data }: Props = $props();
+
+  let jobs: AllJobStatusResponseDto | undefined = $state();
 
   let running = true;
-  let isOpen = false;
-  let selectedJob: ComboBoxOption | undefined = undefined;
+  let isOpen = $state(false);
+  let selectedJob: ComboBoxOption | undefined = $state(undefined);
 
   onMount(async () => {
     while (running) {
@@ -58,23 +62,30 @@
       handleError(error, $t('errors.unable_to_submit_job'));
     }
   };
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await handleCreate();
+  };
 </script>
 
 <UserPageLayout title={data.meta.title} admin>
-  <div class="flex justify-end" slot="buttons">
-    <LinkButton on:click={() => (isOpen = true)}>
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiPlus} size="18" />
-        {$t('admin.create_job')}
-      </div>
-    </LinkButton>
-    <LinkButton href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
-      <div class="flex place-items-center gap-2 text-sm">
-        <Icon path={mdiCog} size="18" />
-        {$t('admin.manage_concurrency')}
-      </div>
-    </LinkButton>
-  </div>
+  {#snippet buttons()}
+    <div class="flex justify-end">
+      <LinkButton onclick={() => (isOpen = true)}>
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiPlus} size="18" />
+          {$t('admin.create_job')}
+        </div>
+      </LinkButton>
+      <LinkButton href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
+        <div class="flex place-items-center gap-2 text-sm">
+          <Icon path={mdiCog} size="18" />
+          {$t('admin.manage_concurrency')}
+        </div>
+      </LinkButton>
+    </div>
+  {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
       {#if jobs}
@@ -92,15 +103,17 @@
     onConfirm={handleCreate}
     onCancel={handleCancel}
   >
-    <form on:submit|preventDefault={handleCreate} autocomplete="off" id="create-tag-form" slot="prompt" class="w-full">
-      <div class="flex flex-col gap-1 text-left">
-        <Combobox
-          bind:selectedOption={selectedJob}
-          label={$t('jobs')}
-          {options}
-          placeholder={$t('admin.search_jobs')}
-        />
-      </div>
-    </form>
+    {#snippet promptSnippet()}
+      <form {onsubmit} autocomplete="off" id="create-tag-form" class="w-full">
+        <div class="flex flex-col gap-1 text-left">
+          <Combobox
+            bind:selectedOption={selectedJob}
+            label={$t('jobs')}
+            {options}
+            placeholder={$t('admin.search_jobs')}
+          />
+        </div>
+      </form>
+    {/snippet}
   </ConfirmDialog>
 {/if}

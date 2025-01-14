@@ -1,8 +1,9 @@
 import { goto } from '$app/navigation';
 import FormatBoldMessage from '$lib/components/i18n/format-bold-message.svelte';
+import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
-import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
+import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
 import { downloadManager } from '$lib/stores/download';
@@ -14,6 +15,7 @@ import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
+  deleteAssets,
   deleteStacks,
   getAssetInfo,
   getBaseUrl,
@@ -27,11 +29,12 @@ import {
   type AssetResponseDto,
   type AssetTypeEnum,
   type DownloadInfoDto,
+  type StackResponseDto,
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
-import { t } from 'svelte-i18n';
+import { t, type Translations } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { handleError } from './handle-error';
 
@@ -118,7 +121,8 @@ export const addAssetsToNewAlbum = async (albumName: string, assetIds: string[])
     return;
   }
   const $t = get(t);
-  notificationController.show({
+  // for reasons beyond me <ComponentProps<typeof FormatBoldMessage>> doesn't work, even though it's (afaik) exactly this object
+  notificationController.show<{ key: Translations; values: InterpolationValues }>({
     type: NotificationType.Info,
     timeout: 5000,
     component: {
@@ -211,13 +215,6 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 
 export const downloadFile = async (asset: AssetResponseDto) => {
   const $t = get(t);
-  if (asset.isOffline) {
-    notificationController.show({
-      type: NotificationType.Info,
-      message: $t('asset_filename_is_offline', { values: { filename: asset.originalFileName } }),
-    });
-    return;
-  }
   const assets = [
     {
       filename: asset.originalFileName,
@@ -445,7 +442,27 @@ export const deleteStack = async (stackIds: string[]) => {
   }
 };
 
-export const selectAllAssets = async (assetStore: AssetStore, assetInteractionStore: AssetInteractionStore) => {
+export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
+  const $t = get(t);
+
+  try {
+    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
+    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
+    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
+
+    notificationController.show({
+      type: NotificationType.Info,
+      message: $t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }),
+    });
+
+    keepAsset.stack = null;
+    return keepAsset;
+  } catch (error) {
+    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
+  }
+};
+
+export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: AssetInteraction) => {
   if (get(isSelectingAllAssets)) {
     // Selection is already ongoing
     return;
@@ -459,7 +476,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
       }
-      assetInteractionStore.selectAssets(bucket.assets);
+      assetInteraction.selectAssets(bucket.assets);
 
       // We use setTimeout to allow the UI to update. Otherwise, this may
       // cause a long delay between the start of 'select all' and the
@@ -472,6 +489,11 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteractionSt
     handleError(error, $t('errors.error_selecting_all_assets'));
     isSelectingAllAssets.set(false);
   }
+};
+
+export const cancelMultiselect = (assetInteraction: AssetInteraction) => {
+  isSelectingAllAssets.set(false);
+  assetInteraction.clearMultiselect();
 };
 
 export const toggleArchive = async (asset: AssetResponseDto) => {
@@ -529,7 +551,7 @@ export const delay = async (ms: number) => {
 };
 
 export const canCopyImageToClipboard = (): boolean => {
-  return !!(navigator.clipboard && window.ClipboardItem);
+  return !!(navigator.clipboard && globalThis.ClipboardItem);
 };
 
 const imgToBlob = async (imageElement: HTMLImageElement) => {

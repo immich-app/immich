@@ -102,6 +102,7 @@ class AssetFaceResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetFaceResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetFaceResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

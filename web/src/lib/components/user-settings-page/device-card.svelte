@@ -15,14 +15,14 @@
     mdiUbuntu,
   } from '@mdi/js';
   import { DateTime, type ToRelativeCalendarOptions } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  export let device: SessionResponseDto;
+  interface Props {
+    device: SessionResponseDto;
+    onDelete?: (() => void) | undefined;
+  }
 
-  const dispatcher = createEventDispatcher<{
-    delete: void;
-  }>();
+  let { device, onDelete = undefined }: Props = $props();
 
   const options: ToRelativeCalendarOptions = {
     unit: 'days',
@@ -68,14 +68,14 @@
         </span>
       </div>
     </div>
-    {#if !device.current}
+    {#if !device.current && onDelete}
       <div>
         <CircleIconButton
           color="primary"
           icon={mdiTrashCanOutline}
           title={$t('log_out')}
           size="16"
-          on:click={() => dispatcher('delete')}
+          onclick={onDelete}
         />
       </div>
     {/if}

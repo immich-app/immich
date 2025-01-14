@@ -9,8 +9,6 @@
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
   import { shortcut } from '$lib/actions/shortcut';
 
-  export let asset: AssetResponseDto;
-
   onMount(() => {
     return websocketEvents.on('on_asset_update', (assetUpdate) => {
       if (assetUpdate.id === asset.id) {
@@ -19,11 +17,16 @@
     });
   });
 
-  export let onUpdateSelectedType: (type: string) => void;
-  export let onClose: () => void;
+  interface Props {
+    asset: AssetResponseDto;
+    onUpdateSelectedType: (type: string) => void;
+    onClose: () => void;
+  }
 
-  let selectedType: string = editTypes[0].name;
-  $: selectedTypeObj = editTypes.find((t) => t.name === selectedType) || editTypes[0];
+  let { asset = $bindable(), onUpdateSelectedType, onClose }: Props = $props();
+
+  let selectedType: string = $state(editTypes[0].name);
+  let selectedTypeObj = $derived(editTypes.find((t) => t.name === selectedType) || editTypes[0]);
 
   setTimeout(() => {
     onUpdateSelectedType(selectedType);
@@ -38,7 +41,7 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={onClose} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg capitalize">{$t('editor')}</p>
   </div>
   <section class="px-4 py-4">
@@ -49,14 +52,14 @@
             color={etype.name === selectedType ? 'primary' : 'opaque'}
             icon={etype.icon}
             title={etype.name}
-            on:click={() => selectType(etype.name)}
+            onclick={() => selectType(etype.name)}
           />
         </li>
       {/each}
     </ul>
   </section>
   <section>
-    <svelte:component this={selectedTypeObj.component} />
+    <selectedTypeObj.component />
   </section>
 </section>
 

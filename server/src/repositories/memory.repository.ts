@@ -3,10 +3,8 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { IMemoryRepository } from 'src/interfaces/memory.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, Repository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class MemoryRepository implements IMemoryRepository {
   constructor(
@@ -66,7 +64,6 @@ export class MemoryRepository implements IMemoryRepository {
     return new Set(results.map(({ assetId }) => assetId));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(id: string, assetIds: string[]): Promise<void> {
     await this.dataSource
       .createQueryBuilder()
@@ -76,7 +73,6 @@ export class MemoryRepository implements IMemoryRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   async removeAssetIds(id: string, assetIds: string[]): Promise<void> {
     await this.dataSource

@@ -27,11 +27,15 @@
     inTimeline: boolean;
   }
 
-  export let user: UserResponseDto;
+  interface Props {
+    user: UserResponseDto;
+  }
 
-  let createPartnerFlag = false;
+  let { user }: Props = $props();
+
+  let createPartnerFlag = $state(false);
   // let removePartnerDto: PartnerResponseDto | null = null;
-  let partners: Array<PartnerSharing> = [];
+  let partners: Array<PartnerSharing> = $state([]);
 
   onMount(async () => {
     await refreshPartners();
@@ -60,10 +64,7 @@
     for (const candidate of sharedWith) {
       const existIndex = partners.findIndex((p) => candidate.id === p.user.id);
 
-      if (existIndex >= 0) {
-        partners[existIndex].sharedWithMe = true;
-        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
-      } else {
+      if (existIndex === -1) {
         partners = [
           ...partners,
           {
@@ -73,6 +74,9 @@
             inTimeline: candidate.inTimeline ?? false,
           },
         ];
+      } else {
+        partners[existIndex].sharedWithMe = true;
+        partners[existIndex].inTimeline = candidate.inTimeline ?? false;
       }
     }
   };
@@ -113,7 +117,6 @@
       await updatePartner({ id: partner.user.id, updatePartnerDto: { inTimeline } });
 
       partner.inTimeline = inTimeline;
-      partners = partners;
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_timeline_display_status'));
     }
@@ -139,7 +142,7 @@
 
           {#if partner.sharedByMe}
             <CircleIconButton
-              on:click={() => handleRemovePartner(partner.user)}
+              onclick={() => handleRemovePartner(partner.user)}
               icon={mdiClose}
               size={'16'}
               title={$t('stop_sharing_photos_with_user')}
@@ -177,7 +180,7 @@
               title={$t('show_in_timeline')}
               subtitle={$t('show_in_timeline_setting_description')}
               bind:checked={partner.inTimeline}
-              on:toggle={({ detail }) => handleShowOnTimelineChanged(partner, detail)}
+              onToggle={(isChecked) => handleShowOnTimelineChanged(partner, isChecked)}
             />
           {/if}
         </div>
@@ -186,14 +189,10 @@
   {/if}
 
   <div class="flex justify-end mt-5">
-    <Button size="sm" on:click={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
+    <Button size="sm" onclick={() => (createPartnerFlag = true)}>{$t('add_partner')}</Button>
   </div>
 </section>
 
 {#if createPartnerFlag}
-  <PartnerSelectionModal
-    {user}
-    onClose={() => (createPartnerFlag = false)}
-    on:add-users={(event) => handleCreatePartners(event.detail)}
-  />
+  <PartnerSelectionModal {user} onClose={() => (createPartnerFlag = false)} onAddUsers={handleCreatePartners} />
 {/if}

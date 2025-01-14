@@ -30,6 +30,11 @@ export class ServerAboutResponseDto {
   exiftool?: string;
 
   licensed!: boolean;
+
+  thirdPartySourceUrl?: string;
+  thirdPartyBugFeatureUrl?: string;
+  thirdPartyDocumentationUrl?: string;
+  thirdPartySupportUrl?: string;
 }
 
 export class ServerStorageResponseDto {
@@ -63,6 +68,12 @@ export class ServerVersionResponseDto {
   }
 }
 
+export class ServerVersionHistoryResponseDto {
+  id!: string;
+  createdAt!: Date;
+  version!: string;
+}
+
 export class UsageByUserDto {
   @ApiProperty({ type: 'string' })
   userId!: string;
@@ -74,6 +85,10 @@ export class UsageByUserDto {
   videos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
   usage!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  usagePhotos!: number;
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  usageVideos!: number;
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes!: number | null;
 }
@@ -88,6 +103,12 @@ export class ServerStatsResponseDto {
   @ApiProperty({ type: 'integer', format: 'int64' })
   usage = 0;
 
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  usagePhotos = 0;
+
+  @ApiProperty({ type: 'integer', format: 'int64' })
+  usageVideos = 0;
+
   @ApiProperty({
     isArray: true,
     type: UsageByUserDto,
@@ -96,7 +117,9 @@ export class ServerStatsResponseDto {
       {
         photos: 1,
         videos: 1,
-        diskUsageRaw: 1,
+        diskUsageRaw: 2,
+        usagePhotos: 1,
+        usageVideos: 1,
       },
     ],
   })
@@ -121,6 +144,9 @@ export class ServerConfigDto {
   isInitialized!: boolean;
   isOnboarded!: boolean;
   externalDomain!: string;
+  publicUsers!: boolean;
+  mapDarkStyleUrl!: string;
+  mapLightStyleUrl!: string;
 }
 
 export class ServerFeaturesDto {

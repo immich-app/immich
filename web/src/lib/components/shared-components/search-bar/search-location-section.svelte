@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface SearchLocationFilter {
     country?: string;
     state?: string;
@@ -7,22 +7,22 @@
 </script>
 
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/combobox.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let filters: SearchLocationFilter;
+  interface Props {
+    filters: SearchLocationFilter;
+  }
 
-  let countries: string[] = [];
-  let states: string[] = [];
-  let cities: string[] = [];
+  let { filters = $bindable() }: Props = $props();
 
-  $: countryFilter = filters.country;
-  $: stateFilter = filters.state;
-  $: handlePromiseError(updateCountries());
-  $: handlePromiseError(updateStates(countryFilter));
-  $: handlePromiseError(updateCities(countryFilter, stateFilter));
+  let countries: string[] = $state([]);
+  let states: string[] = $state([]);
+  let cities: string[] = $state([]);
 
   async function updateCountries() {
     const results: Array<string | null> = await getSearchSuggestions({
@@ -64,6 +64,17 @@
       filters.city = undefined;
     }
   }
+  let countryFilter = $derived(filters.country);
+  let stateFilter = $derived(filters.state);
+  run(() => {
+    handlePromiseError(updateCountries());
+  });
+  run(() => {
+    handlePromiseError(updateStates(countryFilter));
+  });
+  run(() => {
+    handlePromiseError(updateCities(countryFilter, stateFilter));
+  });
 </script>
 
 <div id="location-selection">
@@ -73,7 +84,7 @@
     <div class="w-full">
       <Combobox
         label={$t('country')}
-        on:select={({ detail }) => (filters.country = detail?.value)}
+        onSelect={(option) => (filters.country = option?.value)}
         options={asComboboxOptions(countries)}
         placeholder={$t('search_country')}
         selectedOption={asSelectedOption(filters.country)}
@@ -83,7 +94,7 @@
     <div class="w-full">
       <Combobox
         label={$t('state')}
-        on:select={({ detail }) => (filters.state = detail?.value)}
+        onSelect={(option) => (filters.state = option?.value)}
         options={asComboboxOptions(states)}
         placeholder={$t('search_state')}
         selectedOption={asSelectedOption(filters.state)}
@@ -93,7 +104,7 @@
     <div class="w-full">
       <Combobox
         label={$t('city')}
-        on:select={({ detail }) => (filters.city = detail?.value)}
+        onSelect={(option) => (filters.city = option?.value)}
         options={asComboboxOptions(cities)}
         placeholder={$t('search_city')}
         selectedOption={asSelectedOption(filters.city)}

@@ -1,27 +1,21 @@
 import { UserEntity } from 'src/entities/user.entity';
 import { JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { SessionService } from 'src/services/session.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
-import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newSessionRepositoryMock } from 'test/repositories/session.repository.mock';
+import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe('SessionService', () => {
   let sut: SessionService;
+
   let accessMock: Mocked<IAccessRepositoryMock>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let sessionMock: Mocked<ISessionRepository>;
 
   beforeEach(() => {
-    accessMock = newAccessRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-    sessionMock = newSessionRepositoryMock();
-
-    sut = new SessionService(accessMock, loggerMock, sessionMock);
+    ({ sut, accessMock, sessionMock } = newTestService(SessionService));
   });
 
   it('should be defined', () => {

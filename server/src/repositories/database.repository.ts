@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
+import { Kysely, sql } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
-import { getVectorExtension } from 'src/database.config';
+import { DB } from 'src/db';
+import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -15,20 +18,34 @@ import {
   VectorUpdateResult,
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
+import { UPSERT_COLUMNS } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
-import { DataSource, EntityManager, QueryRunner } from 'typeorm';
+import { DataSource, EntityManager, EntityMetadata, QueryRunner } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class DatabaseRepository implements IDatabaseRepository {
-  readonly asyncLock = new AsyncLock();
+  private vectorExtension: VectorExtension;
+  private readonly asyncLock = new AsyncLock();
 
   constructor(
+    @InjectKysely() private db: Kysely<DB>,
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    @Inject(IConfigRepository) configRepository: IConfigRepository,
   ) {
+    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(DatabaseRepository.name);
+  }
+
+  async shutdown() {
+    await this.db.destroy();
+  }
+
+  init() {
+    for (const metadata of this.dataSource.entityMetadatas) {
+      const table = metadata.tableName as keyof DB;
+      UPSERT_COLUMNS[table] = this.getUpsertColumns(metadata);
+    }
   }
 
   async reconnect() {
@@ -69,10 +86,6 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
     await this.dataSource.query(`CREATE EXTENSION IF NOT EXISTS ${extension}`);
-  }
-
-  async updateExtension(extension: DatabaseExtension, version?: string): Promise<void> {
-    await this.dataSource.query(`ALTER EXTENSION ${extension} UPDATE${version ? ` TO '${version}'` : ''}`);
   }
 
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
@@ -119,7 +132,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     try {
       await this.dataSource.query(`REINDEX INDEX ${index}`);
     } catch (error) {
-      if (getVectorExtension() !== DatabaseExtension.VECTORS) {
+      if (this.vectorExtension !== DatabaseExtension.VECTORS) {
         throw error;
       }
       this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
@@ -141,7 +154,7 @@ export class DatabaseRepository implements IDatabaseRepository {
   }
 
   async shouldReindex(name: VectorIndex): Promise<boolean> {
-    if (getVectorExtension() !== DatabaseExtension.VECTORS) {
+    if (this.vectorExtension !== DatabaseExtension.VECTORS) {
       return false;
     }
 
@@ -251,5 +264,11 @@ export class DatabaseRepository implements IDatabaseRepository {
 
   private async releaseLock(lock: DatabaseLock, queryRunner: QueryRunner): Promise<void> {
     return queryRunner.query('SELECT pg_advisory_unlock($1)', [lock]);
+  }
+
+  private getUpsertColumns(metadata: EntityMetadata) {
+    return Object.fromEntries(
+      metadata.ownColumns.map((column) => [column.propertyName, sql<string>`excluded.${sql.ref(column.propertyName)}`]),
+    ) as any;
   }
 }

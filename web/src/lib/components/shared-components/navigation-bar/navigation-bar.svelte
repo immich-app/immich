@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
@@ -7,35 +7,50 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { handleLogout } from '$lib/utils/auth';
-  import { logout } from '@immich/sdk';
-  import { mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
+  import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
+  import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { AppRoute } from '../../../constants';
-  import ImmichLogo from '../immich-logo.svelte';
-  import SearchBar from '../search-bar/search-bar.svelte';
+  import { AppRoute } from '$lib/constants';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
+  import { onMount } from 'svelte';
 
-  export let showUploadButton = true;
+  interface Props {
+    showUploadButton?: boolean;
+    onUploadClick: () => void;
+  }
 
-  let shouldShowAccountInfo = false;
-  let shouldShowAccountInfoPanel = false;
-  let innerWidth: number;
-  const dispatch = createEventDispatcher<{
-    uploadClicked: void;
-  }>();
+  let { showUploadButton = true, onUploadClick }: Props = $props();
+
+  let shouldShowAccountInfo = $state(false);
+  let shouldShowAccountInfoPanel = $state(false);
+  let shouldShowHelpPanel = $state(false);
+  let innerWidth: number = $state(0);
 
   const onLogout = async () => {
     const { redirectUri } = await logout();
     await handleLogout(redirectUri);
   };
+
+  let info: ServerAboutResponseDto | undefined = $state();
+
+  onMount(async () => {
+    info = userInteraction.aboutInfo ?? (await getAboutInfo());
+  });
 </script>
 
 <svelte:window bind:innerWidth />
+
+{#if shouldShowHelpPanel && info}
+  <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
+{/if}
 
 <section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
   <SkipLink text={$t('skip_to_content')} />
@@ -52,7 +67,7 @@
         {/if}
       </div>
 
-      <section class="flex place-items-center justify-end gap-2 md:gap-4 w-full sm:w-auto">
+      <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
         {#if $featureFlags.search}
           <CircleIconButton
             href={AppRoute.SEARCH}
@@ -61,20 +76,35 @@
             title={$t('go_to_search')}
             icon={mdiMagnify}
             padding="2"
+            onclick={() => {}}
           />
         {/if}
 
         <ThemeButton padding="2" />
 
-        {#if !$page.url.pathname.includes('/admin') && showUploadButton}
-          <LinkButton on:click={() => dispatch('uploadClicked')} class="hidden lg:block">
+        <div
+          use:clickOutside={{
+            onEscape: () => (shouldShowHelpPanel = false),
+          }}
+        >
+          <CircleIconButton
+            id="support-feedback-button"
+            title={$t('support_and_feedback')}
+            icon={mdiHelpCircleOutline}
+            onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            padding="1"
+          />
+        </div>
+
+        {#if !page.url.pathname.includes('/admin') && showUploadButton}
+          <LinkButton onclick={onUploadClick} class="hidden lg:block">
             <div class="flex gap-2">
               <Icon path={mdiTrayArrowUp} size="1.5em" />
               <span>{$t('upload')}</span>
             </div>
           </LinkButton>
           <CircleIconButton
-            on:click={() => dispatch('uploadClicked')}
+            onclick={onUploadClick}
             title={$t('upload')}
             icon={mdiTrayArrowUp}
             class="lg:hidden"
@@ -90,12 +120,12 @@
         >
           <button
             type="button"
-            class="flex"
-            on:mouseover={() => (shouldShowAccountInfo = true)}
-            on:focus={() => (shouldShowAccountInfo = true)}
-            on:blur={() => (shouldShowAccountInfo = false)}
-            on:mouseleave={() => (shouldShowAccountInfo = false)}
-            on:click={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
+            class="flex pl-2"
+            onmouseover={() => (shouldShowAccountInfo = true)}
+            onfocus={() => (shouldShowAccountInfo = true)}
+            onblur={() => (shouldShowAccountInfo = false)}
+            onmouseleave={() => (shouldShowAccountInfo = false)}
+            onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
               <UserAvatar user={$user} size="md" showTitle={false} interactive />
@@ -114,7 +144,7 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel on:logout={onLogout} />
+            <AccountInfoPanel {onLogout} />
           {/if}
         </div>
       </section>

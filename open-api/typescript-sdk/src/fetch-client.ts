@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.115.0
+ * 1.124.2
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -221,10 +221,6 @@ export type PersonWithFacesResponseDto = {
     /** This property was added in v1.107.0 */
     updatedAt?: string;
 };
-export type SmartInfoResponseDto = {
-    objects?: string[] | null;
-    tags?: string[] | null;
-};
 export type AssetStackResponseDto = {
     assetCount: number;
     id: string;
@@ -267,7 +263,6 @@ export type AssetResponseDto = {
     people?: PersonWithFacesResponseDto[];
     /** This property was deprecated in v1.113.0 */
     resized?: boolean;
-    smartInfo?: SmartInfoResponseDto;
     stack?: (AssetStackResponseDto) | null;
     tags?: TagResponseDto[];
     thumbhash: string | null;
@@ -366,7 +361,6 @@ export type AssetMediaCreateDto = {
     fileModifiedAt: string;
     isArchived?: boolean;
     isFavorite?: boolean;
-    isOffline?: boolean;
     isVisible?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
@@ -536,6 +530,7 @@ export type JobStatusDto = {
 };
 export type AllJobStatusResponseDto = {
     backgroundTask: JobStatusDto;
+    backupDatabase: JobStatusDto;
     duplicateDetection: JobStatusDto;
     faceDetection: JobStatusDto;
     facialRecognition: JobStatusDto;
@@ -555,7 +550,7 @@ export type JobCreateDto = {
 };
 export type JobCommandDto = {
     command: JobCommand;
-    force: boolean;
+    force?: boolean;
 };
 export type LibraryResponseDto = {
     assetCount: number;
@@ -578,10 +573,6 @@ export type UpdateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
     name?: string;
-};
-export type ScanLibraryDto = {
-    refreshAllFiles?: boolean;
-    refreshModifiedFiles?: boolean;
 };
 export type LibraryStatsResponseDto = {
     photos: number;
@@ -643,6 +634,13 @@ export type MemoryUpdateDto = {
     memoryAt?: string;
     seenAt?: string;
 };
+export type TemplateDto = {
+    template: string;
+};
+export type TemplateResponseDto = {
+    html: string;
+    name: string;
+};
 export type SystemConfigSmtpTransportDto = {
     host: string;
     ignoreCert: boolean;
@@ -655,6 +653,9 @@ export type SystemConfigSmtpDto = {
     "from": string;
     replyTo: string;
     transport: SystemConfigSmtpTransportDto;
+};
+export type TestEmailResponseDto = {
+    messageId: string;
 };
 export type OAuthConfigDto = {
     redirectUri: string;
@@ -837,6 +838,39 @@ export type PlacesResponseDto = {
     longitude: number;
     name: string;
 };
+export type RandomSearchDto = {
+    city?: string | null;
+    country?: string | null;
+    createdAfter?: string;
+    createdBefore?: string;
+    deviceId?: string;
+    isArchived?: boolean;
+    isEncoded?: boolean;
+    isFavorite?: boolean;
+    isMotion?: boolean;
+    isNotInAlbum?: boolean;
+    isOffline?: boolean;
+    isVisible?: boolean;
+    lensModel?: string | null;
+    libraryId?: string | null;
+    make?: string;
+    model?: string | null;
+    personIds?: string[];
+    size?: number;
+    state?: string | null;
+    takenAfter?: string;
+    takenBefore?: string;
+    trashedAfter?: string;
+    trashedBefore?: string;
+    "type"?: AssetTypeEnum;
+    updatedAfter?: string;
+    updatedBefore?: string;
+    withArchived?: boolean;
+    withDeleted?: boolean;
+    withExif?: boolean;
+    withPeople?: boolean;
+    withStacked?: boolean;
+};
 export type SmartSearchDto = {
     city?: string | null;
     country?: string | null;
@@ -886,6 +920,10 @@ export type ServerAboutResponseDto = {
     sourceCommit?: string;
     sourceRef?: string;
     sourceUrl?: string;
+    thirdPartyBugFeatureUrl?: string;
+    thirdPartyDocumentationUrl?: string;
+    thirdPartySourceUrl?: string;
+    thirdPartySupportUrl?: string;
     version: string;
     versionUrl: string;
 };
@@ -894,7 +932,10 @@ export type ServerConfigDto = {
     isInitialized: boolean;
     isOnboarded: boolean;
     loginPageMessage: string;
+    mapDarkStyleUrl: string;
+    mapLightStyleUrl: string;
     oauthButtonText: string;
+    publicUsers: boolean;
     trashDays: number;
     userDeleteDelay: number;
 };
@@ -936,6 +977,8 @@ export type UsageByUserDto = {
     photos: number;
     quotaSizeInBytes: number | null;
     usage: number;
+    usagePhotos: number;
+    usageVideos: number;
     userId: string;
     userName: string;
     videos: number;
@@ -944,6 +987,8 @@ export type ServerStatsResponseDto = {
     photos: number;
     usage: number;
     usageByUser: UsageByUserDto[];
+    usagePhotos: number;
+    usageVideos: number;
     videos: number;
 };
 export type ServerStorageResponseDto = {
@@ -962,6 +1007,11 @@ export type ServerVersionResponseDto = {
     major: number;
     minor: number;
     patch: number;
+};
+export type ServerVersionHistoryResponseDto = {
+    createdAt: string;
+    id: string;
+    version: string;
 };
 export type SessionResponseDto = {
     createdAt: string;
@@ -1042,6 +1092,14 @@ export type AssetFullSyncDto = {
     updatedUntil: string;
     userId?: string;
 };
+export type DatabaseBackupConfig = {
+    cronExpression: string;
+    enabled: boolean;
+    keepLastAmount: number;
+};
+export type SystemConfigBackupsDto = {
+    database: DatabaseBackupConfig;
+};
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
     accelDecode: boolean;
@@ -1053,7 +1111,6 @@ export type SystemConfigFFmpegDto = {
     crf: number;
     gopSize: number;
     maxBitrate: string;
-    npl: number;
     preferredHwDevice: string;
     preset: string;
     refs: number;
@@ -1066,14 +1123,16 @@ export type SystemConfigFFmpegDto = {
     transcode: TranscodePolicy;
     twoPass: boolean;
 };
+export type SystemConfigGeneratedImageDto = {
+    format: ImageFormat;
+    quality: number;
+    size: number;
+};
 export type SystemConfigImageDto = {
     colorspace: Colorspace;
     extractEmbedded: boolean;
-    previewFormat: ImageFormat;
-    previewSize: number;
-    quality: number;
-    thumbnailFormat: ImageFormat;
-    thumbnailSize: number;
+    preview: SystemConfigGeneratedImageDto;
+    thumbnail: SystemConfigGeneratedImageDto;
 };
 export type JobSettingsDto = {
     concurrency: number;
@@ -1126,7 +1185,9 @@ export type SystemConfigMachineLearningDto = {
     duplicateDetection: DuplicateDetectionConfig;
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
-    url: string;
+    /** This property was deprecated in v1.122.0 */
+    url?: string;
+    urls: string[];
 };
 export type SystemConfigMapDto = {
     darkStyle: string;
@@ -1171,11 +1232,20 @@ export type SystemConfigReverseGeocodingDto = {
 export type SystemConfigServerDto = {
     externalDomain: string;
     loginPageMessage: string;
+    publicUsers: boolean;
 };
 export type SystemConfigStorageTemplateDto = {
     enabled: boolean;
     hashVerificationEnabled: boolean;
     template: string;
+};
+export type SystemConfigTemplateEmailsDto = {
+    albumInviteTemplate: string;
+    albumUpdateTemplate: string;
+    welcomeTemplate: string;
+};
+export type SystemConfigTemplatesDto = {
+    email: SystemConfigTemplateEmailsDto;
 };
 export type SystemConfigThemeDto = {
     customCss: string;
@@ -1188,6 +1258,7 @@ export type SystemConfigUserDto = {
     deleteDelay: number;
 };
 export type SystemConfigDto = {
+    backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
     image: SystemConfigImageDto;
     job: SystemConfigJobDto;
@@ -1203,6 +1274,7 @@ export type SystemConfigDto = {
     reverseGeocoding: SystemConfigReverseGeocodingDto;
     server: SystemConfigServerDto;
     storageTemplate: SystemConfigStorageTemplateDto;
+    templates: SystemConfigTemplatesDto;
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
@@ -1696,6 +1768,9 @@ export function getMemoryLane({ day, month }: {
         ...opts
     }));
 }
+/**
+ * This property was deprecated in v1.116.0
+ */
 export function getRandom({ count }: {
     count?: number;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2024,23 +2099,13 @@ export function updateLibrary({ id, updateLibraryDto }: {
         body: updateLibraryDto
     })));
 }
-export function removeOfflineFiles({ id }: {
+export function scanLibrary({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/removeOffline`, {
+    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, {
         ...opts,
         method: "POST"
     }));
-}
-export function scanLibrary({ id, scanLibraryDto }: {
-    id: string;
-    scanLibraryDto: ScanLibraryDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/libraries/${encodeURIComponent(id)}/scan`, oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: scanLibraryDto
-    })));
 }
 export function getLibraryStatistics({ id }: {
     id: string;
@@ -2097,20 +2162,6 @@ export function reverseGeocode({ lat, lon }: {
     }>(`/map/reverse-geocode${QS.query(QS.explode({
         lat,
         lon
-    }))}`, {
-        ...opts
-    }));
-}
-export function getMapStyle({ key, theme }: {
-    key?: string;
-    theme: MapTheme;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: object;
-    }>(`/map/style.json${QS.query(QS.explode({
-        key,
-        theme
     }))}`, {
         ...opts
     }));
@@ -2192,10 +2243,26 @@ export function addMemoryAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
+export function getNotificationTemplate({ name, templateDto }: {
+    name: string;
+    templateDto: TemplateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TemplateResponseDto;
+    }>(`/notifications/templates/${encodeURIComponent(name)}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: templateDto
+    })));
+}
 export function sendTestEmail({ systemConfigSmtpDto }: {
     systemConfigSmtpDto: SystemConfigSmtpDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/notifications/test-email", oazapfts.json({
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TestEmailResponseDto;
+    }>("/notifications/test-email", oazapfts.json({
         ...opts,
         method: "POST",
         body: systemConfigSmtpDto
@@ -2295,7 +2362,9 @@ export function updatePartner({ id, updatePartnerDto }: {
         body: updatePartnerDto
     })));
 }
-export function getAllPeople({ page, size, withHidden }: {
+export function getAllPeople({ closestAssetId, closestPersonId, page, size, withHidden }: {
+    closestAssetId?: string;
+    closestPersonId?: string;
     page?: number;
     size?: number;
     withHidden?: boolean;
@@ -2304,6 +2373,8 @@ export function getAllPeople({ page, size, withHidden }: {
         status: 200;
         data: PeopleResponseDto;
     }>(`/people${QS.query(QS.explode({
+        closestAssetId,
+        closestPersonId,
         page,
         size,
         withHidden
@@ -2357,19 +2428,6 @@ export function updatePerson({ id, personUpdateDto }: {
         method: "PUT",
         body: personUpdateDto
     })));
-}
-/**
- * This property was deprecated in v1.113.0
- */
-export function getPersonAssets({ id }: {
-    id: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AssetResponseDto[];
-    }>(`/people/${encodeURIComponent(id)}/assets`, {
-        ...opts
-    }));
 }
 export function mergePerson({ id, mergePersonDto }: {
     id: string;
@@ -2462,7 +2520,7 @@ export function getExploreData(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function searchMetadata({ metadataSearchDto }: {
+export function searchAssets({ metadataSearchDto }: {
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
@@ -2499,6 +2557,18 @@ export function searchPlaces({ name }: {
     }))}`, {
         ...opts
     }));
+}
+export function searchRandom({ randomSearchDto }: {
+    randomSearchDto: RandomSearchDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetResponseDto[];
+    }>("/search/random", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: randomSearchDto
+    })));
 }
 export function searchSmart({ smartSearchDto }: {
     smartSearchDto: SmartSearchDto;
@@ -2631,6 +2701,14 @@ export function getServerVersion(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerVersionResponseDto;
     }>("/server/version", {
+        ...opts
+    }));
+}
+export function getVersionHistory(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerVersionHistoryResponseDto[];
+    }>("/server/version-history", {
         ...opts
     }));
 }
@@ -3380,8 +3458,9 @@ export enum Reason {
     UnsupportedFormat = "unsupported-format"
 }
 export enum AssetJobName {
-    RegenerateThumbnail = "regenerate-thumbnail",
+    RefreshFaces = "refresh-faces",
     RefreshMetadata = "refresh-metadata",
+    RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
 export enum AssetMediaSize {
@@ -3411,7 +3490,8 @@ export enum JobName {
     Search = "search",
     Sidecar = "sidecar",
     Library = "library",
-    Notifications = "notifications"
+    Notifications = "notifications",
+    BackupDatabase = "backupDatabase"
 }
 export enum JobCommand {
     Start = "start",
@@ -3419,10 +3499,6 @@ export enum JobCommand {
     Resume = "resume",
     Empty = "empty",
     ClearFailed = "clear-failed"
-}
-export enum MapTheme {
-    Light = "light",
-    Dark = "dark"
 }
 export enum MemoryType {
     OnThisDay = "on_this_day"
@@ -3471,7 +3547,8 @@ export enum TranscodeHWAccel {
 export enum AudioCodec {
     Mp3 = "mp3",
     Aac = "aac",
-    Libopus = "libopus"
+    Libopus = "libopus",
+    PcmS16Le = "pcm_s16le"
 }
 export enum VideoContainer {
     Mov = "mov",

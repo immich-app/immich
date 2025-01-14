@@ -9,9 +9,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
@@ -19,13 +20,13 @@ import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/asset.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -35,31 +36,34 @@ import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 final backupServiceProvider = Provider(
   (ref) => BackupService(
     ref.watch(apiServiceProvider),
-    ref.watch(dbProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(albumServiceProvider),
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
+    ref.watch(assetRepositoryProvider),
+    ref.watch(assetMediaRepositoryProvider),
   ),
 );
 
 class BackupService {
   final httpClient = http.Client();
   final ApiService _apiService;
-  final Isar _db;
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
   final AlbumService _albumService;
   final IAlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
+  final IAssetRepository _assetRepository;
+  final IAssetMediaRepository _assetMediaRepository;
 
   BackupService(
     this._apiService,
-    this._db,
     this._appSetting,
     this._albumService,
     this._albumMediaRepository,
     this._fileMediaRepository,
+    this._assetRepository,
+    this._assetMediaRepository,
   );
 
   Future<List<String>?> getDeviceBackupAsset() async {
@@ -73,23 +77,16 @@ class BackupService {
     }
   }
 
-  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) {
-    final duplicates = deviceAssetIds.map((id) => DuplicatedAsset(id)).toList();
-    return _db.writeTxn(() => _db.duplicatedAssets.putAll(duplicates));
-  }
+  Future<void> _saveDuplicatedAssetIds(List<String> deviceAssetIds) =>
+      _assetRepository.transaction(
+        () => _assetRepository.upsertDuplicatedAssets(deviceAssetIds),
+      );
 
   /// Get duplicated asset id from database
   Future<Set<String>> getDuplicatedAssetIds() async {
-    final duplicates = await _db.duplicatedAssets.where().findAll();
-    return duplicates.map((e) => e.id).toSet();
+    final duplicates = await _assetRepository.getAllDuplicatedAssetIds();
+    return duplicates.toSet();
   }
-
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      selectedAlbumsQuery() =>
-          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.select);
-  QueryBuilder<BackupAlbum, BackupAlbum, QAfterFilterCondition>
-      excludedAlbumsQuery() =>
-          _db.backupAlbums.filter().selectionEqualTo(BackupSelection.exclude);
 
   /// Returns all assets newer than the last successful backup per album
   /// if `useTimeFilter` is set to true, all assets will be returned
@@ -316,20 +313,19 @@ class BackupService {
             );
           }
         } else {
-          if (asset.type == AssetType.video) {
-            file = await asset.local!.originFile;
-          } else {
-            file = await asset.local!.originFile
+          file =
+              await asset.local!.originFile.timeout(const Duration(seconds: 5));
+
+          if (asset.local!.isLivePhoto) {
+            livePhotoFile = await asset.local!.originFileWithSubtype
                 .timeout(const Duration(seconds: 5));
-            if (asset.local!.isLivePhoto) {
-              livePhotoFile = await asset.local!.originFileWithSubtype
-                  .timeout(const Duration(seconds: 5));
-            }
           }
         }
 
         if (file != null) {
-          String originalFileName = asset.fileName;
+          String? originalFileName =
+              await _assetMediaRepository.getOriginalFilename(asset.localId!);
+          originalFileName ??= asset.fileName;
 
           if (asset.local!.isLivePhoto) {
             if (livePhotoFile == null) {

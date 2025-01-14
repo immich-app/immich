@@ -13,14 +13,14 @@ part of openapi.api;
 class UpdateLibraryDto {
   /// Returns a new [UpdateLibraryDto] instance.
   UpdateLibraryDto({
-    this.exclusionPatterns = const [],
-    this.importPaths = const [],
+    this.exclusionPatterns = const {},
+    this.importPaths = const {},
     this.name,
   });
 
-  List<String> exclusionPatterns;
+  Set<String> exclusionPatterns;
 
-  List<String> importPaths;
+  Set<String> importPaths;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -48,8 +48,8 @@ class UpdateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'exclusionPatterns'] = this.exclusionPatterns;
-      json[r'importPaths'] = this.importPaths;
+      json[r'exclusionPatterns'] = this.exclusionPatterns.toList(growable: false);
+      json[r'importPaths'] = this.importPaths.toList(growable: false);
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -62,16 +62,17 @@ class UpdateLibraryDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UpdateLibraryDto? fromJson(dynamic value) {
+    upgradeDto(value, "UpdateLibraryDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return UpdateLibraryDto(
         exclusionPatterns: json[r'exclusionPatterns'] is Iterable
-            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toSet()
+            : const {},
         importPaths: json[r'importPaths'] is Iterable
-            ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+            ? (json[r'importPaths'] as Iterable).cast<String>().toSet()
+            : const {},
         name: mapValueOfType<String>(json, r'name'),
       );
     }

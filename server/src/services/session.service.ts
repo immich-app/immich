@@ -1,25 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
-import { requireAccess } from 'src/utils/access';
+import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { BaseService } from 'src/services/base.service';
 
 @Injectable()
-export class SessionService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ISessionRepository) private sessionRepository: ISessionRepository,
-  ) {
-    this.logger.setContext(SessionService.name);
-  }
-
-  async handleCleanup() {
+export class SessionService extends BaseService {
+  @OnJob({ name: JobName.CLEAN_OLD_SESSION_TOKENS, queue: QueueName.BACKGROUND_TASK })
+  async handleCleanup(): Promise<JobStatus> {
     const sessions = await this.sessionRepository.search({
       updatedBefore: DateTime.now().minus({ days: 90 }).toJSDate(),
     });
@@ -44,7 +35,7 @@ export class SessionService {
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
-    await requireAccess(this.access, { auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.AUTH_DEVICE_DELETE, ids: [id] });
     await this.sessionRepository.delete(id);
   }
 

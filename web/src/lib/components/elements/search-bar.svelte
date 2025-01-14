@@ -1,29 +1,39 @@
 <script lang="ts">
   import { mdiClose, mdiMagnify } from '@mdi/js';
-  import { createEventDispatcher } from 'svelte';
   import type { SearchOptions } from '$lib/utils/dipatch';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
-  export let name: string;
-  export let roundedBottom = true;
-  export let showLoadingSpinner: boolean;
-  export let placeholder: string;
+  interface Props {
+    name: string;
+    roundedBottom?: boolean;
+    showLoadingSpinner: boolean;
+    placeholder: string;
+    onSearch?: (options: SearchOptions) => void;
+    onReset?: () => void;
+  }
 
-  let inputRef: HTMLElement;
+  let {
+    name = $bindable(),
+    roundedBottom = true,
+    showLoadingSpinner,
+    placeholder,
+    onSearch = () => {},
+    onReset = () => {},
+  }: Props = $props();
 
-  const dispatch = createEventDispatcher<{ search: SearchOptions; reset: void }>();
+  let inputRef = $state<HTMLElement>();
 
   const resetSearch = () => {
     name = '';
-    dispatch('reset');
+    onReset();
     inputRef?.focus();
   };
 
   const handleSearch = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
-      dispatch('search', { force: true });
+      onSearch({ force: true });
     }
   };
 </script>
@@ -38,7 +48,7 @@
     title={$t('search')}
     size="16"
     padding="2"
-    on:click={() => dispatch('search', { force: true })}
+    onclick={() => onSearch({ force: true })}
   />
   <input
     class="w-full gap-2 bg-gray-200 dark:bg-immich-dark-gray dark:text-white"
@@ -46,8 +56,8 @@
     {placeholder}
     bind:value={name}
     bind:this={inputRef}
-    on:keydown={handleSearch}
-    on:input={() => dispatch('search', { force: false })}
+    onkeydown={handleSearch}
+    oninput={() => onSearch({ force: false })}
   />
   {#if showLoadingSpinner}
     <div class="flex place-items-center">
@@ -55,6 +65,6 @@
     </div>
   {/if}
   {#if name}
-    <CircleIconButton icon={mdiClose} title={$t('clear_value')} size="16" padding="2" on:click={resetSearch} />
+    <CircleIconButton icon={mdiClose} title={$t('clear_value')} size="16" padding="2" onclick={resetSearch} />
   {/if}
 </div>

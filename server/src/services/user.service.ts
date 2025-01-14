@@ -1,9 +1,8 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { getClientLicensePublicKey, getServerLicensePublicKey } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
@@ -11,36 +10,23 @@ import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
-import { UserMetadataKey } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEntityJob, IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository, UserFindOptions } from 'src/interfaces/user.interface';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { CacheControl, StorageFolder, UserMetadataKey } from 'src/enum';
+import { JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { UserFindOptions } from 'src/interfaces/user.interface';
+import { BaseService } from 'src/services/base.service';
+import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class UserService {
-  private configCore: SystemConfigCore;
+export class UserService extends BaseService {
+  async search(auth: AuthDto): Promise<UserResponseDto[]> {
+    const config = await this.getConfig({ withCache: false });
 
-  constructor(
-    @Inject(IAlbumRepository) private albumRepository: IAlbumRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(UserService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, this.logger);
-  }
+    let users: UserEntity[] = [auth.user];
+    if (auth.user.isAdmin || config.server.publicUsers) {
+      users = await this.userRepository.getList({ withDeleted: false });
+    }
 
-  async search(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: false });
     return users.map((user) => mapUser(user));
   }
 
@@ -153,16 +139,18 @@ export class UserService {
       throw new BadRequestException('Invalid license key');
     }
 
+    const { licensePublicKey } = this.configRepository.getEnv();
+
     const clientLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
-      getClientLicensePublicKey(),
+      licensePublicKey.client,
     );
 
     const serverLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
-      getServerLicensePublicKey(),
+      licensePublicKey.server,
     );
 
     if (!clientLicenseValid && !serverLicenseValid) {
@@ -182,14 +170,16 @@ export class UserService {
     return licenseData;
   }
 
+  @OnJob({ name: JobName.USER_SYNC_USAGE, queue: QueueName.BACKGROUND_TASK })
   async handleUserSyncUsage(): Promise<JobStatus> {
     await this.userRepository.syncUsage();
     return JobStatus.SUCCESS;
   }
 
+  @OnJob({ name: JobName.USER_DELETE_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleUserDeleteCheck(): Promise<JobStatus> {
     const users = await this.userRepository.getDeletedUsers();
-    const config = await this.configCore.getConfig({ withCache: false });
+    const config = await this.getConfig({ withCache: false });
     await this.jobRepository.queueAll(
       users.flatMap((user) =>
         this.isReadyForDeletion(user, config.user.deleteDelay)
@@ -200,8 +190,9 @@ export class UserService {
     return JobStatus.SUCCESS;
   }
 
-  async handleUserDelete({ id, force }: IEntityJob): Promise<JobStatus> {
-    const config = await this.configCore.getConfig({ withCache: false });
+  @OnJob({ name: JobName.USER_DELETION, queue: QueueName.BACKGROUND_TASK })
+  async handleUserDelete({ id, force }: JobOf<JobName.USER_DELETION>): Promise<JobStatus> {
+    const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {
       return JobStatus.FAILED;

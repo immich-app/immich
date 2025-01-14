@@ -1,50 +1,30 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { SystemConfigCore } from 'src/cores/system-config.core';
+import { Injectable } from '@nestjs/common';
+import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResponseDto, mapDuplicateResponse } from 'src/dtos/duplicate.dto';
+import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import {
-  IBaseJob,
-  IEntityJob,
-  IJobRepository,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobName,
-  JobStatus,
-} from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AssetDuplicateResult, ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { WithoutProperty } from 'src/interfaces/asset.interface';
+import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { AssetDuplicateResult } from 'src/interfaces/search.interface';
+import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
-export class DuplicateService {
-  private configCore: SystemConfigCore;
-
-  constructor(
-    @Inject(ISystemMetadataRepository) systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ISearchRepository) private searchRepository: ISearchRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(ICryptoRepository) private cryptoRepository: ICryptoRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-  ) {
-    this.logger.setContext(DuplicateService.name);
-    this.configCore = SystemConfigCore.create(systemMetadataRepository, logger);
-  }
-
+export class DuplicateService extends BaseService {
   async getDuplicates(auth: AuthDto): Promise<DuplicateResponseDto[]> {
-    const res = await this.assetRepository.getDuplicates({ userIds: [auth.user.id] });
-
-    return mapDuplicateResponse(res.map((a) => mapAsset(a, { auth, withStack: true })));
+    const duplicates = await this.assetRepository.getDuplicates(auth.user.id);
+    return duplicates.map(({ duplicateId, assets }) => ({
+      duplicateId,
+      assets: assets.map((asset) => mapAsset(asset, { auth })),
+    }));
   }
 
-  async handleQueueSearchDuplicates({ force }: IBaseJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: false });
+  @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
+  async handleQueueSearchDuplicates({ force }: JobOf<JobName.QUEUE_DUPLICATE_DETECTION>): Promise<JobStatus> {
+    const { machineLearning } = await this.getConfig({ withCache: false });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }
@@ -64,8 +44,9 @@ export class DuplicateService {
     return JobStatus.SUCCESS;
   }
 
-  async handleSearchDuplicates({ id }: IEntityJob): Promise<JobStatus> {
-    const { machineLearning } = await this.configCore.getConfig({ withCache: true });
+  @OnJob({ name: JobName.DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })
+  async handleSearchDuplicates({ id }: JobOf<JobName.DUPLICATE_DETECTION>): Promise<JobStatus> {
+    const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isDuplicateDetectionEnabled(machineLearning)) {
       return JobStatus.SKIPPED;
     }

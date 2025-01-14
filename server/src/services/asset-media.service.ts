@@ -1,13 +1,7 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
-import { StorageCore, StorageFolder } from 'src/cores/storage.core';
+import { StorageCore } from 'src/cores/storage.core';
 import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
@@ -27,20 +21,15 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, AssetType, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
-import { requireAccess, requireUploadAccess } from 'src/utils/access';
-import { getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
+import { JobName } from 'src/interfaces/job.interface';
+import { AuthRequest } from 'src/middleware/auth.guard';
+import { BaseService } from 'src/services/base.service';
+import { requireUploadAccess } from 'src/utils/access';
+import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
+import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
-import { QueryFailedError } from 'typeorm';
 export interface UploadRequest {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
@@ -56,19 +45,7 @@ export interface UploadFile {
 }
 
 @Injectable()
-export class AssetMediaService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-    @Inject(IUserRepository) private userRepository: IUserRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(AssetMediaService.name);
-  }
-
+export class AssetMediaService extends BaseService {
   async getUploadAssetIdByChecksum(auth: AuthDto, checksum?: string): Promise<AssetMediaResponseDto | undefined> {
     if (!checksum) {
       return;
@@ -141,6 +118,14 @@ export class AssetMediaService {
     return folder;
   }
 
+  async onUploadError(request: AuthRequest, file: Express.Multer.File) {
+    const uploadFilename = this.getUploadFilename(asRequest(request, file));
+    const uploadFolder = this.getUploadFolder(asRequest(request, file));
+    const uploadPath = `${uploadFolder}/${uploadFilename}`;
+
+    await this.jobRepository.queue({ name: JobName.DELETE_FILES, data: { files: [uploadPath] } });
+  }
+
   async uploadAsset(
     auth: AuthDto,
     dto: AssetMediaCreateDto,
@@ -148,7 +133,7 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await requireAccess(this.access, {
+      await this.requireAccess({
         auth,
         permission: Permission.ASSET_UPLOAD,
         // do not need an id here, but the interface requires it
@@ -182,7 +167,7 @@ export class AssetMediaService {
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
     try {
-      await requireAccess(this.access, { auth, permission: Permission.ASSET_UPDATE, ids: [id] });
+      await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
       const asset = (await this.assetRepository.getById(id)) as AssetEntity;
 
       this.requireQuota(auth, file.size);
@@ -205,12 +190,9 @@ export class AssetMediaService {
   }
 
   async downloadOriginal(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: [id] });
 
     const asset = await this.findOrFail(id);
-    if (!asset) {
-      throw new NotFoundException('Asset does not exist');
-    }
 
     return new ImmichFileResponse({
       path: asset.originalPath,
@@ -220,7 +202,7 @@ export class AssetMediaService {
   }
 
   async viewThumbnail(auth: AuthDto, id: string, dto: AssetMediaOptionsDto): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
     const size = dto.size ?? AssetMediaSize.THUMBNAIL;
@@ -234,8 +216,12 @@ export class AssetMediaService {
     if (!filepath) {
       throw new NotFoundException('Asset media not found');
     }
+    let fileName = getFileNameWithoutExtension(asset.originalFileName);
+    fileName += `_${size}`;
+    fileName += getFilenameExtension(filepath);
 
     return new ImmichFileResponse({
+      fileName,
       path: filepath,
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PRIVATE_WITH_CACHE,
@@ -243,12 +229,9 @@ export class AssetMediaService {
   }
 
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_VIEW, ids: [id] });
+    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
     const asset = await this.findOrFail(id);
-    if (!asset) {
-      throw new NotFoundException('Asset does not exist');
-    }
 
     if (asset.type !== AssetType.VIDEO) {
       throw new BadRequestException('Asset is not a video');
@@ -318,7 +301,7 @@ export class AssetMediaService {
     });
 
     // handle duplicates with a success response
-    if (error instanceof QueryFailedError && (error as any).constraint === ASSET_CHECKSUM_CONSTRAINT) {
+    if (error.constraint_name === ASSET_CHECKSUM_CONSTRAINT) {
       const duplicateId = await this.assetRepository.getUploadAssetIdByChecksum(auth.user.id, file.checksum);
       if (!duplicateId) {
         this.logger.error(`Error locating duplicate for checksum constraint`);
@@ -359,7 +342,7 @@ export class AssetMediaService {
       localDateTime: dto.fileCreatedAt,
       duration: dto.duration || null,
 
-      livePhotoVideo: null,
+      livePhotoVideoId: null,
       sidecarPath: sidecarPath || null,
     });
 
@@ -427,7 +410,6 @@ export class AssetMediaService {
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: file.originalName,
       sidecarPath: sidecarFile?.originalPath,
-      isOffline: dto.isOffline ?? false,
     });
 
     if (sidecarFile) {

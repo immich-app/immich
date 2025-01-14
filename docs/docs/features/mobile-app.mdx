@@ -1,6 +1,9 @@
+import Icon from '@mdi/react';
+import { mdiCloudOffOutline, mdiCloudCheckOutline } from '@mdi/js';
 import MobileAppDownload from '/docs/partials/_mobile-app-download.md';
 import MobileAppLogin from '/docs/partials/_mobile-app-login.md';
 import MobileAppBackup from '/docs/partials/_mobile-app-backup.md';
+import { cloudDonePath, cloudOffPath } from '@site/src/components/svg-paths';
 
 # Mobile App
 
@@ -26,4 +29,68 @@ The beta release channel allows users to test upcoming changes before they are o
 
 :::info
 You can enable automatic backup on supported devices. For more information see [Automatic Backup](/docs/features/automatic-backup.md).
+:::
+
+## Sync only selected photos
+
+If you have a large number of photos on the device, and you would prefer not to backup all the photos, then it might be prudent to only backup selected photos from device to the Immich server.
+
+First, you need to enable the Storage Indicator in your app's settings. Navigate to **<ins>Settings -> Photo Grid</ins>** and enable **"Show Storage indicator on asset tiles"**; this makes it easy to distinguish local-only assets and synced assets.
+
+:::note
+
+This will enable a small cloud icon on the bottom right corner of the asset tile, indicating that the asset is synced to the server:
+
+1. <Icon path={mdiCloudOffOutline} size={1} /> - Local-only asset; not synced to the server
+2. <Icon path={mdiCloudCheckOutline} size={1} /> - Asset is synced to the server
+
+:::
+
+Now make sure that the local album is selected in the backup screen (steps 1-2 above). You can find these albums listed in **<ins>Library -> On this device</ins>**. To selectively upload photos from these albums, simply select the local-only photos and tap on "Upload" button in the dynamic bottom menu.
+
+<img
+  src={require('./img/mobile-upload-open-photo.webp').default}
+  width="50%"
+  title="Upload button on local asset preview"
+/>
+<img
+  src={require('./img/mobile-upload-selected-photos.webp').default}
+  width="40%"
+  title="Upload button after photos selection"
+/>
+
+## Album Sync
+
+You can sync or mirror an album from your phone to the Immich server on your account. For example, if you select Recents, Camera and Videos album for backup, the corresponding album with the same name will be created on the server. Once the assets from those albums are uploaded, they will be put into the target albums automatically.
+
+### Album Synchronization Highlights
+
+- **One-Way Sync:** Synchronization is one-way, from the device to the server.
+
+- **Name Matching:** If an album on the server has the same name as the album on the device, images from the device will be merged with the existing images in the server album.
+
+- **Shared Albums:** If the matching album on the server is shared, the new photos merged into the album will also be shared.
+
+- **Album Structure:** When an album is created for the first time, its structure is based on the initial state. Future updates made on the phone (such as deleting or repositioning photos) will not be reflected in Immich.
+
+- **User-Specific Sync:** Album synchronization is unique to each server user and does not sync between different users or partners.
+
+- **Mobile-Only Feature:** Album synchronization is currently only available on mobile. For similar options on a computer, refer to [Libraries](/docs/features/libraries) for further details.
+
+### Synchronizing albums from the past
+
+Albums can be synchronized to the server even if they did not exist on the server before. In order to apply this setting you have to:  
+Enter the cloud on the top right -> cog wheel on the top right -> select the sync option under Sync albums.
+
+:::info Sync albums delete/move photos
+If you delete/move photos in the local album on your device, it will not be reflected in the album on the server **even if** you click Sync albums
+It will only reflect files you add.
+:::
+
+If the same asset is in more than one album it will only sync to the first album it's in, after that it won't sync again even if the user clicks sync albums manually.
+To overcome this limitation, the files must be removed from the blacklist by
+App settings -> Advanced -> Duplicate Assets -> Clear
+
+:::info
+Cleaning duplicate assets from the list will cause all the previously uploaded duplicate files to be re-uploaded, the files will not actually be uploaded and will be rejected on the server side (due to duplication) but will be synchronized to the album and at the end will be added to the black list again at the end of the synchronization.
 :::

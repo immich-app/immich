@@ -12,7 +12,6 @@ import { TagResponseDto, mapTag } from 'src/dtos/tag.dto';
 import { UserResponseDto, mapUser } from 'src/dtos/user.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { AssetType } from 'src/enum';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -45,7 +44,6 @@ export class AssetResponseDto extends SanitizedAssetResponseDto {
   isTrashed!: boolean;
   isOffline!: boolean;
   exifInfo?: ExifResponseDto;
-  smartInfo?: SmartInfoResponseDto;
   tags?: TagResponseDto[];
   people?: PersonWithFacesResponseDto[];
   unassignedFaces?: AssetFaceWithoutPersonResponseDto[];
@@ -99,8 +97,17 @@ const mapStack = (entity: AssetEntity) => {
   return {
     id: entity.stack.id,
     primaryAssetId: entity.stack.primaryAssetId,
-    assetCount: entity.stack.assetCount ?? entity.stack.assets.length,
+    assetCount: entity.stack.assetCount ?? entity.stack.assets.length + 1,
   };
+};
+
+// if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
+const hexOrBufferToBase64 = (encoded: string | Buffer) => {
+  if (typeof encoded === 'string') {
+    return Buffer.from(encoded.slice(2), 'hex').toString('base64');
+  }
+
+  return encoded.toString('base64');
 };
 
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
@@ -131,7 +138,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalPath: entity.originalPath,
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
-    thumbhash: entity.thumbhash?.toString('base64') ?? null,
+    thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
     fileCreatedAt: entity.fileCreatedAt,
     fileModifiedAt: entity.fileModifiedAt,
     localDateTime: entity.localDateTime,
@@ -141,12 +148,11 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     isTrashed: !!entity.deletedAt,
     duration: entity.duration ?? '0:00:00.00000',
     exifInfo: entity.exifInfo ? mapExif(entity.exifInfo) : undefined,
-    smartInfo: entity.smartInfo ? mapSmartInfo(entity.smartInfo) : undefined,
     livePhotoVideoId: entity.livePhotoVideoId,
     tags: entity.tags?.map((tag) => mapTag(tag)),
     people: peopleWithFaces(entity.faces),
     unassignedFaces: entity.faces?.filter((face) => !face.person).map((a) => mapFacesWithoutPerson(a)),
-    checksum: entity.checksum.toString('base64'),
+    checksum: hexOrBufferToBase64(entity.checksum),
     stack: withStack ? mapStack(entity) : undefined,
     isOffline: entity.isOffline,
     hasMetadata: true,
@@ -160,16 +166,4 @@ export class MemoryLaneResponseDto {
   yearsAgo!: number;
 
   assets!: AssetResponseDto[];
-}
-
-export class SmartInfoResponseDto {
-  tags?: string[] | null;
-  objects?: string[] | null;
-}
-
-export function mapSmartInfo(entity: SmartInfoEntity): SmartInfoResponseDto {
-  return {
-    tags: entity.tags,
-    objects: entity.objects,
-  };
 }

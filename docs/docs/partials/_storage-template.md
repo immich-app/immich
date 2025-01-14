@@ -1,9 +1,5 @@
 Immich allows the admin user to set the uploaded filename pattern at the directory and filename level as well as the [storage label for a user](/docs/administration/user-management/#set-storage-label-for-user).
 
-:::note new version
-On new machines running version 1.92.0 storage template engine is off by default, for [more info](https://github.com/immich-app/immich/releases/tag/v1.92.0#:~:text=the%20partner%E2%80%99s%20assets.-,Hardening%20storage%20template,-We%20have%20further).
-:::
-
 :::tip
 You can read more about the differences between storage template engine on and off [here](/docs/administration/backup-and-restore#asset-types-and-storage-locations)
 :::
@@ -16,11 +12,18 @@ Year/Year-Month-Day/Filename.Extension
 
 If you want to change the storage template during the initial setup, first enable the feature.
 
-<img src={require('./img/enable-storage-template.png').default} width="100%" title="Enable Storage Template Setting" />
+<img src={require('./img/enable-storage-template.webp').default} width="80%" title="Enable Storage Template Setting" />
 
 Then, customize your storage template.
 
-<img src={require('./img/storage-template.png').default} width="100%" title="Storage Template Setting" />
+<img src={require('./img/storage-template.webp').default} width="80%" title="Storage Template Setting" />
+
+:::info
+The `Storage Template Migration` job can be run after enabling this feature or changing the template, in order to apply the changes to the existing library.
+
+<img src={require('./img/storage-template-migration-job.webp').default} width="80%" title="Storage Template Setting" />
+
+:::
 
 :::tip
 If an asset is in multiple albums, `{{album}}` will be set to the name of the album which was most recently created. By default, special characters will be converted to an HTML entity (for example, `&` -> `&amp;`). To prevent this, wrap the variable in an extra set of braces (for example, `{{{album}}}`). You can learn more about this [here](https://handlebarsjs.com/guide/expressions.html#html-escaping) and [here](https://github.com/immich-app/immich/issues/4917).
@@ -31,5 +34,5 @@ Immich also provides a mechanism to migrate between templates so that if the tem
 If you want to store assets in album folders, but you also have assets that do not belong to any album, you can use `{{#if album}}`, `{{else}}` and `{{/if}}` to create a conditional statement. For example, the following template will store assets in album folders if they belong to an album, and in a folder named "Other/Month" if they do not belong to an album:
 
 ```
-{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}
+{{y}}/{{#if album}}{{album}}{{else}}Other{{/if}}/{{MM}}/{{filename}}
 ```

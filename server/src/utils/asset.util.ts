@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { StorageCore } from 'src/cores/storage.core';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
+import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
@@ -8,6 +9,9 @@ import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { AuthRequest } from 'src/middleware/auth.guard';
+import { ImmichFile } from 'src/middleware/file-upload.interceptor';
+import { UploadFile } from 'src/services/asset-media.service';
 import { checkAccess } from 'src/utils/access';
 
 export interface IBulkAsset {
@@ -180,4 +184,22 @@ export const onAfterUnlink = async (
 ) => {
   await assetRepository.update({ id: livePhotoVideoId, isVisible: true });
   await eventRepository.emit('asset.show', { assetId: livePhotoVideoId, userId });
+};
+
+export function mapToUploadFile(file: ImmichFile): UploadFile {
+  return {
+    uuid: file.uuid,
+    checksum: file.checksum,
+    originalPath: file.path,
+    originalName: Buffer.from(file.originalname, 'latin1').toString('utf8'),
+    size: file.size,
+  };
+}
+
+export const asRequest = (request: AuthRequest, file: Express.Multer.File) => {
+  return {
+    auth: request.user || null,
+    fieldName: file.fieldname as UploadFieldName,
+    file: mapToUploadFile(file as ImmichFile),
+  };
 };

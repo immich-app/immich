@@ -1,12 +1,5 @@
-import {
-  LibraryResponseDto,
-  LoginResponseDto,
-  ScanLibraryDto,
-  getAllLibraries,
-  removeOfflineFiles,
-  scanLibrary,
-} from '@immich/sdk';
-import { cpSync, existsSync } from 'node:fs';
+import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
+import { cpSync, existsSync, rmSync, unlinkSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -15,8 +8,7 @@ import request from 'supertest';
 import { utimes } from 'utimes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-const scan = async (accessToken: string, id: string, dto: ScanLibraryDto = {}) =>
-  scanLibrary({ id, scanLibraryDto: dto }, { headers: asBearerAuth(accessToken) });
+const scan = async (accessToken: string, id: string) => scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
 
 describe('/libraries', () => {
   let admin: LoginResponseDto;
@@ -293,19 +285,52 @@ describe('/libraries', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    it('should scan external library', async () => {
+    it('should import new asset when scanning external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/directoryA`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, {
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
+        libraryId: library.id,
       });
       expect(assets.count).toBe(1);
+    });
+
+    it('should process metadata and thumbnails for external asset', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/directoryA`],
+      });
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, {
+        originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
+        libraryId: library.id,
+      });
+      expect(assets.count).toBe(1);
+      const asset = assets.items[0];
+      expect(asset.exifInfo).not.toBe(null);
+      expect(asset.exifInfo?.dateTimeOriginal).not.toBe(null);
+      expect(asset.thumbhash).not.toBe(null);
     });
 
     it('should scan external library with exclusion pattern', async () => {
@@ -315,10 +340,15 @@ describe('/libraries', () => {
         exclusionPatterns: ['**/directoryA'],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 1 });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(1);
       expect(assets.items[0].originalPath.includes('directoryB'));
@@ -330,397 +360,303 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(2);
       expect(assets.items.find((asset) => asset.originalPath.includes('directoryA'))).toBeDefined();
       expect(assets.items.find((asset) => asset.originalPath.includes('directoryB'))).toBeDefined();
     });
 
-    it('should pick up new files', async () => {
+    it('should scan multiple import paths with commas', async () => {
+      // https://github.com/immich-app/immich/issues/10699
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
+        importPaths: [`${testAssetDirInternal}/temp/folder, a`, `${testAssetDirInternal}/temp/folder, b`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+      utils.createImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder, a'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder, b'))).toBeDefined();
 
-      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 3 });
-
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(newAssets.count).toBe(3);
-      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
     });
 
-    it('should offline a file missing from disk', async () => {
-      utils.createImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
+    it('should scan multiple import paths with braces', async () => {
+      // https://github.com/immich-app/immich/issues/10699
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
+        importPaths: [`${testAssetDirInternal}/temp/folder{ a`, `${testAssetDirInternal}/temp/folder} b`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      utils.createImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(assets.count).toBe(3);
-
-      utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetC.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: newAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(newAssets.count).toBe(3);
-
-      expect(newAssets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'assetC.png',
-          }),
-        ]),
-      );
-    });
-
-    it('should offline a file outside of import paths', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      await request(app)
-        .put(`/libraries/${library.id}`)
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ importPaths: [`${testAssetDirInternal}/temp/directoryA`] });
+        .send();
+      expect(status).toBe(204);
 
-      await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(2);
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder{ a'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('folder} b'))).toBeDefined();
+
+      utils.removeImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
+    });
+
+    const annoyingChars = [
+      "'",
+      '"',
+      '`',
+      '*',
+      '{',
+      '}',
+      ',',
+      '(',
+      ')',
+      '[',
+      ']',
+      '?',
+      '!',
+      '@',
+      '#',
+      '$',
+      '%',
+      '^',
+      '&',
+      '=',
+      '+',
+      '~',
+      '|',
+      '<',
+      '>',
+      ';',
+      ':',
+      '/', // We never got backslashes to work
+    ];
+
+    it.each(annoyingChars)('should scan multiple import paths with %s', async (char) => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/folder${char}1`, `${testAssetDirInternal}/temp/folder${char}2`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
+      utils.createImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets.items).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: false,
-            originalFileName: 'assetA.png',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'assetB.png',
-          }),
+          expect.objectContaining({ originalPath: expect.stringContaining(`folder${char}1/asset1.png`) }),
+          expect.objectContaining({ originalPath: expect.stringContaining(`folder${char}2/asset2.png`) }),
         ]),
       );
+
+      utils.removeImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
     });
 
-    it('should offline a file covered by an exclusion pattern', async () => {
+    it('should reimport a modified file', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
+        importPaths: [`${testAssetDirInternal}/temp/reimport`],
       });
+
+      utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-      await request(app)
-        .put(`/libraries/${library.id}`)
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_001);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ exclusionPatterns: ['**/directoryB/**'] });
+        .send();
+      expect(status).toBe(204);
 
-      await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(assets.count).toBe(2);
-
-      expect(assets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            isOffline: false,
-            originalFileName: 'assetA.png',
-          }),
-          expect.objectContaining({
-            isOffline: true,
-            originalFileName: 'assetB.png',
-          }),
-        ]),
-      );
-    });
-
-    it('should not try to delete offline files', async () => {
-      utils.createImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp/offline1`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-      expect(initialAssets).toEqual({
-        count: 1,
-        total: 1,
-        facets: [],
-        items: [expect.objectContaining({ originalFileName: 'assetA.png' })],
-        nextPage: null,
-      });
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
+      const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
-        isOffline: true,
-      });
-      expect(offlineAssets).toEqual({
-        count: 1,
-        total: 1,
-        facets: [],
-        items: [expect.objectContaining({ originalFileName: 'assetA.png' })],
-        nextPage: null,
       });
 
-      utils.createImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-      await removeOfflineFiles({ id: library.id }, { headers: asBearerAuth(admin.accessToken) });
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForWebsocketEvent({ event: 'assetDelete', total: 1 });
+      expect(assets.count).toEqual(1);
 
-      expect(existsSync(`${testAssetDir}/temp/offline1/assetA.png`)).toBe(true);
+      const asset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
-      utils.removeImageFile(`${testAssetDir}/temp/offline1/assetA.png`);
-    });
-
-    it('should scan new files', async () => {
-      const library = await utils.createLibrary(admin.accessToken, {
-        ownerId: admin.userId,
-        importPaths: [`${testAssetDirInternal}/temp`],
-      });
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      utils.createImageFile(`${testAssetDir}/temp/directoryC/assetC.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
-
-      expect(assets.count).toBe(3);
-      expect(assets.items).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            originalFileName: 'assetC.png',
+      expect(asset).toEqual(
+        expect.objectContaining({
+          originalFileName: 'asset.jpg',
+          exifInfo: expect.objectContaining({
+            model: 'NIKON D750',
           }),
-        ]),
+        }),
       );
 
-      utils.removeImageFile(`${testAssetDir}/temp/directoryC/assetC.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
     });
 
-    describe('with refreshModifiedFiles=true', () => {
-      it('should reimport modified files', async () => {
-        const library = await utils.createLibrary(admin.accessToken, {
-          ownerId: admin.userId,
-          importPaths: [`${testAssetDirInternal}/temp`],
-        });
-
-        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_001);
-
-        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-
-        const { assets } = await utils.metadataSearch(admin.accessToken, {
-          libraryId: library.id,
-          model: 'NIKON D750',
-        });
-        expect(assets.count).toBe(1);
+    it('should not reimport unmodified files', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/reimport`],
       });
 
-      it('should not reimport unmodified files', async () => {
-        const library = await utils.createLibrary(admin.accessToken, {
-          ownerId: admin.userId,
-          importPaths: [`${testAssetDirInternal}/temp`],
-        });
+      utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
 
-        await scan(admin.accessToken, library.id, { refreshModifiedFiles: true });
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
-        const { assets } = await utils.metadataSearch(admin.accessToken, {
-          libraryId: library.id,
-          model: 'NIKON D750',
-        });
-        expect(assets.count).toBe(0);
+      const { assets } = await utils.searchAssets(admin.accessToken, {
+        libraryId: library.id,
       });
+
+      expect(assets.count).toEqual(1);
+
+      const asset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(asset).toEqual(
+        expect.objectContaining({
+          originalFileName: 'asset.jpg',
+          exifInfo: expect.not.objectContaining({
+            model: 'NIKON D750',
+          }),
+        }),
+      );
+
+      utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
     });
 
-    describe('with refreshAllFiles=true', () => {
-      it('should reimport all files', async () => {
-        const library = await utils.createLibrary(admin.accessToken, {
-          ownerId: admin.userId,
-          importPaths: [`${testAssetDirInternal}/temp`],
-        });
-
-        utils.createImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-        cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/directoryA/assetB.jpg`);
-        await utimes(`${testAssetDir}/temp/directoryA/assetB.jpg`, 447_775_200_000);
-
-        await scan(admin.accessToken, library.id, { refreshAllFiles: true });
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-        utils.removeImageFile(`${testAssetDir}/temp/directoryA/assetB.jpg`);
-
-        const { assets } = await utils.metadataSearch(admin.accessToken, {
-          libraryId: library.id,
-          model: 'NIKON D750',
-        });
-        expect(assets.count).toBe(1);
-      });
-    });
-  });
-
-  describe('POST /libraries/:id/removeOffline', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/removeOffline`).send({});
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should remove offline files', async () => {
+    it('should set an asset offline if its file is missing', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      utils.createImageFile(`${testAssetDir}/temp/offline/online.png`);
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-      });
-      expect(initialAssets.count).toBe(2);
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      expect(assets.count).toBe(1);
 
       utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-        isOffline: true,
-      });
-      expect(offlineAssets.count).toBe(1);
-
       const { status } = await request(app)
-        .post(`/libraries/${library.id}/removeOffline`)
+        .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
       expect(status).toBe(204);
+
       await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(trashedAsset.isOffline).toEqual(true);
 
-      expect(assets.count).toBe(1);
-
-      utils.removeImageFile(`${testAssetDir}/temp/offline/online.png`);
+      const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      expect(newAssets.items).toEqual([]);
     });
 
-    it('should remove offline files from trash', async () => {
+    it('should set an asset offline if its file is not in any import path', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      utils.createImageFile(`${testAssetDir}/temp/offline/online.png`);
-      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
-
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets: initialAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      expect(assets.count).toBe(1);
+
+      utils.createDirectory(`${testAssetDir}/temp/another-path/`);
+
+      await utils.updateLibrary(admin.accessToken, library.id, {
+        importPaths: [`${testAssetDirInternal}/temp/another-path/`],
       });
-
-      expect(initialAssets.count).toBe(2);
-      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
-
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-
-      const { assets: offlineAssets } = await utils.metadataSearch(admin.accessToken, {
-        libraryId: library.id,
-        isOffline: true,
-      });
-      expect(offlineAssets.count).toBe(1);
 
       const { status } = await request(app)
-        .post(`/libraries/${library.id}/removeOffline`)
+        .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
       expect(status).toBe(204);
+
       await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'backgroundTask');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(trashedAsset.isOffline).toBe(true);
 
-      expect(assets.count).toBe(1);
-      expect(assets.items[0].isOffline).toBe(false);
-      expect(assets.items[0].originalPath).toEqual(`${testAssetDirInternal}/temp/offline/online.png`);
+      const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
-      utils.removeImageFile(`${testAssetDir}/temp/offline/online.png`);
+      expect(newAssets.items).toEqual([]);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
+      utils.removeDirectory(`${testAssetDir}/temp/another-path/`);
     });
 
-    it('should not remove online files', async () => {
+    it('should set an asset offline if its file is covered by an exclusion pattern', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp`],
@@ -729,19 +665,535 @@ describe('/libraries', () => {
       await scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets: assetsBefore } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, {
+        libraryId: library.id,
+        originalFileName: 'assetB.png',
+      });
+      expect(assets.count).toBe(1);
+
+      await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/directoryB/**'] });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(trashedAsset.isTrashed).toBe(true);
+      expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/directoryB/assetB.png`);
+      expect(trashedAsset.isOffline).toBe(true);
+
+      const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      expect(newAssets.items).toEqual([
+        expect.objectContaining({
+          originalFileName: 'assetA.png',
+        }),
+      ]);
+    });
+
+    it('should not set an asset offline if its file exists, is in an import path, and not covered by an exclusion pattern', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets: assetsBefore } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assetsBefore.count).toBeGreaterThan(1);
 
       const { status } = await request(app)
-        .post(`/libraries/${library.id}/removeOffline`)
+        .post(`/libraries/${library.id}/scan`)
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send();
       expect(status).toBe(204);
+
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
-      const { assets } = await utils.metadataSearch(admin.accessToken, { libraryId: library.id });
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       expect(assets).toEqual(assetsBefore);
+    });
+
+    describe('xmp metadata', async () => {
+      it('should import metadata from file.xmp', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should import metadata from file.ext.xmp', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should import metadata in file.ext.xmp before file.xmp if both exist', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.xmp to file.ext.xmp when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2000-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.ext.xmp to file.xmp when asset refreshes', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-09-27T12:35:33.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.ext.xmp to file metadata', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-07-20T17:27:12.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+
+      it('should switch from using file.xmp to file metadata', async () => {
+        const library = await utils.createLibrary(admin.accessToken, {
+          ownerId: admin.userId,
+          importPaths: [`${testAssetDirInternal}/temp/xmp`],
+        });
+
+        cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
+        cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
+        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+
+        await scan(admin.accessToken, library.id);
+        await utils.waitForQueueFinish(admin.accessToken, 'library');
+        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+
+        const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(newAssets.items).toEqual([
+          expect.objectContaining({
+            originalFileName: 'glarus.nef',
+            fileCreatedAt: '2010-07-20T17:27:12.000Z',
+          }),
+        ]);
+
+        rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
+      });
+    });
+
+    it('should set an offline asset to online if its file exists, is in an import path, and not covered by an exclusion pattern', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(offlineAsset.isTrashed).toBe(true);
+      expect(offlineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(offlineAsset.isOffline).toBe(true);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+        expect(assets.count).toBe(1);
+      }
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline.png`, `${testAssetDir}/temp/offline/offline.png`);
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const backOnlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(backOnlineAsset.isTrashed).toBe(false);
+      expect(backOnlineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(backOnlineAsset.isOffline).toBe(false);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        expect(assets.count).toBe(1);
+      }
+    });
+
+    it('should not set an offline asset to online if its file exists, is not covered by an exclusion pattern, but is outside of all import paths', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+        expect(assets.count).toBe(1);
+      }
+
+      const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(offlineAsset.isTrashed).toBe(true);
+      expect(offlineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(offlineAsset.isOffline).toBe(true);
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline.png`, `${testAssetDir}/temp/offline/offline.png`);
+
+      utils.createDirectory(`${testAssetDir}/temp/another-path/`);
+
+      await utils.updateLibrary(admin.accessToken, library.id, {
+        importPaths: [`${testAssetDirInternal}/temp/another-path`],
+      });
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const stillOfflineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(stillOfflineAsset.isTrashed).toBe(true);
+      expect(stillOfflineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(stillOfflineAsset.isOffline).toBe(true);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+        expect(assets.count).toBe(1);
+      }
+
+      utils.removeDirectory(`${testAssetDir}/temp/another-path/`);
+    });
+
+    it('should not set an offline asset to online if its file exists, is in an import path, but is covered by an exclusion pattern', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
+      });
+
+      await scan(admin.accessToken, library.id);
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+        expect(assets.count).toBe(1);
+      }
+
+      const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(offlineAsset.isTrashed).toBe(true);
+      expect(offlineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(offlineAsset.isOffline).toBe(true);
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline.png`, `${testAssetDir}/temp/offline/offline.png`);
+
+      await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
+
+      {
+        const { status } = await request(app)
+          .post(`/libraries/${library.id}/scan`)
+          .set('Authorization', `Bearer ${admin.accessToken}`)
+          .send();
+        expect(status).toBe(204);
+      }
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      const stillOfflineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(stillOfflineAsset.isTrashed).toBe(true);
+      expect(stillOfflineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(stillOfflineAsset.isOffline).toBe(true);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+        expect(assets.count).toBe(1);
+      }
     });
   });
 
@@ -772,6 +1224,29 @@ describe('/libraries', () => {
         importPath: pathToTest,
         isValid: false,
         message: `Path does not exist (ENOENT)`,
+      });
+    });
+
+    it("should fail if path isn't absolute", async () => {
+      const pathToTest = `relative/path`;
+
+      const cwd = process.cwd();
+      // Create directory in cwd
+      utils.createDirectory(`${cwd}/${pathToTest}`);
+
+      const response = await utils.validateLibrary(admin.accessToken, library.id, {
+        importPaths: [pathToTest],
+      });
+
+      utils.removeDirectory(`${cwd}/${pathToTest}`);
+
+      expect(response.importPaths?.length).toEqual(1);
+      const pathResponse = response?.importPaths?.at(0);
+
+      expect(pathResponse).toEqual({
+        importPath: pathToTest,
+        isValid: false,
+        message: expect.stringMatching('Import path must be absolute, try /usr/src/app/relative/path'),
       });
     });
 
@@ -828,7 +1303,7 @@ describe('/libraries', () => {
       });
 
       await scan(admin.accessToken, library.id);
-      await utils.waitForWebsocketEvent({ event: 'assetUpload', total: 2 });
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { status, body } = await request(app)
         .delete(`/libraries/${library.id}`)

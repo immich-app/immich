@@ -14,20 +14,30 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import type { PageData } from './$types';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { preferences } from '$lib/stores/user.store';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const assetStore = new AssetStore({ isFavorite: true });
-  const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+  const assetInteraction = new AssetInteraction();
 
-  $: isAllArchive = [...$selectedAssets].every((asset) => asset.isArchived);
+  const handleEscape = () => {
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
+  };
 
   onDestroy(() => {
     assetStore.destroy();
@@ -35,11 +45,14 @@
 </script>
 
 <!-- Multiselection mode app bar -->
-{#if $isMultiSelectState}
-  <AssetSelectControlBar assets={$selectedAssets} clearSelect={() => assetInteractionStore.clearMultiselect()}>
+{#if assetInteraction.selectionActive}
+  <AssetSelectControlBar
+    assets={assetInteraction.selectedAssets}
+    clearSelect={() => assetInteraction.clearMultiselect()}
+  >
     <FavoriteAction removeFavorite onFavorite={(assetIds) => assetStore.removeAssets(assetIds)} />
     <CreateSharedLink />
-    <SelectAllAssets {assetStore} {assetInteractionStore} />
+    <SelectAllAssets {assetStore} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
@@ -48,14 +61,29 @@
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />
-      <ArchiveAction menuItem unarchive={isAllArchive} onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+      <ArchiveAction
+        menuItem
+        unarchive={assetInteraction.isAllArchived}
+        onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
+      />
+      {#if $preferences.tags.enabled}
+        <TagAction menuItem />
+      {/if}
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
   </AssetSelectControlBar>
 {/if}
 
-<UserPageLayout hideNavbar={$isMultiSelectState} title={data.meta.title} scrollbar={false}>
-  <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} removeAction={AssetAction.UNFAVORITE}>
-    <EmptyPlaceholder text={$t('no_favorites_message')} slot="empty" />
+<UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNFAVORITE}
+    onEscape={handleEscape}
+  >
+    {#snippet empty()}
+      <EmptyPlaceholder text={$t('no_favorites_message')} />
+    {/snippet}
   </AssetGrid>
 </UserPageLayout>

@@ -36,14 +36,18 @@ services:
       IMMICH_BUILD_URL: https://github.com/immich-app/immich/actions/runs/9654404849
       IMMICH_BUILD_IMAGE: development
       IMMICH_BUILD_IMAGE_URL: https://github.com/immich-app/immich/pkgs/container/immich-server
+      IMMICH_THIRD_PARTY_SOURCE_URL: https://github.com/immich-app/immich/
+      IMMICH_THIRD_PARTY_BUG_FEATURE_URL: https://github.com/immich-app/immich/issues
+      IMMICH_THIRD_PARTY_DOCUMENTATION_URL: https://immich.app/docs
+      IMMICH_THIRD_PARTY_SUPPORT_URL: https://immich.app/docs/third-party
     ulimits:
       nofile:
         soft: 1048576
         hard: 1048576
     ports:
-      - 3001:3001
       - 9230:9230
       - 9231:9231
+      - 2283:2283
     depends_on:
       - redis
       - database
@@ -53,16 +57,19 @@ services:
   immich-web:
     container_name: immich_web
     image: immich-web-dev:latest
+    # Needed for rootless docker setup, see https://github.com/moby/moby/issues/45919
+    # user: 0:0
     build:
       context: ../web
     command: ['/usr/src/app/bin/immich-web']
     env_file:
       - .env
     ports:
-      - 2283:3000
+      - 3000:3000
       - 24678:24678
     volumes:
       - ../web:/usr/src/app
+      - ../i18n:/usr/src/i18n
       - ../open-api/:/usr/src/open-api/
       - /usr/src/app/node_modules
     ulimits:
@@ -99,7 +106,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:2d1463258f2764328496376f5d965f20c6a67f66ea2b06dc42af351f75248792
+    image: redis:6.2-alpine@sha256:905c4ee67b8e0aa955331960d2aa745781e6bd89afc44a8584bfd13bc890f0ae
     healthcheck:
       test: redis-cli ping || exit 1
 
@@ -118,28 +125,25 @@ services:
     ports:
       - 5432:5432
     healthcheck:
-      test: pg_isready --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' || exit 1; Chksum="$$(psql --dbname='${DB_DATABASE_NAME}' --username='${DB_USERNAME}' --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
+      test: >-
+        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1;
+        Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align
+        --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')";
+        echo "checksum failure count is $$Chksum";
+        [ "$$Chksum" = '0' ] || exit 1
       interval: 5m
       start_interval: 30s
       start_period: 5m
-    command:
-      [
-        'postgres',
-        '-c',
-        'shared_preload_libraries=vectors.so',
-        '-c',
-        'search_path="$$user", public, vectors',
-        '-c',
-        'logging_collector=on',
-        '-c',
-        'max_wal_size=2GB',
-        '-c',
-        'shared_buffers=512MB',
-        '-c',
-        'wal_compression=on',
-      ]
+    command: >-
+      postgres
+      -c shared_preload_libraries=vectors.so
+      -c 'search_path="$$user", public, vectors'
+      -c logging_collector=on
+      -c max_wal_size=2GB
+      -c shared_buffers=512MB
+      -c wal_compression=on
 
-  # set IMMICH_METRICS=true in .env to enable metrics
+  # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
   #   ports:

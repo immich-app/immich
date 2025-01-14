@@ -36,7 +36,6 @@
     mdiPencil,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
-  import { createEventDispatcher } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
@@ -45,10 +44,16 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
 
-  export let asset: AssetResponseDto;
-  export let albums: AlbumResponseDto[] = [];
-  export let currentAlbum: AlbumResponseDto | null = null;
+  interface Props {
+    asset: AssetResponseDto;
+    albums?: AlbumResponseDto[];
+    currentAlbum?: AlbumResponseDto | null;
+    onClose: () => void;
+  }
+
+  let { asset, albums = [], currentAlbum = null, onClose }: Props = $props();
 
   const getDimensions = (exifInfo: ExifResponseDto) => {
     const { exifImageWidth: width, exifImageHeight: height } = exifInfo;
@@ -59,11 +64,11 @@
     return { width, height };
   };
 
-  let showAssetPath = false;
-  let showEditFaces = false;
-  let previousId: string;
+  let showAssetPath = $state(false);
+  let showEditFaces = $state(false);
+  let previousId: string | undefined = $state();
 
-  $: {
+  $effect(() => {
     if (!previousId) {
       previousId = asset.id;
     }
@@ -71,9 +76,9 @@
       showEditFaces = false;
       previousId = asset.id;
     }
-  }
+  });
 
-  $: isOwner = $user?.id === asset.ownerId;
+  let isOwner = $derived($user?.id === asset.ownerId);
 
   const handleNewAsset = async (newAsset: AssetResponseDto) => {
     // TODO: check if reloading asset data is necessary
@@ -84,31 +89,30 @@
     }
   };
 
-  $: handlePromiseError(handleNewAsset(asset));
+  $effect(() => {
+    handlePromiseError(handleNewAsset(asset));
+  });
 
-  $: latlng = (() => {
-    const lat = asset.exifInfo?.latitude;
-    const lng = asset.exifInfo?.longitude;
+  let latlng = $derived(
+    (() => {
+      const lat = asset.exifInfo?.latitude;
+      const lng = asset.exifInfo?.longitude;
 
-    if (lat && lng) {
-      return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
-    }
-  })();
+      if (lat && lng) {
+        return { lat: Number(lat.toFixed(7)), lng: Number(lng.toFixed(7)) };
+      }
+    })(),
+  );
 
-  $: people = asset.people || [];
-  $: showingHiddenPeople = false;
-
-  $: unassignedFaces = asset.unassignedFaces || [];
-
-  $: timeZone = asset.exifInfo?.timeZone;
-  $: dateTime =
+  let people = $state(asset.people || []);
+  let unassignedFaces = $state(asset.unassignedFaces || []);
+  let showingHiddenPeople = $state(false);
+  let timeZone = $derived(asset.exifInfo?.timeZone);
+  let dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromDateTimeOriginal(asset.exifInfo.dateTimeOriginal, timeZone)
-      : fromLocalDateTime(asset.localDateTime);
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-  }>();
+      : fromLocalDateTime(asset.localDateTime),
+  );
 
   const getMegapixel = (width: number, height: number): number | undefined => {
     const megapixel = Math.round((height * width) / 1_000_000);
@@ -128,9 +132,17 @@
     showEditFaces = false;
   };
 
+  const getAssetFolderHref = (asset: AssetResponseDto) => {
+    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
+    // Remove the last part of the path to get the parent path
+    const assetParentPath = asset.originalPath.split('/').slice(0, -1).join('/');
+    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
+    return folderUrl.href;
+  };
+
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
-  let isShowChangeDate = false;
+  let isShowChangeDate = $state(false);
 
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
     isShowChangeDate = false;
@@ -144,18 +156,27 @@
 
 <section class="relative p-2 dark:bg-immich-dark-bg dark:text-immich-dark-fg">
   <div class="flex place-items-center gap-2">
-    <CircleIconButton icon={mdiClose} title={$t('close')} on:click={() => dispatch('close')} />
+    <CircleIconButton icon={mdiClose} title={$t('close')} onclick={onClose} />
     <p class="text-lg text-immich-fg dark:text-immich-dark-fg">{$t('info')}</p>
   </div>
 
   {#if asset.isOffline}
     <section class="px-4 py-4">
       <div role="alert">
-        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">{$t('asset_offline')}</div>
-        <div class="rounded-b border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
+        <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
+          {$t('asset_offline')}
+        </div>
+        <div class="border border-t-0 border-red-400 bg-red-100 px-4 py-3 text-red-700">
           <p>
-            {$t('asset_offline_description')}
+            {#if $user?.isAdmin}
+              {$t('admin.asset_offline_description')}
+            {:else}
+              {$t('asset_offline_description')}
+            {/if}
           </p>
+        </div>
+        <div class="rounded-b bg-red-500 px-4 py-2 text-white text-sm">
+          <p>{asset.originalPath}</p>
         </div>
       </div>
     </section>
@@ -184,7 +205,7 @@
               icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
               padding="1"
               buttonSize="32"
-              on:click={() => (showingHiddenPeople = !showingHiddenPeople)}
+              onclick={() => (showingHiddenPeople = !showingHiddenPeople)}
             />
           {/if}
           <CircleIconButton
@@ -193,7 +214,7 @@
             padding="1"
             size="20"
             buttonSize="32"
-            on:click={() => (showEditFaces = true)}
+            onclick={() => (showEditFaces = true)}
           />
         </div>
       </div>
@@ -206,10 +227,10 @@
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
                 ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
                 : AppRoute.PHOTOS}"
-              on:focus={() => ($boundingBoxesArray = people[index].faces)}
-              on:blur={() => ($boundingBoxesArray = [])}
-              on:mouseover={() => ($boundingBoxesArray = people[index].faces)}
-              on:mouseleave={() => ($boundingBoxesArray = [])}
+              onfocus={() => ($boundingBoxesArray = people[index].faces)}
+              onblur={() => ($boundingBoxesArray = [])}
+              onmouseover={() => ($boundingBoxesArray = people[index].faces)}
+              onmouseleave={() => ($boundingBoxesArray = [])}
             >
               <div class="relative">
                 <ImageThumbnail
@@ -272,7 +293,7 @@
       <button
         type="button"
         class="flex w-full text-left justify-between place-items-start gap-4 py-4"
-        on:click={() => (isOwner ? (isShowChangeDate = true) : null)}
+        onclick={() => (isOwner ? (isShowChangeDate = true) : null)}
         title={isOwner ? $t('edit_date') : ''}
         class:hover:dark:text-immich-dark-primary={isOwner}
         class:hover:text-immich-primary={isOwner}
@@ -315,7 +336,7 @@
           </div>
         {/if}
       </button>
-    {:else if !asset.exifInfo?.dateTimeOriginal && isOwner}
+    {:else if !dateTime && isOwner}
       <div class="flex justify-between place-items-start gap-4 py-4">
         <div class="flex gap-4">
           <div>
@@ -329,51 +350,60 @@
     {/if}
 
     {#if isShowChangeDate}
-      <ChangeDate
-        initialDate={dateTime}
-        initialTimeZone={timeZone ?? ''}
-        on:confirm={({ detail: date }) => handleConfirmChangeDate(date)}
-        on:cancel={() => (isShowChangeDate = false)}
-      />
+      <Portal>
+        <ChangeDate
+          initialDate={dateTime}
+          initialTimeZone={timeZone ?? ''}
+          onConfirm={handleConfirmChangeDate}
+          onCancel={() => (isShowChangeDate = false)}
+        />
+      </Portal>
     {/if}
 
-    {#if asset.exifInfo?.fileSizeInByte}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiImageOutline} size="24" /></div>
+    <div class="flex gap-4 py-4">
+      <div><Icon path={mdiImageOutline} size="24" /></div>
 
-        <div>
-          <p class="break-all flex place-items-center gap-2">
-            {asset.originalFileName}
-            {#if isOwner}
-              <CircleIconButton
-                icon={mdiInformationOutline}
-                title={$t('show_file_location')}
-                size="16"
-                padding="2"
-                on:click={toggleAssetPath}
-              />
-            {/if}
+      <div>
+        <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
+          {asset.originalFileName}
+          {#if isOwner}
+            <CircleIconButton
+              icon={mdiInformationOutline}
+              title={$t('show_file_location')}
+              size="16"
+              padding="2"
+              onclick={toggleAssetPath}
+            />
+          {/if}
+        </p>
+        {#if showAssetPath}
+          <p
+            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+            transition:slide={{ duration: 250 }}
+          >
+            <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
+              {asset.originalPath}
+            </a>
           </p>
+        {/if}
+        {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
           <div class="flex gap-2 text-sm">
-            {#if asset.exifInfo.exifImageHeight && asset.exifInfo.exifImageWidth}
+            {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
               {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                 <p>
                   {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
                 </p>
+                {@const { width, height } = getDimensions(asset.exifInfo)}
+                <p>{width} x {height}</p>
               {/if}
-              {@const { width, height } = getDimensions(asset.exifInfo)}
-              <p>{width} x {height}</p>
             {/if}
-            <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {#if asset.exifInfo?.fileSizeInByte}
+              <p>{getByteUnitString(asset.exifInfo.fileSizeInByte, $locale)}</p>
+            {/if}
           </div>
-          {#if showAssetPath}
-            <p class="text-xs opacity-50 break-all" transition:slide={{ duration: 250 }}>
-              {asset.originalPath}
-            </p>
-          {/if}
-        </div>
+        {/if}
       </div>
-    {/if}
+    </div>
 
     {#if asset.exifInfo?.make || asset.exifInfo?.model || asset.exifInfo?.fNumber}
       <div class="flex gap-4 py-4">
@@ -418,8 +448,7 @@
         </div>
       {/await}
     {:then component}
-      <svelte:component
-        this={component.default}
+      <component.default
         mapMarkers={[
           {
             lat: latlng.lat,
@@ -436,7 +465,7 @@
         useLocationPin
         onOpenInMapView={() => goto(`${AppRoute.MAP}#12.5/${latlng.lat}/${latlng.lng}`)}
       >
-        <svelte:fragment slot="popup" let:marker>
+        {#snippet popup({ marker })}
           {@const { lat, lon } = marker}
           <div class="flex flex-col items-center gap-1">
             <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
@@ -448,8 +477,8 @@
               {$t('open_in_openstreetmap')}
             </a>
           </div>
-        </svelte:fragment>
-      </svelte:component>
+        {/snippet}
+      </component.default>
     {/await}
   </div>
 {/if}
@@ -511,9 +540,7 @@
   <PersonSidePanel
     assetId={asset.id}
     assetType={asset.type}
-    on:close={() => {
-      showEditFaces = false;
-    }}
-    on:refresh={handleRefreshPeople}
+    onClose={() => (showEditFaces = false)}
+    onRefresh={handleRefreshPeople}
   />
 {/if}

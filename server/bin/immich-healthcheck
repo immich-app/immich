@@ -1,3 +1,22 @@
 #!/usr/bin/env bash
 
-node /usr/src/app/dist/utils/healthcheck.js
+if [[ ( $IMMICH_WORKERS_INCLUDE != '' && $IMMICH_WORKERS_INCLUDE != *api* ) || $IMMICH_WORKERS_EXCLUDE == *api* ]]; then
+        echo "API worker excluded, skipping";
+        exit 0;
+fi
+
+IMMICH_HOST="${IMMICH_HOST:-localhost}"
+IMMICH_PORT="${IMMICH_PORT:-2283}"
+
+result=$(curl -fsS -m 2 http://"$IMMICH_HOST":"$IMMICH_PORT"/api/server/ping)
+result_exit=$?
+
+if [ $result_exit != 0 ]; then
+        echo "Fail: exit code is $result_exit";
+        exit 1;
+fi
+
+if [ "$result" != "{\"res\":\"pong\"}" ]; then
+        echo "Fail: didn't reply with pong";
+        exit 1;
+fi

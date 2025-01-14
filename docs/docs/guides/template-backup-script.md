@@ -6,10 +6,19 @@ This script assumes you have a second hard drive connected to your server for on
 
 The database is saved to your Immich upload folder in the `database-backup` subdirectory. The database is then backed up and versioned with your assets by Borg. This ensures that the database backup is in sync with your assets in every snapshot.
 
+:::info
+This script makes backups of your database along with your photo/video library. This is redundant with the [automatic database backup tool](https://immich.app/docs/administration/backup-and-restore#automatic-database-backups) built into Immich. Using this script to backup your database has two advantages over the built-in backup tool:
+
+- This script uses storage more efficiently by versioning your backups instead of making multiple copies.
+- The database backups are performed at the same time as the library backup, ensuring that the backups of your database and the library are always in sync.
+
+If you are using this script, it is therefore safe to turn off the built-in automatic database backups from your admin panel to save storage space.
+:::
+
 ### Prerequisites
 
 - Borg needs to be installed on your server as well as the remote machine. You can find instructions to install Borg [here](https://borgbackup.readthedocs.io/en/latest/installation.html).
-- (Optional) To run this sript as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
+- (Optional) To run this script as a non-root user, you should [add your username to the docker group](https://docs.docker.com/engine/install/linux-postinstall/).
 - To run this script non-interactively, set up [passwordless ssh](https://www.redhat.com/sysadmin/passwordless-ssh) to your remote machine from your server. If you skipped the previous step, make sure this step is done from your root account.
 
 To initialize the borg repository, run the following commands once.

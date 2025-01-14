@@ -8,28 +8,40 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
   import { mdiPlus, mdiArrowLeft } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
+
+  let { data }: Props = $props();
 
   const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
-  const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets, clearMultiselect } = assetInteractionStore;
+  const assetInteraction = new AssetInteraction();
+
+  const handleEscape = () => {
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
+  };
 
   onDestroy(() => {
-    assetInteractionStore.clearMultiselect();
     assetStore.destroy();
   });
 </script>
 
 <main class="grid h-screen bg-immich-bg pt-18 dark:bg-immich-dark-bg">
-  {#if $isMultiSelectState}
-    <AssetSelectControlBar assets={$selectedAssets} clearSelect={clearMultiselect}>
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
+    >
       <CreateSharedLink />
       <ButtonContextMenu icon={mdiPlus} title={$t('add')}>
         <AddToAlbum />
@@ -38,13 +50,13 @@
       <DownloadAction />
     </AssetSelectControlBar>
   {:else}
-    <ControlAppBar showBackButton backIcon={mdiArrowLeft} on:close={() => goto(AppRoute.SHARING)}>
-      <svelte:fragment slot="leading">
+    <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(AppRoute.SHARING)}>
+      {#snippet leading()}
         <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
           {data.partner.name}'s photos
         </p>
-      </svelte:fragment>
+      {/snippet}
     </ControlAppBar>
   {/if}
-  <AssetGrid enableRouting={true} {assetStore} {assetInteractionStore} />
+  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape} />
 </main>

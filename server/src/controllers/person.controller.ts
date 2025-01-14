@@ -1,9 +1,7 @@
 import { Body, Controller, Get, Inject, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
-import { EndpointLifecycle } from 'src/decorators';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceUpdateDto,
@@ -33,8 +31,8 @@ export class PersonController {
 
   @Get()
   @Authenticated({ permission: Permission.PERSON_READ })
-  getAllPeople(@Auth() auth: AuthDto, @Query() withHidden: PersonSearchDto): Promise<PeopleResponseDto> {
-    return this.service.getAll(auth, withHidden);
+  getAllPeople(@Auth() auth: AuthDto, @Query() options: PersonSearchDto): Promise<PeopleResponseDto> {
+    return this.service.getAll(auth, options);
   }
 
   @Post()
@@ -81,13 +79,6 @@ export class PersonController {
     @Param() { id }: UUIDParamDto,
   ) {
     await sendFile(res, next, () => this.service.getThumbnail(auth, id), this.logger);
-  }
-
-  @EndpointLifecycle({ deprecatedAt: 'v1.113.0' })
-  @Get(':id/assets')
-  @Authenticated()
-  getPersonAssets(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetResponseDto[]> {
-    return this.service.getAssets(auth, id);
   }
 
   @Put(':id/reassign')

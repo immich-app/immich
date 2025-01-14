@@ -2,17 +2,17 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import type { AssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { generateId } from '$lib/utils/generate-id';
+  import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   export let element: HTMLElement | undefined = undefined;
   export let isSelectionMode = false;
@@ -25,10 +25,13 @@
   export let renderThumbsAtTopMargin: string | undefined = undefined;
   export let assetStore: AssetStore;
   export let bucket: AssetBucket;
-  export let assetInteractionStore: AssetInteractionStore;
+  export let assetInteraction: AssetInteraction;
 
   export let onScrollTarget: ScrollTargetListener | undefined = undefined;
   export let onAssetInGrid: ((asset: AssetResponseDto) => void) | undefined = undefined;
+  export let onSelect: ({ title, assets }: { title: string; assets: AssetResponseDto[] }) => void;
+  export let onSelectAssets: (asset: AssetResponseDto) => void;
+  export let onSelectAssetCandidates: (asset: AssetResponseDto | null) => void;
 
   const componentId = generateId();
   $: bucketDate = bucket.bucketDate;
@@ -40,18 +43,11 @@
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
 
-  const { selectedGroup, selectedAssets, assetSelectionCandidates, isMultiSelectState } = assetInteractionStore;
-  const dispatch = createEventDispatcher<{
-    select: { title: string; assets: AssetResponseDto[] };
-    selectAssets: AssetResponseDto;
-    selectAssetCandidates: AssetResponseDto | null;
-  }>();
-
   let isMouseOverGroup = false;
   let hoveredDateGroup = '';
 
   const onClick = (assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
-    if (isSelectionMode || $isMultiSelectState) {
+    if (isSelectionMode || assetInteraction.selectionActive) {
       assetSelectHandler(asset, assets, groupTitle);
       return;
     }
@@ -65,19 +61,21 @@
     }
   };
 
-  const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => dispatch('select', { title, assets });
+  const handleSelectGroup = (title: string, assets: AssetResponseDto[]) => onSelect({ title, assets });
 
   const assetSelectHandler = (asset: AssetResponseDto, assetsInDateGroup: AssetResponseDto[], groupTitle: string) => {
-    dispatch('selectAssets', asset);
+    onSelectAssets(asset);
 
     // Check if all assets are selected in a group to toggle the group selection's icon
-    let selectedAssetsInGroupCount = assetsInDateGroup.filter((asset) => $selectedAssets.has(asset)).length;
+    let selectedAssetsInGroupCount = assetsInDateGroup.filter((asset) =>
+      assetInteraction.selectedAssets.has(asset),
+    ).length;
 
     // if all assets are selected in a group, add the group to selected group
     if (selectedAssetsInGroupCount == assetsInDateGroup.length) {
-      assetInteractionStore.addGroupToMultiselectGroup(groupTitle);
+      assetInteraction.addGroupToMultiselectGroup(groupTitle);
     } else {
-      assetInteractionStore.removeGroupFromMultiselectGroup(groupTitle);
+      assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
   };
 
@@ -85,8 +83,8 @@
     // Show multi select icon on hover on date group
     hoveredDateGroup = groupTitle;
 
-    if ($isMultiSelectState) {
-      dispatch('selectAssetCandidates', asset);
+    if (assetInteraction.selectionActive) {
+      onSelectAssetCandidates(asset);
     }
   };
 
@@ -153,14 +151,14 @@
             class="flex z-[100] sticky top-[-1px] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
             style:width={dateGroup.geometry.containerWidth + 'px'}
           >
-            {#if !singleSelect && ((hoveredDateGroup == dateGroup.groupTitle && isMouseOverGroup) || $selectedGroup.has(dateGroup.groupTitle))}
+            {#if !singleSelect && ((hoveredDateGroup == dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
               <div
                 transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
                 class="inline-block px-2 hover:cursor-pointer"
                 on:click={() => handleSelectGroup(dateGroup.groupTitle, dateGroup.assets)}
                 on:keydown={() => handleSelectGroup(dateGroup.groupTitle, dateGroup.assets)}
               >
-                {#if $selectedGroup.has(dateGroup.groupTitle)}
+                {#if assetInteraction.selectedGroup.has(dateGroup.groupTitle)}
                   <Icon path={mdiCheckCircle} size="24" color="#4250af" />
                 {:else}
                   <Icon path={mdiCircleOutline} size="24" color="#757575" />
@@ -214,8 +212,8 @@
                   onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
                   onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
                   onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
-                  selected={$selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
-                  selectionCandidate={$assetSelectionCandidates.has(asset)}
+                  selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
+                  selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={box.width}
                   thumbnailHeight={box.height}

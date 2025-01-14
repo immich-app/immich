@@ -20,7 +20,6 @@
     getAllLibraries,
     getLibraryStatistics,
     getUserAdmin,
-    removeOfflineFiles,
     scanLibrary,
     updateLibrary,
     type LibraryResponseDto,
@@ -37,32 +36,36 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import { locale } from '$lib/stores/preferences.store';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let libraries: LibraryResponseDto[] = [];
+  let { data }: Props = $props();
+
+  let libraries: LibraryResponseDto[] = $state([]);
 
   let stats: LibraryStatsResponseDto[] = [];
-  let owner: UserResponseDto[] = [];
+  let owner: UserResponseDto[] = $state([]);
   let photos: number[] = [];
   let videos: number[] = [];
-  let totalCount: number[] = [];
-  let diskUsage: number[] = [];
-  let diskUsageUnit: ByteUnit[] = [];
-  let editImportPaths: number | null;
-  let editScanSettings: number | null;
-  let renameLibrary: number | null;
+  let totalCount: number[] = $state([]);
+  let diskUsage: number[] = $state([]);
+  let diskUsageUnit: ByteUnit[] = $state([]);
+  let editImportPaths: number | undefined = $state();
+  let editScanSettings: number | undefined = $state();
+  let renameLibrary: number | undefined = $state();
   let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
-  let toCreateLibrary = false;
+  let toCreateLibrary = $state(false);
 
   onMount(async () => {
     await readLibraryList();
   });
 
   const closeAll = () => {
-    editImportPaths = null;
-    editScanSettings = null;
-    renameLibrary = null;
+    editImportPaths = undefined;
+    editScanSettings = undefined;
+    renameLibrary = undefined;
     updateLibraryIndex = null;
 
     for (let index = 0; index < dropdownOpen.length; index++) {
@@ -122,7 +125,7 @@
   const handleScanAll = async () => {
     try {
       for (const library of libraries) {
-        await scanLibrary({ id: library.id, scanLibraryDto: {} });
+        await scanLibrary({ id: library.id });
       }
       notificationController.show({
         message: $t('admin.refreshing_all_libraries'),
@@ -135,49 +138,13 @@
 
   const handleScan = async (libraryId: string) => {
     try {
-      await scanLibrary({ id: libraryId, scanLibraryDto: {} });
+      await scanLibrary({ id: libraryId });
       notificationController.show({
-        message: $t('admin.scanning_library_for_new_files'),
+        message: $t('admin.scanning_library'),
         type: NotificationType.Info,
       });
     } catch (error) {
       handleError(error, $t('errors.unable_to_scan_library'));
-    }
-  };
-
-  const handleScanChanges = async (libraryId: string) => {
-    try {
-      await scanLibrary({ id: libraryId, scanLibraryDto: { refreshModifiedFiles: true } });
-      notificationController.show({
-        message: $t('admin.scanning_library_for_changed_files'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_scan_library'));
-    }
-  };
-
-  const handleForceScan = async (libraryId: string) => {
-    try {
-      await scanLibrary({ id: libraryId, scanLibraryDto: { refreshAllFiles: true } });
-      notificationController.show({
-        message: $t('admin.forcing_refresh_library_files'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_scan_library'));
-    }
-  };
-
-  const handleRemoveOffline = async (libraryId: string) => {
-    try {
-      await removeOfflineFiles({ id: libraryId });
-      notificationController.show({
-        message: $t('admin.removing_offline_files'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_remove_offline_files'));
     }
   };
 
@@ -193,7 +160,7 @@
     updateLibraryIndex = index;
   };
 
-  const onScanNewLibraryClicked = async (library: LibraryResponseDto) => {
+  const onScanClicked = async (library: LibraryResponseDto) => {
     closeAll();
 
     if (library) {
@@ -205,27 +172,6 @@
     closeAll();
     editScanSettings = index;
     updateLibraryIndex = index;
-  };
-
-  const onScanAllLibraryFilesClicked = async (library: LibraryResponseDto) => {
-    closeAll();
-    if (library) {
-      await handleScanChanges(library.id);
-    }
-  };
-
-  const onForceScanAllLibraryFilesClicked = async (library: LibraryResponseDto) => {
-    closeAll();
-    if (library) {
-      await handleForceScan(library.id);
-    }
-  };
-
-  const onRemoveOfflineFilesClicked = async (library: LibraryResponseDto) => {
-    closeAll();
-    if (library) {
-      await handleRemoveOffline(library.id);
-    }
   };
 
   const handleDelete = async (library: LibraryResponseDto, index: number) => {
@@ -267,29 +213,28 @@
 </script>
 
 {#if toCreateLibrary}
-  <LibraryUserPickerForm
-    on:submit={({ detail }) => handleCreate(detail.ownerId)}
-    on:cancel={() => (toCreateLibrary = false)}
-  />
+  <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
 {/if}
 
 <UserPageLayout title={data.meta.title} admin>
-  <div class="flex justify-end gap-2" slot="buttons">
-    {#if libraries.length > 0}
-      <LinkButton on:click={() => handleScanAll()}>
+  {#snippet buttons()}
+    <div class="flex justify-end gap-2">
+      {#if libraries.length > 0}
+        <LinkButton onclick={() => handleScanAll()}>
+          <div class="flex gap-1 text-sm">
+            <Icon path={mdiSync} size="18" />
+            <span>{$t('scan_all_libraries')}</span>
+          </div>
+        </LinkButton>
+      {/if}
+      <LinkButton onclick={() => (toCreateLibrary = true)}>
         <div class="flex gap-1 text-sm">
-          <Icon path={mdiSync} size="18" />
-          <span>{$t('scan_all_libraries')}</span>
+          <Icon path={mdiPlusBoxOutline} size="18" />
+          <span>{$t('create_library')}</span>
         </div>
       </LinkButton>
-    {/if}
-    <LinkButton on:click={() => (toCreateLibrary = true)}>
-      <div class="flex gap-1 text-sm">
-        <Icon path={mdiPlusBoxOutline} size="18" />
-        <span>{$t('create_library')}</span>
-      </div>
-    </LinkButton>
-  </div>
+    </div>
+  {/snippet}
   <section class="my-4">
     <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
       {#if libraries.length > 0}
@@ -303,7 +248,7 @@
               <th class="text-center text-sm font-medium">{$t('owner')}</th>
               <th class="text-center text-sm font-medium">{$t('assets')}</th>
               <th class="text-center text-sm font-medium">{$t('size')}</th>
-              <th class="text-center text-sm font-medium" />
+              <th class="text-center text-sm font-medium"></th>
             </tr>
           </thead>
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
@@ -354,59 +299,44 @@
                     icon={mdiDotsVertical}
                     title={$t('library_options')}
                   >
+                    <MenuOption onClick={() => onScanClicked(library)} text={$t('scan_library')} />
+                    <hr />
                     <MenuOption onClick={() => onRenameClicked(index)} text={$t('rename')} />
                     <MenuOption onClick={() => onEditImportPathClicked(index)} text={$t('edit_import_paths')} />
                     <MenuOption onClick={() => onScanSettingClicked(index)} text={$t('scan_settings')} />
                     <hr />
-                    <MenuOption onClick={() => onScanNewLibraryClicked(library)} text={$t('scan_new_library_files')} />
                     <MenuOption
-                      onClick={() => onScanAllLibraryFilesClicked(library)}
-                      text={$t('scan_all_library_files')}
-                      subtitle={$t('only_refreshes_modified_files')}
-                    />
-                    <MenuOption
-                      onClick={() => onForceScanAllLibraryFilesClicked(library)}
-                      text={$t('force_re-scan_library_files')}
-                      subtitle={$t('refreshes_every_file')}
-                    />
-                    <hr />
-                    <MenuOption
-                      onClick={() => onRemoveOfflineFilesClicked(library)}
-                      text={$t('remove_offline_files')}
-                    />
-                    <MenuOption
-                      text={$t('delete_library')}
+                      onClick={() => handleDelete(library, index)}
                       activeColor="bg-red-200"
                       textColor="text-red-600"
-                      onClick={() => handleDelete(library, index)}
+                      text={$t('delete_library')}
                     />
                   </ButtonContextMenu>
                 </td>
               </tr>
               {#if renameLibrary === index}
+                <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm
-                    {library}
-                    on:submit={({ detail }) => handleUpdate(detail)}
-                    on:cancel={() => (renameLibrary = null)}
-                  />
+                  <LibraryRenameForm {library} onSubmit={handleUpdate} onCancel={() => (renameLibrary = undefined)} />
                 </div>
               {/if}
               {#if editImportPaths === index}
+                <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
                   <LibraryImportPathsForm
                     {library}
-                    on:submit={({ detail }) => handleUpdate(detail)}
-                    on:cancel={() => (editImportPaths = null)}
+                    onSubmit={handleUpdate}
+                    onCancel={() => (editImportPaths = undefined)}
                   />
                 </div>
               {/if}
               {#if editScanSettings === index}
+                <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }} class="mb-4 ml-4 mr-4">
                   <LibraryScanSettingsForm
                     {library}
-                    on:submit={({ detail: library }) => handleUpdate(library)}
-                    on:cancel={() => (editScanSettings = null)}
+                    onSubmit={handleUpdate}
+                    onCancel={() => (editScanSettings = undefined)}
                   />
                 </div>
               {/if}

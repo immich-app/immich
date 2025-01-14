@@ -30,6 +30,7 @@ jobs:
           filters: |
             web:
               - 'web/**'
+              - 'i18n/**'
               - 'open-api/typescript-sdk/**'
             server:
               - 'server/**'
@@ -80,7 +81,7 @@ jobs:
         run: npm run check
         if: ${{ !cancelled() }}
 
-      - name: Run unit tests & coverage
+      - name: Run small tests & coverage
         run: npm run test:cov
         if: ${{ !cancelled() }}
 
@@ -242,6 +243,26 @@ jobs:
       - name: Run tsc
         run: npm run check
         if: ${{ !cancelled() }}
+
+  medium-tests-server:
+    name: Medium Tests (Server)
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
+    runs-on: mich
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Production build
+        if: ${{ !cancelled() }}
+        run: docker compose -f e2e/docker-compose.yml build
+
+      - name: Run medium tests
+        if: ${{ !cancelled() }}
+        run: make test-medium
 
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)

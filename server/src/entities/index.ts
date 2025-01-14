@@ -18,13 +18,13 @@ import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SessionEntity } from 'src/entities/session.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartInfoEntity } from 'src/entities/smart-info.entity';
 import { SmartSearchEntity } from 'src/entities/smart-search.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { SystemMetadataEntity } from 'src/entities/system-metadata.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
+import { VersionHistoryEntity } from 'src/entities/version-history.entity';
 
 export const entities = [
   ActivityEntity,
@@ -45,7 +45,6 @@ export const entities = [
   PartnerEntity,
   PersonEntity,
   SharedLinkEntity,
-  SmartInfoEntity,
   SmartSearchEntity,
   StackEntity,
   SystemMetadataEntity,
@@ -54,4 +53,5 @@ export const entities = [
   UserMetadataEntity,
   SessionEntity,
   LibraryEntity,
+  VersionHistoryEntity,
 ];

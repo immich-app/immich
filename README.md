@@ -17,23 +17,25 @@
 <img src="design/immich-screenshots.png" title="Main Screenshot">
 </a>
 <br/>
+
 <p align="center">
-
-<a href="readme_i18n/README_ca_ES.md">Català</a>
-<a href="readme_i18n/README_es_ES.md">Español</a>
-<a href="readme_i18n/README_fr_FR.md">Français</a>
-<a href="readme_i18n/README_it_IT.md">Italiano</a>
-<a href="readme_i18n/README_ja_JP.md">日本語</a>
-<a href="readme_i18n/README_ko_KR.md">한국어</a>
-<a href="readme_i18n/README_de_DE.md">Deutsch</a>
-<a href="readme_i18n/README_nl_NL.md">Nederlands</a>
-<a href="readme_i18n/README_tr_TR.md">Türkçe</a>
-<a href="readme_i18n/README_zh_CN.md">中文</a>
-<a href="readme_i18n/README_ru_RU.md">Русский</a>
-<a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
-<a href="readme_i18n/README_sv_SE.md">Svenska</a>
-<a href="readme_i18n/README_ar_JO.md">العربية</a>
-
+  <a href="readme_i18n/README_ca_ES.md">Català</a>
+  <a href="readme_i18n/README_es_ES.md">Español</a>
+  <a href="readme_i18n/README_fr_FR.md">Français</a>
+  <a href="readme_i18n/README_it_IT.md">Italiano</a>
+  <a href="readme_i18n/README_ja_JP.md">日本語</a>
+  <a href="readme_i18n/README_ko_KR.md">한국어</a>
+  <a href="readme_i18n/README_de_DE.md">Deutsch</a>
+  <a href="readme_i18n/README_nl_NL.md">Nederlands</a>
+  <a href="readme_i18n/README_tr_TR.md">Türkçe</a>
+  <a href="readme_i18n/README_zh_CN.md">中文</a>
+  <a href="readme_i18n/README_uk_UA.md">Українська</a>
+  <a href="readme_i18n/README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
+  <a href="readme_i18n/README_sv_SE.md">Svenska</a>
+  <a href="readme_i18n/README_ar_JO.md">العربية</a>
+  <a href="readme_i18n/README_vi_VN.md">Tiếng Việt</a>
+  <a href="readme_i18n/README_th_TH.md">ภาษาไทย</a>
 </p>
 
 ## Disclaimer
@@ -101,6 +103,8 @@ For the mobile app, you can use `https://demo.immich.app/api` for the `Server En
 | Offline support                              | Yes    | No  |
 | Read-only gallery                            | Yes    | Yes |
 | Stacked Photos                               | Yes    | Yes |
+| Tags                                         | No     | Yes |
+| Folder View                                  | No     | Yes |
 
 ## Translations
 

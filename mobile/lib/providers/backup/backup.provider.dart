@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/models/backup/available_album.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
@@ -17,11 +18,12 @@ import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/providers/backup/error_backup_list.provider.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
-import 'package:immich_mobile/models/authentication/authentication_state.model.dart';
-import 'package:immich_mobile/providers/authentication.provider.dart';
+import 'package:immich_mobile/models/auth/auth_state.model.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -45,6 +47,7 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     this._db,
     this._albumMediaRepository,
     this._fileMediaRepository,
+    this._backupRepository,
     this.ref,
   ) : super(
           BackUpState(
@@ -89,12 +92,13 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   final log = Logger('BackupNotifier');
   final BackupService _backupService;
   final ServerInfoService _serverInfoService;
-  final AuthenticationState _authState;
+  final AuthState _authState;
   final BackgroundService _backgroundService;
   final GalleryPermissionNotifier _galleryPermissionNotifier;
   final Isar _db;
   final IAlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
+  final IBackupRepository _backupRepository;
   final Ref ref;
 
   ///
@@ -255,9 +259,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
     state = state.copyWith(availableAlbums: availableAlbums);
 
     final List<BackupAlbum> excludedBackupAlbums =
-        await _backupService.excludedAlbumsQuery().findAll();
+        await _backupRepository.getAllBySelection(BackupSelection.exclude);
     final List<BackupAlbum> selectedBackupAlbums =
-        await _backupService.selectedAlbumsQuery().findAll();
+        await _backupRepository.getAllBySelection(BackupSelection.select);
 
     final Set<AvailableAlbum> selectedAlbums = {};
     for (final BackupAlbum ba in selectedBackupAlbums) {
@@ -313,6 +317,9 @@ class BackupNotifier extends StateNotifier<BackUpState> {
   /// Those assets are unique and are used as the total assets
   ///
   Future<void> _updateBackupAssetCount() async {
+    // Save to persistent storage
+    await _updatePersistentAlbumsSelection();
+
     final duplicatedAssetIds = await _backupService.getDuplicatedAssetIds();
     final Set<BackupCandidate> assetsFromSelectedAlbums = {};
     final Set<BackupCandidate> assetsFromExcludedAlbums = {};
@@ -408,9 +415,6 @@ class BackupNotifier extends StateNotifier<BackUpState> {
         selectedAlbumsBackupAssetsIds: selectedAlbumsBackupAssets,
       );
     }
-
-    // Save to persistent storage
-    await _updatePersistentAlbumsSelection();
   }
 
   /// Get all necessary information for calculating the available albums,
@@ -761,12 +765,13 @@ final backupProvider =
   return BackupNotifier(
     ref.watch(backupServiceProvider),
     ref.watch(serverInfoServiceProvider),
-    ref.watch(authenticationProvider),
+    ref.watch(authProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(dbProvider),
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
+    ref.watch(backupRepositoryProvider),
     ref,
   );
 });

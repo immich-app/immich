@@ -8,7 +8,11 @@
   import { Theme } from '$lib/constants';
   import { t } from 'svelte-i18n';
 
-  export let onDone: () => void;
+  interface Props {
+    onDone: () => void;
+  }
+
+  let { onDone }: Props = $props();
 </script>
 
 <OnboardingCard icon={mdiThemeLightDark} title={$t('color_theme')}>
@@ -20,7 +24,7 @@
     <button
       type="button"
       class="w-1/2 aspect-square bg-immich-bg rounded-3xl transition-all shadow-sm hover:shadow-xl border-[3px] border-immich-dark-primary/80 border-immich-primary dark:border dark:border-transparent"
-      on:click={() => ($colorTheme.value = Theme.LIGHT)}
+      onclick={() => ($colorTheme.value = Theme.LIGHT)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-primary"
@@ -32,7 +36,7 @@
     <button
       type="button"
       class="w-1/2 aspect-square bg-immich-dark-bg rounded-3xl dark:border-[3px] dark:border-immich-dark-primary/80 dark:border-immich-dark-primary border border-transparent"
-      on:click={() => ($colorTheme.value = Theme.DARK)}
+      onclick={() => ($colorTheme.value = Theme.DARK)}
     >
       <div
         class="flex flex-col place-items-center place-content-center justify-around h-full w-full text-immich-dark-primary"
@@ -45,7 +49,7 @@
 
   <div class="flex">
     <div class="w-full flex place-content-end">
-      <Button class="flex gap-2 place-content-center" on:click={() => onDone()}>
+      <Button class="flex gap-2 place-content-center" onclick={() => onDone()}>
         <p>{$t('privacy')}</p>
         <Icon path={mdiArrowRight} size="18" />
       </Button>

@@ -78,6 +78,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/3gpp', extension: '.3gp' },
     { mimetype: 'video/3gpp', extension: '.3gpp' },
     { mimetype: 'video/avi', extension: '.avi' },
+    { mimetype: 'video/mp2t', extension: '.m2t' },
     { mimetype: 'video/mp2t', extension: '.m2ts' },
     { mimetype: 'video/mp2t', extension: '.mts' },
     { mimetype: 'video/mp4', extension: '.mp4' },
@@ -92,6 +93,7 @@ describe('mimeTypes', () => {
     { mimetype: 'video/x-matroska', extension: '.mkv' },
     { mimetype: 'video/x-ms-wmv', extension: '.wmv' },
     { mimetype: 'video/x-msvideo', extension: '.avi' },
+    { mimetype: 'video/mpeg', extension: '.vob' },
   ]) {
     it(`should map ${extension} to ${mimetype}`, () => {
       expect({ ...mimeTypes.image, ...mimeTypes.video }[extension]).toContain(mimetype);

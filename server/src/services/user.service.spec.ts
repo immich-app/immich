@@ -1,25 +1,17 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserEntity } from 'src/entities/user.entity';
-import { UserMetadataKey } from 'src/enum';
+import { CacheControl, UserMetadataKey } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserService } from 'src/services/user.service';
-import { CacheControl, ImmichFileResponse } from 'src/utils/file';
+import { ImmichFileResponse } from 'src/utils/file';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 const makeDeletedAt = (daysAgo: number) => {
@@ -30,41 +22,54 @@ const makeDeletedAt = (daysAgo: number) => {
 
 describe(UserService.name, () => {
   let sut: UserService;
-  let userMock: Mocked<IUserRepository>;
-  let cryptoRepositoryMock: Mocked<ICryptoRepository>;
 
   let albumMock: Mocked<IAlbumRepository>;
   let jobMock: Mocked<IJobRepository>;
   let storageMock: Mocked<IStorageRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    systemMock = newSystemMetadataRepositoryMock();
-    cryptoRepositoryMock = newCryptoRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    storageMock = newStorageRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new UserService(albumMock, cryptoRepositoryMock, jobMock, storageMock, systemMock, userMock, loggerMock);
+    ({ sut, albumMock, jobMock, storageMock, systemMock, userMock } = newTestService(UserService));
 
     userMock.get.mockImplementation((userId) =>
-      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
+      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? undefined),
     );
   });
 
   describe('getAll', () => {
-    it('should get all users', async () => {
+    it('admin should get all users', async () => {
       userMock.getList.mockResolvedValue([userStub.admin]);
-      await expect(sut.search()).resolves.toEqual([
+      await expect(sut.search(authStub.admin)).resolves.toEqual([
         expect.objectContaining({
           id: authStub.admin.user.id,
           email: authStub.admin.user.email,
         }),
       ]);
       expect(userMock.getList).toHaveBeenCalledWith({ withDeleted: false });
+    });
+
+    it('non-admin should get all users when publicUsers enabled', async () => {
+      userMock.getList.mockResolvedValue([userStub.user1]);
+      await expect(sut.search(authStub.user1)).resolves.toEqual([
+        expect.objectContaining({
+          id: authStub.user1.user.id,
+          email: authStub.user1.user.email,
+        }),
+      ]);
+      expect(userMock.getList).toHaveBeenCalledWith({ withDeleted: false });
+    });
+
+    it('non-admin user should only receive itself when publicUsers is disabled', async () => {
+      userMock.getList.mockResolvedValue([userStub.user1]);
+      systemMock.get.mockResolvedValue(systemConfigStub.publicUsersDisabled);
+      await expect(sut.search(authStub.user1)).resolves.toEqual([
+        expect.objectContaining({
+          id: authStub.user1.user.id,
+          email: authStub.user1.user.email,
+        }),
+      ]);
+      expect(userMock.getList).not.toHaveBeenCalledWith({ withDeleted: false });
     });
   });
 
@@ -76,7 +81,7 @@ describe(UserService.name, () => {
     });
 
     it('should throw an error if a user is not found', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(sut.get(authStub.admin.user.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(userMock.get).toHaveBeenCalledWith(authStub.admin.user.id, { withDeleted: false });
     });
@@ -95,7 +100,7 @@ describe(UserService.name, () => {
   describe('createProfileImage', () => {
     it('should throw an error if the user does not exist', async () => {
       const file = { path: '/profile/path' } as Express.Multer.File;
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       userMock.update.mockResolvedValue({ ...userStub.admin, profileImagePath: file.path });
 
       await expect(sut.createProfileImage(authStub.admin, file)).rejects.toThrowError(BadRequestException);
@@ -150,7 +155,7 @@ describe(UserService.name, () => {
 
   describe('getUserProfileImage', () => {
     it('should throw an error if the user does not exist', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
 
       await expect(sut.getProfileImage(userStub.admin.id)).rejects.toBeInstanceOf(BadRequestException);
 

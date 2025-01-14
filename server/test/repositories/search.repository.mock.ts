@@ -7,6 +7,7 @@ export const newSearchRepositoryMock = (): Mocked<ISearchRepository> => {
     searchSmart: vitest.fn(),
     searchDuplicates: vitest.fn(),
     searchFaces: vitest.fn(),
+    searchRandom: vitest.fn(),
     upsert: vitest.fn(),
     searchPlaces: vitest.fn(),
     getAssetsByCity: vitest.fn(),

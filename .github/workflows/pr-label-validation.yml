@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
-      pull-requests: read
+      pull-requests: write
     steps:
       - name: Require PR to have a changelog label
         uses: mheap/github-action-required-labels@v5
@@ -19,3 +19,4 @@ jobs:
           use_regex: true
           labels: "changelog:.*"
           add_comment: true
+          message: "Label error. Requires {{errorString}} {{count}} of: {{ provided }}. Found: {{ applied }}. A maintainer will add the required label."

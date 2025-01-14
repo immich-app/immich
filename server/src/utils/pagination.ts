@@ -1,14 +1,10 @@
 import _ from 'lodash';
+import { PaginationMode } from 'src/enum';
 import { FindManyOptions, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 
 export interface PaginationOptions {
   take: number;
   skip?: number;
-}
-
-export enum PaginationMode {
-  LIMIT_OFFSET = 'limit-offset',
-  SKIP_TAKE = 'skip-take',
 }
 
 export interface PaginatedBuilderOptions {
@@ -37,7 +33,10 @@ export async function* usePagination<T>(
   }
 }
 
-function paginationHelper<Entity extends ObjectLiteral>(items: Entity[], take: number): PaginationResult<Entity> {
+export function paginationHelper<Entity extends ObjectLiteral>(
+  items: Entity[],
+  take: number,
+): PaginationResult<Entity> {
   const hasNextPage = items.length > take;
   items.splice(take);
 

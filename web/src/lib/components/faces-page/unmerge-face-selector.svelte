@@ -10,7 +10,7 @@
     type PersonResponseDto,
   } from '@immich/sdk';
   import { mdiMerge, mdiPlus } from '@mdi/js';
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
   import Button from '../elements/buttons/button.svelte';
@@ -21,23 +21,26 @@
   import PeopleList from './people-list.svelte';
   import { t } from 'svelte-i18n';
 
-  export let assetIds: string[];
-  export let personAssets: PersonResponseDto;
+  interface Props {
+    assetIds: string[];
+    personAssets: PersonResponseDto;
+    onConfirm: () => void;
+    onClose: () => void;
+    header?: Snippet;
+    merge?: Snippet;
+  }
 
-  let people: PersonResponseDto[] = [];
-  let selectedPerson: PersonResponseDto | null = null;
-  let disableButtons = false;
-  let showLoadingSpinnerCreate = false;
-  let showLoadingSpinnerReassign = false;
-  let hasSelection = false;
-  let screenHeight: number;
+  let { assetIds, personAssets, onConfirm, onClose, header, merge }: Props = $props();
 
-  $: peopleToNotShow = selectedPerson ? [personAssets, selectedPerson] : [personAssets];
+  let people: PersonResponseDto[] = $state([]);
+  let selectedPerson: PersonResponseDto | null = $state(null);
+  let disableButtons = $state(false);
+  let showLoadingSpinnerCreate = $state(false);
+  let showLoadingSpinnerReassign = $state(false);
+  let hasSelection = $state(false);
+  let screenHeight: number = $state(0);
 
-  let dispatch = createEventDispatcher<{
-    confirm: void;
-    close: void;
-  }>();
+  let peopleToNotShow = $derived(selectedPerson ? [personAssets, selectedPerson] : [personAssets]);
 
   const selectedPeople: AssetFaceUpdateItem[] = [];
 
@@ -49,10 +52,6 @@
     const data = await getAllPeople({ withHidden: false });
     people = data.people;
   });
-
-  const onClose = () => {
-    dispatch('close');
-  };
 
   const handleSelectedPerson = (person: PersonResponseDto) => {
     if (selectedPerson && selectedPerson.id === person.id) {
@@ -87,7 +86,7 @@
     }
 
     showLoadingSpinnerCreate = false;
-    dispatch('confirm');
+    onConfirm();
   };
 
   const handleReassign = async () => {
@@ -113,7 +112,7 @@
     }
 
     showLoadingSpinnerReassign = false;
-    dispatch('confirm');
+    onConfirm();
   };
 </script>
 
@@ -123,18 +122,18 @@
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
-  <ControlAppBar on:close={onClose}>
-    <svelte:fragment slot="leading">
-      <slot name="header" />
-      <div />
-    </svelte:fragment>
-    <svelte:fragment slot="trailing">
+  <ControlAppBar {onClose}>
+    {#snippet leading()}
+      {@render header?.()}
+      <div></div>
+    {/snippet}
+    {#snippet trailing()}
       <div class="flex gap-4">
         <Button
           title={$t('create_new_person_hint')}
           size={'sm'}
           disabled={disableButtons || hasSelection}
-          on:click={handleCreate}
+          onclick={handleCreate}
         >
           {#if !showLoadingSpinnerCreate}
             <Icon path={mdiPlus} size={18} />
@@ -147,7 +146,7 @@
           size={'sm'}
           title={$t('reassing_hint')}
           disabled={disableButtons || !hasSelection}
-          on:click={handleReassign}
+          onclick={handleReassign}
         >
           {#if !showLoadingSpinnerReassign}
             <div>
@@ -159,9 +158,9 @@
           <span class="ml-2"> {$t('reassign')}</span></Button
         >
       </div>
-    </svelte:fragment>
+    {/snippet}
   </ControlAppBar>
-  <slot name="merge" />
+  {@render merge?.()}
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
       {#if selectedPerson !== null}
@@ -175,12 +174,12 @@
               circle
               selectable
               thumbnailSize={180}
-              on:click={handleRemoveSelectedPerson}
+              onClick={handleRemoveSelectedPerson}
             />
           </div>
         </div>
       {/if}
-      <PeopleList {people} {peopleToNotShow} {screenHeight} on:select={({ detail }) => handleSelectedPerson(detail)} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} onSelect={handleSelectedPerson} />
     </section>
   </section>
 </section>

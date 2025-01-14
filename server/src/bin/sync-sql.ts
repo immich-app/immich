@@ -1,22 +1,21 @@
 #!/usr/bin/env node
 import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { format } from 'sql-formatter';
-import { databaseConfig } from 'src/database.config';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { entities } from 'src/entities';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { AuthService } from 'src/services/auth.service';
-import { otelConfig } from 'src/utils/instrumentation';
 import { Logger } from 'typeorm';
 
 export class SqlLogger implements Logger {
@@ -75,18 +74,29 @@ class SqlGenerator {
     await rm(this.options.targetDir, { force: true, recursive: true });
     await mkdir(this.options.targetDir);
 
+    process.env.DB_HOSTNAME = 'localhost';
+    const { database, otel } = new ConfigRepository().getEnv();
+
     const moduleFixture = await Test.createTestingModule({
       imports: [
+        KyselyModule.forRoot({
+          ...database.config.kysely,
+          log: (event) => {
+            if (event.level === 'query') {
+              this.sqlLogger.logQuery(event.query.sql);
+            } else if (event.level === 'error') {
+              this.sqlLogger.logQueryError(event.error as Error, event.query.sql);
+            }
+          },
+        }),
         TypeOrmModule.forRoot({
-          ...databaseConfig,
-          host: 'localhost',
+          ...database.config.typeorm,
           entities,
           logging: ['query'],
           logger: this.sqlLogger,
         }),
         TypeOrmModule.forFeature(entities),
-        EventEmitterModule.forRoot(),
-        OpenTelemetryModule.forRoot(otelConfig),
+        OpenTelemetryModule.forRoot(otel),
       ],
       providers: [...repositories, AuthService, SchedulerRegistry],
     }).compile();

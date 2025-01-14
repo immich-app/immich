@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { parse } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { AssetIdsDto } from 'src/dtos/asset.dto';
@@ -6,26 +6,14 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ImmichReadStream, IStorageRepository } from 'src/interfaces/storage.interface';
-import { requireAccess } from 'src/utils/access';
+import { ImmichReadStream } from 'src/interfaces/storage.interface';
+import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
-export class DownloadService {
-  constructor(
-    @Inject(IAccessRepository) private access: IAccessRepository,
-    @Inject(IAssetRepository) private assetRepository: IAssetRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(IStorageRepository) private storageRepository: IStorageRepository,
-  ) {
-    this.logger.setContext(DownloadService.name);
-  }
-
+export class DownloadService extends BaseService {
   async getDownloadInfo(auth: AuthDto, dto: DownloadInfoDto): Promise<DownloadResponseDto> {
     const targetSize = dto.archiveSize || HumanReadableSize.GiB * 4;
     const archives: DownloadArchiveInfo[] = [];
@@ -73,7 +61,7 @@ export class DownloadService {
   }
 
   async downloadArchive(auth: AuthDto, dto: AssetIdsDto): Promise<ImmichReadStream> {
-    await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
+    await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: dto.assetIds });
 
     const zip = this.storageRepository.createZipStream();
     const assets = await this.assetRepository.getByIds(dto.assetIds);
@@ -116,20 +104,20 @@ export class DownloadService {
 
     if (dto.assetIds) {
       const assetIds = dto.assetIds;
-      await requireAccess(this.access, { auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
+      await this.requireAccess({ auth, permission: Permission.ASSET_DOWNLOAD, ids: assetIds });
       const assets = await this.assetRepository.getByIds(assetIds, { exifInfo: true });
       return usePagination(PAGINATION_SIZE, () => ({ hasNextPage: false, items: assets }));
     }
 
     if (dto.albumId) {
       const albumId = dto.albumId;
-      await requireAccess(this.access, { auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
+      await this.requireAccess({ auth, permission: Permission.ALBUM_DOWNLOAD, ids: [albumId] });
       return usePagination(PAGINATION_SIZE, (pagination) => this.assetRepository.getByAlbumId(pagination, albumId));
     }
 
     if (dto.userId) {
       const userId = dto.userId;
-      await requireAccess(this.access, { auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
+      await this.requireAccess({ auth, permission: Permission.TIMELINE_DOWNLOAD, ids: [userId] });
       return usePagination(PAGINATION_SIZE, (pagination) =>
         this.assetRepository.getByUserId(pagination, userId, { isVisible: true }),
       );

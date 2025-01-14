@@ -4,12 +4,16 @@
   import { mdiArrowUpLeft, mdiChevronRight } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let pathSegments: string[] = [];
-  export let getLink: (path: string) => string;
-  export let title: string;
-  export let icon: string;
+  interface Props {
+    pathSegments?: string[];
+    getLink: (path: string) => string;
+    title: string;
+    icon: string;
+  }
 
-  $: isRoot = pathSegments.length === 0;
+  let { pathSegments = [], getLink, title, icon }: Props = $props();
+
+  let isRoot = $derived(pathSegments.length === 0);
 </script>
 
 <nav class="flex items-center py-2">
@@ -21,6 +25,7 @@
         href={getLink(pathSegments.slice(0, -1).join('/'))}
         class="mr-2"
         padding="2"
+        onclick={() => {}}
       />
     </div>
   {/if}
@@ -37,6 +42,7 @@
           size="1.25em"
           padding="2"
           aria-current={isRoot ? 'page' : undefined}
+          onclick={() => {}}
         />
       </li>
       {#each pathSegments as segment, index}
@@ -46,9 +52,12 @@
         >
           <Icon path={mdiChevronRight} class="text-gray-500 dark:text-gray-300" size={16} ariaHidden />
           {#if isLastSegment}
-            <p class="cursor-default">{segment}</p>
+            <p class="cursor-default whitespace-pre-wrap">{segment}</p>
           {:else}
-            <a class="underline hover:font-semibold" href={getLink(pathSegments.slice(0, index + 1).join('/'))}>
+            <a
+              class="underline hover:font-semibold whitespace-pre-wrap"
+              href={getLink(pathSegments.slice(0, index + 1).join('/'))}
+            >
               {segment}
             </a>
           {/if}

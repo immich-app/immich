@@ -16,10 +16,14 @@
   import { t } from 'svelte-i18n';
   import type { OnAction } from './action';
 
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    asset: AssetResponseDto;
+    onAction: OnAction;
+  }
 
-  let showConfirmModal = false;
+  let { asset, onAction }: Props = $props();
+
+  let showConfirmModal = $state(false);
 
   const trashOrDelete = async (force = false) => {
     if (force || !$featureFlags.trash) {
@@ -77,11 +81,11 @@
   color="opaque"
   icon={asset.isTrashed ? mdiDeleteForeverOutline : mdiDeleteOutline}
   title={asset.isTrashed ? $t('permanently_delete') : $t('delete')}
-  on:click={() => trashOrDelete(asset.isTrashed)}
+  onclick={() => trashOrDelete(asset.isTrashed)}
 />
 
 {#if showConfirmModal}
   <Portal target="body">
-    <DeleteAssetDialog size={1} on:cancel={() => (showConfirmModal = false)} on:confirm={() => deleteAsset()} />
+    <DeleteAssetDialog size={1} onCancel={() => (showConfirmModal = false)} onConfirm={deleteAsset} />
   </Portal>
 {/if}

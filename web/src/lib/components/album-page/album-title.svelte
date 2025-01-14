@@ -4,11 +4,20 @@
   import { shortcut } from '$lib/actions/shortcut';
   import { t } from 'svelte-i18n';
 
-  export let id: string;
-  export let albumName: string;
-  export let isOwned: boolean;
+  interface Props {
+    id: string;
+    albumName: string;
+    isOwned: boolean;
+    onUpdate: (albumName: string) => void;
+  }
 
-  $: newAlbumName = albumName;
+  let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
+
+  let newAlbumName = $state(albumName);
+
+  $effect(() => {
+    newAlbumName = albumName;
+  });
 
   const handleUpdateName = async () => {
     if (newAlbumName === albumName) {
@@ -16,23 +25,23 @@
     }
 
     try {
-      await updateAlbumInfo({
+      ({ albumName } = await updateAlbumInfo({
         id,
         updateAlbumDto: {
           albumName: newAlbumName,
         },
-      });
+      }));
+      onUpdate(albumName);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_album'));
       return;
     }
-    albumName = newAlbumName;
   };
 </script>
 
 <input
   use:shortcut={{ shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() }}
-  on:blur={handleUpdateName}
+  onblur={handleUpdateName}
   class="w-[99%] mb-2 border-b-2 border-transparent text-2xl md:text-4xl lg:text-6xl text-immich-primary outline-none transition-all dark:text-immich-dark-primary {isOwned
     ? 'hover:border-gray-400'
     : 'hover:border-transparent'} bg-immich-bg focus:border-b-2 focus:border-immich-primary focus:outline-none dark:bg-immich-dark-bg dark:focus:border-immich-dark-primary dark:focus:bg-immich-dark-gray"

@@ -4,10 +4,8 @@ import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { TagEntity } from 'src/entities/tag.entity';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
-import { Instrumentation } from 'src/utils/instrumentation';
 import { DataSource, In, Repository, TreeRepository } from 'typeorm';
 
-@Instrumentation()
 @Injectable()
 export class TagRepository implements ITagRepository {
   constructor(
@@ -110,7 +108,6 @@ export class TagRepository implements ITagRepository {
     return new Set(results.map(({ assetId }) => assetId));
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(tagId: string, assetIds: string[]): Promise<void> {
     if (assetIds.length === 0) {
       return;
@@ -124,7 +121,6 @@ export class TagRepository implements ITagRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   @Chunked({ paramIndex: 1 })
   async removeAssetIds(tagId: string, assetIds: string[]): Promise<void> {
     if (assetIds.length === 0) {
@@ -142,7 +138,6 @@ export class TagRepository implements ITagRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, tagId: DummyValue.UUID }]] })
   @Chunked()
   async upsertAssetIds(items: AssetTagItem[]): Promise<AssetTagItem[]> {
     if (items.length === 0) {

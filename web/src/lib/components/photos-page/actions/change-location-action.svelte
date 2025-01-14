@@ -9,10 +9,14 @@
   import { mdiMapMarkerMultipleOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export let menuItem = false;
+  interface Props {
+    menuItem?: boolean;
+  }
+
+  let { menuItem = false }: Props = $props();
   const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-  let isShowChangeLocation = false;
+  let isShowChangeLocation = $state(false);
 
   async function handleConfirm(point: { lng: number; lat: number }) {
     isShowChangeLocation = false;
@@ -35,8 +39,5 @@
   />
 {/if}
 {#if isShowChangeLocation}
-  <ChangeLocation
-    on:confirm={({ detail: point }) => handleConfirm(point)}
-    on:cancel={() => (isShowChangeLocation = false)}
-  />
+  <ChangeLocation onConfirm={handleConfirm} onCancel={() => (isShowChangeLocation = false)} />
 {/if}

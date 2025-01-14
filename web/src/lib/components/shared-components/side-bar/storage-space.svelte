@@ -1,24 +1,19 @@
 <script lang="ts">
-  import ServerAboutModal from '$lib/components/shared-components/server-about-modal.svelte';
   import { locale } from '$lib/stores/preferences.store';
-  import { serverInfo } from '$lib/stores/server-info.store';
   import { user } from '$lib/stores/user.store';
   import { requestServerInfo } from '$lib/utils/auth';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { getByteUnitString } from '../../../utils/byte-units';
+  import { getByteUnitString } from '$lib/utils/byte-units';
   import LoadingSpinner from '../loading-spinner.svelte';
-  import { getAboutInfo, type ServerAboutResponseDto } from '@immich/sdk';
+  import { userInteraction } from '$lib/stores/user.svelte';
 
-  let usageClasses = '';
-  let isOpen = false;
+  let usageClasses = $state('');
 
-  $: hasQuota = $user?.quotaSizeInBytes !== null;
-  $: availableBytes = (hasQuota ? $user?.quotaSizeInBytes : $serverInfo?.diskSizeRaw) || 0;
-  $: usedBytes = (hasQuota ? $user?.quotaUsageInBytes : $serverInfo?.diskUseRaw) || 0;
-  $: usedPercentage = Math.min(Math.round((usedBytes / availableBytes) * 100), 100);
-
-  let aboutInfo: ServerAboutResponseDto;
+  let hasQuota = $derived($user?.quotaSizeInBytes !== null);
+  let availableBytes = $derived((hasQuota ? $user?.quotaSizeInBytes : userInteraction.serverInfo?.diskSizeRaw) || 0);
+  let usedBytes = $derived((hasQuota ? $user?.quotaUsageInBytes : userInteraction.serverInfo?.diskUseRaw) || 0);
+  let usedPercentage = $derived(Math.min(Math.round((usedBytes / availableBytes) * 100), 100));
 
   const onUpdate = () => {
     usageClasses = getUsageClass();
@@ -36,19 +31,19 @@
     return 'bg-immich-primary dark:bg-immich-dark-primary';
   };
 
-  $: if ($user) {
-    onUpdate();
-  }
+  $effect(() => {
+    if ($user) {
+      onUpdate();
+    }
+  });
 
   onMount(async () => {
+    if (userInteraction.serverInfo && $user) {
+      return;
+    }
     await requestServerInfo();
-    aboutInfo = await getAboutInfo();
   });
 </script>
-
-{#if isOpen}
-  <ServerAboutModal onClose={() => (isOpen = false)} info={aboutInfo} />
-{/if}
 
 <div
   class="hidden md:block storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm"
@@ -62,7 +57,7 @@
   <div class="hidden group-hover:sm:block md:block">
     <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
 
-    {#if $serverInfo}
+    {#if userInteraction.serverInfo}
       <p class="text-gray-500 dark:text-gray-300">
         {$t('storage_usage', {
           values: {
@@ -73,7 +68,7 @@
       </p>
 
       <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-        <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%" />
+        <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
       </div>
     {:else}
       <div class="mt-2">

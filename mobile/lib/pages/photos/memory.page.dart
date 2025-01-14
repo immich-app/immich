@@ -113,11 +113,15 @@ class MemoryPage extends HookConsumerWidget {
       }
 
       // Precache the asset
+      final size = MediaQuery.sizeOf(context);
       await precacheImage(
         ImmichImage.imageProvider(
           asset: asset,
+          width: size.width,
+          height: size.height,
         ),
         context,
+        size: size,
       );
     }
 

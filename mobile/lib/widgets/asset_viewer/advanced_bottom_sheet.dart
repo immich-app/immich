@@ -6,12 +6,18 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 
 class AdvancedBottomSheet extends HookConsumerWidget {
   final Asset assetDetail;
+  final ScrollController? scrollController;
 
-  const AdvancedBottomSheet({super.key, required this.assetDetail});
+  const AdvancedBottomSheet({
+    super.key,
+    required this.assetDetail,
+    this.scrollController,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
+      controller: scrollController,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8.0),
         child: LayoutBuilder(
@@ -54,7 +60,7 @@ class AdvancedBottomSheet extends HookConsumerWidget {
                                   text: assetDetail.toString(),
                                 ),
                               ).then((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                context.scaffoldMessenger.showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       "Copied to clipboard",

@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export interface SearchDisplayFilters {
     isNotInAlbum?: boolean;
     isArchive?: boolean;
@@ -10,7 +10,11 @@
   import Checkbox from '$lib/components/elements/checkbox.svelte';
   import { t } from 'svelte-i18n';
 
-  export let filters: SearchDisplayFilters;
+  interface Props {
+    filters: SearchDisplayFilters;
+  }
+
+  let { filters = $bindable() }: Props = $props();
 </script>
 
 <div id="display-options-selection">

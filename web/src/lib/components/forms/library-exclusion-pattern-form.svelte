@@ -1,15 +1,29 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderRemove } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  export let exclusionPattern: string;
-  export let exclusionPatterns: string[] = [];
-  export let isEditing = false;
-  export let submitText = $t('submit');
+  interface Props {
+    exclusionPattern: string;
+    exclusionPatterns?: string[];
+    isEditing?: boolean;
+    submitText?: string;
+    onCancel: () => void;
+    onSubmit: (exclusionPattern: string) => void;
+    onDelete?: () => void;
+  }
+
+  let {
+    exclusionPattern = $bindable(),
+    exclusionPatterns = $bindable([]),
+    isEditing = false,
+    submitText = $t('submit'),
+    onCancel,
+    onSubmit,
+    onDelete,
+  }: Props = $props();
 
   onMount(() => {
     if (isEditing) {
@@ -17,20 +31,19 @@
     }
   });
 
-  $: isDuplicate = exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern);
-  $: canSubmit = exclusionPattern && !exclusionPatterns.includes(exclusionPattern);
+  let isDuplicate = $derived(exclusionPattern !== null && exclusionPatterns.includes(exclusionPattern));
+  let canSubmit = $derived(exclusionPattern && !exclusionPatterns.includes(exclusionPattern));
 
-  const dispatch = createEventDispatcher<{
-    cancel: void;
-    submit: { excludePattern: string };
-    delete: void;
-  }>();
-  const handleCancel = () => dispatch('cancel');
-  const handleSubmit = () => dispatch('submit', { excludePattern: exclusionPattern });
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    if (canSubmit) {
+      onSubmit(exclusionPattern);
+    }
+  };
 </script>
 
-<FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={handleCancel}>
-  <form on:submit|preventDefault={() => handleSubmit()} autocomplete="off" id="add-exclusion-pattern-form">
+<FullScreenModal title={$t('add_exclusion_pattern')} icon={mdiFolderRemove} onClose={onCancel}>
+  <form {onsubmit} autocomplete="off" id="add-exclusion-pattern-form">
     <p class="py-5 text-sm">
       {$t('admin.exclusion_pattern_description')}
       <br /><br />
@@ -52,11 +65,12 @@
       {/if}
     </div>
   </form>
-  <svelte:fragment slot="sticky-bottom">
-    <Button color="gray" fullwidth on:click={() => handleCancel()}>{$t('cancel')}</Button>
+
+  {#snippet stickyBottom()}
+    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth on:click={() => dispatch('delete')}>{$t('delete')}</Button>
+      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
     {/if}
     <Button type="submit" disabled={!canSubmit} fullwidth form="add-exclusion-pattern-form">{submitText}</Button>
-  </svelte:fragment>
+  {/snippet}
 </FullScreenModal>

@@ -66,6 +66,10 @@ class PeopleApi {
   /// Performs an HTTP 'GET /people' operation and returns the [Response].
   /// Parameters:
   ///
+  /// * [String] closestAssetId:
+  ///
+  /// * [String] closestPersonId:
+  ///
   /// * [num] page:
   ///   Page number for pagination
   ///
@@ -73,7 +77,7 @@ class PeopleApi {
   ///   Number of items per page
   ///
   /// * [bool] withHidden:
-  Future<Response> getAllPeopleWithHttpInfo({ num? page, num? size, bool? withHidden, }) async {
+  Future<Response> getAllPeopleWithHttpInfo({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
     final path = r'/people';
 
@@ -84,6 +88,12 @@ class PeopleApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (closestAssetId != null) {
+      queryParams.addAll(_queryParams('', 'closestAssetId', closestAssetId));
+    }
+    if (closestPersonId != null) {
+      queryParams.addAll(_queryParams('', 'closestPersonId', closestPersonId));
+    }
     if (page != null) {
       queryParams.addAll(_queryParams('', 'page', page));
     }
@@ -110,6 +120,10 @@ class PeopleApi {
 
   /// Parameters:
   ///
+  /// * [String] closestAssetId:
+  ///
+  /// * [String] closestPersonId:
+  ///
   /// * [num] page:
   ///   Page number for pagination
   ///
@@ -117,8 +131,8 @@ class PeopleApi {
   ///   Number of items per page
   ///
   /// * [bool] withHidden:
-  Future<PeopleResponseDto?> getAllPeople({ num? page, num? size, bool? withHidden, }) async {
-    final response = await getAllPeopleWithHttpInfo( page: page, size: size, withHidden: withHidden, );
+  Future<PeopleResponseDto?> getAllPeople({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
+    final response = await getAllPeopleWithHttpInfo( closestAssetId: closestAssetId, closestPersonId: closestPersonId, page: page, size: size, withHidden: withHidden, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -176,62 +190,6 @@ class PeopleApi {
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'PersonResponseDto',) as PersonResponseDto;
     
-    }
-    return null;
-  }
-
-  /// This property was deprecated in v1.113.0
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<Response> getPersonAssetsWithHttpInfo(String id,) async {
-    // ignore: prefer_const_declarations
-    final path = r'/people/{id}/assets'
-      .replaceAll('{id}', id);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'GET',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// This property was deprecated in v1.113.0
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  Future<List<AssetResponseDto>?> getPersonAssets(String id,) async {
-    final response = await getPersonAssetsWithHttpInfo(id,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList(growable: false);
-
     }
     return null;
   }

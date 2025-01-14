@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:157a371e60389919fe4a72dff71ce86eaa5234f59114c23b0b346d0d02c74d39 AS builder-cpu
+FROM python:3.11-bookworm@sha256:b337e1fd27dbacda505219f713789bf82766694095876769ea10c2d34b4f470b AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -34,7 +34,7 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:669bbd08353610485a94d5d0c976b4b6498c55280fe42c00f7581f85ee9f3121 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:873952659a04188d2a62d5f7e30fd673d2559432a847a8ad5fcaf9cbd085e9ed AS prod-cpu
 
 FROM prod-cpu AS prod-openvino
 
@@ -104,7 +104,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
 
 COPY --from=builder /opt/venv /opt/venv
 COPY ann/ann.py /usr/src/ann/ann.py
-COPY start.sh log_conf.json ./
+COPY start.sh log_conf.json gunicorn_conf.py ./
 COPY app .
 ENTRYPOINT ["tini", "--"]
 CMD ["./start.sh"]

@@ -1,29 +1,33 @@
 <script lang="ts">
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { createEventDispatcher } from 'svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
 
-  export let person: PersonResponseDto;
-  export let selectable = false;
-  export let selected = false;
-  export let thumbnailSize: number | null = null;
-  export let circle = false;
-  export let border = false;
+  interface Props {
+    person: PersonResponseDto;
+    selectable?: boolean;
+    selected?: boolean;
+    thumbnailSize?: number | null;
+    circle?: boolean;
+    border?: boolean;
+    onClick?: (person: PersonResponseDto) => void;
+  }
 
-  let dispatch = createEventDispatcher<{
-    click: PersonResponseDto;
-  }>();
-
-  const handleOnClicked = () => {
-    dispatch('click', person);
-  };
+  let {
+    person,
+    selectable = false,
+    selected = false,
+    thumbnailSize = null,
+    circle = false,
+    border = false,
+    onClick = () => {},
+  }: Props = $props();
 </script>
 
 <button
   type="button"
   class="relative rounded-lg transition-all"
-  on:click={handleOnClicked}
+  onclick={() => onClick(person)}
   disabled={!selectable}
   style:width={thumbnailSize ? thumbnailSize + 'px' : '100%'}
   style:height={thumbnailSize ? thumbnailSize + 'px' : '100%'}
@@ -44,14 +48,14 @@
     class:hover:opacity-100={selectable}
     class:rounded-full={circle}
     class:rounded-lg={!circle}
-  />
+  ></div>
 
   {#if selected}
     <div
       class="absolute left-0 top-0 h-full w-full bg-blue-500/80"
       class:rounded-full={circle}
       class:rounded-lg={!circle}
-    />
+    ></div>
   {/if}
 
   {#if person.name}

@@ -15,251 +15,287 @@
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import SettingCheckboxes from '$lib/components/shared-components/settings/setting-checkboxes.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
   import { t } from 'svelte-i18n';
   import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
         <p class="text-sm dark:text-immich-dark-fg">
           <Icon path={mdiHelpCircleOutline} class="inline" size="15" />
-          <FormatMessage key="admin.transcoding_codecs_learn_more" let:tag let:message>
-            {#if tag === 'h264-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {:else if tag === 'hevc-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {:else if tag === 'vp9-link'}
-              <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
-                {message}
-              </a>
-            {/if}
+          <FormatMessage key="admin.transcoding_codecs_learn_more">
+            {#snippet children({ tag, message })}
+              {#if tag === 'h264-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/H.264" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {:else if tag === 'hevc-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/H.265" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {:else if tag === 'vp9-link'}
+                <a href="https://trac.ffmpeg.org/wiki/Encode/VP9" class="underline" target="_blank" rel="noreferrer">
+                  {message}
+                </a>
+              {/if}
+            {/snippet}
           </FormatMessage>
         </p>
 
-        <SettingInputField
-          inputType={SettingInputFieldType.NUMBER}
-          {disabled}
-          label={$t('admin.transcoding_constant_rate_factor')}
-          desc={$t('admin.transcoding_constant_rate_factor_description')}
-          bind:value={config.ffmpeg.crf}
-          required={true}
-          isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
-        />
+        <SettingAccordion
+          key="transcoding-policy"
+          title={$t('admin.transcoding_policy')}
+          subtitle={$t('admin.transcoding_policy_description')}
+        >
+          <div class="ml-4 mt-4 flex flex-col gap-4">
+            <SettingSelect
+              label={$t('admin.transcoding_transcode_policy')}
+              {disabled}
+              desc={$t('admin.transcoding_transcode_policy_description')}
+              bind:value={config.ffmpeg.transcode}
+              name="transcode"
+              options={[
+                { value: TranscodePolicy.All, text: $t('all_videos') },
+                {
+                  value: TranscodePolicy.Optimal,
+                  text: $t('admin.transcoding_optimal_description'),
+                },
+                {
+                  value: TranscodePolicy.Bitrate,
+                  text: $t('admin.transcoding_bitrate_description'),
+                },
+                {
+                  value: TranscodePolicy.Required,
+                  text: $t('admin.transcoding_required_description'),
+                },
+                {
+                  value: TranscodePolicy.Disabled,
+                  text: $t('admin.transcoding_disabled_description'),
+                },
+              ]}
+              isEdited={config.ffmpeg.transcode !== savedConfig.ffmpeg.transcode}
+            />
 
-        <SettingSelect
-          label={$t('admin.transcoding_preset_preset')}
-          {disabled}
-          desc={$t('admin.transcoding_preset_preset_description')}
-          bind:value={config.ffmpeg.preset}
-          name="preset"
-          options={[
-            { value: 'ultrafast', text: 'ultrafast' },
-            { value: 'superfast', text: 'superfast' },
-            { value: 'veryfast', text: 'veryfast' },
-            { value: 'faster', text: 'faster' },
-            { value: 'fast', text: 'fast' },
-            { value: 'medium', text: 'medium' },
-            { value: 'slow', text: 'slow' },
-            { value: 'slower', text: 'slower' },
-            { value: 'veryslow', text: 'veryslow' },
-          ]}
-          isEdited={config.ffmpeg.preset !== savedConfig.ffmpeg.preset}
-        />
+            <SettingCheckboxes
+              label={$t('admin.transcoding_accepted_video_codecs')}
+              {disabled}
+              desc={$t('admin.transcoding_accepted_video_codecs_description')}
+              bind:value={config.ffmpeg.acceptedVideoCodecs}
+              name="videoCodecs"
+              options={[
+                { value: VideoCodec.H264, text: 'H.264' },
+                { value: VideoCodec.Hevc, text: 'HEVC' },
+                { value: VideoCodec.Vp9, text: 'VP9' },
+                { value: VideoCodec.Av1, text: 'AV1' },
+              ]}
+              isEdited={!isEqual(
+                sortBy(config.ffmpeg.acceptedVideoCodecs),
+                sortBy(savedConfig.ffmpeg.acceptedVideoCodecs),
+              )}
+            />
 
-        <SettingSelect
-          label={$t('admin.transcoding_video_codec')}
-          {disabled}
-          desc={$t('admin.transcoding_video_codec_description')}
-          bind:value={config.ffmpeg.targetVideoCodec}
-          options={[
-            { value: VideoCodec.H264, text: 'h264' },
-            { value: VideoCodec.Hevc, text: 'hevc' },
-            { value: VideoCodec.Vp9, text: 'vp9' },
-            { value: VideoCodec.Av1, text: 'av1' },
-          ]}
-          name="vcodec"
-          isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
-          on:select={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
-        />
+            <SettingCheckboxes
+              label={$t('admin.transcoding_accepted_audio_codecs')}
+              {disabled}
+              desc={$t('admin.transcoding_accepted_audio_codecs_description')}
+              bind:value={config.ffmpeg.acceptedAudioCodecs}
+              name="audioCodecs"
+              options={[
+                { value: AudioCodec.Aac, text: 'AAC' },
+                { value: AudioCodec.Mp3, text: 'MP3' },
+                { value: AudioCodec.Libopus, text: 'Opus' },
+                { value: AudioCodec.PcmS16Le, text: 'PCM (16 bit)' },
+              ]}
+              isEdited={!isEqual(
+                sortBy(config.ffmpeg.acceptedAudioCodecs),
+                sortBy(savedConfig.ffmpeg.acceptedAudioCodecs),
+              )}
+            />
 
-        <SettingSelect
-          label={$t('admin.transcoding_audio_codec')}
-          {disabled}
-          desc={$t('admin.transcoding_audio_codec_description')}
-          bind:value={config.ffmpeg.targetAudioCodec}
-          options={[
-            { value: AudioCodec.Aac, text: 'aac' },
-            { value: AudioCodec.Mp3, text: 'mp3' },
-            { value: AudioCodec.Libopus, text: 'opus' },
-          ]}
-          name="acodec"
-          isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
-          on:select={() =>
-            config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
-              ? null
-              : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
-        />
+            <SettingCheckboxes
+              label={$t('admin.transcoding_accepted_containers')}
+              {disabled}
+              desc={$t('admin.transcoding_accepted_containers_description')}
+              bind:value={config.ffmpeg.acceptedContainers}
+              name="videoContainers"
+              options={[
+                { value: VideoContainer.Mov, text: 'MOV' },
+                { value: VideoContainer.Ogg, text: 'Ogg' },
+                { value: VideoContainer.Webm, text: 'WebM' },
+              ]}
+              isEdited={!isEqual(
+                sortBy(config.ffmpeg.acceptedContainers),
+                sortBy(savedConfig.ffmpeg.acceptedContainers),
+              )}
+            />
+          </div>
+        </SettingAccordion>
 
-        <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_video_codecs')}
-          {disabled}
-          desc={$t('admin.transcoding_accepted_video_codecs_description')}
-          bind:value={config.ffmpeg.acceptedVideoCodecs}
-          name="videoCodecs"
-          options={[
-            { value: VideoCodec.H264, text: 'H.264' },
-            { value: VideoCodec.Hevc, text: 'HEVC' },
-            { value: VideoCodec.Vp9, text: 'VP9' },
-            { value: VideoCodec.Av1, text: 'AV1' },
-          ]}
-          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedVideoCodecs), sortBy(savedConfig.ffmpeg.acceptedVideoCodecs))}
-        />
+        <SettingAccordion
+          key="encoding-options"
+          title={$t('admin.transcoding_encoding_options')}
+          subtitle={$t('admin.transcoding_encoding_options_description')}
+        >
+          <div class="ml-4 mt-4 flex flex-col gap-4">
+            <SettingSelect
+              label={$t('admin.transcoding_video_codec')}
+              {disabled}
+              desc={$t('admin.transcoding_video_codec_description')}
+              bind:value={config.ffmpeg.targetVideoCodec}
+              options={[
+                { value: VideoCodec.H264, text: 'h264' },
+                { value: VideoCodec.Hevc, text: 'hevc' },
+                { value: VideoCodec.Vp9, text: 'vp9' },
+                { value: VideoCodec.Av1, text: 'av1' },
+              ]}
+              name="vcodec"
+              isEdited={config.ffmpeg.targetVideoCodec !== savedConfig.ffmpeg.targetVideoCodec}
+              onSelect={() => (config.ffmpeg.acceptedVideoCodecs = [config.ffmpeg.targetVideoCodec])}
+            />
 
-        <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_audio_codecs')}
-          {disabled}
-          desc={$t('admin.transcoding_accepted_audio_codecs_description')}
-          bind:value={config.ffmpeg.acceptedAudioCodecs}
-          name="audioCodecs"
-          options={[
-            { value: AudioCodec.Aac, text: 'AAC' },
-            { value: AudioCodec.Mp3, text: 'MP3' },
-            { value: AudioCodec.Libopus, text: 'Opus' },
-          ]}
-          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedAudioCodecs), sortBy(savedConfig.ffmpeg.acceptedAudioCodecs))}
-        />
+            <!-- PCM is excluded here since it's a bad choice for users storage-wise -->
+            <SettingSelect
+              label={$t('admin.transcoding_audio_codec')}
+              {disabled}
+              desc={$t('admin.transcoding_audio_codec_description')}
+              bind:value={config.ffmpeg.targetAudioCodec}
+              options={[
+                { value: AudioCodec.Aac, text: 'aac' },
+                { value: AudioCodec.Mp3, text: 'mp3' },
+                { value: AudioCodec.Libopus, text: 'opus' },
+              ]}
+              name="acodec"
+              isEdited={config.ffmpeg.targetAudioCodec !== savedConfig.ffmpeg.targetAudioCodec}
+              onSelect={() =>
+                config.ffmpeg.acceptedAudioCodecs.includes(config.ffmpeg.targetAudioCodec)
+                  ? null
+                  : config.ffmpeg.acceptedAudioCodecs.push(config.ffmpeg.targetAudioCodec)}
+            />
 
-        <SettingCheckboxes
-          label={$t('admin.transcoding_accepted_containers')}
-          {disabled}
-          desc={$t('admin.transcoding_accepted_containers_description')}
-          bind:value={config.ffmpeg.acceptedContainers}
-          name="videoContainers"
-          options={[
-            { value: VideoContainer.Mov, text: 'MOV' },
-            { value: VideoContainer.Ogg, text: 'Ogg' },
-            { value: VideoContainer.Webm, text: 'WebM' },
-          ]}
-          isEdited={!isEqual(sortBy(config.ffmpeg.acceptedContainers), sortBy(savedConfig.ffmpeg.acceptedContainers))}
-        />
+            <SettingSelect
+              label={$t('admin.transcoding_target_resolution')}
+              {disabled}
+              desc={$t('admin.transcoding_target_resolution_description')}
+              bind:value={config.ffmpeg.targetResolution}
+              options={[
+                { value: '2160', text: '4k' },
+                { value: '1440', text: '1440p' },
+                { value: '1080', text: '1080p' },
+                { value: '720', text: '720p' },
+                { value: '480', text: '480p' },
+                { value: 'original', text: $t('original') },
+              ]}
+              name="resolution"
+              isEdited={config.ffmpeg.targetResolution !== savedConfig.ffmpeg.targetResolution}
+            />
 
-        <SettingSelect
-          label={$t('admin.transcoding_target_resolution')}
-          {disabled}
-          desc={$t('admin.transcoding_target_resolution_description')}
-          bind:value={config.ffmpeg.targetResolution}
-          options={[
-            { value: '2160', text: '4k' },
-            { value: '1440', text: '1440p' },
-            { value: '1080', text: '1080p' },
-            { value: '720', text: '720p' },
-            { value: '480', text: '480p' },
-            { value: 'original', text: $t('original') },
-          ]}
-          name="resolution"
-          isEdited={config.ffmpeg.targetResolution !== savedConfig.ffmpeg.targetResolution}
-        />
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              {disabled}
+              label={$t('admin.transcoding_constant_rate_factor')}
+              description={$t('admin.transcoding_constant_rate_factor_description')}
+              bind:value={config.ffmpeg.crf}
+              required={true}
+              isEdited={config.ffmpeg.crf !== savedConfig.ffmpeg.crf}
+            />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.TEXT}
-          {disabled}
-          label={$t('admin.transcoding_max_bitrate')}
-          desc={$t('admin.transcoding_max_bitrate_description')}
-          bind:value={config.ffmpeg.maxBitrate}
-          isEdited={config.ffmpeg.maxBitrate !== savedConfig.ffmpeg.maxBitrate}
-        />
+            <SettingSelect
+              label={$t('admin.transcoding_preset_preset')}
+              {disabled}
+              desc={$t('admin.transcoding_preset_preset_description')}
+              bind:value={config.ffmpeg.preset}
+              name="preset"
+              options={[
+                { value: 'ultrafast', text: 'ultrafast' },
+                { value: 'superfast', text: 'superfast' },
+                { value: 'veryfast', text: 'veryfast' },
+                { value: 'faster', text: 'faster' },
+                { value: 'fast', text: 'fast' },
+                { value: 'medium', text: 'medium' },
+                { value: 'slow', text: 'slow' },
+                { value: 'slower', text: 'slower' },
+                { value: 'veryslow', text: 'veryslow' },
+              ]}
+              isEdited={config.ffmpeg.preset !== savedConfig.ffmpeg.preset}
+            />
 
-        <SettingInputField
-          inputType={SettingInputFieldType.NUMBER}
-          {disabled}
-          label={$t('admin.transcoding_threads')}
-          desc={$t('admin.transcoding_threads_description')}
-          bind:value={config.ffmpeg.threads}
-          isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
-        />
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              {disabled}
+              label={$t('admin.transcoding_max_bitrate')}
+              description={$t('admin.transcoding_max_bitrate_description')}
+              bind:value={config.ffmpeg.maxBitrate}
+              isEdited={config.ffmpeg.maxBitrate !== savedConfig.ffmpeg.maxBitrate}
+            />
 
-        <SettingSelect
-          label={$t('admin.transcoding_transcode_policy')}
-          {disabled}
-          desc={$t('admin.transcoding_transcode_policy_description')}
-          bind:value={config.ffmpeg.transcode}
-          name="transcode"
-          options={[
-            { value: TranscodePolicy.All, text: $t('all_videos') },
-            {
-              value: TranscodePolicy.Optimal,
-              text: $t('admin.transcoding_optimal_description'),
-            },
-            {
-              value: TranscodePolicy.Bitrate,
-              text: $t('admin.transcoding_bitrate_description'),
-            },
-            {
-              value: TranscodePolicy.Required,
-              text: $t('admin.transcoding_required_description'),
-            },
-            {
-              value: TranscodePolicy.Disabled,
-              text: $t('admin.transcoding_disabled_description'),
-            },
-          ]}
-          isEdited={config.ffmpeg.transcode !== savedConfig.ffmpeg.transcode}
-        />
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              {disabled}
+              label={$t('admin.transcoding_threads')}
+              description={$t('admin.transcoding_threads_description')}
+              bind:value={config.ffmpeg.threads}
+              isEdited={config.ffmpeg.threads !== savedConfig.ffmpeg.threads}
+            />
 
-        <SettingSelect
-          label={$t('admin.transcoding_tone_mapping')}
-          {disabled}
-          desc={$t('admin.transcoding_tone_mapping_description')}
-          bind:value={config.ffmpeg.tonemap}
-          name="tonemap"
-          options={[
-            {
-              value: ToneMapping.Hable,
-              text: 'Hable',
-            },
-            {
-              value: ToneMapping.Mobius,
-              text: 'Mobius',
-            },
-            {
-              value: ToneMapping.Reinhard,
-              text: 'Reinhard',
-            },
-            {
-              value: ToneMapping.Disabled,
-              text: $t('disabled'),
-            },
-          ]}
-          isEdited={config.ffmpeg.tonemap !== savedConfig.ffmpeg.tonemap}
-        />
+            <SettingSelect
+              label={$t('admin.transcoding_tone_mapping')}
+              {disabled}
+              desc={$t('admin.transcoding_tone_mapping_description')}
+              bind:value={config.ffmpeg.tonemap}
+              name="tonemap"
+              options={[
+                {
+                  value: ToneMapping.Hable,
+                  text: 'Hable',
+                },
+                {
+                  value: ToneMapping.Mobius,
+                  text: 'Mobius',
+                },
+                {
+                  value: ToneMapping.Reinhard,
+                  text: 'Reinhard',
+                },
+                {
+                  value: ToneMapping.Disabled,
+                  text: $t('disabled'),
+                },
+              ]}
+              isEdited={config.ffmpeg.tonemap !== savedConfig.ffmpeg.tonemap}
+            />
 
-        <SettingSwitch
-          title={$t('admin.transcoding_two_pass_encoding')}
-          {disabled}
-          subtitle={$t('admin.transcoding_two_pass_encoding_setting_description')}
-          bind:checked={config.ffmpeg.twoPass}
-          isEdited={config.ffmpeg.twoPass !== savedConfig.ffmpeg.twoPass}
-        />
+            <SettingSwitch
+              title={$t('admin.transcoding_two_pass_encoding')}
+              {disabled}
+              subtitle={$t('admin.transcoding_two_pass_encoding_setting_description')}
+              bind:checked={config.ffmpeg.twoPass}
+              isEdited={config.ffmpeg.twoPass !== savedConfig.ffmpeg.twoPass}
+            />
+          </div>
+        </SettingAccordion>
 
         <SettingAccordion
           key="hardware-acceleration"
@@ -327,7 +363,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.TEXT}
               label={$t('admin.transcoding_preferred_hardware_device')}
-              desc={$t('admin.transcoding_preferred_hardware_device_description')}
+              description={$t('admin.transcoding_preferred_hardware_device_description')}
               bind:value={config.ffmpeg.preferredHwDevice}
               isEdited={config.ffmpeg.preferredHwDevice !== savedConfig.ffmpeg.preferredHwDevice}
               {disabled}
@@ -343,17 +379,8 @@
           <div class="ml-4 mt-4 flex flex-col gap-4">
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
-              label={$t('admin.transcoding_tone_mapping_npl')}
-              desc={$t('admin.transcoding_tone_mapping_npl_description')}
-              bind:value={config.ffmpeg.npl}
-              isEdited={config.ffmpeg.npl !== savedConfig.ffmpeg.npl}
-              {disabled}
-            />
-
-            <SettingInputField
-              inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_b_frames')}
-              desc={$t('admin.transcoding_max_b_frames_description')}
+              description={$t('admin.transcoding_max_b_frames_description')}
               bind:value={config.ffmpeg.bframes}
               isEdited={config.ffmpeg.bframes !== savedConfig.ffmpeg.bframes}
               {disabled}
@@ -362,7 +389,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_reference_frames')}
-              desc={$t('admin.transcoding_reference_frames_description')}
+              description={$t('admin.transcoding_reference_frames_description')}
               bind:value={config.ffmpeg.refs}
               isEdited={config.ffmpeg.refs !== savedConfig.ffmpeg.refs}
               {disabled}
@@ -371,7 +398,7 @@
             <SettingInputField
               inputType={SettingInputFieldType.NUMBER}
               label={$t('admin.transcoding_max_keyframe_interval')}
-              desc={$t('admin.transcoding_max_keyframe_interval_description')}
+              description={$t('admin.transcoding_max_keyframe_interval_description')}
               bind:value={config.ffmpeg.gopSize}
               isEdited={config.ffmpeg.gopSize !== savedConfig.ffmpeg.gopSize}
               {disabled}

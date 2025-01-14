@@ -13,6 +13,7 @@ part of openapi.api;
 class SystemConfigDto {
   /// Returns a new [SystemConfigDto] instance.
   SystemConfigDto({
+    required this.backup,
     required this.ffmpeg,
     required this.image,
     required this.job,
@@ -28,10 +29,13 @@ class SystemConfigDto {
     required this.reverseGeocoding,
     required this.server,
     required this.storageTemplate,
+    required this.templates,
     required this.theme,
     required this.trash,
     required this.user,
   });
+
+  SystemConfigBackupsDto backup;
 
   SystemConfigFFmpegDto ffmpeg;
 
@@ -63,6 +67,8 @@ class SystemConfigDto {
 
   SystemConfigStorageTemplateDto storageTemplate;
 
+  SystemConfigTemplatesDto templates;
+
   SystemConfigThemeDto theme;
 
   SystemConfigTrashDto trash;
@@ -71,6 +77,7 @@ class SystemConfigDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
+    other.backup == backup &&
     other.ffmpeg == ffmpeg &&
     other.image == image &&
     other.job == job &&
@@ -86,6 +93,7 @@ class SystemConfigDto {
     other.reverseGeocoding == reverseGeocoding &&
     other.server == server &&
     other.storageTemplate == storageTemplate &&
+    other.templates == templates &&
     other.theme == theme &&
     other.trash == trash &&
     other.user == user;
@@ -93,6 +101,7 @@ class SystemConfigDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (backup.hashCode) +
     (ffmpeg.hashCode) +
     (image.hashCode) +
     (job.hashCode) +
@@ -108,15 +117,17 @@ class SystemConfigDto {
     (reverseGeocoding.hashCode) +
     (server.hashCode) +
     (storageTemplate.hashCode) +
+    (templates.hashCode) +
     (theme.hashCode) +
     (trash.hashCode) +
     (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'backup'] = this.backup;
       json[r'ffmpeg'] = this.ffmpeg;
       json[r'image'] = this.image;
       json[r'job'] = this.job;
@@ -132,6 +143,7 @@ class SystemConfigDto {
       json[r'reverseGeocoding'] = this.reverseGeocoding;
       json[r'server'] = this.server;
       json[r'storageTemplate'] = this.storageTemplate;
+      json[r'templates'] = this.templates;
       json[r'theme'] = this.theme;
       json[r'trash'] = this.trash;
       json[r'user'] = this.user;
@@ -142,10 +154,12 @@ class SystemConfigDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigDto(
+        backup: SystemConfigBackupsDto.fromJson(json[r'backup'])!,
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
         image: SystemConfigImageDto.fromJson(json[r'image'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
@@ -161,6 +175,7 @@ class SystemConfigDto {
         reverseGeocoding: SystemConfigReverseGeocodingDto.fromJson(json[r'reverseGeocoding'])!,
         server: SystemConfigServerDto.fromJson(json[r'server'])!,
         storageTemplate: SystemConfigStorageTemplateDto.fromJson(json[r'storageTemplate'])!,
+        templates: SystemConfigTemplatesDto.fromJson(json[r'templates'])!,
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
         user: SystemConfigUserDto.fromJson(json[r'user'])!,
@@ -211,6 +226,7 @@ class SystemConfigDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'backup',
     'ffmpeg',
     'image',
     'job',
@@ -226,6 +242,7 @@ class SystemConfigDto {
     'reverseGeocoding',
     'server',
     'storageTemplate',
+    'templates',
     'theme',
     'trash',
     'user',

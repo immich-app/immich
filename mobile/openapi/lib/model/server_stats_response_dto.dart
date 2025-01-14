@@ -16,6 +16,8 @@ class ServerStatsResponseDto {
     this.photos = 0,
     this.usage = 0,
     this.usageByUser = const [],
+    this.usagePhotos = 0,
+    this.usageVideos = 0,
     this.videos = 0,
   });
 
@@ -25,6 +27,10 @@ class ServerStatsResponseDto {
 
   List<UsageByUserDto> usageByUser;
 
+  int usagePhotos;
+
+  int usageVideos;
+
   int videos;
 
   @override
@@ -32,6 +38,8 @@ class ServerStatsResponseDto {
     other.photos == photos &&
     other.usage == usage &&
     _deepEquality.equals(other.usageByUser, usageByUser) &&
+    other.usagePhotos == usagePhotos &&
+    other.usageVideos == usageVideos &&
     other.videos == videos;
 
   @override
@@ -40,16 +48,20 @@ class ServerStatsResponseDto {
     (photos.hashCode) +
     (usage.hashCode) +
     (usageByUser.hashCode) +
+    (usagePhotos.hashCode) +
+    (usageVideos.hashCode) +
     (videos.hashCode);
 
   @override
-  String toString() => 'ServerStatsResponseDto[photos=$photos, usage=$usage, usageByUser=$usageByUser, videos=$videos]';
+  String toString() => 'ServerStatsResponseDto[photos=$photos, usage=$usage, usageByUser=$usageByUser, usagePhotos=$usagePhotos, usageVideos=$usageVideos, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
       json[r'usage'] = this.usage;
       json[r'usageByUser'] = this.usageByUser;
+      json[r'usagePhotos'] = this.usagePhotos;
+      json[r'usageVideos'] = this.usageVideos;
       json[r'videos'] = this.videos;
     return json;
   }
@@ -58,6 +70,7 @@ class ServerStatsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerStatsResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "ServerStatsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -65,6 +78,8 @@ class ServerStatsResponseDto {
         photos: mapValueOfType<int>(json, r'photos')!,
         usage: mapValueOfType<int>(json, r'usage')!,
         usageByUser: UsageByUserDto.listFromJson(json[r'usageByUser']),
+        usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
+        usageVideos: mapValueOfType<int>(json, r'usageVideos')!,
         videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
@@ -116,6 +131,8 @@ class ServerStatsResponseDto {
     'photos',
     'usage',
     'usageByUser',
+    'usagePhotos',
+    'usageVideos',
     'videos',
   };
 }

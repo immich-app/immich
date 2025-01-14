@@ -4,9 +4,8 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { createAssetInteractionStore } from '$lib/stores/asset-interaction.store';
   import { AssetStore } from '$lib/stores/assets.store';
-  import { downloadAlbum } from '$lib/utils/asset-utils';
+  import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
   import AssetGrid from '../photos-page/asset-grid.svelte';
@@ -20,18 +19,22 @@
   import AlbumSummary from './album-summary.svelte';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
-  export let sharedLink: SharedLinkResponseDto;
-  export let user: UserResponseDto | undefined = undefined;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+    user?: UserResponseDto | undefined;
+  }
+
+  let { sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-  let innerWidth: number;
+  let innerWidth: number = $state(0);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
   const assetStore = new AssetStore({ albumId: album.id, order: album.order });
-  const assetInteractionStore = createAssetInteractionStore();
-  const { isMultiSelectState, selectedAssets } = assetInteractionStore;
+  const assetInteraction = new AssetInteraction();
 
   dragAndDropFilesStore.subscribe((value) => {
     if (value.isDragging && value.files.length > 0) {
@@ -48,8 +51,8 @@
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
-      if (!$showAssetViewer && $isMultiSelectState) {
-        assetInteractionStore.clearMultiselect();
+      if (!$showAssetViewer && assetInteraction.selectionActive) {
+        cancelMultiselect(assetInteraction);
       }
     },
   }}
@@ -57,28 +60,28 @@
 />
 
 <header>
-  {#if $isMultiSelectState}
+  {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
       ownerId={user?.id}
-      assets={$selectedAssets}
-      clearSelect={() => assetInteractionStore.clearMultiselect()}
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => assetInteraction.clearMultiselect()}
     >
-      <SelectAllAssets {assetStore} {assetInteractionStore} />
+      <SelectAllAssets {assetStore} {assetInteraction} />
       {#if sharedLink.allowDownload}
         <DownloadAction filename="{album.albumName}.zip" />
       {/if}
     </AssetSelectControlBar>
   {:else}
     <ControlAppBar showBackButton={false}>
-      <svelte:fragment slot="leading">
+      {#snippet leading()}
         <ImmichLogoSmallLink width={innerWidth} />
-      </svelte:fragment>
+      {/snippet}
 
-      <svelte:fragment slot="trailing">
+      {#snippet trailing()}
         {#if sharedLink.allowUpload}
           <CircleIconButton
             title={$t('add_photos')}
-            on:click={() => openFileUploadDialog({ albumId: album.id })}
+            onclick={() => openFileUploadDialog({ albumId: album.id })}
             icon={mdiFileImagePlusOutline}
           />
         {/if}
@@ -86,19 +89,19 @@
         {#if album.assetCount > 0 && sharedLink.allowDownload}
           <CircleIconButton
             title={$t('download')}
-            on:click={() => downloadAlbum(album)}
+            onclick={() => downloadAlbum(album)}
             icon={mdiFolderDownloadOutline}
           />
         {/if}
 
         <ThemeButton />
-      </svelte:fragment>
+      {/snippet}
     </ControlAppBar>
   {/if}
 </header>
 
 <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteractionStore}>
+  <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->
       <h1

@@ -1,50 +1,31 @@
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { mapUserAdmin } from 'src/dtos/user.dto';
 import { UserStatus } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { UserAdminService } from 'src/services/user-admin.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
-import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
+import { newTestService } from 'test/utils';
 import { Mocked, describe } from 'vitest';
 
 describe(UserAdminService.name, () => {
   let sut: UserAdminService;
-  let albumMock: Mocked<IAlbumRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
-  let eventMock: Mocked<IEventRepository>;
+
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
   let userMock: Mocked<IUserRepository>;
 
   beforeEach(() => {
-    albumMock = newAlbumRepositoryMock();
-    cryptoMock = newCryptoRepositoryMock();
-    eventMock = newEventRepositoryMock();
-    jobMock = newJobRepositoryMock();
-    userMock = newUserRepositoryMock();
-    loggerMock = newLoggerRepositoryMock();
-
-    sut = new UserAdminService(albumMock, cryptoMock, eventMock, jobMock, userMock, loggerMock);
+    ({ sut, jobMock, userMock } = newTestService(UserAdminService));
 
     userMock.get.mockImplementation((userId) =>
-      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
+      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? undefined),
     );
   });
 
   describe('create', () => {
     it('should not create a user if there is no local admin account', async () => {
-      userMock.getAdmin.mockResolvedValueOnce(null);
+      userMock.getAdmin.mockResolvedValueOnce(void 0);
 
       await expect(
         sut.create({
@@ -85,8 +66,8 @@ describe(UserAdminService.name, () => {
         email: 'immich@test.com',
         storageLabel: 'storage_label',
       };
-      userMock.getByEmail.mockResolvedValue(null);
-      userMock.getByStorageLabel.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
+      userMock.getByStorageLabel.mockResolvedValue(void 0);
       userMock.update.mockResolvedValue(userStub.user1);
 
       await sut.update(authStub.user1, userStub.user1.id, update);
@@ -127,7 +108,7 @@ describe(UserAdminService.name, () => {
     });
 
     it('update user information should throw error if user not found', async () => {
-      userMock.get.mockResolvedValueOnce(null);
+      userMock.get.mockResolvedValueOnce(void 0);
 
       await expect(
         sut.update(authStub.admin, userStub.user1.id, { shouldChangePassword: true }),
@@ -137,7 +118,7 @@ describe(UserAdminService.name, () => {
 
   describe('delete', () => {
     it('should throw error if user could not be found', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
 
       await expect(sut.delete(authStub.admin, userStub.admin.id, {})).rejects.toThrowError(BadRequestException);
       expect(userMock.delete).not.toHaveBeenCalled();
@@ -185,7 +166,7 @@ describe(UserAdminService.name, () => {
 
   describe('restore', () => {
     it('should throw error if user could not be found', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(sut.restore(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
       expect(userMock.update).not.toHaveBeenCalled();
     });

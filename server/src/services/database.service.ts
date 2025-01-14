@@ -1,17 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import semver from 'semver';
-import { getVectorExtension } from 'src/database.config';
-import { OnEmit } from 'src/decorators';
+import { OnEvent } from 'src/decorators';
 import {
   DatabaseExtension,
   DatabaseLock,
   EXTENSION_NAMES,
-  IDatabaseRepository,
   VectorExtension,
   VectorIndex,
 } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { BootstrapEventPriority } from 'src/interfaces/event.interface';
+import { BaseService } from 'src/services/base.service';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -63,17 +62,10 @@ const messages = {
 const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
 
 @Injectable()
-export class DatabaseService {
+export class DatabaseService extends BaseService {
   private reconnection?: NodeJS.Timeout;
 
-  constructor(
-    @Inject(IDatabaseRepository) private databaseRepository: IDatabaseRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-  ) {
-    this.logger.setContext(DatabaseService.name);
-  }
-
-  @OnEmit({ event: 'app.bootstrap', priority: -200 })
+  @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
     const current = semver.coerce(version);
@@ -85,7 +77,8 @@ export class DatabaseService {
     }
 
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      const extension = getVectorExtension();
+      const envData = this.configRepository.getEnv();
+      const extension = envData.database.vectorExtension;
       const name = EXTENSION_NAMES[extension];
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
@@ -116,9 +109,11 @@ export class DatabaseService {
 
       await this.checkReindexing();
 
-      if (process.env.DB_SKIP_MIGRATIONS !== 'true') {
+      const { database } = this.configRepository.getEnv();
+      if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
+      this.databaseRepository.init();
     });
   }
 

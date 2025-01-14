@@ -28,10 +28,12 @@
   <a href="README_nl_NL.md">Nederlands</a>
   <a href="README_tr_TR.md">Türkçe</a>
   <a href="README_zh_CN.md">中文</a>
+  <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
+  <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
 ## Avís legal

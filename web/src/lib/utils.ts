@@ -16,13 +16,11 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
-  type AssetResponseDto,
   type PersonResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { sortBy } from 'lodash-es';
+import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
@@ -148,6 +146,7 @@ export const getJobName = derived(t, ($t) => {
       [JobName.Search]: $t('search'),
       [JobName.Library]: $t('library'),
       [JobName.Notifications]: $t('notifications'),
+      [JobName.BackupDatabase]: $t('admin.backup_database'),
     };
 
     return names[jobName];
@@ -214,6 +213,7 @@ export const getPeopleThumbnailUrl = (person: PersonResponseDto, updatedAt?: str
 export const getAssetJobName = derived(t, ($t) => {
   return (job: AssetJobName) => {
     const names: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshFaces]: $t('refresh_faces'),
       [AssetJobName.RefreshMetadata]: $t('refresh_metadata'),
       [AssetJobName.RegenerateThumbnail]: $t('refresh_thumbnails'),
       [AssetJobName.TranscodeVideo]: $t('refresh_encoded_videos'),
@@ -226,6 +226,7 @@ export const getAssetJobName = derived(t, ($t) => {
 export const getAssetJobMessage = derived(t, ($t) => {
   return (job: AssetJobName) => {
     const messages: Record<AssetJobName, string> = {
+      [AssetJobName.RefreshFaces]: $t('refreshing_faces'),
       [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
       [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
       [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
@@ -237,6 +238,7 @@ export const getAssetJobMessage = derived(t, ($t) => {
 
 export const getAssetJobIcon = (job: AssetJobName) => {
   const names: Record<AssetJobName, string> = {
+    [AssetJobName.RefreshFaces]: mdiHeadSyncOutline,
     [AssetJobName.RefreshMetadata]: mdiDatabaseRefreshOutline,
     [AssetJobName.RegenerateThumbnail]: mdiImageRefreshOutline,
     [AssetJobName.TranscodeVideo]: mdiCogRefreshOutline,
@@ -257,11 +259,7 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  let url = externalDomain || window.location.origin;
-  if (!url.endsWith('/')) {
-    url += '/';
-  }
-  return `${url}share/${key}`;
+  return new URL(`share/${key}`, externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {
@@ -283,7 +281,7 @@ export const oauth = {
     try {
       const redirectUri = location.href.split('?')[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      window.location.href = url;
+      globalThis.location.href = url;
       return true;
     } catch (error) {
       handleError(error, $t('errors.unable_to_login_with_oauth'));
@@ -330,10 +328,6 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
   } catch (error) {
     return [error, undefined];
   }
-};
-
-export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  return sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
 };
 
 // eslint-disable-next-line unicorn/prefer-code-point

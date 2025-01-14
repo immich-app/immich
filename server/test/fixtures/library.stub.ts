@@ -1,6 +1,3 @@
-import { join } from 'node:path';
-import { APP_MEDIA_LOCATION } from 'src/constants';
-import { THUMBNAIL_DIR } from 'src/cores/storage.core';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { userStub } from 'test/fixtures/user.stub';
 
@@ -53,18 +50,6 @@ export const libraryStub = {
     refreshedAt: null,
     exclusionPatterns: [],
   }),
-  externalLibraryWithExclusionPattern: Object.freeze<LibraryEntity>({
-    id: 'library-id',
-    name: 'test_library',
-    assets: [],
-    owner: userStub.admin,
-    ownerId: 'user-id',
-    importPaths: [],
-    createdAt: new Date('2023-01-01'),
-    updatedAt: new Date('2023-01-01'),
-    refreshedAt: null,
-    exclusionPatterns: ['**/dir1/**'],
-  }),
   patternPath: Object.freeze<LibraryEntity>({
     id: 'library-id1337',
     name: 'importpath-exclusion-library1',
@@ -83,7 +68,7 @@ export const libraryStub = {
     assets: [],
     owner: userStub.admin,
     ownerId: 'user-id',
-    importPaths: [join(THUMBNAIL_DIR, 'library'), '/xyz', join(APP_MEDIA_LOCATION, 'library')],
+    importPaths: ['upload/thumbs', 'xyz', 'upload/library'],
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
     refreshedAt: null,

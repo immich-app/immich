@@ -1,36 +1,49 @@
-<script lang="ts" context="module">
-  export enum SettingInputFieldType {
-    EMAIL = 'email',
-    TEXT = 'text',
-    NUMBER = 'number',
-    PASSWORD = 'password',
-    COLOR = 'color',
-  }
-</script>
-
 <script lang="ts">
   import { quintOut } from 'svelte/easing';
   import type { FormEventHandler } from 'svelte/elements';
   import { fly } from 'svelte/transition';
   import PasswordField from '../password-field.svelte';
   import { t } from 'svelte-i18n';
-  import { onMount, tick } from 'svelte';
+  import { onMount, tick, type Snippet } from 'svelte';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let inputType: SettingInputFieldType;
-  export let value: string | number;
-  export let min = Number.MIN_SAFE_INTEGER;
-  export let max = Number.MAX_SAFE_INTEGER;
-  export let step = '1';
-  export let label = '';
-  export let desc = '';
-  export let title = '';
-  export let required = false;
-  export let disabled = false;
-  export let isEdited = false;
-  export let autofocus = false;
-  export let passwordAutocomplete: string = 'current-password';
+  interface Props {
+    inputType: SettingInputFieldType;
+    value: string | number;
+    min?: number;
+    max?: number;
+    step?: string;
+    label?: string;
+    description?: string;
+    title?: string;
+    required?: boolean;
+    disabled?: boolean;
+    isEdited?: boolean;
+    autofocus?: boolean;
+    passwordAutocomplete?: AutoFill;
+    descriptionSnippet?: Snippet;
+    trailingSnippet?: Snippet;
+  }
 
-  let input: HTMLInputElement;
+  let {
+    inputType,
+    value = $bindable(),
+    min = Number.MIN_SAFE_INTEGER,
+    max = Number.MAX_SAFE_INTEGER,
+    step = '1',
+    label = '',
+    description = '',
+    title = '',
+    required = false,
+    disabled = false,
+    isEdited = false,
+    autofocus = false,
+    passwordAutocomplete = 'current-password',
+    descriptionSnippet,
+    trailingSnippet,
+  }: Props = $props();
+
+  let input: HTMLInputElement | undefined = $state();
 
   const handleChange: FormEventHandler<HTMLInputElement> = (e) => {
     value = e.currentTarget.value;
@@ -50,14 +63,14 @@
   onMount(() => {
     if (autofocus) {
       tick()
-        .then(() => input?.focus())
+        .then(() => setTimeout(() => input?.focus(), 0))
         .catch((_) => {});
     }
   });
 </script>
 
 <div class="mb-4 w-full">
-  <div class={`flex h-[26px] place-items-center gap-1`}>
+  <div class={`flex place-items-center gap-1`}>
     <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for={label}>{label}</label>
     {#if required}
       <div class="text-red-400">*</div>
@@ -73,12 +86,12 @@
     {/if}
   </div>
 
-  {#if desc}
+  {#if description}
     <p class="immich-form-label pb-2 text-sm" id="{label}-desc">
-      {desc}
+      {description}
     </p>
   {:else}
-    <slot name="desc" />
+    {@render descriptionSnippet?.()}
   {/if}
 
   {#if inputType !== SettingInputFieldType.PASSWORD}
@@ -87,7 +100,7 @@
         <input
           bind:this={input}
           class="immich-form-input w-full pb-2 rounded-none mr-1"
-          aria-describedby={desc ? `${label}-desc` : undefined}
+          aria-describedby={description ? `${label}-desc` : undefined}
           aria-labelledby="{label}-label"
           id={label}
           name={label}
@@ -97,7 +110,7 @@
           {step}
           {required}
           {value}
-          on:change={handleChange}
+          onchange={handleChange}
           {disabled}
           {title}
         />
@@ -107,7 +120,7 @@
         bind:this={input}
         class="immich-form-input w-full pb-2"
         class:color-picker={inputType === SettingInputFieldType.COLOR}
-        aria-describedby={desc ? `${label}-desc` : undefined}
+        aria-describedby={description ? `${label}-desc` : undefined}
         aria-labelledby="{label}-label"
         id={label}
         name={label}
@@ -117,14 +130,16 @@
         {step}
         {required}
         {value}
-        on:change={handleChange}
+        onchange={handleChange}
         {disabled}
         {title}
       />
+
+      {@render trailingSnippet?.()}
     </div>
   {:else}
     <PasswordField
-      aria-describedby={desc ? `${label}-desc` : undefined}
+      aria-describedby={description ? `${label}-desc` : undefined}
       aria-labelledby="{label}-label"
       id={label}
       name={label}

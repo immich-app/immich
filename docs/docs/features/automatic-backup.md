@@ -1,8 +1,14 @@
 # Automatic Backup
 
-A guide on how the foreground and background automatic backup works.
+Immich supports uploading photos and videos from your mobile device to the server automatically.
 
-<img src={require('./img/background-foreground-backup.png').default} width="50%" title="Foreground&Background Backup" />
+---
+
+You can enable the settings by accessing the upload options from the upload page
+
+<img src={require('./img/backup-settings-access.webp').default} width="50%" title="Backup option selection" />
+
+<img src={require('./img/background-foreground-backup.webp').default} width="50%" title="Foreground&Background Backup" />
 
 ## Foreground backup
 
@@ -10,9 +16,9 @@ If foreground backup is enabled: whenever the app is opened or resumed, it will 
 
 ## Background backup
 
-Background backup is available thanks to the contribution effort of [@fyfrey](https://github.com/fyfrey) and [@martyfuhry](https://github.com/martyfuhry).
+This feature is intended for everyday use. For initial bulk uploading, please use the foreground upload feature. For more information on why background upload is not working as expected, please refer to the [FAQ](/docs/FAQ#why-does-foreground-backup-stop-when-i-navigate-away-from-the-app-shouldnt-it-transfer-the-job-to-background-backup).
 
-If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the cloud. If there are, it will upload them to the cloud in the background.
+If background backup is enabled. The app will periodically check if there are any new photos or videos in the selected album(s) to be uploaded to the server. If there are, it will upload them to the cloud in the background.
 
 :::info Note
 
@@ -30,7 +36,7 @@ If background backup is enabled. The app will periodically check if there are an
 - You must enable **Background App Refresh** for the app to work in the background. You can enable it in the Settings app under General > Background App Refresh.
 
 <div style={{textAlign: 'center'}}>
-<img src={require('./img/background-app-refresh.png').default} width="30%" title="background-app-refresh" />
+<img src={require('./img/background-app-refresh.webp').default} width="30%" title="background-app-refresh" />
 </div>
 
 :::

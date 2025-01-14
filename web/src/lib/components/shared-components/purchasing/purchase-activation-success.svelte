@@ -7,7 +7,11 @@
   import { preferences } from '$lib/stores/user.store';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
 
-  export let onDone: () => void;
+  interface Props {
+    onDone: () => void;
+  }
+
+  let { onDone }: Props = $props();
 </script>
 
 <div class="m-auto w-3/4 text-center flex flex-col place-content-center place-items-center dark:text-white my-6">
@@ -20,11 +24,11 @@
       title={$t('show_supporter_badge')}
       subtitle={$t('show_supporter_badge_description')}
       bind:checked={$preferences.purchase.showSupportBadge}
-      on:toggle={({ detail }) => setSupportBadgeVisibility(detail)}
+      onToggle={setSupportBadgeVisibility}
     />
   </div>
 
   <div class="mt-6 w-full">
-    <Button fullwidth on:click={onDone}>{$t('ok')}</Button>
+    <Button fullwidth onclick={onDone}>{$t('ok')}</Button>
   </div>
 </div>

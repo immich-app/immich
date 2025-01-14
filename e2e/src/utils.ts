@@ -10,7 +10,9 @@ import {
   Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UpdateLibraryDto,
   UserAdminCreateDto,
+  UserPreferencesUpdateDto,
   ValidateLibraryDto,
   checkExistingAssets,
   createAlbum,
@@ -19,25 +21,30 @@ import {
   createPartner,
   createPerson,
   createSharedLink,
+  createStack,
   createUserAdmin,
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
   getConfigDefaults,
   login,
-  searchMetadata,
+  searchAssets,
   setBaseUrl,
   signUpAdmin,
+  tagAssets,
   updateAdminOnboarding,
   updateAlbumUser,
   updateAssets,
   updateConfig,
+  updateLibrary,
+  updateMyPreferences,
+  upsertTags,
   validate,
 } from '@immich/sdk';
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
@@ -68,6 +75,7 @@ export const immichCli = (args: string[]) =>
   executeCommand('node', ['node_modules/.bin/immich', '-d', `/${tempDir}/immich/`, ...args]).promise;
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
+export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
@@ -156,8 +164,7 @@ export const utils = {
 
       for (const table of tables) {
         if (table === 'system_metadata') {
-          // prevent reverse geocoder from being re-initialized
-          sql.push(`DELETE FROM "system_metadata" where "key" != 'reverse-geocoding-state';`);
+          sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
         } else {
           sql.push(`DELETE FROM ${table} CASCADE;`);
         }
@@ -373,6 +380,12 @@ export const utils = {
     writeFileSync(path, makeRandomImage());
   },
 
+  createDirectory: (path: string) => {
+    if (!existsSync(path)) {
+      mkdirSync(path, { recursive: true });
+    }
+  },
+
   removeImageFile: (path: string) => {
     if (!existsSync(path)) {
       return;
@@ -381,13 +394,29 @@ export const utils = {
     rmSync(path);
   },
 
+  renameImageFile: (oldPath: string, newPath: string) => {
+    if (!existsSync(oldPath)) {
+      return;
+    }
+
+    renameSync(oldPath, newPath);
+  },
+
+  removeDirectory: (path: string) => {
+    if (!existsSync(path)) {
+      return;
+    }
+
+    rmSync(path, { recursive: true });
+  },
+
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 
   checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
     checkExistingAssets({ checkExistingAssetsDto }, { headers: asBearerAuth(accessToken) }),
 
-  metadataSearch: async (accessToken: string, dto: MetadataSearchDto) => {
-    return searchMetadata({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
+  searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
+    return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>
@@ -428,7 +457,22 @@ export const utils = {
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
+  updateLibrary: (accessToken: string, id: string, dto: UpdateLibraryDto) =>
+    updateLibrary({ id, updateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
   createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
+
+  updateMyPreferences: (accessToken: string, userPreferencesUpdateDto: UserPreferencesUpdateDto) =>
+    updateMyPreferences({ userPreferencesUpdateDto }, { headers: asBearerAuth(accessToken) }),
+
+  createStack: (accessToken: string, assetIds: string[]) =>
+    createStack({ stackCreateDto: { assetIds } }, { headers: asBearerAuth(accessToken) }),
+
+  upsertTags: (accessToken: string, tags: string[]) =>
+    upsertTags({ tagUpsertDto: { tags } }, { headers: asBearerAuth(accessToken) }),
+
+  tagAssets: (accessToken: string, tagId: string, assetIds: string[]) =>
+    tagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([
