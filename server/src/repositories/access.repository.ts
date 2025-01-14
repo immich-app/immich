@@ -33,11 +33,7 @@ type ITimelineAccess = IAccessRepository['timeline'];
 
 @Injectable()
 class ActivityAccess implements IActivityAccess {
-  constructor(
-    private activityRepository: Repository<ActivityEntity>,
-    private albumRepository: Repository<AlbumEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -46,14 +42,12 @@ class ActivityAccess implements IActivityAccess {
       return new Set();
     }
 
-    return this.activityRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...activityIds]),
-          userId,
-        },
-      })
+    return this.db
+      .selectFrom('activity')
+      .select('activity.id')
+      .where('activity.id', 'in', [...activityIds])
+      .where('activity.userId', '=', userId)
+      .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
@@ -64,16 +58,13 @@ class ActivityAccess implements IActivityAccess {
       return new Set();
     }
 
-    return this.activityRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...activityIds]),
-          album: {
-            ownerId: userId,
-          },
-        },
-      })
+    return this.db
+      .selectFrom('activity')
+      .select('activity.id')
+      .leftJoin('albums', (join) => join.onRef('activity.albumId', '=', 'albums.id').on('albums.deletedAt', 'is', null))
+      .where('activity.id', 'in', [...activityIds])
+      .whereRef('albums.ownerId', '=', 'activity.userId')
+      .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
@@ -84,19 +75,16 @@ class ActivityAccess implements IActivityAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .createQueryBuilder('album')
-      .select('album.id')
-      .leftJoin('album.albumUsers', 'album_albumUsers_users')
-      .leftJoin('album_albumUsers_users.user', 'albumUsers')
-      .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
-      .andWhere('album.isActivityEnabled = true')
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
-        }),
-      )
-      .getMany()
+    return this.db
+      .selectFrom('albums')
+      .select('albums.id')
+      .leftJoin('albums_shared_users_users as sharedAlbum', 'sharedAlbum.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'sharedAlbum.usersId').on('users.deletedAt', 'is', null))
+      .where('albums.id', 'in', [...albumIds])
+      .where('albums.isActivityEnabled', '=', true)
+      .where((qb) => qb.or([qb('albums.ownerId', '=', userId), qb('users.id', '=', userId)]))
+      .where('albums.deletedAt', 'is', null)
+      .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 }
@@ -518,7 +506,7 @@ export class AccessRepository implements IAccessRepository {
     @InjectRepository(TagEntity) tagRepository: Repository<TagEntity>,
     @InjectKysely() db: Kysely<DB>,
   ) {
-    this.activity = new ActivityAccess(activityRepository, albumRepository, db);
+    this.activity = new ActivityAccess(db);
     this.album = new AlbumAccess(albumRepository, sharedLinkRepository, db);
     this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository, db);
     this.authDevice = new AuthDeviceAccess(sessionRepository, db);
