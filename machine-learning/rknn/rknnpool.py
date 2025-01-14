@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 import numpy as np
 from numpy.typing import NDArray
+from app.config import log
 
 supported_socs = ["rk3562", "rk3566", "rk3568", "rk3576", "rk3588"]
 coremask_supported_socs = ["rk3576","rk3588"]
@@ -25,16 +26,18 @@ try:
                 soc_name = None
     is_available = is_available and os.path.exists("/sys/kernel/debug/rknpu/load")
 except (FileNotFoundError, ImportError):
+    log.debug("RKNN is not available")
     is_available = False
     soc_name = None
 
 
 def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
+    if not is_available:
+        raise RuntimeError("rknn is not available!")
     rknn_lite = RKNNLite()
     ret = rknn_lite.load_rknn(rknnModel)
     if ret != 0:
-        print("Load RKNN rknnModel failed")
-        exit(ret)
+        raise RuntimeError("Load RKNN rknnModel failed")
     
     if soc_name in coremask_supported_socs:
         if id == 0:
@@ -51,8 +54,7 @@ def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
         ret = rknn_lite.init_runtime() # Please do not set this parameter on other platforms.
 
     if ret != 0:
-        print("Init runtime environment failed")
-        exit(ret)
+        raise RuntimeError("Init runtime environment failed")
     print(rknnModel, "\t\tdone")
     return rknn_lite
 
