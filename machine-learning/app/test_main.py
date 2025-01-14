@@ -359,7 +359,7 @@ class TestRknnSession:
         )
 
         info.assert_has_calls(
-            [mock.call(f"Loaded RKNN model from {str(model_path).replace("model","rk3566")} with {tpe} threads.")]
+            [mock.call(f"Loaded RKNN model from {str(model_path).replace('model','rk3566')} with {tpe} threads.")]
         )
 
     def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
