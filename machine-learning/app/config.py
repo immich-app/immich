@@ -41,10 +41,11 @@ class PreloadModelData(BaseModel):
     # Root validator to use fallbacks
     @root_validator(pre=True)
     def set_models(cls, values):
-        # Set clip.model using fallback if clip.model is None
-        values['clip']['model'] = values.get('clip', {}).get('model') or values.get('clip_model_fallback')
+        values['clip']['model'] = (
+            values.get('clip', {}).get('model') 
+            or values.get('clip_model_fallback')
+        )
 
-        # Set facialRecognition.model using fallback if facialRecognition.model is None
         values['facial_recognition']['model'] = (
             values.get('facial_recognition', {}).get('model') 
             or values.get('facial_recognition_model_fallback')
