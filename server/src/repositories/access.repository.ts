@@ -4,16 +4,13 @@ import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { ActivityEntity } from 'src/entities/activity.entity';
-import { AlbumEntity } from 'src/entities/album.entity';
+
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
+
 import { MemoryEntity } from 'src/entities/memory.entity';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SessionEntity } from 'src/entities/session.entity';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { AlbumUserRole } from 'src/enum';
@@ -152,13 +149,7 @@ class AlbumAccess implements IAlbumAccess {
 }
 
 class AssetAccess implements IAssetAccess {
-  constructor(
-    private albumRepository: Repository<AlbumEntity>,
-    private assetRepository: Repository<AssetEntity>,
-    private partnerRepository: Repository<PartnerEntity>,
-    private sharedLinkRepository: Repository<SharedLinkEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -242,23 +233,32 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.sharedLinkRepository
-      .createQueryBuilder('sharedLink')
-      .leftJoin('sharedLink.album', 'album')
-      .leftJoin('sharedLink.assets', 'assets')
-      .leftJoin('album.assets', 'albumAssets')
-      .select('assets.id', 'assetId')
-      .addSelect('albumAssets.id', 'albumAssetId')
-      .addSelect('assets.livePhotoVideoId', 'assetLivePhotoVideoId')
-      .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
-      .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
-      .andWhere(
-        'array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"] && array[:...assetIds]::uuid[]',
-        {
-          assetIds: [...assetIds],
-        },
+    return this.db
+      .selectFrom('shared_links')
+      .leftJoin('albums', (join) =>
+        join.onRef('albums.id', '=', 'shared_links.albumId').on('albums.deletedAt', 'is', null),
       )
-      .getRawMany()
+      .leftJoin('shared_link__asset', 'shared_link__asset.sharedLinksId', 'shared_links.id')
+      .leftJoin('assets', (join) =>
+        join.onRef('assets.id', '=', 'shared_link__asset.assetsId').on('assets.deletedAt', 'is', null),
+      )
+      .leftJoin('albums_assets_assets', 'albums_assets_assets.albumsId', 'albums.id')
+      .leftJoin('assets as albumAssets', (join) =>
+        join.onRef('albumAssets.id', '=', 'albums_assets_assets.assetsId').on('albumAssets.deletedAt', 'is', null),
+      )
+      .select([
+        'assets.id as assetId',
+        'assets.livePhotoVideoId as assetLivePhotoVideoId',
+        'albumAssets.id as albumAssetId',
+        'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
+      ])
+      .where('shared_links.id', '=', sharedLinkId)
+      .where(
+        sql`array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
+        '&&',
+        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      )
+      .execute()
       .then((rows) => {
         const allowedIds = new Set<string>();
         for (const row of rows) {
@@ -485,15 +485,10 @@ export class AccessRepository implements IAccessRepository {
   timeline: ITimelineAccess;
 
   constructor(
-    @InjectRepository(ActivityEntity) activityRepository: Repository<ActivityEntity>,
-    @InjectRepository(AssetEntity) assetRepository: Repository<AssetEntity>,
-    @InjectRepository(AlbumEntity) albumRepository: Repository<AlbumEntity>,
-    @InjectRepository(LibraryEntity) libraryRepository: Repository<LibraryEntity>,
     @InjectRepository(MemoryEntity) memoryRepository: Repository<MemoryEntity>,
     @InjectRepository(PartnerEntity) partnerRepository: Repository<PartnerEntity>,
     @InjectRepository(PersonEntity) personRepository: Repository<PersonEntity>,
     @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
-    @InjectRepository(SharedLinkEntity) sharedLinkRepository: Repository<SharedLinkEntity>,
     @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
     @InjectRepository(StackEntity) stackRepository: Repository<StackEntity>,
     @InjectRepository(TagEntity) tagRepository: Repository<TagEntity>,
@@ -501,7 +496,7 @@ export class AccessRepository implements IAccessRepository {
   ) {
     this.activity = new ActivityAccess(db);
     this.album = new AlbumAccess(db);
-    this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository, db);
+    this.asset = new AssetAccess(db);
     this.authDevice = new AuthDeviceAccess(sessionRepository, db);
     this.memory = new MemoryAccess(memoryRepository, db);
     this.person = new PersonAccess(assetFaceRepository, personRepository, db);

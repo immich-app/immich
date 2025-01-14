@@ -114,24 +114,24 @@ where
   and "assets"."id" in ($3)
 
 -- AccessRepository.asset.checkSharedLinkAccess
-SELECT
-  "assets"."id" AS "assetId",
-  "assets"."livePhotoVideoId" AS "assetLivePhotoVideoId",
-  "albumAssets"."id" AS "albumAssetId",
-  "albumAssets"."livePhotoVideoId" AS "albumAssetLivePhotoVideoId"
-FROM
-  "shared_links" "sharedLink"
-  LEFT JOIN "albums" "album" ON "album"."id" = "sharedLink"."albumId"
-  AND ("album"."deletedAt" IS NULL)
-  LEFT JOIN "shared_link__asset" "assets_sharedLink" ON "assets_sharedLink"."sharedLinksId" = "sharedLink"."id"
-  LEFT JOIN "assets" "assets" ON "assets"."id" = "assets_sharedLink"."assetsId"
-  AND ("assets"."deletedAt" IS NULL)
-  LEFT JOIN "albums_assets_assets" "album_albumAssets" ON "album_albumAssets"."albumsId" = "album"."id"
-  LEFT JOIN "assets" "albumAssets" ON "albumAssets"."id" = "album_albumAssets"."assetsId"
-  AND ("albumAssets"."deletedAt" IS NULL)
-WHERE
-  "sharedLink"."id" = $1
-  AND array[
+select
+  "assets"."id" as "assetId",
+  "assets"."livePhotoVideoId" as "assetLivePhotoVideoId",
+  "albumAssets"."id" as "albumAssetId",
+  "albumAssets"."livePhotoVideoId" as "albumAssetLivePhotoVideoId"
+from
+  "shared_links"
+  left join "albums" on "albums"."id" = "shared_links"."albumId"
+  and "albums"."deletedAt" is null
+  left join "shared_link__asset" on "shared_link__asset"."sharedLinksId" = "shared_links"."id"
+  left join "assets" on "assets"."id" = "shared_link__asset"."assetsId"
+  and "assets"."deletedAt" is null
+  left join "albums_assets_assets" on "albums_assets_assets"."albumsId" = "albums"."id"
+  left join "assets" as "albumAssets" on "albumAssets"."id" = "albums_assets_assets"."assetsId"
+  and "albumAssets"."deletedAt" is null
+where
+  "shared_links"."id" = $1
+  and array[
     "assets"."id",
     "assets"."livePhotoVideoId",
     "albumAssets"."id",
