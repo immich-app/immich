@@ -48,4 +48,8 @@ export class CliService extends BaseService {
     config.oauth.enabled = true;
     await this.updateConfig(config);
   }
+
+  cleanup() {
+    return this.databaseRepository.shutdown();
+  }
 }

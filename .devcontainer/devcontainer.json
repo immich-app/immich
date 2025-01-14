@@ -1,20 +1,26 @@
 {
-	"name": "Immich devcontainers",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			"BASEIMAGE": "mcr.microsoft.com/devcontainers/typescript-node:22"
-		}
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"svelte.svelte-vscode"
-			]
-		}
-	},
-	"forwardPorts": [],
-	"postCreateCommand": "make install-all",
-	"remoteUser": "node"
+  "name": "Immich",
+  "service": "immich-devcontainer",
+  "dockerComposeFile": [
+    "docker-compose.yml",
+    "../docker/docker-compose.dev.yml"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.dart-code",
+        "Dart-Code.flutter",
+        "dbaeumer.vscode-eslint",
+        "dcmdev.dcm-vscode-extension",
+        "esbenp.prettier-vscode",
+        "svelte.svelte-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [],
+  "initializeCommand": "bash .devcontainer/scripts/initializeCommand.sh",
+  "onCreateCommand": "bash .devcontainer/scripts/onCreateCommand.sh",
+  "overrideCommand": true,
+  "workspaceFolder": "/immich",
+  "remoteUser": "node"
 }
-

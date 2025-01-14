@@ -96,7 +96,7 @@ describe('AuthService', () => {
     });
 
     it('should check the user exists', async () => {
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
       expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
     });
@@ -144,7 +144,7 @@ describe('AuthService', () => {
       const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
     });
@@ -227,7 +227,7 @@ describe('AuthService', () => {
     });
 
     it('should sign up the admin', async () => {
-      userMock.getAdmin.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(void 0);
       userMock.create.mockResolvedValue({
         ...dto,
         id: 'admin',
@@ -309,7 +309,7 @@ describe('AuthService', () => {
 
     it('should not accept a key without a user', async () => {
       sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -354,7 +354,7 @@ describe('AuthService', () => {
 
   describe('validate - user token', () => {
     it('should throw if no token is found', async () => {
-      sessionMock.getByToken.mockResolvedValue(null);
+      sessionMock.getByToken.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-user-token': 'auth_token' },
@@ -399,13 +399,13 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toBeDefined();
-      expect(sessionMock.update.mock.calls[0][0]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
+      expect(sessionMock.update.mock.calls[0][1]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
     });
   });
 
   describe('validate - api key', () => {
     it('should throw an error if no api key is found', async () => {
-      keyMock.getKey.mockResolvedValue(null);
+      keyMock.getKey.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -417,7 +417,7 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if api key has insufficient permissions', async () => {
-      keyMock.getKey.mockResolvedValue({ ...keyStub.admin, permissions: [] });
+      keyMock.getKey.mockResolvedValue(keyStub.authKey);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -428,14 +428,14 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      keyMock.getKey.mockResolvedValue(keyStub.admin);
+      keyMock.getKey.mockResolvedValue(keyStub.authKey);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
-      ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.admin });
+      ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.authKey });
       expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });
@@ -473,7 +473,7 @@ describe('AuthService', () => {
 
     it('should not allow auto registering', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -510,7 +510,7 @@ describe('AuthService', () => {
 
     it('should allow auto registering by default', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
@@ -525,7 +525,7 @@ describe('AuthService', () => {
 
     it('should throw an error if user should be auto registered but the email claim does not exist', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
       sessionMock.create.mockResolvedValue(sessionStub.valid);
@@ -559,7 +559,7 @@ describe('AuthService', () => {
 
     it('should use the default quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
 
@@ -572,7 +572,7 @@ describe('AuthService', () => {
 
     it('should ignore an invalid storage quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 'abc' });
@@ -586,7 +586,7 @@ describe('AuthService', () => {
 
     it('should ignore a negative quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: -5 });
@@ -600,7 +600,7 @@ describe('AuthService', () => {
 
     it('should not set quota for 0 quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 0 });
@@ -620,7 +620,7 @@ describe('AuthService', () => {
 
     it('should use a valid storage quota', async () => {
       systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
       userMock.getAdmin.mockResolvedValue(userStub.user1);
       userMock.create.mockResolvedValue(userStub.user1);
       oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 5 });

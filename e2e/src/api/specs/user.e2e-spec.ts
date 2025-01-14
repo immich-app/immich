@@ -129,6 +129,8 @@ describe('/users', () => {
       expect(body).toEqual({
         ...before,
         updatedAt: expect.any(String),
+        profileChangedAt: expect.any(String),
+        createdAt: expect.any(String),
         name: 'Name',
       });
     });
@@ -177,6 +179,8 @@ describe('/users', () => {
         ...before,
         email: 'non-admin@immich.cloud',
         updatedAt: expect.anything(),
+        createdAt: expect.anything(),
+        profileChangedAt: expect.anything(),
       });
     });
   });

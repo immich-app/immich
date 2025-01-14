@@ -36,11 +36,15 @@ You can enable automatic backup on supported devices. For more information see [
 If you have a large number of photos on the device, and you would prefer not to backup all the photos, then it might be prudent to only backup selected photos from device to the Immich server.
 
 First, you need to enable the Storage Indicator in your app's settings. Navigate to **<ins>Settings -> Photo Grid</ins>** and enable **"Show Storage indicator on asset tiles"**; this makes it easy to distinguish local-only assets and synced assets.
+
 :::note
+
 This will enable a small cloud icon on the bottom right corner of the asset tile, indicating that the asset is synced to the server:
 
 1. <Icon path={mdiCloudOffOutline} size={1} /> - Local-only asset; not synced to the server
-2. <Icon path={mdiCloudCheckOutline} size={1} /> - Asset is synced to the server :::
+2. <Icon path={mdiCloudCheckOutline} size={1} /> - Asset is synced to the server
+
+:::
 
 Now make sure that the local album is selected in the backup screen (steps 1-2 above). You can find these albums listed in **<ins>Library -> On this device</ins>**. To selectively upload photos from these albums, simply select the local-only photos and tap on "Upload" button in the dynamic bottom menu.
 

@@ -1,6 +1,6 @@
 <script lang="ts">
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import type { Snippet } from 'svelte';
-  import ImmichLogo from './immich-logo.svelte';
 
   interface Props {
     title: string;

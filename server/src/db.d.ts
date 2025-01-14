@@ -62,6 +62,7 @@ export interface Albums {
 export interface AlbumsAssetsAssets {
   albumsId: string;
   assetsId: string;
+  createdAt: Generated<Timestamp>;
 }
 
 export interface AlbumsSharedUsersUsers {
@@ -201,7 +202,6 @@ export interface GeodataPlaces {
   admin2Name: string | null;
   alternateNames: string | null;
   countryCode: string;
-  earthCoord: Generated<string | null>;
   id: number;
   latitude: number;
   longitude: number;
@@ -257,7 +257,7 @@ export interface NaturalearthCountries {
   admin: string;
   admin_a3: string;
   coordinates: string;
-  id: Generated<number>;
+  id: number;
   type: string;
 }
 
@@ -309,13 +309,6 @@ export interface SharedLinks {
   showExif: Generated<boolean>;
   type: string;
   userId: string;
-}
-
-export interface SmartInfo {
-  assetId: string;
-  objects: string[] | null;
-  smartInfoTextSearchableColumn: Generated<string>;
-  tags: string[] | null;
 }
 
 export interface SmartSearch {
@@ -399,6 +392,12 @@ export interface VectorsPgVectorIndexStat {
   tablerelid: number | null;
 }
 
+export interface VersionHistory {
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  version: string;
+}
+
 export interface DB {
   activity: Activity;
   albums: Albums;
@@ -425,7 +424,6 @@ export interface DB {
   sessions: Sessions;
   shared_link__asset: SharedLinkAsset;
   shared_links: SharedLinks;
-  smart_info: SmartInfo;
   smart_search: SmartSearch;
   socket_io_attachments: SocketIoAttachments;
   system_config: SystemConfig;
@@ -436,4 +434,5 @@ export interface DB {
   user_metadata: UserMetadata;
   users: Users;
   'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
+  version_history: VersionHistory;
 }
