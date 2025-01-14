@@ -11,6 +11,8 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
+import '../../services/app_settings.service.dart';
+import '../app_settings.provider.dart';
 
 final isRefreshingRemoteAlbumProvider = StateProvider<bool>((ref) => false);
 
@@ -150,6 +152,17 @@ final albumWatcher =
   }
 });
 
+Stream<RenderList> renderListGeneratorWithGroupByDate(
+    QueryBuilder<Asset, Asset, QAfterSortBy> query,
+    StreamProviderRef<RenderList> ref,
+    GroupAssetsBy groupBy,
+    ) {
+  final settings = ref.watch(appSettingsServiceProvider);
+  final groupBy =
+  GroupAssetsBy.values[settings.getSetting(AppSettingsEnum.groupAssetsBy)];
+  return renderListGeneratorWithGroupBy(query, groupBy);
+}
+
 final albumRenderlistProvider =
     StreamProvider.autoDispose.family<RenderList, int>((ref, albumId) {
   final album = ref.watch(albumWatcher(albumId)).value;
@@ -157,13 +170,15 @@ final albumRenderlistProvider =
   if (album != null) {
     final query = album.assets.filter().isTrashedEqualTo(false);
     if (album.sortOrder == SortOrder.asc) {
-      return renderListGeneratorWithGroupBy(
+      return renderListGeneratorWithGroupByDate(
         query.sortByFileCreatedAt(),
+        ref,
         GroupAssetsBy.none,
       );
     } else if (album.sortOrder == SortOrder.desc) {
-      return renderListGeneratorWithGroupBy(
+      return renderListGeneratorWithGroupByDate(
         query.sortByFileCreatedAtDesc(),
+        ref,
         GroupAssetsBy.none,
       );
     }
