@@ -24,6 +24,7 @@ import { repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { teardownTelemetry } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
+import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 
 const common = [...services, ...repositories];
@@ -106,4 +107,10 @@ export class MicroservicesModule extends BaseModule {}
   imports: [...imports],
   providers: [...common, ...commands, SchedulerRegistry],
 })
-export class ImmichAdminModule {}
+export class ImmichAdminModule implements OnModuleDestroy {
+  constructor(private service: CliService) {}
+
+  async onModuleDestroy() {
+    await this.service.cleanup();
+  }
+}

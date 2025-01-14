@@ -153,7 +153,7 @@ describe(AlbumService.name, () => {
     });
 
     it('should require valid userIds', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(
         sut.create(authStub.admin, {
           albumName: 'Empty album',
@@ -299,7 +299,7 @@ describe(AlbumService.name, () => {
     it('should throw an error if the userId does not exist', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
       albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(
         sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { albumUsers: [{ userId: 'user-3' }] }),
       ).rejects.toBeInstanceOf(BadRequestException);

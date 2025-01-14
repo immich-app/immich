@@ -1,3 +1,6 @@
+import { ExpressionBuilder } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { DB } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
@@ -71,3 +74,9 @@ export class UserEntity {
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   profileChangedAt!: Date;
 }
+
+export const withMetadata = (eb: ExpressionBuilder<DB, 'users'>) => {
+  return jsonArrayFrom(
+    eb.selectFrom('user_metadata').selectAll('user_metadata').whereRef('users.id', '=', 'user_metadata.userId'),
+  ).as('metadata');
+};

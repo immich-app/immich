@@ -65,7 +65,7 @@ export class AuthService extends BaseService {
     if (user) {
       const isAuthenticated = this.validatePassword(dto.password, user);
       if (!isAuthenticated) {
-        user = null;
+        user = undefined;
       }
     }
 
