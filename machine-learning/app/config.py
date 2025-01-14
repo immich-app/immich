@@ -24,13 +24,20 @@ class FacialRecognitionSettings(BaseModel):
     detection: str | None = None
 
 
+# Define str | None as a separate variable
+clip_model_fallback: str | None = None
+facial_recognition_model_fallback: str | None = None
+
+
 class PreloadModelData(BaseModel):
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
 
     # Define fallback environment variables
-    clip_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
-    facial_recognition_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION")
+    clip_model_fallback: str | None = Field(clip_model_fallback, env="MACHINE_LEARNING_PRELOAD__CLIP")
+    facial_recognition_model_fallback: str | None = Field(
+        facial_recognition_model_fallback, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
+    )
 
 
 class MaxBatchSize(BaseModel):
