@@ -15,15 +15,13 @@ from uvicorn.workers import UvicornWorker
 
 
 class ClipSettings(BaseModel):
-    model: str | None = None
-    textual: bool = True
-    visual: bool = True
+    textual: str | None = None
+    visual: str | None = None
 
 
 class FacialRecognitionSettings(BaseModel):
-    model: str | None = None
-    recognition: bool = True
-    detection: bool = True
+    recognition: str | None = None
+    detection: str | None = None
 
 
 class PreloadModelData(BaseModel):
@@ -35,16 +33,6 @@ class PreloadModelData(BaseModel):
     facial_recognition_model_fallback: str | None = Field(
         default=None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
     )
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        # Replace the values with fallbacks if necessary
-        if not self.clip.model and self.clip_model_fallback:
-            self.clip.model = self.clip_model_fallback
-
-        if not self.facial_recognition.model and self.facial_recognition_model_fallback:
-            self.facial_recognition.model = self.facial_recognition_model_fallback
 
 
 class MaxBatchSize(BaseModel):

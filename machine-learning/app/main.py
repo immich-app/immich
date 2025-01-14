@@ -77,31 +77,29 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: {preload}")
 
-    if preload.clip.model is not None:
-        if preload.clip.textual:
-            model = await model_cache.get(preload.clip.model, ModelType.TEXTUAL, ModelTask.SEARCH)
-            await load(model)
+    if preload.clip.textual is not None:
+        model = await model_cache.get(preload.clip.model, ModelType.TEXTUAL, ModelTask.SEARCH)
+        await load(model)
 
-        if preload.clip.visual:
-            model = await model_cache.get(preload.clip.model, ModelType.VISUAL, ModelTask.SEARCH)
-            await load(model)
+    if preload.clip.visual is not None:
+        model = await model_cache.get(preload.clip.model, ModelType.VISUAL, ModelTask.SEARCH)
+        await load(model)
 
-    if preload.facial_recognition.model is not None:
-        if preload.facial_recognition.detection:
-            model = await model_cache.get(
-                preload.facial_recognition.model,
-                ModelType.DETECTION,
-                ModelTask.FACIAL_RECOGNITION,
-            )
-            await load(model)
+    if preload.facial_recognition.detection is not None:
+        model = await model_cache.get(
+            preload.facial_recognition.model,
+            ModelType.DETECTION,
+            ModelTask.FACIAL_RECOGNITION,
+        )
+        await load(model)
 
-        if preload.facial_recognition.recognition:
-            model = await model_cache.get(
-                preload.facial_recognition.model,
-                ModelType.RECOGNITION,
-                ModelTask.FACIAL_RECOGNITION,
-            )
-            await load(model)
+    if preload.facial_recognition.recognition is not None:
+        model = await model_cache.get(
+            preload.facial_recognition.model,
+            ModelType.RECOGNITION,
+            ModelTask.FACIAL_RECOGNITION,
+        )
+        await load(model)
 
 
 def update_state() -> Iterator[None]:
