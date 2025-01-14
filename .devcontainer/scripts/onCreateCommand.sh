@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Enable multiarch for arm64 if necessary
 if [ "$(dpkg --print-architecture)" = "arm64" ]; then
     sudo dpkg --add-architecture amd64 && \
@@ -21,4 +23,3 @@ dart --disable-analytics
 # Install immich
 cd /immich
 make install-all
-
