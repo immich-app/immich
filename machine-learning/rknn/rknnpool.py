@@ -23,7 +23,7 @@ try:
             else:
                 is_available = False
                 soc_name = None
-    is_available = os.path.exists("/sys/kernel/debug/rknpu/load")
+    is_available = is_available and os.path.exists("/sys/kernel/debug/rknpu/load")
 except (FileNotFoundError, ImportError):
     is_available = False
     soc_name = None
@@ -79,9 +79,9 @@ class rknnPoolExecutor:
 
     def get(self) -> list[list[NDArray[np.float32]], bool]:
         if self.queue.empty():
-            return None, False
+            return None
         fut = self.queue.get()
-        return fut.result(), True
+        return fut.result()
 
     def release(self) -> None:
         self.pool.shutdown()

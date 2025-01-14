@@ -13,8 +13,8 @@ from rknn.rknnpool import rknnPoolExecutor, soc_name
 from ..config import log, settings
 
 
-def runInfrence(rknn_lite: Any, input: NDArray[np.float32]) -> list[NDArray[np.float32]]:
-    outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=[input], data_format="nchw")
+def runInfrence(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
+    outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=input, data_format="nchw")
 
     return outputs
 
@@ -66,7 +66,7 @@ class RknnSession:
         input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
-        input_data: NDArray[np.float32] = np.ascontiguousarray(list(input_feed.values())[0], dtype=np.float32)
+        input_data: list[NDArray[np.float32]]  = [np.ascontiguousarray(v) for v in input_feed.values()]
         self.rknnpool.put(input_data)
-        outputs: list[NDArray[np.float32]] = self.rknnpool.get()[0]
+        outputs: list[NDArray[np.float32]] = self.rknnpool.get()
         return outputs
