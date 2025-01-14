@@ -362,31 +362,6 @@ class TestRknnSession:
             [mock.call(f"Loaded RKNN model from {str(model_path).replace("model","rk3566")} with {tpe} threads.")]
         )
 
-    # def test_get_inputs(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
-    #     rknn_session.return_value.load.return_value = 123
-    #     rknn_session.return_value.input_shapes = {123: [(1, 3, 224, 224)]}
-    #     mocker.patch("app.sessions.rknn.soc_name", "rk3566")
-    #     session = RknnSession(Path("ViT-B-32__openai"))
-
-    #     inputs = session.get_inputs()
-
-    #     assert len(inputs) == 1
-    #     assert inputs[0].name is None
-    #     assert inputs[0].shape == (1, 3, 224, 224)
-
-    # def test_get_outputs(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
-    #     rknn_session.return_value.load.return_value = 123
-    #     rknn_session.return_value.output_shapes = {123: [(1, 3, 224, 224)]}
-    #     mocker.patch("rknn.rknnpool.is_available", True)
-    #     mocker.patch("rknn.rknnpool.soc_name", "rk3566")
-    #     session = RknnSession(Path("ViT-B-32__openai"))
-
-    #     outputs = session.get_outputs()
-
-    #     assert len(outputs) == 1
-    #     assert outputs[0].name is None
-    #     assert outputs[0].shape == (1, 3, 224, 224)
-
     def test_run(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
         rknn_session.return_value.load.return_value = 123
         np_spy = mocker.spy(np, "ascontiguousarray")
