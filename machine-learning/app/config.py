@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 from socket import socket
+from typing import Optional
 
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel, Field
@@ -12,9 +13,6 @@ from rich.console import Console
 from rich.logging import RichHandler
 from uvicorn import Server
 from uvicorn.workers import UvicornWorker
-
-# for fallback environment variables
-from typing import Optional
 
 
 class ClipSettings(BaseModel):
@@ -25,6 +23,11 @@ class ClipSettings(BaseModel):
 class FacialRecognitionSettings(BaseModel):
     recognition: str | None = None
     detection: str | None = None
+
+
+# Define str | None as a separate variable
+clip_model_fallback: str | None = None
+facial_recognition_model_fallback: str | None = None
 
 
 class PreloadModelData(BaseModel):
