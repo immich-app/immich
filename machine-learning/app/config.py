@@ -28,7 +28,7 @@ class FacialRecognitionSettings(BaseModel):
 
 class PreloadModelData(BaseModel):
     clip: ClipSettings = ClipSettings()
-    facialRecognition: FacialRecognitionSettings = FacialRecognitionSettings()
+    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
   
     # Define fallback environment variables
     clip_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
@@ -41,7 +41,7 @@ class PreloadModelData(BaseModel):
         values['clip']['model'] = values.get('clip', {}).get('model') or values.get('clip_model_fallback')
 
         # Set facialRecognition.model using fallback if facialRecognition.model is None
-        values['facialRecognition']['model'] = values.get('facialRecognition', {}).get('model') or values.get('facial_recognition_model_fallback')
+        values['facial_recognition']['model'] = values.get('facial_recognition', {}).get('model') or values.get('facial_recognition_model_fallback')
 
         return values
 
