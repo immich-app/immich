@@ -6,7 +6,7 @@ from pathlib import Path
 from socket import socket
 
 from gunicorn.arbiter import Arbiter
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, root_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from rich.console import Console
 from rich.logging import RichHandler
@@ -31,8 +31,12 @@ class PreloadModelData(BaseModel):
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
   
     # Define fallback environment variables
-    clip_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
-    facial_recognition_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION")
+    clip_model_fallback: str | None = Field(
+        None, env="MACHINE_LEARNING_PRELOAD__CLIP"
+    )
+    facial_recognition_model_fallback: str | None = Field(
+        None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
+    )
 
     # Root validator to use fallbacks
     @root_validator(pre=True)
