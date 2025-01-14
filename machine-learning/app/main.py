@@ -76,19 +76,23 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: {preload}")
-    if preload.clip is not None:
-        model = await model_cache.get(preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH)
-        await load(model)
+    if preload.clip.model is not None:
+        if preload.clip.textual:
+            model = await model_cache.get(preload.clip, ModelType.TEXTUAL, ModelTask.SEARCH)
+            await load(model)
 
-        model = await model_cache.get(preload.clip, ModelType.VISUAL, ModelTask.SEARCH)
-        await load(model)
+        if preload.clip.visual:
+            model = await model_cache.get(preload.clip, ModelType.VISUAL, ModelTask.SEARCH)
+            await load(model)
 
-    if preload.facial_recognition is not None:
-        model = await model_cache.get(preload.facial_recognition, ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
-        await load(model)
+    if preload.facial_recognition.model is not None:
+        if preload.facial_recognition.detection:
+            model = await model_cache.get(preload.facial_recognition, ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)
+            await load(model)
 
-        model = await model_cache.get(preload.facial_recognition, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
-        await load(model)
+        if preload.facial_recognition.recognition:
+            model = await model_cache.get(preload.facial_recognition, ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
+            await load(model)
 
 
 def update_state() -> Iterator[None]:
