@@ -235,7 +235,11 @@ describe(StorageTemplateService.name, () => {
       expect(assetMock.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
       expect(storageMock.checkFileExists).toHaveBeenCalledTimes(3);
       expect(storageMock.rename).toHaveBeenCalledWith(assetStub.image.originalPath, newPath);
-      expect(moveMock.update).toHaveBeenCalledWith('123');
+      expect(moveMock.update).toHaveBeenCalledWith('123', {
+        id: '123',
+        oldPath: assetStub.image.originalPath,
+        newPath,
+      });
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         originalPath: newPath,
