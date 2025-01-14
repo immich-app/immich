@@ -29,10 +29,8 @@ class PreloadModelData(BaseModel):
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
 
     # Define fallback environment variables
-    clip_model_fallback: str | None = Field(default=None, env="MACHINE_LEARNING_PRELOAD__CLIP")
-    facial_recognition_model_fallback: str | None = Field(
-        default=None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
-    )
+    clip_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__CLIP")
+    facial_recognition_model_fallback: str | None = Field(None, env="MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION")
 
 
 class MaxBatchSize(BaseModel):
