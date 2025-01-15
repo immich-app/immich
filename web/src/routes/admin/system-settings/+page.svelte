@@ -17,7 +17,7 @@
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import { Button, HStack } from '@immich/ui';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
@@ -255,31 +255,29 @@
 
   <UserPageLayout title={data.meta.title} admin>
     {#snippet buttons()}
-      <div class="flex justify-end gap-2">
+      <HStack gap={0}>
         <div class="hidden lg:block">
           <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
         </div>
-        <LinkButton onclick={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiContentCopy} size="18" />
-            {$t('copy_to_clipboard')}
-          </div>
-        </LinkButton>
-        <LinkButton onclick={() => downloadConfig()}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiDownload} size="18" />
-            {$t('export_as_json')}
-          </div>
-        </LinkButton>
+        <Button
+          onclick={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}
+          variant="ghost"
+          color="secondary"
+        >
+          <Icon path={mdiContentCopy} />
+          {$t('copy_to_clipboard')}
+        </Button>
+        <Button onclick={() => downloadConfig()} variant="ghost" color="secondary">
+          <Icon path={mdiDownload} />
+          {$t('export_as_json')}
+        </Button>
         {#if !$featureFlags.configFile}
-          <LinkButton onclick={() => inputElement?.click()}>
-            <div class="flex place-items-center gap-2 text-sm">
-              <Icon path={mdiUpload} size="18" />
-              {$t('import_from_json')}
-            </div>
-          </LinkButton>
+          <Button onclick={() => inputElement?.click()} variant="ghost" color="secondary">
+            <Icon path={mdiUpload} />
+            {$t('import_from_json')}
+          </Button>
         {/if}
-      </div>
+      </HStack>
     {/snippet}
 
     <AdminSettings bind:config bind:this={adminSettingElement}>

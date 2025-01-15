@@ -3,8 +3,6 @@
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
@@ -32,6 +30,7 @@
     updatePerson,
     type PersonResponseDto,
   } from '@immich/sdk';
+  import { Button, Text } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -393,12 +392,10 @@
             />
           </div>
         </div>
-        <LinkButton onclick={() => (selectHidden = !selectHidden)}>
-          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-            <Icon path={mdiEyeOutline} size="18" />
-            <p class="ml-2">{$t('show_and_hide_people')}</p>
-          </div>
-        </LinkButton>
+        <Button onclick={() => (selectHidden = !selectHidden)} variant="ghost" color="secondary">
+          <Icon path={mdiEyeOutline} />
+          <Text>{$t('show_and_hide_people')}</Text>
+        </Button>
       </div>
     {/if}
   {/snippet}
@@ -445,13 +442,13 @@
 
       {#snippet stickyBottom()}
         <Button
-          color="gray"
-          fullwidth
+          color="secondary"
+          fullWidth
           onclick={() => {
             showChangeNameModal = false;
           }}>{$t('cancel')}</Button
         >
-        <Button type="submit" fullwidth form="change-name-form">{$t('ok')}</Button>
+        <Button type="submit" fullWidth form="change-name-form">{$t('ok')}</Button>
       {/snippet}
     </FullScreenModal>
   {/if}

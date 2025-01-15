@@ -1,14 +1,11 @@
 <script lang="ts">
   import empty2Url from '$lib/assets/empty-2.svg';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import Albums from '$lib/components/album-page/albums-list.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
-  import type { PageData } from './$types';
-  import { createAlbumAndRedirect } from '$lib/utils/album-utils';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -17,8 +14,11 @@
     SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import Albums from '$lib/components/album-page/albums-list.svelte';
+  import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+  import { Button, HStack } from '@immich/ui';
+  import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -39,21 +39,17 @@
 
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
-    <div class="flex">
-      <LinkButton onclick={() => createAlbumAndRedirect()}>
-        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-          <Icon path={mdiPlusBoxOutline} size="18" class="shrink-0" />
-          <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>
-        </div>
-      </LinkButton>
+    <HStack gap={0}>
+      <Button onclick={() => createAlbumAndRedirect()} variant="ghost" color="secondary">
+        <Icon path={mdiPlusBoxOutline} class="shrink-0" />
+        <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>
+      </Button>
 
-      <LinkButton href={AppRoute.SHARED_LINKS}>
-        <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-          <Icon path={mdiLink} size="18" class="shrink-0" />
-          <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>
-        </div>
-      </LinkButton>
-    </div>
+      <Button href={AppRoute.SHARED_LINKS} variant="ghost" color="secondary">
+        <Icon path={mdiLink} class="shrink-0" />
+        <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>
+      </Button>
+    </HStack>
   {/snippet}
 
   <div class="flex flex-col">
