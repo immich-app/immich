@@ -316,7 +316,7 @@ export class LibraryService extends BaseService {
       }
     }
 
-    const library = await this.libraryRepository.update({ id, ...dto });
+    const library = await this.libraryRepository.update(id, dto);
     return mapLibrary(library);
   }
 
@@ -656,7 +656,7 @@ export class LibraryService extends BaseService {
       this.logger.log(`All ${crawlCount} file(s) on disk are already in library ${library.id}`);
     }
 
-    await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });
+    await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }

@@ -14,9 +14,41 @@ from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
 
+class ClipSettings(BaseModel):
+    textual: str | None = None
+    visual: str | None = None
+
+
+class FacialRecognitionSettings(BaseModel):
+    recognition: str | None = None
+    detection: str | None = None
+
+
 class PreloadModelData(BaseModel):
-    clip: str | None = None
-    facial_recognition: str | None = None
+    clip: ClipSettings = ClipSettings()
+    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
+
+    clip_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
+    facial_recognition_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
+
+    def update_from_fallbacks(self) -> None:
+        if self.clip_model_fallback:
+            self.clip.textual = self.clip_model_fallback
+            self.clip.visual = self.clip_model_fallback
+            log.warning(
+                "Deprecated env variable: MACHINE_LEARNING_PRELOAD__CLIP. "
+                "Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL and "
+                "MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
+            )
+
+        if self.facial_recognition_model_fallback:
+            self.facial_recognition.recognition = self.facial_recognition_model_fallback
+            self.facial_recognition.detection = self.facial_recognition_model_fallback
+            log.warning(
+                "Deprecated environment variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. "
+                "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION and "
+                "MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION instead."
+            )
 
 
 class MaxBatchSize(BaseModel):

@@ -2,7 +2,11 @@ import plugin from 'tailwindcss/plugin';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./src/**/*.{html,js,svelte,ts}', './node_modules/@immich/ui/dist/**/*.{svelte,js}'],
+  content: [
+    './src/**/*.{html,js,svelte,ts}',
+    './node_modules/@immich/ui/dist/**/*.{svelte,js}',
+    '../../ui/src/**/*.{html,js,svelte,ts}',
+  ],
   darkMode: 'class',
   theme: {
     extend: {

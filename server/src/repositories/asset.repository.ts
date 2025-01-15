@@ -801,8 +801,6 @@ export class AssetRepository implements IAssetRepository {
       .where('libraryId', '=', asUuid(options.libraryId!))
       .executeTakeFirstOrThrow();
 
-    console.log(count);
-
     return count as number;
   }
 }
