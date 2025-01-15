@@ -86,6 +86,7 @@ class SqlGenerator {
               this.sqlLogger.logQuery(event.query.sql);
             } else if (event.level === 'error') {
               this.sqlLogger.logQueryError(event.error as Error, event.query.sql);
+              this.sqlLogger.logQuery(event.query.sql);
             }
           },
         }),
