@@ -77,3 +77,9 @@ from
 where
   "memoriesId" = $1
   and "assetsId" in ($2)
+
+-- MemoryRepository.addAssetIds
+insert into
+  "memories_assets_assets" ("memoriesId", "assetsId")
+values
+  ($1, $2)
