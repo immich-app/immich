@@ -20,14 +20,14 @@ import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
-import { repositories } from 'src/repositories';
+import { providers, repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { teardownTelemetry } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 
-const common = [...services, ...repositories];
+const common = [...services, ...providers, ...repositories];
 
 const middleware = [
   FileUploadInterceptor,
@@ -73,7 +73,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    this.telemetryRepository.setup({ repositories: repositories.map(({ useClass }) => useClass) });
+    this.telemetryRepository.setup({ repositories: [...providers.map(({ useClass }) => useClass), ...repositories] });
 
     this.jobRepository.setup({ services });
     if (this.worker === ImmichWorker.MICROSERVICES) {
