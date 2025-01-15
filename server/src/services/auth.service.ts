@@ -65,7 +65,7 @@ export class AuthService extends BaseService {
     if (user) {
       const isAuthenticated = this.validatePassword(dto.password, user);
       if (!isAuthenticated) {
-        user = null;
+        user = undefined;
       }
     }
 
@@ -331,7 +331,7 @@ export class AuthService extends BaseService {
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
       if (diff.hours > 1) {
-        await this.sessionRepository.update({ id: session.id, updatedAt: new Date() });
+        await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
       return { user: session.user, session };
@@ -346,9 +346,9 @@ export class AuthService extends BaseService {
 
     await this.sessionRepository.create({
       token,
-      user,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
+      userId: user.id,
     });
 
     return mapLoginResponse(user, key);
