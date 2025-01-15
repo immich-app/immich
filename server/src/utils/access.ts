@@ -114,7 +114,9 @@ const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessR
     // uses activity id
     case Permission.ACTIVITY_DELETE: {
       const isOwner = await access.activity.checkOwnerAccess(auth.user.id, ids);
+      console.log('isOwner', isOwner);
       const isAlbumOwner = await access.activity.checkAlbumOwnerAccess(auth.user.id, setDifference(ids, isOwner));
+      console.log('isAlbumOwner', isAlbumOwner);
       return setUnion(isOwner, isAlbumOwner);
     }
 

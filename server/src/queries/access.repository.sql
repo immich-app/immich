@@ -18,7 +18,7 @@ from
   and "albums"."deletedAt" is null
 where
   "activity"."id" in ($1)
-  and "albums"."ownerId" = "activity"."userId"
+  and "albums"."ownerId" = $2::uuid
 
 -- AccessRepository.activity.checkCreateAccess
 select

@@ -6,6 +6,7 @@ import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 
 import { AlbumUserRole } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
+import { asUuid } from 'src/utils/database';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -35,7 +36,10 @@ class ActivityAccess implements IActivityAccess {
       .where('activity.id', 'in', [...activityIds])
       .where('activity.userId', '=', userId)
       .execute()
-      .then((activities) => new Set(activities.map((activity) => activity.id)));
+      .then((activities) => {
+        console.log('activities', activities);
+        return new Set(activities.map((activity) => activity.id));
+      });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -50,7 +54,7 @@ class ActivityAccess implements IActivityAccess {
       .select('activity.id')
       .leftJoin('albums', (join) => join.onRef('activity.albumId', '=', 'albums.id').on('albums.deletedAt', 'is', null))
       .where('activity.id', 'in', [...activityIds])
-      .whereRef('albums.ownerId', '=', 'activity.userId')
+      .whereRef('albums.ownerId', '=', asUuid(userId))
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
