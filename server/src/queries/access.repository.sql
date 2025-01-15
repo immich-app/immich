@@ -155,6 +155,7 @@ from
 where
   "memories"."id" in ($1)
   and "memories"."ownerId" = $2
+  and "memories"."deletedAt" is null
 
 -- AccessRepository.person.checkOwnerAccess
 select

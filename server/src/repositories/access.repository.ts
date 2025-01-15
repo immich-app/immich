@@ -345,6 +345,7 @@ class MemoryAccess implements IMemoryAccess {
       .select('memories.id')
       .where('memories.id', 'in', [...memoryIds])
       .where('memories.ownerId', '=', userId)
+      .where('memories.deletedAt', 'is', null)
       .execute()
       .then((memories) => new Set(memories.map((memory) => memory.id)));
   }
