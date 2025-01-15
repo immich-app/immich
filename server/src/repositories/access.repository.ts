@@ -211,7 +211,9 @@ class AssetAccess implements IAssetAccess {
       .innerJoin('users as sharedBy', (join) =>
         join.onRef('sharedBy.id', '=', 'partner.sharedById').on('sharedBy.deletedAt', 'is', null),
       )
-      .innerJoin('assets', (join) => join.onRef('assets.id', '=', 'sharedBy.id').on('assets.deletedAt', 'is', null))
+      .innerJoin('assets', (join) =>
+        join.onRef('assets.ownerId', '=', 'sharedBy.id').on('assets.deletedAt', 'is', null),
+      )
       .select('assets.id')
       .where('partner.sharedWithId', '=', userId)
       .where('assets.isArchived', '=', false)
