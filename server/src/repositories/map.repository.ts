@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
-import { Kysely, sql } from 'kysely';
+import { Expression, Kysely, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { createReadStream, existsSync } from 'node:fs';
@@ -8,6 +8,7 @@ import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
+import { AssetEntity, withExif } from 'src/entities/asset.entity';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { LogLevel, SystemMetadataKey } from 'src/enum';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -20,9 +21,6 @@ import {
   ReverseGeocodeResult,
 } from 'src/interfaces/map.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { OptionalBetween } from 'src/utils/database';
-import { IsNull, Not } from 'typeorm';
-import { AssetEntity, withExif } from '../entities/asset.entity';
 
 interface MapDB extends DB {
   geodata_places_tmp: GeodataPlaces;
@@ -68,30 +66,32 @@ export class MapRepository implements IMapRepository {
   ): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
-    const where = {
-      isVisible: true,
-      isArchived,
-      exifInfo: {
-        latitude: Not(IsNull()),
-        longitude: Not(IsNull()),
-      },
-      isFavorite,
-      fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-    };
-
     const assets = (await this.db
       .selectFrom('assets')
       .$call(withExif)
       .select('id')
-      .innerJoin('albums_assets_assets', (join) => join.onRef('assets.id', '=', 'albums_assets_assets.assetsId'))
+      .leftJoin('albums_assets_assets', (join) => join.onRef('assets.id', '=', 'albums_assets_assets.assetsId'))
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
+      .where('deletedAt', 'is', null)
       .where('exif.latitude', 'is not', null)
       .where('exif.longitude', 'is not', null)
-      .where((eb) => eb.or([eb('ownerId', 'in', ownerIds), eb('albums_assets_assets.albumsId', 'in', albumIds)]))
+      .where((eb) => {
+        const ors: Expression<SqlBool>[] = [];
+
+        if (ownerIds.length > 0) {
+          ors.push(eb('ownerId', 'in', ownerIds));
+        }
+
+        if (albumIds.length > 0) {
+          ors.push(eb('albums_assets_assets.albumsId', 'in', albumIds));
+        }
+
+        return eb.or(ors);
+      })
       .orderBy('fileCreatedAt', 'desc')
       .execute()) as any as AssetEntity[];
 
@@ -112,12 +112,12 @@ export class MapRepository implements IMapRepository {
       .selectFrom('geodata_places')
       .selectAll()
       .where(
-        sql`(earth_box(ll_to_earth_public(${point.longitude}, ${point.latitude}), 25000))`,
+        sql`earth_box(ll_to_earth_public(${point.latitude}, ${point.longitude}), 25000)`,
         '@>',
-        'll_to_earth_public(latitude, longitude)',
+        sql`ll_to_earth_public(latitude, longitude)`,
       )
       .orderBy(
-        sql`(earth_distance(ll_to_earth_public(${point.longitude}, ${point.latitude}), ll_to_earth_public(latitude, longitude)))`,
+        sql`(earth_distance(ll_to_earth_public(${point.latitude}, ${point.longitude}), ll_to_earth_public(latitude, longitude)))`,
       )
       .limit(1)
       .executeTakeFirst();
@@ -141,7 +141,7 @@ export class MapRepository implements IMapRepository {
     const ne_response = await this.db
       .selectFrom('naturalearth_countries')
       .selectAll()
-      .where('coordinates', '@>', `point(${point.longitude}, ${point.latitude}`)
+      .where('coordinates', '@>', sql<string>`point(${point.longitude}, ${point.latitude})`)
       .limit(1)
       .executeTakeFirst();
 
@@ -304,26 +304,26 @@ export class MapRepository implements IMapRepository {
     return Promise.all([
       sql`ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db),
       sql`
-        CREATE INDEX IDX_geodata_gist_earthcoord_${randomUUID().replaceAll('-', '_')}
+        CREATE INDEX IDX_geodata_gist_earthcoord_${sql.raw(randomUUID().replaceAll('-', '_'))}
                 ON geodata_places_tmp
                 USING gist (ll_to_earth_public(latitude, longitude))
                 WITH (fillfactor = 100)
       `.execute(this.db),
-      sql`
-        CREATE INDEX idx_geodata_places_name_${randomUUID().replaceAll('-', '_')}
-                  ON geodata_places_tmp
-                  USING gin (f_unaccent(name) gin_trgm_ops)
-      `.execute(this.db),
-      sql`
-        CREATE INDEX idx_geodata_places_admin1_name_${randomUUID().replaceAll('-', '_')}
-                  ON geodata_places_tmp
-                  USING gin (f_unaccent("admin1Name") gin_trgm_ops)
-      `.execute(this.db),
-      sql`
-        CREATE INDEX idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}
-                  ON geodata_places_tmp
-                  USING gin (f_unaccent("admin2Name") gin_trgm_ops)
-      `.execute(this.db),
+      this.db.schema
+        .createIndex(`idx_geodata_places_country_code_${randomUUID().replaceAll('-', '_')}`)
+        .on('geodata_places_tmp')
+        .using('gin (f_unaccent(name) gin_trgm_ops)')
+        .execute(),
+      this.db.schema
+        .createIndex(`idx_geodata_places_country_code_${randomUUID().replaceAll('-', '_')}`)
+        .on('geodata_places_tmp')
+        .using('gin (f_unaccent("admin1Name") gin_trgm_ops)')
+        .execute(),
+      this.db.schema
+        .createIndex(`idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}`)
+        .on('geodata_places_tmp')
+        .using('gin (f_unaccent("admin2Name") gin_trgm_ops)')
+        .execute(),
     ]);
   }
 }

@@ -194,7 +194,16 @@ const getEnv = (): EnvData => {
           dialect: new PostgresJSDialect({
             postgres: databaseUrl ? postgres(databaseUrl, driverOptions) : postgres({ ...parts, ...driverOptions }),
           }),
-          log: ['error'] as const,
+          log(event) {
+            if (event.level === 'error') {
+              console.error('Query failed :', {
+                durationMs: event.queryDurationMillis,
+                error: event.error,
+                sql: event.query.sql,
+                params: event.query.parameters,
+              });
+            }
+          },
         },
       },
 
