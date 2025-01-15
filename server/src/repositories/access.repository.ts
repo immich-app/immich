@@ -1,21 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-
-import { MemoryEntity } from 'src/entities/memory.entity';
-import { PartnerEntity } from 'src/entities/partner.entity';
-import { PersonEntity } from 'src/entities/person.entity';
-import { SessionEntity } from 'src/entities/session.entity';
-import { StackEntity } from 'src/entities/stack.entity';
-import { TagEntity } from 'src/entities/tag.entity';
 import { AlbumUserRole } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { In, Repository } from 'typeorm';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -281,10 +271,7 @@ class AssetAccess implements IAssetAccess {
 }
 
 class AuthDeviceAccess implements IAuthDeviceAccess {
-  constructor(
-    private sessionRepository: Repository<SessionEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -293,23 +280,18 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
       return new Set();
     }
 
-    return this.sessionRepository
-      .find({
-        select: { id: true },
-        where: {
-          userId,
-          id: In([...deviceIds]),
-        },
-      })
+    return this.db
+      .selectFrom('sessions')
+      .select('sessions.id')
+      .where('sessions.userId', '=', userId)
+      .where('sessions.id', 'in', [...deviceIds])
+      .execute()
       .then((tokens) => new Set(tokens.map((token) => token.id)));
   }
 }
 
 class StackAccess implements IStackAccess {
-  constructor(
-    private stackRepository: Repository<StackEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -318,23 +300,18 @@ class StackAccess implements IStackAccess {
       return new Set();
     }
 
-    return this.stackRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...stackIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('asset_stack as stacks')
+      .select('stacks.id')
+      .where('stacks.id', 'in', [...stackIds])
+      .where('stacks.ownerId', '=', userId)
+      .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
 }
 
 class TimelineAccess implements ITimelineAccess {
-  constructor(
-    private partnerRepository: Repository<PartnerEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -343,21 +320,18 @@ class TimelineAccess implements ITimelineAccess {
       return new Set();
     }
 
-    return this.partnerRepository
-      .createQueryBuilder('partner')
-      .select('partner.sharedById')
-      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
-      .andWhere('partner.sharedWithId = :userId', { userId })
-      .getMany()
+    return this.db
+      .selectFrom('partners')
+      .select('partners.sharedById')
+      .where('partners.sharedById', 'in', [...partnerIds])
+      .where('partners.sharedWithId', '=', userId)
+      .execute()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 
 class MemoryAccess implements IMemoryAccess {
-  constructor(
-    private memoryRepository: Repository<MemoryEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -366,24 +340,18 @@ class MemoryAccess implements IMemoryAccess {
       return new Set();
     }
 
-    return this.memoryRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...memoryIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('memories')
+      .select('memories.id')
+      .where('memories.id', 'in', [...memoryIds])
+      .where('memories.ownerId', '=', userId)
+      .execute()
       .then((memories) => new Set(memories.map((memory) => memory.id)));
   }
 }
 
 class PersonAccess implements IPersonAccess {
-  constructor(
-    private assetFaceRepository: Repository<AssetFaceEntity>,
-    private personRepository: Repository<PersonEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -392,14 +360,12 @@ class PersonAccess implements IPersonAccess {
       return new Set();
     }
 
-    return this.personRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...personIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('person')
+      .select('person.id')
+      .where('person.id', 'in', [...personIds])
+      .where('person.ownerId', '=', userId)
+      .execute()
       .then((persons) => new Set(persons.map((person) => person.id)));
   }
 
@@ -410,25 +376,21 @@ class PersonAccess implements IPersonAccess {
       return new Set();
     }
 
-    return this.assetFaceRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...assetFaceIds]),
-          asset: {
-            ownerId: userId,
-          },
-        },
-      })
+    return this.db
+      .selectFrom('asset_faces')
+      .select('asset_faces.id')
+      .leftJoin('assets', (join) =>
+        join.onRef('assets.id', '=', 'asset_faces.assetId').on('assets.deletedAt', 'is', null),
+      )
+      .where('asset_faces.id', 'in', [...assetFaceIds])
+      .where('assets.ownerId', '=', userId)
+      .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
   }
 }
 
 class PartnerAccess implements IPartnerAccess {
-  constructor(
-    private partnerRepository: Repository<PartnerEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -437,21 +399,18 @@ class PartnerAccess implements IPartnerAccess {
       return new Set();
     }
 
-    return this.partnerRepository
-      .createQueryBuilder('partner')
-      .select('partner.sharedById')
-      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
-      .andWhere('partner.sharedWithId = :userId', { userId })
-      .getMany()
+    return this.db
+      .selectFrom('partners')
+      .select('partners.sharedById')
+      .where('partners.sharedById', 'in', [...partnerIds])
+      .where('partners.sharedWithId', '=', userId)
+      .execute()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 
 class TagAccess implements ITagAccess {
-  constructor(
-    private tagRepository: Repository<TagEntity>,
-    private db: Kysely<DB>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -460,14 +419,12 @@ class TagAccess implements ITagAccess {
       return new Set();
     }
 
-    return this.tagRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...tagIds]),
-          userId,
-        },
-      })
+    return this.db
+      .selectFrom('tags')
+      .select('tags.id')
+      .where('tags.id', 'in', [...tagIds])
+      .where('tags.userId', '=', userId)
+      .execute()
       .then((tags) => new Set(tags.map((tag) => tag.id)));
   }
 }
@@ -484,25 +441,16 @@ export class AccessRepository implements IAccessRepository {
   tag: ITagAccess;
   timeline: ITimelineAccess;
 
-  constructor(
-    @InjectRepository(MemoryEntity) memoryRepository: Repository<MemoryEntity>,
-    @InjectRepository(PartnerEntity) partnerRepository: Repository<PartnerEntity>,
-    @InjectRepository(PersonEntity) personRepository: Repository<PersonEntity>,
-    @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
-    @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
-    @InjectRepository(StackEntity) stackRepository: Repository<StackEntity>,
-    @InjectRepository(TagEntity) tagRepository: Repository<TagEntity>,
-    @InjectKysely() db: Kysely<DB>,
-  ) {
+  constructor(@InjectKysely() db: Kysely<DB>) {
     this.activity = new ActivityAccess(db);
     this.album = new AlbumAccess(db);
     this.asset = new AssetAccess(db);
-    this.authDevice = new AuthDeviceAccess(sessionRepository, db);
-    this.memory = new MemoryAccess(memoryRepository, db);
-    this.person = new PersonAccess(assetFaceRepository, personRepository, db);
-    this.partner = new PartnerAccess(partnerRepository, db);
-    this.stack = new StackAccess(stackRepository, db);
-    this.tag = new TagAccess(tagRepository, db);
-    this.timeline = new TimelineAccess(partnerRepository, db);
+    this.authDevice = new AuthDeviceAccess(db);
+    this.memory = new MemoryAccess(db);
+    this.person = new PersonAccess(db);
+    this.partner = new PartnerAccess(db);
+    this.stack = new StackAccess(db);
+    this.tag = new TagAccess(db);
+    this.timeline = new TimelineAccess(db);
   }
 }

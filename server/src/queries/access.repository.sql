@@ -139,100 +139,75 @@ where
   ] && array[$2]::uuid []
 
 -- AccessRepository.authDevice.checkOwnerAccess
-SELECT
-  "SessionEntity"."id" AS "SessionEntity_id"
-FROM
-  "sessions" "SessionEntity"
-WHERE
-  (
-    ("SessionEntity"."userId" = $1)
-    AND ("SessionEntity"."id" IN ($2))
-  )
+select
+  "sessions"."id"
+from
+  "sessions"
+where
+  "sessions"."userId" = $1
+  and "sessions"."id" in ($2)
 
 -- AccessRepository.memory.checkOwnerAccess
-SELECT
-  "MemoryEntity"."id" AS "MemoryEntity_id"
-FROM
-  "memories" "MemoryEntity"
-WHERE
-  (
-    (
-      ("MemoryEntity"."id" IN ($1))
-      AND ("MemoryEntity"."ownerId" = $2)
-    )
-  )
-  AND ("MemoryEntity"."deletedAt" IS NULL)
+select
+  "memories"."id"
+from
+  "memories"
+where
+  "memories"."id" in ($1)
+  and "memories"."ownerId" = $2
 
 -- AccessRepository.person.checkOwnerAccess
-SELECT
-  "PersonEntity"."id" AS "PersonEntity_id"
-FROM
-  "person" "PersonEntity"
-WHERE
-  (
-    ("PersonEntity"."id" IN ($1))
-    AND ("PersonEntity"."ownerId" = $2)
-  )
+select
+  "person"."id"
+from
+  "person"
+where
+  "person"."id" in ($1)
+  and "person"."ownerId" = $2
 
 -- AccessRepository.person.checkFaceOwnerAccess
-SELECT
-  "AssetFaceEntity"."id" AS "AssetFaceEntity_id"
-FROM
-  "asset_faces" "AssetFaceEntity"
-  LEFT JOIN "assets" "AssetFaceEntity__AssetFaceEntity_asset" ON "AssetFaceEntity__AssetFaceEntity_asset"."id" = "AssetFaceEntity"."assetId"
-  AND (
-    "AssetFaceEntity__AssetFaceEntity_asset"."deletedAt" IS NULL
-  )
-WHERE
-  (
-    ("AssetFaceEntity"."id" IN ($1))
-    AND (
-      (
-        (
-          "AssetFaceEntity__AssetFaceEntity_asset"."ownerId" = $2
-        )
-      )
-    )
-  )
+select
+  "asset_faces"."id"
+from
+  "asset_faces"
+  left join "assets" on "assets"."id" = "asset_faces"."assetId"
+  and "assets"."deletedAt" is null
+where
+  "asset_faces"."id" in ($1)
+  and "assets"."ownerId" = $2
 
 -- AccessRepository.partner.checkUpdateAccess
-SELECT
-  "partner"."sharedById" AS "partner_sharedById",
-  "partner"."sharedWithId" AS "partner_sharedWithId"
-FROM
-  "partners" "partner"
-WHERE
-  "partner"."sharedById" IN ($1)
-  AND "partner"."sharedWithId" = $2
+select
+  "partners"."sharedById"
+from
+  "partners"
+where
+  "partners"."sharedById" in ($1)
+  and "partners"."sharedWithId" = $2
 
 -- AccessRepository.stack.checkOwnerAccess
-SELECT
-  "StackEntity"."id" AS "StackEntity_id"
-FROM
-  "asset_stack" "StackEntity"
-WHERE
-  (
-    ("StackEntity"."id" IN ($1))
-    AND ("StackEntity"."ownerId" = $2)
-  )
+select
+  "stacks"."id"
+from
+  "asset_stack" as "stacks"
+where
+  "stacks"."id" in ($1)
+  and "stacks"."ownerId" = $2
 
 -- AccessRepository.tag.checkOwnerAccess
-SELECT
-  "TagEntity"."id" AS "TagEntity_id"
-FROM
-  "tags" "TagEntity"
-WHERE
-  (
-    ("TagEntity"."id" IN ($1))
-    AND ("TagEntity"."userId" = $2)
-  )
+select
+  "tags"."id"
+from
+  "tags"
+where
+  "tags"."id" in ($1)
+  and "tags"."userId" = $2
 
 -- AccessRepository.timeline.checkPartnerAccess
-SELECT
-  "partner"."sharedById" AS "partner_sharedById",
-  "partner"."sharedWithId" AS "partner_sharedWithId"
-FROM
-  "partners" "partner"
-WHERE
-  "partner"."sharedById" IN ($1)
-  AND "partner"."sharedWithId" = $2
+select
+  "partners"."sharedById"
+from
+  "partners"
+where
+  "partners"."sharedById" in ($1)
+  and "partners"."sharedWithId" = $2
