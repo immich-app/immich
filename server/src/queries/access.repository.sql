@@ -106,7 +106,7 @@ from
   "partners" as "partner"
   inner join "users" as "sharedBy" on "sharedBy"."id" = "partner"."sharedById"
   and "sharedBy"."deletedAt" is null
-  inner join "assets" on "assets"."id" = "sharedBy"."id"
+  inner join "assets" on "assets"."ownerId" = "sharedBy"."id"
   and "assets"."deletedAt" is null
 where
   "partner"."sharedWithId" = $1
