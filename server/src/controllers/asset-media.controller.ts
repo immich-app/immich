@@ -15,7 +15,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import {
@@ -95,6 +95,10 @@ export class AssetMediaController {
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
+  @ApiOperation({
+    summary: 'replaceAsset',
+    description: 'Replace the asset with new file, without changing its id',
+  })
   @Authenticated({ sharedLink: true })
   async replaceAsset(
     @Auth() auth: AuthDto,
@@ -142,6 +146,10 @@ export class AssetMediaController {
    */
   @Post('exist')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'checkExistingAssets',
+    description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
+  })
   @Authenticated()
   checkExistingAssets(
     @Auth() auth: AuthDto,
@@ -155,6 +163,10 @@ export class AssetMediaController {
    */
   @Post('bulk-upload-check')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'checkBulkUpload',
+    description: 'Checks if assets exist by checksums',
+  })
   @Authenticated()
   checkBulkUpload(
     @Auth() auth: AuthDto,
