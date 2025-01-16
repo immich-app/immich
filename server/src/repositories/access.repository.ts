@@ -1,21 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Kysely, sql } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { ActivityEntity } from 'src/entities/activity.entity';
-import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
-import { MemoryEntity } from 'src/entities/memory.entity';
-import { PartnerEntity } from 'src/entities/partner.entity';
-import { PersonEntity } from 'src/entities/person.entity';
-import { SessionEntity } from 'src/entities/session.entity';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { StackEntity } from 'src/entities/stack.entity';
-import { TagEntity } from 'src/entities/tag.entity';
+
 import { AlbumUserRole } from 'src/enum';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { Brackets, In, Repository } from 'typeorm';
+import { asUuid } from 'src/utils/database';
 
 type IActivityAccess = IAccessRepository['activity'];
 type IAlbumAccess = IAccessRepository['album'];
@@ -30,10 +21,7 @@ type ITimelineAccess = IAccessRepository['timeline'];
 
 @Injectable()
 class ActivityAccess implements IActivityAccess {
-  constructor(
-    private activityRepository: Repository<ActivityEntity>,
-    private albumRepository: Repository<AlbumEntity>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -42,15 +30,16 @@ class ActivityAccess implements IActivityAccess {
       return new Set();
     }
 
-    return this.activityRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...activityIds]),
-          userId,
-        },
-      })
-      .then((activities) => new Set(activities.map((activity) => activity.id)));
+    return this.db
+      .selectFrom('activity')
+      .select('activity.id')
+      .where('activity.id', 'in', [...activityIds])
+      .where('activity.userId', '=', userId)
+      .execute()
+      .then((activities) => {
+        console.log('activities', activities);
+        return new Set(activities.map((activity) => activity.id));
+      });
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -60,16 +49,13 @@ class ActivityAccess implements IActivityAccess {
       return new Set();
     }
 
-    return this.activityRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...activityIds]),
-          album: {
-            ownerId: userId,
-          },
-        },
-      })
+    return this.db
+      .selectFrom('activity')
+      .select('activity.id')
+      .leftJoin('albums', (join) => join.onRef('activity.albumId', '=', 'albums.id').on('albums.deletedAt', 'is', null))
+      .where('activity.id', 'in', [...activityIds])
+      .whereRef('albums.ownerId', '=', asUuid(userId))
+      .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
@@ -80,28 +66,22 @@ class ActivityAccess implements IActivityAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .createQueryBuilder('album')
-      .select('album.id')
-      .leftJoin('album.albumUsers', 'album_albumUsers_users')
-      .leftJoin('album_albumUsers_users.user', 'albumUsers')
-      .where('album.id IN (:...albumIds)', { albumIds: [...albumIds] })
-      .andWhere('album.isActivityEnabled = true')
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
-        }),
-      )
-      .getMany()
+    return this.db
+      .selectFrom('albums')
+      .select('albums.id')
+      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
+      .where('albums.id', 'in', [...albumIds])
+      .where('albums.isActivityEnabled', '=', true)
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
+      .where('albums.deletedAt', 'is', null)
+      .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 }
 
 class AlbumAccess implements IAlbumAccess {
-  constructor(
-    private albumRepository: Repository<AlbumEntity>,
-    private sharedLinkRepository: Repository<SharedLinkEntity>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -110,14 +90,13 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...albumIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('albums')
+      .select('albums.id')
+      .where('albums.id', 'in', [...albumIds])
+      .where('albums.ownerId', '=', userId)
+      .where('albums.deletedAt', 'is', null)
+      .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
@@ -128,19 +107,19 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...albumIds]),
-          albumUsers: {
-            user: { id: userId },
-            // If editor access is needed we check for it, otherwise both are accepted
-            role:
-              access === AlbumUserRole.EDITOR ? AlbumUserRole.EDITOR : In([AlbumUserRole.EDITOR, AlbumUserRole.VIEWER]),
-          },
-        },
-      })
+    const accessRole =
+      access === AlbumUserRole.EDITOR ? [AlbumUserRole.EDITOR] : [AlbumUserRole.EDITOR, AlbumUserRole.VIEWER];
+
+    return this.db
+      .selectFrom('albums')
+      .select('albums.id')
+      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
+      .where('albums.id', 'in', [...albumIds])
+      .where('albums.deletedAt', 'is', null)
+      .where('users.id', '=', userId)
+      .where('albumUsers.role', 'in', [...accessRole])
+      .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
@@ -151,14 +130,12 @@ class AlbumAccess implements IAlbumAccess {
       return new Set();
     }
 
-    return this.sharedLinkRepository
-      .find({
-        select: { albumId: true },
-        where: {
-          id: sharedLinkId,
-          albumId: In([...albumIds]),
-        },
-      })
+    return this.db
+      .selectFrom('shared_links')
+      .select('shared_links.albumId')
+      .where('shared_links.id', '=', sharedLinkId)
+      .where('shared_links.albumId', 'in', [...albumIds])
+      .execute()
       .then(
         (sharedLinks) => new Set(sharedLinks.flatMap((sharedLink) => (sharedLink.albumId ? [sharedLink.albumId] : []))),
       );
@@ -166,12 +143,7 @@ class AlbumAccess implements IAlbumAccess {
 }
 
 class AssetAccess implements IAssetAccess {
-  constructor(
-    private albumRepository: Repository<AlbumEntity>,
-    private assetRepository: Repository<AssetEntity>,
-    private partnerRepository: Repository<PartnerEntity>,
-    private sharedLinkRepository: Repository<SharedLinkEntity>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -180,30 +152,31 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.albumRepository
-      .createQueryBuilder('album')
-      .innerJoin('album.assets', 'asset')
-      .leftJoin('album.albumUsers', 'album_albumUsers_users')
-      .leftJoin('album_albumUsers_users.user', 'albumUsers')
-      .select('asset.id', 'assetId')
-      .addSelect('asset.livePhotoVideoId', 'livePhotoVideoId')
-      .where('array["asset"."id", "asset"."livePhotoVideoId"] && array[:...assetIds]::uuid[]', {
-        assetIds: [...assetIds],
-      })
-      .andWhere(
-        new Brackets((qb) => {
-          qb.where('album.ownerId = :userId', { userId }).orWhere('albumUsers.id = :userId', { userId });
-        }),
+    return this.db
+      .selectFrom('albums')
+      .innerJoin('albums_assets_assets as albumAssets', 'albums.id', 'albumAssets.albumsId')
+      .innerJoin('assets', (join) =>
+        join.onRef('assets.id', '=', 'albumAssets.assetsId').on('assets.deletedAt', 'is', null),
       )
-      .getRawMany()
-      .then((rows) => {
+      .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
+      .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
+      .select(['assets.id', 'assets.livePhotoVideoId'])
+      .where(
+        sql`array["assets"."id", "assets"."livePhotoVideoId"]`,
+        '&&',
+        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      )
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('users.id', '=', userId)]))
+      .where('albums.deletedAt', 'is', null)
+      .execute()
+      .then((assets) => {
         const allowedIds = new Set<string>();
-        for (const row of rows) {
-          if (row.assetId && assetIds.has(row.assetId)) {
-            allowedIds.add(row.assetId);
+        for (const asset of assets) {
+          if (asset.id && assetIds.has(asset.id)) {
+            allowedIds.add(asset.id);
           }
-          if (row.livePhotoVideoId && assetIds.has(row.livePhotoVideoId)) {
-            allowedIds.add(row.livePhotoVideoId);
+          if (asset.livePhotoVideoId && assetIds.has(asset.livePhotoVideoId)) {
+            allowedIds.add(asset.livePhotoVideoId);
           }
         }
         return allowedIds;
@@ -217,15 +190,12 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.assetRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...assetIds]),
-          ownerId: userId,
-        },
-        withDeleted: true,
-      })
+    return this.db
+      .selectFrom('assets')
+      .select('assets.id')
+      .where('assets.id', 'in', [...assetIds])
+      .where('assets.ownerId', '=', userId)
+      .execute()
       .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
@@ -236,16 +206,20 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.partnerRepository
-      .createQueryBuilder('partner')
-      .innerJoin('partner.sharedBy', 'sharedBy')
-      .innerJoin('sharedBy.assets', 'asset')
-      .select('asset.id', 'assetId')
-      .where('partner.sharedWithId = :userId', { userId })
-      .andWhere('asset.isArchived = false')
-      .andWhere('asset.id IN (:...assetIds)', { assetIds: [...assetIds] })
-      .getRawMany()
-      .then((rows) => new Set(rows.map((row) => row.assetId)));
+    return this.db
+      .selectFrom('partners as partner')
+      .innerJoin('users as sharedBy', (join) =>
+        join.onRef('sharedBy.id', '=', 'partner.sharedById').on('sharedBy.deletedAt', 'is', null),
+      )
+      .innerJoin('assets', (join) =>
+        join.onRef('assets.ownerId', '=', 'sharedBy.id').on('assets.deletedAt', 'is', null),
+      )
+      .select('assets.id')
+      .where('partner.sharedWithId', '=', userId)
+      .where('assets.isArchived', '=', false)
+      .where('assets.id', 'in', [...assetIds])
+      .execute()
+      .then((assets) => new Set(assets.map((asset) => asset.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
@@ -255,23 +229,32 @@ class AssetAccess implements IAssetAccess {
       return new Set();
     }
 
-    return this.sharedLinkRepository
-      .createQueryBuilder('sharedLink')
-      .leftJoin('sharedLink.album', 'album')
-      .leftJoin('sharedLink.assets', 'assets')
-      .leftJoin('album.assets', 'albumAssets')
-      .select('assets.id', 'assetId')
-      .addSelect('albumAssets.id', 'albumAssetId')
-      .addSelect('assets.livePhotoVideoId', 'assetLivePhotoVideoId')
-      .addSelect('albumAssets.livePhotoVideoId', 'albumAssetLivePhotoVideoId')
-      .where('sharedLink.id = :sharedLinkId', { sharedLinkId })
-      .andWhere(
-        'array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"] && array[:...assetIds]::uuid[]',
-        {
-          assetIds: [...assetIds],
-        },
+    return this.db
+      .selectFrom('shared_links')
+      .leftJoin('albums', (join) =>
+        join.onRef('albums.id', '=', 'shared_links.albumId').on('albums.deletedAt', 'is', null),
       )
-      .getRawMany()
+      .leftJoin('shared_link__asset', 'shared_link__asset.sharedLinksId', 'shared_links.id')
+      .leftJoin('assets', (join) =>
+        join.onRef('assets.id', '=', 'shared_link__asset.assetsId').on('assets.deletedAt', 'is', null),
+      )
+      .leftJoin('albums_assets_assets', 'albums_assets_assets.albumsId', 'albums.id')
+      .leftJoin('assets as albumAssets', (join) =>
+        join.onRef('albumAssets.id', '=', 'albums_assets_assets.assetsId').on('albumAssets.deletedAt', 'is', null),
+      )
+      .select([
+        'assets.id as assetId',
+        'assets.livePhotoVideoId as assetLivePhotoVideoId',
+        'albumAssets.id as albumAssetId',
+        'albumAssets.livePhotoVideoId as albumAssetLivePhotoVideoId',
+      ])
+      .where('shared_links.id', '=', sharedLinkId)
+      .where(
+        sql`array["assets"."id", "assets"."livePhotoVideoId", "albumAssets"."id", "albumAssets"."livePhotoVideoId"]`,
+        '&&',
+        sql`array[${sql.join([...assetIds])}]::uuid[] `,
+      )
+      .execute()
       .then((rows) => {
         const allowedIds = new Set<string>();
         for (const row of rows) {
@@ -294,7 +277,7 @@ class AssetAccess implements IAssetAccess {
 }
 
 class AuthDeviceAccess implements IAuthDeviceAccess {
-  constructor(private sessionRepository: Repository<SessionEntity>) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -303,20 +286,18 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
       return new Set();
     }
 
-    return this.sessionRepository
-      .find({
-        select: { id: true },
-        where: {
-          userId,
-          id: In([...deviceIds]),
-        },
-      })
+    return this.db
+      .selectFrom('sessions')
+      .select('sessions.id')
+      .where('sessions.userId', '=', userId)
+      .where('sessions.id', 'in', [...deviceIds])
+      .execute()
       .then((tokens) => new Set(tokens.map((token) => token.id)));
   }
 }
 
 class StackAccess implements IStackAccess {
-  constructor(private stackRepository: Repository<StackEntity>) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -325,20 +306,18 @@ class StackAccess implements IStackAccess {
       return new Set();
     }
 
-    return this.stackRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...stackIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('asset_stack as stacks')
+      .select('stacks.id')
+      .where('stacks.id', 'in', [...stackIds])
+      .where('stacks.ownerId', '=', userId)
+      .execute()
       .then((stacks) => new Set(stacks.map((stack) => stack.id)));
   }
 }
 
 class TimelineAccess implements ITimelineAccess {
-  constructor(private partnerRepository: Repository<PartnerEntity>) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -347,18 +326,18 @@ class TimelineAccess implements ITimelineAccess {
       return new Set();
     }
 
-    return this.partnerRepository
-      .createQueryBuilder('partner')
-      .select('partner.sharedById')
-      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
-      .andWhere('partner.sharedWithId = :userId', { userId })
-      .getMany()
+    return this.db
+      .selectFrom('partners')
+      .select('partners.sharedById')
+      .where('partners.sharedById', 'in', [...partnerIds])
+      .where('partners.sharedWithId', '=', userId)
+      .execute()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 
 class MemoryAccess implements IMemoryAccess {
-  constructor(private memoryRepository: Repository<MemoryEntity>) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -367,23 +346,19 @@ class MemoryAccess implements IMemoryAccess {
       return new Set();
     }
 
-    return this.memoryRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...memoryIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('memories')
+      .select('memories.id')
+      .where('memories.id', 'in', [...memoryIds])
+      .where('memories.ownerId', '=', userId)
+      .where('memories.deletedAt', 'is', null)
+      .execute()
       .then((memories) => new Set(memories.map((memory) => memory.id)));
   }
 }
 
 class PersonAccess implements IPersonAccess {
-  constructor(
-    private assetFaceRepository: Repository<AssetFaceEntity>,
-    private personRepository: Repository<PersonEntity>,
-  ) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -392,14 +367,12 @@ class PersonAccess implements IPersonAccess {
       return new Set();
     }
 
-    return this.personRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...personIds]),
-          ownerId: userId,
-        },
-      })
+    return this.db
+      .selectFrom('person')
+      .select('person.id')
+      .where('person.id', 'in', [...personIds])
+      .where('person.ownerId', '=', userId)
+      .execute()
       .then((persons) => new Set(persons.map((person) => person.id)));
   }
 
@@ -410,22 +383,21 @@ class PersonAccess implements IPersonAccess {
       return new Set();
     }
 
-    return this.assetFaceRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...assetFaceIds]),
-          asset: {
-            ownerId: userId,
-          },
-        },
-      })
+    return this.db
+      .selectFrom('asset_faces')
+      .select('asset_faces.id')
+      .leftJoin('assets', (join) =>
+        join.onRef('assets.id', '=', 'asset_faces.assetId').on('assets.deletedAt', 'is', null),
+      )
+      .where('asset_faces.id', 'in', [...assetFaceIds])
+      .where('assets.ownerId', '=', userId)
+      .execute()
       .then((faces) => new Set(faces.map((face) => face.id)));
   }
 }
 
 class PartnerAccess implements IPartnerAccess {
-  constructor(private partnerRepository: Repository<PartnerEntity>) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -434,18 +406,18 @@ class PartnerAccess implements IPartnerAccess {
       return new Set();
     }
 
-    return this.partnerRepository
-      .createQueryBuilder('partner')
-      .select('partner.sharedById')
-      .where('partner.sharedById IN (:...partnerIds)', { partnerIds: [...partnerIds] })
-      .andWhere('partner.sharedWithId = :userId', { userId })
-      .getMany()
+    return this.db
+      .selectFrom('partners')
+      .select('partners.sharedById')
+      .where('partners.sharedById', 'in', [...partnerIds])
+      .where('partners.sharedWithId', '=', userId)
+      .execute()
       .then((partners) => new Set(partners.map((partner) => partner.sharedById)));
   }
 }
 
 class TagAccess implements ITagAccess {
-  constructor(private tagRepository: Repository<TagEntity>) {}
+  constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
@@ -454,14 +426,12 @@ class TagAccess implements ITagAccess {
       return new Set();
     }
 
-    return this.tagRepository
-      .find({
-        select: { id: true },
-        where: {
-          id: In([...tagIds]),
-          userId,
-        },
-      })
+    return this.db
+      .selectFrom('tags')
+      .select('tags.id')
+      .where('tags.id', 'in', [...tagIds])
+      .where('tags.userId', '=', userId)
+      .execute()
       .then((tags) => new Set(tags.map((tag) => tag.id)));
   }
 }
@@ -478,29 +448,16 @@ export class AccessRepository implements IAccessRepository {
   tag: ITagAccess;
   timeline: ITimelineAccess;
 
-  constructor(
-    @InjectRepository(ActivityEntity) activityRepository: Repository<ActivityEntity>,
-    @InjectRepository(AssetEntity) assetRepository: Repository<AssetEntity>,
-    @InjectRepository(AlbumEntity) albumRepository: Repository<AlbumEntity>,
-    @InjectRepository(LibraryEntity) libraryRepository: Repository<LibraryEntity>,
-    @InjectRepository(MemoryEntity) memoryRepository: Repository<MemoryEntity>,
-    @InjectRepository(PartnerEntity) partnerRepository: Repository<PartnerEntity>,
-    @InjectRepository(PersonEntity) personRepository: Repository<PersonEntity>,
-    @InjectRepository(AssetFaceEntity) assetFaceRepository: Repository<AssetFaceEntity>,
-    @InjectRepository(SharedLinkEntity) sharedLinkRepository: Repository<SharedLinkEntity>,
-    @InjectRepository(SessionEntity) sessionRepository: Repository<SessionEntity>,
-    @InjectRepository(StackEntity) stackRepository: Repository<StackEntity>,
-    @InjectRepository(TagEntity) tagRepository: Repository<TagEntity>,
-  ) {
-    this.activity = new ActivityAccess(activityRepository, albumRepository);
-    this.album = new AlbumAccess(albumRepository, sharedLinkRepository);
-    this.asset = new AssetAccess(albumRepository, assetRepository, partnerRepository, sharedLinkRepository);
-    this.authDevice = new AuthDeviceAccess(sessionRepository);
-    this.memory = new MemoryAccess(memoryRepository);
-    this.person = new PersonAccess(assetFaceRepository, personRepository);
-    this.partner = new PartnerAccess(partnerRepository);
-    this.stack = new StackAccess(stackRepository);
-    this.tag = new TagAccess(tagRepository);
-    this.timeline = new TimelineAccess(partnerRepository);
+  constructor(@InjectKysely() db: Kysely<DB>) {
+    this.activity = new ActivityAccess(db);
+    this.album = new AlbumAccess(db);
+    this.asset = new AssetAccess(db);
+    this.authDevice = new AuthDeviceAccess(db);
+    this.memory = new MemoryAccess(db);
+    this.person = new PersonAccess(db);
+    this.partner = new PartnerAccess(db);
+    this.stack = new StackAccess(db);
+    this.tag = new TagAccess(db);
+    this.timeline = new TimelineAccess(db);
   }
 }

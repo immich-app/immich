@@ -26,7 +26,7 @@
   :root {
     /* light */
     --immich-ui-primary: 66 80 175;
-    --immich-ui-dark: 0 0 0;
+    --immich-ui-dark: 58 58 58;
     --immich-ui-light: 255 255 255;
     --immich-ui-success: 34 197 94;
     --immich-ui-danger: 180 0 0;
