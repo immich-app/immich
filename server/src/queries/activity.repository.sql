@@ -9,7 +9,11 @@ select
     from
       (
         select
-          *
+          "id",
+          "name",
+          "email",
+          "profileImagePath",
+          "profileChangedAt"
         from
           "users"
         where
