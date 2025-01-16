@@ -27,16 +27,6 @@ class FacialRecognitionSettings(BaseModel):
 
 
 class PreloadModelData(BaseModel):
-    clip: ClipSettings = ClipSettings()
-    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
-
-
-class MaxBatchSize(BaseModel):
-    facial_recognition: int | None = None
-
-
-class Settings(BaseSettings):
-
     if os.environ.get("MACHINE_LEARNING_PRELOAD__CLIP") is not None:
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
         os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
@@ -51,6 +41,15 @@ class Settings(BaseSettings):
         ]
         os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__FALLBACK"] = "True"
         del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
+    clip: ClipSettings = ClipSettings()
+    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
+
+
+class MaxBatchSize(BaseModel):
+    facial_recognition: int | None = None
+
+
+class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="MACHINE_LEARNING_",
         case_sensitive=False,
