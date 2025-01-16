@@ -170,7 +170,12 @@ class AlbumService {
     try {
       await _userService.refreshUsers();
       final (sharedAlbum, ownedAlbum) = await (
+        // Note: `shared: true` is required to get albums that don't belong to
+        // us due to unusual behaviour on the API but this will also return our
+        // own shared albums
         _albumApiRepository.getAll(shared: true),
+        // Passing null (or nothing) for `shared` returns only albums that
+        // explicitly belong to us
         _albumApiRepository.getAll(shared: null)
       ).wait;
 
