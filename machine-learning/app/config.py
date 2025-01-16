@@ -42,7 +42,6 @@ class PreloadModelData(BaseModel):
             self.facial_recognition_fallback = "True"
 
 
-
 class MaxBatchSize(BaseModel):
     facial_recognition: int | None = None
 
