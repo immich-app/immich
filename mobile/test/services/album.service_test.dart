@@ -84,8 +84,11 @@ void main() {
   group('refreshRemoteAlbums', () {
     test('is working', () async {
       when(() => userService.refreshUsers()).thenAnswer((_) async => true);
-      when(() => albumApiRepository.getAll())
-          .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset, AlbumStub.sharedWithUser]);
+      when(() => albumApiRepository.getAll(shared: true))
+          .thenAnswer((_) async => [AlbumStub.sharedWithUser]);
+
+      when(() => albumApiRepository.getAll(shared: null))
+          .thenAnswer((_) async => [AlbumStub.oneAsset, AlbumStub.twoAsset]);
 
       when(
         () => syncService.syncRemoteAlbumsToDb([
@@ -97,7 +100,8 @@ void main() {
       final result = await sut.refreshRemoteAlbums();
       expect(result, true);
       verify(() => userService.refreshUsers()).called(1);
-      verify(() => albumApiRepository.getAll()).called(1);
+      verify(() => albumApiRepository.getAll(shared: true)).called(1);
+      verify(() => albumApiRepository.getAll(shared: null)).called(1);
       verify(
         () => syncService.syncRemoteAlbumsToDb(
           [
