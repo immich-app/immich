@@ -129,7 +129,7 @@
 </div>
 
 <!-- Create Album -->
-<Button onclick={() => createAlbumAndRedirect()} variant="ghost" color="secondary">
+<Button onclick={() => createAlbumAndRedirect()} size="small" variant="ghost" color="secondary">
   <Icon path={mdiPlusBoxOutline} />
   <p class="hidden md:block">{$t('create_album')}</p>
 </Button>
@@ -190,7 +190,7 @@
 {/if}
 
 <!-- Cover/List Display Toggle -->
-<Button onclick={() => handleChangeListMode()} variant="ghost" color="secondary">
+<Button onclick={() => handleChangeListMode()} size="small" variant="ghost" color="secondary">
   {#if $albumViewSettings.view === AlbumViewMode.List}
     <Icon path={mdiViewGridOutline} />
     <Text class="hidden md:block">{$t('covers')}</Text>

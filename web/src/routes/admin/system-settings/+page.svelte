@@ -255,24 +255,25 @@
 
   <UserPageLayout title={data.meta.title} admin>
     {#snippet buttons()}
-      <HStack gap={0}>
+      <HStack gap={1}>
         <div class="hidden lg:block">
           <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
         </div>
         <Button
           onclick={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}
+          size="small"
           variant="ghost"
           color="secondary"
         >
           <Icon path={mdiContentCopy} />
           {$t('copy_to_clipboard')}
         </Button>
-        <Button onclick={() => downloadConfig()} variant="ghost" color="secondary">
+        <Button onclick={() => downloadConfig()} size="small" variant="ghost" color="secondary">
           <Icon path={mdiDownload} />
           {$t('export_as_json')}
         </Button>
         {#if !$featureFlags.configFile}
-          <Button onclick={() => inputElement?.click()} variant="ghost" color="secondary">
+          <Button onclick={() => inputElement?.click()} size="small" variant="ghost" color="secondary">
             <Icon path={mdiUpload} />
             {$t('import_from_json')}
           </Button>

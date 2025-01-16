@@ -72,11 +72,11 @@
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
     <HStack gap={0}>
-      <Button onclick={() => (isOpen = true)} variant="ghost" color="secondary">
+      <Button onclick={() => (isOpen = true)} size="small" variant="ghost" color="secondary">
         <Icon path={mdiPlus} size="18" />
         {$t('admin.create_job')}
       </Button>
-      <Button href="{AppRoute.ADMIN_SETTINGS}?isOpen=job" variant="ghost" color="secondary">
+      <Button href="{AppRoute.ADMIN_SETTINGS}?isOpen=job" size="small" variant="ghost" color="secondary">
         <Icon path={mdiCog} size="18" />
         {$t('admin.manage_concurrency')}
       </Button>

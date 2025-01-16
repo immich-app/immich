@@ -392,7 +392,7 @@
             />
           </div>
         </div>
-        <Button onclick={() => (selectHidden = !selectHidden)} variant="ghost" color="secondary">
+        <Button onclick={() => (selectHidden = !selectHidden)} size="small" variant="ghost" color="secondary">
           <Icon path={mdiEyeOutline} />
           <Text>{$t('show_and_hide_people')}</Text>
         </Button>

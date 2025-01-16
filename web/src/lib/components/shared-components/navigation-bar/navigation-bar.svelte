@@ -91,6 +91,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
+            size="large"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}

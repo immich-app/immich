@@ -119,6 +119,7 @@
           disabled={assetInteraction.selectionActive}
           variant="ghost"
           color="secondary"
+          size="small"
         >
           <Icon path={mdiHistory} />
           {$t('restore_all')}
@@ -128,6 +129,7 @@
           disabled={assetInteraction.selectionActive}
           variant="ghost"
           color="secondary"
+          size="small"
         >
           <Icon path={mdiDeleteForeverOutline} />
           {$t('empty_trash')}

@@ -189,6 +189,7 @@
       <Button
         onclick={() => handleRepair()}
         disabled={matches.length === 0 || repairing}
+        size="small"
         variant="ghost"
         color="secondary"
       >
@@ -198,6 +199,7 @@
       <Button
         onclick={() => handleCheckAll()}
         disabled={extras.length === 0 || checking}
+        size="small"
         variant="ghost"
         color="secondary"
       >
@@ -207,13 +209,14 @@
       <Button
         onclick={() => handleDownload()}
         disabled={extras.length + orphans.length === 0}
+        size="small"
         variant="ghost"
         color="secondary"
       >
         <Icon path={mdiDownload} />
         {$t('export')}
       </Button>
-      <Button onclick={() => handleRefresh()} variant="ghost" color="secondary">
+      <Button onclick={() => handleRefresh()} size="small" variant="ghost" color="secondary">
         <Icon path={mdiRefresh} />
         {$t('refresh')}
       </Button>

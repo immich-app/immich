@@ -169,17 +169,17 @@
 
   {#snippet buttons()}
     <HStack>
-      <Button onclick={handleCreate} variant="ghost" color="secondary">
+      <Button onclick={handleCreate} size="small" variant="ghost" color="secondary">
         <Icon path={mdiPlus} />
         <p class="hidden md:block">{$t('create_tag')}</p>
       </Button>
 
       {#if pathSegments.length > 0 && tag}
-        <Button onclick={handleEdit} variant="ghost" color="secondary">
+        <Button onclick={handleEdit} size="small" variant="ghost" color="secondary">
           <Icon path={mdiPencil} size="18" />
           <Text class="hidden md:block">{$t('edit_tag')}</Text>
         </Button>
-        <Button onclick={handleDelete} variant="ghost" color="secondary">
+        <Button onclick={handleDelete} size="small" variant="ghost" color="secondary">
           <Icon path={mdiTrashCanOutline} />
           <Text class="hidden md:block">{$t('delete_tag')}</Text>
         </Button>

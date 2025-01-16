@@ -163,11 +163,17 @@
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
     <HStack gap={0}>
-      <Button onclick={() => handleDeduplicateAll()} disabled={!hasDuplicates} variant="ghost" color="secondary">
+      <Button
+        onclick={() => handleDeduplicateAll()}
+        disabled={!hasDuplicates}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
         <Icon path={mdiTrashCanOutline} />
         {$t('deduplicate_all')}
       </Button>
-      <Button onclick={() => handleKeepAll()} disabled={!hasDuplicates} variant="ghost" color="secondary">
+      <Button onclick={() => handleKeepAll()} disabled={!hasDuplicates} size="small" variant="ghost" color="secondary">
         <Icon path={mdiCheckOutline} />
         {$t('keep_all')}
       </Button>
@@ -175,6 +181,7 @@
         shape="round"
         variant="ghost"
         color="secondary"
+        size="large"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}

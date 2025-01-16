@@ -27,21 +27,21 @@
 
 <form {onsubmit}>
   <FullScreenModal title={$t('map_settings')} {onClose}>
-    <Stack gap={2}>
+    <Stack gap={4}>
       <Field label={$t('allow_dark_mode')}>
-        <Switch bind:checked={settings.allowDarkMode} class="flex justify-between items-center" />
+        <Switch bind:checked={settings.allowDarkMode} class="flex justify-between items-center text-sm" />
       </Field>
       <Field label={$t('only_favorites')}>
-        <Switch bind:checked={settings.onlyFavorites} class="flex justify-between items-center" />
+        <Switch bind:checked={settings.onlyFavorites} class="flex justify-between items-center text-sm" />
       </Field>
       <Field label={$t('include_archived')}>
-        <Switch bind:checked={settings.includeArchived} class="flex justify-between items-center" />
+        <Switch bind:checked={settings.includeArchived} class="flex justify-between items-center text-sm" />
       </Field>
       <Field label={$t('include_shared_partner_assets')}>
-        <Switch bind:checked={settings.withPartners} class="flex justify-between items-center" />
+        <Switch bind:checked={settings.withPartners} class="flex justify-between items-center text-sm" />
       </Field>
       <Field label={$t('include_shared_albums')}>
-        <Switch bind:checked={settings.withSharedAlbums} class="flex justify-between items-center" />
+        <Switch bind:checked={settings.withSharedAlbums} class="flex justify-between items-center text-sm" />
       </Field>
 
       {#if customDateRange}
@@ -62,7 +62,7 @@
           </div>
           <div class="flex justify-center text-xs">
             <Button
-              color="secondary"
+              color="primary"
               size="small"
               variant="ghost"
               onclick={() => {
@@ -110,7 +110,7 @@
           />
           <div class="text-xs">
             <Button
-              color="secondary"
+              color="primary"
               size="small"
               variant="ghost"
               onclick={() => {

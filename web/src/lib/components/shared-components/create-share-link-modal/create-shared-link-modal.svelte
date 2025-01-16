@@ -248,6 +248,7 @@
           variant="ghost"
           shape="round"
           color="secondary"
+          size="giant"
           icon={mdiContentCopy}
           onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
           aria-label={$t('copy_link_to_clipboard')}

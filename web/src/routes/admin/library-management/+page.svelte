@@ -220,14 +220,14 @@
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
-        <Button onclick={handleScanAll} variant="ghost" color="secondary">
+        <Button onclick={handleScanAll} size="small" variant="ghost" color="secondary">
           <div class="flex gap-1 text-sm">
             <Icon path={mdiSync} size="18" />
             <span>{$t('scan_all_libraries')}</span>
           </div>
         </Button>
       {/if}
-      <Button onclick={() => (toCreateLibrary = true)} variant="ghost" color="secondary">
+      <Button onclick={() => (toCreateLibrary = true)} size="small" variant="ghost" color="secondary">
         <div class="flex gap-1 text-sm">
           <Icon path={mdiPlusBoxOutline} size="18" />
           <span>{$t('create_library')}</span>
