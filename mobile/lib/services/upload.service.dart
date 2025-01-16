@@ -37,8 +37,8 @@ class UploadService {
     onUploadStatus?.call(update);
   }
 
-  Future<bool> cancelUpload(String id) async {
-    return await FileDownloader().cancelTaskWithId(id);
+  Future<bool> cancelUpload(String id) {
+    return FileDownloader().cancelTaskWithId(id);
   }
 
   Future<void> upload(File file) async {

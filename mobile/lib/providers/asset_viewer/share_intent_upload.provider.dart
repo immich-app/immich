@@ -5,35 +5,66 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/share_intent_service.dart';
 import 'package:immich_mobile/services/upload.service.dart';
 
-final shareIntentUploadProvider = StateNotifierProvider.autoDispose<
+final shareIntentUploadProvider = StateNotifierProvider<
     ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
   ((ref) => ShareIntentUploadStateNotifier(
+        ref.watch(appRouterProvider),
         ref.watch(uploadServiceProvider),
+        ref.watch(shareIntentServiceProvider),
       )),
 );
 
 class ShareIntentUploadStateNotifier
     extends StateNotifier<List<ShareIntentAttachment>> {
+  final AppRouter router;
   final UploadService _uploadService;
+  final ShareIntentService _shareIntentService;
 
   ShareIntentUploadStateNotifier(
+    this.router,
     this._uploadService,
+    this._shareIntentService,
   ) : super([]) {
     _uploadService.onUploadStatus = _uploadStatusCallback;
     _uploadService.onTaskProgress = _taskProgressCallback;
   }
 
+  void init() {
+    _shareIntentService.onSharedMedia = onSharedMedia;
+    _shareIntentService.init();
+  }
+
+  void onSharedMedia(List<ShareIntentAttachment> attachments) {
+    router.removeWhere((route) => route.name == "ShareIntentRoute");
+    clearAttachments();
+    addAttachments(attachments);
+    router.push(ShareIntentRoute(attachments: attachments));
+  }
+
   void addAttachments(List<ShareIntentAttachment> attachments) {
+    if (attachments.isEmpty) {
+      return;
+    }
     state = [...state, ...attachments];
   }
 
   void removeAttachment(ShareIntentAttachment attachment) {
-    state = state.where((element) => element != attachment).toList();
+    final updatedState =
+        state.where((element) => element != attachment).toList();
+    if (updatedState.length != state.length) {
+      state = updatedState;
+    }
   }
 
   void clearAttachments() {
+    if (state.isEmpty) {
+      return;
+    }
+
     state = [];
   }
 
@@ -69,11 +100,13 @@ class ShareIntentUploadStateNotifier
     switch (update.status) {
       case TaskStatus.complete:
         if (update.responseStatusCode == 200) {
-          kDebugMode
-              ? debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE")
-              : null;
+          if (kDebugMode) {
+            debugPrint("[COMPLETE] ${update.task.taskId} - DUPLICATE");
+          }
         } else {
-          kDebugMode ? debugPrint("[COMPLETE] ${update.task.taskId}") : null;
+          if (kDebugMode) {
+            debugPrint("[COMPLETE] ${update.task.taskId}");
+          }
         }
         break;
 

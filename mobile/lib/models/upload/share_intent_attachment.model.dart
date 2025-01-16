@@ -52,7 +52,9 @@ class ShareIntentAttachment {
 
   bool get isVideo => type == ShareIntentAttachmentType.video;
 
-  String get fileSize => formatHumanReadableBytes(fileLength, 2);
+  String? _fileSize;
+
+  String get fileSize => _fileSize ??= formatHumanReadableBytes(fileLength, 2);
 
   ShareIntentAttachment copyWith({
     String? path,

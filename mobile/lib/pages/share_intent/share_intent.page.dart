@@ -23,18 +23,6 @@ class ShareIntentPage extends HookConsumerWidget {
     final candidates = ref.watch(shareIntentUploadProvider);
     final isUploaded = useState(false);
 
-    useEffect(
-      () {
-        Future.microtask(() {
-          ref
-              .read(shareIntentUploadProvider.notifier)
-              .addAttachments(attachments);
-        });
-        return () {};
-      },
-      const [],
-    );
-
     void removeAttachment(ShareIntentAttachment attachment) {
       ref.read(shareIntentUploadProvider.notifier).removeAttachment(attachment);
     }
@@ -104,7 +92,7 @@ class ShareIntentPage extends HookConsumerWidget {
               leading: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: const BorderRadius.all(Radius.circular(16)),
                     child: attachment.isImage
                         ? Image.file(
                             attachment.file,
@@ -217,15 +205,13 @@ class UploadStatusIcon extends StatelessWidget {
       );
     }
 
-    switch (status) {
-      case UploadStatus.enqueued:
-        return Icon(
+    final statusIcon = switch (status) {
+      UploadStatus.enqueued => Icon(
           Icons.check_circle_rounded,
           color: context.primaryColor,
           semanticLabel: 'enqueued'.tr(),
-        );
-      case UploadStatus.running:
-        return Stack(
+        ),
+      UploadStatus.running => Stack(
           alignment: AlignmentDirectional.center,
           children: [
             SizedBox(
@@ -249,33 +235,29 @@ class UploadStatusIcon extends StatelessWidget {
               ),
             ),
           ],
-        );
-      case UploadStatus.complete:
-        return Icon(
+        ),
+      UploadStatus.complete => Icon(
           Icons.check_circle_rounded,
           color: Colors.green,
           semanticLabel: 'completed'.tr(),
-        );
-      case UploadStatus.notFound:
-      case UploadStatus.failed:
-        return Icon(
+        ),
+      UploadStatus.notFound || UploadStatus.failed => Icon(
           Icons.error_rounded,
           color: Colors.red,
           semanticLabel: 'failed'.tr(),
-        );
-      case UploadStatus.canceled:
-        return Icon(
+        ),
+      UploadStatus.canceled => Icon(
           Icons.cancel_rounded,
           color: Colors.red,
           semanticLabel: 'canceled'.tr(),
-        );
-      case UploadStatus.waitingtoRetry:
-      case UploadStatus.paused:
-        return Icon(
+        ),
+      UploadStatus.waitingtoRetry || UploadStatus.paused => Icon(
           Icons.pause_circle_rounded,
           color: context.primaryColor,
           semanticLabel: 'paused'.tr(),
-        );
-    }
+        ),
+    };
+
+    return statusIcon;
   }
 }
