@@ -1,27 +1,26 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
+  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import type { AssetResponseDto } from '@immich/sdk';
+  import { locale } from '$lib/stores/preferences.store';
   import { featureFlags } from '$lib/stores/server-config.store';
+  import { stackAssets } from '$lib/utils/asset-utils';
+  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, updateAssets } from '@immich/sdk';
+  import { Button, HStack, IconButton } from '@immich/ui';
+  import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import { mdiCheckOutline, mdiInformationOutline, mdiTrashCanOutline } from '@mdi/js';
-  import { stackAssets } from '$lib/utils/asset-utils';
-  import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
-  import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { mdiKeyboard } from '@mdi/js';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { locale } from '$lib/stores/preferences.store';
 
   interface Props {
     data: PageData;
@@ -163,25 +162,31 @@
 
 <UserPageLayout title={data.meta.title + ` (${duplicates.length.toLocaleString($locale)})`} scrollbar={true}>
   {#snippet buttons()}
-    <div class="flex place-items-center gap-2">
-      <LinkButton onclick={() => handleDeduplicateAll()} disabled={!hasDuplicates}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiTrashCanOutline} size="18" />
-          {$t('deduplicate_all')}
-        </div>
-      </LinkButton>
-      <LinkButton onclick={() => handleKeepAll()} disabled={!hasDuplicates}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiCheckOutline} size="18" />
-          {$t('keep_all')}
-        </div>
-      </LinkButton>
-      <CircleIconButton
+    <HStack gap={0}>
+      <Button
+        onclick={() => handleDeduplicateAll()}
+        disabled={!hasDuplicates}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Icon path={mdiTrashCanOutline} />
+        {$t('deduplicate_all')}
+      </Button>
+      <Button onclick={() => handleKeepAll()} disabled={!hasDuplicates} size="small" variant="ghost" color="secondary">
+        <Icon path={mdiCheckOutline} />
+        {$t('keep_all')}
+      </Button>
+      <IconButton
+        shape="round"
+        variant="ghost"
+        color="secondary"
+        size="large"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
       />
-    </div>
+    </HStack>
   {/snippet}
 
   <div class="">

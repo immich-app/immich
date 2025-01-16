@@ -1,21 +1,20 @@
 <script lang="ts">
   import Button from '$lib/components/elements/buttons/button.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { locale } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { HStack, IconButton, Input } from '@immich/ui';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
+  import { DateTime, Duration } from 'luxon';
+  import { t } from 'svelte-i18n';
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-  import { t } from 'svelte-i18n';
-  import { locale } from '$lib/stores/preferences.store';
-  import { DateTime, Duration } from 'luxon';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
-  import { SettingInputFieldType } from '$lib/constants';
 
   interface Props {
     onClose: () => void;
@@ -243,14 +242,18 @@
         <Button size="sm" fullwidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
       {/if}
     {:else}
-      <div class="flex w-full gap-2">
-        <input class="immich-form-input w-full" bind:value={sharedLink} disabled />
-        <LinkButton onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiContentCopy} ariaLabel={$t('copy_link_to_clipboard')} size="18" />
-          </div>
-        </LinkButton>
-      </div>
+      <HStack class="w-full">
+        <Input bind:value={sharedLink} disabled class="flex flex-row" />
+        <IconButton
+          variant="ghost"
+          shape="round"
+          color="secondary"
+          size="giant"
+          icon={mdiContentCopy}
+          onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
+          aria-label={$t('copy_link_to_clipboard')}
+        />
+      </HStack>
     {/if}
   {/snippet}
 </FullScreenModal>

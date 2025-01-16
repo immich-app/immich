@@ -1,4 +1,4 @@
-import { IActivityRepository } from 'src/interfaces/activity.interface';
+import { IActivityRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newActivityRepositoryMock = (): Mocked<IActivityRepository> => {
