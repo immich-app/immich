@@ -335,6 +335,9 @@ export class LibraryService extends BaseService {
   async handleDeleteLibrary(job: JobOf<JobName.LIBRARY_DELETE>): Promise<JobStatus> {
     const libraryId = job.id;
 
+    // Hide all assets in the library before deleting them
+    await this.assetRepository.updateByLibraryId(libraryId, { deletedAt: new Date() });
+
     const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { libraryId, withDeleted: true }),
     );

@@ -317,6 +317,10 @@ export class AssetRepository implements IAssetRepository {
     await this.db.updateTable('assets').set(options).where('id', '=', anyUuid(ids)).execute();
   }
 
+  async updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void> {
+    await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
+  }
+
   @GenerateSql({
     params: [{ targetDuplicateId: DummyValue.UUID, duplicateIds: [DummyValue.UUID], assetIds: [DummyValue.UUID] }],
   })

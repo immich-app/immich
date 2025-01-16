@@ -155,6 +155,7 @@ export interface IAssetRepository {
   getAllByDeviceId(userId: string, deviceId: string): Promise<string[]>;
   getLivePhotoCount(motionId: string): Promise<number>;
   updateAll(ids: string[], options: Updateable<Assets>): Promise<void>;
+  updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void>;
   updateDuplicates(options: AssetUpdateDuplicateOptions): Promise<void>;
   update(asset: Updateable<Assets> & { id: string }): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
