@@ -17,32 +17,30 @@ from uvicorn.workers import UvicornWorker
 class ClipSettings(BaseModel):
     textual: str | None = None
     visual: str | None = None
-    fallback: str | None = None
 
 
 class FacialRecognitionSettings(BaseModel):
     recognition: str | None = None
     detection: str | None = None
-    fallback: str | None = None
 
 
 class PreloadModelData(BaseModel):
-    if os.environ.get("MACHINE_LEARNING_PRELOAD__CLIP") is not None:
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__FALLBACK"] = "True"
-        del os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
-    if os.environ.get("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION") is not None:
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = os.environ[
-            "MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
-        ]
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = os.environ[
-            "MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"
-        ]
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__FALLBACK"] = "True"
-        del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
-    clip: ClipSettings = ClipSettings()
-    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
+    clip: ClipSettings | str = ClipSettings()
+    facial_recognition: FacialRecognitionSettings | str = FacialRecognitionSettings()
+    clip_fallback: str | None = None
+    facial_recognition_fallback: str | None = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # If clip is a string, set both textual and visual to that string
+        if isinstance(self.clip, str):
+            self.clip = ClipSettings(textual=self.clip, visual=self.clip)
+            self.clip_fallback = "True"
+        if isinstance(self.facial_recognition, str):
+            self.clip = ClipSettings(textual=self.facial_recognition, visual=self.facial_recognition)
+            self.facial_recognition_fallback = "True"
+
 
 
 class MaxBatchSize(BaseModel):

@@ -77,9 +77,8 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(
         f"Preloading models: "
-        f"clip_textual={preload.clip.textual} clip_visual={preload.clip.visual} "
-        f"facial_recognition_recognition={preload.facial_recognition.recognition} "
-        f"facial_recognition_detection={preload.facial_recognition.detection}"
+        f"clip:{preload.clip} "
+        f"facial_recognition:{preload.facial_recognition}"
     )
 
     if preload.clip.textual is not None:
@@ -106,14 +105,14 @@ async def preload_models(preload: PreloadModelData) -> None:
         )
         await load(model)
 
-    if preload.clip.fallback is not None:
+    if preload.clip_fallback is not None:
         log.warning(
             "Deprecated env variable: MACHINE_LEARNING_PRELOAD__CLIP. "
             "Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL and "
             "MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
         )
 
-    if preload.facial_recognition.fallback is not None:
+    if preload.facial_recognition_fallback is not None:
         log.warning(
             "Deprecated env variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. "
             "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION and "
