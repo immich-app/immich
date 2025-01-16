@@ -250,6 +250,21 @@ export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
   );
 }
 
+export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetsId')
+        .innerJoin('tags_closure', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .where('tags_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        .as('has_tags'),
+    (join) => join.onRef('has_tags.assetsId', '=', 'assets.id'),
+  );
+}
+
 export function hasPeople(db: Kysely<DB>, personIds?: string[]) {
   return personIds && personIds.length > 0
     ? hasPeopleCte(db, personIds).selectFrom('assets').innerJoin('has_people', 'has_people.assetId', 'assets.id')
@@ -328,6 +343,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
   return hasPeople(kysely.withPlugin(joinDeduplicationPlugin), options.personIds)
     .selectAll('assets')
+    .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))
