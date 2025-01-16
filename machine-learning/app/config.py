@@ -33,7 +33,6 @@ class PreloadModelData(BaseModel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # If clip is a string, set both textual and visual to that string
         if isinstance(self.clip, str):
             self.clip = ClipSettings(textual=self.clip, visual=self.clip)
             self.clip_fallback = "True"
