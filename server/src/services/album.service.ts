@@ -229,7 +229,7 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('User not found');
       }
 
-      await this.albumUserRepository.create({ userId, albumId: id, role });
+      await this.albumUserRepository.create({ usersId: userId, albumsId: id, role });
       await this.eventRepository.emit('album.invite', { id, userId });
     }
 
@@ -257,12 +257,12 @@ export class AlbumService extends BaseService {
       await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
     }
 
-    await this.albumUserRepository.delete({ albumId: id, userId });
+    await this.albumUserRepository.delete({ albumsId: id, usersId: userId });
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: Partial<AlbumUserEntity>): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.ALBUM_SHARE, ids: [id] });
-    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+    await this.albumUserRepository.update({ albumsId: id, usersId: userId }, { role: dto.role });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {

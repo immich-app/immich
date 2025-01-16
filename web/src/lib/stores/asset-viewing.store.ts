@@ -15,9 +15,10 @@ function createAssetViewingStore() {
     viewState.set(true);
   };
 
-  const setAssetId = async (id: string) => {
+  const setAssetId = async (id: string): Promise<AssetResponseDto> => {
     const asset = await getAssetInfo({ id, key: getKey() });
     setAsset(asset);
+    return asset;
   };
 
   const showAssetViewer = (show: boolean) => {
