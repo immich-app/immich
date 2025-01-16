@@ -1,5 +1,6 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute } from '$lib/constants';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -17,6 +18,7 @@
     onClose: () => void;
     onResetPasswordSuccess: () => void;
     onEditSuccess: () => void;
+    isAdminDisabled?: boolean;
   }
 
   let {
@@ -26,11 +28,13 @@
     onClose,
     onResetPasswordSuccess,
     onEditSuccess,
+    isAdminDisabled,
   }: Props = $props();
 
   let quotaSize = $state(user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
 
   const previousQutoa = user.quotaSizeInBytes;
+  const disabled = isAdminDisabled;
 
   let quotaSizeWarning = $derived(
     previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
@@ -41,7 +45,7 @@
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel } = user;
+      const { id, email, name, storageLabel, isAdmin } = user;
       await updateUserAdmin({
         id,
         userAdminUpdateDto: {
@@ -49,6 +53,7 @@
           name,
           storageLabel: storageLabel || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
+          isAdmin
         },
       });
 
@@ -146,6 +151,14 @@
           {$t('admin.storage_template_migration_job')}
         </a>
       </p>
+    </div>
+
+    <div class="my-4 flex flex-col gap-2">
+      <SettingSwitch
+        title={$t('admin.make_admin')}
+        {disabled}
+        bind:checked={user.isAdmin}
+      />
     </div>
   </form>
 

@@ -117,6 +117,11 @@ export class UserAdminUpdateDto {
   @IsPositive()
   @ApiProperty({ type: 'integer', format: 'int64' })
   quotaSizeInBytes?: number | null;
+
+  @Optional({ nullable: false })
+  @ApiProperty({ default: false })
+  @IsBoolean()
+  isAdmin?: boolean;
 }
 
 export class UserAdminDeleteDto {
