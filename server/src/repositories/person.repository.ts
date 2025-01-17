@@ -1,20 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import {
-  ExpressionBuilder,
-  Kysely,
-  OnConflictDatabase,
-  OnConflictTables,
-  SelectExpression,
-  sql,
-  StringReference,
-} from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, SelectExpression, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB } from 'src/db';
+import { AssetFaces, DB, FaceSearch } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
 import {
@@ -30,7 +21,7 @@ import {
   UnassignFacesOptions,
   UpdateFacesData,
 } from 'src/interfaces/person.interface';
-import { asVector } from 'src/utils/database';
+import { mapUpsertColumns } from 'src/utils/database';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsRelations } from 'typeorm';
 
@@ -81,6 +72,10 @@ export class PersonRepository implements IPersonRepository {
 
   @GenerateSql({ params: [[{ id: DummyValue.UUID }]] })
   async delete(entities: PersonEntity[]): Promise<void> {
+    if (entities.length === 0) {
+      return;
+    }
+
     await this.db
       .deleteFrom('person')
       .where(
@@ -344,35 +339,56 @@ export class PersonRepository implements IPersonRepository {
     return results.map(({ id }) => id);
   }
 
-  @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: [1, 2, 3] }]] })
-  async refreshFaces(
-    facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[],
-    faceIdsToRemove: string[],
-    embeddingsToAdd?: FaceSearchEntity[],
-  ): Promise<void> {
+  /**
+    const query = this.faceSearchRepository.createQueryBuilder().select('1').fromDummy();
     if (facesToAdd.length > 0) {
-      const faces = facesToAdd.map((face) => _.omit(face, 'faceSearch', 'asset'));
-      await this.db.insertInto('asset_faces').values(faces).execute();
+      const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
+      query.addCommonTableExpression(insertCte, 'added');
     }
 
     if (faceIdsToRemove.length > 0) {
-      await this.db
-        .deleteFrom('asset_faces')
-        .where('asset_faces.id', '=', (eb) => eb.fn.any(eb.val(faceIdsToRemove)))
-        .execute();
+      const deleteCte = this.assetFaceRepository
+        .createQueryBuilder()
+        .delete()
+        .where('id = any(:faceIdsToRemove)', { faceIdsToRemove });
+      query.addCommonTableExpression(deleteCte, 'deleted');
     }
 
     if (embeddingsToAdd?.length) {
-      await this.db
-        .insertInto('face_search')
-        .values(
-          embeddingsToAdd.map(({ faceId, embedding }) => ({
-            faceId,
-            embedding: asVector(embedding),
-          })),
-        )
-        .execute();
+      const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
+      query.addCommonTableExpression(embeddingCte, 'embeddings');
+      query.getQuery(); // typeorm mixes up parameters without this
     }
+
+    await query.execute();
+   */
+
+  @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: DummyValue.VECTOR }]] })
+  async refreshFaces(
+    facesToAdd: (Insertable<AssetFaces> & { assetId: string })[],
+    faceIdsToRemove: string[],
+    embeddingsToAdd?: Insertable<FaceSearch>[],
+  ): Promise<void> {
+    if (facesToAdd.length === 0 && faceIdsToRemove.length === 0 && !embeddingsToAdd?.length) {
+      return;
+    }
+
+    let query = this.db;
+    if (facesToAdd.length > 0) {
+      (query as any) = query.with('added', (db) => db.insertInto('asset_faces').values(facesToAdd));
+    }
+
+    if (faceIdsToRemove.length > 0) {
+      (query as any) = query.with('removed', (db) =>
+        db.deleteFrom('asset_faces').where('asset_faces.id', '=', (eb) => eb.fn.any(eb.val(faceIdsToRemove))),
+      );
+    }
+
+    if (embeddingsToAdd?.length) {
+      (query as any) = query.with('added_embeddings', (db) => db.insertInto('face_search').values(embeddingsToAdd));
+    }
+
+    await query.selectFrom(sql`(select 1)`.as('dummy')).execute();
   }
 
   async update(person: Partial<PersonEntity> & { id: string }): Promise<PersonEntity> {
@@ -385,24 +401,21 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async updateAll(people: (Partial<PersonEntity> & { ownerId: string })[]): Promise<void> {
+    if (people.length === 0) {
+      return;
+    }
+
+    const keys = ['id'] as const;
     await this.db
       .insertInto('person')
       .values(people)
-      .onConflict((oc) =>
-        oc.column('id').doUpdateSet((eb) => {
-          const keys = Object.keys(people[0]!) as StringReference<
-            OnConflictDatabase<DB, 'person'>,
-            OnConflictTables<'person'>
-          >[];
-          return Object.fromEntries(keys.map((key) => [key, eb.ref(key)]));
-        }),
-      )
+      .onConflict((oc) => oc.columns(keys).doUpdateSet(() => mapUpsertColumns('person', people[0], keys)))
       .execute();
   }
 
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
   @ChunkedArray()
-  async getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
+  getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
     const { assetIds, personIds }: { assetIds: string[]; personIds: string[] } = { assetIds: [], personIds: [] };
 
     for (const { assetId, personId } of ids) {

@@ -45,7 +45,7 @@ const face = {
   imageHeight: 500,
   imageWidth: 400,
 };
-const faceSearch = { faceId, embedding: [1, 2, 3, 4] };
+const faceSearch = { faceId, embedding: '[1, 2, 3, 4]' };
 const detectFaceMock: DetectedFaces = {
   faces: [
     {
