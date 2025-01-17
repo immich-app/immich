@@ -75,7 +75,7 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 
 async def preload_models(preload: PreloadModelData) -> None:
-    log.info(f"Preloading models: " f"clip:{preload.clip} " f"facial_recognition:{preload.facial_recognition}")
+    log.info(f"Preloading models: clip:{preload.clip} facial_recognition:{preload.facial_recognition}")
 
     if preload.clip.textual is not None:
         model = await model_cache.get(preload.clip.textual, ModelType.TEXTUAL, ModelTask.SEARCH)
