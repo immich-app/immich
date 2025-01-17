@@ -59,24 +59,24 @@ def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
     return rknn_lite
 
 
-def initRKNNs(rknnModel="./rknnModel/yolov5s.rknn", TPEs=1):
+def initRKNNs(rknnModel="./rknnModel/yolov5s.rknn", tpes=1):
     rknn_list = []
-    for i in range(TPEs):
+    for i in range(tpes):
         rknn_list.append(initRKNN(rknnModel, i % 3))
     return rknn_list
 
 
-class rknnPoolExecutor:
-    def __init__(self, rknnModel: str, TPEs: int, func):
-        self.TPEs = TPEs
+class RknnPoolExecutor:
+    def __init__(self, rknnModel: str, tpes: int, func):
+        self.tpes = tpes
         self.queue = Queue()
-        self.rknnPool = initRKNNs(rknnModel, TPEs)
-        self.pool = ThreadPoolExecutor(max_workers=TPEs)
+        self.rknn_pool = initRKNNs(rknnModel, tpes)
+        self.pool = ThreadPoolExecutor(max_workers=tpes)
         self.func = func
         self.num = 0
 
     def put(self, frame) -> None:
-        self.queue.put(self.pool.submit(self.func, self.rknnPool[self.num % self.TPEs], frame))
+        self.queue.put(self.pool.submit(self.func, self.rknn_pool[self.num % self.tpes], frame))
         self.num += 1
 
     def get(self) -> list[list[NDArray[np.float32]], bool]:
@@ -87,5 +87,5 @@ class rknnPoolExecutor:
 
     def release(self) -> None:
         self.pool.shutdown()
-        for rknn_lite in self.rknnPool:
+        for rknn_lite in self.rknn_pool:
             rknn_lite.release()

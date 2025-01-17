@@ -138,7 +138,7 @@ def ann_session() -> Iterator[mock.Mock]:
 
 @pytest.fixture(scope="function")
 def rknn_session() -> Iterator[mock.Mock]:
-    with mock.patch("app.sessions.rknn.rknnPoolExecutor") as mocked:
+    with mock.patch("app.sessions.rknn.RknnPoolExecutor") as mocked:
         yield mocked
 
 

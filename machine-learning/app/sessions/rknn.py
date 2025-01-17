@@ -8,7 +8,7 @@ import onnxruntime as ort
 from numpy.typing import NDArray
 
 from app.schemas import SessionNode
-from rknn.rknnpool import rknnPoolExecutor, soc_name
+from rknn.rknnpool import RknnPoolExecutor, soc_name
 
 from ..config import log, settings
 
@@ -32,7 +32,7 @@ class RknnSession:
             self.tpe = settings.rknn_facial_detection_threads
 
         log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
-        self.rknnpool = rknnPoolExecutor(rknnModel=self.model_path.as_posix(), TPEs=self.tpe, func=runInfrence)
+        self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), TPEs=self.tpe, func=runInfrence)
         log.info(f"Loaded RKNN model from {self.model_path} with {self.tpe} threads.")
 
     def __del__(self) -> None:
