@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/models/upload/share_intent_attachment.model.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -117,7 +118,8 @@ class ShareIntentUploadStateNotifier
 
   void _taskProgressCallback(TaskProgressUpdate update) {
     // Ignore if the task is cancled or completed
-    if (update.progress == -2 || update.progress == -1) {
+    if (update.progress == downloadFailed ||
+        update.progress == downloadCompleted) {
       return;
     }
 
