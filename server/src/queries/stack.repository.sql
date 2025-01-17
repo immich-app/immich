@@ -255,13 +255,3 @@ ORDER BY
   "StackEntity_id" ASC
 LIMIT
   1
-
--- StackRepository.save
-START TRANSACTION
-INSERT INTO
-  "asset_stack" ("id", "ownerId", "primaryAssetId")
-VALUES
-  (DEFAULT, $1, $2)
-RETURNING
-  "id"
-ROLLBACK
