@@ -11,14 +11,12 @@
 </script>
 
 <script lang="ts" generics="T">
-  import Icon from './icon.svelte';
-
-  import { mdiCheck } from '@mdi/js';
-
-  import { isEqual } from 'lodash-es';
-  import LinkButton from './buttons/link-button.svelte';
   import { clickOutside } from '$lib/actions/click-outside';
+  import { Button, Text } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
+  import { isEqual } from 'lodash-es';
   import { fly } from 'svelte/transition';
+  import Icon from './icon.svelte';
 
   interface Props {
     class?: string;
@@ -82,14 +80,12 @@
 
 <div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
   <!-- BUTTON TITLE -->
-  <LinkButton onclick={() => (showMenu = true)} fullwidth {title}>
-    <div class="flex place-items-center gap-2 text-sm">
-      {#if renderedSelectedOption?.icon}
-        <Icon path={renderedSelectedOption.icon} size="18" />
-      {/if}
-      <p class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</p>
-    </div>
-  </LinkButton>
+  <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
+    {#if renderedSelectedOption?.icon}
+      <Icon path={renderedSelectedOption.icon} />
+    {/if}
+    <Text class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</Text>
+  </Button>
 
   <!-- DROP DOWN MENU -->
   {#if showMenu}
@@ -108,7 +104,7 @@
         >
           {#if isEqual(selectedOption, option)}
             <div class="text-immich-primary dark:text-immich-dark-primary">
-              <Icon path={mdiCheck} size="18" />
+              <Icon path={mdiCheck} />
             </div>
             <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
               {renderedOption.title}

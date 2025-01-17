@@ -1,6 +1,5 @@
 <script lang="ts">
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
@@ -13,6 +12,7 @@
   import { asyncTimeout } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createJob, getAllJobsStatus, ManualJobName, type AllJobStatusResponseDto } from '@immich/sdk';
+  import { Button, HStack } from '@immich/ui';
   import { mdiCog, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -71,20 +71,16 @@
 
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
-    <div class="flex justify-end">
-      <LinkButton onclick={() => (isOpen = true)}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiPlus} size="18" />
-          {$t('admin.create_job')}
-        </div>
-      </LinkButton>
-      <LinkButton href="{AppRoute.ADMIN_SETTINGS}?isOpen=job">
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiCog} size="18" />
-          {$t('admin.manage_concurrency')}
-        </div>
-      </LinkButton>
-    </div>
+    <HStack gap={0}>
+      <Button onclick={() => (isOpen = true)} size="small" variant="ghost" color="secondary">
+        <Icon path={mdiPlus} size="18" />
+        {$t('admin.create_job')}
+      </Button>
+      <Button href="{AppRoute.ADMIN_SETTINGS}?isOpen=job" size="small" variant="ghost" color="secondary">
+        <Icon path={mdiCog} size="18" />
+        {$t('admin.manage_concurrency')}
+      </Button>
+    </HStack>
   {/snippet}
   <section id="setting-content" class="flex place-content-center sm:mx-4">
     <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">

@@ -3,16 +3,21 @@
  * Please do not edit it manually.
  */
 
-import type { ColumnType } from 'kysely';
+import type { ColumnType } from "kysely";
 
-export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
+export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[]
+  ? U[]
+  : ArrayTypeImpl<T>;
 
-export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
+export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U>
+  ? ColumnType<S[], I[], U[]>
+  : T[];
 
-export type AssetsStatusEnum = 'active' | 'deleted' | 'trashed';
+export type AssetsStatusEnum = "active" | "deleted" | "trashed";
 
-export type Generated<T> =
-  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
+export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
+  ? ColumnType<S, I | undefined, U>
+  : ColumnType<T, T | undefined, T>;
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
@@ -28,7 +33,7 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
-export type Sourcetype = 'exif' | 'machine-learning';
+export type Sourcetype = "exif" | "machine-learning";
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -62,6 +67,7 @@ export interface Albums {
 export interface AlbumsAssetsAssets {
   albumsId: string;
   assetsId: string;
+  createdAt: Generated<Timestamp>;
 }
 
 export interface AlbumsSharedUsersUsers {
@@ -201,7 +207,6 @@ export interface GeodataPlaces {
   admin2Name: string | null;
   alternateNames: string | null;
   countryCode: string;
-  earthCoord: Generated<string | null>;
   id: number;
   latitude: number;
   longitude: number;
@@ -311,13 +316,6 @@ export interface SharedLinks {
   userId: string;
 }
 
-export interface SmartInfo {
-  assetId: string;
-  objects: string[] | null;
-  smartInfoTextSearchableColumn: Generated<string>;
-  tags: string[] | null;
-}
-
 export interface SmartSearch {
   assetId: string;
   embedding: string;
@@ -399,6 +397,12 @@ export interface VectorsPgVectorIndexStat {
   tablerelid: number | null;
 }
 
+export interface VersionHistory {
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  version: string;
+}
+
 export interface DB {
   activity: Activity;
   albums: Albums;
@@ -425,7 +429,6 @@ export interface DB {
   sessions: Sessions;
   shared_link__asset: SharedLinkAsset;
   shared_links: SharedLinks;
-  smart_info: SmartInfo;
   smart_search: SmartSearch;
   socket_io_attachments: SocketIoAttachments;
   system_config: SystemConfig;
@@ -435,5 +438,6 @@ export interface DB {
   tags_closure: TagsClosure;
   user_metadata: UserMetadata;
   users: Users;
-  'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
+  "vectors.pg_vector_index_stat": VectorsPgVectorIndexStat;
+  version_history: VersionHistory;
 }

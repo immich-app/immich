@@ -153,7 +153,7 @@ describe(AlbumService.name, () => {
     });
 
     it('should require valid userIds', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(
         sut.create(authStub.admin, {
           albumName: 'Empty album',
@@ -299,7 +299,7 @@ describe(AlbumService.name, () => {
     it('should throw an error if the userId does not exist', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
       albumMock.getById.mockResolvedValue(albumStub.sharedWithAdmin);
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(
         sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, { albumUsers: [{ userId: 'user-3' }] }),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -323,18 +323,16 @@ describe(AlbumService.name, () => {
       albumMock.update.mockResolvedValue(albumStub.sharedWithAdmin);
       userMock.get.mockResolvedValue(userStub.user2);
       albumUserMock.create.mockResolvedValue({
-        userId: userStub.user2.id,
-        user: userStub.user2,
-        albumId: albumStub.sharedWithAdmin.id,
-        album: albumStub.sharedWithAdmin,
+        usersId: userStub.user2.id,
+        albumsId: albumStub.sharedWithAdmin.id,
         role: AlbumUserRole.EDITOR,
       });
       await sut.addUsers(authStub.user1, albumStub.sharedWithAdmin.id, {
         albumUsers: [{ userId: authStub.user2.user.id }],
       });
       expect(albumUserMock.create).toHaveBeenCalledWith({
-        userId: authStub.user2.user.id,
-        albumId: albumStub.sharedWithAdmin.id,
+        usersId: authStub.user2.user.id,
+        albumsId: albumStub.sharedWithAdmin.id,
       });
       expect(eventMock.emit).toHaveBeenCalledWith('album.invite', {
         id: albumStub.sharedWithAdmin.id,
@@ -361,8 +359,8 @@ describe(AlbumService.name, () => {
 
       expect(albumUserMock.delete).toHaveBeenCalledTimes(1);
       expect(albumUserMock.delete).toHaveBeenCalledWith({
-        albumId: albumStub.sharedWithUser.id,
-        userId: userStub.user1.id,
+        albumsId: albumStub.sharedWithUser.id,
+        usersId: userStub.user1.id,
       });
       expect(albumMock.getById).toHaveBeenCalledWith(albumStub.sharedWithUser.id, { withAssets: false });
     });
@@ -388,8 +386,8 @@ describe(AlbumService.name, () => {
 
       expect(albumUserMock.delete).toHaveBeenCalledTimes(1);
       expect(albumUserMock.delete).toHaveBeenCalledWith({
-        albumId: albumStub.sharedWithUser.id,
-        userId: authStub.user1.user.id,
+        albumsId: albumStub.sharedWithUser.id,
+        usersId: authStub.user1.user.id,
       });
     });
 
@@ -400,8 +398,8 @@ describe(AlbumService.name, () => {
 
       expect(albumUserMock.delete).toHaveBeenCalledTimes(1);
       expect(albumUserMock.delete).toHaveBeenCalledWith({
-        albumId: albumStub.sharedWithUser.id,
-        userId: authStub.user1.user.id,
+        albumsId: albumStub.sharedWithUser.id,
+        usersId: authStub.user1.user.id,
       });
     });
 
@@ -433,7 +431,7 @@ describe(AlbumService.name, () => {
         role: AlbumUserRole.EDITOR,
       });
       expect(albumUserMock.update).toHaveBeenCalledWith(
-        { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
+        { albumsId: albumStub.sharedWithAdmin.id, usersId: userStub.admin.id },
         { role: AlbumUserRole.EDITOR },
       );
     });

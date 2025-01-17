@@ -3,7 +3,9 @@ import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { ActivityRepository } from 'src/repositories/activity.repository';
 import { BaseService } from 'src/services/base.service';
+import { IActivityRepository } from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
@@ -104,7 +106,7 @@ export const newTestService = <T extends BaseService>(
   const sut = new Service(
     loggerMock,
     accessMock,
-    activityMock,
+    activityMock as IActivityRepository as ActivityRepository,
     auditMock,
     albumMock,
     albumUserMock,

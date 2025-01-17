@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { CLS_ID } from 'nestjs-cls';
 import { join, resolve } from 'node:path';
-import postgres from 'postgres';
+import postgres, { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
@@ -99,6 +99,11 @@ const getEnv = (): EnvData => {
   }
 
   const driverOptions = {
+    onnotice: (notice: Notice) => {
+      if (notice['severity'] !== 'NOTICE') {
+        console.warn('Postgres notice:', notice);
+      }
+    },
     max: 10,
     types: {
       date: {
@@ -194,7 +199,16 @@ const getEnv = (): EnvData => {
           dialect: new PostgresJSDialect({
             postgres: databaseUrl ? postgres(databaseUrl, driverOptions) : postgres({ ...parts, ...driverOptions }),
           }),
-          log: ['error'] as const,
+          log(event) {
+            if (event.level === 'error') {
+              console.error('Query failed :', {
+                durationMs: event.queryDurationMillis,
+                error: event.error,
+                sql: event.query.sql,
+                params: event.query.parameters,
+              });
+            }
+          },
         },
       },
 

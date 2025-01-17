@@ -1,56 +1,70 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Insertable, Kysely, Updateable } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { SessionEntity } from 'src/entities/session.entity';
+import { SessionEntity, withUser } from 'src/entities/session.entity';
 import { ISessionRepository, SessionSearchOptions } from 'src/interfaces/session.interface';
-import { LessThanOrEqual, Repository } from 'typeorm';
+import { asUuid } from 'src/utils/database';
 
 @Injectable()
 export class SessionRepository implements ISessionRepository {
-  constructor(@InjectRepository(SessionEntity) private repository: Repository<SessionEntity>) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.DATE] })
+  @GenerateSql({ params: [{ updatedBefore: DummyValue.DATE }] })
   search(options: SessionSearchOptions): Promise<SessionEntity[]> {
-    return this.repository.find({ where: { updatedAt: LessThanOrEqual(options.updatedBefore) } });
+    return this.db
+      .selectFrom('sessions')
+      .selectAll()
+      .where('sessions.updatedAt', '<=', options.updatedBefore)
+      .execute() as Promise<SessionEntity[]>;
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
-  getByToken(token: string): Promise<SessionEntity | null> {
-    return this.repository.findOne({
-      where: { token },
-      relations: {
-        user: {
-          metadata: true,
-        },
-      },
-    });
+  getByToken(token: string): Promise<SessionEntity | undefined> {
+    return this.db
+      .selectFrom('sessions')
+      .innerJoinLateral(withUser, (join) => join.onTrue())
+      .selectAll('sessions')
+      .select((eb) => eb.fn.toJson('user').as('user'))
+      .where('sessions.token', '=', token)
+      .executeTakeFirst() as Promise<SessionEntity | undefined>;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   getByUserId(userId: string): Promise<SessionEntity[]> {
-    return this.repository.find({
-      where: {
-        userId,
-      },
-      relations: {
-        user: true,
-      },
-      order: {
-        updatedAt: 'desc',
-        createdAt: 'desc',
-      },
-    });
+    return this.db
+      .selectFrom('sessions')
+      .innerJoinLateral(withUser, (join) => join.onTrue())
+      .selectAll('sessions')
+      .select((eb) => eb.fn.toJson('user').as('user'))
+      .where('sessions.userId', '=', userId)
+      .orderBy('sessions.updatedAt', 'desc')
+      .orderBy('sessions.createdAt', 'desc')
+      .execute() as unknown as Promise<SessionEntity[]>;
   }
 
-  create<T extends Partial<SessionEntity>>(dto: T): Promise<T & { id: string }> {
-    return this.repository.save(dto);
+  async create(dto: Insertable<Sessions>): Promise<SessionEntity> {
+    const { id, token, userId, createdAt, updatedAt, deviceType, deviceOS } = await this.db
+      .insertInto('sessions')
+      .values(dto)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return { id, token, userId, createdAt, updatedAt, deviceType, deviceOS } as SessionEntity;
   }
 
-  update<T extends Partial<SessionEntity>>(dto: T): Promise<T> {
-    return this.repository.save(dto);
+  update(id: string, dto: Updateable<Sessions>): Promise<SessionEntity> {
+    return this.db
+      .updateTable('sessions')
+      .set(dto)
+      .where('sessions.id', '=', asUuid(id))
+      .returningAll()
+      .executeTakeFirstOrThrow() as Promise<SessionEntity>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
-    await this.repository.delete({ id });
+    await this.db.deleteFrom('sessions').where('id', '=', asUuid(id)).execute();
   }
 }

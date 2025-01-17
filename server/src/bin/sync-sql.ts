@@ -12,7 +12,7 @@ import { format } from 'sql-formatter';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { entities } from 'src/entities';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { repositories } from 'src/repositories';
+import { providers, repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { AuthService } from 'src/services/auth.service';
@@ -43,7 +43,7 @@ export class SqlLogger implements Logger {
 
 const reflector = new Reflector();
 
-type Repository = (typeof repositories)[0]['useClass'];
+type Repository = (typeof providers)[0]['useClass'];
 type Provider = { provide: any; useClass: Repository };
 type SqlGeneratorOptions = { targetDir: string };
 
@@ -57,7 +57,11 @@ class SqlGenerator {
   async run() {
     try {
       await this.setup();
-      for (const repository of repositories) {
+      const targets = [
+        ...providers,
+        ...repositories.map((repository) => ({ provide: repository, useClass: repository as any })),
+      ];
+      for (const repository of targets) {
         if (repository.provide === ILoggerRepository) {
           continue;
         }
@@ -86,6 +90,7 @@ class SqlGenerator {
               this.sqlLogger.logQuery(event.query.sql);
             } else if (event.level === 'error') {
               this.sqlLogger.logQueryError(event.error as Error, event.query.sql);
+              this.sqlLogger.logQuery(event.query.sql);
             }
           },
         }),
@@ -98,7 +103,7 @@ class SqlGenerator {
         TypeOrmModule.forFeature(entities),
         OpenTelemetryModule.forRoot(otel),
       ],
-      providers: [...repositories, AuthService, SchedulerRegistry],
+      providers: [...providers, ...repositories, AuthService, SchedulerRegistry],
     }).compile();
 
     this.app = await moduleFixture.createNestApplication().init();

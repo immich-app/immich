@@ -527,6 +527,18 @@
     return !!nextAsset;
   };
 
+  const handleRandom = async () => {
+    const randomAsset = await $assetStore.getRandomAsset();
+
+    if (randomAsset) {
+      const preloadAsset = await $assetStore.getNextAsset(randomAsset);
+      assetViewingStore.setAsset(randomAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+    }
+
+    return randomAsset;
+  };
+
   const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
@@ -911,7 +923,6 @@
     {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
         {withStacked}
-        {assetStore}
         asset={$viewingAsset}
         preloadAssets={$preloadAssets}
         {isShared}
@@ -920,6 +931,7 @@
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}
+        onRandom={handleRandom}
         onClose={handleClose}
       />
     {/await}

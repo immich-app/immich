@@ -1,11 +1,12 @@
 import { BadRequestException, Inject } from '@nestjs/common';
+import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
@@ -43,6 +44,7 @@ import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { IViewRepository } from 'src/interfaces/view.interface';
+import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
@@ -52,7 +54,7 @@ export class BaseService {
   constructor(
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
     @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
-    @Inject(IActivityRepository) protected activityRepository: IActivityRepository,
+    protected activityRepository: ActivityRepository,
     @Inject(IAuditRepository) protected auditRepository: IAuditRepository,
     @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
@@ -131,7 +133,7 @@ export class BaseService {
     return checkAccess(this.accessRepository, request);
   }
 
-  async createUser(dto: Partial<UserEntity> & { email: string }): Promise<UserEntity> {
+  async createUser(dto: Insertable<Users> & { email: string }): Promise<UserEntity> {
     const user = await this.userRepository.getByEmail(dto.email);
     if (user) {
       throw new BadRequestException('User exists');
@@ -144,7 +146,7 @@ export class BaseService {
       }
     }
 
-    const payload: Partial<UserEntity> = { ...dto };
+    const payload: Insertable<Users> = { ...dto };
     if (payload.password) {
       payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }
