@@ -51,7 +51,7 @@ from
       left join lateral (
         select
           "assets".*,
-          to_json("exifInfo") as "exifInfo"
+          to_json("assets_exifInfo") as "exifInfo"
         from
           "assets"
           inner join lateral (
@@ -61,7 +61,7 @@ from
               "exif"
             where
               "exif"."assetId" = "assets"."id"
-          ) as "exifInfo" on true
+          ) as "assets_exifInfo" on true
         where
           "albums_assets_assets"."assetsId" = "assets"."id"
           and "assets"."deletedAt" is null

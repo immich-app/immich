@@ -52,10 +52,14 @@ export class SharedLinkRepository implements ISharedLinkRepository {
                   .where('assets.deletedAt', 'is', null)
                   .innerJoinLateral(
                     (eb) =>
-                      eb.selectFrom('exif').selectAll('exif').whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
+                      eb
+                        .selectFrom('exif')
+                        .selectAll('exif')
+                        .whereRef('exif.assetId', '=', 'assets.id')
+                        .as('assets_exifInfo'),
                     (join) => join.onTrue(),
                   )
-                  .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
+                  .select((eb) => eb.fn.toJson(eb.table('assets_exifInfo')).as('exifInfo'))
                   .orderBy('assets.fileCreatedAt', 'asc')
                   .as('assets'),
               (join) => join.onTrue(),
