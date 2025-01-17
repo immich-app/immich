@@ -32,7 +32,7 @@ class RknnSession:
             self.tpe = settings.rknn_facial_detection_threads
 
         log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
-        self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), TPEs=self.tpe, func=runInfrence)
+        self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), tpes=self.tpe, func=runInfrence)
         log.info(f"Loaded RKNN model from {self.model_path} with {self.tpe} threads.")
 
     def __del__(self) -> None:
