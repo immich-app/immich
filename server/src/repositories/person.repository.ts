@@ -339,40 +339,12 @@ export class PersonRepository implements IPersonRepository {
     return results.map(({ id }) => id);
   }
 
-  /**
-    const query = this.faceSearchRepository.createQueryBuilder().select('1').fromDummy();
-    if (facesToAdd.length > 0) {
-      const insertCte = this.assetFaceRepository.createQueryBuilder().insert().values(facesToAdd);
-      query.addCommonTableExpression(insertCte, 'added');
-    }
-
-    if (faceIdsToRemove.length > 0) {
-      const deleteCte = this.assetFaceRepository
-        .createQueryBuilder()
-        .delete()
-        .where('id = any(:faceIdsToRemove)', { faceIdsToRemove });
-      query.addCommonTableExpression(deleteCte, 'deleted');
-    }
-
-    if (embeddingsToAdd?.length) {
-      const embeddingCte = this.faceSearchRepository.createQueryBuilder().insert().values(embeddingsToAdd).orIgnore();
-      query.addCommonTableExpression(embeddingCte, 'embeddings');
-      query.getQuery(); // typeorm mixes up parameters without this
-    }
-
-    await query.execute();
-   */
-
   @GenerateSql({ params: [[], [], [{ faceId: DummyValue.UUID, embedding: DummyValue.VECTOR }]] })
   async refreshFaces(
     facesToAdd: (Insertable<AssetFaces> & { assetId: string })[],
     faceIdsToRemove: string[],
     embeddingsToAdd?: Insertable<FaceSearch>[],
   ): Promise<void> {
-    if (facesToAdd.length === 0 && faceIdsToRemove.length === 0 && !embeddingsToAdd?.length) {
-      return;
-    }
-
     let query = this.db;
     if (facesToAdd.length > 0) {
       (query as any) = query.with('added', (db) => db.insertInto('asset_faces').values(facesToAdd));
@@ -434,7 +406,7 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
+  getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
     return (this.db
       .selectFrom('asset_faces')
       .selectAll('asset_faces')

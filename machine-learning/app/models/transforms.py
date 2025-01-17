@@ -4,9 +4,9 @@ from typing import IO
 
 import cv2
 import numpy as np
+import orjson
 from numpy.typing import NDArray
 from PIL import Image
-import orjson
 
 _PIL_RESAMPLING_METHODS = {resampling.name.lower(): resampling for resampling in Image.Resampling}
 _PUNCTUATION_TRANS = str.maketrans("", "", string.punctuation)
