@@ -4,7 +4,6 @@ import os
 import sys
 from pathlib import Path
 from socket import socket
-from typing import Any
 
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel
