@@ -3,7 +3,7 @@ import { ExpressionBuilder, Insertable, Kysely, SelectExpression, sql } from 'ky
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFaces, DB, FaceSearch } from 'src/db';
+import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -330,11 +330,11 @@ export class PersonRepository implements IPersonRepository {
     };
   }
 
-  create(person: Partial<PersonEntity> & { ownerId: string }): Promise<PersonEntity> {
+  create(person: Insertable<Person>): Promise<PersonEntity> {
     return this.db.insertInto('person').values(person).returningAll().executeTakeFirst() as Promise<PersonEntity>;
   }
 
-  async createAll(people: (Partial<PersonEntity> & { ownerId: string })[]): Promise<string[]> {
+  async createAll(people: Insertable<Person>[]): Promise<string[]> {
     const results = await this.db.insertInto('person').values(people).returningAll().execute();
     return results.map(({ id }) => id);
   }
@@ -372,16 +372,15 @@ export class PersonRepository implements IPersonRepository {
       .executeTakeFirstOrThrow() as Promise<PersonEntity>;
   }
 
-  async updateAll(people: (Partial<PersonEntity> & { ownerId: string })[]): Promise<void> {
+  async updateAll(people: Insertable<Person>[]): Promise<void> {
     if (people.length === 0) {
       return;
     }
 
-    const keys = ['id'] as const;
     await this.db
       .insertInto('person')
       .values(people)
-      .onConflict((oc) => oc.columns(keys).doUpdateSet(() => mapUpsertColumns('person', people[0], keys)))
+      .onConflict((oc) => oc.column('id').doUpdateSet(() => mapUpsertColumns('person', people[0], ['id'])))
       .execute();
   }
 

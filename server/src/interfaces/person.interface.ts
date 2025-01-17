@@ -1,5 +1,6 @@
+import { Insertable, Updateable } from 'kysely';
+import { AssetFaces, FaceSearch, Person } from 'src/db';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { FaceSearchEntity } from 'src/entities/face-search.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
@@ -58,14 +59,14 @@ export interface IPersonRepository {
   getByName(userId: string, personName: string, options: PersonNameSearchOptions): Promise<PersonEntity[]>;
   getDistinctNames(userId: string, options: PersonNameSearchOptions): Promise<PersonNameResponse[]>;
 
-  create(person: Partial<PersonEntity> & { ownerId: string }): Promise<PersonEntity>;
-  createAll(people: (Partial<PersonEntity> & { ownerId: string })[]): Promise<string[]>;
+  create(person: Insertable<Person>): Promise<PersonEntity>;
+  createAll(people: Insertable<Person>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteFaces(options: DeleteFacesOptions): Promise<void>;
   refreshFaces(
-    facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[],
+    facesToAdd: Insertable<AssetFaces>[],
     faceIdsToRemove: string[],
-    embeddingsToAdd?: FaceSearchEntity[],
+    embeddingsToAdd?: Insertable<FaceSearch>[],
   ): Promise<void>;
   getAllFaces(options?: Partial<AssetFaceEntity>): AsyncIterableIterator<AssetFaceEntity>;
   getFaceById(id: string): Promise<AssetFaceEntity>;
@@ -82,7 +83,7 @@ export interface IPersonRepository {
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
   reassignFaces(data: UpdateFacesData): Promise<number>;
   unassignFaces(options: UnassignFacesOptions): Promise<void>;
-  update(person: Partial<PersonEntity> & { id: string }): Promise<PersonEntity>;
-  updateAll(people: Partial<PersonEntity>[]): Promise<void>;
+  update(person: Updateable<Person> & { id: string }): Promise<PersonEntity>;
+  updateAll(people: Insertable<Person>[]): Promise<void>;
   getLatestFaceDate(): Promise<string | undefined>;
 }
