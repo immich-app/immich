@@ -42,8 +42,9 @@ export class AssetService extends BaseService {
       timelineEnabled: true,
     });
     const userIds = [auth.user.id, ...partnerIds];
+    const shareAlbums = await this.albumRepository.getShared(auth.user.id);
 
-    const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
+    const groups = await this.assetRepository.getByDayOfYear(userIds, shareAlbums.length > 0 ? shareAlbums.map(el=>el.id) : [], dto);
     return groups.map(({ yearsAgo, assets }) => ({
       yearsAgo,
       // TODO move this to clients

@@ -85,7 +85,7 @@ export class AssetRepository implements IAssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
-  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<DayOfYearAssets[]> {
+  getByDayOfYear(ownerIds: string[], albumIds: string[], { day, month }: MonthDay): Promise<DayOfYearAssets[]> {
     return this.db
       .with('res', (qb) =>
         qb
@@ -110,7 +110,20 @@ export class AssetRepository implements IAssetRepository {
                 .innerJoin('asset_job_status', 'assets.id', 'asset_job_status.assetId')
                 .where('asset_job_status.previewAt', 'is not', null)
                 .where(sql`(assets."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
-                .where('assets.ownerId', '=', anyUuid(ownerIds))
+                .where(({eb, and, or}) => or([
+                  // assets in share albums and not ownerIds own
+                  and([
+                    eb.exists((qb)=>
+                      qb
+                        .selectFrom('albums_assets_assets')
+                        .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+                        .where('albums_assets_assets.albumsId', '=', anyUuid(albumIds))
+                    ),
+                    eb('assets.ownerId', '!=', anyUuid(ownerIds))
+                  ]),
+                  // ownerIds own
+                  eb('assets.ownerId', '=', anyUuid(ownerIds))
+                ]))
                 .where('assets.isVisible', '=', true)
                 .where('assets.isArchived', '=', false)
                 .where((eb) =>
@@ -122,6 +135,10 @@ export class AssetRepository implements IAssetRepository {
                   ),
                 )
                 .where('assets.deletedAt', 'is', null)
+                // TODO optimize the query to avoid performance issues caused by a large amount of data
+                // If the same photo is uploaded twice by user A and user B respectively, 
+                // when the photo appears in the sharing, the result will show duplicates
+                .distinctOn('assets.checksum')
                 .limit(10)
                 .as('a'),
             (join) => join.onTrue(),
