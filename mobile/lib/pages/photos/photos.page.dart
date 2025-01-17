@@ -34,10 +34,12 @@ class PhotosPage extends HookConsumerWidget {
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         Future(() => ref.read(albumProvider.notifier).refreshRemoteAlbums());
         ref.read(serverInfoProvider.notifier).getServerInfo();
+
         return;
       },
       [],
     );
+
     Widget buildLoadingIndicator() {
       Timer(const Duration(seconds: 2), () => tipOneOpacity.value = 1);
 
