@@ -17,12 +17,8 @@ services:
   rknn:
     security_opt:
       - systempaths=unconfined
-      - apparmor=unconfined
     devices:
-      - /dev/rga:/dev/rga
       - /dev/dri:/dev/dri
-      - /dev/dma_heap:/dev/dma_heap
-      - /dev/mpp_service:/dev/mpp_service
     volumes:
       - /sys/kernel/debug/:/sys/kernel/debug/:ro
 
