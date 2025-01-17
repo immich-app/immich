@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 from socket import socket
+from typing import Any
 
 from gunicorn.arbiter import Arbiter
 from pydantic import BaseModel
@@ -25,20 +26,18 @@ class FacialRecognitionSettings(BaseModel):
 
 
 class PreloadModelData(BaseModel):
-    clip: ClipSettings | str = ClipSettings()
-    facial_recognition: FacialRecognitionSettings | str = FacialRecognitionSettings()
-    clip_fallback: str | None = None
-    facial_recognition_fallback: str | None = None
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        if isinstance(self.clip, str):
-            self.clip = ClipSettings(textual=self.clip, visual=self.clip)
-            self.clip_fallback = "True"
-        if isinstance(self.facial_recognition, str):
-            self.clip = ClipSettings(textual=self.facial_recognition, visual=self.facial_recognition)
-            self.facial_recognition_fallback = "True"
+    clip_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
+    facial_recognition_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
+    if clip_fallback is not None:
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = clip_fallback
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = clip_fallback
+        del os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
+    if facial_recognition_fallback is not None:
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = facial_recognition_fallback
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = facial_recognition_fallback
+        del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
+    clip: ClipSettings = ClipSettings()
+    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
 
 
 class MaxBatchSize(BaseModel):

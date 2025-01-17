@@ -103,16 +103,16 @@ async def preload_models(preload: PreloadModelData) -> None:
 
     if preload.clip_fallback is not None:
         log.warning(
-            "Deprecated env variable: MACHINE_LEARNING_PRELOAD__CLIP. "
-            "Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL and "
-            "MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
+            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__CLIP'. "
+            "Use 'MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL' and "
+            "'MACHINE_LEARNING_PRELOAD__CLIP__VISUAL' instead."
         )
 
     if preload.facial_recognition_fallback is not None:
         log.warning(
-            "Deprecated env variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. "
-            "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION and "
-            "MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION instead."
+            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION'. "
+            "Use 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION' and "
+            "'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION' instead."
         )
 
 
