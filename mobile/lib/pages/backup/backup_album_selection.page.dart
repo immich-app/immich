@@ -53,7 +53,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                 itemCount: albums.length,
                 itemBuilder: ((context, index) {
                   return AlbumInfoBlock(
-                      album: albums[index], mode: AlbumInfoBlockMode.grid);
+                    album: albums[index],
+                    mode: AlbumInfoBlockMode.grid,
+                  );
                 }),
               )
             : SliverList(
