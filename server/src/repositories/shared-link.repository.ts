@@ -55,7 +55,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
                       eb.selectFrom('exif').selectAll('exif').whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
                     (join) => join.onTrue(),
                   )
-                  .select((eb) => eb.fn.toJson(sql`"exifInfo".*`).as('exifInfo'))
+                  .select((eb) => eb.fn.toJson(eb.table('exifInfo')).as('exifInfo'))
                   .orderBy('assets.fileCreatedAt', 'asc')
                   .as('assets'),
               (join) => join.onTrue(),
@@ -145,6 +145,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       .select((eb) => eb.fn.toJson('album').as('album'))
       .where((eb) => eb.or([eb('shared_links.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
       .orderBy('album.createdAt', 'desc')
+      .distinctOn(['album.createdAt', 'shared_links.id'])
       .execute() as unknown as Promise<SharedLinkEntity[]>;
   }
 
