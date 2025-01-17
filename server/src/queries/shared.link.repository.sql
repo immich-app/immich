@@ -51,7 +51,7 @@ from
       left join lateral (
         select
           "assets".*,
-          to_json("exifInfo".*) as "exifInfo"
+          to_json("exifInfo") as "exifInfo"
         from
           "assets"
           inner join lateral (
@@ -98,8 +98,8 @@ order by
   "shared_links"."createdAt" desc
 
 -- SharedLinkRepository.getAll
-select
-  "shared_links".*,
+select distinct
+  on ("shared_links"."createdAt") "shared_links".*,
   to_json("album") as "album"
 from
   "shared_links"
@@ -153,7 +153,7 @@ where
     or "album"."id" is not null
   )
 order by
-  "album"."createdAt" desc
+  "shared_links"."createdAt" desc
 
 -- SharedLinkRepository.getByKey
 select

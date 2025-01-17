@@ -144,8 +144,8 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       )
       .select((eb) => eb.fn.toJson('album').as('album'))
       .where((eb) => eb.or([eb('shared_links.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
-      .orderBy('album.createdAt', 'desc')
-      .distinctOn(['album.createdAt', 'shared_links.id'])
+      .orderBy('shared_links.createdAt', 'desc')
+      .distinctOn(['shared_links.createdAt'])
       .execute() as unknown as Promise<SharedLinkEntity[]>;
   }
 
