@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Kysely } from 'kysely';
+import { ExpressionBuilder, Kysely } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { join } from 'node:path';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -11,7 +10,33 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
 import { asUuid } from 'src/utils/database';
 import { DataSource, In, Repository } from 'typeorm';
-import { isBefore } from 'validator';
+
+/**
+ * Including EXIF and Tags
+ * */
+const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
+  return eb
+    .selectFrom((eb) =>
+      eb
+        .selectFrom('assets')
+        .selectAll('assets')
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
+        .select((eb) =>
+          jsonArrayFrom(
+            eb
+              .selectFrom('tags')
+              .selectAll('tags')
+              .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
+              .whereRef('tag_asset.assetsId', '=', 'assets.id'),
+          ).as('tags'),
+        )
+        .whereRef('assets.stackId', '=', 'asset_stack.id')
+        .as('asset'),
+    )
+    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+    .as('asset_lat');
+};
 
 @Injectable()
 export class StackRepository implements IStackRepository {
@@ -152,22 +177,7 @@ export class StackRepository implements IStackRepository {
       .selectFrom('asset_stack')
       .where('asset_stack.id', '=', asUuid(id))
       .selectAll('asset_stack')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom((eb) =>
-              eb
-                .selectFrom('assets')
-                .selectAll('assets')
-                .innerJoin('exif', 'assets.id', 'exif.assetId')
-                .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
-                .whereRef('assets.stackId', '=', 'asset_stack.id')
-                .as('asset'),
-            )
-            .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-            .as('asset_lat'),
-        (join) => join.onTrue(),
-      )
+      .leftJoinLateral(withAssets, (join) => join.onTrue())
       .select('assets')
       .executeTakeFirst() as Promise<StackEntity | undefined>;
   }
