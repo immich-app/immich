@@ -13,7 +13,7 @@ from rknn.rknnpool import RknnPoolExecutor, soc_name
 from ..config import log, settings
 
 
-def runInfrence(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
+def runInference(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
     outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=input, data_format="nchw")
 
     return outputs
@@ -27,7 +27,7 @@ class RknnSession:
         self.tpe = settings.rknn_threads
 
         log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
-        self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), tpes=self.tpe, func=runInfrence)
+        self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), tpes=self.tpe, func=runInference)
         log.info(f"Loaded RKNN model from {self.model_path} with {self.tpe} threads.")
 
     def __del__(self) -> None:

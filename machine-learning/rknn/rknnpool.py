@@ -31,7 +31,7 @@ except (FileNotFoundError, ImportError):
     soc_name = None
 
 
-def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
+def initRKNN(rknnModel, id) -> RKNNLite:
     if not is_available:
         raise RuntimeError("rknn is not available!")
     rknn_lite = RKNNLite()
@@ -59,7 +59,7 @@ def initRKNN(rknnModel="./rknnModel/yolov5s.rknn", id=0):
     return rknn_lite
 
 
-def initRKNNs(rknnModel="./rknnModel/yolov5s.rknn", tpes=1):
+def initRKNNs(rknnModel, tpes) -> list[RKNNLite]:
     rknn_list = []
     for i in range(tpes):
         rknn_list.append(initRKNN(rknnModel, i % 3))
@@ -75,8 +75,8 @@ class RknnPoolExecutor:
         self.func = func
         self.num = 0
 
-    def put(self, frame) -> None:
-        self.queue.put(self.pool.submit(self.func, self.rknn_pool[self.num % self.tpes], frame))
+    def put(self, inputs) -> None:
+        self.queue.put(self.pool.submit(self.func, self.rknn_pool[self.num % self.tpes], inputs))
         self.num += 1
 
     def get(self) -> list[list[NDArray[np.float32]], bool]:
