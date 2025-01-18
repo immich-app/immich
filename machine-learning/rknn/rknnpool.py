@@ -31,7 +31,7 @@ except (FileNotFoundError, ImportError):
     soc_name = None
 
 
-def initRKNN(rknnModel, id) -> RKNNLite:
+def init_rknn(rknnModel, id) -> RKNNLite:
     if not is_available:
         raise RuntimeError("rknn is not available!")
     rknn_lite = RKNNLite()
@@ -59,10 +59,10 @@ def initRKNN(rknnModel, id) -> RKNNLite:
     return rknn_lite
 
 
-def initRKNNs(rknnModel, tpes) -> list[RKNNLite]:
+def init_rknns(rknnModel, tpes) -> list[RKNNLite]:
     rknn_list = []
     for i in range(tpes):
-        rknn_list.append(initRKNN(rknnModel, i % 3))
+        rknn_list.append(init_rknn(rknnModel, i % 3))
     return rknn_list
 
 
@@ -70,7 +70,7 @@ class RknnPoolExecutor:
     def __init__(self, rknnModel: str, tpes: int, func):
         self.tpes = tpes
         self.queue = Queue()
-        self.rknn_pool = initRKNNs(rknnModel, tpes)
+        self.rknn_pool = init_rknns(rknnModel, tpes)
         self.pool = ThreadPoolExecutor(max_workers=tpes)
         self.func = func
         self.num = 0
