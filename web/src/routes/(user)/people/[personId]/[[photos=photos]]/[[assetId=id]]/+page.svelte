@@ -328,6 +328,11 @@
     }
   };
 
+  const handleDeleteAssets = async (assetIds: string[]) => {
+    $assetStore.removeAssets(assetIds);
+    await updateAssetCount();
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -404,7 +409,7 @@
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
