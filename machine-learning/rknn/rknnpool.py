@@ -9,7 +9,7 @@ from typing import Callable
 from numpy.typing import NDArray
 from app.config import log
 
-supported_socs = ["rk3562", "rk3566", "rk3568", "rk3576", "rk3588"]
+supported_socs = ["rk3566", "rk3588"]
 coremask_supported_socs = ["rk3576","rk3588"]
 
 try:
