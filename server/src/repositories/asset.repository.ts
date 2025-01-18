@@ -121,7 +121,7 @@ export class AssetRepository implements IAssetRepository {
                     ),
                     eb('assets.ownerId', '!=', anyUuid(ownerIds))
                   ]),
-                  // ownerIds own
+                  // ownerIds own, include partnerIds
                   eb('assets.ownerId', '=', anyUuid(ownerIds))
                 ]))
                 .where('assets.isVisible', '=', true)
@@ -134,11 +134,7 @@ export class AssetRepository implements IAssetRepository {
                       .where('asset_files.type', '=', AssetFileType.PREVIEW),
                   ),
                 )
-                .where('assets.deletedAt', 'is', null)
-                // TODO optimize the query to avoid performance issues caused by a large amount of data
-                // If the same photo is uploaded twice by user A and user B respectively, 
-                // when the photo appears in the sharing, the result will show duplicates
-                .distinctOn('assets.checksum')
+                .where('assets.deletedAt', 'is', null) 
                 .limit(10)
                 .as('a'),
             (join) => join.onTrue(),
@@ -147,6 +143,15 @@ export class AssetRepository implements IAssetRepository {
           .selectAll('a')
           .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo')),
       )
+      // If the same photo is uploaded twice by user A and user B respectively,
+      // when the photo appears in the sharing, the result will show duplicates
+      .with('unique_ids', (qb)=>
+        qb
+          .selectFrom('res')
+          .select([
+            'id',
+            sql`row_number() over (partition by checksum order by case when id = ${ownerIds[0]} then 1 else 2 end)`.as('rn')]),
+      )
       .selectFrom('res')
       .select(
         sql<number>`((now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date) / 365`.as(
@@ -154,6 +159,15 @@ export class AssetRepository implements IAssetRepository {
         ),
       )
       .select((eb) => eb.fn('jsonb_agg', [eb.table('res')]).as('assets'))
+      .where((eb)=>
+        eb
+          .exists((qb)=>
+            qb
+              .selectFrom('unique_ids')
+              .whereRef('id', '=', 'res.id')
+              .where('rn', '=', 1)
+          )
+      )
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
       .limit(10)
