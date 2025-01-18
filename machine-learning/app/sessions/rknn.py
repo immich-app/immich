@@ -24,12 +24,7 @@ class RknnSession:
         self.model_path = Path(str(model_path).replace("model", soc_name))
         self.ort_model_path = Path(str(self.model_path).replace(f"{soc_name}.rknn", "model.onnx"))
 
-        if "textual" in str(self.model_path):
-            self.tpe = settings.rknn_textual_threads
-        elif "visual" in str(self.model_path):
-            self.tpe = settings.rknn_visual_threads
-        else:
-            self.tpe = settings.rknn_facial_detection_threads
+        self.tpe = settings.rknn_threads
 
         log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
         self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), tpes=self.tpe, func=runInfrence)

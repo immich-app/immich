@@ -45,9 +45,7 @@ class Settings(BaseSettings):
     ann_fp16_turbo: bool = False
     ann_tuning_level: int = 2
     rknn: bool = True
-    rknn_textual_threads: int = 1
-    rknn_visual_threads: int = 1
-    rknn_facial_detection_threads: int = 1
+    rknn_threads: int = 1
     preload: PreloadModelData | None = None
     max_batch_size: MaxBatchSize | None = None
 

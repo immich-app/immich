@@ -167,9 +167,7 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_DEVICE_IDS`<sup>\*4</sup>               | Device IDs to use in multi-GPU environments                                                         |               `0`               | machine learning |
 | `MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION`     | Set the maximum number of faces that will be processed at once by the facial recognition model      |  None (`1` if using OpenVINO)   | machine learning |
 | `MACHINE_LEARNING_RKNN`                                   | Enable RKNN hardware acceleration if supported                                                      |             `True`              | machine learning |
-| `MACHINE_LEARNING_RKNN_TEXTUAL_THREADS`                   | How many threads of RKNN runtime should be spinned up while infrencing textual model.               |               `1`               | machine learning |
-| `MACHINE_LEARNING_RKNN_VISUAL_THREADS`                    | How many threads of RKNN runtime should be spinned up while infrencing visual model.                |               `1`               | machine learning |
-| `MACHINE_LEARNING_RKNN_FACIAL_THREADS`                    | How many threads of RKNN runtime should be spinned up while infrencing facial model.                |               `1`               | machine learning |
+| `MACHINE_LEARNING_RKNN_THREADS`                   | How many threads of RKNN runtime should be spinned up while inferencing.               |               `1`               | machine learning |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 
