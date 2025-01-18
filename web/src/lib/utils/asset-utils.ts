@@ -12,6 +12,7 @@ import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
+import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
@@ -33,11 +34,9 @@ import {
   type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { getJustifiedLayout, type LayoutOptions } from 'justified-layout-wasm';
 import { DateTime } from 'luxon';
 import { t, type Translations } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { JustifiedLayout } from '../../../justified-layout/js';
 import { handleError } from './handle-error';
 
 export const addAssetsToAlbum = async (albumId: string, assetIds: string[], showNotification = true) => {
