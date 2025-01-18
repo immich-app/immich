@@ -83,7 +83,7 @@ describe('getEnv', () => {
         config: {
           kysely: {
             dialect: expect.any(PostgresJSDialect),
-            log: ['error'],
+            log: expect.any(Function),
           },
           typeorm: expect.objectContaining({
             type: 'postgres',

@@ -10,6 +10,7 @@ node_modules
 coverage
 dist
 **/migrations/**
+db.d.ts
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml
