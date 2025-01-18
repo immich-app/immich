@@ -13,5 +13,5 @@ export interface IStackRepository {
   update(stack: Pick<StackEntity, 'id'> & Partial<StackEntity>): Promise<StackEntity>;
   delete(id: string): Promise<void>;
   deleteAll(ids: string[]): Promise<void>;
-  getById(id: string): Promise<StackEntity | null>;
+  getById(id: string): Promise<StackEntity | undefined>;
 }

@@ -36,10 +36,7 @@ class ActivityAccess implements IActivityAccess {
       .where('activity.id', 'in', [...activityIds])
       .where('activity.userId', '=', userId)
       .execute()
-      .then((activities) => {
-        console.log('activities', activities);
-        return new Set(activities.map((activity) => activity.id));
-      });
+      .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })

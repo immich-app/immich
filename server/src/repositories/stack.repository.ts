@@ -1,31 +1,55 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Kysely } from 'kysely';
+import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { InjectKysely } from 'nestjs-kysely';
+import { join } from 'node:path';
+import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
+import { asUuid } from 'src/utils/database';
 import { DataSource, In, Repository } from 'typeorm';
+import { isBefore } from 'validator';
 
 @Injectable()
 export class StackRepository implements IStackRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(StackEntity) private repository: Repository<StackEntity>,
+    @InjectKysely() private db: Kysely<DB>,
   ) {}
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
   search(query: StackSearch): Promise<StackEntity[]> {
-    return this.repository.find({
-      where: {
-        ownerId: query.ownerId,
-        primaryAssetId: query.primaryAssetId,
-      },
-      relations: {
-        assets: {
-          exifInfo: true,
-        },
-      },
-    });
+    // return this.repository.find({
+    //   where: {
+    //     ownerId: query.ownerId,
+    //     primaryAssetId: query.primaryAssetId,
+    //   },
+    //   relations: {
+    //     assets: {
+    //       exifInfo: true,
+    //     },
+    //   },
+    // });
+    console.log('query', query);
+    return this.db
+      .selectFrom('asset_stack')
+      .selectAll('asset_stack')
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('assets')
+            .selectAll('assets')
+            .whereRef('assets.id', '=', 'asset_stack.primaryAssetId')
+            .innerJoin('exif', (join) => join.onRef('exif.assetId', '=', 'assets.id'))
+            .as('exifInfo'),
+        (join) => join.onTrue(),
+      )
+      .where('asset_stack.ownerId', '=', query.ownerId)
+      .execute() as Promise<StackEntity[]>;
   }
 
   async create(entity: { ownerId: string; assetIds: string[] }): Promise<StackEntity> {
@@ -123,23 +147,29 @@ export class StackRepository implements IStackRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getById(id: string): Promise<StackEntity | null> {
-    return this.repository.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        assets: {
-          exifInfo: true,
-          tags: true,
-        },
-      },
-      order: {
-        assets: {
-          fileCreatedAt: 'ASC',
-        },
-      },
-    });
+  async getById(id: string): Promise<StackEntity | undefined> {
+    return this.db
+      .selectFrom('asset_stack')
+      .where('asset_stack.id', '=', asUuid(id))
+      .selectAll('asset_stack')
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom((eb) =>
+              eb
+                .selectFrom('assets')
+                .selectAll('assets')
+                .innerJoin('exif', 'assets.id', 'exif.assetId')
+                .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
+                .whereRef('assets.stackId', '=', 'asset_stack.id')
+                .as('asset'),
+            )
+            .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+            .as('asset_lat'),
+        (join) => join.onTrue(),
+      )
+      .select('assets')
+      .executeTakeFirst() as Promise<StackEntity | undefined>;
   }
 
   private async save(entity: Partial<StackEntity>) {
