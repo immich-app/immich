@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python3 build_rknn.py $1 $2 > immich_to_rknn2.log
+python3 build_rknn.py "$1" "$2" > immich_to_rknn2.log
 
 # if "No lowering found for" found in log file, return error status 1
 if grep -q "No lowering found for" immich_to_rknn2.log; then
