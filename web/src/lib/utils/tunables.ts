@@ -40,6 +40,8 @@ export const TUNABLES = {
   },
   ASSET_GRID: {
     NAVIGATE_ON_ASSET_IN_VIEW: getBoolean(localStorage.getItem('ASSET_GRID.NAVIGATE_ON_ASSET_IN_VIEW'), false),
+    LARGE_BUCKET_THRESHOLD: getNumber(localStorage.getItem('ASSET_GRID.LARGE_BUCKET_THRESHOLD'), 3000),
+    LARGE_BUCKET_DEBOUNCE_MS: getNumber(localStorage.getItem('ASSET_GRID.LARGE_BUCKET_DEBOUNCE_MS'), 200),
   },
   BUCKET: {
     PRIORITY: getNumber(localStorage.getItem('BUCKET.PRIORITY'), 2),

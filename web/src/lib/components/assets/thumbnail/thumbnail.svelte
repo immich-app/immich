@@ -113,7 +113,6 @@
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
-  let display = $derived(intersecting);
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -207,17 +206,17 @@
     ? 'bg-gray-300'
     : 'bg-immich-primary/20 dark:bg-immich-dark-primary/20'}"
 >
-  {#if !loaded && asset.thumbhash}
-    <canvas
-      use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
-      class="absolute object-cover z-10"
-      style:width="{width}px"
-      style:height="{height}px"
-      out:fade={{ duration: THUMBHASH_FADE_DURATION }}
-    ></canvas>
-  {/if}
+  {#if intersecting}
+    {#if !loaded && asset.thumbhash}
+      <canvas
+        use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+        class="absolute object-cover z-10"
+        style:width="{width}px"
+        style:height="{height}px"
+        out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+      ></canvas>
+    {/if}
 
-  {#if display}
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
     <div
