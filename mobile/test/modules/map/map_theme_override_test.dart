@@ -4,6 +4,8 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
@@ -20,6 +22,8 @@ void main() {
 
   setUpAll(() async {
     TestUtils.init();
+    final db = await TestUtils.initIsar();
+    StoreService.init(IsarStoreRepository(db));
   });
 
   setUp(() {

@@ -1,10 +1,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
+
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 import '../test_utils.dart';
@@ -15,8 +19,9 @@ void main() {
   late MockAuthRepository authRepository;
   late MockApiService apiService;
   late MockNetworkService networkService;
+  late Isar db;
 
-  setUp(() async {
+  setUp(() {
     authApiRepository = MockAuthApiRepository();
     authRepository = MockAuthRepository();
     apiService = MockApiService();
@@ -32,12 +37,15 @@ void main() {
     registerFallbackValue(Uri());
   });
 
+  setUpAll(() async {
+    db = await TestUtils.initIsar();
+    db.writeTxnSync(() => db.clearSync());
+  });
+
   group('validateServerUrl', () {
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
-      final db = await TestUtils.initIsar();
-      db.writeTxnSync(() => db.clearSync());
-      Store.init(db);
+      await StoreService.init(IsarStoreRepository(db));
     });
 
     test('Should resolve HTTP endpoint', () async {
@@ -105,6 +113,7 @@ void main() {
 
   group('logout', () {
     test('Should logout user', () async {
+      await StoreService.init(IsarStoreRepository(db));
       when(() => authApiRepository.logout()).thenAnswer((_) async => {});
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
@@ -116,10 +125,19 @@ void main() {
     });
 
     test('Should clear local data even on server error', () async {
+      final mockStore = MockStoreRepository();
+      registerFallbackValue(StoreKey.backgroundBackup);
+      registerFallbackValue(StoreKey.assetETag);
+      when(() => mockStore.tryGet(any<StoreKey<String>>()))
+          .thenAnswer((_) async => Future.value());
+      when(() => mockStore.tryGet(any<StoreKey<bool>>()))
+          .thenAnswer((_) async => Future.value());
+      await StoreService.init(mockStore);
       when(() => authApiRepository.logout())
           .thenThrow(Exception('Server error'));
       when(() => authRepository.clearLocalData())
           .thenAnswer((_) => Future.value(null));
+      when(() => mockStore.delete(any())).thenAnswer((_) async => {});
 
       await sut.logout();
 

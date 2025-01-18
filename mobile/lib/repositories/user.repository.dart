@@ -1,16 +1,24 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/providers/domain/auth.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:isar/isar.dart';
 
-final userRepositoryProvider =
-    Provider((ref) => UserRepository(ref.watch(dbProvider)));
+final userRepositoryProvider = Provider(
+  (ref) => UserRepository(
+    ref.watch(dbProvider),
+    authService: ref.watch(authServiceProvider),
+  ),
+);
 
 class UserRepository extends DatabaseRepository implements IUserRepository {
-  UserRepository(super.db);
+  final AuthService _authService;
+
+  UserRepository(super.db, {required AuthService authService})
+      : _authService = authService;
 
   @override
   Future<List<User>> getByIds(List<String> ids) async =>
@@ -21,8 +29,9 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
 
   @override
   Future<List<User>> getAll({bool self = true, UserSort? sortBy}) {
+    final user = _authService.getCurrentUser().toOldUser();
     final baseQuery = db.users.where();
-    final int userId = Store.get(StoreKey.currentUser).isarId;
+    final int userId = user.isarId;
     final QueryBuilder<User, User, QAfterWhereClause> afterWhere =
         self ? baseQuery.noOp() : baseQuery.isarIdNotEqualTo(userId);
     final QueryBuilder<User, User, QAfterSortBy> query = switch (sortBy) {
@@ -39,7 +48,7 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
   }
 
   @override
-  Future<User> me() => Future.value(Store.get(StoreKey.currentUser));
+  Future<User> me() => Future.value(_authService.getCurrentUser().toOldUser());
 
   @override
   Future<void> deleteById(List<int> ids) => txn(() => db.users.deleteAll(ids));
@@ -55,6 +64,6 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .filter()
       .isPartnerSharedWithEqualTo(true)
       .or()
-      .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
+      .isarIdEqualTo(_authService.getCurrentUser().toOldUser().isarId)
       .findAll();
 }

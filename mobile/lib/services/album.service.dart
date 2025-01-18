@@ -6,23 +6,24 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
+import 'package:immich_mobile/providers/domain/auth.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
@@ -33,6 +34,7 @@ final albumServiceProvider = Provider(
   (ref) => AlbumService(
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
+    ref.watch(authServiceProvider),
     ref.watch(entityServiceProvider),
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
@@ -45,6 +47,7 @@ final albumServiceProvider = Provider(
 class AlbumService {
   final UserService _userService;
   final SyncService _syncService;
+  final AuthService _authService;
   final EntityService _entityService;
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
@@ -58,6 +61,7 @@ class AlbumService {
   AlbumService(
     this._userService,
     this._syncService,
+    this._authService,
     this._entityService,
     this._albumRepository,
     this._assetRepository,
@@ -291,7 +295,7 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = Store.get(StoreKey.currentUser).isarId;
+      final userId = _authService.getCurrentUser().toOldUser().isarId;
       if (album.owner.value?.isarId == userId) {
         await _albumApiRepository.delete(album.remoteId!);
       }

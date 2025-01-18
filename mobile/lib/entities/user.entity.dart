@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:immich_mobile/domain/models/user.model.dart' as domain;
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
@@ -178,4 +179,74 @@ extension AvatarColorToColorHelper on AvatarColorEnum {
         AvatarColorEnum.gray => const Color.fromARGB(255, 75, 85, 99),
         AvatarColorEnum.amber => const Color.fromARGB(255, 217, 119, 6),
       };
+}
+
+// TODO: Remove this while refactoring user entity
+extension TempOldToNewUserExtension on User {
+  domain.User toDomain() => domain.User(
+        id: id,
+        name: name,
+        email: email,
+        isAdmin: isAdmin,
+        updatedAt: updatedAt,
+        avatarColor: avatarColor.toDomainColor(),
+        profileImagePath: profileImagePath,
+        quotaSizeInBytes: quotaSizeInBytes,
+        quotaUsageInBytes: quotaUsageInBytes,
+        inTimeline: inTimeline,
+        isPartnerSharedBy: isPartnerSharedBy,
+        isPartnerSharedWith: isPartnerSharedWith,
+        memoryEnabled: memoryEnabled,
+      );
+}
+
+// TODO: Remove this while refactoring user entity
+extension _TempOldToNewColorExtension on AvatarColorEnum {
+  domain.UserAvatarColor toDomainColor() => switch (this) {
+        AvatarColorEnum.primary => domain.UserAvatarColor.primary,
+        AvatarColorEnum.pink => domain.UserAvatarColor.pink,
+        AvatarColorEnum.red => domain.UserAvatarColor.red,
+        AvatarColorEnum.yellow => domain.UserAvatarColor.yellow,
+        AvatarColorEnum.blue => domain.UserAvatarColor.blue,
+        AvatarColorEnum.green => domain.UserAvatarColor.green,
+        AvatarColorEnum.purple => domain.UserAvatarColor.purple,
+        AvatarColorEnum.orange => domain.UserAvatarColor.orange,
+        AvatarColorEnum.gray => domain.UserAvatarColor.gray,
+        AvatarColorEnum.amber => domain.UserAvatarColor.amber,
+      };
+}
+
+// TODO: Remove this while refactoring user entity
+extension _TempNewToOldColorExtension on domain.UserAvatarColor {
+  AvatarColorEnum toAvatarColor() => switch (this) {
+        domain.UserAvatarColor.primary => AvatarColorEnum.primary,
+        domain.UserAvatarColor.pink => AvatarColorEnum.pink,
+        domain.UserAvatarColor.red => AvatarColorEnum.red,
+        domain.UserAvatarColor.yellow => AvatarColorEnum.yellow,
+        domain.UserAvatarColor.blue => AvatarColorEnum.blue,
+        domain.UserAvatarColor.green => AvatarColorEnum.green,
+        domain.UserAvatarColor.purple => AvatarColorEnum.purple,
+        domain.UserAvatarColor.orange => AvatarColorEnum.orange,
+        domain.UserAvatarColor.gray => AvatarColorEnum.gray,
+        domain.UserAvatarColor.amber => AvatarColorEnum.amber,
+      };
+}
+
+// TODO: Remove this while refactoring user entity
+extension TempNewToOldUserExtension on domain.User {
+  User toOldUser() => User(
+        id: id,
+        updatedAt: updatedAt,
+        email: email,
+        name: name,
+        isAdmin: isAdmin,
+        avatarColor: avatarColor.toAvatarColor(),
+        inTimeline: inTimeline,
+        isPartnerSharedBy: isPartnerSharedBy,
+        isPartnerSharedWith: isPartnerSharedWith,
+        memoryEnabled: memoryEnabled,
+        profileImagePath: profileImagePath,
+        quotaSizeInBytes: quotaSizeInBytes,
+        quotaUsageInBytes: quotaUsageInBytes,
+      );
 }

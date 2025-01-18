@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
@@ -15,7 +16,7 @@ import 'package:immich_mobile/services/network.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-final authServiceProvider = Provider(
+final authServiceProviderOld = Provider(
   (ref) => AuthService(
     ref.watch(authApiRepositoryProvider),
     ref.watch(authRepositoryProvider),
@@ -117,7 +118,7 @@ class AuthService {
   Future<void> clearLocalData() {
     return Future.wait([
       _authRepository.clearLocalData(),
-      Store.delete(StoreKey.currentUser),
+      Store.delete(StoreKey.currentUserId),
       Store.delete(StoreKey.accessToken),
       Store.delete(StoreKey.assetETag),
       Store.delete(StoreKey.autoEndpointSwitching),

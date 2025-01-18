@@ -1,0 +1,8 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+part 'store.provider.g.dart';
+
+@Riverpod(keepAlive: true)
+StoreService storeService(Ref _) => StoreService.I;

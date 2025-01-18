@@ -1,14 +1,24 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/providers/domain/auth.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
-final albumMediaRepositoryProvider = Provider((ref) => AlbumMediaRepository());
+final albumMediaRepositoryProvider = Provider(
+  (ref) => AlbumMediaRepository(authService: ref.watch(authServiceProvider)),
+);
 
 class AlbumMediaRepository implements IAlbumMediaRepository {
+  // TODO: Ugly, remove it while refactoring
+  final AuthService _authService;
+
+  const AlbumMediaRepository({required AuthService authService})
+      : _authService = authService;
+
   @override
   Future<List<Album>> getAll() async {
     final List<AssetPathEntity> assetPathEntities =
@@ -62,7 +72,10 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
 
     final List<AssetEntity> assets =
         await onDevice.getAssetListRange(start: start, end: end);
-    return assets.map(AssetMediaRepository.toAsset).toList().cast();
+    return assets
+        .map((a) => AssetMediaRepository.toAsset(a, _authService))
+        .toList()
+        .cast();
   }
 
   @override
@@ -75,7 +88,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     return _toAlbum(assetPathEntity);
   }
 
-  static Album _toAlbum(AssetPathEntity assetPathEntity) {
+  Album _toAlbum(AssetPathEntity assetPathEntity) {
     final Album album = Album(
       name: assetPathEntity.name,
       createdAt:
@@ -85,7 +98,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       shared: false,
       activityEnabled: false,
     );
-    album.owner.value = Store.get(StoreKey.currentUser);
+    album.owner.value = _authService.getCurrentUser().toOldUser();
     album.localId = assetPathEntity.id;
     album.isAll = assetPathEntity.isAll;
     return album;

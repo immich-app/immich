@@ -1,6 +1,9 @@
 import 'dart:io';
-import 'package:immich_mobile/services/app_settings.service.dart';
+
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:logging/logging.dart';
 
 class HttpSSLCertOverride extends HttpOverrides {
@@ -51,7 +54,7 @@ class HttpSSLCertOverride extends HttpOverrides {
         bool selfSignedCertsAllowed =
             Store.get(setting.storeKey as StoreKey<bool>, setting.defaultValue);
 
-        bool isLoggedIn = Store.tryGet(StoreKey.currentUser) != null;
+        bool isLoggedIn = Store.tryGet(StoreKey.currentUserId) != null;
 
         // Conduct server host checks if user is logged in to avoid making
         // insecure SSL connections to services that are not the immich server.

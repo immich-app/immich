@@ -5,12 +5,16 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
+import 'package:immich_mobile/providers/domain/auth.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
@@ -19,11 +23,13 @@ import 'package:immich_mobile/utils/diff.dart';
 
 /// Finds duplicates originating from missing EXIF information
 class BackupVerificationService {
+  final AuthService _authService;
   final IFileMediaRepository _fileMediaRepository;
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
 
-  BackupVerificationService(
+  const BackupVerificationService(
+    this._authService,
     this._fileMediaRepository,
     this._assetRepository,
     this._exifInfoRepository,
@@ -31,7 +37,7 @@ class BackupVerificationService {
 
   /// Returns at most [limit] assets that were backed up without exif
   Future<List<Asset>> findWronglyBackedUpAssets({int limit = 100}) async {
-    final owner = Store.get(StoreKey.currentUser).isarId;
+    final owner = _authService.getCurrentUser().toOldUser().isarId;
     final List<Asset> onlyLocal = await _assetRepository.getAll(
       ownerId: owner,
       state: AssetState.local,
@@ -209,6 +215,7 @@ class BackupVerificationService {
 
 final backupVerificationServiceProvider = Provider(
   (ref) => BackupVerificationService(
+    ref.watch(authServiceProvider),
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(assetRepositoryProvider),
     ref.watch(exifInfoRepositoryProvider),

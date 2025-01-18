@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:mocktail/mocktail.dart';
+
 import '../fixtures/album.stub.dart';
 import '../fixtures/asset.stub.dart';
 import '../fixtures/user.stub.dart';
@@ -12,6 +13,7 @@ void main() {
   late AlbumService sut;
   late MockUserService userService;
   late MockSyncService syncService;
+  late MockAuthService authService;
   late MockEntityService entityService;
   late MockAlbumRepository albumRepository;
   late MockAssetRepository assetRepository;
@@ -22,6 +24,7 @@ void main() {
   setUp(() {
     userService = MockUserService();
     syncService = MockSyncService();
+    authService = MockAuthService();
     entityService = MockEntityService();
     albumRepository = MockAlbumRepository();
     assetRepository = MockAssetRepository();
@@ -39,6 +42,7 @@ void main() {
     sut = AlbumService(
       userService,
       syncService,
+      authService,
       entityService,
       albumRepository,
       assetRepository,

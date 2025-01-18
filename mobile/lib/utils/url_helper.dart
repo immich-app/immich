@@ -1,4 +1,5 @@
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 
 String sanitizeUrl(String url) {
   // Add schema if none is set

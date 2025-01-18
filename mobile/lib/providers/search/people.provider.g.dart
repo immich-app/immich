@@ -19,6 +19,8 @@ final getAllPeopleProvider = AutoDisposeFutureProvider<List<Person>>.internal(
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<Person>>;
 String _$personAssetsHash() => r'3dfecb67a54d07e4208bcb9581b2625acd2e1832';
 
@@ -156,6 +158,8 @@ class PersonAssetsProvider extends AutoDisposeFutureProvider<RenderList> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin PersonAssetsRef on AutoDisposeFutureProviderRef<RenderList> {
   /// The parameter `personId` of this provider.
   String get personId;
@@ -296,6 +300,8 @@ class UpdatePersonNameProvider extends AutoDisposeFutureProvider<bool> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin UpdatePersonNameRef on AutoDisposeFutureProviderRef<bool> {
   /// The parameter `personId` of this provider.
   String get personId;
@@ -314,4 +320,4 @@ class _UpdatePersonNameProviderElement
   String get updatedName => (origin as UpdatePersonNameProvider).updatedName;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -1,11 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/models/auth/login_response.model.dart';
-import 'package:immich_mobile/models/auth/auth_state.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart' as nauth;
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/models/auth/auth_state.model.dart';
+import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/domain/auth.provider.dart';
+import 'package:immich_mobile/providers/domain/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/utils/hash.dart';
@@ -14,14 +19,18 @@ import 'package:openapi/api.dart';
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   return AuthNotifier(
-    ref.watch(authServiceProvider),
+    ref.watch(authServiceProviderOld),
     ref.watch(apiServiceProvider),
+    ref.watch(authServiceProvider),
+    ref.watch(userServiceProvider),
   );
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   final ApiService _apiService;
+  final nauth.AuthService _nAuthService;
+  final UserService _userService;
   final _log = Logger("AuthenticationNotifier");
 
   static const Duration _timeoutDuration = Duration(seconds: 7);
@@ -29,6 +38,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(
     this._authService,
     this._apiService,
+    this._nAuthService,
+    this._userService,
   ) : super(
           AuthState(
             deviceId: "",
@@ -104,7 +115,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String deviceId =
         Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
-    User? user = Store.tryGet(StoreKey.currentUser);
+    _nAuthService.loadOfflineUser();
+    User? user = _nAuthService.tryGetCurrentUser()?.toOldUser();
 
     UserAdminResponseDto? userResponse;
     UserPreferencesResponseDto? userPreferences;
@@ -141,15 +153,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
     // If the user information is successfully retrieved, update the store
     // Due to the flow of the code, this will always happen on first login
     if (userResponse != null) {
-      Store.put(StoreKey.deviceId, deviceId);
-      Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
-      Store.put(
-        StoreKey.currentUser,
-        User.fromUserDto(userResponse, userPreferences),
-      );
-      Store.put(StoreKey.accessToken, accessToken);
-
-      user = User.fromUserDto(userResponse, userPreferences);
+      await Store.put(StoreKey.deviceId, deviceId);
+      await Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
+      user = (await _userService.updateUser(
+        User.fromUserDto(userResponse, userPreferences).toDomain(),
+      ))
+          ?.toOldUser();
+      if (user != null) {
+        await Store.put(StoreKey.currentUserId, user.id);
+      }
+      await Store.put(StoreKey.accessToken, accessToken);
     } else {
       _log.severe("Unable to get user information from the server.");
     }

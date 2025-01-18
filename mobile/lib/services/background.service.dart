@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' show DartPluginRegistrant, IsolateNameServer, PluginUtilities;
+
 import 'package:cancellation_token_http/http.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -10,18 +11,28 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/interfaces/store.interface.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart' as newauth;
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/main.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
+import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
+import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
@@ -31,17 +42,13 @@ import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
+import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
-import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
-import 'package:immich_mobile/services/backup.service.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
@@ -373,15 +380,24 @@ class BackgroundService {
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
     AppSettingsService settingsService = AppSettingsService();
-    AlbumRepository albumRepository = AlbumRepository(db);
+    IStoreRepository storeRepo = IsarStoreRepository(db);
+    IUserRepository userRepo = IsarUserRepository(db);
+    newauth.AuthService nauthService =
+        newauth.AuthService(storeRepo: storeRepo, userRepo: userRepo);
+    AlbumRepository albumRepository =
+        AlbumRepository(db, authService: nauthService);
     AssetRepository assetRepository = AssetRepository(db);
     BackupRepository backupRepository = BackupRepository(db);
     ExifInfoRepository exifInfoRepository = ExifInfoRepository(db);
     ETagRepository eTagRepository = ETagRepository(db);
-    AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
-    FileMediaRepository fileMediaRepository = FileMediaRepository();
-    AssetMediaRepository assetMediaRepository = AssetMediaRepository();
-    UserRepository userRepository = UserRepository(db);
+    AlbumMediaRepository albumMediaRepository =
+        AlbumMediaRepository(authService: nauthService);
+    FileMediaRepository fileMediaRepository =
+        FileMediaRepository(authService: nauthService);
+    AssetMediaRepository assetMediaRepository =
+        AssetMediaRepository(authService: nauthService);
+    UserRepository userRepository =
+        UserRepository(db, authService: nauthService);
     UserApiRepository userApiRepository =
         UserApiRepository(apiService.usersApi);
     AlbumApiRepository albumApiRepository =
@@ -412,6 +428,7 @@ class BackgroundService {
     AlbumService albumService = AlbumService(
       userService,
       syncSerive,
+      nauthService,
       entityService,
       albumRepository,
       assetRepository,

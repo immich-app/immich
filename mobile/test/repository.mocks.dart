@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
@@ -35,3 +36,5 @@ class MockAlbumApiRepository extends Mock implements IAlbumApiRepository {}
 class MockAuthApiRepository extends Mock implements IAuthApiRepository {}
 
 class MockAuthRepository extends Mock implements IAuthRepository {}
+
+class MockStoreRepository extends Mock implements IStoreRepository {}

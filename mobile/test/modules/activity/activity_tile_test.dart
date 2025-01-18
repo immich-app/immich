@@ -5,10 +5,12 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/widgets/activities/activity_tile.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/widgets/activities/activity_tile.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 import 'package:isar/isar.dart';
 
@@ -27,10 +29,10 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     // For UserCircleAvatar
-    Store.init(db);
-    Store.put(StoreKey.currentUser, UserStub.admin);
-    Store.put(StoreKey.serverEndpoint, '');
-    Store.put(StoreKey.accessToken, '');
+    StoreService.init(IsarStoreRepository(db));
+    await Store.put(StoreKey.currentUserId, UserStub.admin.id);
+    await Store.put(StoreKey.serverEndpoint, '');
+    await Store.put(StoreKey.accessToken, '');
   });
 
   setUp(() {

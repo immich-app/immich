@@ -1,21 +1,30 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/services/auth.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/providers/domain/auth.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
-final albumRepositoryProvider =
-    Provider((ref) => AlbumRepository(ref.watch(dbProvider)));
+final albumRepositoryProvider = Provider(
+  (ref) => AlbumRepository(
+    ref.watch(dbProvider),
+    authService: ref.watch(authServiceProvider),
+  ),
+);
 
 class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
-  AlbumRepository(super.db);
+  // TODO: Ugly, remove it while refactoring
+  final AuthService _authService;
+
+  AlbumRepository(super.db, {required AuthService authService})
+      : _authService = authService;
 
   @override
   Future<int> count({bool? local}) {
@@ -42,14 +51,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     if (shared != null) {
       query = query.sharedEqualTo(shared);
     }
+    final user = _authService.getCurrentUser().toOldUser();
     if (owner == true) {
-      query = query.owner(
-        (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
-      );
+      query = query.owner((q) => q.isarIdEqualTo(user.isarId));
     } else if (owner == false) {
-      query = query.owner(
-        (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
-      );
+      query = query.owner((q) => q.not().isarIdEqualTo(user.isarId));
     }
     if (remote == true) {
       query = query.localIdIsNull();
@@ -134,6 +140,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     String searchTerm,
     QuickFilterMode filterMode,
   ) async {
+    final user = _authService.getCurrentUser().toOldUser();
     var query = db.albums
         .filter()
         .nameContains(searchTerm, caseSensitive: false)
@@ -141,13 +148,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
 
     switch (filterMode) {
       case QuickFilterMode.sharedWithMe:
-        query = query.owner(
-          (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
-        );
+        query = query.owner((q) => q.not().isarIdEqualTo(user.isarId));
+        break;
       case QuickFilterMode.myAlbums:
-        query = query.owner(
-          (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
-        );
+        query = query.owner((q) => q.isarIdEqualTo(user.isarId));
+        break;
       case QuickFilterMode.all:
         break;
     }
