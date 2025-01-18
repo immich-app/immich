@@ -1,14 +1,18 @@
-import { AlbumUserEntity } from 'src/entities/album-user.entity';
+import { Insertable, Selectable, Updateable } from 'kysely';
+import { AlbumsSharedUsersUsers } from 'src/db';
 
 export const IAlbumUserRepository = 'IAlbumUserRepository';
 
 export type AlbumPermissionId = {
-  albumId: string;
-  userId: string;
+  albumsId: string;
+  usersId: string;
 };
 
 export interface IAlbumUserRepository {
-  create(albumUser: Partial<AlbumUserEntity>): Promise<AlbumUserEntity>;
-  update({ userId, albumId }: AlbumPermissionId, albumPermission: Partial<AlbumUserEntity>): Promise<AlbumUserEntity>;
-  delete({ userId, albumId }: AlbumPermissionId): Promise<void>;
+  create(albumUser: Insertable<AlbumsSharedUsersUsers>): Promise<Selectable<AlbumsSharedUsersUsers>>;
+  update(
+    id: AlbumPermissionId,
+    albumPermission: Updateable<AlbumsSharedUsersUsers>,
+  ): Promise<Selectable<AlbumsSharedUsersUsers>>;
+  delete(id: AlbumPermissionId): Promise<void>;
 }
