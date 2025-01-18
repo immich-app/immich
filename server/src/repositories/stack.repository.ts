@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
@@ -12,6 +13,7 @@ export class StackRepository implements IStackRepository {
     @InjectRepository(StackEntity) private repository: Repository<StackEntity>,
   ) {}
 
+  @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
   search(query: StackSearch): Promise<StackEntity[]> {
     return this.repository.find({
       where: {
@@ -80,6 +82,7 @@ export class StackRepository implements IStackRepository {
     });
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string): Promise<void> {
     const stack = await this.getById(id);
     if (!stack) {
@@ -119,6 +122,7 @@ export class StackRepository implements IStackRepository {
     return this.save(entity);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async getById(id: string): Promise<StackEntity | null> {
     return this.repository.findOne({
       where: {
