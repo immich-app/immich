@@ -148,7 +148,6 @@ Redis (Sentinel) URL example JSON before encoding:
 
 ## Machine Learning
 
-
 | Variable                                                    | Description                                                                                         |             Default             | Containers       |
 | :---------------------------------------------------------- | :-------------------------------------------------------------------------------------------------- | :-----------------------------: | :--------------- |
 | `MACHINE_LEARNING_MODEL_TTL`                                | Inactivity time (s) before a model is unloaded (disabled if \<= 0)                                  |              `300`              | machine learning |
