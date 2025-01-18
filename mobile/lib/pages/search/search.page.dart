@@ -276,6 +276,8 @@ class SearchPage extends HookConsumerWidget {
         fieldStartHintText: 'start_date'.tr(),
         fieldEndHintText: 'end_date'.tr(),
         initialEntryMode: DatePickerEntryMode.input,
+        keyboardType: TextInputType.text,
+        locale: context.locale,
       );
 
       if (date == null) {
