@@ -355,7 +355,7 @@ class TestRknnSession:
         RknnSession(model_path)
 
         rknn_session.assert_called_once_with(
-            rknnModel=Path(str(model_path).replace("model", "rk3566")).as_posix(), TPEs=tpe, func=runInference
+            rknnModel=Path(str(model_path).replace("model", "rk3566")).as_posix(), tpes=tpe, func=runInference
         )
 
         info.assert_has_calls(

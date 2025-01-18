@@ -5,6 +5,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 import numpy as np
+from typing import Callable
 from numpy.typing import NDArray
 from app.config import log
 
@@ -31,7 +32,7 @@ except (FileNotFoundError, ImportError):
     soc_name = None
 
 
-def init_rknn(rknnModel, id) -> RKNNLite:
+def init_rknn(rknnModel, id) -> Callable:
     if not is_available:
         raise RuntimeError("rknn is not available!")
     rknn_lite = RKNNLite()
@@ -59,7 +60,7 @@ def init_rknn(rknnModel, id) -> RKNNLite:
     return rknn_lite
 
 
-def init_rknns(rknnModel, tpes) -> list[RKNNLite]:
+def init_rknns(rknnModel, tpes) -> list[Callable]:
     rknn_list = []
     for i in range(tpes):
         rknn_list.append(init_rknn(rknnModel, i % 3))

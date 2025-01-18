@@ -69,6 +69,7 @@ class InferenceModel(ABC):
 
     def _download(self) -> None:
         ignored_patterns: dict[ModelFormat, list[str]] = {
+            ModelFormat.ONNX: ["*.armnn", "*.rknn"],
             ModelFormat.ARMNN: ["*.rknn"],
             ModelFormat.RKNN: ["*.armnn"],
         }
