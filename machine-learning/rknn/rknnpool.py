@@ -55,7 +55,7 @@ def init_rknn(rknnModel, id) -> RKNNLite:
 
     if ret != 0:
         raise RuntimeError("Init runtime environment failed")
-    print(rknnModel, "\t\tdone")
+
     return rknn_lite
 
 
