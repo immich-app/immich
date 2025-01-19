@@ -1,3 +1,7 @@
+<script lang="ts" module>
+  export const menuButtonId = 'top-menu-button';
+</script>
+
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
@@ -13,13 +17,14 @@
   import { handleLogout } from '$lib/utils/auth';
   import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiHelpCircleOutline, mdiMagnify, mdiMenu, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import { isOpen } from '$lib/stores/side-bar.store';
 
   interface Props {
     showUploadButton?: boolean;
@@ -56,11 +61,26 @@
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
-    <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
-      <ImmichLogo width="55%" noText={innerWidth < 768} />
-    </a>
+    <div class="flex flex-row ml-4">
+      <CircleIconButton
+        id={menuButtonId}
+        title={'Main menu'}
+        icon={mdiMenu}
+        padding="2"
+        onclick={() => {
+          $isOpen = !$isOpen;
+        }}
+        class="md:hidden"
+      />
+      <a data-sveltekit-preload-data="hover" class="hidden md:block" href={AppRoute.PHOTOS}>
+        <ImmichLogo width="150em" />
+      </a>
+    </div>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
+      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:flex items-center gap-2">
+        <a data-sveltekit-preload-data="hover" class="md:hidden" href={AppRoute.PHOTOS}>
+          <ImmichLogo width="45em" noText={true} />
+        </a>
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}

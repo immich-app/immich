@@ -31,6 +31,7 @@
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import { fly } from 'svelte/transition';
+  import { isOpen } from '$lib/stores/side-bar.store';
 
   let isArchiveSelected: boolean = $state(false);
   let isFavoritesSelected: boolean = $state(false);
@@ -42,7 +43,7 @@
   let isUtilitiesSelected: boolean = $state(false);
 </script>
 
-<SideBarSection>
+<SideBarSection peek>
   <nav aria-label={$t('primary')}>
     <SideBarLink
       title={$t('photos')}
@@ -85,8 +86,8 @@
     ></SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-      <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
-      <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
+      <p class="p-6 {$isOpen ? 'block' : 'hidden'}">{$t('library').toUpperCase()}</p>
+      <hr class="mx-4 mb-[31px] mt-8 {$isOpen ? 'hidden' : 'block'}" />
     </div>
 
     <SideBarLink
