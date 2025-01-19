@@ -41,6 +41,8 @@
   "album_viewer_appbar_share_remove": "Remove from album",
   "album_viewer_appbar_share_to": "Share To",
   "album_viewer_page_share_add_users": "Add users",
+  "album_viewer_add_photos_exit_dialog_title": "Confirm Exit",
+  "album_viewer_add_photos_exit_dialog_content": "Your selected photos will not be saved. Are you sure you want to exit this page?",
   "all": "All",
   "all_people_page_title": "People",
   "all_videos_page_title": "Videos",

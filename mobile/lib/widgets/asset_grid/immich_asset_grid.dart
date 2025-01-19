@@ -5,13 +5,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid_view.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class ImmichAssetGrid extends HookConsumerWidget {
@@ -33,6 +33,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
+  final void Function(Set<Asset> selectedAssets)? onPopInvoked;
 
   const ImmichAssetGrid({
     super.key,
@@ -53,6 +54,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
+    this.onPopInvoked,
   });
 
   @override
@@ -119,6 +121,7 @@ class ImmichAssetGrid extends HookConsumerWidget {
           shrinkWrap: shrinkWrap,
           showDragScroll: showDragScroll,
           showStack: showStack,
+          onPopInvoked: onPopInvoked,
         ),
       );
     }
