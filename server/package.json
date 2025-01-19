@@ -130,6 +130,7 @@
     "globals": "^15.9.0",
     "kysely-codegen": "^0.16.3",
     "mock-fs": "^5.2.0",
+    "node-addon-api": "^8.3.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^4.0.0",
