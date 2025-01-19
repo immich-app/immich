@@ -77,9 +77,9 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 async def preload_models(preload: PreloadModelData) -> None:
     log.info(f"Preloading models: clip:{preload.clip} facial_recognition:{preload.facial_recognition}")
 
-    async def load_models(model_string: str, model_type: "ModelType", model_task: "ModelTask") -> None:
-        for model in model_string.split(","):
-            model_name = model.strip()
+    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask) -> None:
+        for model_name in model_string.split(","):
+            model_name = model_name.strip()
             model = await model_cache.get(model_name, model_type, model_task)
             await load(model)
 
