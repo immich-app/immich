@@ -15,7 +15,7 @@ export interface AlbumInfoOptions {
 }
 
 export interface IAlbumRepository extends IBulkAsset {
-  getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null>;
+  getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | undefined>;
   getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]>;
   removeAsset(assetId: string): Promise<void>;
   getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]>;

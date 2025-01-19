@@ -1,19 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { ExpressionBuilder, Kysely } from 'kysely';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import {
-  DataSource,
-  EntityManager,
-  FindOptionsOrder,
-  FindOptionsRelations,
-  In,
-  IsNull,
-  Not,
-  Repository,
-} from 'typeorm';
+import { DataSource, EntityManager, In, IsNull, Not, Repository } from 'typeorm';
 
 const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   if (album) {
@@ -22,37 +17,88 @@ const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   return album;
 };
 
+const userColumns = [
+  'id',
+  'email',
+  'createdAt',
+  'profileImagePath',
+  'isAdmin',
+  'shouldChangePassword',
+  'deletedAt',
+  'oauthId',
+  'updatedAt',
+  'storageLabel',
+  'name',
+  'quotaSizeInBytes',
+  'quotaUsageInBytes',
+  'status',
+  'profileChangedAt',
+] as const;
+
+const withOwner = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return jsonObjectFrom(eb.selectFrom('users').select(userColumns).whereRef('users.id', '=', 'albums.ownerId')).as(
+    'owner',
+  );
+};
+
+const withAlbumUsers = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('albums_shared_users_users as album_users')
+      .selectAll('album_users')
+      .select((eb) =>
+        jsonObjectFrom(eb.selectFrom('users').select(userColumns).whereRef('users.id', '=', 'album_users.usersId')).as(
+          'user',
+        ),
+      )
+      .whereRef('album_users.albumsId', '=', 'albums.id'),
+  ).as('albumUsers');
+};
+
+const withSharedLink = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return jsonArrayFrom(eb.selectFrom('shared_links').selectAll().whereRef('shared_links.albumId', '=', 'albums.id')).as(
+    'sharedLinks',
+  );
+};
+
+const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return eb
+    .selectFrom((eb) =>
+      eb
+        .selectFrom('assets')
+        .selectAll('assets')
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
+        .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
+        .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
+        .orderBy('assets.fileCreatedAt', 'desc')
+        .as('asset'),
+    )
+    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+    .as('asset_lat');
+};
+
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(
     @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
     @InjectDataSource() private dataSource: DataSource,
+    @InjectKysely() private db: Kysely<DB>,
   ) {}
 
   @GenerateSql({ params: [DummyValue.UUID, {}] })
-  async getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
-    const relations: FindOptionsRelations<AlbumEntity> = {
-      owner: true,
-      albumUsers: { user: true },
-      assets: false,
-      sharedLinks: true,
-    };
-
-    const order: FindOptionsOrder<AlbumEntity> = {};
-
-    if (options.withAssets) {
-      relations.assets = {
-        exifInfo: true,
-      };
-
-      order.assets = {
-        fileCreatedAt: 'DESC',
-      };
-    }
-
-    const album = await this.repository.findOne({ where: { id }, relations, order });
-    return withoutDeletedUsers(album);
+  async getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | undefined> {
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .where('albums.id', '=', id)
+      .where('albums.deletedAt', 'is', null)
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .select(withSharedLink)
+      .$if(options.withAssets, (eb) => eb.select(withAssets))
+      .executeTakeFirst() as Promise<AlbumEntity | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
