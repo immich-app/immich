@@ -86,92 +86,91 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
   getByDayOfYear(ownerIds: string[], albumIds: string[], { day, month }: MonthDay): Promise<DayOfYearAssets[]> {
-    return this.db
-      .with('res', (qb) =>
-        qb
-          .with('today', (qb) =>
-            qb
-              .selectFrom((eb) =>
-                eb
-                  .fn('generate_series', [
-                    sql`(select date_part('year', min(("localDateTime" at time zone 'UTC')::date))::int from assets)`,
-                    sql`date_part('year', current_date)::int - 1`,
-                  ])
-                  .as('year'),
-              )
-              .select((eb) => eb.fn('make_date', [sql`year::int`, sql`${month}::int`, sql`${day}::int`]).as('date')),
-          )
-          .selectFrom('today')
-          .innerJoinLateral(
-            (qb) =>
+    return (
+      this.db
+        .with('res', (qb) =>
+          qb
+            .with('today', (qb) =>
               qb
-                .selectFrom('assets')
-                .selectAll('assets')
-                .innerJoin('asset_job_status', 'assets.id', 'asset_job_status.assetId')
-                .where('asset_job_status.previewAt', 'is not', null)
-                .where(sql`(assets."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
-                .where(({eb, and, or}) => or([
-                  // assets in share albums and not ownerIds own
-                  and([
-                    eb.exists((qb)=>
-                      qb
-                        .selectFrom('albums_assets_assets')
-                        .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
-                        .where('albums_assets_assets.albumsId', '=', anyUuid(albumIds))
-                    ),
-                    eb('assets.ownerId', '!=', anyUuid(ownerIds))
-                  ]),
-                  // ownerIds own, include partnerIds
-                  eb('assets.ownerId', '=', anyUuid(ownerIds))
-                ]))
-                .where('assets.isVisible', '=', true)
-                .where('assets.isArchived', '=', false)
-                .where((eb) =>
-                  eb.exists((qb) =>
-                    qb
-                      .selectFrom('asset_files')
-                      .whereRef('assetId', '=', 'assets.id')
-                      .where('asset_files.type', '=', AssetFileType.PREVIEW),
-                  ),
+                .selectFrom((eb) =>
+                  eb
+                    .fn('generate_series', [
+                      sql`(select date_part('year', min(("localDateTime" at time zone 'UTC')::date))::int from assets)`,
+                      sql`date_part('year', current_date)::int - 1`,
+                    ])
+                    .as('year'),
                 )
-                .where('assets.deletedAt', 'is', null) 
-                .limit(10)
-                .as('a'),
-            (join) => join.onTrue(),
-          )
-          .innerJoin('exif', 'a.id', 'exif.assetId')
-          .selectAll('a')
-          .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo')),
-      )
-      // If the same photo is uploaded twice by user A and user B respectively,
-      // when the photo appears in the sharing, the result will show duplicates
-      .with('unique_ids', (qb)=>
-        qb
-          .selectFrom('res')
-          .select([
-            'id',
-            sql`row_number() over (partition by checksum order by case when id = ${ownerIds[0]} then 1 else 2 end)`.as('rn')]),
-      )
-      .selectFrom('res')
-      .select(
-        sql<number>`((now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date) / 365`.as(
-          'yearsAgo',
-        ),
-      )
-      .select((eb) => eb.fn('jsonb_agg', [eb.table('res')]).as('assets'))
-      .where((eb)=>
-        eb
-          .exists((qb)=>
-            qb
-              .selectFrom('unique_ids')
-              .whereRef('id', '=', 'res.id')
-              .where('rn', '=', 1)
-          )
-      )
-      .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
-      .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
-      .limit(10)
-      .execute() as any as Promise<DayOfYearAssets[]>;
+                .select((eb) => eb.fn('make_date', [sql`year::int`, sql`${month}::int`, sql`${day}::int`]).as('date')),
+            )
+            .selectFrom('today')
+            .innerJoinLateral(
+              (qb) =>
+                qb
+                  .selectFrom('assets')
+                  .selectAll('assets')
+                  .innerJoin('asset_job_status', 'assets.id', 'asset_job_status.assetId')
+                  .where('asset_job_status.previewAt', 'is not', null)
+                  .where(sql`(assets."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
+                  .where(({ eb, and, or }) =>
+                    or([
+                      // assets in share albums and not ownerIds own
+                      and([
+                        eb.exists((qb) =>
+                          qb
+                            .selectFrom('albums_assets_assets')
+                            .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+                            .where('albums_assets_assets.albumsId', '=', anyUuid(albumIds)),
+                        ),
+                        eb('assets.ownerId', '!=', anyUuid(ownerIds)),
+                      ]),
+                      // ownerIds own, include partnerIds
+                      eb('assets.ownerId', '=', anyUuid(ownerIds)),
+                    ]),
+                  )
+                  .where('assets.isVisible', '=', true)
+                  .where('assets.isArchived', '=', false)
+                  .where((eb) =>
+                    eb.exists((qb) =>
+                      qb
+                        .selectFrom('asset_files')
+                        .whereRef('assetId', '=', 'assets.id')
+                        .where('asset_files.type', '=', AssetFileType.PREVIEW),
+                    ),
+                  )
+                  .where('assets.deletedAt', 'is', null)
+                  .limit(10)
+                  .as('a'),
+              (join) => join.onTrue(),
+            )
+            .innerJoin('exif', 'a.id', 'exif.assetId')
+            .selectAll('a')
+            .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo')),
+        )
+        // If the same photo is uploaded twice by user A and user B respectively,
+        // when the photo appears in the sharing, the result will show duplicates
+        .with('unique_ids', (qb) =>
+          qb
+            .selectFrom('res')
+            .select([
+              'id',
+              sql`row_number() over (partition by checksum order by case when id = ${ownerIds[0]} then 1 else 2 end)`.as(
+                'rn',
+              ),
+            ]),
+        )
+        .selectFrom('res')
+        .select(
+          sql<number>`((now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date) / 365`.as(
+            'yearsAgo',
+          ),
+        )
+        .select((eb) => eb.fn('jsonb_agg', [eb.table('res')]).as('assets'))
+        .where((eb) => eb.exists((qb) => qb.selectFrom('unique_ids').whereRef('id', '=', 'res.id').where('rn', '=', 1)))
+        .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
+        .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
+        .limit(10)
+        .execute() as any as Promise<DayOfYearAssets[]>
+    );
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })

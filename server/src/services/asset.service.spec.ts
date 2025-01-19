@@ -2,8 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
+import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
+import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
+import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { AssetStats, IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
@@ -12,6 +15,7 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AssetService } from 'src/services/asset.service';
+import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
@@ -39,6 +43,7 @@ describe(AssetService.name, () => {
 
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
+  let albumMock: Mocked<IAlbumRepository>;
   let eventMock: Mocked<IEventRepository>;
   let jobMock: Mocked<IJobRepository>;
   let partnerMock: Mocked<IPartnerRepository>;
@@ -55,7 +60,7 @@ describe(AssetService.name, () => {
   };
 
   beforeEach(() => {
-    ({ sut, accessMock, assetMock, eventMock, jobMock, partnerMock, stackMock, systemMock, userMock } =
+    ({ sut, accessMock, assetMock, albumMock, eventMock, jobMock, partnerMock, stackMock, systemMock, userMock } =
       newTestService(AssetService));
 
     mockGetById([assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset]);
@@ -72,10 +77,79 @@ describe(AssetService.name, () => {
     });
 
     it('should group the assets correctly', async () => {
-      const image1 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 0, 0, 0) };
-      const image2 = { ...assetStub.image, localDateTime: new Date(2023, 1, 15, 1, 0, 0) };
-      const image3 = { ...assetStub.image, localDateTime: new Date(2015, 1, 15) };
-      const image4 = { ...assetStub.image, localDateTime: new Date(2009, 1, 15) };
+      // image1 same as image5
+      // image2 same as image6
+      // image3 same as image7
+      // image4 not in any album
+      const image1 = {
+        ...assetStub.image,
+        id: '1',
+        isFavorite: false,
+        localDateTime: new Date(2023, 1, 15, 0, 0, 0),
+        ownerId: userStub.admin.id,
+      };
+      const image2 = {
+        ...assetStub.image1,
+        id: '2',
+        isFavorite: false,
+        localDateTime: new Date(2023, 1, 15, 1, 0, 0),
+        ownerId: userStub.admin.id,
+      };
+      const image3 = {
+        ...assetStub.noResizePath,
+        id: '3',
+        isFavorite: false,
+        localDateTime: new Date(2016, 1, 15, 1, 0, 0),
+        ownerId: userStub.admin.id,
+      };
+      const image4 = {
+        ...assetStub.noWebpPath,
+        id: '4',
+        isFavorite: false,
+        localDateTime: new Date(2010, 1, 15, 0, 0, 0),
+        ownerId: userStub.admin.id,
+      };
+      const image5 = {
+        ...assetStub.image,
+        id: '5',
+        isFavorite: false,
+        localDateTime: new Date(2023, 1, 15, 0, 0, 0),
+        ownerId: userStub.user1.id,
+      };
+      const image6 = {
+        ...assetStub.image1,
+        id: '6',
+        isFavorite: false,
+        localDateTime: new Date(2023, 1, 15, 0, 0, 0),
+        ownerId: userStub.user1.id,
+      };
+      const image7 = {
+        ...assetStub.noResizePath,
+        id: '7',
+        isFavorite: false,
+        localDateTime: new Date(2016, 1, 15, 0, 0, 0),
+        ownerId: userStub.user2.id,
+      };
+      const album1: Readonly<AlbumEntity> = {
+        ...albumStub.sharedWithMultiple,
+        id: 'a1',
+        assets: [image1, image2, image3],
+      };
+      const album2: Readonly<AlbumEntity> = {
+        ...albumStub.sharedWithAdmin,
+        id: 'a2',
+        ownerId: userStub.user1.id,
+        owner: userStub.user1,
+        assets: [image5, image6],
+      };
+      const album3: Readonly<AlbumEntity> = {
+        ...albumStub.sharedWithAdmin,
+        id: 'a3',
+        ownerId: userStub.user2.id,
+        owner: userStub.user2,
+        assets: [image7],
+      };
+      albumMock.getShared.mockResolvedValue([album1, album2, album3]);
 
       partnerMock.getAll.mockResolvedValue([]);
       assetMock.getByDayOfYear.mockResolvedValue([
@@ -99,7 +173,9 @@ describe(AssetService.name, () => {
         { yearsAgo: 15, title: '15 years ago', assets: [mapAsset(image4)] },
       ]);
 
-      expect(assetMock.getByDayOfYear.mock.calls).toEqual([[[authStub.admin.user.id], { day: 15, month: 1 }]]);
+      expect(assetMock.getByDayOfYear.mock.calls).toEqual([
+        [[authStub.admin.user.id], ['a1', 'a2', 'a3'], { day: 15, month: 1 }],
+      ]);
     });
 
     it('should get memories with partners with inTimeline enabled', async () => {
@@ -109,7 +185,7 @@ describe(AssetService.name, () => {
       await sut.getMemoryLane(authStub.admin, { day: 15, month: 1 });
 
       expect(assetMock.getByDayOfYear.mock.calls).toEqual([
-        [[authStub.admin.user.id, userStub.user1.id], { day: 15, month: 1 }],
+        [[authStub.admin.user.id, userStub.user1.id], [], { day: 15, month: 1 }],
       ]);
     });
   });
