@@ -29,10 +29,10 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
           ).as('tags'),
         )
         .whereRef('assets.stackId', '=', 'asset_stack.id')
+        .orderBy('assets.fileCreatedAt', 'asc')
         .as('asset'),
     )
     .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-    .orderBy('asset.fileCreatedAt')
     .as('asset_lat');
 };
 

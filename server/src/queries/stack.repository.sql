@@ -2,18 +2,41 @@
 
 -- StackRepository.search
 select
-  "asset_stack".*
+  "asset_stack".*,
+  "assets"
 from
   "asset_stack"
   left join lateral (
     select
-      "assets".*
+      json_agg("asset") as "assets"
     from
-      "assets"
-      inner join "exif" on "exif"."assetId" = "assets"."id"
-    where
-      "assets"."id" = "asset_stack"."primaryAssetId"
-  ) as "exifInfo" on true
+      (
+        select
+          "assets".*,
+          to_json("exif") as "exifInfo",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "tags".*
+                from
+                  "tags"
+                  inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
+                where
+                  "tag_asset"."assetsId" = "assets"."id"
+              ) as agg
+          ) as "tags"
+        from
+          "assets"
+          inner join "exif" on "assets"."id" = "exif"."assetId"
+        where
+          "assets"."stackId" = "asset_stack"."id"
+        order by
+          "assets"."fileCreatedAt" asc
+      ) as "asset"
+  ) as "asset_lat" on true
 where
   "asset_stack"."ownerId" = $1
 
@@ -30,12 +53,28 @@ from
       (
         select
           "assets".*,
-          to_json("exif") as "exifInfo"
+          to_json("exif") as "exifInfo",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "tags".*
+                from
+                  "tags"
+                  inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
+                where
+                  "tag_asset"."assetsId" = "assets"."id"
+              ) as agg
+          ) as "tags"
         from
           "assets"
           inner join "exif" on "assets"."id" = "exif"."assetId"
         where
           "assets"."stackId" = "asset_stack"."id"
+        order by
+          "assets"."fileCreatedAt" asc
       ) as "asset"
   ) as "asset_lat" on true
 where
@@ -54,12 +93,28 @@ from
       (
         select
           "assets".*,
-          to_json("exif") as "exifInfo"
+          to_json("exif") as "exifInfo",
+          (
+            select
+              coalesce(json_agg(agg), '[]')
+            from
+              (
+                select
+                  "tags".*
+                from
+                  "tags"
+                  inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
+                where
+                  "tag_asset"."assetsId" = "assets"."id"
+              ) as agg
+          ) as "tags"
         from
           "assets"
           inner join "exif" on "assets"."id" = "exif"."assetId"
         where
           "assets"."stackId" = "asset_stack"."id"
+        order by
+          "assets"."fileCreatedAt" asc
       ) as "asset"
   ) as "asset_lat" on true
 where
