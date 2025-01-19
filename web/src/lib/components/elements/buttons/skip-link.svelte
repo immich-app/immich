@@ -7,16 +7,30 @@
      * Target for the skip link to move focus to.
      */
     target?: string;
+    /**
+     * Text for the skip link button.
+     */
     text?: string;
+    /**
+     * Breakpoint at which the skip link is visible. Defaults to always being visible.
+     */
+    breakpoint?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   }
 
-  let { target = 'main', text = $t('skip_to_content') }: Props = $props();
+  let { target = 'main', text = $t('skip_to_content'), breakpoint }: Props = $props();
 
   let isFocused = $state(false);
 
   const moveFocus = () => {
     const targetEl = document.querySelector<HTMLElement>(target);
     targetEl?.focus();
+  };
+
+  const getBreakpoint = () => {
+    if (!breakpoint) {
+      return '';
+    }
+    return `hidden ${breakpoint}:block`;
   };
 </script>
 
@@ -25,6 +39,7 @@
     size="sm"
     rounded="none"
     onclick={moveFocus}
+    class={getBreakpoint()}
     onfocus={() => (isFocused = true)}
     onblur={() => (isFocused = false)}
   >

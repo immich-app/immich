@@ -46,7 +46,7 @@
 </script>
 
 <div
-  class="hidden md:block storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm"
+  class="storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm min-w-52 overflow-hidden"
   title={$t('storage_usage', {
     values: {
       used: getByteUnitString(usedBytes, $locale, 3),
@@ -54,7 +54,7 @@
     },
   })}
 >
-  <div class="hidden group-hover:sm:block md:block">
+  <div>
     <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
 
     {#if userInteraction.serverInfo}

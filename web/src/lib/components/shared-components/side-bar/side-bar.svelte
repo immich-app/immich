@@ -85,8 +85,7 @@
     ></SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-      <p class="hidden p-6 group-hover:sm:block md:block">{$t('library').toUpperCase()}</p>
-      <hr class="mx-4 mb-[31px] mt-8 block group-hover:sm:hidden md:hidden" />
+      <p class="p-6">{$t('library').toUpperCase()}</p>
     </div>
 
     <SideBarLink
