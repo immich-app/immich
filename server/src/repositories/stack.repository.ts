@@ -1,15 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { ExpressionBuilder, Kysely } from 'kysely';
+import { ExpressionBuilder, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
 import { asUuid } from 'src/utils/database';
-import { DataSource, In, Repository } from 'typeorm';
 
 /**
  * Including EXIF and Tags
@@ -35,99 +32,88 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
         .as('asset'),
     )
     .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+    .orderBy('asset.fileCreatedAt')
     .as('asset_lat');
 };
 
 @Injectable()
 export class StackRepository implements IStackRepository {
-  constructor(
-    @InjectDataSource() private dataSource: DataSource,
-    @InjectRepository(StackEntity) private repository: Repository<StackEntity>,
-    @InjectKysely() private db: Kysely<DB>,
-  ) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
   search(query: StackSearch): Promise<StackEntity[]> {
-    // return this.repository.find({
-    //   where: {
-    //     ownerId: query.ownerId,
-    //     primaryAssetId: query.primaryAssetId,
-    //   },
-    //   relations: {
-    //     assets: {
-    //       exifInfo: true,
-    //     },
-    //   },
-    // });
-    console.log('query', query);
     return this.db
       .selectFrom('asset_stack')
       .selectAll('asset_stack')
-      .leftJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom('assets')
-            .selectAll('assets')
-            .whereRef('assets.id', '=', 'asset_stack.primaryAssetId')
-            .innerJoin('exif', (join) => join.onRef('exif.assetId', '=', 'assets.id'))
-            .as('exifInfo'),
-        (join) => join.onTrue(),
-      )
+      .leftJoinLateral(withAssets, (join) => join.onTrue())
+      .select('assets')
       .where('asset_stack.ownerId', '=', query.ownerId)
+      .$if(!!query.primaryAssetId, (eb) => eb.where('asset_stack.primaryAssetId', '=', query.primaryAssetId!))
       .execute() as Promise<StackEntity[]>;
   }
 
   async create(entity: { ownerId: string; assetIds: string[] }): Promise<StackEntity> {
-    return this.dataSource.manager.transaction(async (manager) => {
-      const stackRepository = manager.getRepository(StackEntity);
-
-      const stacks = await stackRepository.find({
-        where: {
-          ownerId: entity.ownerId,
-          primaryAssetId: In(entity.assetIds),
-        },
-        select: {
-          id: true,
-          assets: {
-            id: true,
-          },
-        },
-        relations: {
-          assets: {
-            exifInfo: true,
-          },
-        },
-      });
+    return this.db.transaction().execute(async (tx) => {
+      const stacks = await tx
+        .selectFrom('asset_stack')
+        .leftJoinLateral(withAssets, (join) => join.onTrue())
+        .where('asset_stack.ownerId', '=', entity.ownerId)
+        .where('asset_stack.primaryAssetId', 'in', entity.assetIds)
+        .selectAll('asset_stack')
+        .select('assets')
+        .execute();
 
       const assetIds = new Set<string>(entity.assetIds);
 
       // children
       for (const stack of stacks) {
-        for (const asset of stack.assets) {
-          assetIds.add(asset.id);
+        if (stack.assets && stack.assets.length > 0) {
+          for (const asset of stack.assets) {
+            assetIds.add(asset.id);
+          }
         }
       }
 
       if (stacks.length > 0) {
-        await stackRepository.delete({ id: In(stacks.map((stack) => stack.id)) });
+        await tx
+          .deleteFrom('asset_stack')
+          .where(
+            'id',
+            'in',
+            stacks.map((stack) => stack.id),
+          )
+          .execute();
       }
 
-      const { id } = await stackRepository.save({
-        ownerId: entity.ownerId,
-        primaryAssetId: entity.assetIds[0],
-        assets: [...assetIds].map((id) => ({ id }) as AssetEntity),
-      });
+      const newRecord = await tx
+        .insertInto('asset_stack')
+        .values({
+          ownerId: entity.ownerId,
+          primaryAssetId: entity.assetIds[0],
+        })
+        .returning('id')
+        .executeTakeFirst();
 
-      return stackRepository.findOneOrFail({
-        where: {
-          id,
-        },
-        relations: {
-          assets: {
-            exifInfo: true,
-          },
-        },
-      });
+      if (!newRecord) {
+        throw new Error('Failed to create stack');
+      }
+
+      await tx
+        .updateTable('assets')
+        .set({
+          stackId: newRecord.id,
+          updatedAt: new Date(),
+        })
+        .where('id', 'in', [...assetIds])
+        .execute();
+
+      return (await tx
+        .selectFrom('asset_stack')
+        .where('id', '=', newRecord.id)
+        .selectAll('asset_stack')
+        .leftJoinLateral(withAssets, (join) => join.onTrue())
+        .select('assets')
+        .executeTakeFirst()) as StackEntity;
     });
   }
 
@@ -140,12 +126,12 @@ export class StackRepository implements IStackRepository {
 
     const assetIds = stack.assets.map(({ id }) => id);
 
-    await this.repository.delete(id);
-
-    // Update assets updatedAt
-    await this.dataSource.manager.update(AssetEntity, assetIds, {
-      updatedAt: new Date(),
-    });
+    await this.db.deleteFrom('asset_stack').where('id', '=', asUuid(id)).execute();
+    await this.db
+      .updateTable('assets')
+      .set({ stackId: null, updatedAt: new Date() })
+      .where('id', 'in', assetIds)
+      .execute();
   }
 
   async deleteAll(ids: string[]): Promise<void> {
@@ -159,16 +145,20 @@ export class StackRepository implements IStackRepository {
       assetIds.push(...stack.assets.map(({ id }) => id));
     }
 
-    await this.repository.delete(ids);
-
-    // Update assets updatedAt
-    await this.dataSource.manager.update(AssetEntity, assetIds, {
-      updatedAt: new Date(),
-    });
+    await this.db.deleteFrom('assets').where('stackId', 'in', ids).execute();
+    await this.db.updateTable('assets').set({ updatedAt: new Date() }).where('id', 'in', assetIds).execute();
   }
 
-  update(entity: Partial<StackEntity>) {
-    return this.save(entity);
+  async update(id: string, entity: Updateable<StackEntity>): Promise<StackEntity> {
+    await this.db.updateTable('asset_stack').set(entity).where('id', '=', asUuid(id)).executeTakeFirst();
+
+    const stack = await this.getById(id);
+
+    if (!stack) {
+      throw new Error('Failed to update stack');
+    }
+
+    return stack;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -180,24 +170,5 @@ export class StackRepository implements IStackRepository {
       .leftJoinLateral(withAssets, (join) => join.onTrue())
       .select('assets')
       .executeTakeFirst() as Promise<StackEntity | undefined>;
-  }
-
-  private async save(entity: Partial<StackEntity>) {
-    const { id } = await this.repository.save(entity);
-    return this.repository.findOneOrFail({
-      where: {
-        id,
-      },
-      relations: {
-        assets: {
-          exifInfo: true,
-        },
-      },
-      order: {
-        assets: {
-          fileCreatedAt: 'ASC',
-        },
-      },
-    });
   }
 }
