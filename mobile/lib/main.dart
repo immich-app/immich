@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:isar/isar.dart';
@@ -107,10 +108,12 @@ Future<void> initApp() async {
     progressBar: true,
   );
 
-  FileDownloader().trackTasksInGroup(
+  await FileDownloader().trackTasksInGroup(
     downloadGroupLivePhoto,
     markDownloadedComplete: false,
   );
+
+  await FileDownloader().trackTasks();
 }
 
 Future<Isar> loadDb() async {
@@ -208,6 +211,8 @@ class ImmichAppState extends ConsumerState<ImmichApp>
       // needs to be delayed so that EasyLocalization is working
       ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
     });
+
+    ref.read(shareIntentUploadProvider.notifier).init();
   }
 
   @override

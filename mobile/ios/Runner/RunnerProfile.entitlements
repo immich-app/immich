@@ -6,5 +6,9 @@
 	<string>development</string>
 	<key>com.apple.developer.networking.wifi-info</key>
 	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.app.immich.share</string>
+	</array>
 </dict>
 </plist>

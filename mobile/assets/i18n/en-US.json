@@ -1,4 +1,6 @@
 {
+  "start_date": "Start date",
+  "end_date": "End date",
   "action_common_back": "Back",
   "action_common_cancel": "Cancel",
   "action_common_clear": "Clear",
@@ -657,5 +659,15 @@
   "viewer_stack_use_as_main_asset": "Use as Main Asset",
   "viewer_unstack": "Un-Stack",
   "wifi_name": "WiFi Name",
-  "your_wifi_name": "Your WiFi name"
+  "your_wifi_name": "Your WiFi name",
+  "upload": "Upload",
+  "uploading": "Uploading",
+  "shared_intent_upload_button_progress_text": "{} / {} Uploaded",
+  "enqueued": "Enqueued",
+  "not_selected": "Not selected",
+  "completed": "Completed",
+  "failed": "Failed",
+  "paused": "Paused",
+  "canceled": "Canceled",
+  "upload_to_immich": "Upload to Immich ({})"
 }

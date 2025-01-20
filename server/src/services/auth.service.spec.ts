@@ -275,7 +275,6 @@ describe('AuthService', () => {
 
   describe('validate - shared key', () => {
     it('should not accept a non-existent key', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(null);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
