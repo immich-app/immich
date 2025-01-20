@@ -142,6 +142,21 @@
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
+  const getCameraSearchHref = (asset: AssetResponseDto) => {
+    const cameraSearchUrl = new URL(AppRoute.SEARCH, globalThis.location.href);
+    cameraSearchUrl.searchParams.set(
+      QueryParameter.QUERY,
+      `{"make":"${asset.exifInfo?.make}","model":"${asset.exifInfo?.model}"}`,
+    );
+    return cameraSearchUrl.href;
+  };
+
+  const getLensModelSearchHref = (asset: AssetResponseDto) => {
+    const lensSearchUrl = new URL(AppRoute.SEARCH, globalThis.location.href);
+    lensSearchUrl.searchParams.set(QueryParameter.QUERY, `{"lensModel" : "${asset.exifInfo?.lensModel}"}`);
+    return lensSearchUrl.href;
+  };
+
   let isShowChangeDate = $state(false);
 
   async function handleConfirmChangeDate(dateTimeOriginal: string) {
@@ -410,7 +425,31 @@
         <div><Icon path={mdiCameraIris} size="24" /></div>
 
         <div>
-          <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
+          <p>
+            <a
+              href={getCameraSearchHref(asset)}
+              title={$t('search_for_camera')}
+              class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+            >
+              {asset.exifInfo.make || ''}
+              {asset.exifInfo.model || ''}
+            </a>
+          </p>
+
+          {#if asset.exifInfo?.lensModel}
+            <div class="flex gap-2 text-sm">
+              <p>
+                <a
+                  href={getLensModelSearchHref(asset)}
+                  title={$t('search_for_lens')}
+                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+                >
+                  {asset.exifInfo.lensModel || ''}
+                </a>
+              </p>
+            </div>
+          {/if}
+
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
               <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>
