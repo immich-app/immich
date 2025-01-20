@@ -165,25 +165,24 @@ from
 where
   "albums"."ownerId" = $1
   and "albums_assets_assets"."assetsId" = $2
+  and "albums"."deletedAt" is null
 order by
   "albums"."createdAt" desc
 
 -- AlbumRepository.getMetadataForIds
-SELECT
-  "album"."id" AS "album_id",
-  MIN("assets"."fileCreatedAt") AS "start_date",
-  MAX("assets"."fileCreatedAt") AS "end_date",
-  COUNT("assets"."id") AS "asset_count"
-FROM
-  "albums" "album"
-  LEFT JOIN "albums_assets_assets" "album_assets" ON "album_assets"."albumsId" = "album"."id"
-  LEFT JOIN "assets" "assets" ON "assets"."id" = "album_assets"."assetsId"
-  AND "assets"."deletedAt" IS NULL
-WHERE
-  ("album"."id" IN ($1))
-  AND ("album"."deletedAt" IS NULL)
-GROUP BY
-  "album"."id"
+select
+  "albums"."id",
+  min("assets"."fileCreatedAt") as "startDate",
+  max("assets"."fileCreatedAt") as "endDate",
+  count("assets"."id") as "assetCount"
+from
+  "albums"
+  left join "albums_assets_assets" as "album_assets" on "album_assets"."albumsId" = "albums"."id"
+  left join "assets" on "assets"."id" = "album_assets"."assetsId"
+where
+  "id" in ($1)
+group by
+  "albums"."id"
 
 -- AlbumRepository.getOwned
 select
@@ -272,6 +271,7 @@ from
   "albums"
 where
   "albums"."ownerId" = $1
+  and "albums"."deletedAt" is null
 order by
   "albums"."createdAt" desc
 
@@ -371,88 +371,110 @@ where
       and "shared_albums"."usersId" is not null
     )
   )
+  and "albums"."deletedAt" is null
 order by
   "albums"."createdAt" desc
 
 -- AlbumRepository.getNotShared
-SELECT
-  "AlbumEntity"."id" AS "AlbumEntity_id",
-  "AlbumEntity"."ownerId" AS "AlbumEntity_ownerId",
-  "AlbumEntity"."albumName" AS "AlbumEntity_albumName",
-  "AlbumEntity"."description" AS "AlbumEntity_description",
-  "AlbumEntity"."createdAt" AS "AlbumEntity_createdAt",
-  "AlbumEntity"."updatedAt" AS "AlbumEntity_updatedAt",
-  "AlbumEntity"."deletedAt" AS "AlbumEntity_deletedAt",
-  "AlbumEntity"."albumThumbnailAssetId" AS "AlbumEntity_albumThumbnailAssetId",
-  "AlbumEntity"."isActivityEnabled" AS "AlbumEntity_isActivityEnabled",
-  "AlbumEntity"."order" AS "AlbumEntity_order",
-  "AlbumEntity__AlbumEntity_albumUsers"."albumsId" AS "AlbumEntity__AlbumEntity_albumUsers_albumsId",
-  "AlbumEntity__AlbumEntity_albumUsers"."usersId" AS "AlbumEntity__AlbumEntity_albumUsers_usersId",
-  "AlbumEntity__AlbumEntity_albumUsers"."role" AS "AlbumEntity__AlbumEntity_albumUsers_role",
-  "AlbumEntity__AlbumEntity_sharedLinks"."id" AS "AlbumEntity__AlbumEntity_sharedLinks_id",
-  "AlbumEntity__AlbumEntity_sharedLinks"."description" AS "AlbumEntity__AlbumEntity_sharedLinks_description",
-  "AlbumEntity__AlbumEntity_sharedLinks"."password" AS "AlbumEntity__AlbumEntity_sharedLinks_password",
-  "AlbumEntity__AlbumEntity_sharedLinks"."userId" AS "AlbumEntity__AlbumEntity_sharedLinks_userId",
-  "AlbumEntity__AlbumEntity_sharedLinks"."key" AS "AlbumEntity__AlbumEntity_sharedLinks_key",
-  "AlbumEntity__AlbumEntity_sharedLinks"."type" AS "AlbumEntity__AlbumEntity_sharedLinks_type",
-  "AlbumEntity__AlbumEntity_sharedLinks"."createdAt" AS "AlbumEntity__AlbumEntity_sharedLinks_createdAt",
-  "AlbumEntity__AlbumEntity_sharedLinks"."expiresAt" AS "AlbumEntity__AlbumEntity_sharedLinks_expiresAt",
-  "AlbumEntity__AlbumEntity_sharedLinks"."allowUpload" AS "AlbumEntity__AlbumEntity_sharedLinks_allowUpload",
-  "AlbumEntity__AlbumEntity_sharedLinks"."allowDownload" AS "AlbumEntity__AlbumEntity_sharedLinks_allowDownload",
-  "AlbumEntity__AlbumEntity_sharedLinks"."showExif" AS "AlbumEntity__AlbumEntity_sharedLinks_showExif",
-  "AlbumEntity__AlbumEntity_sharedLinks"."albumId" AS "AlbumEntity__AlbumEntity_sharedLinks_albumId",
-  "AlbumEntity__AlbumEntity_owner"."id" AS "AlbumEntity__AlbumEntity_owner_id",
-  "AlbumEntity__AlbumEntity_owner"."name" AS "AlbumEntity__AlbumEntity_owner_name",
-  "AlbumEntity__AlbumEntity_owner"."isAdmin" AS "AlbumEntity__AlbumEntity_owner_isAdmin",
-  "AlbumEntity__AlbumEntity_owner"."email" AS "AlbumEntity__AlbumEntity_owner_email",
-  "AlbumEntity__AlbumEntity_owner"."storageLabel" AS "AlbumEntity__AlbumEntity_owner_storageLabel",
-  "AlbumEntity__AlbumEntity_owner"."oauthId" AS "AlbumEntity__AlbumEntity_owner_oauthId",
-  "AlbumEntity__AlbumEntity_owner"."profileImagePath" AS "AlbumEntity__AlbumEntity_owner_profileImagePath",
-  "AlbumEntity__AlbumEntity_owner"."shouldChangePassword" AS "AlbumEntity__AlbumEntity_owner_shouldChangePassword",
-  "AlbumEntity__AlbumEntity_owner"."createdAt" AS "AlbumEntity__AlbumEntity_owner_createdAt",
-  "AlbumEntity__AlbumEntity_owner"."deletedAt" AS "AlbumEntity__AlbumEntity_owner_deletedAt",
-  "AlbumEntity__AlbumEntity_owner"."status" AS "AlbumEntity__AlbumEntity_owner_status",
-  "AlbumEntity__AlbumEntity_owner"."updatedAt" AS "AlbumEntity__AlbumEntity_owner_updatedAt",
-  "AlbumEntity__AlbumEntity_owner"."quotaSizeInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaSizeInBytes",
-  "AlbumEntity__AlbumEntity_owner"."quotaUsageInBytes" AS "AlbumEntity__AlbumEntity_owner_quotaUsageInBytes",
-  "AlbumEntity__AlbumEntity_owner"."profileChangedAt" AS "AlbumEntity__AlbumEntity_owner_profileChangedAt"
-FROM
-  "albums" "AlbumEntity"
-  LEFT JOIN "albums_shared_users_users" "AlbumEntity__AlbumEntity_albumUsers" ON "AlbumEntity__AlbumEntity_albumUsers"."albumsId" = "AlbumEntity"."id"
-  LEFT JOIN "shared_links" "AlbumEntity__AlbumEntity_sharedLinks" ON "AlbumEntity__AlbumEntity_sharedLinks"."albumId" = "AlbumEntity"."id"
-  LEFT JOIN "users" "AlbumEntity__AlbumEntity_owner" ON "AlbumEntity__AlbumEntity_owner"."id" = "AlbumEntity"."ownerId"
-  AND (
-    "AlbumEntity__AlbumEntity_owner"."deletedAt" IS NULL
-  )
-WHERE
+select distinct
+  on ("albums"."createdAt") "albums".*,
   (
-    (
-      ("AlbumEntity"."ownerId" = $1)
-      AND (
-        (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "album_users".*,
           (
-            "AlbumEntity__AlbumEntity_albumUsers"."usersId" IS NULL
-          )
-        )
-      )
-      AND (
-        (
-          (
-            "AlbumEntity__AlbumEntity_sharedLinks"."id" IS NULL
-          )
-        )
-      )
-    )
-  )
-  AND ("AlbumEntity"."deletedAt" IS NULL)
-ORDER BY
-  "AlbumEntity"."createdAt" DESC
+            select
+              to_json(obj)
+            from
+              (
+                select
+                  "id",
+                  "email",
+                  "createdAt",
+                  "profileImagePath",
+                  "isAdmin",
+                  "shouldChangePassword",
+                  "deletedAt",
+                  "oauthId",
+                  "updatedAt",
+                  "storageLabel",
+                  "name",
+                  "quotaSizeInBytes",
+                  "quotaUsageInBytes",
+                  "status",
+                  "profileChangedAt"
+                from
+                  "users"
+                where
+                  "users"."id" = "album_users"."usersId"
+              ) as obj
+          ) as "user"
+        from
+          "albums_shared_users_users" as "album_users"
+        where
+          "album_users"."albumsId" = "albums"."id"
+      ) as agg
+  ) as "albumUsers",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "id",
+          "email",
+          "createdAt",
+          "profileImagePath",
+          "isAdmin",
+          "shouldChangePassword",
+          "deletedAt",
+          "oauthId",
+          "updatedAt",
+          "storageLabel",
+          "name",
+          "quotaSizeInBytes",
+          "quotaUsageInBytes",
+          "status",
+          "profileChangedAt"
+        from
+          "users"
+        where
+          "users"."id" = "albums"."ownerId"
+      ) as obj
+  ) as "owner",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          *
+        from
+          "shared_links"
+        where
+          "shared_links"."albumId" = "albums"."id"
+      ) as agg
+  ) as "sharedLinks"
+from
+  "albums"
+  left join "albums_shared_users_users" as "shared_albums" on "shared_albums"."albumsId" = "albums"."id"
+  left join "shared_links" on "shared_links"."albumId" = "albums"."id"
+where
+  "albums"."ownerId" = $1
+  and "shared_albums"."usersId" is null
+  and "shared_links"."userId" is null
+  and "albums"."deletedAt" is null
+order by
+  "albums"."createdAt" desc
 
 -- AlbumRepository.getAssetIds
-SELECT
-  "albums_assets"."assetsId" AS "assetId"
-FROM
-  "albums_assets_assets" "albums_assets"
-WHERE
-  "albums_assets"."albumsId" = $1
-  AND "albums_assets"."assetsId" IN ($2)
+select
+  *
+from
+  "albums_assets_assets"
+where
+  "albums_assets_assets"."albumsId" = $1
+  and "albums_assets_assets"."assetsId" in ($2)
