@@ -277,7 +277,10 @@ class MemoryPage extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                  MemoryBottomInfo(memory: memories[mIndex]),
+                  MemoryBottomInfo(
+                    memory: memories[mIndex],
+                    currentAssetIndex: currentAssetPage.value,
+                  ),
                 ],
               );
             },
