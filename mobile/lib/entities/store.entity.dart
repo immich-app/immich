@@ -245,6 +245,9 @@ enum StoreKey<T> {
 
   // Video settings
   loadOriginalVideo<bool>(136, type: bool),
+
+  // Memory settings
+  memoryIncludesShareAlbum<bool>(137, type: bool)
   ;
 
   const StoreKey(

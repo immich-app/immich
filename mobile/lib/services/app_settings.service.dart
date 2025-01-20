@@ -83,6 +83,9 @@ enum AppSettingsEnum<T> {
   enableHapticFeedback<bool>(StoreKey.enableHapticFeedback, null, true),
   syncAlbums<bool>(StoreKey.syncAlbums, null, false),
   autoEndpointSwitching<bool>(StoreKey.autoEndpointSwitching, null, false),
+
+  memoryIncludesSharedAlbum<bool>(
+      StoreKey.memoryIncludesShareAlbum, null, false),
   ;
 
   const AppSettingsEnum(this.storeKey, this.hiveKey, this.defaultValue);

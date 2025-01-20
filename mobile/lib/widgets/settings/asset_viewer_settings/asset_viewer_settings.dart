@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/widgets/settings/asset_viewer_settings/image_viewer_quality_setting.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
+import 'memory_viewer_setting.dart';
 import 'video_viewer_settings.dart';
 
 class AssetViewerSettings extends StatelessWidget {
@@ -13,6 +14,7 @@ class AssetViewerSettings extends StatelessWidget {
     final assetViewerSetting = [
       const ImageViewerQualitySetting(),
       const VideoViewerSettings(),
+      const MemoryViewerSetting(),
     ];
 
     return SettingsSubPageScaffold(

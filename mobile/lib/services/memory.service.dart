@@ -7,6 +7,8 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
+import '../entities/store.entity.dart';
+import '../utils/hash.dart';
 
 final memoryServiceProvider = StateProvider<MemoryService>((ref) {
   return MemoryService(
@@ -43,10 +45,19 @@ class MemoryService {
           final String title = yearsAgo <= 1
               ? 'memories_year_ago'.tr()
               : 'memories_years_ago'.tr(args: [yearsAgo.toString()]);
+          final assets = Store.tryGet(StoreKey.memoryIncludesShareAlbum) == true
+              ? dbAssets
+              : dbAssets
+                  .where(
+                    (asset) =>
+                        fastHash(Store.tryGet(StoreKey.currentUser)!.id) ==
+                        asset.ownerId,
+                  )
+                  .toList();
           memories.add(
             Memory(
               title: title,
-              assets: dbAssets,
+              assets: assets,
             ),
           );
         }
