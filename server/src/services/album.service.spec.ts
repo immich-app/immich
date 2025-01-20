@@ -198,7 +198,7 @@ describe(AlbumService.name, () => {
 
   describe('update', () => {
     it('should prevent updating an album that does not exist', async () => {
-      albumMock.getById.mockResolvedValue(null);
+      albumMock.getById.mockResolvedValue(void 0);
 
       await expect(
         sut.update(authStub.user1, 'invalid-id', {
@@ -350,7 +350,7 @@ describe(AlbumService.name, () => {
   describe('removeUser', () => {
     it('should require a valid album id', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
-      albumMock.getById.mockResolvedValue(null);
+      albumMock.getById.mockResolvedValue(void 0);
       await expect(sut.removeUser(authStub.admin, 'album-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
