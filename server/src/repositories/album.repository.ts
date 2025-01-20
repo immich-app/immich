@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
@@ -8,7 +8,7 @@ import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 const userColumns = [
   'id',
@@ -75,7 +75,6 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
 export class AlbumRepository implements IAlbumRepository {
   constructor(
     @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
-    @InjectDataSource() private dataSource: DataSource,
     @InjectKysely() private db: Kysely<DB>,
   ) {}
 
@@ -116,24 +115,23 @@ export class AlbumRepository implements IAlbumRepository {
       return [];
     }
 
-    // Only possible with query builder because of GROUP BY.
-    const albumMetadatas = await this.repository
-      .createQueryBuilder('album')
-      .select('album.id')
-      .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
-      .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
-      .addSelect('COUNT(assets.id)', 'asset_count')
-      .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
-      .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
-      .where('album.id IN (:...ids)', { ids })
-      .groupBy('album.id')
-      .getRawMany();
+    const metadatas = await this.db
+      .selectFrom('albums')
+      .leftJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .leftJoin('assets', 'assets.id', 'album_assets.assetsId')
+      .select('albums.id')
+      .select((eb) => eb.fn.min('assets.fileCreatedAt').as('startDate'))
+      .select((eb) => eb.fn.max('assets.fileCreatedAt').as('endDate'))
+      .select((eb) => eb.fn.count('assets.id').as('assetCount'))
+      .where('id', 'in', ids)
+      .groupBy('albums.id')
+      .execute();
 
-    return albumMetadatas.map<AlbumAssetCount>((metadatas) => ({
-      albumId: metadatas['album_id'],
-      assetCount: Number(metadatas['asset_count']),
-      startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
-      endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
+    return metadatas.map((metadatas) => ({
+      albumId: metadatas.id,
+      assetCount: Number(metadatas.assetCount),
+      startDate: metadatas.startDate ? new Date(metadatas.startDate) : undefined,
+      endDate: metadatas.endDate ? new Date(metadatas.endDate) : undefined,
     }));
   }
 
