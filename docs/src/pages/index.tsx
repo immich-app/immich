@@ -73,9 +73,9 @@ function HomepageHeader() {
         />
 
         <div>
-          <p className="font-bold text-2xl md:text-5xl ">Download mobile app</p>
+          <p className="font-bold text-2xl md:text-5xl ">Download the mobile app</p>
           <p className="text-lg">
-            Download Immich app and start backing up your photos and videos securely to your own server
+            Download the Immich app and start backing up your photos and videos securely to your own server
           </p>
         </div>
         <div className="flex flex-col sm:flex-row place-items-center place-content-center mt-4 gap-1">
