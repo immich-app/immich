@@ -175,10 +175,10 @@ export class MetadataService extends BaseService {
     let fileCreatedAtDate = dateTimeOriginal;
     let fileModifiedAtDate = modifyDate;
 
-    /* if (asset.isExternal) {
+    if (asset.isExternal) {
       fileCreatedAtDate = fileCreatedAt;
       fileModifiedAtDate = fileModifiedAt;
-    } */
+    }
 
     const exifData: Insertable<Exif> = {
       assetId: asset.id,

@@ -231,7 +231,11 @@ describe(LibraryService.name, () => {
       const response = await sut.handleQueueSyncAssets({ id: libraryStub.externalLibrary1.id });
 
       expect(response).toBe(JobStatus.SUCCESS);
-      expect(assetMock.detectOfflineExternalAssets).toHaveBeenCalledWith(libraryStub.externalLibrary1);
+      expect(assetMock.detectOfflineExternalAssets).toHaveBeenCalledWith(
+        libraryStub.externalLibrary1.id,
+        libraryStub.externalLibrary1.importPaths,
+        libraryStub.externalLibrary1.exclusionPatterns,
+      );
     });
 
     it('should skip an empty library', async () => {
@@ -270,7 +274,11 @@ describe(LibraryService.name, () => {
       });
 
       expect(response).toBe(JobStatus.SUCCESS);
-      expect(assetMock.detectOfflineExternalAssets).toHaveBeenCalledWith(libraryStub.externalLibraryWithImportPaths1);
+      expect(assetMock.detectOfflineExternalAssets).toHaveBeenCalledWith(
+        libraryStub.externalLibraryWithImportPaths1.id,
+        libraryStub.externalLibraryWithImportPaths1.importPaths,
+        libraryStub.externalLibraryWithImportPaths1.exclusionPatterns,
+      );
     });
 
     it("should fail if library can't be found", async () => {
@@ -579,10 +587,15 @@ describe(LibraryService.name, () => {
 
   describe('getStatistics', () => {
     it('should return library statistics', async () => {
-      assetMock.getLibraryAssetCount.mockResolvedValue(10);
-      await expect(sut.getStatistics(libraryStub.externalLibrary1.id)).resolves.toEqual(10);
+      libraryMock.getStatistics.mockResolvedValue({ photos: 10, videos: 0, total: 10, usage: 1337 });
+      await expect(sut.getStatistics(libraryStub.externalLibrary1.id)).resolves.toEqual({
+        photos: 10,
+        videos: 0,
+        total: 10,
+        usage: 1337,
+      });
 
-      expect(assetMock.getLibraryAssetCount).toHaveBeenCalledWith({ libraryId: libraryStub.externalLibrary1.id });
+      expect(libraryMock.getStatistics).toHaveBeenCalledWith(libraryStub.externalLibrary1.id);
     });
   });
 

@@ -15,6 +15,7 @@
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
   import { locale } from '$lib/stores/preferences.store';
+  import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import {
     createLibrary,
@@ -25,6 +26,7 @@
     scanLibrary,
     updateLibrary,
     type LibraryResponseDto,
+    type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -42,8 +44,13 @@
 
   let libraries: LibraryResponseDto[] = $state([]);
 
+  let stats: LibraryStatsResponseDto[] = [];
   let owner: UserResponseDto[] = $state([]);
-  let assetCount: number[] = $state([]);
+  let photos: number[] = [];
+  let videos: number[] = [];
+  let totalCount: number[] = $state([]);
+  let diskUsage: number[] = $state([]);
+  let diskUsageUnit: ByteUnit[] = $state([]);
   let editImportPaths: number | undefined = $state();
   let editScanSettings: number | undefined = $state();
   let renameLibrary: number | undefined = $state();
@@ -67,8 +74,12 @@
   };
 
   const refreshStats = async (listIndex: number) => {
-    assetCount[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
+    stats[listIndex] = await getLibraryStatistics({ id: libraries[listIndex].id });
     owner[listIndex] = await getUserAdmin({ id: libraries[listIndex].ownerId });
+    photos[listIndex] = stats[listIndex].photos;
+    videos[listIndex] = stats[listIndex].videos;
+    totalCount[listIndex] = stats[listIndex].total;
+    [diskUsage[listIndex], diskUsageUnit[listIndex]] = getBytesWithUnit(stats[listIndex].usage, 0);
   };
 
   async function readLibraryList() {
@@ -179,10 +190,10 @@
     }
 
     await refreshStats(index);
-    const count = assetCount[index];
-    if (count > 0) {
+    const assetCount = totalCount[index];
+    if (assetCount > 0) {
       const isConfirmed = await dialogController.show({
-        prompt: $t('admin.confirm_delete_library_assets', { values: { count } }),
+        prompt: $t('admin.confirm_delete_library_assets', { values: { count: assetCount } }),
       });
 
       if (!isConfirmed) {
@@ -231,18 +242,19 @@
           <thead
             class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
           >
-            <tr class="grid grid-cols-5 w-full place-items-center">
+            <tr class="grid grid-cols-6 w-full place-items-center">
               <th class="text-center text-sm font-medium">{$t('type')}</th>
               <th class="text-center text-sm font-medium">{$t('name')}</th>
               <th class="text-center text-sm font-medium">{$t('owner')}</th>
               <th class="text-center text-sm font-medium">{$t('assets')}</th>
+              <th class="text-center text-sm font-medium">{$t('size')}</th>
               <th class="text-center text-sm font-medium"></th>
             </tr>
           </thead>
           <tbody class="block overflow-y-auto rounded-md border dark:border-immich-dark-gray">
             {#each libraries as library, index (library.id)}
               <tr
-                class={`grid grid-cols-5 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                class={`grid grid-cols-6 h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
                   index % 2 == 0
                     ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
                     : 'bg-immich-bg dark:bg-immich-dark-gray/50'
@@ -263,10 +275,18 @@
                   {:else}{owner[index].name}{/if}
                 </td>
                 <td class=" text-ellipsis px-4 text-sm">
-                  {#if assetCount[index] == undefined}
+                  {#if totalCount[index] == undefined}
                     <LoadingSpinner size="40" />
                   {:else}
-                    {assetCount[index].toLocaleString($locale)}
+                    {totalCount[index].toLocaleString($locale)}
+                  {/if}
+                </td>
+                <td class=" text-ellipsis px-4 text-sm">
+                  {#if diskUsage[index] == undefined}
+                    <LoadingSpinner size="40" />
+                  {:else}
+                    {diskUsage[index]}
+                    {diskUsageUnit[index]}
                   {/if}
                 </td>
 

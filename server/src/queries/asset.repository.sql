@@ -262,8 +262,9 @@ with
     from
       "assets"
     where
-      "assets"."deletedAt" is null
-      and "assets"."isVisible" = $2
+      "assets"."fileCreatedAt" <= $2
+      and "assets"."deletedAt" is null
+      and "assets"."isVisible" = $3
   )
 select
   "timeBucket",
@@ -283,9 +284,10 @@ from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
 where
-  "assets"."deletedAt" is null
-  and "assets"."isVisible" = $1
-  and date_trunc($2, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $3
+  "assets"."fileCreatedAt" <= $1
+  and "assets"."deletedAt" is null
+  and "assets"."isVisible" = $2
+  and date_trunc($3, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
 order by
   "assets"."localDateTime" desc
 

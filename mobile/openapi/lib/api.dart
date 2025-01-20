@@ -150,6 +150,7 @@ part 'model/job_name.dart';
 part 'model/job_settings_dto.dart';
 part 'model/job_status_dto.dart';
 part 'model/library_response_dto.dart';
+part 'model/library_stats_response_dto.dart';
 part 'model/license_key_dto.dart';
 part 'model/license_response_dto.dart';
 part 'model/log_level.dart';

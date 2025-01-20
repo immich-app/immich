@@ -22,7 +22,6 @@ import {
   withStack,
   withTags,
 } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import {
   AssetDeltaSyncOptions,
@@ -49,6 +48,8 @@ import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
+
+const ASSET_CUTOFF_DATE = new Date('9000-01-01');
 
 @Injectable()
 export class AssetRepository implements IAssetRepository {
@@ -527,6 +528,7 @@ export class AssetRepository implements IAssetRepository {
     return this.db
       .selectFrom('assets')
       .selectAll('assets')
+      .where('assets.fileCreatedAt', '<=', ASSET_CUTOFF_DATE)
       .$call(withExif)
       .where('ownerId', '=', anyUuid(userIds))
       .where('isVisible', '=', true)
@@ -543,6 +545,7 @@ export class AssetRepository implements IAssetRepository {
         .with('assets', (qb) =>
           qb
             .selectFrom('assets')
+            .where('assets.fileCreatedAt', '<=', ASSET_CUTOFF_DATE)
             .select(truncatedDate<Date>(options.size).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
@@ -592,6 +595,7 @@ export class AssetRepository implements IAssetRepository {
   async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     return hasPeople(this.db, options.personId ? [options.personId] : undefined)
       .selectAll('assets')
+      .where('assets.fileCreatedAt', '<=', ASSET_CUTOFF_DATE)
       .$call(withExif)
       .$if(!!options.albumId, (qb) => withAlbums(qb, { albumId: options.albumId }))
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
@@ -748,9 +752,16 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
-  async detectOfflineExternalAssets(library: LibraryEntity): Promise<UpdateResult> {
-    const paths = library.importPaths.map((importPath) => `${importPath}%`);
-    const exclusions = library.exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
+  })
+  async detectOfflineExternalAssets(
+    libraryId: string,
+    importPaths: string[],
+    exclusionPatterns: string[],
+  ): Promise<UpdateResult> {
+    const paths = importPaths.map((importPath) => `${importPath}%`);
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
 
     return this.db
       .updateTable('assets')
@@ -760,13 +771,16 @@ export class AssetRepository implements IAssetRepository {
       })
       .where('isOffline', '=', false)
       .where('isExternal', '=', true)
-      .where('libraryId', '=', asUuid(library.id))
+      .where('libraryId', '=', asUuid(libraryId))
       .where((eb) =>
         eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
       )
       .executeTakeFirstOrThrow();
   }
 
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, paths: [DummyValue.STRING] }],
+  })
   async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
     const result = await this.db
       .selectFrom(

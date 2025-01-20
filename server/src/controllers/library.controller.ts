@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
+  LibraryStatsResponseDto,
   UpdateLibraryDto,
   ValidateLibraryDto,
   ValidateLibraryResponseDto,
@@ -58,7 +59,7 @@ export class LibraryController {
 
   @Get(':id/statistics')
   @Authenticated({ permission: Permission.LIBRARY_STATISTICS, admin: true })
-  getLibraryStatistics(@Param() { id }: UUIDParamDto): Promise<number> {
+  getLibraryStatistics(@Param() { id }: UUIDParamDto): Promise<LibraryStatsResponseDto> {
     return this.service.getStatistics(id);
   }
 

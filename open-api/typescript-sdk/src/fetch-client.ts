@@ -574,6 +574,12 @@ export type UpdateLibraryDto = {
     importPaths?: string[];
     name?: string;
 };
+export type LibraryStatsResponseDto = {
+    photos: number;
+    total: number;
+    usage: number;
+    videos: number;
+};
 export type ValidateLibraryDto = {
     exclusionPatterns?: string[];
     importPaths?: string[];
@@ -2106,7 +2112,7 @@ export function getLibraryStatistics({ id }: {
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: number;
+        data: LibraryStatsResponseDto;
     }>(`/libraries/${encodeURIComponent(id)}/statistics`, {
         ...opts
     }));

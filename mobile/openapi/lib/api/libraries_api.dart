@@ -228,7 +228,7 @@ class LibrariesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<num?> getLibraryStatistics(String id,) async {
+  Future<LibraryStatsResponseDto?> getLibraryStatistics(String id,) async {
     final response = await getLibraryStatisticsWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -237,7 +237,7 @@ class LibrariesApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'num',) as num;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LibraryStatsResponseDto',) as LibraryStatsResponseDto;
     
     }
     return null;

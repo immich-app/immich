@@ -337,6 +337,7 @@ Class | Method | HTTP request | Description
  - [JobSettingsDto](doc//JobSettingsDto.md)
  - [JobStatusDto](doc//JobStatusDto.md)
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
+ - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
  - [LicenseResponseDto](doc//LicenseResponseDto.md)
  - [LogLevel](doc//LogLevel.md)

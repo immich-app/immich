@@ -43,5 +43,6 @@ export const newAssetRepositoryMock = (): Mocked<IAssetRepository> => {
     upsertFiles: vitest.fn(),
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
+    updateByLibraryId: vitest.fn(),
   };
 };

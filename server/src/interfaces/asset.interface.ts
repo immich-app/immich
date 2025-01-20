@@ -1,7 +1,6 @@
 import { Insertable, Updateable, UpdateResult } from 'kysely';
 import { AssetJobStatus, Assets, Exif } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem } from 'src/interfaces/search.interface';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
@@ -171,7 +170,11 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(file: UpsertFileOptions): Promise<void>;
   upsertFiles(files: UpsertFileOptions[]): Promise<void>;
-  detectOfflineExternalAssets(library: LibraryEntity): Promise<UpdateResult>;
+  detectOfflineExternalAssets(
+    libraryId: string,
+    importPaths: string[],
+    exclusionPatterns: string[],
+  ): Promise<UpdateResult>;
   filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]>;
   getLibraryAssetCount(options: AssetSearchOptions): Promise<number | undefined>;
 }

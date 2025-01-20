@@ -7,6 +7,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import {
   CreateLibraryDto,
   LibraryResponseDto,
+  LibraryStatsResponseDto,
   mapLibrary,
   UpdateLibraryDto,
   ValidateLibraryDto,
@@ -23,6 +24,8 @@ import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
+
+const ASSET_IMPORT_DATE = new Date('9999-12-31');
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -179,12 +182,12 @@ export class LibraryService extends BaseService {
     }
   }
 
-  async getStatistics(id: string): Promise<number> {
-    const count = await this.assetRepository.getLibraryAssetCount({ libraryId: id });
-    if (count == undefined) {
-      throw new InternalServerErrorException(`Failed to get asset count for library ${id}`);
+  async getStatistics(id: string): Promise<LibraryStatsResponseDto> {
+    const statistics = await this.libraryRepository.getStatistics(id);
+    if (!statistics) {
+      throw new BadRequestException(`Library ${id} not found`);
     }
-    return count;
+    return statistics;
   }
 
   async get(id: string): Promise<LibraryResponseDto> {
@@ -378,9 +381,9 @@ export class LibraryService extends BaseService {
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
-      fileCreatedAt: new Date(),
-      fileModifiedAt: new Date(),
-      localDateTime: new Date(),
+      fileCreatedAt: ASSET_IMPORT_DATE,
+      fileModifiedAt: ASSET_IMPORT_DATE,
+      localDateTime: ASSET_IMPORT_DATE,
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',
@@ -470,22 +473,25 @@ export class LibraryService extends BaseService {
         case AssetSyncResult.CHECK_OFFLINE: {
           const isInImportPath = job.importPaths.find((path) => asset.originalPath.startsWith(path));
 
-          if (isInImportPath) {
-            const isExcluded = job.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
-
-            if (isExcluded) {
-              this.logger.verbose(
-                `Offline asset ${asset.originalPath} is in an import path but still covered by exclusion pattern, keeping offline in library ${job.libraryId}`,
-              );
-            } else {
-              this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);
-              assetIdsToOnline.push(asset.id);
-            }
-          } else {
+          if (!isInImportPath) {
             this.logger.verbose(
               `Offline asset ${asset.originalPath} is still not in any import path, keeping offline in library ${job.libraryId}`,
             );
+            break;
           }
+
+          const isExcluded = job.exclusionPatterns.some((pattern) => picomatch.isMatch(asset.originalPath, pattern));
+
+          if (!isExcluded) {
+            this.logger.debug(`Offline asset ${asset.originalPath} is now online in library ${job.libraryId}`);
+            assetIdsToOnline.push(asset.id);
+            break;
+          }
+
+          this.logger.verbose(
+            `Offline asset ${asset.originalPath} is in an import path but still covered by exclusion pattern, keeping offline in library ${job.libraryId}`,
+          );
+
           break;
         }
       }
@@ -696,7 +702,11 @@ export class LibraryService extends BaseService {
       `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
-    const offlineResult = await this.assetRepository.detectOfflineExternalAssets(library);
+    const offlineResult = await this.assetRepository.detectOfflineExternalAssets(
+      library.id,
+      library.importPaths,
+      library.exclusionPatterns,
+    );
 
     const affectedAssetCount = Number(offlineResult.numUpdatedRows);
 

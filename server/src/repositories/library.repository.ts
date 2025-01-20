@@ -100,7 +100,7 @@ export class LibraryRepository implements ILibraryRepository {
     const stats = await this.db
       .selectFrom('libraries')
       .innerJoin('assets', 'assets.libraryId', 'libraries.id')
-      .innerJoin('exif', 'exif.assetId', 'assets.id')
+      .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select((eb) =>
         eb.fn
           .count('assets.id')

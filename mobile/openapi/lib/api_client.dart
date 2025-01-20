@@ -354,6 +354,8 @@ class ApiClient {
           return JobStatusDto.fromJson(value);
         case 'LibraryResponseDto':
           return LibraryResponseDto.fromJson(value);
+        case 'LibraryStatsResponseDto':
+          return LibraryStatsResponseDto.fromJson(value);
         case 'LicenseKeyDto':
           return LicenseKeyDto.fromJson(value);
         case 'LicenseResponseDto':

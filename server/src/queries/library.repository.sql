@@ -130,7 +130,7 @@ select
 from
   "libraries"
   inner join "assets" on "assets"."libraryId" = "libraries"."id"
-  inner join "exif" on "exif"."assetId" = "assets"."id"
+  left join "exif" on "exif"."assetId" = "assets"."id"
 where
   "libraries"."id" = $6
 group by
