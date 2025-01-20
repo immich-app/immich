@@ -8,7 +8,7 @@ import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { DataSource, EntityManager, In, IsNull, Not, Repository } from 'typeorm';
+import { DataSource, EntityManager, In, IsNull, Repository } from 'typeorm';
 
 const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
   if (album) {
@@ -146,13 +146,15 @@ export class AlbumRepository implements IAlbumRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getOwned(ownerId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
-      where: { ownerId },
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .select(withSharedLink)
+      .where('albums.ownerId', '=', ownerId)
+      .orderBy('albums.createdAt', 'desc')
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   /**
@@ -160,17 +162,24 @@ export class AlbumRepository implements IAlbumRepository {
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   async getShared(ownerId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
-      where: [
-        { albumUsers: { userId: ownerId } },
-        { sharedLinks: { userId: ownerId } },
-        { ownerId, albumUsers: { user: Not(IsNull()) } },
-      ],
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .distinctOn('albums.createdAt')
+      .leftJoin('albums_shared_users_users as shared_albums', 'shared_albums.albumsId', 'albums.id')
+      .leftJoin('shared_links', 'shared_links.albumId', 'albums.id')
+      .where((eb) =>
+        eb.or([
+          eb('shared_albums.usersId', '=', ownerId),
+          eb('shared_links.userId', '=', ownerId),
+          eb.and([eb('albums.ownerId', '=', ownerId), eb('shared_albums.usersId', 'is not', null)]),
+        ]),
+      )
+      .select(withAlbumUsers)
+      .select(withOwner)
+      .select(withSharedLink)
+      .orderBy('albums.createdAt', 'desc')
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   /**
