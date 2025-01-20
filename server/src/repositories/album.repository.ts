@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { ExpressionBuilder, Insertable, Kysely } from 'kysely';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
+import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { DataSource, EntityManager, In, Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 const userColumns = [
   'id',
@@ -74,8 +74,6 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
     @InjectDataSource() private dataSource: DataSource,
     @InjectKysely() private db: Kysely<DB>,
   ) {}
@@ -256,22 +254,7 @@ export class AlbumRepository implements IAlbumRepository {
     await this.addAssets(this.db, albumId, assetIds);
   }
 
-  create(album: Insertable<Albums>, assetIds: string[]): Promise<AlbumEntity> {
-    // return this.dataSource.transaction<AlbumEntity>(async (manager) => {
-    //   const { id } = await manager.save(AlbumEntity, { ...album, assets: [] });
-    //   const assetIds = (album.assets || []).map((asset) => asset.id);
-    //   await this.addAssets(manager, id, assetIds);
-    //   return manager.findOneOrFail(AlbumEntity, {
-    //     where: { id },
-    //     relations: {
-    //       owner: true,
-    //       albumUsers: { user: true },
-    //       sharedLinks: true,
-    //       assets: true,
-    //     },
-    //   });
-    // });
-
+  create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]): Promise<AlbumEntity> {
     return this.db.transaction().execute(async (tx) => {
       const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
 
@@ -279,16 +262,44 @@ export class AlbumRepository implements IAlbumRepository {
         throw new Error('Failed to create album');
       }
 
-      await this.addAssets(tx, newAlbum.id, assetIds);
+      if (assetIds.length > 0) {
+        await this.addAssets(tx, newAlbum.id, assetIds);
+      }
+
+      if (albumUsers.length > 0) {
+        await tx
+          .insertInto('albums_shared_users_users')
+          .values(
+            albumUsers.map((albumUser) => ({ albumsId: newAlbum.id, usersId: albumUser.userId, role: albumUser.role })),
+          )
+          .execute();
+      }
+
+      return tx
+        .selectFrom('albums')
+        .selectAll()
+        .where('id', '=', newAlbum.id)
+        .select(withOwner)
+        .select(withSharedLink)
+        .select(withAssets)
+        .executeTakeFirst() as unknown as Promise<AlbumEntity>;
     });
   }
 
-  update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
-    return this.save(album);
+  update(id: string, album: Updateable<Albums>): Promise<AlbumEntity> {
+    return this.db
+      .updateTable('albums')
+      .set({ ...album, updatedAt: new Date() })
+      .where('id', '=', id)
+      .returningAll('albums')
+      .returning(withOwner)
+      .returning(withSharedLink)
+      .returning(withAlbumUsers)
+      .executeTakeFirst() as unknown as Promise<AlbumEntity>;
   }
 
   async delete(id: string): Promise<void> {
-    await this.repository.delete({ id });
+    await this.db.deleteFrom('albums').where('id', '=', id).execute();
   }
 
   @Chunked({ paramIndex: 2, chunkSize: 30_000 })
@@ -301,19 +312,6 @@ export class AlbumRepository implements IAlbumRepository {
       .insertInto('albums_assets_assets')
       .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
       .execute();
-  }
-
-  private async save(album: Partial<AlbumEntity>) {
-    const { id } = await this.repository.save(album);
-    return this.repository.findOneOrFail({
-      where: { id },
-      relations: {
-        owner: true,
-        albumUsers: { user: true },
-        sharedLinks: true,
-        assets: true,
-      },
-    });
   }
 
   /**

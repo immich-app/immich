@@ -29,7 +29,7 @@ export class AddUsersDto {
   albumUsers!: AlbumUserAddDto[];
 }
 
-class AlbumUserCreateDto {
+export class AlbumUserCreateDto {
   @ValidateUUID()
   userId!: string;
 
