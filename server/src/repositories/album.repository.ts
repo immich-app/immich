@@ -75,7 +75,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .as('asset'),
     )
     .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-    .as('asset_lat');
+    .as('assets');
 };
 
 @Injectable()
@@ -103,16 +103,16 @@ export class AlbumRepository implements IAlbumRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      where: [
-        { ownerId, assets: { id: assetId } },
-        { albumUsers: { userId: ownerId }, assets: { id: assetId } },
-      ],
-      relations: { owner: true, albumUsers: { user: true } },
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .leftJoin('albums_assets_assets', 'albums_assets_assets.albumsId', 'albums.id')
+      .where('albums.ownerId', '=', ownerId)
+      .where('albums_assets_assets.assetsId', '=', assetId)
+      .orderBy('albums.createdAt', 'desc')
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
