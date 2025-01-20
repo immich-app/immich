@@ -123,7 +123,7 @@ export class AlbumRepository implements IAlbumRepository {
       .select((eb) => eb.fn.min('assets.fileCreatedAt').as('startDate'))
       .select((eb) => eb.fn.max('assets.fileCreatedAt').as('endDate'))
       .select((eb) => eb.fn.count('assets.id').as('assetCount'))
-      .where('id', 'in', ids)
+      .where('albums.id', 'in', ids)
       .groupBy('albums.id')
       .execute();
 
