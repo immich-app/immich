@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { Albums, DB } from 'src/db';
@@ -8,7 +8,7 @@ import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 const userColumns = [
   'id',
@@ -74,6 +74,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
   constructor(
+    @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
     @InjectDataSource() private dataSource: DataSource,
     @InjectKysely() private db: Kysely<DB>,
   ) {}
@@ -325,28 +326,44 @@ export class AlbumRepository implements IAlbumRepository {
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
 
-    const builder = this.dataSource
-      .createQueryBuilder('albums_assets_assets', 'album_assets')
-      .innerJoin('assets', 'assets', '"album_assets"."assetsId" = "assets"."id"')
-      .where('"album_assets"."albumsId" = "albums"."id"');
+    const result = await this.db
+      .updateTable('albums')
+      .set((eb) => ({
+        albumThumbnailAssetId: this.updateThumbnailBuilder(eb)
+          .select('album_assets.assetsId')
+          .orderBy('assets.fileCreatedAt', 'desc')
+          .limit(1),
+        updatedAt: new Date(),
+      }))
+      .where((eb) =>
+        eb.or([
+          eb.and([
+            eb('albumThumbnailAssetId', 'is', null),
+            eb.exists(this.updateThumbnailBuilder(eb).select(sql`1`.as('1'))), // Has assets
+          ]),
+          eb.and([
+            eb('albumThumbnailAssetId', 'is not', null),
+            eb.not(
+              eb.exists(
+                this.updateThumbnailBuilder(eb)
+                  .select(sql`1`.as('1'))
+                  .whereRef('albums.albumThumbnailAssetId', '=', 'album_assets.assetsId'), // Has invalid assets
+              ),
+            ),
+          ]),
+        ]),
+      )
+      .execute();
 
-    const newThumbnail = builder
-      .clone()
-      .select('"album_assets"."assetsId"')
-      .orderBy('"assets"."fileCreatedAt"', 'DESC')
-      .limit(1);
-    const hasAssets = builder.clone().select('1');
-    const hasInvalidAsset = hasAssets.clone().andWhere('"albums"."albumThumbnailAssetId" = "album_assets"."assetsId"');
+    return Number(result[0].numUpdatedRows);
+  }
 
-    const updateAlbums = this.repository
-      .createQueryBuilder('albums')
-      .update(AlbumEntity)
-      .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
-      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${hasAssets.getQuery()})`)
-      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${hasInvalidAsset.getQuery()})`);
-
-    const result = await updateAlbums.execute();
-
-    return result.affected;
+  private updateThumbnailBuilder(eb: ExpressionBuilder<DB, 'albums'>) {
+    return eb
+      .selectFrom('albums_assets_assets as album_assets')
+      .innerJoin('assets', (join) =>
+        join.onRef('album_assets.assetsId', '=', 'assets.id').on('assets.deletedAt', 'is', null),
+      )
+      .whereRef('album_assets.albumsId', '=', 'albums.id');
   }
 }
