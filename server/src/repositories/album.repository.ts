@@ -256,7 +256,7 @@ export class AlbumRepository implements IAlbumRepository {
     await this.addAssets(this.db, albumId, assetIds);
   }
 
-  create(album: Insertable<Albums>): Promise<AlbumEntity> {
+  create(album: Insertable<Albums>, assetIds: string[]): Promise<AlbumEntity> {
     // return this.dataSource.transaction<AlbumEntity>(async (manager) => {
     //   const { id } = await manager.save(AlbumEntity, { ...album, assets: [] });
     //   const assetIds = (album.assets || []).map((asset) => asset.id);
@@ -273,9 +273,13 @@ export class AlbumRepository implements IAlbumRepository {
     // });
 
     return this.db.transaction().execute(async (tx) => {
-      const result = await tx.insertInto('albums').values(album).returning('albums.id').execute();
-      const assetIds = (album.assets || []).map((asset) => asset.id);
-      await this.addAssets(tx, id, assetIds);
+      const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
+
+      if (!newAlbum) {
+        throw new Error('Failed to create album');
+      }
+
+      await this.addAssets(tx, newAlbum.id, assetIds);
     });
   }
 
