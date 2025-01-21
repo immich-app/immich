@@ -30,12 +30,11 @@ class MemoryViewerSetting extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSubTitle(title: "Memory".tr()),
+        SettingsSubTitle(title: "memories_settings_title".tr()),
         SettingsSwitchListTile(
           valueNotifier: memoryIncludesSharedAlbum,
-          title: "Memory includes shared albums",
-          subtitle:
-              "Enable the photos displayed in the memory to include assets from shared albums",
+          title: "memories_includes_shared_albums".tr(),
+          subtitle: "memories_includes_shared_albums_content".tr(),
           onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
       ],
