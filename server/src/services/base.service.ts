@@ -6,10 +6,8 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -44,7 +42,9 @@ import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { IViewRepository } from 'src/interfaces/view.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
@@ -53,7 +53,7 @@ export class BaseService {
 
   constructor(
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
-    @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
+    protected accessRepository: AccessRepository,
     protected activityRepository: ActivityRepository,
     @Inject(IAuditRepository) protected auditRepository: IAuditRepository,
     @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
@@ -65,7 +65,7 @@ export class BaseService {
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
     @Inject(IJobRepository) protected jobRepository: IJobRepository,
-    @Inject(IKeyRepository) protected keyRepository: IKeyRepository,
+    protected keyRepository: ApiKeyRepository,
     @Inject(ILibraryRepository) protected libraryRepository: ILibraryRepository,
     @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
     @Inject(IMapRepository) protected mapRepository: IMapRepository,

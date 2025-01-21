@@ -3,9 +3,11 @@ import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { BaseService } from 'src/services/base.service';
-import { IActivityRepository } from 'src/types';
+import { IAccessRepository, IActivityRepository, IApiKeyRepository } from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
@@ -105,7 +107,7 @@ export const newTestService = <T extends BaseService>(
 
   const sut = new Service(
     loggerMock,
-    accessMock,
+    accessMock as IAccessRepository as AccessRepository,
     activityMock as IActivityRepository as ActivityRepository,
     auditMock,
     albumMock,
@@ -117,7 +119,7 @@ export const newTestService = <T extends BaseService>(
     databaseMock,
     eventMock,
     jobMock,
-    keyMock,
+    keyMock as IApiKeyRepository as ApiKeyRepository,
     libraryMock,
     machineLearningMock,
     mapMock,

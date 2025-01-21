@@ -68,7 +68,7 @@ After bringing down the containers with `docker compose down` and back up with `
 :::note
 To see exactly what metrics are made available, you can additionally add `8081:8081` to the server container's ports and `8082:8082` to the microservices container's ports.
 Visiting the `/metrics` endpoint for these services will show the same raw data that Prometheus collects.
-To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](../install/environment-variables/#general).
+To configure these ports see [`IMMICH_API_METRICS_PORT` & `IMMICH_MICROSERVICES_METRICS_PORT`](/docs/install/environment-variables/#general).
 :::
 
 ### Usage
