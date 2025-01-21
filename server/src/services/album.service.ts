@@ -200,11 +200,8 @@ export class AlbumService extends BaseService {
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
-    if (removedIds.length > 0) {
-      await this.albumRepository.update(id, { id, updatedAt: new Date() });
-      if (album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
-        await this.albumRepository.updateThumbnails();
-      }
+    if (removedIds.length > 0 && album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
+      await this.albumRepository.updateThumbnails();
     }
 
     return results;
