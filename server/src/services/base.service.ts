@@ -8,7 +8,6 @@ import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -45,6 +44,7 @@ import { IVersionHistoryRepository } from 'src/interfaces/version-history.interf
 import { IViewRepository } from 'src/interfaces/view.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
@@ -65,7 +65,7 @@ export class BaseService {
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
     @Inject(IJobRepository) protected jobRepository: IJobRepository,
-    @Inject(IKeyRepository) protected keyRepository: IKeyRepository,
+    protected keyRepository: ApiKeyRepository,
     @Inject(ILibraryRepository) protected libraryRepository: ILibraryRepository,
     @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
     @Inject(IMapRepository) protected mapRepository: IMapRepository,

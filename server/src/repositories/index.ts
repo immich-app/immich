@@ -1,6 +1,5 @@
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IConfigRepository } from 'src/interfaces/config.interface';
@@ -79,6 +78,7 @@ export const repositories = [
   //
   AccessRepository,
   ActivityRepository,
+  ApiKeyRepository,
 ];
 
 export const providers = [
@@ -92,7 +92,6 @@ export const providers = [
   { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IEventRepository, useClass: EventRepository },
   { provide: IJobRepository, useClass: JobRepository },
-  { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: ILoggerRepository, useClass: LoggerRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
