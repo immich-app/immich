@@ -254,3 +254,10 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
     }),
   } as unknown as ChildProcessWithoutNullStreams;
 });
+
+export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+  for (const item of items) {
+    await Promise.resolve();
+    yield item;
+  }
+}

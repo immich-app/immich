@@ -1086,7 +1086,9 @@ describe(MetadataService.name, () => {
         ],
         [],
       );
-      expect(personMock.updateAll).toHaveBeenCalledWith([{ id: 'random-uuid', faceAssetId: 'random-uuid' }]);
+      expect(personMock.updateAll).toHaveBeenCalledWith([
+        { id: 'random-uuid', ownerId: 'admin-id', faceAssetId: 'random-uuid' },
+      ]);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_PERSON_THUMBNAIL,

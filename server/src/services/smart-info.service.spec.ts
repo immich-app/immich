@@ -284,7 +284,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned objects', async () => {
-      machineLearningMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
+      machineLearningMock.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
 
@@ -293,7 +293,7 @@ describe(SmartInfoService.name, () => {
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
-      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
+      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
     });
 
     it('should skip invisible assets', async () => {
@@ -315,7 +315,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should wait for database', async () => {
-      machineLearningMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
+      machineLearningMock.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
       databaseMock.isBusy.mockReturnValue(true);
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
@@ -326,7 +326,7 @@ describe(SmartInfoService.name, () => {
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
-      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
+      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
     });
   });
 
