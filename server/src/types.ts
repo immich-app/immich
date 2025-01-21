@@ -7,6 +7,8 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 
+export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
+
 export type AuthApiKey = {
   id: string;
   key: string;

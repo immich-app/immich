@@ -17,10 +17,9 @@ import { QueueName } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { IConfigRepository } from 'src/types';
+import { DeepPartial, IConfigRepository } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
-import { DeepPartial } from 'typeorm';
 import { Mocked } from 'vitest';
 
 const partialConfig = {
