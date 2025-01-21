@@ -8,38 +8,13 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
 import { asUuid } from 'src/utils/database';
 
-/**
- * Including EXIF
- * */
-const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
-  return eb
-    .selectFrom((eb) =>
-      eb
-        .selectFrom('assets')
-        .selectAll('assets')
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
-        .where('assets.deletedAt', 'is', null)
-        .whereRef('assets.stackId', '=', 'asset_stack.id')
-        .orderBy('assets.fileCreatedAt', 'asc')
-        .as('asset'),
-    )
-    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-    .as('asset_lat');
-};
-
-/**
- * Including EXIF and Tags
- * */
-const withAssetAndTags = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
-  return eb
-    .selectFrom((eb) =>
-      eb
-        .selectFrom('assets')
-        .selectAll('assets')
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
-        .select((eb) =>
+const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) => {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('assets')
+      .selectAll()
+      .$if(withTags, (eb) =>
+        eb.select((eb) =>
           jsonArrayFrom(
             eb
               .selectFrom('tags')
@@ -47,14 +22,10 @@ const withAssetAndTags = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
               .innerJoin('tag_asset', 'tags.id', 'tag_asset.tagsId')
               .whereRef('tag_asset.assetsId', '=', 'assets.id'),
           ).as('tags'),
-        )
-        .where('assets.deletedAt', 'is', null)
-        .whereRef('assets.stackId', '=', 'asset_stack.id')
-        .orderBy('assets.fileCreatedAt', 'asc')
-        .as('asset'),
-    )
-    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
-    .as('asset_lat');
+        ),
+      )
+      .whereRef('assets.stackId', '=', 'asset_stack.id'),
+  ).as('assets');
 };
 
 @Injectable()
@@ -66,22 +37,20 @@ export class StackRepository implements IStackRepository {
     return this.db
       .selectFrom('asset_stack')
       .selectAll('asset_stack')
-      .leftJoinLateral(withAssets, (join) => join.onTrue())
-      .select('assets')
+      .select(withAssets)
       .where('asset_stack.ownerId', '=', query.ownerId)
       .$if(!!query.primaryAssetId, (eb) => eb.where('asset_stack.primaryAssetId', '=', query.primaryAssetId!))
-      .execute() as Promise<StackEntity[]>;
+      .execute() as unknown as Promise<StackEntity[]>;
   }
 
   async create(entity: { ownerId: string; assetIds: string[] }): Promise<StackEntity> {
     return this.db.transaction().execute(async (tx) => {
       const stacks = await tx
         .selectFrom('asset_stack')
-        .leftJoinLateral(withAssets, (join) => join.onTrue())
         .where('asset_stack.ownerId', '=', entity.ownerId)
         .where('asset_stack.primaryAssetId', 'in', entity.assetIds)
         .select('asset_stack.id')
-        .select('assets')
+        .select(withAssets)
         .execute();
 
       const assetIds = new Set<string>(entity.assetIds);
@@ -128,13 +97,12 @@ export class StackRepository implements IStackRepository {
         .where('id', 'in', [...assetIds])
         .execute();
 
-      return (await tx
+      return tx
         .selectFrom('asset_stack')
-        .where('id', '=', newRecord.id)
         .selectAll('asset_stack')
-        .leftJoinLateral(withAssets, (join) => join.onTrue())
-        .select('assets')
-        .executeTakeFirst()) as StackEntity;
+        .select(withAssets)
+        .where('id', '=', newRecord.id)
+        .executeTakeFirst() as unknown as Promise<StackEntity>;
     });
   }
 
@@ -180,7 +148,7 @@ export class StackRepository implements IStackRepository {
       .set(entity)
       .where('id', '=', asUuid(id))
       .returningAll()
-      .returning(withAssetAndTags)
+      .returning((eb) => withAssets(eb, true))
       .executeTakeFirst()) as StackEntity | undefined;
 
     if (!stack) {
@@ -191,13 +159,12 @@ export class StackRepository implements IStackRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getById(id: string): Promise<StackEntity | undefined> {
+  getById(id: string): Promise<StackEntity | undefined> {
     return this.db
       .selectFrom('asset_stack')
-      .where('asset_stack.id', '=', asUuid(id))
-      .selectAll('asset_stack')
-      .leftJoinLateral(withAssetAndTags, (join) => join.onTrue())
-      .select('assets')
+      .selectAll()
+      .select((eb) => withAssets(eb, true))
+      .where('id', '=', asUuid(id))
       .executeTakeFirst() as Promise<StackEntity | undefined>;
   }
 }

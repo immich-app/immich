@@ -3,44 +3,34 @@
 -- StackRepository.search
 select
   "asset_stack".*,
-  "assets"
-from
-  "asset_stack"
-  left join lateral (
+  (
     select
-      json_agg("asset") as "assets"
+      coalesce(json_agg(agg), '[]')
     from
       (
         select
-          "assets".*,
-          to_json("exif") as "exifInfo"
+          *
         from
           "assets"
-          inner join "exif" on "assets"."id" = "exif"."assetId"
         where
-          "assets"."deletedAt" is null
-          and "assets"."stackId" = "asset_stack"."id"
-        order by
-          "assets"."fileCreatedAt" asc
-      ) as "asset"
-  ) as "asset_lat" on true
+          "assets"."stackId" = "asset_stack"."id"
+      ) as agg
+  ) as "assets"
+from
+  "asset_stack"
 where
   "asset_stack"."ownerId" = $1
 
 -- StackRepository.delete
 select
-  "asset_stack".*,
-  "assets"
-from
-  "asset_stack"
-  left join lateral (
+  *,
+  (
     select
-      json_agg("asset") as "assets"
+      coalesce(json_agg(agg), '[]')
     from
       (
         select
-          "assets".*,
-          to_json("exif") as "exifInfo",
+          *,
           (
             select
               coalesce(json_agg(agg), '[]')
@@ -57,31 +47,25 @@ from
           ) as "tags"
         from
           "assets"
-          inner join "exif" on "assets"."id" = "exif"."assetId"
         where
-          "assets"."deletedAt" is null
-          and "assets"."stackId" = "asset_stack"."id"
-        order by
-          "assets"."fileCreatedAt" asc
-      ) as "asset"
-  ) as "asset_lat" on true
+          "assets"."stackId" = "asset_stack"."id"
+      ) as agg
+  ) as "assets"
+from
+  "asset_stack"
 where
-  "asset_stack"."id" = $1::uuid
+  "id" = $1::uuid
 
 -- StackRepository.getById
 select
-  "asset_stack".*,
-  "assets"
-from
-  "asset_stack"
-  left join lateral (
+  *,
+  (
     select
-      json_agg("asset") as "assets"
+      coalesce(json_agg(agg), '[]')
     from
       (
         select
-          "assets".*,
-          to_json("exif") as "exifInfo",
+          *,
           (
             select
               coalesce(json_agg(agg), '[]')
@@ -98,13 +82,11 @@ from
           ) as "tags"
         from
           "assets"
-          inner join "exif" on "assets"."id" = "exif"."assetId"
         where
-          "assets"."deletedAt" is null
-          and "assets"."stackId" = "asset_stack"."id"
-        order by
-          "assets"."fileCreatedAt" asc
-      ) as "asset"
-  ) as "asset_lat" on true
+          "assets"."stackId" = "asset_stack"."id"
+      ) as agg
+  ) as "assets"
+from
+  "asset_stack"
 where
-  "asset_stack"."id" = $1::uuid
+  "id" = $1::uuid
