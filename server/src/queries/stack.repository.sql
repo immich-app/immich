@@ -13,26 +13,13 @@ from
       (
         select
           "assets".*,
-          to_json("exif") as "exifInfo",
-          (
-            select
-              coalesce(json_agg(agg), '[]')
-            from
-              (
-                select
-                  "tags".*
-                from
-                  "tags"
-                  inner join "tag_asset" on "tags"."id" = "tag_asset"."tagsId"
-                where
-                  "tag_asset"."assetsId" = "assets"."id"
-              ) as agg
-          ) as "tags"
+          to_json("exif") as "exifInfo"
         from
           "assets"
           inner join "exif" on "assets"."id" = "exif"."assetId"
         where
-          "assets"."stackId" = "asset_stack"."id"
+          "assets"."deletedAt" is null
+          and "assets"."stackId" = "asset_stack"."id"
         order by
           "assets"."fileCreatedAt" asc
       ) as "asset"
@@ -72,7 +59,8 @@ from
           "assets"
           inner join "exif" on "assets"."id" = "exif"."assetId"
         where
-          "assets"."stackId" = "asset_stack"."id"
+          "assets"."deletedAt" is null
+          and "assets"."stackId" = "asset_stack"."id"
         order by
           "assets"."fileCreatedAt" asc
       ) as "asset"
@@ -112,7 +100,8 @@ from
           "assets"
           inner join "exif" on "assets"."id" = "exif"."assetId"
         where
-          "assets"."stackId" = "asset_stack"."id"
+          "assets"."deletedAt" is null
+          and "assets"."stackId" = "asset_stack"."id"
         order by
           "assets"."fileCreatedAt" asc
       ) as "asset"
