@@ -5,6 +5,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { ViewRepository } from 'src/repositories/view-repository';
 
 export type AuthApiKey = {
   id: string;
@@ -20,6 +21,7 @@ export type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInter
 export type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
 export type IAuditRepository = RepositoryInterface<AuditRepository>;
 export type IConfigRepository = RepositoryInterface<ConfigRepository>;
+export type IViewRepository = RepositoryInterface<ViewRepository>;
 
 export type ActivityItem =
   | Awaited<ReturnType<IActivityRepository['create']>>
