@@ -1,4 +1,3 @@
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
@@ -78,11 +77,11 @@ import { ViewRepository } from 'src/repositories/view-repository';
 
 export const repositories = [
   //
+  AccessRepository,
   ActivityRepository,
 ];
 
 export const providers = [
-  { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },

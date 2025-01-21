@@ -1,33 +1,18 @@
-import { Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-
 import { AlbumUserRole } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { asUuid } from 'src/utils/database';
 
-type IActivityAccess = IAccessRepository['activity'];
-type IAlbumAccess = IAccessRepository['album'];
-type IAssetAccess = IAccessRepository['asset'];
-type IAuthDeviceAccess = IAccessRepository['authDevice'];
-type IMemoryAccess = IAccessRepository['memory'];
-type IPersonAccess = IAccessRepository['person'];
-type IPartnerAccess = IAccessRepository['partner'];
-type IStackAccess = IAccessRepository['stack'];
-type ITagAccess = IAccessRepository['tag'];
-type ITimelineAccess = IAccessRepository['timeline'];
-
-@Injectable()
-class ActivityAccess implements IActivityAccess {
+class ActivityAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, activityIds: Set<string>) {
     if (activityIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -41,9 +26,9 @@ class ActivityAccess implements IActivityAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>): Promise<Set<string>> {
+  async checkAlbumOwnerAccess(userId: string, activityIds: Set<string>) {
     if (activityIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -58,9 +43,9 @@ class ActivityAccess implements IActivityAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkCreateAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
+  async checkCreateAccess(userId: string, albumIds: Set<string>) {
     if (albumIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -77,14 +62,14 @@ class ActivityAccess implements IActivityAccess {
   }
 }
 
-class AlbumAccess implements IAlbumAccess {
+class AlbumAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, albumIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, albumIds: Set<string>) {
     if (albumIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -99,9 +84,9 @@ class AlbumAccess implements IAlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole): Promise<Set<string>> {
+  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole) {
     if (albumIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     const accessRole =
@@ -122,9 +107,9 @@ class AlbumAccess implements IAlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>): Promise<Set<string>> {
+  async checkSharedLinkAccess(sharedLinkId: string, albumIds: Set<string>) {
     if (albumIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -139,14 +124,14 @@ class AlbumAccess implements IAlbumAccess {
   }
 }
 
-class AssetAccess implements IAssetAccess {
+class AssetAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
+  async checkAlbumAccess(userId: string, assetIds: Set<string>) {
     if (assetIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -182,9 +167,9 @@ class AssetAccess implements IAssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, assetIds: Set<string>) {
     if (assetIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -198,9 +183,9 @@ class AssetAccess implements IAssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkPartnerAccess(userId: string, assetIds: Set<string>): Promise<Set<string>> {
+  async checkPartnerAccess(userId: string, assetIds: Set<string>) {
     if (assetIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -221,9 +206,9 @@ class AssetAccess implements IAssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>): Promise<Set<string>> {
+  async checkSharedLinkAccess(sharedLinkId: string, assetIds: Set<string>) {
     if (assetIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -273,14 +258,14 @@ class AssetAccess implements IAssetAccess {
   }
 }
 
-class AuthDeviceAccess implements IAuthDeviceAccess {
+class AuthDeviceAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, deviceIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, deviceIds: Set<string>) {
     if (deviceIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -293,14 +278,14 @@ class AuthDeviceAccess implements IAuthDeviceAccess {
   }
 }
 
-class StackAccess implements IStackAccess {
+class StackAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, stackIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, stackIds: Set<string>) {
     if (stackIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -313,14 +298,14 @@ class StackAccess implements IStackAccess {
   }
 }
 
-class TimelineAccess implements ITimelineAccess {
+class TimelineAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkPartnerAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
+  async checkPartnerAccess(userId: string, partnerIds: Set<string>) {
     if (partnerIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -333,14 +318,14 @@ class TimelineAccess implements ITimelineAccess {
   }
 }
 
-class MemoryAccess implements IMemoryAccess {
+class MemoryAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, memoryIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, memoryIds: Set<string>) {
     if (memoryIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -354,14 +339,14 @@ class MemoryAccess implements IMemoryAccess {
   }
 }
 
-class PersonAccess implements IPersonAccess {
+class PersonAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, personIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, personIds: Set<string>) {
     if (personIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -375,9 +360,9 @@ class PersonAccess implements IPersonAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>): Promise<Set<string>> {
+  async checkFaceOwnerAccess(userId: string, assetFaceIds: Set<string>) {
     if (assetFaceIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -393,14 +378,14 @@ class PersonAccess implements IPersonAccess {
   }
 }
 
-class PartnerAccess implements IPartnerAccess {
+class PartnerAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkUpdateAccess(userId: string, partnerIds: Set<string>): Promise<Set<string>> {
+  async checkUpdateAccess(userId: string, partnerIds: Set<string>) {
     if (partnerIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -413,14 +398,14 @@ class PartnerAccess implements IPartnerAccess {
   }
 }
 
-class TagAccess implements ITagAccess {
+class TagAccess {
   constructor(private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, tagIds: Set<string>): Promise<Set<string>> {
+  async checkOwnerAccess(userId: string, tagIds: Set<string>) {
     if (tagIds.size === 0) {
-      return new Set();
+      return new Set<string>();
     }
 
     return this.db
@@ -433,17 +418,17 @@ class TagAccess implements ITagAccess {
   }
 }
 
-export class AccessRepository implements IAccessRepository {
-  activity: IActivityAccess;
-  album: IAlbumAccess;
-  asset: IAssetAccess;
-  authDevice: IAuthDeviceAccess;
-  memory: IMemoryAccess;
-  person: IPersonAccess;
-  partner: IPartnerAccess;
-  stack: IStackAccess;
-  tag: ITagAccess;
-  timeline: ITimelineAccess;
+export class AccessRepository {
+  activity: ActivityAccess;
+  album: AlbumAccess;
+  asset: AssetAccess;
+  authDevice: AuthDeviceAccess;
+  memory: MemoryAccess;
+  person: PersonAccess;
+  partner: PartnerAccess;
+  stack: StackAccess;
+  tag: TagAccess;
+  timeline: TimelineAccess;
 
   constructor(@InjectKysely() db: Kysely<DB>) {
     this.activity = new ActivityAccess(db);
