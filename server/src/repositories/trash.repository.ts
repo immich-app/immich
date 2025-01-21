@@ -38,6 +38,10 @@ export class TrashRepository implements ITrashRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   async restoreAll(ids: string[]): Promise<number> {
+    if (ids.length === 0) {
+      return 0;
+    }
+
     const { numUpdatedRows } = await this.db
       .updateTable('assets')
       .where('status', '=', AssetStatus.TRASHED)

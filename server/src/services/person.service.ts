@@ -145,7 +145,7 @@ export class PersonService extends BaseService {
     for (const personId of changeFeaturePhoto) {
       const assetFace = await this.personRepository.getRandomFace(personId);
 
-      if (assetFace !== null) {
+      if (assetFace) {
         await this.personRepository.update({ id: personId, faceAssetId: assetFace.id });
         jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: personId } });
       }
@@ -444,7 +444,7 @@ export class PersonService extends BaseService {
     const face = await this.personRepository.getFaceByIdWithAssets(
       id,
       { person: true, asset: true, faceSearch: true },
-      { id: true, personId: true, sourceType: true, faceSearch: true },
+      ['id', 'personId', 'sourceType'],
     );
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
@@ -544,7 +544,7 @@ export class PersonService extends BaseService {
     }
 
     const face = await this.personRepository.getFaceByIdWithAssets(person.faceAssetId);
-    if (face === null) {
+    if (!face) {
       this.logger.error(`Could not generate person thumbnail: face ${person.faceAssetId} not found`);
       return JobStatus.FAILED;
     }

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, SelectExpression, sql } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
-import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
@@ -212,22 +211,16 @@ export class PersonRepository implements IPersonRepository {
     id: string,
     relations?: FindOptionsRelations<AssetFaceEntity>,
     select?: SelectFaceOptions,
-  ): Promise<AssetFaceEntity | null> {
-    return (this.db
+  ): Promise<AssetFaceEntity | undefined> {
+    return this.db
       .selectFrom('asset_faces')
-      .$if(!!select, (qb) =>
-        qb.select(
-          Object.keys(
-            _.omitBy({ ...select!, faceSearch: undefined, asset: undefined }, _.isUndefined),
-          ) as SelectExpression<DB, 'asset_faces'>[],
-        ),
-      )
+      .$if(!!select, (qb) => qb.select(select!))
       .$if(!select, (qb) => qb.selectAll('asset_faces'))
       .select(withPerson)
       .select(withAsset)
       .$if(!!relations?.faceSearch, (qb) => qb.select(withFaceSearch))
       .where('asset_faces.id', '=', id)
-      .executeTakeFirst() ?? null) as Promise<AssetFaceEntity | null>;
+      .executeTakeFirst() as Promise<AssetFaceEntity | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -335,6 +328,10 @@ export class PersonRepository implements IPersonRepository {
   }
 
   async createAll(people: Insertable<Person>[]): Promise<string[]> {
+    if (people.length === 0) {
+      return [];
+    }
+
     const results = await this.db.insertInto('person').values(people).returningAll().execute();
     return results.map(({ id }) => id);
   }
@@ -387,8 +384,12 @@ export class PersonRepository implements IPersonRepository {
   @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personId: DummyValue.UUID }]] })
   @ChunkedArray()
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]> {
-    const { assetIds, personIds }: { assetIds: string[]; personIds: string[] } = { assetIds: [], personIds: [] };
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
 
+    const assetIds: string[] = [];
+    const personIds: string[] = [];
     for (const { assetId, personId } of ids) {
       assetIds.push(assetId);
       personIds.push(personId);
@@ -405,12 +406,12 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getRandomFace(personId: string): Promise<AssetFaceEntity | null> {
-    return (this.db
+  getRandomFace(personId: string): Promise<AssetFaceEntity | undefined> {
+    return this.db
       .selectFrom('asset_faces')
       .selectAll('asset_faces')
       .where('asset_faces.personId', '=', personId)
-      .executeTakeFirst() ?? null) as Promise<AssetFaceEntity | null>;
+      .executeTakeFirst() as Promise<AssetFaceEntity | undefined>;
   }
 
   @GenerateSql()

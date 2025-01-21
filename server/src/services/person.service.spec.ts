@@ -368,7 +368,6 @@ describe(PersonService.name, () => {
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
-      personMock.getRandomFace.mockResolvedValue(null);
       await expect(
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
@@ -391,7 +390,6 @@ describe(PersonService.name, () => {
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
-      personMock.getRandomFace.mockResolvedValue(null);
       await expect(
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
@@ -771,8 +769,6 @@ describe(PersonService.name, () => {
 
   describe('handleRecognizeFaces', () => {
     it('should fail if face does not exist', async () => {
-      personMock.getFaceByIdWithAssets.mockResolvedValue(null);
-
       expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(JobStatus.FAILED);
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();
