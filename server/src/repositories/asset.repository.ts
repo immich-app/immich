@@ -139,7 +139,7 @@ export class AssetRepository implements IAssetRepository {
       .select((eb) => eb.fn('jsonb_agg', [eb.table('res')]).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
-      .limit(10)
+      .limit(50)
       .execute() as any as Promise<DayOfYearAssets[]>;
   }
 
