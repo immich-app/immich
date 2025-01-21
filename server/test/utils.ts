@@ -6,8 +6,9 @@ import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AuditRepository } from 'src/repositories/audit.repository';
 import { BaseService } from 'src/services/base.service';
-import { IAccessRepository, IActivityRepository, IApiKeyRepository } from 'src/types';
+import { IAccessRepository, IActivityRepository, IApiKeyRepository, IAuditRepository } from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
@@ -109,7 +110,7 @@ export const newTestService = <T extends BaseService>(
     loggerMock,
     accessMock as IAccessRepository as AccessRepository,
     activityMock as IActivityRepository as ActivityRepository,
-    auditMock,
+    auditMock as IAuditRepository as AuditRepository,
     albumMock,
     albumUserMock,
     assetMock,
