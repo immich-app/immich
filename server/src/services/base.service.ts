@@ -6,7 +6,6 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IKeyRepository } from 'src/interfaces/api-key.interface';
@@ -44,6 +43,7 @@ import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { IViewRepository } from 'src/interfaces/view.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -53,7 +53,7 @@ export class BaseService {
 
   constructor(
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
-    @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
+    protected accessRepository: AccessRepository,
     protected activityRepository: ActivityRepository,
     @Inject(IAuditRepository) protected auditRepository: IAuditRepository,
     @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
