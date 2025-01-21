@@ -16,7 +16,7 @@ test.describe('User Administration', () => {
 
     // Navigate to user management page and verify title and header
     await page.goto('/admin/user-management');
-    await expect(page).toHaveTitle(/User Management/);
+    await expect(page).toHaveTitle('User Management');
     await expect(page.locator('#user-page-header')).toHaveText('User Management');
   });
 
@@ -34,10 +34,7 @@ test.describe('User Administration', () => {
     await page.getByRole('button', { name: 'Create', exact: true }).click();
 
     // Edit the created user
-    await page
-      .getByRole('row', { name: /user@immich.cloud/ })
-      .getByRole('button', { name: 'Edit user' })
-      .click();
+    await page.getByRole('row', { name: 'user@immich.cloud' }).getByRole('button', { name: 'Edit user' }).click();
 
     await expect(page.locator('#id-2-title')).toHaveText('Edit user');
     await page.getByLabel('Name').fill('Updated Immich User');
@@ -46,7 +43,7 @@ test.describe('User Administration', () => {
     // Verify the user update
     await page.reload();
     // this test will fail unless the browser is restarted
-    await expect(page.getByRole('row', { name: /user@immich.cloud/ }).getByText('Updated Immich User')).toBeVisible();
+    await expect(page.getByRole('row', { name: 'user@immich.cloud' }).getByText('Updated Immich User')).toBeVisible();
   });
 
   test('toggle admin switch for user', async ({ context, page }) => {
@@ -63,10 +60,7 @@ test.describe('User Administration', () => {
     await page.getByRole('button', { name: 'Create', exact: true }).click();
 
     // Open the user edit modal for the new user
-    await page
-      .getByRole('row', { name: /user@immich.cloud/ })
-      .getByRole('button', { name: 'Edit user' })
-      .click();
+    await page.getByRole('row', { name: 'user@immich.cloud' }).getByRole('button', { name: 'Edit user' }).click();
 
     // Assert that the edit user form is visible
     await expect(page.locator('#edit-user-form')).toBeVisible();
@@ -78,10 +72,7 @@ test.describe('User Administration', () => {
 
     // Verify the admin switch is enabled
     await page.reload();
-    await page
-      .getByRole('row', { name: /user@immich.cloud/ })
-      .getByRole('button', { name: 'Edit' })
-      .click();
+    await page.getByRole('row', { name: 'user@immich.cloud' }).getByRole('button', { name: 'Edit' }).click();
     await expect(page.getByLabel('Admin User')).toBeChecked();
 
     // Toggle admin switch off
@@ -89,10 +80,7 @@ test.describe('User Administration', () => {
     await page.getByRole('button', { name: 'Confirm' }).click();
 
     // Verify the admin switch is disabled
-    await page
-      .getByRole('row', { name: /user@immich.cloud/ })
-      .getByRole('button', { name: 'Edit' })
-      .click();
+    await page.getByRole('row', { name: 'user@immich.cloud' }).getByRole('button', { name: 'Edit' }).click();
     await expect(page.getByLabel('Admin User')).not.toBeChecked();
     await page.getByRole('button', { name: 'Confirm' }).click();
   });

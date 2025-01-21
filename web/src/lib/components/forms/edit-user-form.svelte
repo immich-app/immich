@@ -114,28 +114,28 @@
 
 <FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
   <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="immich-form-label" for="name">{$t('name')}</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
         {$t('admin.quota_size_gib')}
         {#if quotaSizeWarning}
-          <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
+          <p class="text-sm text-red-400">{$t('errors.quota_higher_than_disk_size')}</p>
         {/if}</label
       >
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
       <p>{$t('admin.note_unlimited_quota')}</p>
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
       <input
         class="immich-form-input"
@@ -153,8 +153,8 @@
       </p>
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
-      <SettingSwitch title={$t('admin.make_admin')} {disabled} bind:checked={user.isAdmin} />
+    <div class="flex flex-col gap-2 my-4">
+      <SettingSwitch title={$t('admin.admin_user')} {disabled} bind:checked={user.isAdmin} />
     </div>
   </form>
 

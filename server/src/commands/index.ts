@@ -1,4 +1,4 @@
-import { GrantAdminCommand, PromptEmailQuestion, RemoveAdminCommand } from 'src/commands/grant-admin';
+import { GrantAdminCommand, PromptEmailQuestion, RevokeAdminCommand } from 'src/commands/grant-admin';
 import { ListUsersCommand } from 'src/commands/list-users.command';
 import { DisableOAuthLogin, EnableOAuthLogin } from 'src/commands/oauth-login';
 import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/commands/password-login';
@@ -14,5 +14,5 @@ export const commands = [
   DisableOAuthLogin,
   ListUsersCommand,
   GrantAdminCommand,
-  RemoveAdminCommand,
+  RevokeAdminCommand,
 ];

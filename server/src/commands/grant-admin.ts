@@ -32,10 +32,10 @@ export class GrantAdminCommand extends CommandRunner {
 }
 
 @Command({
-  name: 'remove-admin',
-  description: 'Remove admin privileges from a user (by email)',
+  name: 'revoke-admin',
+  description: 'Revoke admin privileges from a user (by email)',
 })
-export class RemoveAdminCommand extends CommandRunner {
+export class RevokeAdminCommand extends CommandRunner {
   constructor(
     private service: CliService,
     private inquirer: InquirerService,
@@ -46,11 +46,11 @@ export class RemoveAdminCommand extends CommandRunner {
   async run(): Promise<void> {
     try {
       const email = await prompt(this.inquirer)();
-      await this.service.removeAdminAccess(email);
-      console.debug('Admin access has been removed from', email);
+      await this.service.revokeAdminAccess(email);
+      console.debug('Admin access has been revoked from', email);
     } catch (error) {
       console.error(error);
-      console.error('Unable to remove admin access from user');
+      console.error('Unable to revoke admin access from user');
     }
   }
 }

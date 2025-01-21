@@ -47,7 +47,7 @@ export class CliService extends BaseService {
     await this.userRepository.update(user.id, { isAdmin: true });
   }
 
-  async removeAdminAccess(email: string): Promise<void> {
+  async revokeAdminAccess(email: string): Promise<void> {
     const user = await this.userRepository.getByEmail(email);
 
     if (!user) {
