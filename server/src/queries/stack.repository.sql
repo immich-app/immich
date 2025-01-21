@@ -13,7 +13,8 @@ select
         from
           "assets"
         where
-          "assets"."stackId" = "asset_stack"."id"
+          "assets"."deletedAt" is null
+          and "assets"."stackId" = "asset_stack"."id"
       ) as agg
   ) as "assets"
 from
@@ -48,7 +49,8 @@ select
         from
           "assets"
         where
-          "assets"."stackId" = "asset_stack"."id"
+          "assets"."deletedAt" is null
+          and "assets"."stackId" = "asset_stack"."id"
       ) as agg
   ) as "assets"
 from
@@ -83,7 +85,8 @@ select
         from
           "assets"
         where
-          "assets"."stackId" = "asset_stack"."id"
+          "assets"."deletedAt" is null
+          and "assets"."stackId" = "asset_stack"."id"
       ) as agg
   ) as "assets"
 from

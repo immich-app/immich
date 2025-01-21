@@ -24,6 +24,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
           ).as('tags'),
         ),
       )
+      .where('assets.deletedAt', 'is', null)
       .whereRef('assets.stackId', '=', 'asset_stack.id'),
   ).as('assets');
 };
@@ -52,7 +53,11 @@ export class StackRepository implements IStackRepository {
         .select('asset_stack.id')
         .select((eb) =>
           jsonArrayFrom(
-            eb.selectFrom('assets').select('assets.id').whereRef('assets.stackId', '=', 'asset_stack.id'),
+            eb
+              .selectFrom('assets')
+              .select('assets.id')
+              .whereRef('assets.stackId', '=', 'asset_stack.id')
+              .where('assets.deletedAt', 'is', null),
           ).as('assets'),
         )
         .execute();
