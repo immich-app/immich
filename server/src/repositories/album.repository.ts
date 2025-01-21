@@ -97,13 +97,19 @@ export class AlbumRepository implements IAlbumRepository {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
-      .leftJoin('albums_assets_assets', 'albums_assets_assets.albumsId', 'albums.id')
-      .where('albums.ownerId', '=', ownerId)
-      .where('albums_assets_assets.assetsId', '=', assetId)
+      .leftJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'albums.id')
+      .where((eb) =>
+        eb.or([
+          eb.and([eb('albums.ownerId', '=', ownerId), eb('album_assets.assetsId', '=', assetId)]),
+          eb.and([eb('album_users.usersId', '=', ownerId), eb('album_assets.assetsId', '=', assetId)]),
+        ]),
+      )
       .where('albums.deletedAt', 'is', null)
       .orderBy('albums.createdAt', 'desc')
       .select(withOwner)
       .select(withAlbumUsers)
+      .orderBy('albums.createdAt', 'desc')
       .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
@@ -281,6 +287,7 @@ export class AlbumRepository implements IAlbumRepository {
         .select(withOwner)
         .select(withSharedLink)
         .select(withAssets)
+        .select(withAlbumUsers)
         .executeTakeFirst() as unknown as Promise<AlbumEntity>;
     });
   }

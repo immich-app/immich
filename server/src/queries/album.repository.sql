@@ -161,12 +161,22 @@ select
   ) as "albumUsers"
 from
   "albums"
-  left join "albums_assets_assets" on "albums_assets_assets"."albumsId" = "albums"."id"
+  left join "albums_assets_assets" as "album_assets" on "album_assets"."albumsId" = "albums"."id"
+  left join "albums_shared_users_users" as "album_users" on "album_users"."albumsId" = "albums"."id"
 where
-  "albums"."ownerId" = $1
-  and "albums_assets_assets"."assetsId" = $2
+  (
+    (
+      "albums"."ownerId" = $1
+      and "album_assets"."assetsId" = $2
+    )
+    or (
+      "album_users"."usersId" = $3
+      and "album_assets"."assetsId" = $4
+    )
+  )
   and "albums"."deletedAt" is null
 order by
+  "albums"."createdAt" desc,
   "albums"."createdAt" desc
 
 -- AlbumRepository.getMetadataForIds
@@ -180,7 +190,7 @@ from
   left join "albums_assets_assets" as "album_assets" on "album_assets"."albumsId" = "albums"."id"
   left join "assets" on "assets"."id" = "album_assets"."assetsId"
 where
-  "id" in ($1)
+  "albums"."id" in ($1)
 group by
   "albums"."id"
 
