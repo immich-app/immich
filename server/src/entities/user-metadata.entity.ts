@@ -25,6 +25,7 @@ export interface UserPreferences {
   };
   memories: {
     enabled: boolean;
+    includesShared: boolean;
   };
   people: {
     enabled: boolean;
@@ -68,6 +69,7 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
     },
     memories: {
       enabled: true,
+      includesShared: false
     },
     people: {
       enabled: true,

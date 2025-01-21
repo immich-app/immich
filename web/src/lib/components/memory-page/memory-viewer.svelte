@@ -25,6 +25,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
+  import { user, preferences as settings } from '$lib/stores/user.store';
   import { AssetMediaSize, getMemoryLane, type AssetResponseDto, type MemoryLaneResponseDto } from '@immich/sdk';
   import {
     mdiChevronDown,
@@ -92,8 +93,11 @@
           assetIndex,
           previous,
         };
-
-        memoryAssets.push(current);
+        if ($settings.memories.includesShared || (!$settings.memories.includesShared && $user.id === asset.ownerId)) {
+          memoryAssets.push(current);
+        }
+        if (!$settings.memories.includesShared && $user.id != asset.ownerId) {
+        }
 
         if (previous) {
           previous.next = current;
@@ -374,6 +378,7 @@
             {/key}
 
             <div
+              hidden={current.asset.ownerId != $user.id}
               class="absolute bottom-6 right-6 transition-all"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}

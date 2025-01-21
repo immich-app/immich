@@ -863,6 +863,8 @@
   "matches": "匹配",
   "media_type": "媒体类型",
   "memories": "回忆",
+  "memories_includes_shared_albums": "包含共享相册",
+  "memories_includes_shared_albums_content": "在卡片中展示共享相册中的照片",
   "memories_setting_description": "管理回忆中的内容",
   "memory": "回忆",
   "memory_lane_title": "记忆线{title}",

@@ -19,6 +19,9 @@
 
   // Memories
   let memoriesEnabled = $state($preferences?.memories?.enabled ?? true);
+  let memoriesIncludesShared = $state(
+    ($preferences?.memories?.enabled && $preferences?.memories?.includesShared) ?? true,
+  );
 
   // People
   let peopleEnabled = $state($preferences?.people?.enabled ?? false);
@@ -36,7 +39,7 @@
       const data = await updateMyPreferences({
         userPreferencesUpdateDto: {
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
-          memories: { enabled: memoriesEnabled },
+          memories: { enabled: memoriesEnabled, includesShared: memoriesIncludesShared },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
           ratings: { enabled: ratingsEnabled },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
@@ -79,6 +82,14 @@
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={memoriesEnabled} />
+          </div>
+          <div class="ml-4 mt-6">
+            <SettingSwitch
+              disabled={!memoriesEnabled}
+              title={$t('memories_includes_shared_albums')}
+              subtitle={$t('memories_includes_shared_albums_content')}
+              bind:checked={memoriesIncludesShared}
+            />
           </div>
         </SettingAccordion>
 

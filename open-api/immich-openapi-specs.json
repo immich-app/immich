@@ -9755,16 +9755,24 @@
           "enabled": {
             "default": true,
             "type": "boolean"
+          },
+          "includesShared": {
+            "default": false,
+            "type": "boolean"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "includesShared"
         ],
         "type": "object"
       },
       "MemoriesUpdate": {
         "properties": {
           "enabled": {
+            "type": "boolean"
+          },
+          "includesShared": {
             "type": "boolean"
           }
         },

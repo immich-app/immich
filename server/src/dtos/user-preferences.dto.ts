@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsPositive, ValidateNested } from 'class-validator';
+import { includes } from 'lodash';
 import { UserPreferences } from 'src/entities/user-metadata.entity';
 import { UserAvatarColor } from 'src/enum';
 import { Optional, ValidateBoolean } from 'src/validation';
@@ -15,6 +16,8 @@ class AvatarUpdate {
 class MemoriesUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
+  @ValidateBoolean({ optional: true })
+  includesShared?: boolean;
 }
 
 class RatingsUpdate {
@@ -135,6 +138,7 @@ class RatingsResponse {
 
 class MemoriesResponse {
   enabled: boolean = true;
+  includesShared: boolean = false;
 }
 
 class FoldersResponse {

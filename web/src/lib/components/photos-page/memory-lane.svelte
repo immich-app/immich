@@ -3,6 +3,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { memoryStore } from '$lib/stores/memory.store';
+  import { user, preferences as settings } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { getMemoryLane } from '@immich/sdk';
@@ -16,6 +17,11 @@
   onMount(async () => {
     const localTime = new Date();
     $memoryStore = await getMemoryLane({ month: localTime.getMonth() + 1, day: localTime.getDate() });
+    $memoryStore = $memoryStore.map((memory) => {
+      let tmp = memory;
+      if (!$settings.memories.includesShared) tmp.assets = tmp.assets.filter((asset) => asset.ownerId === $user.id);
+      return tmp;
+    });
   });
 
   let memoryLaneElement: HTMLElement | undefined = $state();
