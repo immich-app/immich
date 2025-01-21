@@ -165,9 +165,9 @@ No. Our design principle is that the original assets should always be untouched.
 If you aren't able to or prefer not to mount Samba on the host (such as Windows environment), you can mount the volume within Docker.
 Below is an example in the `docker-compose.yml`.
 
-Change your username, password, local IP, and share name, and see below where the line '- "originals:/usr/src/app/originals"',
-corrolates to the section where the volume 'originals' was created. You can call this whatever you like, and map it to the docker container as you like.
-For example you could change 'originals:' to 'Photos:', and change - '"originals:/usr/src/app/originals"' to '"Photos:/usr/src/app/photos"'.
+Change your username, password, local IP, and share name, and see below where the line `- 'originals:/usr/src/app/originals'`,
+corrolates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the docker container as you like.
+For example you could change `originals:` to `Photos:`, and change `- originals:/usr/src/app/originals` to `Photos:/usr/src/app/photos`.
 
 ```diff
 ...
@@ -178,15 +178,15 @@ services:
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
       - ${UPLOAD_LOCATION}:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
-+     - "originals:/usr/src/app/originals"
++     - 'originals:/usr/src/app/originals'
 ...
 volumes:
   model-cache:
 + originals:
 +   driver_opts:
 +     type: cifs
-+     o: "iocharset=utf8,username=USERNAMEHERE,password=PASSWORDHERE,rw" # change to `ro` if read only desired
-+     device: "//localipaddress/sharename"
++     o: 'iocharset=utf8,username=USERNAMEHERE,password=PASSWORDHERE,rw' # change to `ro` if read only desired
++     device: '//localipaddress/sharename'
 ```
 
 ---
