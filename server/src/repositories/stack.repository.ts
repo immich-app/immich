@@ -50,7 +50,11 @@ export class StackRepository implements IStackRepository {
         .where('asset_stack.ownerId', '=', entity.ownerId)
         .where('asset_stack.primaryAssetId', 'in', entity.assetIds)
         .select('asset_stack.id')
-        .select(withAssets)
+        .select((eb) =>
+          jsonArrayFrom(
+            eb.selectFrom('assets').select('assets.id').whereRef('assets.stackId', '=', 'asset_stack.id'),
+          ).as('assets'),
+        )
         .execute();
 
       const assetIds = new Set<string>(entity.assetIds);
@@ -82,11 +86,7 @@ export class StackRepository implements IStackRepository {
           primaryAssetId: entity.assetIds[0],
         })
         .returning('id')
-        .executeTakeFirst();
-
-      if (!newRecord) {
-        throw new Error('Failed to create stack');
-      }
+        .executeTakeFirstOrThrow();
 
       await tx
         .updateTable('assets')
@@ -142,20 +142,14 @@ export class StackRepository implements IStackRepository {
       .execute();
   }
 
-  async update(id: string, entity: Updateable<StackEntity>): Promise<StackEntity> {
-    const stack = (await this.db
+  update(id: string, entity: Updateable<StackEntity>): Promise<StackEntity> {
+    return this.db
       .updateTable('asset_stack')
       .set(entity)
       .where('id', '=', asUuid(id))
-      .returningAll()
+      .returningAll('asset_stack')
       .returning((eb) => withAssets(eb, true))
-      .executeTakeFirst()) as StackEntity | undefined;
-
-    if (!stack) {
-      throw new Error('Failed to update stack');
-    }
-
-    return stack;
+      .executeTakeFirstOrThrow() as unknown as Promise<StackEntity>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
