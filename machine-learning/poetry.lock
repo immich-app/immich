@@ -1625,13 +1625,13 @@ test = ["pytest (>=7.4)", "pytest-cov (>=4.1)"]
 
 [[package]]
 name = "locust"
-version = "2.32.5"
+version = "2.32.6"
 description = "Developer-friendly load testing framework"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "locust-2.32.5-py3-none-any.whl", hash = "sha256:2f49509868ffc2e368be40921c6825f92147c84e997206760a85dab3058f5efb"},
-    {file = "locust-2.32.5.tar.gz", hash = "sha256:ea7bc1e8ce2520e8893c471b4b0a56a4f53b01b4b618adfe8d2c8ab2728b5821"},
+    {file = "locust-2.32.6-py3-none-any.whl", hash = "sha256:d5c0e4f73134415d250087034431cf3ea42ca695d3dee7f10812287cacb6c4ef"},
+    {file = "locust-2.32.6.tar.gz", hash = "sha256:6600cc308398e724764aacc56ccddf6cfcd0127c4c92dedd5c4979dd37ef5b15"},
 ]
 
 [package.dependencies]
