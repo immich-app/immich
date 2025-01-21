@@ -9,9 +9,29 @@ import { IStackRepository, StackSearch } from 'src/interfaces/stack.interface';
 import { asUuid } from 'src/utils/database';
 
 /**
- * Including EXIF and Tags
+ * Including EXIF
  * */
 const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
+  return eb
+    .selectFrom((eb) =>
+      eb
+        .selectFrom('assets')
+        .selectAll('assets')
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
+        .where('assets.deletedAt', 'is', null)
+        .whereRef('assets.stackId', '=', 'asset_stack.id')
+        .orderBy('assets.fileCreatedAt', 'asc')
+        .as('asset'),
+    )
+    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+    .as('asset_lat');
+};
+
+/**
+ * Including EXIF and Tags
+ * */
+const withAssetAndTags = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
   return eb
     .selectFrom((eb) =>
       eb
@@ -28,6 +48,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>) => {
               .whereRef('tag_asset.assetsId', '=', 'assets.id'),
           ).as('tags'),
         )
+        .where('assets.deletedAt', 'is', null)
         .whereRef('assets.stackId', '=', 'asset_stack.id')
         .orderBy('assets.fileCreatedAt', 'asc')
         .as('asset'),
@@ -59,7 +80,7 @@ export class StackRepository implements IStackRepository {
         .leftJoinLateral(withAssets, (join) => join.onTrue())
         .where('asset_stack.ownerId', '=', entity.ownerId)
         .where('asset_stack.primaryAssetId', 'in', entity.assetIds)
-        .selectAll('asset_stack')
+        .select('asset_stack.id')
         .select('assets')
         .execute();
 
@@ -145,14 +166,22 @@ export class StackRepository implements IStackRepository {
       assetIds.push(...stack.assets.map(({ id }) => id));
     }
 
-    await this.db.deleteFrom('assets').where('stackId', 'in', ids).execute();
-    await this.db.updateTable('assets').set({ updatedAt: new Date() }).where('id', 'in', assetIds).execute();
+    await this.db
+      .updateTable('assets')
+      .set({ updatedAt: new Date(), stackId: null })
+      .where('id', 'in', assetIds)
+      .where('stackId', 'in', ids)
+      .execute();
   }
 
   async update(id: string, entity: Updateable<StackEntity>): Promise<StackEntity> {
-    await this.db.updateTable('asset_stack').set(entity).where('id', '=', asUuid(id)).executeTakeFirst();
-
-    const stack = await this.getById(id);
+    const stack = (await this.db
+      .updateTable('asset_stack')
+      .set(entity)
+      .where('id', '=', asUuid(id))
+      .returningAll()
+      .returning(withAssetAndTags)
+      .executeTakeFirst()) as StackEntity | undefined;
 
     if (!stack) {
       throw new Error('Failed to update stack');
@@ -167,7 +196,7 @@ export class StackRepository implements IStackRepository {
       .selectFrom('asset_stack')
       .where('asset_stack.id', '=', asUuid(id))
       .selectAll('asset_stack')
-      .leftJoinLateral(withAssets, (join) => join.onTrue())
+      .leftJoinLateral(withAssetAndTags, (join) => join.onTrue())
       .select('assets')
       .executeTakeFirst() as Promise<StackEntity | undefined>;
   }
