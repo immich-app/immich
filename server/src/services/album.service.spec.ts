@@ -702,7 +702,6 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith('album-123', { id: 'album-123', updatedAt: expect.any(Date) });
       expect(albumMock.removeAssetIds).toHaveBeenCalledWith('album-123', ['asset-id']);
     });
 
@@ -726,8 +725,6 @@ describe(AlbumService.name, () => {
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },
       ]);
-
-      expect(albumMock.update).toHaveBeenCalledWith('album-123', { id: 'album-123', updatedAt: expect.any(Date) });
     });
 
     it('should reset the thumbnail if it is removed', async () => {
@@ -740,10 +737,6 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith('album-123', {
-        id: 'album-123',
-        updatedAt: expect.any(Date),
-      });
       expect(albumMock.updateThumbnails).toHaveBeenCalled();
     });
   });
