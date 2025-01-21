@@ -75,10 +75,6 @@ export class UserAdminService extends BaseService {
       dto.storageLabel = null;
     }
 
-    if (dto.isAdmin) {
-      dto.isAdmin = true;
-    }
-
     const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date() });
 
     return mapUserAdmin(updatedUser);

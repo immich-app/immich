@@ -53,7 +53,7 @@
           name,
           storageLabel: storageLabel || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
-          isAdmin
+          isAdmin,
         },
       });
 
@@ -154,11 +154,7 @@
     </div>
 
     <div class="my-4 flex flex-col gap-2">
-      <SettingSwitch
-        title={$t('admin.make_admin')}
-        {disabled}
-        bind:checked={user.isAdmin}
-      />
+      <SettingSwitch title={$t('admin.make_admin')} {disabled} bind:checked={user.isAdmin} />
     </div>
   </form>
 
