@@ -3,8 +3,8 @@ import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { ONE_HOUR } from 'src/constants';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { AuthService } from 'src/services/auth.service';
 import { JobService } from 'src/services/job.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
@@ -38,7 +38,7 @@ export class ApiService {
     private jobService: JobService,
     private sharedLinkService: SharedLinkService,
     private versionService: VersionService,
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+    private configRepository: ConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(ApiService.name);

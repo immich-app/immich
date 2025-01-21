@@ -9,7 +9,6 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
@@ -45,6 +44,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
@@ -59,7 +59,7 @@ export class BaseService {
     @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) protected configRepository: IConfigRepository,
+    protected configRepository: ConfigRepository,
     @Inject(ICronRepository) protected cronRepository: ICronRepository,
     @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
