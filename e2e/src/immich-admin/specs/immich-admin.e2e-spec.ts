@@ -7,9 +7,9 @@ describe(`immich-admin`, () => {
     await utils.adminSetup();
   });
 
-  describe('remove-admin', () => {
-    it('should remove admin privileges from a user', async () => {
-      const { child, promise } = immichAdmin(['grant-admin']);
+  describe('revoke-admin', () => {
+    it('should revoke admin privileges from a user', async () => {
+      const { child, promise } = immichAdmin(['revoke-admin']);
 
       let data = '';
       child.stdout.on('data', (chunk) => {
@@ -22,7 +22,7 @@ describe(`immich-admin`, () => {
       const { stdout, exitCode } = await promise;
       expect(exitCode).toBe(0);
 
-      expect(stdout).toContain('Admin access has been removed from');
+      expect(stdout).toContain('Admin access has been revoked from');
     });
   });
 
