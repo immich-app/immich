@@ -165,7 +165,7 @@ No. Our design principle is that the original assets should always be untouched.
 If you aren't able to or prefer not to mount Samba on the host (such as Windows environment), you can mount the volume within Docker.
 Below is an example in the `docker-compose.yml`.
 
-Change your username, password, local IP, and share name, and see below where the line `- 'originals:/usr/src/app/originals'`,
+Change your username, password, local IP, and share name, and see below where the line `- originals:/usr/src/app/originals`,
 corrolates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the docker container as you like.
 For example you could change `originals:` to `Photos:`, and change `- originals:/usr/src/app/originals` to `Photos:/usr/src/app/photos`.
 
