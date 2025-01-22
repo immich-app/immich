@@ -3,9 +3,19 @@ import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AuditRepository } from 'src/repositories/audit.repository';
+import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
-import { IActivityRepository } from 'src/types';
+import {
+  IAccessRepository,
+  IActivityRepository,
+  IApiKeyRepository,
+  IAuditRepository,
+  IViewRepository,
+} from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
@@ -105,9 +115,9 @@ export const newTestService = <T extends BaseService>(
 
   const sut = new Service(
     loggerMock,
-    accessMock,
+    accessMock as IAccessRepository as AccessRepository,
     activityMock as IActivityRepository as ActivityRepository,
-    auditMock,
+    auditMock as IAuditRepository as AuditRepository,
     albumMock,
     albumUserMock,
     assetMock,
@@ -117,7 +127,7 @@ export const newTestService = <T extends BaseService>(
     databaseMock,
     eventMock,
     jobMock,
-    keyMock,
+    keyMock as IApiKeyRepository as ApiKeyRepository,
     libraryMock,
     machineLearningMock,
     mapMock,
@@ -142,7 +152,7 @@ export const newTestService = <T extends BaseService>(
     trashMock,
     userMock,
     versionHistoryMock,
-    viewMock,
+    viewMock as IViewRepository as ViewRepository,
   );
 
   return {
@@ -252,3 +262,10 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
     }),
   } as unknown as ChildProcessWithoutNullStreams;
 });
+
+export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+  for (const item of items) {
+    await Promise.resolve();
+    yield item;
+  }
+}

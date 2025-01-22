@@ -142,6 +142,10 @@ describe('/albums', () => {
         ...user1Albums[0],
         assets: [expect.objectContaining({ isFavorite: false })],
         lastModifiedAssetTimestamp: expect.any(String),
+        startDate: expect.any(String),
+        endDate: expect.any(String),
+        shared: true,
+        albumUsers: expect.any(Array),
       });
     });
 
@@ -299,6 +303,10 @@ describe('/albums', () => {
         ...user1Albums[0],
         assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
         lastModifiedAssetTimestamp: expect.any(String),
+        startDate: expect.any(String),
+        endDate: expect.any(String),
+        albumUsers: expect.any(Array),
+        shared: true,
       });
     });
 
@@ -330,6 +338,10 @@ describe('/albums', () => {
         ...user1Albums[0],
         assets: [expect.objectContaining({ id: user1Albums[0].assets[0].id })],
         lastModifiedAssetTimestamp: expect.any(String),
+        startDate: expect.any(String),
+        endDate: expect.any(String),
+        albumUsers: expect.any(Array),
+        shared: true,
       });
     });
 
@@ -344,6 +356,10 @@ describe('/albums', () => {
         assets: [],
         assetCount: 1,
         lastModifiedAssetTimestamp: expect.any(String),
+        endDate: expect.any(String),
+        startDate: expect.any(String),
+        albumUsers: expect.any(Array),
+        shared: true,
       });
     });
   });

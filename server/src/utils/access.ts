@@ -2,7 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { AlbumUserRole, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { setDifference, setIsEqual, setIsSuperset, setUnion } from 'src/utils/set';
 
 export type GrantedRequest = {
@@ -34,7 +34,7 @@ export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
   return auth;
 };
 
-export const requireAccess = async (access: IAccessRepository, request: AccessRequest) => {
+export const requireAccess = async (access: AccessRepository, request: AccessRequest) => {
   const allowedIds = await checkAccess(access, request);
   if (!setIsEqual(new Set(request.ids), allowedIds)) {
     throw new BadRequestException(`Not found or no ${request.permission} access`);
@@ -42,7 +42,7 @@ export const requireAccess = async (access: IAccessRepository, request: AccessRe
 };
 
 export const checkAccess = async (
-  access: IAccessRepository,
+  access: AccessRepository,
   { ids, auth, permission }: AccessRequest,
 ): Promise<Set<string>> => {
   const idSet = Array.isArray(ids) ? new Set(ids) : ids;
@@ -56,7 +56,7 @@ export const checkAccess = async (
 };
 
 const checkSharedLinkAccess = async (
-  access: IAccessRepository,
+  access: AccessRepository,
   request: SharedLinkAccessRequest,
 ): Promise<Set<string>> => {
   const { sharedLink, permission, ids } = request;
@@ -102,7 +102,7 @@ const checkSharedLinkAccess = async (
   }
 };
 
-const checkOtherAccess = async (access: IAccessRepository, request: OtherAccessRequest): Promise<Set<string>> => {
+const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRequest): Promise<Set<string>> => {
   const { auth, permission, ids } = request;
 
   switch (permission) {

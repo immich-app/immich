@@ -1,5 +1,3 @@
-import { APIKeyEntity } from 'src/entities/api-key.entity';
-import { AuthApiKey } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
@@ -9,7 +7,7 @@ export const keyStub = {
     key: 'my-api-key (hashed)',
     user: userStub.admin,
     permissions: [],
-  } as AuthApiKey),
+  } as any),
 
   admin: Object.freeze({
     id: 'my-random-guid',
@@ -17,5 +15,6 @@ export const keyStub = {
     key: 'my-api-key (hashed)',
     userId: authStub.admin.user.id,
     user: userStub.admin,
-  } as APIKeyEntity),
+    permissions: [],
+  } as any),
 };

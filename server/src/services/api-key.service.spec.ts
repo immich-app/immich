@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { Permission } from 'src/enum';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { APIKeyService } from 'src/services/api-key.service';
+import { IApiKeyRepository } from 'src/types';
 import { keyStub } from 'test/fixtures/api-key.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService } from 'test/utils';
@@ -12,7 +12,7 @@ describe(APIKeyService.name, () => {
   let sut: APIKeyService;
 
   let cryptoMock: Mocked<ICryptoRepository>;
-  let keyMock: Mocked<IKeyRepository>;
+  let keyMock: Mocked<IApiKeyRepository>;
 
   beforeEach(() => {
     ({ sut, cryptoMock, keyMock } = newTestService(APIKeyService));
@@ -56,8 +56,6 @@ describe(APIKeyService.name, () => {
 
   describe('update', () => {
     it('should throw an error if the key is not found', async () => {
-      keyMock.getById.mockResolvedValue(null);
-
       await expect(sut.update(authStub.admin, 'random-guid', { name: 'New Name' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
@@ -77,8 +75,6 @@ describe(APIKeyService.name, () => {
 
   describe('delete', () => {
     it('should throw an error if the key is not found', async () => {
-      keyMock.getById.mockResolvedValue(null);
-
       await expect(sut.delete(authStub.admin, 'random-guid')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(keyMock.delete).not.toHaveBeenCalledWith('random-guid');
@@ -95,8 +91,6 @@ describe(APIKeyService.name, () => {
 
   describe('getById', () => {
     it('should throw an error if the key is not found', async () => {
-      keyMock.getById.mockResolvedValue(null);
-
       await expect(sut.getById(authStub.admin, 'random-guid')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(keyMock.getById).toHaveBeenCalledWith(authStub.admin.user.id, 'random-guid');

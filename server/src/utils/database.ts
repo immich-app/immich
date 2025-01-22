@@ -42,7 +42,7 @@ export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uu
 
 export const anyUuid = (ids: string[]) => sql<string>`any(${`{${ids}}`}::uuid[])`;
 
-export const asVector = (embedding: number[]) => sql<number[]>`${`[${embedding}]`}::vector`;
+export const asVector = (embedding: number[]) => sql<string>`${`[${embedding}]`}::vector`;
 
 /**
  * Mainly for type debugging to make VS Code display a more useful tooltip.

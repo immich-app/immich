@@ -1,5 +1,4 @@
 import { PostgresJSDialect } from 'kysely-postgres-js';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   EXTENSION_NAMES,
@@ -8,6 +7,7 @@ import {
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
+import { IConfigRepository } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';

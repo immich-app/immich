@@ -4,9 +4,9 @@ import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GitHubRelease, IServerInfoRepository, ServerBuildVersions } from 'src/interfaces/server-info.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 
 const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
@@ -36,7 +36,7 @@ const getLockfileVersion = (name: string, lockfile?: BuildLockfile) => {
 @Injectable()
 export class ServerInfoRepository implements IServerInfoRepository {
   constructor(
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+    private configRepository: ConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(ServerInfoRepository.name);

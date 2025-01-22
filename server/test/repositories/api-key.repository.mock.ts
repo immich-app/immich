@@ -1,7 +1,7 @@
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
+import { IApiKeyRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newKeyRepositoryMock = (): Mocked<IKeyRepository> => {
+export const newKeyRepositoryMock = (): Mocked<IApiKeyRepository> => {
   return {
     create: vitest.fn(),
     update: vitest.fn(),

@@ -12,7 +12,7 @@ from PIL import Image
 
 from app.config import log, settings
 from app.models.base import InferenceModel
-from app.models.transforms import decode_cv2
+from app.models.transforms import decode_cv2, serialize_np_array
 from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelFormat, ModelSession, ModelTask, ModelType
 
 
@@ -61,7 +61,7 @@ class FaceRecognizer(InferenceModel):
         return [
             {
                 "boundingBox": {"x1": x1, "y1": y1, "x2": x2, "y2": y2},
-                "embedding": embedding,
+                "embedding": serialize_np_array(embedding),
                 "score": score,
             }
             for (x1, y1, x2, y2), embedding, score in zip(faces["boxes"], embeddings, faces["scores"])

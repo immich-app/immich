@@ -6,13 +6,9 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
@@ -43,8 +39,12 @@ import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
-import { IViewRepository } from 'src/interfaces/view.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AuditRepository } from 'src/repositories/audit.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { ViewRepository } from 'src/repositories/view-repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
@@ -53,19 +53,19 @@ export class BaseService {
 
   constructor(
     @Inject(ILoggerRepository) protected logger: ILoggerRepository,
-    @Inject(IAccessRepository) protected accessRepository: IAccessRepository,
+    protected accessRepository: AccessRepository,
     protected activityRepository: ActivityRepository,
-    @Inject(IAuditRepository) protected auditRepository: IAuditRepository,
+    protected auditRepository: AuditRepository,
     @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
-    @Inject(IConfigRepository) protected configRepository: IConfigRepository,
+    protected configRepository: ConfigRepository,
     @Inject(ICronRepository) protected cronRepository: ICronRepository,
     @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
     @Inject(IJobRepository) protected jobRepository: IJobRepository,
-    @Inject(IKeyRepository) protected keyRepository: IKeyRepository,
+    protected keyRepository: ApiKeyRepository,
     @Inject(ILibraryRepository) protected libraryRepository: ILibraryRepository,
     @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
     @Inject(IMapRepository) protected mapRepository: IMapRepository,
@@ -90,7 +90,7 @@ export class BaseService {
     @Inject(ITrashRepository) protected trashRepository: ITrashRepository,
     @Inject(IUserRepository) protected userRepository: IUserRepository,
     @Inject(IVersionHistoryRepository) protected versionRepository: IVersionHistoryRepository,
-    @Inject(IViewRepository) protected viewRepository: IViewRepository,
+    protected viewRepository: ViewRepository,
   ) {
     this.logger.setContext(this.constructor.name);
     this.storageCore = StorageCore.create(

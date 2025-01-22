@@ -25,7 +25,7 @@ import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
 import { personStub } from 'test/fixtures/person.stub';
-import { newTestService } from 'test/utils';
+import { makeStream, newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
 describe(MediaService.name, () => {
@@ -55,10 +55,8 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [personStub.newThumbnail],
-        hasNextPage: false,
-      });
+
+      personMock.getAll.mockReturnValue(makeStream([personStub.newThumbnail]));
       personMock.getFacesByIds.mockResolvedValue([faceStub.face1]);
 
       await sut.handleQueueGenerateThumbnails({ force: true });
@@ -72,7 +70,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, {});
+      expect(personMock.getAll).toHaveBeenCalledWith(undefined);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_PERSON_THUMBNAIL,
@@ -86,10 +84,7 @@ describe(MediaService.name, () => {
         items: [assetStub.trashed],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -111,10 +106,7 @@ describe(MediaService.name, () => {
         items: [assetStub.archived],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueGenerateThumbnails({ force: true });
 
@@ -136,10 +128,7 @@ describe(MediaService.name, () => {
         items: [assetStub.image],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [personStub.noThumbnail, personStub.noThumbnail],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream([personStub.noThumbnail, personStub.noThumbnail]));
       personMock.getRandomFace.mockResolvedValueOnce(faceStub.face1);
 
       await sut.handleQueueGenerateThumbnails({ force: false });
@@ -147,7 +136,7 @@ describe(MediaService.name, () => {
       expect(assetMock.getAll).not.toHaveBeenCalled();
       expect(assetMock.getWithout).toHaveBeenCalledWith({ skip: 0, take: 1000 }, WithoutProperty.THUMBNAIL);
 
-      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
+      expect(personMock.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
       expect(personMock.getRandomFace).toHaveBeenCalled();
       expect(personMock.update).toHaveBeenCalledTimes(1);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
@@ -165,11 +154,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noResizePath],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
-
+      personMock.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
@@ -181,7 +166,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
+      expect(personMock.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
     it('should queue all assets with missing webp path', async () => {
@@ -189,11 +174,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noWebpPath],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
-
+      personMock.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
@@ -205,7 +186,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
+      expect(personMock.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
 
     it('should queue all assets with missing thumbhash', async () => {
@@ -213,11 +194,7 @@ describe(MediaService.name, () => {
         items: [assetStub.noThumbhash],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
-
+      personMock.getAll.mockReturnValue(makeStream());
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(assetMock.getAll).not.toHaveBeenCalled();
@@ -229,7 +206,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(personMock.getAll).toHaveBeenCalledWith({ skip: 0, take: 1000 }, { where: { thumbnailPath: '' } });
+      expect(personMock.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
     });
   });
 
@@ -237,7 +214,7 @@ describe(MediaService.name, () => {
     it('should remove empty directories and queue jobs', async () => {
       assetMock.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
       jobMock.getJobCounts.mockResolvedValue({ active: 1, waiting: 0 } as JobCounts);
-      personMock.getAll.mockResolvedValue({ hasNextPage: false, items: [personStub.withName] });
+      personMock.getAll.mockReturnValue(makeStream([personStub.withName]));
 
       await expect(sut.handleQueueMigration()).resolves.toBe(JobStatus.SUCCESS);
 
@@ -730,10 +707,7 @@ describe(MediaService.name, () => {
         items: [assetStub.video],
         hasNextPage: false,
       });
-      personMock.getAll.mockResolvedValue({
-        items: [],
-        hasNextPage: false,
-      });
+      personMock.getAll.mockReturnValue(makeStream());
 
       await sut.handleQueueVideoConversion({ force: true });
 

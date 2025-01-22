@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:f997d3f71b7dcff3f937703c02861437f2b41a94e1ddbd1b5fa357ee99f5cce4 AS builder-cpu
+FROM python:3.11-bookworm@sha256:adb581d8ed80edd03efd4dcad66db115b9ce8de8522b01720b9f3e6146f0884c AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 

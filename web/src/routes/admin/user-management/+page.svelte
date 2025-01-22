@@ -253,7 +253,7 @@
           {/if}
         </tbody>
       </table>
-      <Button shape="round" onclick={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
+      <Button shape="round" size="small" onclick={() => (shouldShowCreateUserForm = true)}>{$t('create_user')}</Button>
     </section>
   </section>
 </UserPageLayout>

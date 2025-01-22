@@ -1,6 +1,7 @@
 import { SystemConfig } from 'src/config';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { Column, DeepPartial, Entity, PrimaryColumn } from 'typeorm';
+import { DeepPartial } from 'src/types';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity('system_metadata')
 export class SystemMetadataEntity<T extends keyof SystemMetadata = SystemMetadataKey> {

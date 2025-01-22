@@ -3,8 +3,8 @@ import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
 import { UserPreferences, getDefaultPreferences } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserMetadataKey } from 'src/enum';
+import { DeepPartial } from 'src/types';
 import { getKeysDeep } from 'src/utils/misc';
-import { DeepPartial } from 'typeorm';
 
 export const getPreferences = (user: UserEntity) => {
   const preferences = getDefaultPreferences(user);

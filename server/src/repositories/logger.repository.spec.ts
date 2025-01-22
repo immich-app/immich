@@ -1,7 +1,7 @@
 import { ClsService } from 'nestjs-cls';
 import { ImmichWorker } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { LoggerRepository } from 'src/repositories/logger.repository';
+import { IConfigRepository } from 'src/types';
 import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { Mocked } from 'vitest';
 

@@ -104,7 +104,7 @@ export interface SearchExifOptions {
 }
 
 export interface SearchEmbeddingOptions {
-  embedding: number[];
+  embedding: string;
   userIds: string[];
 }
 
@@ -152,7 +152,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 
 export interface AssetDuplicateSearch {
   assetId: string;
-  embedding: number[];
+  embedding: string;
   maxDistance: number;
   type: AssetType;
   userIds: string[];
@@ -192,7 +192,7 @@ export interface ISearchRepository {
   searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]>;
-  upsert(assetId: string, embedding: number[]): Promise<void>;
+  upsert(assetId: string, embedding: string): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
   getAssetsByCity(userIds: string[]): Promise<AssetEntity[]>;
   deleteAllSearchEmbeddings(): Promise<void>;

@@ -5,12 +5,12 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { ImmichFile } from 'src/middleware/file-upload.interceptor';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { UploadFile } from 'src/services/asset-media.service';
 import { checkAccess } from 'src/utils/access';
 
@@ -31,7 +31,7 @@ export const getAssetFiles = (files?: AssetFileEntity[]) => ({
 
 export const addAssets = async (
   auth: AuthDto,
-  repositories: { access: IAccessRepository; bulk: IBulkAsset },
+  repositories: { access: AccessRepository; bulk: IBulkAsset },
   dto: { parentId: string; assetIds: string[] },
 ) => {
   const { access, bulk } = repositories;
@@ -71,7 +71,7 @@ export const addAssets = async (
 
 export const removeAssets = async (
   auth: AuthDto,
-  repositories: { access: IAccessRepository; bulk: IBulkAsset },
+  repositories: { access: AccessRepository; bulk: IBulkAsset },
   dto: { parentId: string; assetIds: string[]; canAlwaysRemove: Permission },
 ) => {
   const { access, bulk } = repositories;

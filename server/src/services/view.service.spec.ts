@@ -1,6 +1,6 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
-import { IViewRepository } from 'src/interfaces/view.interface';
 import { ViewService } from 'src/services/view.service';
+import { IViewRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService } from 'test/utils';
@@ -42,7 +42,7 @@ describe(ViewService.name, () => {
 
       const mockAssetReponseDto = mockAssets.map((a) => mapAsset(a, { auth: authStub.admin }));
 
-      viewMock.getAssetsByOriginalPath.mockResolvedValue(mockAssets);
+      viewMock.getAssetsByOriginalPath.mockResolvedValue(mockAssets as any);
 
       const result = await sut.getAssetsByOriginalPath(authStub.admin, path);
       expect(result).toEqual(mockAssetReponseDto);

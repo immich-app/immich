@@ -49,5 +49,3 @@ The `thumbs/` folder contains both the small thumbnails displayed in the timelin
 
 The storage metrics of the Immich server will track available storage at `UPLOAD_LOCATION`, so the administrator must set up some sort of monitoring to ensure the storage does not run out of space. The `profile/` folder is much smaller, usually less than 1 MB.
 :::
-
-Thanks to [Jrasm91](https://github.com/immich-app/immich/discussions/2110#discussioncomment-5477767) for writing the guide.

@@ -2,15 +2,14 @@ import { Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetEntity, withExif } from 'src/entities/asset.entity';
-import { IViewRepository } from 'src/interfaces/view.interface';
+import { withExif } from 'src/entities/asset.entity';
 import { asUuid } from 'src/utils/database';
 
-export class ViewRepository implements IViewRepository {
+export class ViewRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async getUniqueOriginalPaths(userId: string): Promise<string[]> {
+  async getUniqueOriginalPaths(userId: string) {
     const results = await this.db
       .selectFrom('assets')
       .select((eb) => eb.fn<string>('substring', ['assets.originalPath', eb.val('^(.*/)[^/]*$')]).as('directoryPath'))
@@ -25,7 +24,7 @@ export class ViewRepository implements IViewRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  async getAssetsByOriginalPath(userId: string, partialPath: string): Promise<AssetEntity[]> {
+  async getAssetsByOriginalPath(userId: string, partialPath: string) {
     const normalizedPath = partialPath.replaceAll(/^\/|\/$/g, '');
 
     return this.db
@@ -42,6 +41,6 @@ export class ViewRepository implements IViewRepository {
         (eb) => eb.fn('regexp_replace', ['assets.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
         'asc',
       )
-      .execute() as any as Promise<AssetEntity[]>;
+      .execute();
   }
 }

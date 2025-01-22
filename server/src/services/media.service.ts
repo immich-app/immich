@@ -72,23 +72,20 @@ export class MediaService extends BaseService {
     }
 
     const jobs: JobItem[] = [];
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.personRepository.getAll(pagination, { where: force ? undefined : { thumbnailPath: '' } }),
-    );
 
-    for await (const people of personPagination) {
-      for (const person of people) {
-        if (!person.faceAssetId) {
-          const face = await this.personRepository.getRandomFace(person.id);
-          if (!face) {
-            continue;
-          }
+    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+    for await (const person of people) {
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
         }
 
-        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
       }
+
+      jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
 
     await this.jobRepository.queueAll(jobs);
@@ -114,15 +111,18 @@ export class MediaService extends BaseService {
       );
     }
 
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.personRepository.getAll(pagination),
-    );
+    let jobs: { name: JobName.MIGRATE_PERSON; data: { id: string } }[] = [];
 
-    for await (const people of personPagination) {
-      await this.jobRepository.queueAll(
-        people.map((person) => ({ name: JobName.MIGRATE_PERSON, data: { id: person.id } })),
-      );
+    for await (const person of this.personRepository.getAll()) {
+      jobs.push({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
+
+      if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
+
+    await this.jobRepository.queueAll(jobs);
 
     return JobStatus.SUCCESS;
   }
