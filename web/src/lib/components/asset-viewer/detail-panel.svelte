@@ -87,6 +87,9 @@
       people = data?.people || [];
       unassignedFaces = data?.unassignedFaces || [];
       asset.exifInfo = data?.exifInfo;
+      asset.stack = data?.stack;
+      asset.tags = data?.tags;
+      asset.owner = data?.owner;
     }
   };
 
