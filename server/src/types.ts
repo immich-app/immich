@@ -5,6 +5,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { MemoryRepository } from 'src/repositories/memory.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
@@ -23,6 +24,7 @@ export type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInter
 export type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
 export type IAuditRepository = RepositoryInterface<AuditRepository>;
 export type IConfigRepository = RepositoryInterface<ConfigRepository>;
+export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
 export type IViewRepository = RepositoryInterface<ViewRepository>;
 
 export type ActivityItem =
@@ -33,3 +35,7 @@ export type ApiKeyItem =
   | Awaited<ReturnType<IApiKeyRepository['create']>>
   | NonNullable<Awaited<ReturnType<IApiKeyRepository['getById']>>>
   | Awaited<ReturnType<IApiKeyRepository['getByUserId']>>[0];
+
+export type MemoryItem =
+  | Awaited<ReturnType<IMemoryRepository['create']>>
+  | Awaited<ReturnType<IMemoryRepository['search']>>[0];

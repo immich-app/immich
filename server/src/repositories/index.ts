@@ -11,7 +11,6 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
@@ -78,6 +77,7 @@ export const repositories = [
   AuditRepository,
   ApiKeyRepository,
   ConfigRepository,
+  MemoryRepository,
   ViewRepository,
 ];
 
@@ -95,7 +95,6 @@ export const providers = [
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMapRepository, useClass: MapRepository },
   { provide: IMediaRepository, useClass: MediaRepository },
-  { provide: IMemoryRepository, useClass: MemoryRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: INotificationRepository, useClass: NotificationRepository },

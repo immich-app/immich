@@ -19,7 +19,6 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
@@ -44,6 +43,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { MemoryRepository } from 'src/repositories/memory.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -70,7 +70,7 @@ export class BaseService {
     @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
     @Inject(IMapRepository) protected mapRepository: IMapRepository,
     @Inject(IMediaRepository) protected mediaRepository: IMediaRepository,
-    @Inject(IMemoryRepository) protected memoryRepository: IMemoryRepository,
+    protected memoryRepository: MemoryRepository,
     @Inject(IMetadataRepository) protected metadataRepository: IMetadataRepository,
     @Inject(IMoveRepository) protected moveRepository: IMoveRepository,
     @Inject(INotificationRepository) protected notificationRepository: INotificationRepository,
