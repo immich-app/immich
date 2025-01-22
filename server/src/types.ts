@@ -5,6 +5,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
@@ -25,6 +26,19 @@ export type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInter
 export type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
 export type IAuditRepository = RepositoryInterface<AuditRepository>;
 export type IConfigRepository = RepositoryInterface<ConfigRepository>;
+export type ILoggingRepository = Pick<
+  LoggingRepository,
+  | 'verbose'
+  | 'log'
+  | 'debug'
+  | 'warn'
+  | 'error'
+  | 'fatal'
+  | 'isLevelEnabled'
+  | 'setLogLevel'
+  | 'setContext'
+  | 'setAppName'
+>;
 export type IMediaRepository = RepositoryInterface<MediaRepository>;
 export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
 export type IViewRepository = RepositoryInterface<ViewRepository>;
