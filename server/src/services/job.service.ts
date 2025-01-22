@@ -51,7 +51,7 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
+  @OnEvent({ name: 'config.update', server: true, workers: [ImmichWorker.MICROSERVICES] })
   onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
     this.onConfigInit({ newConfig: config });
   }
