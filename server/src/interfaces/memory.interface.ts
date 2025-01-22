@@ -7,7 +7,7 @@ export const IMemoryRepository = 'IMemoryRepository';
 
 export interface IMemoryRepository extends IBulkAsset {
   search(ownerId: string): Promise<MemoryEntity[]>;
-  get(id: string): Promise<MemoryEntity | null>;
+  get(id: string): Promise<MemoryEntity | undefined>;
   create(
     memory: Omit<Insertable<Memories>, 'data'> & { data: OnThisDayData },
     assetIds: Set<string>,

@@ -1,4 +1,4 @@
-import { Insertable, Updateable } from 'kysely';
+import { Insertable, Selectable, Updateable } from 'kysely';
 import { AssetFaces, FaceSearch, Person } from 'src/db';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -49,7 +49,7 @@ export interface DeleteFacesOptions {
 
 export type UnassignFacesOptions = DeleteFacesOptions;
 
-export type SelectFaceOptions = Partial<{ [K in keyof AssetFaceEntity]: boolean }>;
+export type SelectFaceOptions = (keyof Selectable<AssetFaces>)[];
 
 export interface IPersonRepository {
   getAll(options?: Partial<PersonEntity>): AsyncIterableIterator<PersonEntity>;
@@ -74,10 +74,10 @@ export interface IPersonRepository {
     id: string,
     relations?: FindOptionsRelations<AssetFaceEntity>,
     select?: SelectFaceOptions,
-  ): Promise<AssetFaceEntity | null>;
+  ): Promise<AssetFaceEntity | undefined>;
   getFaces(assetId: string): Promise<AssetFaceEntity[]>;
   getFacesByIds(ids: AssetFaceId[]): Promise<AssetFaceEntity[]>;
-  getRandomFace(personId: string): Promise<AssetFaceEntity | null>;
+  getRandomFace(personId: string): Promise<AssetFaceEntity | undefined>;
   getStatistics(personId: string): Promise<PersonStatistics>;
   reassignFace(assetFaceId: string, newPersonId: string): Promise<number>;
   getNumberOfPeople(userId: string): Promise<PeopleStatistics>;
