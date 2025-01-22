@@ -42,9 +42,9 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { BoundingBox } from 'src/interfaces/machine-learning.interface';
-import { CropOptions, ImageDimensions, InputDimensions } from 'src/interfaces/media.interface';
 import { UpdateFacesData } from 'src/interfaces/person.interface';
 import { BaseService } from 'src/services/base.service';
+import { CropOptions, ImageDimensions, InputDimensions } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';

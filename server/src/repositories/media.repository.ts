@@ -12,12 +12,11 @@ import {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
-  IMediaRepository,
   ImageDimensions,
   ProbeOptions,
   TranscodeCommand,
   VideoInfo,
-} from 'src/interfaces/media.interface';
+} from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
@@ -37,7 +36,7 @@ type ProgressEvent = {
 };
 
 @Injectable()
-export class MediaRepository implements IMediaRepository {
+export class MediaRepository {
   constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
     this.logger.setContext(MediaRepository.name);
   }
