@@ -1,7 +1,6 @@
 <script lang="ts">
   import empty2Url from '$lib/assets/empty-2.svg';
   import Albums from '$lib/components/album-page/albums-list.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
@@ -15,7 +14,7 @@
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
   import { createAlbumAndRedirect } from '$lib/utils/album-utils';
-  import { Button, HStack } from '@immich/ui';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -40,14 +39,17 @@
 <UserPageLayout title={data.meta.title}>
   {#snippet buttons()}
     <HStack gap={0}>
-      <Button onclick={() => createAlbumAndRedirect()} size="small" variant="ghost" color="secondary">
-        <Icon path={mdiPlusBoxOutline} class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">{$t('create_album')}</span>
+      <Button
+        leadingIcon={mdiPlusBoxOutline}
+        onclick={() => createAlbumAndRedirect()}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('create_album')}</Text>
       </Button>
-
-      <Button href={AppRoute.SHARED_LINKS} size="small" variant="ghost" color="secondary">
-        <Icon path={mdiLink} class="shrink-0" />
-        <span class="leading-none max-sm:text-xs">{$t('shared_links')}</span>
+      <Button leadingIcon={mdiLink} href={AppRoute.SHARED_LINKS} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('shared_links')}</Text>
       </Button>
     </HStack>
   {/snippet}

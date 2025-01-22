@@ -30,7 +30,7 @@
     updatePerson,
     type PersonResponseDto,
   } from '@immich/sdk';
-  import { Button, Text } from '@immich/ui';
+  import { Button } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -392,10 +392,13 @@
             />
           </div>
         </div>
-        <Button onclick={() => (selectHidden = !selectHidden)} size="small" variant="ghost" color="secondary">
-          <Icon path={mdiEyeOutline} />
-          <Text>{$t('show_and_hide_people')}</Text>
-        </Button>
+        <Button
+          leadingIcon={mdiEyeOutline}
+          onclick={() => (selectHidden = !selectHidden)}
+          size="small"
+          variant="ghost"
+          color="secondary">{$t('show_and_hide_people')}</Button
+        >
       </div>
     {/if}
   {/snippet}

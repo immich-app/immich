@@ -1,6 +1,5 @@
 <script lang="ts">
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import DuplicatesModal from '$lib/components/shared-components/duplicates-modal.svelte';
@@ -17,7 +16,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import type { AssetResponseDto } from '@immich/sdk';
   import { deleteAssets, updateAssets } from '@immich/sdk';
-  import { Button, HStack, IconButton } from '@immich/ui';
+  import { Button, HStack, IconButton, Text } from '@immich/ui';
   import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -164,18 +163,24 @@
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
+        leadingIcon={mdiTrashCanOutline}
         onclick={() => handleDeduplicateAll()}
         disabled={!hasDuplicates}
         size="small"
         variant="ghost"
         color="secondary"
       >
-        <Icon path={mdiTrashCanOutline} />
-        {$t('deduplicate_all')}
+        <Text class="hidden md:block">{$t('deduplicate_all')}</Text>
       </Button>
-      <Button onclick={() => handleKeepAll()} disabled={!hasDuplicates} size="small" variant="ghost" color="secondary">
-        <Icon path={mdiCheckOutline} />
-        {$t('keep_all')}
+      <Button
+        leadingIcon={mdiCheckOutline}
+        onclick={() => handleKeepAll()}
+        disabled={!hasDuplicates}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('keep_all')}</Text>
       </Button>
       <IconButton
         shape="round"
