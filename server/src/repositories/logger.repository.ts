@@ -1,10 +1,10 @@
-import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
 import { Telemetry } from 'src/decorators';
 import { LogLevel } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
@@ -25,7 +25,7 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
 
   constructor(
     private cls: ClsService,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
+    configRepository: ConfigRepository,
   ) {
     super(LoggerRepository.name);
 

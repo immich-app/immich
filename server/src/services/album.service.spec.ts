@@ -135,14 +135,17 @@ describe(AlbumService.name, () => {
         assetIds: ['123'],
       });
 
-      expect(albumMock.create).toHaveBeenCalledWith({
-        ownerId: authStub.admin.user.id,
-        albumName: albumStub.empty.albumName,
-        description: albumStub.empty.description,
-        albumUsers: [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
-        assets: [{ id: '123' }],
-        albumThumbnailAssetId: '123',
-      });
+      expect(albumMock.create).toHaveBeenCalledWith(
+        {
+          ownerId: authStub.admin.user.id,
+          albumName: albumStub.empty.albumName,
+          description: albumStub.empty.description,
+
+          albumThumbnailAssetId: '123',
+        },
+        ['123'],
+        [{ userId: 'user-id', role: AlbumUserRole.EDITOR }],
+      );
 
       expect(userMock.get).toHaveBeenCalledWith('user-id', {});
       expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['123']));
@@ -175,14 +178,17 @@ describe(AlbumService.name, () => {
         assetIds: ['asset-1', 'asset-2'],
       });
 
-      expect(albumMock.create).toHaveBeenCalledWith({
-        ownerId: authStub.admin.user.id,
-        albumName: 'Test album',
-        description: '',
-        albumUsers: [],
-        assets: [{ id: 'asset-1' }],
-        albumThumbnailAssetId: 'asset-1',
-      });
+      expect(albumMock.create).toHaveBeenCalledWith(
+        {
+          ownerId: authStub.admin.user.id,
+          albumName: 'Test album',
+          description: '',
+
+          albumThumbnailAssetId: 'asset-1',
+        },
+        ['asset-1'],
+        [],
+      );
       expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledWith(
         authStub.admin.user.id,
         new Set(['asset-1', 'asset-2']),
@@ -192,7 +198,7 @@ describe(AlbumService.name, () => {
 
   describe('update', () => {
     it('should prevent updating an album that does not exist', async () => {
-      albumMock.getById.mockResolvedValue(null);
+      albumMock.getById.mockResolvedValue(void 0);
 
       await expect(
         sut.update(authStub.user1, 'invalid-id', {
@@ -238,7 +244,7 @@ describe(AlbumService.name, () => {
       });
 
       expect(albumMock.update).toHaveBeenCalledTimes(1);
-      expect(albumMock.update).toHaveBeenCalledWith({
+      expect(albumMock.update).toHaveBeenCalledWith('album-4', {
         id: 'album-4',
         albumName: 'new album name',
       });
@@ -344,7 +350,7 @@ describe(AlbumService.name, () => {
   describe('removeUser', () => {
     it('should require a valid album id', async () => {
       accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
-      albumMock.getById.mockResolvedValue(null);
+      albumMock.getById.mockResolvedValue(void 0);
       await expect(sut.removeUser(authStub.admin, 'album-1', 'user-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(albumMock.update).not.toHaveBeenCalled();
     });
@@ -529,7 +535,7 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-3' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
+      expect(albumMock.update).toHaveBeenCalledWith('album-123', {
         id: 'album-123',
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
@@ -547,7 +553,7 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-1' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
+      expect(albumMock.update).toHaveBeenCalledWith('album-123', {
         id: 'album-123',
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-id',
@@ -569,7 +575,7 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-3' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
+      expect(albumMock.update).toHaveBeenCalledWith('album-123', {
         id: 'album-123',
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
@@ -606,7 +612,7 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-3' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
+      expect(albumMock.update).toHaveBeenCalledWith('album-123', {
         id: 'album-123',
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
@@ -629,7 +635,7 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-1' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
+      expect(albumMock.update).toHaveBeenCalledWith('album-123', {
         id: 'album-123',
         updatedAt: expect.any(Date),
         albumThumbnailAssetId: 'asset-1',
@@ -696,7 +702,6 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
       expect(albumMock.removeAssetIds).toHaveBeenCalledWith('album-123', ['asset-id']);
     });
 
@@ -720,8 +725,6 @@ describe(AlbumService.name, () => {
       await expect(sut.removeAssets(authStub.admin, 'album-123', { ids: ['asset-id'] })).resolves.toEqual([
         { success: true, id: 'asset-id' },
       ]);
-
-      expect(albumMock.update).toHaveBeenCalledWith({ id: 'album-123', updatedAt: expect.any(Date) });
     });
 
     it('should reset the thumbnail if it is removed', async () => {
@@ -734,10 +737,6 @@ describe(AlbumService.name, () => {
         { success: true, id: 'asset-id' },
       ]);
 
-      expect(albumMock.update).toHaveBeenCalledWith({
-        id: 'album-123',
-        updatedAt: expect.any(Date),
-      });
       expect(albumMock.updateThumbnails).toHaveBeenCalled();
     });
   });

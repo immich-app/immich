@@ -14,6 +14,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     final List<AssetPathEntity> assetPathEntities =
         await PhotoManager.getAssetPathList(
       hasAll: true,
+      filterOption: FilterOptionGroup(containsPathModified: true),
     );
     return assetPathEntities.map(_toAlbum).toList();
   }

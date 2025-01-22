@@ -76,7 +76,7 @@ where
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
 order by
-  smart_search.embedding <= > $6::vector
+  smart_search.embedding <= > $6
 limit
   $7
 offset
@@ -88,7 +88,7 @@ with
     select
       "assets"."id" as "assetId",
       "assets"."duplicateId",
-      smart_search.embedding <= > $1::vector as "distance"
+      smart_search.embedding <= > $1 as "distance"
     from
       "assets"
       inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
@@ -99,7 +99,7 @@ with
       and "assets"."type" = $4
       and "assets"."id" != $5::uuid
     order by
-      smart_search.embedding <= > $6::vector
+      smart_search.embedding <= > $6
     limit
       $7
   )
@@ -116,7 +116,7 @@ with
     select
       "asset_faces"."id",
       "asset_faces"."personId",
-      face_search.embedding <= > $1::vector as "distance"
+      face_search.embedding <= > $1 as "distance"
     from
       "asset_faces"
       inner join "assets" on "assets"."id" = "asset_faces"."assetId"
@@ -125,7 +125,7 @@ with
       "assets"."ownerId" = any ($2::uuid [])
       and "assets"."deletedAt" is null
     order by
-      face_search.embedding <= > $3::vector
+      face_search.embedding <= > $3
     limit
       $4
   )

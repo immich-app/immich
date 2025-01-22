@@ -1,10 +1,6 @@
-import { IAccessRepository } from 'src/interfaces/access.interface';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
@@ -35,7 +31,6 @@ import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
-import { IViewRepository } from 'src/interfaces/view.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -78,22 +73,23 @@ import { ViewRepository } from 'src/repositories/view-repository';
 
 export const repositories = [
   //
+  AccessRepository,
   ActivityRepository,
+  AuditRepository,
+  ApiKeyRepository,
+  ConfigRepository,
+  ViewRepository,
 ];
 
 export const providers = [
-  { provide: IAccessRepository, useClass: AccessRepository },
   { provide: IAlbumRepository, useClass: AlbumRepository },
   { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
-  { provide: IAuditRepository, useClass: AuditRepository },
-  { provide: IConfigRepository, useClass: ConfigRepository },
   { provide: ICronRepository, useClass: CronRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDatabaseRepository, useClass: DatabaseRepository },
   { provide: IEventRepository, useClass: EventRepository },
   { provide: IJobRepository, useClass: JobRepository },
-  { provide: IKeyRepository, useClass: ApiKeyRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: ILoggerRepository, useClass: LoggerRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
@@ -119,5 +115,4 @@ export const providers = [
   { provide: ITrashRepository, useClass: TrashRepository },
   { provide: IUserRepository, useClass: UserRepository },
   { provide: IVersionHistoryRepository, useClass: VersionHistoryRepository },
-  { provide: IViewRepository, useClass: ViewRepository },
 ];

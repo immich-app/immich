@@ -80,7 +80,7 @@ class FaceDetectionOutput(TypedDict):
 
 class DetectedFace(TypedDict):
     boundingBox: BoundingBox
-    embedding: npt.NDArray[np.float32]
+    embedding: str
     score: float
 
 

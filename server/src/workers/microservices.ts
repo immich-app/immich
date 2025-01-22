@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { isMainThread } from 'node:worker_threads';
 import { MicroservicesModule } from 'src/app.module';
 import { serverVersion } from 'src/constants';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -23,7 +22,7 @@ export async function bootstrap() {
 
   await app.listen(0);
 
-  const configRepository = app.get<IConfigRepository>(IConfigRepository);
+  const configRepository = app.get(ConfigRepository);
   const { environment } = configRepository.getEnv();
   logger.log(`Immich Microservices is running [v${serverVersion}] [${environment}] `);
 }
