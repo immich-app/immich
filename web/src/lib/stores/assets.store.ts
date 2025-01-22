@@ -15,12 +15,6 @@ import { websocketEvents } from './websocket';
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
 
-const LAYOUT_OPTIONS = {
-  spacing: 2,
-  heightTolerance: 0.15,
-  rowHeight: 235,
-};
-
 export interface Viewport {
   width: number;
   height: number;
@@ -477,7 +471,12 @@ export class AssetStore {
       bucket.bucketHeight = height;
     }
 
-    const layoutOptions = { ...LAYOUT_OPTIONS, rowWidth: Math.floor(viewPortWidth) };
+    const layoutOptions = {
+      spacing: 2,
+      heightTolerance: 0.15,
+      rowHeight: 235,
+      rowWidth: Math.floor(viewPortWidth),
+    };
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
