@@ -97,6 +97,7 @@
   {#each dateGroups as dateGroup, groupIndex (dateGroup.date)}
     {@const display =
       dateGroup.intersecting || !!dateGroup.assets.some((asset) => asset.id === $assetStore.pendingScrollAssetId)}
+    {@const geometry = dateGroup.geometry}
 
     <div
       id="date-group"
@@ -118,7 +119,7 @@
       data-display={display}
       data-date-group={dateGroup.date}
       style:height={dateGroup.height + 'px'}
-      style:width={dateGroup.geometry.containerWidth + 'px'}
+      style:width={geometry.containerWidth + 'px'}
       style:overflow={'clip'}
     >
       {#if !display}
@@ -149,7 +150,7 @@
           <!-- Date group title -->
           <div
             class="flex z-[100] sticky top-[-1px] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-            style:width={dateGroup.geometry.containerWidth + 'px'}
+            style:width={geometry.containerWidth + 'px'}
           >
             {#if !singleSelect && ((hoveredDateGroup == dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
               <div
@@ -174,8 +175,8 @@
           <!-- Image grid -->
           <div
             class="relative overflow-clip"
-            style:height={dateGroup.geometry.containerHeight + 'px'}
-            style:width={dateGroup.geometry.containerWidth + 'px'}
+            style:height={geometry.containerHeight + 'px'}
+            style:width={geometry.containerWidth + 'px'}
           >
             {#each dateGroup.assets as asset, i (asset.id)}
               {@const isSmallGroup = dateGroup.assets.length <= SMALL_GROUP_THRESHOLD}
@@ -190,10 +191,10 @@
                 }}
                 data-asset-id={asset.id}
                 class="absolute"
-                style:width={dateGroup.geometry.getWidth(i) + 'px'}
-                style:height={dateGroup.geometry.getHeight(i) + 'px'}
-                style:top={dateGroup.geometry.getTop(i) + 'px'}
-                style:left={dateGroup.geometry.getLeft(i) + 'px'}
+                style:width={geometry.getWidth(i) + 'px'}
+                style:height={geometry.getHeight(i) + 'px'}
+                style:top={geometry.getTop(i) + 'px'}
+                style:left={geometry.getLeft(i) + 'px'}
               >
                 <Thumbnail
                   {dateGroup}
@@ -215,8 +216,8 @@
                   selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}
-                  thumbnailWidth={dateGroup.geometry.getWidth(i)}
-                  thumbnailHeight={dateGroup.geometry.getHeight(i)}
+                  thumbnailWidth={geometry.getWidth(i)}
+                  thumbnailHeight={geometry.getHeight(i)}
                   eagerThumbhash={isSmallGroup}
                 />
               </div>
