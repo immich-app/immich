@@ -25,7 +25,7 @@ class DeprecatedApi {
   /// * [num] count:
   Future<Response> getRandomWithHttpInfo({ num? count, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/assets/random';
+    final apiPath = r'/assets/random';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -42,7 +42,7 @@ class DeprecatedApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,

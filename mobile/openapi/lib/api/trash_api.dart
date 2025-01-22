@@ -19,7 +19,7 @@ class TrashApi {
   /// Performs an HTTP 'POST /trash/empty' operation and returns the [Response].
   Future<Response> emptyTrashWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/trash/empty';
+    final apiPath = r'/trash/empty';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class TrashApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -63,7 +63,7 @@ class TrashApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> restoreAssetsWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/trash/restore/assets';
+    final apiPath = r'/trash/restore/assets';
 
     // ignore: prefer_final_locals
     Object? postBody = bulkIdsDto;
@@ -76,7 +76,7 @@ class TrashApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -107,7 +107,7 @@ class TrashApi {
   /// Performs an HTTP 'POST /trash/restore' operation and returns the [Response].
   Future<Response> restoreTrashWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/trash/restore';
+    final apiPath = r'/trash/restore';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -120,7 +120,7 @@ class TrashApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

@@ -22,7 +22,7 @@ class UsersAdminApi {
   /// * [UserAdminCreateDto] userAdminCreateDto (required):
   Future<Response> createUserAdminWithHttpInfo(UserAdminCreateDto userAdminCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users';
+    final apiPath = r'/admin/users';
 
     // ignore: prefer_final_locals
     Object? postBody = userAdminCreateDto;
@@ -35,7 +35,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -71,7 +71,7 @@ class UsersAdminApi {
   /// * [UserAdminDeleteDto] userAdminDeleteDto (required):
   Future<Response> deleteUserAdminWithHttpInfo(String id, UserAdminDeleteDto userAdminDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users/{id}'
+    final apiPath = r'/admin/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -85,7 +85,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -121,7 +121,7 @@ class UsersAdminApi {
   /// * [String] id (required):
   Future<Response> getUserAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users/{id}'
+    final apiPath = r'/admin/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -135,7 +135,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -169,7 +169,7 @@ class UsersAdminApi {
   /// * [String] id (required):
   Future<Response> getUserPreferencesAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users/{id}/preferences'
+    final apiPath = r'/admin/users/{id}/preferences'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -183,7 +183,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -217,7 +217,7 @@ class UsersAdminApi {
   /// * [String] id (required):
   Future<Response> restoreUserAdminWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users/{id}/restore'
+    final apiPath = r'/admin/users/{id}/restore'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -231,7 +231,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -265,7 +265,7 @@ class UsersAdminApi {
   /// * [bool] withDeleted:
   Future<Response> searchUsersAdminWithHttpInfo({ bool? withDeleted, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users';
+    final apiPath = r'/admin/users';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -282,7 +282,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -321,7 +321,7 @@ class UsersAdminApi {
   /// * [UserAdminUpdateDto] userAdminUpdateDto (required):
   Future<Response> updateUserAdminWithHttpInfo(String id, UserAdminUpdateDto userAdminUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users/{id}'
+    final apiPath = r'/admin/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -335,7 +335,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -373,7 +373,7 @@ class UsersAdminApi {
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
   Future<Response> updateUserPreferencesAdminWithHttpInfo(String id, UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/admin/users/{id}/preferences'
+    final apiPath = r'/admin/users/{id}/preferences'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -387,7 +387,7 @@ class UsersAdminApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

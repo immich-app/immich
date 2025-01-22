@@ -22,7 +22,7 @@ class PartnersApi {
   /// * [String] id (required):
   Future<Response> createPartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partners/{id}'
+    final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -36,7 +36,7 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -70,7 +70,7 @@ class PartnersApi {
   /// * [PartnerDirection] direction (required):
   Future<Response> getPartnersWithHttpInfo(PartnerDirection direction,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partners';
+    final apiPath = r'/partners';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -85,7 +85,7 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -122,7 +122,7 @@ class PartnersApi {
   /// * [String] id (required):
   Future<Response> removePartnerWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partners/{id}'
+    final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -136,7 +136,7 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -164,7 +164,7 @@ class PartnersApi {
   /// * [UpdatePartnerDto] updatePartnerDto (required):
   Future<Response> updatePartnerWithHttpInfo(String id, UpdatePartnerDto updatePartnerDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/partners/{id}'
+    final apiPath = r'/partners/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -178,7 +178,7 @@ class PartnersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

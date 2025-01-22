@@ -26,7 +26,7 @@ class SharedLinksApi {
   /// * [String] key:
   Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links/{id}/assets'
+    final apiPath = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -44,7 +44,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -85,7 +85,7 @@ class SharedLinksApi {
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
   Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links';
+    final apiPath = r'/shared-links';
 
     // ignore: prefer_final_locals
     Object? postBody = sharedLinkCreateDto;
@@ -98,7 +98,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -129,7 +129,7 @@ class SharedLinksApi {
   /// Performs an HTTP 'GET /shared-links' operation and returns the [Response].
   Future<Response> getAllSharedLinksWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links';
+    final apiPath = r'/shared-links';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -142,7 +142,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -180,7 +180,7 @@ class SharedLinksApi {
   /// * [String] token:
   Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? password, String? token, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links/me';
+    final apiPath = r'/shared-links/me';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -203,7 +203,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -241,7 +241,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links/{id}'
+    final apiPath = r'/shared-links/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -255,7 +255,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -289,7 +289,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   Future<Response> removeSharedLinkWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links/{id}'
+    final apiPath = r'/shared-links/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -303,7 +303,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -333,7 +333,7 @@ class SharedLinksApi {
   /// * [String] key:
   Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links/{id}/assets'
+    final apiPath = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -351,7 +351,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -394,7 +394,7 @@ class SharedLinksApi {
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
   Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/shared-links/{id}'
+    final apiPath = r'/shared-links/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -408,7 +408,7 @@ class SharedLinksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PATCH',
       queryParams,
       postBody,

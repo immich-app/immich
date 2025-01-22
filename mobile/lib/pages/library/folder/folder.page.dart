@@ -3,13 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
+import 'package:immich_mobile/providers/folder.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
-import 'package:immich_mobile/providers/folder.provider.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 @RoutePage()
 class FolderPage extends HookConsumerWidget {
@@ -20,6 +19,15 @@ class FolderPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final folderState = ref.watch(folderStructureProvider);
+    useEffect(
+      () {
+        if (folder == null) {
+          ref.read(folderStructureProvider.notifier).fetchFolders();
+        }
+        return null;
+      },
+      [],
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -51,9 +59,8 @@ class FolderPage extends HookConsumerWidget {
 
 class FolderContent extends HookConsumerWidget {
   final RootFolder? folder;
-  final List<Asset>? assets;
 
-  const FolderContent({super.key, this.folder, this.assets});
+  const FolderContent({super.key, this.folder});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,6 +69,10 @@ class FolderContent extends HookConsumerWidget {
     }
 
     final folderAssetsState = ref.watch(folderAssetsProvider(folder!));
+    useEffect(() {
+      ref.read(folderAssetsProvider(folder!).notifier).fetchAssets();
+      return null;
+    }, [folder]);
 
     return folderAssetsState.when(
       data: (assets) {

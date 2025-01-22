@@ -82,9 +82,9 @@ class FolderService {
   Future<List<Asset>> getFolderAssets(RootFolder folder) async {
     try {
       if (folder is RecursiveFolder) {
-        final fullPath = folder.path.isEmpty
-            ? '/${folder.name}'
-            : '${folder.path}/${folder.name}';
+        String fullPath =
+            folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
+        fullPath = fullPath[0] == '/' ? fullPath.substring(1) : fullPath;
         final result = await _folderApiRepository.getAssetsForPath(fullPath);
         print("Assets for folder $fullPath: $result");
         return result;

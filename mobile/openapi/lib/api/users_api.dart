@@ -22,7 +22,7 @@ class UsersApi {
   /// * [MultipartFile] file (required):
   Future<Response> createProfileImageWithHttpInfo(MultipartFile file,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/profile-image';
+    final apiPath = r'/users/profile-image';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -34,7 +34,7 @@ class UsersApi {
     const contentTypes = <String>['multipart/form-data'];
 
     bool hasFields = false;
-    final mp = MultipartRequest('POST', Uri.parse(path));
+    final mp = MultipartRequest('POST', Uri.parse(apiPath));
     if (file != null) {
       hasFields = true;
       mp.fields[r'file'] = file.field;
@@ -45,7 +45,7 @@ class UsersApi {
     }
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -76,7 +76,7 @@ class UsersApi {
   /// Performs an HTTP 'DELETE /users/profile-image' operation and returns the [Response].
   Future<Response> deleteProfileImageWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/users/profile-image';
+    final apiPath = r'/users/profile-image';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -89,7 +89,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -109,7 +109,7 @@ class UsersApi {
   /// Performs an HTTP 'DELETE /users/me/license' operation and returns the [Response].
   Future<Response> deleteUserLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me/license';
+    final apiPath = r'/users/me/license';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -122,7 +122,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -142,7 +142,7 @@ class UsersApi {
   /// Performs an HTTP 'GET /users/me/preferences' operation and returns the [Response].
   Future<Response> getMyPreferencesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me/preferences';
+    final apiPath = r'/users/me/preferences';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -155,7 +155,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -183,7 +183,7 @@ class UsersApi {
   /// Performs an HTTP 'GET /users/me' operation and returns the [Response].
   Future<Response> getMyUserWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me';
+    final apiPath = r'/users/me';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -196,7 +196,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -227,7 +227,7 @@ class UsersApi {
   /// * [String] id (required):
   Future<Response> getProfileImageWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/{id}/profile-image'
+    final apiPath = r'/users/{id}/profile-image'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -241,7 +241,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -275,7 +275,7 @@ class UsersApi {
   /// * [String] id (required):
   Future<Response> getUserWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/{id}'
+    final apiPath = r'/users/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -289,7 +289,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -320,7 +320,7 @@ class UsersApi {
   /// Performs an HTTP 'GET /users/me/license' operation and returns the [Response].
   Future<Response> getUserLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me/license';
+    final apiPath = r'/users/me/license';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -333,7 +333,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -361,7 +361,7 @@ class UsersApi {
   /// Performs an HTTP 'GET /users' operation and returns the [Response].
   Future<Response> searchUsersWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/users';
+    final apiPath = r'/users';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -374,7 +374,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -408,7 +408,7 @@ class UsersApi {
   /// * [LicenseKeyDto] licenseKeyDto (required):
   Future<Response> setUserLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me/license';
+    final apiPath = r'/users/me/license';
 
     // ignore: prefer_final_locals
     Object? postBody = licenseKeyDto;
@@ -421,7 +421,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -455,7 +455,7 @@ class UsersApi {
   /// * [UserPreferencesUpdateDto] userPreferencesUpdateDto (required):
   Future<Response> updateMyPreferencesWithHttpInfo(UserPreferencesUpdateDto userPreferencesUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me/preferences';
+    final apiPath = r'/users/me/preferences';
 
     // ignore: prefer_final_locals
     Object? postBody = userPreferencesUpdateDto;
@@ -468,7 +468,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -502,7 +502,7 @@ class UsersApi {
   /// * [UserUpdateMeDto] userUpdateMeDto (required):
   Future<Response> updateMyUserWithHttpInfo(UserUpdateMeDto userUpdateMeDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/users/me';
+    final apiPath = r'/users/me';
 
     // ignore: prefer_final_locals
     Object? postBody = userUpdateMeDto;
@@ -515,7 +515,7 @@ class UsersApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

@@ -22,7 +22,7 @@ class FileReportsApi {
   /// * [FileReportFixDto] fileReportFixDto (required):
   Future<Response> fixAuditFilesWithHttpInfo(FileReportFixDto fileReportFixDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/reports/fix';
+    final apiPath = r'/reports/fix';
 
     // ignore: prefer_final_locals
     Object? postBody = fileReportFixDto;
@@ -35,7 +35,7 @@ class FileReportsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -58,7 +58,7 @@ class FileReportsApi {
   /// Performs an HTTP 'GET /reports' operation and returns the [Response].
   Future<Response> getAuditFilesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/reports';
+    final apiPath = r'/reports';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -71,7 +71,7 @@ class FileReportsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -102,7 +102,7 @@ class FileReportsApi {
   /// * [FileChecksumDto] fileChecksumDto (required):
   Future<Response> getFileChecksumsWithHttpInfo(FileChecksumDto fileChecksumDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/reports/checksum';
+    final apiPath = r'/reports/checksum';
 
     // ignore: prefer_final_locals
     Object? postBody = fileChecksumDto;
@@ -115,7 +115,7 @@ class FileReportsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

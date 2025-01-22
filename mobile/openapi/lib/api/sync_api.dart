@@ -22,7 +22,7 @@ class SyncApi {
   /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
   Future<Response> getDeltaSyncWithHttpInfo(AssetDeltaSyncDto assetDeltaSyncDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/delta-sync';
+    final apiPath = r'/sync/delta-sync';
 
     // ignore: prefer_final_locals
     Object? postBody = assetDeltaSyncDto;
@@ -35,7 +35,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class SyncApi {
   /// * [AssetFullSyncDto] assetFullSyncDto (required):
   Future<Response> getFullSyncForUserWithHttpInfo(AssetFullSyncDto assetFullSyncDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/full-sync';
+    final apiPath = r'/sync/full-sync';
 
     // ignore: prefer_final_locals
     Object? postBody = assetFullSyncDto;
@@ -82,7 +82,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

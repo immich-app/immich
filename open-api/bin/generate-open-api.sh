@@ -9,7 +9,11 @@ function dart {
   wget -O native_class.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/serialization/native/native_class.mustache
   patch --no-backup-if-mismatch -u native_class.mustache <native_class.mustache.patch
 
-  cd ../../../../
+  cd ../../
+  wget -O api.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/api.mustache
+  patch --no-backup-if-mismatch -u api.mustache <api.mustache.patch
+
+  cd ../../
   npx --yes @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./templates/mobile
 
   # Post generate patches

@@ -22,7 +22,7 @@ class ViewApi {
   /// * [String] path (required):
   Future<Response> getAssetsByOriginalPathWithHttpInfo(String path,) async {
     // ignore: prefer_const_declarations
-    final path = r'/view/folder';
+    final apiPath = r'/view/folder';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -37,7 +37,7 @@ class ViewApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -71,7 +71,7 @@ class ViewApi {
   /// Performs an HTTP 'GET /view/folder/unique-paths' operation and returns the [Response].
   Future<Response> getUniqueOriginalPathsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/view/folder/unique-paths';
+    final apiPath = r'/view/folder/unique-paths';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -84,7 +84,7 @@ class ViewApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
