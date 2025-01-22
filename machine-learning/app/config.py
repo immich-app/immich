@@ -25,30 +25,18 @@ class FacialRecognitionSettings(BaseModel):
 
 
 class PreloadModelData(BaseModel):
+    clip_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
+    facial_recognition_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
+    if clip_fallback is not None:
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = clip_fallback
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = clip_fallback
+        del os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
+    if facial_recognition_fallback is not None:
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = facial_recognition_fallback
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = facial_recognition_fallback
+        del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
     clip: ClipSettings = ClipSettings()
     facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
-
-    clip_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
-    facial_recognition_model_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
-
-    def update_from_fallbacks(self) -> None:
-        if self.clip_model_fallback:
-            self.clip.textual = self.clip_model_fallback
-            self.clip.visual = self.clip_model_fallback
-            log.warning(
-                "Deprecated env variable: MACHINE_LEARNING_PRELOAD__CLIP. "
-                "Use MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL and "
-                "MACHINE_LEARNING_PRELOAD__CLIP__VISUAL instead."
-            )
-
-        if self.facial_recognition_model_fallback:
-            self.facial_recognition.recognition = self.facial_recognition_model_fallback
-            self.facial_recognition.detection = self.facial_recognition_model_fallback
-            log.warning(
-                "Deprecated environment variable: MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION. "
-                "Use MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION and "
-                "MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION instead."
-            )
 
 
 class MaxBatchSize(BaseModel):

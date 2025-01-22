@@ -201,20 +201,21 @@ export class AuditService extends BaseService {
       }
     }
 
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.personRepository.getAll(pagination),
-    );
-    for await (const people of personPagination) {
-      for (const { id, thumbnailPath } of people) {
-        track(thumbnailPath);
-        const entity = { entityId: id, entityType: PathEntityType.PERSON };
-        if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
-          orphans.push({ ...entity, pathType: PersonPathType.FACE, pathValue: thumbnailPath });
-        }
+    let peopleCount = 0;
+    for await (const { id, thumbnailPath } of this.personRepository.getAll()) {
+      track(thumbnailPath);
+      const entity = { entityId: id, entityType: PathEntityType.PERSON };
+      if (thumbnailPath && !hasFile(thumbFiles, thumbnailPath)) {
+        orphans.push({ ...entity, pathType: PersonPathType.FACE, pathValue: thumbnailPath });
       }
 
-      this.logger.log(`Found ${assetCount} assets, ${users.length} users, ${people.length} people`);
+      if (peopleCount === JOBS_ASSET_PAGINATION_SIZE) {
+        this.logger.log(`Found ${assetCount} assets, ${users.length} users, ${peopleCount} people`);
+        peopleCount = 0;
+      }
     }
+
+    this.logger.log(`Found ${assetCount} assets, ${users.length} users, ${peopleCount} people`);
 
     const extras: string[] = [];
     for (const file of allFiles) {

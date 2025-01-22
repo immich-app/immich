@@ -75,31 +75,47 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
 
 
 async def preload_models(preload: PreloadModelData) -> None:
-    log.info(f"Preloading models: {preload}")
+    log.info(f"Preloading models: clip:{preload.clip} facial_recognition:{preload.facial_recognition}")
+
+    async def load_models(model_string: str, model_type: ModelType, model_task: ModelTask) -> None:
+        for model_name in model_string.split(","):
+            model_name = model_name.strip()
+            model = await model_cache.get(model_name, model_type, model_task)
+            await load(model)
 
     if preload.clip.textual is not None:
-        model = await model_cache.get(preload.clip.textual, ModelType.TEXTUAL, ModelTask.SEARCH)
-        await load(model)
+        await load_models(preload.clip.textual, ModelType.TEXTUAL, ModelTask.SEARCH)
 
     if preload.clip.visual is not None:
-        model = await model_cache.get(preload.clip.visual, ModelType.VISUAL, ModelTask.SEARCH)
-        await load(model)
+        await load_models(preload.clip.visual, ModelType.VISUAL, ModelTask.SEARCH)
 
     if preload.facial_recognition.detection is not None:
-        model = await model_cache.get(
+        await load_models(
             preload.facial_recognition.detection,
             ModelType.DETECTION,
             ModelTask.FACIAL_RECOGNITION,
         )
-        await load(model)
 
     if preload.facial_recognition.recognition is not None:
-        model = await model_cache.get(
+        await load_models(
             preload.facial_recognition.recognition,
             ModelType.RECOGNITION,
             ModelTask.FACIAL_RECOGNITION,
         )
-        await load(model)
+
+    if preload.clip_fallback is not None:
+        log.warning(
+            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__CLIP'. "
+            "Use 'MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL' and "
+            "'MACHINE_LEARNING_PRELOAD__CLIP__VISUAL' instead."
+        )
+
+    if preload.facial_recognition_fallback is not None:
+        log.warning(
+            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION'. "
+            "Use 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION' and "
+            "'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION' instead."
+        )
 
 
 def update_state() -> Iterator[None]:

@@ -1,19 +1,106 @@
+import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { QueueOptions } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
+import { RedisOptions } from 'ioredis';
+import { KyselyConfig } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
-import { CLS_ID } from 'nestjs-cls';
+import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
+import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { join, resolve } from 'node:path';
-import postgres from 'postgres';
+import postgres, { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
-import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker } from 'src/enum';
-import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
+import { DatabaseConnectionParams, DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { setDifference } from 'src/utils/set';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+
+export interface EnvData {
+  host?: string;
+  port: number;
+  environment: ImmichEnvironment;
+  configFile?: string;
+  logLevel?: LogLevel;
+
+  buildMetadata: {
+    build?: string;
+    buildUrl?: string;
+    buildImage?: string;
+    buildImageUrl?: string;
+    repository?: string;
+    repositoryUrl?: string;
+    sourceRef?: string;
+    sourceCommit?: string;
+    sourceUrl?: string;
+    thirdPartySourceUrl?: string;
+    thirdPartyBugFeatureUrl?: string;
+    thirdPartyDocumentationUrl?: string;
+    thirdPartySupportUrl?: string;
+  };
+
+  bull: {
+    config: QueueOptions;
+    queues: RegisterQueueOptions[];
+  };
+
+  cls: {
+    config: ClsModuleOptions;
+  };
+
+  database: {
+    config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: KyselyConfig };
+    skipMigrations: boolean;
+    vectorExtension: VectorExtension;
+  };
+
+  licensePublicKey: {
+    client: string;
+    server: string;
+  };
+
+  network: {
+    trustedProxies: string[];
+  };
+
+  otel: OpenTelemetryModuleOptions;
+
+  resourcePaths: {
+    lockFile: string;
+    geodata: {
+      dateFile: string;
+      admin1: string;
+      admin2: string;
+      cities500: string;
+      naturalEarthCountriesPath: string;
+    };
+    web: {
+      root: string;
+      indexHtml: string;
+    };
+  };
+
+  redis: RedisOptions;
+
+  telemetry: {
+    apiPort: number;
+    microservicesPort: number;
+    metrics: Set<ImmichTelemetry>;
+  };
+
+  storage: {
+    ignoreMountCheckErrors: boolean;
+  };
+
+  workers: ImmichWorker[];
+
+  noColor: boolean;
+  nodeVersion?: string;
+}
 
 const productionKeys = {
   client:
@@ -99,6 +186,11 @@ const getEnv = (): EnvData => {
   }
 
   const driverOptions = {
+    onnotice: (notice: Notice) => {
+      if (notice['severity'] !== 'NOTICE') {
+        console.warn('Postgres notice:', notice);
+      }
+    },
     max: 10,
     types: {
       date: {
@@ -194,7 +286,16 @@ const getEnv = (): EnvData => {
           dialect: new PostgresJSDialect({
             postgres: databaseUrl ? postgres(databaseUrl, driverOptions) : postgres({ ...parts, ...driverOptions }),
           }),
-          log: ['error'] as const,
+          log(event) {
+            if (event.level === 'error') {
+              console.error('Query failed :', {
+                durationMs: event.queryDurationMillis,
+                error: event.error,
+                sql: event.query.sql,
+                params: event.query.parameters,
+              });
+            }
+          },
         },
       },
 
@@ -255,10 +356,10 @@ let cached: EnvData | undefined;
 
 @Injectable()
 @Telemetry({ enabled: false })
-export class ConfigRepository implements IConfigRepository {
+export class ConfigRepository {
   constructor(@Inject(IWorker) @Optional() private worker?: ImmichWorker) {}
 
-  getEnv(): EnvData {
+  getEnv() {
     if (!cached) {
       cached = getEnv();
     }

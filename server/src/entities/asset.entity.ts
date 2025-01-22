@@ -248,7 +248,7 @@ export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
       .select('assetId')
       .where('personId', '=', anyUuid(personIds!))
       .groupBy('assetId')
-      .having((eb) => eb.fn.count('personId'), '>=', personIds.length),
+      .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length),
   );
 }
 

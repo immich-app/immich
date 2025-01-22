@@ -824,7 +824,7 @@ export const assetStub = {
     duplicateId: null,
     smartSearch: {
       assetId: 'asset-id',
-      embedding: Array.from({ length: 512 }, Math.random),
+      embedding: '[1, 2, 3, 4]',
     },
     isOffline: false,
   }),
@@ -866,7 +866,7 @@ export const assetStub = {
     duplicateId: 'duplicate-id',
     smartSearch: {
       assetId: 'asset-id',
-      embedding: Array.from({ length: 512 }, Math.random),
+      embedding: '[1, 2, 3, 4]',
     },
     isOffline: false,
   }),

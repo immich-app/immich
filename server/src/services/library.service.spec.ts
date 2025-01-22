@@ -5,7 +5,6 @@ import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetType, ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICronRepository } from 'src/interfaces/cron.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
@@ -19,6 +18,7 @@ import {
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { LibraryService } from 'src/services/library.service';
+import { IConfigRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { libraryStub } from 'test/fixtures/library.stub';
