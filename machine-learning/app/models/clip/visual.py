@@ -10,7 +10,15 @@ from PIL import Image
 
 from app.config import log
 from app.models.base import InferenceModel
-from app.models.transforms import crop_pil, decode_pil, get_pil_resampling, normalize, resize_pil, to_numpy
+from app.models.transforms import (
+    crop_pil,
+    decode_pil,
+    get_pil_resampling,
+    normalize,
+    resize_pil,
+    serialize_np_array,
+    to_numpy,
+)
 from app.schemas import ModelSession, ModelTask, ModelType
 
 
@@ -18,10 +26,10 @@ class BaseCLIPVisualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.VISUAL, ModelTask.SEARCH)
 
-    def _predict(self, inputs: Image.Image | bytes, **kwargs: Any) -> NDArray[np.float32]:
+    def _predict(self, inputs: Image.Image | bytes, **kwargs: Any) -> str:
         image = decode_pil(inputs)
         res: NDArray[np.float32] = self.session.run(None, self.transform(image))[0][0]
-        return res
+        return serialize_np_array(res)
 
     @abstractmethod
     def transform(self, image: Image.Image) -> dict[str, NDArray[np.float32]]:

@@ -523,11 +523,11 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: Partial<AssetFaceEntity>[] = [];
+    const facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: Partial<PersonEntity>[] = [];
-    const missingWithFaceAsset: Partial<PersonEntity>[] = [];
+    const missing: (Partial<PersonEntity> & { ownerId: string })[] = [];
+    const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
     for (const region of tags.RegionInfo.RegionList) {
       if (!region.Name) {
         continue;
@@ -554,7 +554,7 @@ export class MetadataService extends BaseService {
       facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
         missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
-        missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
+        missingWithFaceAsset.push({ id: personId, ownerId: asset.ownerId, faceAssetId: face.id });
       }
     }
 
@@ -571,7 +571,7 @@ export class MetadataService extends BaseService {
     }
 
     if (facesToAdd.length > 0) {
-      this.logger.debug(`Creating ${facesToAdd} faces from metadata for asset ${asset.id}`);
+      this.logger.debug(`Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}`);
     }
 
     if (facesToRemove.length > 0 || facesToAdd.length > 0) {

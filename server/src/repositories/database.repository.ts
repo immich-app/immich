@@ -6,7 +6,6 @@ import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   DatabaseLock,
@@ -18,6 +17,7 @@ import {
   VectorUpdateResult,
 } from 'src/interfaces/database.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { UPSERT_COLUMNS } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, EntityMetadata, QueryRunner } from 'typeorm';
@@ -31,7 +31,7 @@ export class DatabaseRepository implements IDatabaseRepository {
     @InjectKysely() private db: Kysely<DB>,
     @InjectDataSource() private dataSource: DataSource,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
+    configRepository: ConfigRepository,
   ) {
     this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(DatabaseRepository.name);

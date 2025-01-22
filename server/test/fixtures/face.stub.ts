@@ -19,7 +19,7 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId1', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId1', embedding: '[1, 2, 3, 4]' },
   }),
   primaryFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId2',
@@ -34,7 +34,7 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId2', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId2', embedding: '[1, 2, 3, 4]' },
   }),
   mergeFace1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId3',
@@ -49,7 +49,7 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId3', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId3', embedding: '[1, 2, 3, 4]' },
   }),
   start: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId5',
@@ -64,7 +64,7 @@ export const faceStub = {
     imageHeight: 2880,
     imageWidth: 2160,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId5', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId5', embedding: '[1, 2, 3, 4]' },
   }),
   middle: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId6',
@@ -79,7 +79,7 @@ export const faceStub = {
     imageHeight: 500,
     imageWidth: 400,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId6', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId6', embedding: '[1, 2, 3, 4]' },
   }),
   end: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId7',
@@ -94,7 +94,7 @@ export const faceStub = {
     imageHeight: 500,
     imageWidth: 500,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId7', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId7', embedding: '[1, 2, 3, 4]' },
   }),
   noPerson1: Object.freeze<AssetFaceEntity>({
     id: 'assetFaceId8',
@@ -109,7 +109,7 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId8', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId8', embedding: '[1, 2, 3, 4]' },
   }),
   noPerson2: Object.freeze<AssetFaceEntity>({
     id: 'assetFaceId9',
@@ -124,7 +124,7 @@ export const faceStub = {
     imageHeight: 1024,
     imageWidth: 1024,
     sourceType: SourceType.MACHINE_LEARNING,
-    faceSearch: { faceId: 'assetFaceId9', embedding: [1, 2, 3, 4] },
+    faceSearch: { faceId: 'assetFaceId9', embedding: '[1, 2, 3, 4]' },
   }),
   fromExif1: Object.freeze<AssetFaceEntity>({
     id: 'assetFaceId9',

@@ -19,7 +19,7 @@ import {
   withLibrary,
   withOwner,
   withSmartSearch,
-  withStack,
+  withTagId,
   withTags,
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
@@ -129,13 +129,13 @@ export class AssetRepository implements IAssetRepository {
                   ),
                 )
                 .where('assets.deletedAt', 'is', null)
-                .limit(10)
+                .limit(20)
                 .as('a'),
             (join) => join.onTrue(),
           )
           .innerJoin('exif', 'a.id', 'exif.assetId')
           .selectAll('a')
-          .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo')),
+          .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo')),
       )
       .selectFrom('res')
       .select(
@@ -143,7 +143,7 @@ export class AssetRepository implements IAssetRepository {
           'yearsAgo',
         ),
       )
-      .select((eb) => eb.fn('jsonb_agg', [eb.table('res')]).as('assets'))
+      .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
       .limit(10)
@@ -166,7 +166,29 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
       .$if(!!smartSearch, withSmartSearch)
-      .$if(!!stack, (qb) => withStack(qb, { assets: !!stack!.assets, count: false }))
+      .$if(!!stack, (qb) =>
+        qb
+          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+          .$if(!stack!.assets, (qb) => qb.select((eb) => eb.fn.toJson(eb.table('asset_stack')).as('stack')))
+          .$if(!!stack!.assets, (qb) =>
+            qb
+              .leftJoinLateral(
+                (eb) =>
+                  eb
+                    .selectFrom('assets as stacked')
+                    .selectAll('asset_stack')
+                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+                    .whereRef('stacked.stackId', '=', 'asset_stack.id')
+                    .whereRef('stacked.id', '!=', 'asset_stack.primaryAssetId')
+                    .where('stacked.deletedAt', 'is', null)
+                    .where('stacked.isArchived', '=', false)
+                    .groupBy('asset_stack.id')
+                    .as('stacked_assets'),
+                (join) => join.on('asset_stack.id', 'is not', null),
+              )
+              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
+          ),
+      )
       .$if(!!tags, (qb) => qb.select(withTags))
       .execute();
 
@@ -182,7 +204,22 @@ export class AssetRepository implements IAssetRepository {
       .select(withFacesAndPeople)
       .select(withTags)
       .$call(withExif)
-      .$call((qb) => withStack(qb, { assets: true, count: false }))
+      .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('assets as stacked')
+            .selectAll('asset_stack')
+            .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+            .whereRef('stacked.stackId', '=', 'asset_stack.id')
+            .whereRef('stacked.id', '!=', 'asset_stack.primaryAssetId')
+            .where('stacked.deletedAt', 'is', null)
+            .where('stacked.isArchived', '=', false)
+            .groupBy('asset_stack.id')
+            .as('stacked_assets'),
+        (join) => join.on('asset_stack.id', 'is not', null),
+      )
+      .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.id', '=', anyUuid(ids))
       .execute() as any as Promise<AssetEntity[]>;
   }
@@ -302,7 +339,29 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
       .$if(!!smartSearch, withSmartSearch)
-      .$if(!!stack, (qb) => withStack(qb, { assets: !!stack!.assets, count: false }))
+      .$if(!!stack, (qb) =>
+        qb
+          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+          .$if(!stack!.assets, (qb) => qb.select((eb) => eb.fn.toJson(eb.table('asset_stack')).as('stack')))
+          .$if(!!stack!.assets, (qb) =>
+            qb
+              .leftJoinLateral(
+                (eb) =>
+                  eb
+                    .selectFrom('assets as stacked')
+                    .selectAll('asset_stack')
+                    .select((eb) => eb.fn('array_agg', [eb.table('stacked')]).as('assets'))
+                    .whereRef('stacked.stackId', '=', 'asset_stack.id')
+                    .whereRef('stacked.id', '!=', 'asset_stack.primaryAssetId')
+                    .where('stacked.deletedAt', 'is', null)
+                    .where('stacked.isArchived', '=', false)
+                    .groupBy('asset_stack.id')
+                    .as('stacked_assets'),
+                (join) => join.on('asset_stack.id', 'is not', null),
+              )
+              .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
+          ),
+      )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!tags, (qb) => qb.select(withTags))
       .limit(1)
@@ -575,7 +634,8 @@ export class AssetRepository implements IAssetRepository {
             .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
             .$if(!!options.isDuplicate, (qb) =>
               qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
-            ),
+            )
+            .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
         )
         .selectFrom('assets')
         .select('timeBucket')
@@ -591,7 +651,7 @@ export class AssetRepository implements IAssetRepository {
     );
   }
 
-  @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH }] })
+  @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }] })
   async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     return hasPeople(this.db, options.personId ? [options.personId] : undefined)
       .selectAll('assets')
@@ -601,12 +661,33 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
       .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
       .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-      .$if(!!options.withStacked, (qb) => withStack(qb, { assets: true, count: false })) // TODO: optimize this; it's a huge performance hit
+      .$if(!!options.withStacked, (qb) =>
+        qb
+          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+          .where((eb) =>
+            eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
+          )
+          .leftJoinLateral(
+            (eb) =>
+              eb
+                .selectFrom('assets as stacked')
+                .selectAll('asset_stack')
+                .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
+                .whereRef('stacked.stackId', '=', 'asset_stack.id')
+                .where('stacked.deletedAt', 'is', null)
+                .where('stacked.isArchived', '=', false)
+                .groupBy('asset_stack.id')
+                .as('stacked_assets'),
+            (join) => join.on('asset_stack.id', 'is not', null),
+          )
+          .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
+      )
       .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
       .$if(options.isDuplicate !== undefined, (qb) =>
         qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
       )
       .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+      .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
@@ -698,7 +779,19 @@ export class AssetRepository implements IAssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
-      .$call((qb) => withStack(qb, { assets: false, count: true }))
+      .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('assets as stacked')
+            .selectAll('asset_stack')
+            .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
+            .whereRef('stacked.stackId', '=', 'asset_stack.id')
+            .groupBy('asset_stack.id')
+            .as('stacked_assets'),
+        (join) => join.on('asset_stack.id', 'is not', null),
+      )
+      .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('isVisible', '=', true)
       .where('updatedAt', '<=', updatedUntil)
@@ -714,7 +807,19 @@ export class AssetRepository implements IAssetRepository {
       .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
-      .$call((qb) => withStack(qb, { assets: false, count: true }))
+      .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+      .leftJoinLateral(
+        (eb) =>
+          eb
+            .selectFrom('assets as stacked')
+            .selectAll('asset_stack')
+            .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
+            .whereRef('stacked.stackId', '=', 'asset_stack.id')
+            .groupBy('asset_stack.id')
+            .as('stacked_assets'),
+        (join) => join.on('asset_stack.id', 'is not', null),
+      )
+      .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('isVisible', '=', true)
       .where('updatedAt', '>', options.updatedAfter)

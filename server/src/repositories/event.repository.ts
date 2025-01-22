@@ -12,7 +12,6 @@ import _ from 'lodash';
 import { Server, Socket } from 'socket.io';
 import { EventConfig } from 'src/decorators';
 import { ImmichWorker, MetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   ArgsOf,
   ClientEventMap,
@@ -52,7 +51,7 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private moduleRef: ModuleRef,
-    @Inject(IConfigRepository) private configRepository: ConfigRepository,
+    private configRepository: ConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     this.logger.setContext(EventRepository.name);

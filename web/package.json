@@ -30,7 +30,7 @@
     "@sveltejs/adapter-static": "^3.0.8",
     "@sveltejs/enhanced-img": "^0.4.4",
     "@sveltejs/kit": "^2.15.2",
-    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/svelte": "^5.2.6",
     "@testing-library/user-event": "^14.5.2",
@@ -40,7 +40,7 @@
     "@types/luxon": "^3.4.2",
     "@typescript-eslint/eslint-plugin": "^8.20.0",
     "@typescript-eslint/parser": "^8.20.0",
-    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/coverage-v8": "^3.0.0",
     "autoprefixer": "^10.4.17",
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
@@ -60,14 +60,14 @@
     "tailwindcss": "^3.4.17",
     "tslib": "^2.6.2",
     "typescript": "^5.7.3",
-    "vite": "^5.4.11",
-    "vitest": "^2.0.5"
+    "vite": "^6.0.0",
+    "vitest": "^3.0.0"
   },
   "type": "module",
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.13.0",
+    "@immich/ui": "^0.14.1",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -88,6 +88,6 @@
     "thumbhash": "^0.1.1"
   },
   "volta": {
-    "node": "22.13.0"
+    "node": "22.13.1"
   }
 }

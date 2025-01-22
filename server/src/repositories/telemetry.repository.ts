@@ -15,9 +15,9 @@ import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { serverVersion } from 'src/constants';
 import { ImmichTelemetry, MetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricGroupRepository, ITelemetryRepository, MetricGroupOptions } from 'src/interfaces/telemetry.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 
 class MetricGroupRepository implements IMetricGroupRepository {
   private enabled = false;
@@ -95,7 +95,7 @@ export class TelemetryRepository implements ITelemetryRepository {
   constructor(
     private metricService: MetricService,
     private reflect: Reflector,
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+    private configRepository: ConfigRepository,
     @Inject(ILoggerRepository) private logger: ILoggerRepository,
   ) {
     const { telemetry } = this.configRepository.getEnv();

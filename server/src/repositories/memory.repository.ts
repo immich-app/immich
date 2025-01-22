@@ -22,8 +22,8 @@ export class MemoryRepository implements IMemoryRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  get(id: string): Promise<MemoryEntity | null> {
-    return this.getByIdBuilder(id).executeTakeFirst() as unknown as Promise<MemoryEntity | null>;
+  get(id: string): Promise<MemoryEntity | undefined> {
+    return this.getByIdBuilder(id).executeTakeFirst() as unknown as Promise<MemoryEntity | undefined>;
   }
 
   async create(memory: Insertable<Memories>, assetIds: Set<string>): Promise<MemoryEntity> {
@@ -71,6 +71,10 @@ export class MemoryRepository implements IMemoryRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async addAssetIds(id: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
     await this.db
       .insertInto('memories_assets_assets')
       .values(assetIds.map((assetId) => ({ memoriesId: id, assetsId: assetId })))
@@ -80,6 +84,10 @@ export class MemoryRepository implements IMemoryRepository {
   @Chunked({ paramIndex: 1 })
   @GenerateSql({ params: [DummyValue.UUID, [DummyValue.UUID]] })
   async removeAssetIds(id: string, assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
     await this.db
       .deleteFrom('memories_assets_assets')
       .where('memoriesId', '=', id)
