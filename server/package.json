@@ -35,7 +35,7 @@
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
-    "@nestjs/bullmq": "^10.0.1",
+    "@nestjs/bullmq": "^11.0.0",
     "@nestjs/common": "^10.2.2",
     "@nestjs/core": "^10.2.2",
     "@nestjs/event-emitter": "^2.0.4",
