@@ -96,6 +96,7 @@
     class="object-cover {optionalClasses}"
     class:opacity-0={!thumbhash && !loaded}
     draggable="false"
+    in:fade={{ duration: THUMBHASH_FADE_DURATION }}
   />
 {/if}
 
