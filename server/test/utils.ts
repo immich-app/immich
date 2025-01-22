@@ -7,6 +7,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { MemoryRepository } from 'src/repositories/memory.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import {
@@ -14,6 +15,7 @@ import {
   IActivityRepository,
   IApiKeyRepository,
   IAuditRepository,
+  IMemoryRepository,
   IViewRepository,
 } from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -132,7 +134,7 @@ export const newTestService = <T extends BaseService>(
     machineLearningMock,
     mapMock,
     mediaMock,
-    memoryMock,
+    memoryMock as IMemoryRepository as MemoryRepository,
     metadataMock,
     moveMock,
     notificationMock,
