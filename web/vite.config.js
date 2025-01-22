@@ -46,11 +46,8 @@ export default defineConfig({
     topLevelAwait(),
   ],
   optimizeDeps: {
-    exclude: ['justified-layout-wasm'],
+    entries: ['src/**/*.{svelte,ts,html}'],
   },
-  // optimizeDeps: {
-  //   entries: ['src/**/*.{svelte,ts,html}'],
-  // },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     globals: true,
