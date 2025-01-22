@@ -38,7 +38,7 @@
     "@nestjs/bullmq": "^10.0.1",
     "@nestjs/common": "^10.2.2",
     "@nestjs/core": "^10.2.2",
-    "@nestjs/event-emitter": "^2.0.4",
+    "@nestjs/event-emitter": "^3.0.0",
     "@nestjs/platform-express": "^10.2.2",
     "@nestjs/platform-socket.io": "^10.2.2",
     "@nestjs/schedule": "^4.0.0",
