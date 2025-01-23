@@ -1,4 +1,4 @@
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
+import { IMemoryRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newMemoryRepositoryMock = (): Mocked<IMemoryRepository> => {

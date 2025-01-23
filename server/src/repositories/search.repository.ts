@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirectionExpression, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetType } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateSearch,
   AssetSearchOptions,
@@ -20,6 +19,7 @@ import {
   SearchPaginationOptions,
   SmartSearchOptions,
 } from 'src/interfaces/search.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import { Paginated } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -27,7 +27,7 @@ import { isValidInteger } from 'src/validation';
 @Injectable()
 export class SearchRepository implements ISearchRepository {
   constructor(
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<DB>,
   ) {
     this.logger.setContext(SearchRepository.name);

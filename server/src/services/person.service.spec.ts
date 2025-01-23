@@ -7,12 +7,12 @@ import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interfac
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { DetectedFaces, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { FaceSearchResult, ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { PersonService } from 'src/services/person.service';
+import { IMediaRepository } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -368,7 +368,6 @@ describe(PersonService.name, () => {
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
-      personMock.getRandomFace.mockResolvedValue(null);
       await expect(
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
@@ -391,7 +390,6 @@ describe(PersonService.name, () => {
       personMock.getFaceById.mockResolvedValue(faceStub.face1);
       personMock.reassignFace.mockResolvedValue(1);
       personMock.getById.mockResolvedValue(personStub.noName);
-      personMock.getRandomFace.mockResolvedValue(null);
       await expect(
         sut.reassignFacesById(authStub.admin, personStub.noName.id, {
           id: faceStub.face1.id,
@@ -771,8 +769,6 @@ describe(PersonService.name, () => {
 
   describe('handleRecognizeFaces', () => {
     it('should fail if face does not exist', async () => {
-      personMock.getFaceByIdWithAssets.mockResolvedValue(null);
-
       expect(await sut.handleRecognizeFaces({ id: faceStub.face1.id })).toBe(JobStatus.FAILED);
 
       expect(personMock.reassignFaces).not.toHaveBeenCalled();

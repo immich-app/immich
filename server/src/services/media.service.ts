@@ -27,8 +27,8 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { AudioStreamInfo, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/interfaces/media.interface';
 import { BaseService } from 'src/services/base.service';
+import { AudioStreamInfo, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';

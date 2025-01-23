@@ -112,7 +112,7 @@ order by
 
 -- LibraryRepository.getStatistics
 select
-  count("assets"."id") filter (
+  count(*) filter (
     where
       (
         "assets"."type" = $1
@@ -130,8 +130,17 @@ select
 from
   "libraries"
   inner join "assets" on "assets"."libraryId" = "libraries"."id"
-  inner join "exif" on "exif"."assetId" = "assets"."id"
+  left join "exif" on "exif"."assetId" = "assets"."id"
 where
   "libraries"."id" = $6
 group by
   "libraries"."id"
+select
+  0::int as "photos",
+  0::int as "videos",
+  0::int as "usage",
+  0::int as "total"
+from
+  "libraries"
+where
+  "libraries"."id" = $1

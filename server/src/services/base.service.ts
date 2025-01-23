@@ -15,11 +15,8 @@ import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
-import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
@@ -44,6 +41,9 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
+import { MemoryRepository } from 'src/repositories/memory.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -52,7 +52,7 @@ export class BaseService {
   protected storageCore: StorageCore;
 
   constructor(
-    @Inject(ILoggerRepository) protected logger: ILoggerRepository,
+    protected logger: LoggingRepository,
     protected accessRepository: AccessRepository,
     protected activityRepository: ActivityRepository,
     protected auditRepository: AuditRepository,
@@ -69,8 +69,8 @@ export class BaseService {
     @Inject(ILibraryRepository) protected libraryRepository: ILibraryRepository,
     @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
     @Inject(IMapRepository) protected mapRepository: IMapRepository,
-    @Inject(IMediaRepository) protected mediaRepository: IMediaRepository,
-    @Inject(IMemoryRepository) protected memoryRepository: IMemoryRepository,
+    protected mediaRepository: MediaRepository,
+    protected memoryRepository: MemoryRepository,
     @Inject(IMetadataRepository) protected metadataRepository: IMetadataRepository,
     @Inject(IMoveRepository) protected moveRepository: IMoveRepository,
     @Inject(INotificationRepository) protected notificationRepository: INotificationRepository,

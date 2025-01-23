@@ -1,12 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { GitHubRelease, IServerInfoRepository, ServerBuildVersions } from 'src/interfaces/server-info.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
@@ -37,7 +37,7 @@ const getLockfileVersion = (name: string, lockfile?: BuildLockfile) => {
 export class ServerInfoRepository implements IServerInfoRepository {
   constructor(
     private configRepository: ConfigRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(ServerInfoRepository.name);
   }

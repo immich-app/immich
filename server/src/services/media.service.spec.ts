@@ -1,3 +1,4 @@
+import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
@@ -14,13 +15,12 @@ import {
 } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobCounts, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMediaRepository, RawImageInfo } from 'src/interfaces/media.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { MediaService } from 'src/services/media.service';
+import { ILoggingRepository, IMediaRepository, RawImageInfo } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -33,7 +33,7 @@ describe(MediaService.name, () => {
 
   let assetMock: Mocked<IAssetRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let loggerMock: Mocked<ILoggingRepository>;
   let mediaMock: Mocked<IMediaRepository>;
   let moveMock: Mocked<IMoveRepository>;
   let personMock: Mocked<IPersonRepository>;
@@ -257,7 +257,7 @@ describe(MediaService.name, () => {
     beforeEach(() => {
       rawBuffer = Buffer.from('image data');
       rawInfo = { width: 100, height: 100, channels: 3 };
-      mediaMock.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo });
+      mediaMock.decodeImage.mockResolvedValue({ data: rawBuffer, info: rawInfo as OutputInfo });
     });
 
     it('should skip thumbnail generation if asset not found', async () => {

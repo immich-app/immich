@@ -2,7 +2,6 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
@@ -169,18 +168,15 @@
 
   {#snippet buttons()}
     <HStack>
-      <Button onclick={handleCreate} size="small" variant="ghost" color="secondary">
-        <Icon path={mdiPlus} />
-        <p class="hidden md:block">{$t('create_tag')}</p>
+      <Button leadingIcon={mdiPlus} onclick={handleCreate} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('create_tag')}</Text>
       </Button>
 
       {#if pathSegments.length > 0 && tag}
-        <Button onclick={handleEdit} size="small" variant="ghost" color="secondary">
-          <Icon path={mdiPencil} size="18" />
+        <Button leadingIcon={mdiPencil} onclick={handleEdit} size="small" variant="ghost" color="secondary">
           <Text class="hidden md:block">{$t('edit_tag')}</Text>
         </Button>
-        <Button onclick={handleDelete} size="small" variant="ghost" color="secondary">
-          <Icon path={mdiTrashCanOutline} />
+        <Button leadingIcon={mdiTrashCanOutline} onclick={handleDelete} size="small" variant="ghost" color="secondary">
           <Text class="hidden md:block">{$t('delete_tag')}</Text>
         </Button>
       {/if}
