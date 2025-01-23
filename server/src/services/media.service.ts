@@ -258,7 +258,7 @@ export class MediaService extends BaseService {
 
       // Assume extracted image from RAW always in JPEG format, as implied from the `jpgFromRaw` tag name
       const extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
-      const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath, true);
+      const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath);
       useExtracted = didExtract && (await this.shouldUseExtractedImage(extractedPath, image.preview.size));
 
       if (useExtracted) {

@@ -62,7 +62,7 @@ export class MediaRepository {
     return true;
   }
 
-  async writeExif(tags: ExifEntity, output: string): Promise<boolean> {
+  async writeExif(tags: Partial<ExifEntity>, output: string): Promise<boolean> {
     try {
       const tagsToWrite: WriteTags = {
         ExifImageWidth: tags.exifImageWidth,
