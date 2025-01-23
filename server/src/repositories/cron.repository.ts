@@ -1,11 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
-import { CronCreate, CronUpdate, ICronRepository } from 'src/interfaces/cron.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
+type CronBase = {
+  name: string;
+  start?: boolean;
+};
+
+export type CronCreate = CronBase & {
+  expression: string;
+  onTick: () => void;
+};
+
+export type CronUpdate = CronBase & {
+  expression?: string;
+};
+
 @Injectable()
-export class CronRepository implements ICronRepository {
+export class CronRepository {
   constructor(
     private schedulerRegistry: SchedulerRegistry,
     private logger: LoggingRepository,

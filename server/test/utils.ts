@@ -2,24 +2,42 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { TrashRepository } from 'src/repositories/trash.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import {
   IAccessRepository,
   IActivityRepository,
+  IAlbumUserRepository,
   IApiKeyRepository,
   IAuditRepository,
+  ICronRepository,
   ILoggingRepository,
+  IMapRepository,
   IMediaRepository,
   IMemoryRepository,
+  IMetadataRepository,
+  INotificationRepository,
+  IOAuthRepository,
+  IServerInfoRepository,
+  ITrashRepository,
+  IVersionHistoryRepository,
   IViewRepository,
 } from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -66,7 +84,7 @@ import { Mocked, vitest } from 'vitest';
 
 type Overrides = {
   worker?: ImmichWorker;
-  metadataRepository?: IMetadataRepository;
+  metadataRepository?: MetadataRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -125,10 +143,10 @@ export const newTestService = <T extends BaseService>(
     activityMock as IActivityRepository as ActivityRepository,
     auditMock as IAuditRepository as AuditRepository,
     albumMock,
-    albumUserMock,
+    albumUserMock as IAlbumUserRepository as AlbumUserRepository,
     assetMock,
     configMock,
-    cronMock,
+    cronMock as ICronRepository as CronRepository,
     cryptoMock,
     databaseMock,
     eventMock,
@@ -136,28 +154,28 @@ export const newTestService = <T extends BaseService>(
     keyMock as IApiKeyRepository as ApiKeyRepository,
     libraryMock,
     machineLearningMock,
-    mapMock,
+    mapMock as IMapRepository as MapRepository,
     mediaMock as IMediaRepository as MediaRepository,
     memoryMock as IMemoryRepository as MemoryRepository,
-    metadataMock,
+    metadataMock as IMetadataRepository as MetadataRepository,
     moveMock,
-    notificationMock,
-    oauthMock,
+    notificationMock as INotificationRepository as NotificationRepository,
+    oauthMock as IOAuthRepository as OAuthRepository,
     partnerMock,
     personMock,
     processMock,
     searchMock,
-    serverInfoMock,
+    serverInfoMock as IServerInfoRepository as ServerInfoRepository,
     sessionMock,
     sharedLinkMock,
     stackMock,
     storageMock,
     systemMock,
     tagMock,
-    telemetryMock,
-    trashMock,
+    telemetryMock as unknown as TelemetryRepository,
+    trashMock as ITrashRepository as TrashRepository,
     userMock,
-    versionHistoryMock,
+    versionHistoryMock as IVersionHistoryRepository as VersionHistoryRepository,
     viewMock as IViewRepository as ViewRepository,
   );
 

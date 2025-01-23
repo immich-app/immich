@@ -13,7 +13,6 @@ import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
-import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
@@ -22,7 +21,7 @@ import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { providers, repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { teardownTelemetry } from 'src/repositories/telemetry.repository';
+import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
@@ -67,7 +66,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     logger: LoggingRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
-    @Inject(ITelemetryRepository) private telemetryRepository: ITelemetryRepository,
+    private telemetryRepository: TelemetryRepository,
   ) {
     logger.setAppName(this.worker);
   }

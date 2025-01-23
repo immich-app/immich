@@ -1,4 +1,4 @@
-import { IMapRepository } from 'src/interfaces/map.interface';
+import { IMapRepository } from 'src/types';
 import { Mocked } from 'vitest';
 
 export const newMapRepositoryMock = (): Mocked<IMapRepository> => {

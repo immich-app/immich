@@ -43,8 +43,8 @@ import {
   WithProperty,
   WithoutProperty,
 } from 'src/interfaces/asset.interface';
-import { MapMarker, MapMarkerSearchOptions } from 'src/interfaces/map.interface';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/interfaces/search.interface';
+import { MapMarker, MapMarkerSearchOptions } from 'src/repositories/map.repository';
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
