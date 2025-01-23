@@ -172,4 +172,31 @@ describe('/stacks', () => {
       );
     });
   });
+
+  describe('GET /stacks/:id', () => {
+    it('should include exifInfo in stack assets', async () => {
+      const [asset1, asset2] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
+
+      const stack = await utils.createStack(user1.accessToken, [asset1.id, asset2.id]);
+
+      const { status, body } = await request(app)
+        .get(`/stacks/${stack.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: stack.id,
+          primaryAssetId: asset1.id,
+          assets: expect.arrayContaining([
+            expect.objectContaining({ id: asset1.id, exifInfo: expect.any(Object) }),
+            expect.objectContaining({ id: asset2.id, exifInfo: expect.any(Object) }),
+          ]),
+        }),
+      );
+    });
+  });
 });
