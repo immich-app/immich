@@ -102,7 +102,11 @@ export const startWatch = async (
     if (!ext || !extensions.has(ext)) {
       return;
     }
-    console.log(`Change detected: ${path}`);
+
+    if (!options.progress) {
+      // logging when progress is disabled as it can cause issues with the progress bar rendering
+      console.log(`Change detected: ${path}`);
+    }
     pathsBatcher.add(path);
   };
   const fsWatcher = watchFs(paths, {
