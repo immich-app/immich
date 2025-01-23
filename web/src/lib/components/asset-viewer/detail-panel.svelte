@@ -45,6 +45,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
 
   interface Props {
     asset: AssetResponseDto;
@@ -141,21 +142,6 @@
   };
 
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
-
-  const getCameraSearchHref = (asset: AssetResponseDto) => {
-    const cameraSearchUrl = new URL(AppRoute.SEARCH, globalThis.location.href);
-    cameraSearchUrl.searchParams.set(
-      QueryParameter.QUERY,
-      `{"make":"${asset.exifInfo?.make}","model":"${asset.exifInfo?.model}"}`,
-    );
-    return cameraSearchUrl.href;
-  };
-
-  const getLensModelSearchHref = (asset: AssetResponseDto) => {
-    const lensSearchUrl = new URL(AppRoute.SEARCH, globalThis.location.href);
-    lensSearchUrl.searchParams.set(QueryParameter.QUERY, `{"lensModel" : "${asset.exifInfo?.lensModel}"}`);
-    return lensSearchUrl.href;
-  };
 
   let isShowChangeDate = $state(false);
 
@@ -425,26 +411,31 @@
         <div><Icon path={mdiCameraIris} size="24" /></div>
 
         <div>
-          <p>
-            <a
-              href={getCameraSearchHref(asset)}
-              title={$t('search_for_camera')}
-              class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            >
-              {asset.exifInfo.make || ''}
-              {asset.exifInfo.model || ''}
-            </a>
-          </p>
+          {#if asset.exifInfo?.make || asset.exifInfo?.model}
+            <p>
+              <a
+                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({
+                  ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
+                  ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
+                })}"
+                title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
+                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+              >
+                {asset.exifInfo.make || ''}
+                {asset.exifInfo.model || ''}
+              </a>
+            </p>
+          {/if}
 
           {#if asset.exifInfo?.lensModel}
             <div class="flex gap-2 text-sm">
               <p>
                 <a
-                  href={getLensModelSearchHref(asset)}
-                  title={$t('search_for_lens')}
-                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+                  href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
+                  title="{$t('search_for')} {asset.exifInfo.lensModel}"
+                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
                 >
-                  {asset.exifInfo.lensModel || ''}
+                  {asset.exifInfo.lensModel}
                 </a>
               </p>
             </div>
