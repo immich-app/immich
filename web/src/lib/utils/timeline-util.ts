@@ -1,10 +1,10 @@
 import type { AssetBucket } from '$lib/stores/assets.store';
 import { locale } from '$lib/stores/preferences.store';
+import type { JustifiedLayout } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
-import type { JustifiedLayout } from '../../../justified-layout/js';
 
 export type DateGroup = {
   date: DateTime;
