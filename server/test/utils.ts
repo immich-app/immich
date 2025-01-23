@@ -13,6 +13,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -30,6 +31,7 @@ import {
   IMemoryRepository,
   IMetadataRepository,
   IOAuthRepository,
+  IServerInfoRepository,
   ITrashRepository,
   IVersionHistoryRepository,
   IViewRepository,
@@ -159,7 +161,7 @@ export const newTestService = <T extends BaseService>(
     personMock,
     processMock,
     searchMock,
-    serverInfoMock,
+    serverInfoMock as IServerInfoRepository as ServerInfoRepository,
     sessionMock,
     sharedLinkMock,
     stackMock,

@@ -13,7 +13,6 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
@@ -74,6 +73,7 @@ export const repositories = [
   MemoryRepository,
   MetadataRepository,
   OAuthRepository,
+  ServerInfoRepository,
   TelemetryRepository,
   TrashRepository,
   ViewRepository,
@@ -96,7 +96,6 @@ export const providers = [
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: IProcessRepository, useClass: ProcessRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
-  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
   { provide: ISessionRepository, useClass: SessionRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: IStackRepository, useClass: StackRepository },

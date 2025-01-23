@@ -21,7 +21,6 @@ import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
@@ -41,6 +40,7 @@ import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -79,7 +79,7 @@ export class BaseService {
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
     @Inject(IProcessRepository) protected processRepository: IProcessRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
-    @Inject(IServerInfoRepository) protected serverInfoRepository: IServerInfoRepository,
+    protected serverInfoRepository: ServerInfoRepository,
     @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,
     @Inject(ISharedLinkRepository) protected sharedLinkRepository: ISharedLinkRepository,
     @Inject(IStackRepository) protected stackRepository: IStackRepository,
