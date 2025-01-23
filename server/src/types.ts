@@ -8,6 +8,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { MetricGroupRepository, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
@@ -45,6 +46,7 @@ export type ILoggingRepository = Pick<
 >;
 export type IMediaRepository = RepositoryInterface<MediaRepository>;
 export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
+export type IMetadataRepository = RepositoryInterface<MetadataRepository>;
 export type IMetricGroupRepository = RepositoryInterface<MetricGroupRepository>;
 export type IOAuthRepository = RepositoryInterface<OAuthRepository>;
 export type ITelemetryRepository = RepositoryInterface<TelemetryRepository>;

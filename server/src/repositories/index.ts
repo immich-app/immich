@@ -9,7 +9,6 @@ import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -73,6 +72,7 @@ export const repositories = [
   LoggingRepository,
   MediaRepository,
   MemoryRepository,
+  MetadataRepository,
   OAuthRepository,
   TelemetryRepository,
   TrashRepository,
@@ -92,7 +92,6 @@ export const providers = [
   { provide: ILibraryRepository, useClass: LibraryRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMapRepository, useClass: MapRepository },
-  { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: INotificationRepository, useClass: NotificationRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },

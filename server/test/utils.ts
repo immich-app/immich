@@ -2,7 +2,6 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
@@ -10,6 +9,7 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
@@ -24,6 +24,7 @@ import {
   ILoggingRepository,
   IMediaRepository,
   IMemoryRepository,
+  IMetadataRepository,
   IOAuthRepository,
   ITrashRepository,
   IVersionHistoryRepository,
@@ -73,7 +74,7 @@ import { Mocked, vitest } from 'vitest';
 
 type Overrides = {
   worker?: ImmichWorker;
-  metadataRepository?: IMetadataRepository;
+  metadataRepository?: MetadataRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -146,7 +147,7 @@ export const newTestService = <T extends BaseService>(
     mapMock,
     mediaMock as IMediaRepository as MediaRepository,
     memoryMock as IMemoryRepository as MemoryRepository,
-    metadataMock,
+    metadataMock as IMetadataRepository as MetadataRepository,
     moveMock,
     notificationMock,
     oauthMock as IOAuthRepository as OAuthRepository,
