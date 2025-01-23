@@ -1,4 +1,3 @@
-import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -63,6 +62,7 @@ import { ViewRepository } from 'src/repositories/view-repository';
 export const repositories = [
   AccessRepository,
   ActivityRepository,
+  AlbumUserRepository,
   AuditRepository,
   ApiKeyRepository,
   ConfigRepository,
@@ -82,7 +82,6 @@ export const repositories = [
 
 export const providers = [
   { provide: IAlbumRepository, useClass: AlbumRepository },
-  { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
   { provide: IAssetRepository, useClass: AssetRepository },
   { provide: ICryptoRepository, useClass: CryptoRepository },
   { provide: IDatabaseRepository, useClass: DatabaseRepository },

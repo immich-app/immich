@@ -4,6 +4,7 @@ import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
@@ -22,6 +23,7 @@ import { BaseService } from 'src/services/base.service';
 import {
   IAccessRepository,
   IActivityRepository,
+  IAlbumUserRepository,
   IApiKeyRepository,
   IAuditRepository,
   ICronRepository,
@@ -139,7 +141,7 @@ export const newTestService = <T extends BaseService>(
     activityMock as IActivityRepository as ActivityRepository,
     auditMock as IAuditRepository as AuditRepository,
     albumMock,
-    albumUserMock,
+    albumUserMock as IAlbumUserRepository as AlbumUserRepository,
     assetMock,
     configMock,
     cronMock as ICronRepository as CronRepository,

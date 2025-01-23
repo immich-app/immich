@@ -6,7 +6,6 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
@@ -30,6 +29,7 @@ import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -57,7 +57,7 @@ export class BaseService {
     protected activityRepository: ActivityRepository,
     protected auditRepository: AuditRepository,
     @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
-    @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
+    protected albumUserRepository: AlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
