@@ -85,7 +85,6 @@ export class AddUpdatedAtTriggers1737672307560 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`drop function updated_at_trigger`);
     await queryRunner.query(`drop trigger activity_updated_at on activity`);
     await queryRunner.query(`drop trigger albums_updated_at on albums`);
     await queryRunner.query(`drop trigger api_keys_updated_at on api_keys`);
@@ -98,5 +97,6 @@ export class AddUpdatedAtTriggers1737672307560 implements MigrationInterface {
     await queryRunner.query(`drop trigger sessions_updated_at on sessions`);
     await queryRunner.query(`drop trigger tags_updated_at on tags`);
     await queryRunner.query(`drop trigger users_updated_at on users`);
+    await queryRunner.query(`drop function updated_at_trigger`);
   }
 }
