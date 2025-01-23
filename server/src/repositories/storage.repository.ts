@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
@@ -7,7 +7,6 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Writable } from 'node:stream';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   DiskUsage,
   IStorageRepository,
@@ -15,11 +14,12 @@ import {
   ImmichZipStream,
   WatchEvents,
 } from 'src/interfaces/storage.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
 
 @Injectable()
 export class StorageRepository implements IStorageRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(StorageRepository.name);
   }
 

@@ -1,7 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   ClipTextualResponse,
   ClipVisualResponse,
@@ -13,10 +12,11 @@ import {
   ModelTask,
   ModelType,
 } from 'src/interfaces/machine-learning.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 @Injectable()
 export class MachineLearningRepository implements IMachineLearningRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(MachineLearningRepository.name);
   }
 

@@ -1,11 +1,11 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { custom, generators, Issuer } from 'openid-client';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IOAuthRepository, OAuthConfig, OAuthProfile } from 'src/interfaces/oauth.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 @Injectable()
 export class OAuthRepository implements IOAuthRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(OAuthRepository.name);
   }
 

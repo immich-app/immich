@@ -7,6 +7,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
@@ -16,6 +17,7 @@ import {
   IActivityRepository,
   IApiKeyRepository,
   IAuditRepository,
+  ILoggingRepository,
   IMediaRepository,
   IMemoryRepository,
   IViewRepository,
@@ -34,7 +36,7 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
@@ -78,7 +80,7 @@ export const newTestService = <T extends BaseService>(
   const { metadataRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
-  const loggerMock = newLoggerRepositoryMock();
+  const loggerMock = newLoggingRepositoryMock();
   const cronMock = newCronRepositoryMock();
   const cryptoMock = newCryptoRepositoryMock();
   const activityMock = newActivityRepositoryMock();
@@ -118,7 +120,7 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    loggerMock,
+    loggerMock as ILoggingRepository as LoggingRepository,
     accessMock as IAccessRepository as AccessRepository,
     activityMock as IActivityRepository as ActivityRepository,
     auditMock as IAuditRepository as AuditRepository,

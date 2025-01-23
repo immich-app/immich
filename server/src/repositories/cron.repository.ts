@@ -1,14 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
 import { CronCreate, CronUpdate, ICronRepository } from 'src/interfaces/cron.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 @Injectable()
 export class CronRepository implements ICronRepository {
   constructor(
     private schedulerRegistry: SchedulerRegistry,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(CronRepository.name);
   }

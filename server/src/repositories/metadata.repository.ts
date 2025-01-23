@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 @Injectable()
 export class MetadataRepository implements IMetadataRepository {
@@ -20,7 +20,7 @@ export class MetadataRepository implements IMetadataRepository {
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
   });
 
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(MetadataRepository.name);
   }
 

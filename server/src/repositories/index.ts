@@ -7,7 +7,6 @@ import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
@@ -43,7 +42,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
-import { LoggerRepository } from 'src/repositories/logger.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
@@ -70,12 +69,12 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 
 export const repositories = [
-  //
   AccessRepository,
   ActivityRepository,
   AuditRepository,
   ApiKeyRepository,
   ConfigRepository,
+  LoggingRepository,
   MediaRepository,
   MemoryRepository,
   ViewRepository,
@@ -91,7 +90,6 @@ export const providers = [
   { provide: IEventRepository, useClass: EventRepository },
   { provide: IJobRepository, useClass: JobRepository },
   { provide: ILibraryRepository, useClass: LibraryRepository },
-  { provide: ILoggerRepository, useClass: LoggerRepository },
   { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
   { provide: IMapRepository, useClass: MapRepository },
   { provide: IMetadataRepository, useClass: MetadataRepository },

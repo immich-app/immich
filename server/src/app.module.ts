@@ -13,7 +13,6 @@ import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
@@ -22,6 +21,7 @@ import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { providers, repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
 import { CliService } from 'src/services/cli.service';
@@ -64,7 +64,7 @@ const imports = [
 class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
-    @Inject(ILoggerRepository) logger: ILoggerRepository,
+    logger: LoggingRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ITelemetryRepository) private telemetryRepository: ITelemetryRepository,

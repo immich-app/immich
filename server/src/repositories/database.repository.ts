@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { Kysely, sql } from 'kysely';
@@ -16,8 +16,8 @@ import {
   VectorIndex,
   VectorUpdateResult,
 } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { UPSERT_COLUMNS } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, EntityMetadata, QueryRunner } from 'typeorm';
@@ -30,7 +30,7 @@ export class DatabaseRepository implements IDatabaseRepository {
   constructor(
     @InjectKysely() private db: Kysely<DB>,
     @InjectDataSource() private dataSource: DataSource,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     configRepository: ConfigRepository,
   ) {
     this.vectorExtension = configRepository.getEnv().database.vectorExtension;
