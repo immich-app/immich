@@ -352,11 +352,14 @@
 {#if assets.length > 0}
   <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
     {#each assets as asset, i}
+      {@const top = geometry.getTop(i)}
+      {@const left = geometry.getLeft(i)}
+      {@const width = geometry.getWidth(i)}
+      {@const height = geometry.getHeight(i)}
+
       <div
         class="absolute"
-        style="width: {geometry.getWidth(i)}px; height: {geometry.getHeight(i)}px; top: {geometry.getTop(
-          i,
-        )}px; left: {geometry.getLeft(i)}px"
+        style="width: {width}px; height: {height}px; top: {top}px; left: {left}px"
         title={showAssetName ? asset.originalFileName : ''}
       >
         <Thumbnail
@@ -375,8 +378,8 @@
           {asset}
           selected={assetInteraction.selectedAssets.has(asset)}
           selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-          thumbnailWidth={geometry.boxes[i].width}
-          thumbnailHeight={geometry.boxes[i].height}
+          thumbnailWidth={width}
+          thumbnailHeight={height}
         />
         {#if showAssetName}
           <div
