@@ -38,7 +38,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
+    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM, SMALL_GROUP_THRESHOLD },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -179,6 +179,7 @@
           >
             {#each dateGroup.assets as asset, index (asset.id)}
               {@const box = dateGroup.geometry.boxes[index]}
+              {@const isSmallGroup = dateGroup.assets.length <= SMALL_GROUP_THRESHOLD}
               <!-- update ASSET_GRID_PADDING-->
               <div
                 use:intersectionObserver={{
@@ -217,6 +218,7 @@
                   disabled={$assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={box.width}
                   thumbnailHeight={box.height}
+                  eagerThumbhash={isSmallGroup}
                 />
               </div>
             {/each}

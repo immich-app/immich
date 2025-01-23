@@ -5,14 +5,11 @@ import { decodeBase64 } from '$lib/utils';
  * @param canvas
  * @param param1 object containing the base64 encoded hash (base64Thumbhash: yourString)
  */
-export async function thumbhash(canvas: HTMLCanvasElement, { base64ThumbHash }: { base64ThumbHash: string }) {
-  const ctx = canvas.getContext('2d');
+export function thumbhash(canvas: HTMLCanvasElement, { base64ThumbHash }: { base64ThumbHash: string }) {
+  const ctx = canvas.getContext('bitmaprenderer');
   if (ctx) {
     const { w, h, rgba } = thumbHashToRGBA(decodeBase64(base64ThumbHash));
-    const bitmap = await createImageBitmap(new ImageData(rgba, w, h));
-    canvas.width = w;
-    canvas.height = h;
-    ctx.drawImage(bitmap, 0, 0);
+    void createImageBitmap(new ImageData(rgba, w, h)).then((bitmap) => ctx.transferFromImageBitmap(bitmap));
   }
 }
 

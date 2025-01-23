@@ -53,6 +53,7 @@ export const TUNABLES = {
     INTERSECTION_DISABLED: getBoolean(localStorage.getItem('DATEGROUP.INTERSECTION_DISABLED'), false),
     INTERSECTION_ROOT_TOP: localStorage.getItem('DATEGROUP.INTERSECTION_ROOT_TOP') || '150%',
     INTERSECTION_ROOT_BOTTOM: localStorage.getItem('DATEGROUP.INTERSECTION_ROOT_BOTTOM') || '150%',
+    SMALL_GROUP_THRESHOLD: getNumber(localStorage.getItem('DATEGROUP.SMALL_GROUP_THRESHOLD'), 100),
   },
   THUMBNAIL: {
     PRIORITY: getNumber(localStorage.getItem('THUMBNAIL.PRIORITY'), 8),

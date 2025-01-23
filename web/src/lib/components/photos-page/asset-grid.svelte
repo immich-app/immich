@@ -828,12 +828,12 @@
   class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
   tabindex="-1"
   use:resizeObserver={({ width, height }) => {
-    if (!largeBucketMode && assetStore.maxBucketAssets > LARGE_BUCKET_THRESHOLD) {
+    if (!largeBucketMode && assetStore.maxBucketAssets >= LARGE_BUCKET_THRESHOLD) {
       largeBucketMode = true;
-      // Each viewport update causes each asset to re-render both the thumbhash and the thumbnail.
+      // Each viewport update causes each asset to re-decode both the thumbhash and the thumbnail.
       // This is because the thumbnail components are destroyed and re-mounted, possibly because of the intersection observer.
       // For larger buckets, this can lead to freezing and a poor user experience.
-      // As a mitigation, we aggressively debounce the viewport update to reduce the number of re-renders.
+      // As a mitigation, we aggressively debounce the viewport update to reduce the number of these events.
       updateViewport = debounce(() => $assetStore.updateViewport(safeViewport), LARGE_BUCKET_DEBOUNCE_MS, {
         leading: false,
         trailing: true,
