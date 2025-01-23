@@ -35,7 +35,6 @@ import { ITagRepository } from 'src/interfaces/tag.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
@@ -44,6 +43,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
@@ -89,7 +89,7 @@ export class BaseService {
     @Inject(ITelemetryRepository) protected telemetryRepository: ITelemetryRepository,
     @Inject(ITrashRepository) protected trashRepository: ITrashRepository,
     @Inject(IUserRepository) protected userRepository: IUserRepository,
-    @Inject(IVersionHistoryRepository) protected versionRepository: IVersionHistoryRepository,
+    protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
   ) {
     this.logger.setContext(this.constructor.name);

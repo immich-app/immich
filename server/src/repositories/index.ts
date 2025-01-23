@@ -27,7 +27,6 @@ import { ITagRepository } from 'src/interfaces/tag.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
-import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -78,6 +77,7 @@ export const repositories = [
   MediaRepository,
   MemoryRepository,
   ViewRepository,
+  VersionHistoryRepository,
 ];
 
 export const providers = [
@@ -110,5 +110,4 @@ export const providers = [
   { provide: ITelemetryRepository, useClass: TelemetryRepository },
   { provide: ITrashRepository, useClass: TrashRepository },
   { provide: IUserRepository, useClass: UserRepository },
-  { provide: IVersionHistoryRepository, useClass: VersionHistoryRepository },
 ];

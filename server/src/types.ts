@@ -8,6 +8,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
@@ -42,6 +43,7 @@ export type ILoggingRepository = Pick<
 export type IMediaRepository = RepositoryInterface<MediaRepository>;
 export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
 export type IViewRepository = RepositoryInterface<ViewRepository>;
+export type IVersionHistoryRepository = RepositoryInterface<VersionHistoryRepository>;
 
 export type ActivityItem =
   | Awaited<ReturnType<IActivityRepository['create']>>

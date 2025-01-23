@@ -10,6 +10,7 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import {
@@ -20,6 +21,7 @@ import {
   ILoggingRepository,
   IMediaRepository,
   IMemoryRepository,
+  IVersionHistoryRepository,
   IViewRepository,
 } from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -157,7 +159,7 @@ export const newTestService = <T extends BaseService>(
     telemetryMock,
     trashMock,
     userMock,
-    versionHistoryMock,
+    versionHistoryMock as IVersionHistoryRepository as VersionHistoryRepository,
     viewMock as IViewRepository as ViewRepository,
   );
 
