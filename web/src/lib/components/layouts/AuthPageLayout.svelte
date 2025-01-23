@@ -18,8 +18,11 @@
         <Heading size="large" class="font-semibold" color="primary">{title}</Heading>
       </VStack>
     </CardHeader>
-    <CardBody>
-      {@render children?.()}
-    </CardBody>
+
+    <div class="pb-4">
+      <CardBody>
+        {@render children?.()}
+      </CardBody>
+    </div>
   </Card>
 </section>
