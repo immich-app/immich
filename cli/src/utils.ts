@@ -178,7 +178,7 @@ export const sha1 = (filepath: string) => {
  * when the batch size is reached or the debounce time has passed.
  */
 export class Batcher<T = unknown> {
-  private readonly items: T[] = [];
+  private items: T[] = [];
   private readonly batchSize: number;
   private readonly debounceTimeMs?: number;
   private readonly onBatch: (items: T[]) => void;
@@ -228,8 +228,8 @@ export class Batcher<T = unknown> {
       return;
     }
 
-    this.onBatch([...this.items]);
+    this.onBatch(this.items);
 
-    this.items.length = 0;
+    this.items = [];
   }
 }
