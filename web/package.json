@@ -84,8 +84,7 @@
     "svelte-gestures": "^5.0.4",
     "svelte-i18n": "^4.0.1",
     "svelte-local-storage-store": "^0.6.4",
-    "svelte-maplibre": "^0.9.13",
-    "thumbhash": "^0.1.1"
+    "svelte-maplibre": "^0.9.13"
   },
   "volta": {
     "node": "22.13.1"
