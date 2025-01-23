@@ -15,7 +15,6 @@ import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
-import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IProcessRepository } from 'src/interfaces/process.interface';
@@ -39,6 +38,7 @@ import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -73,7 +73,7 @@ export class BaseService {
     protected memoryRepository: MemoryRepository,
     protected metadataRepository: MetadataRepository,
     @Inject(IMoveRepository) protected moveRepository: IMoveRepository,
-    @Inject(INotificationRepository) protected notificationRepository: INotificationRepository,
+    protected notificationRepository: NotificationRepository,
     protected oauthRepository: OAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,

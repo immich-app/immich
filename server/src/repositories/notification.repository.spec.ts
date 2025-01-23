@@ -1,6 +1,5 @@
-import { EmailRenderRequest, EmailTemplate } from 'src/interfaces/notification.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
+import { EmailRenderRequest, EmailTemplate, NotificationRepository } from 'src/repositories/notification.repository';
 import { ILoggingRepository } from 'src/types';
 import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { Mocked } from 'vitest';
