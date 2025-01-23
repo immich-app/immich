@@ -99,7 +99,7 @@ export const startWatch = async (
       return;
     }
     const ext = '.' + path.split('.').pop()?.toLowerCase();
-    if (!extensions.has(ext ?? '')) {
+    if (!ext || !extensions.has(ext)) {
       return;
     }
     console.log(`Change detected: ${path}`);
