@@ -9,7 +9,6 @@ import { UserEntity } from 'src/entities/user.entity';
 import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICronRepository } from 'src/interfaces/cron.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
@@ -36,6 +35,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -60,7 +60,7 @@ export class BaseService {
     @Inject(IAlbumUserRepository) protected albumUserRepository: IAlbumUserRepository,
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
     protected configRepository: ConfigRepository,
-    @Inject(ICronRepository) protected cronRepository: ICronRepository,
+    protected cronRepository: CronRepository,
     @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,

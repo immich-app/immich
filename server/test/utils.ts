@@ -6,6 +6,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -21,6 +22,7 @@ import {
   IActivityRepository,
   IApiKeyRepository,
   IAuditRepository,
+  ICronRepository,
   ILoggingRepository,
   IMediaRepository,
   IMemoryRepository,
@@ -136,7 +138,7 @@ export const newTestService = <T extends BaseService>(
     albumUserMock,
     assetMock,
     configMock,
-    cronMock,
+    cronMock as ICronRepository as CronRepository,
     cryptoMock,
     databaseMock,
     eventMock,
