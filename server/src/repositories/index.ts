@@ -24,7 +24,6 @@ import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
-import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -76,6 +75,7 @@ export const repositories = [
   MediaRepository,
   MemoryRepository,
   OAuthRepository,
+  TrashRepository,
   ViewRepository,
   VersionHistoryRepository,
 ];
@@ -107,6 +107,5 @@ export const providers = [
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
   { provide: ITagRepository, useClass: TagRepository },
   { provide: ITelemetryRepository, useClass: TelemetryRepository },
-  { provide: ITrashRepository, useClass: TrashRepository },
   { provide: IUserRepository, useClass: UserRepository },
 ];
