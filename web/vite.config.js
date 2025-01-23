@@ -4,7 +4,6 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
-import topLevelAwait from 'vite-plugin-top-level-await';
 import wasm from 'vite-plugin-wasm';
 
 const upstream = {
@@ -16,6 +15,9 @@ const upstream = {
 };
 
 export default defineConfig({
+  build: {
+    target: 'es2022',
+  },
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
@@ -43,7 +45,6 @@ export default defineConfig({
     enhancedImages(),
     svelteTesting(),
     wasm(),
-    topLevelAwait(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
