@@ -31,7 +31,6 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
-import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -42,6 +41,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
@@ -86,7 +86,7 @@ export class BaseService {
     @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
     @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
     @Inject(ITagRepository) protected tagRepository: ITagRepository,
-    @Inject(ITelemetryRepository) protected telemetryRepository: ITelemetryRepository,
+    protected telemetryRepository: TelemetryRepository,
     protected trashRepository: TrashRepository,
     @Inject(IUserRepository) protected userRepository: IUserRepository,
     protected versionRepository: VersionHistoryRepository,

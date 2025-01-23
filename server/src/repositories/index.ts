@@ -23,7 +23,6 @@ import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
-import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -75,6 +74,7 @@ export const repositories = [
   MediaRepository,
   MemoryRepository,
   OAuthRepository,
+  TelemetryRepository,
   TrashRepository,
   ViewRepository,
   VersionHistoryRepository,
@@ -106,6 +106,5 @@ export const providers = [
   { provide: IStorageRepository, useClass: StorageRepository },
   { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
   { provide: ITagRepository, useClass: TagRepository },
-  { provide: ITelemetryRepository, useClass: TelemetryRepository },
   { provide: IUserRepository, useClass: UserRepository },
 ];

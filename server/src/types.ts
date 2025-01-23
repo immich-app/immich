@@ -9,6 +9,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { MetricGroupRepository, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
@@ -44,7 +45,9 @@ export type ILoggingRepository = Pick<
 >;
 export type IMediaRepository = RepositoryInterface<MediaRepository>;
 export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
+export type IMetricGroupRepository = RepositoryInterface<MetricGroupRepository>;
 export type IOAuthRepository = RepositoryInterface<OAuthRepository>;
+export type ITelemetryRepository = RepositoryInterface<TelemetryRepository>;
 export type ITrashRepository = RepositoryInterface<TrashRepository>;
 export type IViewRepository = RepositoryInterface<ViewRepository>;
 export type IVersionHistoryRepository = RepositoryInterface<VersionHistoryRepository>;
