@@ -19,10 +19,8 @@
       </VStack>
     </CardHeader>
 
-    <div class="pb-4">
-      <CardBody>
-        {@render children?.()}
-      </CardBody>
-    </div>
+    <CardBody class="mb-4">
+      {@render children?.()}
+    </CardBody>
   </Card>
 </section>
