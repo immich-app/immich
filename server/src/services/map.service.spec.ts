@@ -1,7 +1,7 @@
 import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IMapRepository } from 'src/interfaces/map.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { MapService } from 'src/services/map.service';
+import { IMapRepository } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';

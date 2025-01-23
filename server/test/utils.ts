@@ -8,6 +8,7 @@ import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
@@ -24,6 +25,7 @@ import {
   IAuditRepository,
   ICronRepository,
   ILoggingRepository,
+  IMapRepository,
   IMediaRepository,
   IMemoryRepository,
   IMetadataRepository,
@@ -146,7 +148,7 @@ export const newTestService = <T extends BaseService>(
     keyMock as IApiKeyRepository as ApiKeyRepository,
     libraryMock,
     machineLearningMock,
-    mapMock,
+    mapMock as IMapRepository as MapRepository,
     mediaMock as IMediaRepository as MediaRepository,
     memoryMock as IMemoryRepository as MemoryRepository,
     metadataMock as IMetadataRepository as MetadataRepository,

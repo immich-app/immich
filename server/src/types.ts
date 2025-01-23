@@ -7,6 +7,7 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
@@ -46,6 +47,7 @@ export type ILoggingRepository = Pick<
   | 'setContext'
   | 'setAppName'
 >;
+export type IMapRepository = RepositoryInterface<MapRepository>;
 export type IMediaRepository = RepositoryInterface<MediaRepository>;
 export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
 export type IMetadataRepository = RepositoryInterface<MetadataRepository>;

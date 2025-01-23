@@ -15,7 +15,6 @@ import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
@@ -37,6 +36,7 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
@@ -68,7 +68,7 @@ export class BaseService {
     protected keyRepository: ApiKeyRepository,
     @Inject(ILibraryRepository) protected libraryRepository: ILibraryRepository,
     @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
-    @Inject(IMapRepository) protected mapRepository: IMapRepository,
+    protected mapRepository: MapRepository,
     protected mediaRepository: MediaRepository,
     protected memoryRepository: MemoryRepository,
     protected metadataRepository: MetadataRepository,
