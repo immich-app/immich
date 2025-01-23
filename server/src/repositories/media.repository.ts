@@ -14,7 +14,6 @@ import {
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
-  IMediaRepository,
   ProbeOptions,
   TranscodeCommand,
   VideoInfo,

@@ -1,4 +1,4 @@
-import { Insertable, Updateable } from 'kysely';
+import { Insertable, Selectable, Updateable } from 'kysely';
 import { AssetFiles, AssetJobStatus, Assets, Exif } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
@@ -156,7 +156,6 @@ export interface IAssetRepository {
   update(asset: Updateable<Assets> & { id: string }): Promise<AssetEntity>;
   remove(asset: AssetEntity): Promise<void>;
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | undefined>;
-  removeAssetFile(path: string): Promise<void>;
   getStatistics(ownerId: string, options: AssetStatsOptions): Promise<AssetStats>;
   getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]>;
   getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]>;
@@ -168,5 +167,5 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(options: Insertable<AssetFiles>): Promise<void>;
   upsertFiles(options: Insertable<AssetFiles>[]): Promise<void>;
-  deleteFiles(assetIds: string | string[]): Promise<void>;
+  deleteFiles(options: Selectable<AssetFiles>[]): Promise<void>;
 }

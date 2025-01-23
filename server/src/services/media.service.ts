@@ -205,7 +205,7 @@ export class MediaService extends BaseService {
       pathsToDelete.push(fullsizeFile.path);
       if (!generated.fullsizePath) {
         // did not generate a new fullsize image, delete the existing record
-        await this.assetRepository.deleteFiles(fullsizeFile.id);
+        await this.assetRepository.deleteFiles([fullsizeFile]);
       }
     }
 
