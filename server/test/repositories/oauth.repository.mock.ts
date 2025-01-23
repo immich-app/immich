@@ -1,4 +1,4 @@
-import { IOAuthRepository } from 'src/interfaces/oauth.interface';
+import { IOAuthRepository } from 'src/types';
 import { Mocked } from 'vitest';
 
 export const newOAuthRepositoryMock = (): Mocked<IOAuthRepository> => {

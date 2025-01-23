@@ -19,7 +19,7 @@ import {
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
-import { OAuthProfile } from 'src/interfaces/oauth.interface';
+import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { AuthApiKey } from 'src/types';
 import { isGranted } from 'src/utils/access';

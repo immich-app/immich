@@ -12,7 +12,6 @@ import { IMapRepository } from 'src/interfaces/map.interface';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { INotificationRepository } from 'src/interfaces/notification.interface';
-import { IOAuthRepository } from 'src/interfaces/oauth.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IProcessRepository } from 'src/interfaces/process.interface';
@@ -76,6 +75,7 @@ export const repositories = [
   LoggingRepository,
   MediaRepository,
   MemoryRepository,
+  OAuthRepository,
   ViewRepository,
   VersionHistoryRepository,
 ];
@@ -95,7 +95,6 @@ export const providers = [
   { provide: IMetadataRepository, useClass: MetadataRepository },
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: INotificationRepository, useClass: NotificationRepository },
-  { provide: IOAuthRepository, useClass: OAuthRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: IProcessRepository, useClass: ProcessRepository },

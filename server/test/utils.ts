@@ -10,6 +10,7 @@ import { AuditRepository } from 'src/repositories/audit.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
+import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
@@ -21,6 +22,7 @@ import {
   ILoggingRepository,
   IMediaRepository,
   IMemoryRepository,
+  IOAuthRepository,
   IVersionHistoryRepository,
   IViewRepository,
 } from 'src/types';
@@ -144,7 +146,7 @@ export const newTestService = <T extends BaseService>(
     metadataMock,
     moveMock,
     notificationMock,
-    oauthMock,
+    oauthMock as IOAuthRepository as OAuthRepository,
     partnerMock,
     personMock,
     processMock,
