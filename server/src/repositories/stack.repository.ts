@@ -12,7 +12,11 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
   return jsonArrayFrom(
     eb
       .selectFrom('assets')
-      .selectAll()
+      .selectAll('assets')
+      .innerJoinLateral(
+        (eb) => eb.selectFrom('exif').selectAll('exif').whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
+        (join) => join.onTrue(),
+      )
       .$if(withTags, (eb) =>
         eb.select((eb) =>
           jsonArrayFrom(
@@ -24,6 +28,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
           ).as('tags'),
         ),
       )
+      .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
       .where('assets.deletedAt', 'is', null)
       .whereRef('assets.stackId', '=', 'asset_stack.id'),
   ).as('assets');
