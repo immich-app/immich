@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { JsonObject } from 'src/db';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
@@ -32,7 +33,7 @@ export class MemoryService extends BaseService {
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data: dto.data,
+        data: dto.data as unknown as JsonObject,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         seenAt: dto.seenAt,

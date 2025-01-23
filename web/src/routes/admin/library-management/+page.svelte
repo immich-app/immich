@@ -29,7 +29,7 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Text } from '@immich/ui';
   import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -220,18 +220,18 @@
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
-        <Button onclick={handleScanAll} size="small" variant="ghost" color="secondary">
-          <div class="flex gap-1 text-sm">
-            <Icon path={mdiSync} size="18" />
-            <span>{$t('scan_all_libraries')}</span>
-          </div>
+        <Button leadingIcon={mdiSync} onclick={handleScanAll} size="small" variant="ghost" color="secondary">
+          <Text class="hidden md:block">{$t('scan_all_libraries')}</Text>
         </Button>
       {/if}
-      <Button onclick={() => (toCreateLibrary = true)} size="small" variant="ghost" color="secondary">
-        <div class="flex gap-1 text-sm">
-          <Icon path={mdiPlusBoxOutline} size="18" />
-          <span>{$t('create_library')}</span>
-        </div>
+      <Button
+        leadingIcon={mdiPlusBoxOutline}
+        onclick={() => (toCreateLibrary = true)}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('create_library')}</Text>
       </Button>
     </div>
   {/snippet}

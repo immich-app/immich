@@ -7,10 +7,9 @@ import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
 import { excludePaths, serverVersion } from 'src/constants';
 import { ImmichEnvironment } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
 import { isStartUpError, useSwagger } from 'src/utils/misc';
@@ -24,8 +23,8 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
-  const configRepository = app.get<IConfigRepository>(IConfigRepository);
+  const logger = await app.resolve(LoggingRepository);
+  const configRepository = app.get(ConfigRepository);
 
   const { environment, host, port, resourcePaths } = configRepository.getEnv();
   const isDev = environment === ImmichEnvironment.DEVELOPMENT;

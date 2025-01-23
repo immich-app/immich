@@ -1,13 +1,12 @@
 import { PostgresJSDialect } from 'kysely-postgres-js';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   DatabaseExtension,
   EXTENSION_NAMES,
   IDatabaseRepository,
   VectorExtension,
 } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { DatabaseService } from 'src/services/database.service';
+import { IConfigRepository, ILoggingRepository } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
@@ -17,7 +16,7 @@ describe(DatabaseService.name, () => {
 
   let configMock: Mocked<IConfigRepository>;
   let databaseMock: Mocked<IDatabaseRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let loggerMock: Mocked<ILoggingRepository>;
   let extensionRange: string;
   let versionBelowRange: string;
   let minVersionInRange: string;

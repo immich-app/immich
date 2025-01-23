@@ -1,13 +1,13 @@
 import { SystemConfig } from 'src/config';
 import { ImmichWorker } from 'src/enum';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SmartInfoService } from 'src/services/smart-info.service';
+import { IConfigRepository } from 'src/types';
 import { getCLIPModelInfo } from 'src/utils/misc';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
@@ -284,7 +284,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should save the returned objects', async () => {
-      machineLearningMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
+      machineLearningMock.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
 
@@ -293,7 +293,7 @@ describe(SmartInfoService.name, () => {
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
-      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
+      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
     });
 
     it('should skip invisible assets', async () => {
@@ -315,7 +315,7 @@ describe(SmartInfoService.name, () => {
     });
 
     it('should wait for database', async () => {
-      machineLearningMock.encodeImage.mockResolvedValue([0.01, 0.02, 0.03]);
+      machineLearningMock.encodeImage.mockResolvedValue('[0.01, 0.02, 0.03]');
       databaseMock.isBusy.mockReturnValue(true);
 
       expect(await sut.handleEncodeClip({ id: assetStub.image.id })).toEqual(JobStatus.SUCCESS);
@@ -326,7 +326,7 @@ describe(SmartInfoService.name, () => {
         '/uploads/user-id/thumbs/path.jpg',
         expect.objectContaining({ modelName: 'ViT-B-32__openai' }),
       );
-      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, [0.01, 0.02, 0.03]);
+      expect(searchMock.upsert).toHaveBeenCalledWith(assetStub.image.id, '[0.01, 0.02, 0.03]');
     });
   });
 

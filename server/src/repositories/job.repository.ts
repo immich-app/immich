@@ -1,13 +1,11 @@
 import { getQueueToken } from '@nestjs/bullmq';
 import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { ClassConstructor } from 'class-transformer';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
 import { MetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IEntityJob,
@@ -21,7 +19,8 @@ import {
   QueueName,
   QueueStatus,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
 type JobMapItem = {
@@ -38,10 +37,9 @@ export class JobRepository implements IJobRepository {
 
   constructor(
     private moduleRef: ModuleRef,
-    private schedulerRegistry: SchedulerRegistry,
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+    private configRepository: ConfigRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(JobRepository.name);
   }

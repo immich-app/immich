@@ -5,7 +5,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Next,
   Param,
   Post,
@@ -22,9 +21,9 @@ import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/u
 import { CreateProfileImageDto, CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto } from 'src/dtos/user.dto';
 import { RouteKey } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { UserService } from 'src/services/user.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
@@ -34,7 +33,7 @@ import { UUIDParamDto } from 'src/validation';
 export class UserController {
   constructor(
     private service: UserService,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {}
 
   @Get()

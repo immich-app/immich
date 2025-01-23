@@ -3,9 +3,25 @@ import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AuditRepository } from 'src/repositories/audit.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
+import { MemoryRepository } from 'src/repositories/memory.repository';
+import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
-import { IActivityRepository } from 'src/types';
+import {
+  IAccessRepository,
+  IActivityRepository,
+  IApiKeyRepository,
+  IAuditRepository,
+  ILoggingRepository,
+  IMediaRepository,
+  IMemoryRepository,
+  IViewRepository,
+} from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
@@ -20,7 +36,7 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
@@ -64,7 +80,7 @@ export const newTestService = <T extends BaseService>(
   const { metadataRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
-  const loggerMock = newLoggerRepositoryMock();
+  const loggerMock = newLoggingRepositoryMock();
   const cronMock = newCronRepositoryMock();
   const cryptoMock = newCryptoRepositoryMock();
   const activityMock = newActivityRepositoryMock();
@@ -104,10 +120,10 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    loggerMock,
-    accessMock,
+    loggerMock as ILoggingRepository as LoggingRepository,
+    accessMock as IAccessRepository as AccessRepository,
     activityMock as IActivityRepository as ActivityRepository,
-    auditMock,
+    auditMock as IAuditRepository as AuditRepository,
     albumMock,
     albumUserMock,
     assetMock,
@@ -117,12 +133,12 @@ export const newTestService = <T extends BaseService>(
     databaseMock,
     eventMock,
     jobMock,
-    keyMock,
+    keyMock as IApiKeyRepository as ApiKeyRepository,
     libraryMock,
     machineLearningMock,
     mapMock,
-    mediaMock,
-    memoryMock,
+    mediaMock as IMediaRepository as MediaRepository,
+    memoryMock as IMemoryRepository as MemoryRepository,
     metadataMock,
     moveMock,
     notificationMock,
@@ -142,7 +158,7 @@ export const newTestService = <T extends BaseService>(
     trashMock,
     userMock,
     versionHistoryMock,
-    viewMock,
+    viewMock as IViewRepository as ViewRepository,
   );
 
   return {
@@ -252,3 +268,10 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
     }),
   } as unknown as ChildProcessWithoutNullStreams;
 });
+
+export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+  for (const item of items) {
+    await Promise.resolve();
+    yield item;
+  }
+}

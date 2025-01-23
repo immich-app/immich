@@ -5,13 +5,12 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { IConfigRepository, ILoggingRepository } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 
@@ -40,7 +39,7 @@ export class StorageCore {
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
     private systemMetadataRepository: ISystemMetadataRepository,
-    private logger: ILoggerRepository,
+    private logger: ILoggingRepository,
   ) {}
 
   static create(
@@ -51,7 +50,7 @@ export class StorageCore {
     personRepository: IPersonRepository,
     storageRepository: IStorageRepository,
     systemMetadataRepository: ISystemMetadataRepository,
-    logger: ILoggerRepository,
+    logger: ILoggingRepository,
   ) {
     if (!instance) {
       instance = new StorageCore(

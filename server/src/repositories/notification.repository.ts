@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { render } from '@react-email/render';
 import { createTransport } from 'nodemailer';
 import React from 'react';
@@ -6,7 +6,6 @@ import { AlbumInviteEmail } from 'src/emails/album-invite.email';
 import { AlbumUpdateEmail } from 'src/emails/album-update.email';
 import { TestEmail } from 'src/emails/test.email';
 import { WelcomeEmail } from 'src/emails/welcome.email';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   EmailRenderRequest,
   EmailTemplate,
@@ -15,10 +14,11 @@ import {
   SendEmailResponse,
   SmtpOptions,
 } from 'src/interfaces/notification.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 @Injectable()
 export class NotificationRepository implements INotificationRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(NotificationRepository.name);
   }
 

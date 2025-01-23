@@ -2,9 +2,9 @@ import { BadRequestException } from '@nestjs/common';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
+import { ILoggingRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -26,7 +26,7 @@ describe(DownloadService.name, () => {
   let sut: DownloadService;
   let accessMock: IAccessRepositoryMock;
   let assetMock: Mocked<IAssetRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let loggerMock: Mocked<ILoggingRepository>;
   let storageMock: Mocked<IStorageRepository>;
 
   it('should work', () => {

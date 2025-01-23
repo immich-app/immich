@@ -12,7 +12,7 @@ import {
   VideoContainer,
 } from 'src/enum';
 import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-import { ImageOptions } from 'src/interfaces/media.interface';
+import { ImageOptions } from 'src/types';
 
 export interface SystemConfig {
   backup: {

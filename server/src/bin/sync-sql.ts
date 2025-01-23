@@ -11,10 +11,10 @@ import { join } from 'node:path';
 import { format } from 'sql-formatter';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { entities } from 'src/entities';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { providers, repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
 import { Logger } from 'typeorm';
 
@@ -62,7 +62,7 @@ class SqlGenerator {
         ...repositories.map((repository) => ({ provide: repository, useClass: repository as any })),
       ];
       for (const repository of targets) {
-        if (repository.provide === ILoggerRepository) {
+        if (repository.provide === LoggingRepository) {
           continue;
         }
         await this.process(repository);

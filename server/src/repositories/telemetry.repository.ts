@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { MetricOptions } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
@@ -15,9 +15,9 @@ import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { serverVersion } from 'src/constants';
 import { ImmichTelemetry, MetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { IMetricGroupRepository, ITelemetryRepository, MetricGroupOptions } from 'src/interfaces/telemetry.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 class MetricGroupRepository implements IMetricGroupRepository {
   private enabled = false;
@@ -95,8 +95,8 @@ export class TelemetryRepository implements ITelemetryRepository {
   constructor(
     private metricService: MetricService,
     private reflect: Reflector,
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private configRepository: ConfigRepository,
+    private logger: LoggingRepository,
   ) {
     const { telemetry } = this.configRepository.getEnv();
     const { metrics } = telemetry;
