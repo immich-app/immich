@@ -430,9 +430,9 @@ export class AssetRepository implements IAssetRepository {
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | undefined> {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
-
     return this.db
       .selectFrom('assets')
+      .select('assets.id')
       .innerJoin('exif', 'assets.id', 'exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
