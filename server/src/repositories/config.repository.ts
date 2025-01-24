@@ -103,6 +103,7 @@ export interface EnvData {
   nodeVersion?: string;
 }
 
+type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
 type ParsedPostgresConnection = {
   host?: string;
   password?: string;
@@ -110,7 +111,7 @@ type ParsedPostgresConnection = {
   port?: number;
   database?: string;
   client_encoding?: string;
-  ssl?: 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
+  ssl?: Ssl;
   application_name?: string;
   fallback_application_name?: string;
   options?: string;
@@ -138,7 +139,6 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
   return new Set(values.length === 0 ? defaults : (values as T[]));
 };
 
-type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
 const isValidSsl = (ssl?: string | boolean | object): ssl is Ssl =>
   typeof ssl !== 'string' || ssl === 'require' || ssl === 'allow' || ssl === 'prefer' || ssl === 'verify-full';
 
