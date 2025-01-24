@@ -60,6 +60,8 @@ union all
   limit
     $14
 )
+limit
+  $15
 
 -- SearchRepository.searchSmart
 select
