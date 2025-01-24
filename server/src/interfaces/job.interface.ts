@@ -1,5 +1,5 @@
 import { ClassConstructor } from 'class-transformer';
-import { EmailImageAttachment } from 'src/interfaces/notification.interface';
+import { EmailImageAttachment } from 'src/repositories/notification.repository';
 
 export enum QueueName {
   THUMBNAIL_GENERATION = 'thumbnailGeneration',

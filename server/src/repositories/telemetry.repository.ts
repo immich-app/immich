@@ -15,11 +15,12 @@ import { MetricService } from 'nestjs-otel';
 import { copyMetadataFromFunctionToFunction } from 'nestjs-otel/lib/opentelemetry.utils';
 import { serverVersion } from 'src/constants';
 import { ImmichTelemetry, MetadataKey } from 'src/enum';
-import { IMetricGroupRepository, ITelemetryRepository, MetricGroupOptions } from 'src/interfaces/telemetry.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-class MetricGroupRepository implements IMetricGroupRepository {
+type MetricGroupOptions = { enabled: boolean };
+
+export class MetricGroupRepository {
   private enabled = false;
 
   constructor(private metricService: MetricService) {}
@@ -86,7 +87,7 @@ export const teardownTelemetry = async () => {
 };
 
 @Injectable()
-export class TelemetryRepository implements ITelemetryRepository {
+export class TelemetryRepository {
   api: MetricGroupRepository;
   host: MetricGroupRepository;
   jobs: MetricGroupRepository;

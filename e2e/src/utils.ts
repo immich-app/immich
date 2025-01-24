@@ -76,6 +76,7 @@ export const immichCli = (args: string[]) =>
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
+export const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
