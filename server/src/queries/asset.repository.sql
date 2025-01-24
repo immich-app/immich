@@ -306,17 +306,26 @@ order by
 with
   "duplicates" as (
     select
-      "duplicateId",
-      jsonb_agg("assets") as "assets"
+      "assets"."duplicateId",
+      jsonb_agg("asset") as "assets"
     from
       "assets"
+      left join lateral (
+        select
+          "assets".*,
+          "exif" as "exifInfo"
+        from
+          "exif"
+        where
+          "exif"."assetId" = "assets"."id"
+      ) as "asset" on true
     where
-      "ownerId" = $1::uuid
-      and "duplicateId" is not null
-      and "deletedAt" is null
-      and "isVisible" = $2
+      "assets"."ownerId" = $1::uuid
+      and "assets"."duplicateId" is not null
+      and "assets"."deletedAt" is null
+      and "assets"."isVisible" = $2
     group by
-      "duplicateId"
+      "assets"."duplicateId"
   ),
   "unique" as (
     select
