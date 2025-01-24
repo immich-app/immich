@@ -74,7 +74,7 @@ export class SearchRepository implements ISearchRepository {
     const builder = searchAssetBuilder(this.db, options);
     const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
     const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
-    const { rows } = await sql`${lessThan} union all ${greaterThan}`.execute(this.db);
+    const { rows } = await sql`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
     return rows as any as AssetEntity[];
   }
 
