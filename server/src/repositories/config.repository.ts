@@ -103,6 +103,19 @@ export interface EnvData {
   nodeVersion?: string;
 }
 
+type ParsedPostgresConnection = {
+  host?: string;
+  password?: string;
+  user?: string;
+  port?: number;
+  database?: string;
+  client_encoding?: string;
+  ssl?: 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
+  application_name?: string;
+  fallback_application_name?: string;
+  options?: string;
+};
+
 const productionKeys = {
   client:
     'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF2LzdTMzJjUkE1KysxTm5WRHNDTQpzcFAvakpISU1xT0pYRm5oNE53QTJPcHorUk1mZGNvOTJQc09naCt3d1FlRXYxVTJjMnBqelRpUS8ybHJLcS9rCnpKUmxYd2M0Y1Vlc1FETUpPRitQMnFPTlBiQUprWHZDWFlCVUxpdENJa29Md2ZoU0dOanlJS2FSRGhkL3ROeU4KOCtoTlJabllUMWhTSWo5U0NrS3hVQ096YXRQVjRtQ0RlclMrYkUrZ0VVZVdwOTlWOWF6dkYwRkltblRXcFFTdwpjOHdFWmdPTWg0c3ZoNmFpY3dkemtQQ3dFTGFrMFZhQkgzMUJFVUNRTGI5K0FJdEhBVXRKQ0t4aGI1V2pzMXM5CmJyWGZpMHZycGdjWi82RGFuWTJxZlNQem5PbXZEMkZycmxTMXE0SkpOM1ZvN1d3LzBZeS95TWNtelRXWmhHdWgKVVFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tDQo=',
@@ -124,6 +137,10 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
   return new Set(values.length === 0 ? defaults : (values as T[]));
 };
+
+type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
+const isValidSsl = (ssl?: string | boolean | object): ssl is Ssl =>
+  typeof ssl !== 'string' || ssl === 'require' || ssl === 'allow' || ssl === 'prefer' || ssl === 'verify-full';
 
 const getEnv = (): EnvData => {
   const dto = plainToInstance(EnvDto, process.env);
@@ -195,6 +212,30 @@ const getEnv = (): EnvData => {
     database: dto.DB_DATABASE_NAME || 'immich',
   } as const;
 
+  let parsedOptions: ParsedPostgresConnection;
+  if (dto.DB_URL) {
+    const parsed = parse(dto.DB_URL);
+    if (!isValidSsl(parsed.ssl)) {
+      throw new Error(`Invalid ssl option: ${parsed.ssl}`);
+    }
+
+    parsedOptions = {
+      ...parsed,
+      ssl: parsed.ssl,
+      host: parsed.host ?? undefined,
+      port: parsed.port ? Number(parsed.port) : undefined,
+      database: parsed.database ?? undefined,
+    };
+  } else {
+    parsedOptions = {
+      host: dto.DB_HOSTNAME || 'database',
+      port: dto.DB_PORT || 5432,
+      user: dto.DB_USERNAME || 'postgres',
+      password: dto.DB_PASSWORD || 'postgres',
+      database: dto.DB_DATABASE_NAME || 'immich',
+    };
+  }
+
   const driverOptions = {
     onnotice: (notice: Notice) => {
       if (notice['severity'] !== 'NOTICE') {
@@ -216,7 +257,7 @@ const getEnv = (): EnvData => {
         serialize: (value: number) => value.toString(),
       },
     },
-    ...(dto.DB_URL ? parse(dto.DB_URL) : parts),
+    ...parsedOptions,
   };
 
   return {
@@ -285,8 +326,7 @@ const getEnv = (): EnvData => {
           ...(databaseUrl ? { connectionType: 'url', url: databaseUrl } : parts),
         },
         kysely: {
-          // the postgres.js type for some fields is undefined, but the parsed options can be null
-          dialect: new PostgresJSDialect({ postgres: postgres(driverOptions as any) }),
+          dialect: new PostgresJSDialect({ postgres: postgres(driverOptions) }),
           log(event) {
             if (event.level === 'error') {
               console.error('Query failed :', {
