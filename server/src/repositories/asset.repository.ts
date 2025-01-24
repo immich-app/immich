@@ -677,13 +677,23 @@ export class AssetRepository implements IAssetRepository {
         .with('duplicates', (qb) =>
           qb
             .selectFrom('assets')
-            .select('duplicateId')
-            .select((eb) => eb.fn<Assets[]>('jsonb_agg', [eb.table('assets')]).as('assets'))
-            .where('ownerId', '=', asUuid(userId))
-            .where('duplicateId', 'is not', null)
-            .where('deletedAt', 'is', null)
-            .where('isVisible', '=', true)
-            .groupBy('duplicateId'),
+            .leftJoinLateral(
+              (qb) =>
+                qb
+                  .selectFrom('exif')
+                  .selectAll('assets')
+                  .select((eb) => eb.table('exif').as('exifInfo'))
+                  .whereRef('exif.assetId', '=', 'assets.id')
+                  .as('asset'),
+              (join) => join.onTrue(),
+            )
+            .select('assets.duplicateId')
+            .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
+            .where('assets.ownerId', '=', asUuid(userId))
+            .where('assets.duplicateId', 'is not', null)
+            .where('assets.deletedAt', 'is', null)
+            .where('assets.isVisible', '=', true)
+            .groupBy('assets.duplicateId'),
         )
         .with('unique', (qb) =>
           qb
