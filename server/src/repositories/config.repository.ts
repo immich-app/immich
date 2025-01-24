@@ -212,7 +212,7 @@ const getEnv = (): EnvData => {
     database: dto.DB_DATABASE_NAME || 'immich',
   } as const;
 
-  let parsedOptions: ParsedPostgresConnection;
+  let parsedOptions: ParsedPostgresConnection = parts;
   if (dto.DB_URL) {
     const parsed = parse(dto.DB_URL);
     if (!isValidSsl(parsed.ssl)) {
@@ -225,14 +225,6 @@ const getEnv = (): EnvData => {
       host: parsed.host ?? undefined,
       port: parsed.port ? Number(parsed.port) : undefined,
       database: parsed.database ?? undefined,
-    };
-  } else {
-    parsedOptions = {
-      host: dto.DB_HOSTNAME || 'database',
-      port: dto.DB_PORT || 5432,
-      user: dto.DB_USERNAME || 'postgres',
-      password: dto.DB_PASSWORD || 'postgres',
-      database: dto.DB_DATABASE_NAME || 'immich',
     };
   }
 
