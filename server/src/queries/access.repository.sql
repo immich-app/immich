@@ -83,7 +83,7 @@ from
   left join "users" on "users"."id" = "albumUsers"."usersId"
   and "users"."deletedAt" is null
 where
-  array["assets"."id", "assets"."livePhotoVideoId"] && array[$1]::uuid[]
+  array["assets"."id", "assets"."livePhotoVideoId"] && array[$1]::uuid []
   and (
     "albums"."ownerId" = $2
     or "users"."id" = $3
@@ -136,7 +136,7 @@ where
     "assets"."livePhotoVideoId",
     "albumAssets"."id",
     "albumAssets"."livePhotoVideoId"
-  ] && array[$2]::uuid[]
+  ] && array[$2]::uuid []
 
 -- AccessRepository.authDevice.checkOwnerAccess
 select
