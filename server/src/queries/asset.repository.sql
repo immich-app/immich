@@ -35,7 +35,7 @@ with
         where
           "asset_job_status"."previewAt" is not null
           and (assets."localDateTime" at time zone 'UTC')::date = today.date
-          and "assets"."ownerId" = any ($3::uuid [])
+          and "assets"."ownerId" = any ($3::uuid[])
           and "assets"."isVisible" = $4
           and "assets"."isArchived" = $5
           and exists (
@@ -72,7 +72,7 @@ select
 from
   "assets"
 where
-  "assets"."id" = any ($1::uuid [])
+  "assets"."id" = any ($1::uuid[])
 
 -- AssetRepository.getByIdsWithAllRelations
 select
@@ -130,7 +130,7 @@ from
       "asset_stack"."id"
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."id" = any ($2::uuid [])
+  "assets"."id" = any ($2::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "assets"
@@ -182,7 +182,7 @@ update "assets"
 set
   "deviceId" = $1
 where
-  "id" = any ($2::uuid [])
+  "id" = any ($2::uuid[])
 
 -- AssetRepository.updateDuplicates
 update "assets"
@@ -190,8 +190,8 @@ set
   "duplicateId" = $1
 where
   (
-    "duplicateId" = any ($2::uuid [])
-    or "id" = any ($3::uuid [])
+    "duplicateId" = any ($2::uuid[])
+    or "id" = any ($3::uuid[])
   )
 
 -- AssetRepository.getByChecksum
@@ -308,17 +308,26 @@ order by
 with
   "duplicates" as (
     select
-      "duplicateId",
-      jsonb_agg("assets") as "assets"
+      "assets"."duplicateId",
+      jsonb_agg("asset") as "assets"
     from
       "assets"
+      left join lateral (
+        select
+          "assets".*,
+          "exif" as "exifInfo"
+        from
+          "exif"
+        where
+          "exif"."assetId" = "assets"."id"
+      ) as "asset" on true
     where
-      "ownerId" = $1::uuid
-      and "duplicateId" is not null
-      and "deletedAt" is null
-      and "isVisible" = $2
+      "assets"."ownerId" = $1::uuid
+      and "assets"."duplicateId" is not null
+      and "assets"."deletedAt" is null
+      and "assets"."isVisible" = $2
     group by
-      "duplicateId"
+      "assets"."duplicateId"
   ),
   "unique" as (
     select
@@ -431,7 +440,7 @@ from
       "asset_stack"."id"
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."ownerId" = any ($1::uuid [])
+  "assets"."ownerId" = any ($1::uuid[])
   and "isVisible" = $2
   and "updatedAt" > $3
 limit

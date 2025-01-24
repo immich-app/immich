@@ -336,7 +336,7 @@
   "login_form_back_button_text": "Atpakaļ",
   "login_form_button_text": "Pieteikties",
   "login_form_email_hint": "jūsuepasts@email.com",
-  "login_form_endpoint_hint": "http://jūsu-servera-ip:ports/api",
+  "login_form_endpoint_hint": "http://jūsu-servera-ip:ports",
   "login_form_endpoint_url": "Servera Galapunkta URL",
   "login_form_err_http": "Lūdzu norādiet http:// vai https://",
   "login_form_err_invalid_email": "Nederīgs e-pasts",

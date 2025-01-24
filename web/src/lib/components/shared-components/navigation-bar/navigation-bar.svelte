@@ -3,7 +3,6 @@
   import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
@@ -99,11 +98,13 @@
         </div>
 
         {#if !page.url.pathname.includes('/admin') && showUploadButton}
-          <Button onclick={onUploadClick} class="hidden lg:block" variant="ghost" color="secondary">
-            <div class="flex gap-2">
-              <Icon path={mdiTrayArrowUp} size="1.5em" />
-              <span>{$t('upload')}</span>
-            </div>
+          <Button
+            leadingIcon={mdiTrayArrowUp}
+            onclick={onUploadClick}
+            class="hidden lg:flex"
+            variant="ghost"
+            color="secondary"
+            >{$t('upload')}
           </Button>
           <CircleIconButton
             onclick={onUploadClick}

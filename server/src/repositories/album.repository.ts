@@ -63,7 +63,6 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
-        .where('assets.isArchived', '=', false)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )

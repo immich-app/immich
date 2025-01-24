@@ -98,7 +98,6 @@ select
         where
           "albums_assets_assets"."albumsId" = "albums"."id"
           and "assets"."deletedAt" is null
-          and "assets"."isArchived" = $1
         order by
           "assets"."fileCreatedAt" desc
       ) as "asset"
@@ -106,7 +105,7 @@ select
 from
   "albums"
 where
-  "albums"."id" = $2
+  "albums"."id" = $1
   and "albums"."deletedAt" is null
 
 -- AlbumRepository.getByAssetId

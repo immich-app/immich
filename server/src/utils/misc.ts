@@ -14,7 +14,7 @@ import picomatch from 'picomatch';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ILoggingRepository } from 'src/types';
 
 export class ImmichStartupError extends Error {}
 export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
@@ -97,7 +97,7 @@ export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metad
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export const handlePromiseError = <T>(promise: Promise<T>, logger: ILoggerRepository): void => {
+export const handlePromiseError = <T>(promise: Promise<T>, logger: ILoggingRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 

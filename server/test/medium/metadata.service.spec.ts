@@ -5,13 +5,17 @@ import { join } from 'node:path';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { ILoggingRepository } from 'src/types';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newRandomImage, newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
-const metadataRepository = new MetadataRepository(newLoggerRepositoryMock());
+const metadataRepository = new MetadataRepository(
+  newLoggingRepositoryMock() as ILoggingRepository as LoggingRepository,
+);
 
 const createTestFile = async (exifData: Record<string, any>) => {
   const data = newRandomImage();

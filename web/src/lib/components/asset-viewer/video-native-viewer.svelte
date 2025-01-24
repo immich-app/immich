@@ -94,7 +94,7 @@
     playsinline
     controls
     class="h-full object-contain"
-    use:swipe
+    use:swipe={() => ({})}
     onswipe={onSwipe}
     oncanplay={(e) => handleCanPlay(e.currentTarget)}
     onended={onVideoEnded}

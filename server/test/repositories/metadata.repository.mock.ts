@@ -1,4 +1,4 @@
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { IMetadataRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newMetadataRepositoryMock = (): Mocked<IMetadataRepository> => {

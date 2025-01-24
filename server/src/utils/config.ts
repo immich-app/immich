@@ -7,9 +7,8 @@ import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { DeepPartial, IConfigRepository } from 'src/types';
+import { DeepPartial, IConfigRepository, ILoggingRepository } from 'src/types';
 import { getKeysDeep, unsetDeep } from 'src/utils/misc';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
@@ -17,7 +16,7 @@ export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConf
 type RepoDeps = {
   configRepo: IConfigRepository;
   metadataRepo: ISystemMetadataRepository;
-  logger: ILoggerRepository;
+  logger: ILoggingRepository;
 };
 
 const asyncLock = new AsyncLock();

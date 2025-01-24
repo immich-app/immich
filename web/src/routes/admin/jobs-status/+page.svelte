@@ -1,6 +1,5 @@
 <script lang="ts">
   import JobsPanel from '$lib/components/admin-page/jobs/jobs-panel.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import Combobox, { type ComboBoxOption } from '$lib/components/shared-components/combobox.svelte';
   import ConfirmDialog from '$lib/components/shared-components/dialog/confirm-dialog.svelte';
@@ -12,7 +11,7 @@
   import { asyncTimeout } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { createJob, getAllJobsStatus, ManualJobName, type AllJobStatusResponseDto } from '@immich/sdk';
-  import { Button, HStack } from '@immich/ui';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiCog, mdiPlus } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -72,13 +71,17 @@
 <UserPageLayout title={data.meta.title} admin>
   {#snippet buttons()}
     <HStack gap={0}>
-      <Button onclick={() => (isOpen = true)} size="small" variant="ghost" color="secondary">
-        <Icon path={mdiPlus} size="18" />
-        {$t('admin.create_job')}
+      <Button leadingIcon={mdiPlus} onclick={() => (isOpen = true)} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('admin.create_job')}</Text>
       </Button>
-      <Button href="{AppRoute.ADMIN_SETTINGS}?isOpen=job" size="small" variant="ghost" color="secondary">
-        <Icon path={mdiCog} size="18" />
-        {$t('admin.manage_concurrency')}
+      <Button
+        leadingIcon={mdiCog}
+        href="{AppRoute.ADMIN_SETTINGS}?isOpen=job"
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('admin.manage_concurrency')}</Text>
       </Button>
     </HStack>
   {/snippet}

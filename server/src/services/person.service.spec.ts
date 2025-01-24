@@ -7,12 +7,12 @@ import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interfac
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { DetectedFaces, IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMediaRepository } from 'src/interfaces/media.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { FaceSearchResult, ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { PersonService } from 'src/services/person.service';
+import { IMediaRepository } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';

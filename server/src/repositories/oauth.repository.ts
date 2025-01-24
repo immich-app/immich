@@ -1,11 +1,22 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { custom, generators, Issuer } from 'openid-client';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IOAuthRepository, OAuthConfig, OAuthProfile } from 'src/interfaces/oauth.interface';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { custom, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+
+export type OAuthConfig = {
+  clientId: string;
+  clientSecret: string;
+  issuerUrl: string;
+  mobileOverrideEnabled: boolean;
+  mobileRedirectUri: string;
+  profileSigningAlgorithm: string;
+  scope: string;
+  signingAlgorithm: string;
+};
+export type OAuthProfile = UserinfoResponse;
 
 @Injectable()
-export class OAuthRepository implements IOAuthRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+export class OAuthRepository {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(OAuthRepository.name);
   }
 

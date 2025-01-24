@@ -19,8 +19,8 @@ import {
   QueueName,
   QueueStatus,
 } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
 type JobMapItem = {
@@ -39,7 +39,7 @@ export class JobRepository implements IJobRepository {
     private moduleRef: ModuleRef,
     private configRepository: ConfigRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(JobRepository.name);
   }

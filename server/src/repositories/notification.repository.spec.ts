@@ -1,19 +1,17 @@
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { EmailRenderRequest, EmailTemplate } from 'src/interfaces/notification.interface';
-import { NotificationRepository } from 'src/repositories/notification.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { EmailRenderRequest, EmailTemplate, NotificationRepository } from 'src/repositories/notification.repository';
+import { ILoggingRepository } from 'src/types';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(NotificationRepository.name, () => {
   let sut: NotificationRepository;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let loggerMock: Mocked<ILoggingRepository>;
 
   beforeEach(() => {
-    loggerMock = {
-      setContext: vitest.fn(),
-      debug: vitest.fn(),
-    } as unknown as Mocked<ILoggerRepository>;
+    loggerMock = newLoggingRepositoryMock();
 
-    sut = new NotificationRepository(loggerMock);
+    sut = new NotificationRepository(loggerMock as ILoggingRepository as LoggingRepository);
   });
 
   describe('renderEmail', () => {

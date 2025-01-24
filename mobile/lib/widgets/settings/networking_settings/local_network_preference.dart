@@ -102,7 +102,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
       final localEndpoint = await _showEditDialog(
         context,
         "server_endpoint".tr(),
-        "http://local-ip:2283/api",
+        "http://local-ip:2283",
         localEndpointText.value,
       );
 
@@ -212,7 +212,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                       leading: const Icon(Icons.lan_rounded),
                       title: Text("server_endpoint".tr()),
                       subtitle: localEndpointText.value.isEmpty
-                          ? const Text("http://local-ip:2283/api")
+                          ? const Text("http://local-ip:2283")
                           : Text(
                               localEndpointText.value,
                               style: context.textTheme.labelLarge?.copyWith(

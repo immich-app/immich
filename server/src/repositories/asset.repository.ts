@@ -43,8 +43,8 @@ import {
   WithProperty,
   WithoutProperty,
 } from 'src/interfaces/asset.interface';
-import { MapMarker, MapMarkerSearchOptions } from 'src/interfaces/map.interface';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/interfaces/search.interface';
+import { MapMarker, MapMarkerSearchOptions } from 'src/repositories/map.repository';
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
@@ -452,9 +452,9 @@ export class AssetRepository implements IAssetRepository {
 
   findLivePhotoMatch(options: LivePhotoSearchOptions): Promise<AssetEntity | undefined> {
     const { ownerId, otherAssetId, livePhotoCID, type } = options;
-
     return this.db
       .selectFrom('assets')
+      .select('assets.id')
       .innerJoin('exif', 'assets.id', 'exif.assetId')
       .where('id', '!=', asUuid(otherAssetId))
       .where('ownerId', '=', asUuid(ownerId))
@@ -629,10 +629,10 @@ export class AssetRepository implements IAssetRepository {
                 .where((eb) => eb.or([eb('assets.stackId', 'is', null), eb(eb.table('asset_stack'), 'is not', null)])),
             )
             .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-            .$if(!!options.isArchived, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
-            .$if(!!options.isFavorite, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+            .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+            .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
             .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-            .$if(!!options.isDuplicate, (qb) =>
+            .$if(options.isDuplicate !== undefined, (qb) =>
               qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
             )
             .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!)),
@@ -646,7 +646,7 @@ export class AssetRepository implements IAssetRepository {
         */
         .select((eb) => eb.fn.countAll().as('count'))
         .groupBy('timeBucket')
-        .orderBy('timeBucket', 'desc')
+        .orderBy('timeBucket', options.order ?? 'desc')
         .execute() as any as Promise<TimeBucketItem[]>
     );
   }
@@ -691,7 +691,7 @@ export class AssetRepository implements IAssetRepository {
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
-      .orderBy('assets.localDateTime', 'desc')
+      .orderBy('assets.localDateTime', options.order ?? 'desc')
       .execute() as any as Promise<AssetEntity[]>;
   }
 
@@ -702,13 +702,23 @@ export class AssetRepository implements IAssetRepository {
         .with('duplicates', (qb) =>
           qb
             .selectFrom('assets')
-            .select('duplicateId')
-            .select((eb) => eb.fn<Assets[]>('jsonb_agg', [eb.table('assets')]).as('assets'))
-            .where('ownerId', '=', asUuid(userId))
-            .where('duplicateId', 'is not', null)
-            .where('deletedAt', 'is', null)
-            .where('isVisible', '=', true)
-            .groupBy('duplicateId'),
+            .leftJoinLateral(
+              (qb) =>
+                qb
+                  .selectFrom('exif')
+                  .selectAll('assets')
+                  .select((eb) => eb.table('exif').as('exifInfo'))
+                  .whereRef('exif.assetId', '=', 'assets.id')
+                  .as('asset'),
+              (join) => join.onTrue(),
+            )
+            .select('assets.duplicateId')
+            .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
+            .where('assets.ownerId', '=', asUuid(userId))
+            .where('assets.duplicateId', 'is not', null)
+            .where('assets.deletedAt', 'is', null)
+            .where('assets.isVisible', '=', true)
+            .groupBy('assets.duplicateId'),
         )
         .with('unique', (qb) =>
           qb
