@@ -338,7 +338,7 @@
   "login_form_email_hint": "yourmail@email.com",
   "login_form_endpoint_hint": "http://your-server-ip:port",
   "login_form_endpoint_url": "כתובת נקודת קצה השרת",
-  "login_form_err_http": "נא לציין //:http או //:https",
+  "login_form_err_http": "נא לציין //:htttp או //:https",
   "login_form_err_invalid_email": "דוא\"ל שגוי",
   "login_form_err_invalid_url": "כתובת לא חוקית",
   "login_form_err_leading_whitespace": "רווח לבן מוביל",
