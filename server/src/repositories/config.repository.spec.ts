@@ -1,4 +1,3 @@
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ImmichTelemetry } from 'src/enum';
 import { clearEnvCache, ConfigRepository } from 'src/repositories/config.repository';
 
