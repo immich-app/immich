@@ -57,5 +57,9 @@ export default defineConfig({
     sequence: {
       hooks: 'list',
     },
+    deps: {
+      // workaround for https://github.com/vitest-dev/vitest/issues/2150
+      inline: ['@immich/justified-layout-wasm'],
+    },
   },
 });
