@@ -10,6 +10,7 @@ import { PostgresJSDialect } from 'kysely-postgres-js';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { join, resolve } from 'node:path';
+import { parse } from 'pg-connection-string';
 import postgres, { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
@@ -185,6 +186,15 @@ const getEnv = (): EnvData => {
     }
   }
 
+  const parts = {
+    connectionType: 'parts',
+    host: dto.DB_HOSTNAME || 'database',
+    port: dto.DB_PORT || 5432,
+    username: dto.DB_USERNAME || 'postgres',
+    password: dto.DB_PASSWORD || 'postgres',
+    database: dto.DB_DATABASE_NAME || 'immich',
+  } as const;
+
   const driverOptions = {
     onnotice: (notice: Notice) => {
       if (notice['severity'] !== 'NOTICE') {
@@ -206,16 +216,8 @@ const getEnv = (): EnvData => {
         serialize: (value: number) => value.toString(),
       },
     },
+    ...(dto.DB_URL ? parse(dto.DB_URL) : parts),
   };
-
-  const parts = {
-    connectionType: 'parts',
-    host: dto.DB_HOSTNAME || 'database',
-    port: dto.DB_PORT || 5432,
-    username: dto.DB_USERNAME || 'postgres',
-    password: dto.DB_PASSWORD || 'postgres',
-    database: dto.DB_DATABASE_NAME || 'immich',
-  } as const;
 
   return {
     host: dto.IMMICH_HOST,
@@ -283,9 +285,8 @@ const getEnv = (): EnvData => {
           ...(databaseUrl ? { connectionType: 'url', url: databaseUrl } : parts),
         },
         kysely: {
-          dialect: new PostgresJSDialect({
-            postgres: databaseUrl ? postgres(databaseUrl, driverOptions) : postgres({ ...parts, ...driverOptions }),
-          }),
+          // the postgres.js type for some fields is undefined, but the parsed options can be null
+          dialect: new PostgresJSDialect({ postgres: postgres(driverOptions as any) }),
           log(event) {
             if (event.level === 'error') {
               console.error('Query failed :', {
