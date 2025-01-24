@@ -157,10 +157,13 @@ export class PersonRepository implements IPersonRepository {
           ),
         ),
       )
-      .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-      .orderBy((eb) => eb.fn.count('asset_faces.assetId'), 'desc')
-      .orderBy(sql`NULLIF(person.name, '')`, sql`asc nulls last`)
-      .orderBy('person.createdAt')
+      .$if(!options?.closestFaceAssetId, (qb) =>
+        qb
+          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
+          .orderBy((eb) => eb.fn.count('asset_faces.assetId'), 'desc')
+          .orderBy(sql`NULLIF(person.name, '')`, sql`asc nulls last`)
+          .orderBy('person.createdAt'),
+      )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
       .offset(pagination.skip ?? 0)
       .limit(pagination.take + 1)
