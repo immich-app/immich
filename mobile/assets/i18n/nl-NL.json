@@ -336,7 +336,7 @@
   "login_form_back_button_text": "Terug",
   "login_form_button_text": "Inloggen",
   "login_form_email_hint": "jouwemail@email.nl",
-  "login_form_endpoint_hint": "http://jouw-server-ip:poort/api",
+  "login_form_endpoint_hint": "http://jouw-server-ip:poort",
   "login_form_endpoint_url": "Server-URL",
   "login_form_err_http": "Voer http:// of https:// in",
   "login_form_err_invalid_email": "Ongeldig e-mailadres",

@@ -336,7 +336,7 @@
   "login_form_back_button_text": "Înapoi",
   "login_form_button_text": "Conectare",
   "login_form_email_hint": "email-ultau@email.com",
-  "login_form_endpoint_hint": "http://ip-server:port/api",
+  "login_form_endpoint_hint": "http://ip-server:port",
   "login_form_endpoint_url": "URL-ul destinației sever-ului",
   "login_form_err_http": "Te rugăm specifică http:// sau https://",
   "login_form_err_invalid_email": "Email invalid",
