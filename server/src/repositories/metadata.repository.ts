@@ -1,11 +1,72 @@
 import { Injectable } from '@nestjs/common';
-import { DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
+import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
+interface ExifDuration {
+  Value: number;
+  Scale?: number;
+}
+
+type StringOrNumber = string | number;
+
+type TagsWithWrongTypes =
+  | 'FocalLength'
+  | 'Duration'
+  | 'Description'
+  | 'ImageDescription'
+  | 'RegionInfo'
+  | 'TagsList'
+  | 'Keywords'
+  | 'HierarchicalSubject'
+  | 'ISO';
+
+export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
+  ContentIdentifier?: string;
+  MotionPhoto?: number;
+  MotionPhotoVersion?: number;
+  MotionPhotoPresentationTimestampUs?: number;
+  MediaGroupUUID?: string;
+  ImagePixelDepth?: string;
+  FocalLength?: number;
+  Duration?: number | string | ExifDuration;
+  EmbeddedVideoType?: string;
+  EmbeddedVideoFile?: BinaryField;
+  MotionPhotoVideo?: BinaryField;
+  TagsList?: StringOrNumber[];
+  HierarchicalSubject?: StringOrNumber[];
+  Keywords?: StringOrNumber | StringOrNumber[];
+  ISO?: number | number[];
+
+  // Type is wrong, can also be number.
+  Description?: StringOrNumber;
+  ImageDescription?: StringOrNumber;
+
+  // Extended properties for image regions, such as faces
+  RegionInfo?: {
+    AppliedToDimensions: {
+      W: number;
+      H: number;
+      Unit: string;
+    };
+    RegionList: {
+      Area: {
+        // (X,Y) // center of the rectangle
+        X: number;
+        Y: number;
+        W: number;
+        H: number;
+        Unit: string;
+      };
+      Rotation?: number;
+      Type?: string;
+      Name?: string;
+    }[];
+  };
+}
+
 @Injectable()
-export class MetadataRepository implements IMetadataRepository {
+export class MetadataRepository {
   private exiftool = new ExifTool({
     defaultVideosToUTC: true,
     backfillTimezones: true,

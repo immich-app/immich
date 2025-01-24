@@ -1,4 +1,4 @@
-import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
+import { IAlbumUserRepository } from 'src/types';
 import { Mocked } from 'vitest';
 
 export const newAlbumUserRepositoryMock = (): Mocked<IAlbumUserRepository> => {

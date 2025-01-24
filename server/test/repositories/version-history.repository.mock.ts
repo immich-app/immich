@@ -1,4 +1,4 @@
-import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
+import { IVersionHistoryRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newVersionHistoryRepositoryMock = (): Mocked<IVersionHistoryRepository> => {

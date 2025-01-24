@@ -3,9 +3,8 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetStatus } from 'src/enum';
-import { ITrashRepository } from 'src/interfaces/trash.interface';
 
-export class TrashRepository implements ITrashRepository {
+export class TrashRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   getDeletedIds(): AsyncIterableIterator<{ id: string }> {
