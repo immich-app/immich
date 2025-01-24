@@ -69,12 +69,13 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
+  async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
     const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
     const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
-    return sql`${lessThan} union all ${greaterThan}`.execute(this.db) as any as Promise<AssetEntity[]>;
+    const { rows } = await sql`${lessThan} union all ${greaterThan}`.execute(this.db);
+    return rows as any as AssetEntity[];
   }
 
   @GenerateSql({
