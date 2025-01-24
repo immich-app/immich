@@ -1,4 +1,3 @@
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import {
   DatabaseExtension,
   EXTENSION_NAMES,
