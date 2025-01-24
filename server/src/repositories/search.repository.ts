@@ -292,7 +292,7 @@ export class SearchRepository implements ISearchRepository {
       await sql`truncate ${sql.table('smart_search')}`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
-        .alterColumn('embedding', (col) => col.setDataType(sql.lit(`vector(${dimSize})`)))
+        .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
       await sql`reindex index clip_index`.execute(trx);
     });
