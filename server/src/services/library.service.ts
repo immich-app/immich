@@ -570,7 +570,7 @@ export class LibraryService extends BaseService {
       return AssetSyncResult.OFFLINE;
     }
 
-    if (asset.isOffline && asset.status != AssetStatus.DELETED) {
+    if (asset.isOffline && asset.status !== AssetStatus.DELETED) {
       // Only perform the expensive check if the asset is offline
       return AssetSyncResult.CHECK_OFFLINE;
     }
@@ -716,7 +716,7 @@ export class LibraryService extends BaseService {
       );
 
       return JobStatus.SUCCESS;
-    } else if (affectedAssetCount == 0) {
+    } else if (affectedAssetCount === 0) {
       this.logger.log(`No assets were offlined due to import paths and/or exclusion pattern(s) in ${library.id} `);
     } else {
       this.logger.log(
