@@ -5,13 +5,11 @@ import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
 import { RedisOptions } from 'ioredis';
-import { KyselyConfig } from 'kysely';
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
 import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { join, resolve } from 'node:path';
 import { parse } from 'pg-connection-string';
-import postgres, { Notice } from 'postgres';
+import { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
@@ -20,6 +18,20 @@ import { DatabaseConnectionParams, DatabaseExtension, VectorExtension } from 'sr
 import { QueueName } from 'src/interfaces/job.interface';
 import { setDifference } from 'src/utils/set';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+
+type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
+type PostgresConnectionConfig = {
+  host?: string;
+  password?: string;
+  user?: string;
+  port?: number;
+  database?: string;
+  client_encoding?: string;
+  ssl?: Ssl;
+  application_name?: string;
+  fallback_application_name?: string;
+  options?: string;
+};
 
 export interface EnvData {
   host?: string;
@@ -54,7 +66,7 @@ export interface EnvData {
   };
 
   database: {
-    config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: KyselyConfig };
+    config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: PostgresConnectionConfig };
     skipMigrations: boolean;
     vectorExtension: VectorExtension;
   };
@@ -102,20 +114,6 @@ export interface EnvData {
   noColor: boolean;
   nodeVersion?: string;
 }
-
-type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
-type ParsedPostgresConnection = {
-  host?: string;
-  password?: string;
-  user?: string;
-  port?: number;
-  database?: string;
-  client_encoding?: string;
-  ssl?: Ssl;
-  application_name?: string;
-  fallback_application_name?: string;
-  options?: string;
-};
 
 const productionKeys = {
   client:
@@ -212,7 +210,7 @@ const getEnv = (): EnvData => {
     database: dto.DB_DATABASE_NAME || 'immich',
   } as const;
 
-  let parsedOptions: ParsedPostgresConnection = parts;
+  let parsedOptions: PostgresConnectionConfig = parts;
   if (dto.DB_URL) {
     const parsed = parse(dto.DB_URL);
     if (!isValidSsl(parsed.ssl)) {
@@ -317,19 +315,7 @@ const getEnv = (): EnvData => {
           parseInt8: true,
           ...(databaseUrl ? { connectionType: 'url', url: databaseUrl } : parts),
         },
-        kysely: {
-          dialect: new PostgresJSDialect({ postgres: postgres(driverOptions) }),
-          log(event) {
-            if (event.level === 'error') {
-              console.error('Query failed :', {
-                durationMs: event.queryDurationMillis,
-                error: event.error,
-                sql: event.query.sql,
-                params: event.query.parameters,
-              });
-            }
-          },
-        },
+        kysely: driverOptions,
       },
 
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,

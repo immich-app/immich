@@ -3,9 +3,11 @@ import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import postgres from 'postgres';
 import { commands } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
@@ -57,7 +59,19 @@ const imports = [
     },
   }),
   TypeOrmModule.forFeature(entities),
-  KyselyModule.forRoot(database.config.kysely),
+  KyselyModule.forRoot({
+    dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
+    log(event) {
+      if (event.level === 'error') {
+        console.error('Query failed :', {
+          durationMs: event.queryDurationMillis,
+          error: event.error,
+          sql: event.query.sql,
+          params: event.query.parameters,
+        });
+      }
+    },
+  }),
 ];
 
 class BaseModule implements OnModuleInit, OnModuleDestroy {

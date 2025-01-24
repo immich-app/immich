@@ -24,12 +24,7 @@ const envData: EnvData = {
 
   database: {
     config: {
-      kysely: {
-        dialect: new PostgresJSDialect({
-          postgres: postgres({ database: 'immich', host: 'database', port: 5432 }),
-        }),
-        log: ['error'],
-      },
+      kysely: { database: 'immich', host: 'database', port: 5432 },
       typeorm: {
         connectionType: 'parts',
         database: 'immich',
