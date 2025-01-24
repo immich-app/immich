@@ -1,6 +1,6 @@
 import type { AssetBucket } from '$lib/stores/assets.store';
 import { locale } from '$lib/stores/preferences.store';
-import type { JustifiedLayout } from '@immich/justified-layout-wasm';
+import { JustifiedLayout } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -80,14 +80,12 @@ export function formatGroupTitle(_date: DateTime): string {
   return date.toLocaleString(groupDateFormat);
 }
 
-function emptyGeometry() {
-  return {
-    containerWidth: 0,
-    containerHeight: 0,
-    widowCount: 0,
-    boxes: [],
-  };
-}
+const emptyGeometry = new JustifiedLayout(Float32Array.from([]), {
+  rowHeight: 1,
+  heightTolerance: 0,
+  rowWidth: 1,
+  spacing: 0,
+});
 
 const formatDateGroupTitle = memoize(formatGroupTitle);
 
@@ -96,6 +94,7 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
     fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
   );
   const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
+
   return sorted.map((group) => {
     const date = fromLocalDateTime(group[0].localDateTime).startOf('day');
     return {
@@ -105,7 +104,7 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
       height: 0,
       heightActual: false,
       intersecting: false,
-      geometry: emptyGeometry(),
+      geometry: emptyGeometry,
       bucket,
     };
   });
