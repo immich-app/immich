@@ -1,4 +1,3 @@
-import { PostgresJSDialect } from 'kysely-postgres-js';
 import {
   DatabaseExtension,
   EXTENSION_NAMES,
@@ -62,8 +61,11 @@ describe(DatabaseService.name, () => {
             database: {
               config: {
                 kysely: {
-                  dialect: expect.any(PostgresJSDialect),
-                  log: ['error'],
+                  host: 'database',
+                  port: 5432,
+                  user: 'postgres',
+                  password: 'postgres',
+                  database: 'immich',
                 },
                 typeorm: {
                   connectionType: 'parts',
@@ -298,8 +300,11 @@ describe(DatabaseService.name, () => {
           database: {
             config: {
               kysely: {
-                dialect: expect.any(PostgresJSDialect),
-                log: ['error'],
+                host: 'database',
+                port: 5432,
+                user: 'postgres',
+                password: 'postgres',
+                database: 'immich',
               },
               typeorm: {
                 connectionType: 'parts',
@@ -328,8 +333,11 @@ describe(DatabaseService.name, () => {
           database: {
             config: {
               kysely: {
-                dialect: expect.any(PostgresJSDialect),
-                log: ['error'],
+                host: 'database',
+                port: 5432,
+                user: 'postgres',
+                password: 'postgres',
+                database: 'immich',
               },
               typeorm: {
                 connectionType: 'parts',
