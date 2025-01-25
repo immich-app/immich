@@ -1349,5 +1349,6 @@
   "years_ago": "{years, plural, one {# year} other {# years}} ago",
   "yes": "Yes",
   "you_dont_have_any_shared_links": "You don't have any shared links",
-  "zoom_image": "Zoom Image"
+  "zoom_image": "Zoom Image",
+  "rotate_image": "Rotate Image"
 }

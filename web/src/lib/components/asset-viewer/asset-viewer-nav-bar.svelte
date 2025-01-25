@@ -44,6 +44,7 @@
     mdiMagnifyPlusOutline,
     mdiPresentationPlay,
     mdiUpload,
+    mdiRotateRight,
   } from '@mdi/js';
   import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { t } from 'svelte-i18n';
@@ -57,6 +58,7 @@
     showDetailButton: boolean;
     showSlideshow?: boolean;
     onZoomImage: () => void;
+    onRotateImage: () => void;
     onCopyImage?: () => Promise<void>;
     onAction: OnAction;
     onRunJob: (name: AssetJobName) => void;
@@ -75,6 +77,7 @@
     showDetailButton,
     showSlideshow = false,
     onZoomImage,
+    onRotateImage,
     onCopyImage,
     onAction,
     onRunJob,
@@ -121,6 +124,13 @@
         icon={$photoZoomState && $photoZoomState.currentZoom > 1 ? mdiMagnifyMinusOutline : mdiMagnifyPlusOutline}
         title={$t('zoom_image')}
         onclick={onZoomImage}
+      />
+      <CircleIconButton
+        color="opaque"
+        hideMobile={true}
+        icon={mdiRotateRight}
+        title={$t('rotate_image')}
+        onclick={onRotateImage}
       />
     {/if}
     {#if canCopyImageToClipboard() && asset.type === AssetTypeEnum.Image}

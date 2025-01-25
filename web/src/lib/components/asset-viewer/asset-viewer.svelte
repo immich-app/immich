@@ -110,6 +110,7 @@
   let stack: StackResponseDto | null = $state(null);
 
   let zoomToggle = $state(() => void 0);
+  let rotateToggle = $state(() => void 0);
 
   const refreshStack = async () => {
     if (isSharedLink()) {
@@ -429,6 +430,7 @@
         showDetailButton={enableDetailPanel}
         showSlideshow={true}
         onZoomImage={zoomToggle}
+        onRotateImage={rotateToggle}
         onCopyImage={copyImage}
         onAction={handleAction}
         onRunJob={handleRunJob}
@@ -471,6 +473,7 @@
         {#if previewStackedAsset.type === AssetTypeEnum.Image}
           <PhotoViewer
             bind:zoomToggle
+            bind:rotateToggle
             bind:copyImage
             asset={previewStackedAsset}
             {preloadAssets}
@@ -516,6 +519,7 @@
           {:else}
             <PhotoViewer
               bind:zoomToggle
+              bind:rotateToggle
               bind:copyImage
               {asset}
               {preloadAssets}

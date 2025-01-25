@@ -14,6 +14,7 @@ describe('AssetViewerNavBar component', () => {
     showMotionPlayButton: false,
     showShareButton: false,
     onZoomImage: () => {},
+    onRotateImage: () => {},
     onCopyImage: () => {},
     onAction: () => {},
     onRunJob: () => {},

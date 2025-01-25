@@ -1,6 +1,6 @@
 <script lang="ts">
   import { shortcuts } from '$lib/actions/shortcut';
-  import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
+  import { zoomImageAction, zoomed, rotated } from '$lib/actions/zoom-image';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
@@ -30,6 +30,7 @@
     onNextAsset?: (() => void) | null;
     copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
+    rotateToggle?: (() => void) | null;
     onClose?: () => void;
   }
 
@@ -43,6 +44,7 @@
     onNextAsset = null,
     copyImage = $bindable(),
     zoomToggle = $bindable(),
+    rotateToggle = $bindable(),
   }: Props = $props();
 
   const { slideshowState, slideshowLook } = slideshowStore;
@@ -61,6 +63,7 @@
     currentPositionY: 0,
   });
   $zoomed = false;
+  $rotated = 0;
 
   onDestroy(() => {
     $boundingBoxesArray = [];
@@ -104,6 +107,10 @@
 
   zoomToggle = () => {
     $zoomed = $zoomed ? false : true;
+  };
+
+  rotateToggle = () => {
+    $rotated = ($rotated + 1) % 4;
   };
 
   const onCopyShortcut = (event: KeyboardEvent) => {
@@ -163,6 +170,8 @@
 
 <svelte:window
   use:shortcuts={[
+    { shortcut: { key: 'z' }, onShortcut: zoomToggle, preventDefault: false },
+    { shortcut: { key: 'r' }, onShortcut: rotateToggle, preventDefault: false },
     { shortcut: { key: 'c', ctrl: true }, onShortcut: onCopyShortcut, preventDefault: false },
     { shortcut: { key: 'c', meta: true }, onShortcut: onCopyShortcut, preventDefault: false },
   ]}
