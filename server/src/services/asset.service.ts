@@ -142,7 +142,9 @@ export class AssetService extends BaseService {
       await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
     }
 
-    await this.assetRepository.updateAll(ids, options);
+    if (options.isArchived || options.isFavorite || options.duplicateId || options.rating) {
+      await this.assetRepository.updateAll(ids, options);
+    }
   }
 
   @OnJob({ name: JobName.ASSET_DELETION_CHECK, queue: QueueName.BACKGROUND_TASK })
