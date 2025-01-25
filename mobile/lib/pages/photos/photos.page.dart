@@ -34,10 +34,12 @@ class PhotosPage extends HookConsumerWidget {
         Future(() => ref.read(assetProvider.notifier).getAllAsset());
         Future(() => ref.read(albumProvider.notifier).refreshRemoteAlbums());
         ref.read(serverInfoProvider.notifier).getServerInfo();
+
         return;
       },
       [],
     );
+
     Widget buildLoadingIndicator() {
       Timer(const Duration(seconds: 2), () => tipOneOpacity.value = 1);
 
@@ -81,11 +83,18 @@ class PhotosPage extends HookConsumerWidget {
 
     Future<void> refreshAssets() async {
       final fullRefresh = refreshCount.value > 0;
-      await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
+
       if (fullRefresh) {
+        Future.wait([
+          ref.read(assetProvider.notifier).getAllAsset(clear: true),
+          ref.read(albumProvider.notifier).refreshRemoteAlbums(),
+        ]);
+
         // refresh was forced: user requested another refresh within 2 seconds
         refreshCount.value = 0;
       } else {
+        await ref.read(assetProvider.notifier).getAllAsset(clear: false);
+
         refreshCount.value++;
         // set counter back to 0 if user does not request refresh again
         Timer(const Duration(seconds: 4), () => refreshCount.value = 0);

@@ -1,31 +1,30 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import RestoreAssets from '$lib/components/photos-page/actions/restore-assets.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute } from '$lib/constants';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets.store';
   import { featureFlags, serverConfig } from '$lib/stores/server-config.store';
+  import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
-  import type { PageData } from './$types';
-  import { handlePromiseError } from '$lib/utils';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -113,20 +112,28 @@
 {#if $featureFlags.loaded && $featureFlags.trash}
   <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
     {#snippet buttons()}
-      <div class="flex place-items-center gap-2">
-        <LinkButton onclick={handleRestoreTrash} disabled={assetInteraction.selectionActive}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiHistory} size="18" />
-            {$t('restore_all')}
-          </div>
-        </LinkButton>
-        <LinkButton onclick={() => handleEmptyTrash()} disabled={assetInteraction.selectionActive}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiDeleteForeverOutline} size="18" />
-            {$t('empty_trash')}
-          </div>
-        </LinkButton>
-      </div>
+      <HStack gap={0}>
+        <Button
+          leadingIcon={mdiHistory}
+          onclick={handleRestoreTrash}
+          disabled={assetInteraction.selectionActive}
+          variant="ghost"
+          color="secondary"
+          size="small"
+        >
+          <Text class="hidden md:block">{$t('restore_all')}</Text>
+        </Button>
+        <Button
+          leadingIcon={mdiDeleteForeverOutline}
+          onclick={() => handleEmptyTrash()}
+          disabled={assetInteraction.selectionActive}
+          variant="ghost"
+          color="secondary"
+          size="small"
+        >
+          <Text class="hidden md:block">{$t('empty_trash')}</Text>
+        </Button>
+      </HStack>
     {/snippet}
 
     <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape}>

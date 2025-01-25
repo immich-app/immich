@@ -12,7 +12,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
-import { EmailImageAttachment, EmailTemplate } from 'src/interfaces/notification.interface';
+import { EmailImageAttachment, EmailTemplate } from 'src/repositories/notification.repository';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';

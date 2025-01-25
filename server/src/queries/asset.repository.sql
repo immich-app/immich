@@ -23,7 +23,7 @@ with
       )
     select
       "a".*,
-      to_jsonb("exif") as "exifInfo"
+      to_json("exif") as "exifInfo"
     from
       "today"
       inner join lateral (
@@ -35,7 +35,7 @@ with
         where
           "asset_job_status"."previewAt" is not null
           and (assets."localDateTime" at time zone 'UTC')::date = today.date
-          and "assets"."ownerId" = any ($3::uuid [])
+          and "assets"."ownerId" = any ($3::uuid[])
           and "assets"."isVisible" = $4
           and "assets"."isArchived" = $5
           and exists (
@@ -56,7 +56,7 @@ select
   (
     (now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date
   ) / 365 as "yearsAgo",
-  jsonb_agg("res") as "assets"
+  json_agg("res") as "assets"
 from
   "res"
 group by
@@ -72,7 +72,7 @@ select
 from
   "assets"
 where
-  "assets"."id" = any ($1::uuid [])
+  "assets"."id" = any ($1::uuid[])
 
 -- AssetRepository.getByIdsWithAllRelations
 select
@@ -109,34 +109,28 @@ select
           "assets"."id" = "tag_asset"."assetsId"
       ) as agg
   ) as "tags",
-  to_jsonb("exif") as "exifInfo",
-  to_jsonb("stacked_assets") as "stack"
+  to_json("exif") as "exifInfo",
+  to_json("stacked_assets") as "stack"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
+  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
   left join lateral (
     select
       "asset_stack".*,
-      "s"."assets"
+      array_agg("stacked") as "assets"
     from
-      "asset_stack"
-      inner join lateral (
-        select
-          array_agg("stacked") as "assets"
-        from
-          "assets" as "stacked"
-        where
-          "asset_stack"."id" = "stacked"."stackId"
-          and "asset_stack"."primaryAssetId" != "stacked"."id"
-      ) as "s" on (
-        "asset_stack"."primaryAssetId" = "assets"."id"
-        or "assets"."stackId" is null
-      )
+      "assets" as "stacked"
     where
-      "assets"."stackId" = "asset_stack"."id"
-  ) as "stacked_assets" on true
+      "stacked"."stackId" = "asset_stack"."id"
+      and "stacked"."id" != "asset_stack"."primaryAssetId"
+      and "stacked"."deletedAt" is null
+      and "stacked"."isArchived" = $1
+    group by
+      "asset_stack"."id"
+  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."id" = any ($1::uuid [])
+  "assets"."id" = any ($2::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "assets"
@@ -188,7 +182,7 @@ update "assets"
 set
   "deviceId" = $1
 where
-  "id" = any ($2::uuid [])
+  "id" = any ($2::uuid[])
 
 -- AssetRepository.updateDuplicates
 update "assets"
@@ -196,8 +190,8 @@ set
   "duplicateId" = $1
 where
   (
-    "duplicateId" = any ($2::uuid [])
-    or "id" = any ($3::uuid [])
+    "duplicateId" = any ($2::uuid[])
+    or "id" = any ($3::uuid[])
   )
 
 -- AssetRepository.getByChecksum
@@ -278,14 +272,33 @@ order by
 -- AssetRepository.getTimeBucket
 select
   "assets".*,
-  to_jsonb("exif") as "exifInfo"
+  to_json("exif") as "exifInfo",
+  to_json("stacked_assets") as "stack"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
+  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
+  left join lateral (
+    select
+      "asset_stack".*,
+      count("stacked") as "assetCount"
+    from
+      "assets" as "stacked"
+    where
+      "stacked"."stackId" = "asset_stack"."id"
+      and "stacked"."deletedAt" is null
+      and "stacked"."isArchived" = $1
+    group by
+      "asset_stack"."id"
+  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."deletedAt" is null
-  and "assets"."isVisible" = $1
-  and date_trunc($2, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $3
+  (
+    "asset_stack"."primaryAssetId" = "assets"."id"
+    or "assets"."stackId" is null
+  )
+  and "assets"."deletedAt" is null
+  and "assets"."isVisible" = $2
+  and date_trunc($3, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
 order by
   "assets"."localDateTime" desc
 
@@ -293,17 +306,26 @@ order by
 with
   "duplicates" as (
     select
-      "duplicateId",
-      jsonb_agg("assets") as "assets"
+      "assets"."duplicateId",
+      jsonb_agg("asset") as "assets"
     from
       "assets"
+      left join lateral (
+        select
+          "assets".*,
+          "exif" as "exifInfo"
+        from
+          "exif"
+        where
+          "exif"."assetId" = "assets"."id"
+      ) as "asset" on true
     where
-      "ownerId" = $1::uuid
-      and "duplicateId" is not null
-      and "deletedAt" is null
-      and "isVisible" = $2
+      "assets"."ownerId" = $1::uuid
+      and "assets"."duplicateId" is not null
+      and "assets"."deletedAt" is null
+      and "assets"."isVisible" = $2
     group by
-      "duplicateId"
+      "assets"."duplicateId"
   ),
   "unique" as (
     select
@@ -368,25 +390,23 @@ limit
 -- AssetRepository.getAllForUserFullSync
 select
   "assets".*,
-  to_jsonb("exif") as "exifInfo",
-  to_jsonb("stacked_assets") as "stack"
+  to_json("exif") as "exifInfo",
+  to_json("stacked_assets") as "stack"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
+  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
   left join lateral (
     select
       "asset_stack".*,
-      (
-        select
-          count(*) as "assetCount"
-        where
-          "asset_stack"."id" = "assets"."stackId"
-      ) as "assetCount"
+      count("stacked") as "assetCount"
     from
-      "asset_stack"
+      "assets" as "stacked"
     where
-      "assets"."stackId" = "asset_stack"."id"
-  ) as "stacked_assets" on true
+      "stacked"."stackId" = "asset_stack"."id"
+    group by
+      "asset_stack"."id"
+  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = $1::uuid
   and "isVisible" = $2
@@ -400,27 +420,25 @@ limit
 -- AssetRepository.getChangedDeltaSync
 select
   "assets".*,
-  to_jsonb("exif") as "exifInfo",
-  to_jsonb("stacked_assets") as "stack"
+  to_json("exif") as "exifInfo",
+  to_json("stacked_assets") as "stack"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
+  left join "asset_stack" on "asset_stack"."id" = "assets"."stackId"
   left join lateral (
     select
       "asset_stack".*,
-      (
-        select
-          count(*) as "assetCount"
-        where
-          "asset_stack"."id" = "assets"."stackId"
-      ) as "assetCount"
+      count("stacked") as "assetCount"
     from
-      "asset_stack"
+      "assets" as "stacked"
     where
-      "assets"."stackId" = "asset_stack"."id"
-  ) as "stacked_assets" on true
+      "stacked"."stackId" = "asset_stack"."id"
+    group by
+      "asset_stack"."id"
+  ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."ownerId" = any ($1::uuid [])
+  "assets"."ownerId" = any ($1::uuid[])
   and "isVisible" = $2
   and "updatedAt" > $3
 limit

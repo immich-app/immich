@@ -1,4 +1,4 @@
-import { IMediaRepository } from 'src/interfaces/media.interface';
+import { IMediaRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newMediaRepositoryMock = (): Mocked<IMediaRepository> => {

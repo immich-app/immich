@@ -1,4 +1,4 @@
-import { IViewRepository } from 'src/interfaces/view.interface';
+import { IViewRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newViewRepositoryMock = (): Mocked<IViewRepository> => {

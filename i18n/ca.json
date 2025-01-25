@@ -1,5 +1,5 @@
 {
-  "about": "Sobre",
+  "about": "Quant a",
   "account": "Compte",
   "account_settings": "Configuració del compte",
   "acknowledge": "D'acord",
@@ -523,6 +523,10 @@
   "date_range": "Interval de dates",
   "day": "Dia",
   "deduplicate_all": "Desduplica-ho tot",
+  "deduplication_criteria_1": "Mida d'imatge en bytes",
+  "deduplication_criteria_2": "Quantitat de dades EXIF",
+  "deduplication_info": "Informació de deduplicació",
+  "deduplication_info_description": "Per preseleccionar recursos automàticament i eliminar els duplicats de manera massiva, ens fixem en:",
   "default_locale": "Localització predeterminada",
   "default_locale_description": "Format de dates i números segons la configuració del navegador",
   "delete": "Esborra",

@@ -520,7 +520,7 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
-      expect(stackMock.update).toHaveBeenCalledWith({
+      expect(stackMock.update).toHaveBeenCalledWith('stack-1', {
         id: 'stack-1',
         primaryAssetId: 'stack-child-asset-1',
       });

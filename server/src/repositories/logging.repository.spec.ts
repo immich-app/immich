@@ -1,12 +1,12 @@
 import { ClsService } from 'nestjs-cls';
 import { ImmichWorker } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { LoggerRepository } from 'src/repositories/logger.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { IConfigRepository } from 'src/types';
 import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { Mocked } from 'vitest';
 
-describe(LoggerRepository.name, () => {
-  let sut: LoggerRepository;
+describe(LoggingRepository.name, () => {
+  let sut: LoggingRepository;
 
   let configMock: Mocked<IConfigRepository>;
   let clsMock: Mocked<ClsService>;
@@ -22,7 +22,7 @@ describe(LoggerRepository.name, () => {
     it('should use colors', () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ noColor: false }));
 
-      sut = new LoggerRepository(clsMock, configMock);
+      sut = new LoggingRepository(clsMock, configMock);
       sut.setAppName(ImmichWorker.API);
 
       expect(sut['formatContext']('context')).toBe('\u001B[33m[Api:context]\u001B[39m ');
@@ -31,7 +31,7 @@ describe(LoggerRepository.name, () => {
     it('should not use colors when noColor is true', () => {
       configMock.getEnv.mockReturnValue(mockEnvData({ noColor: true }));
 
-      sut = new LoggerRepository(clsMock, configMock);
+      sut = new LoggingRepository(clsMock, configMock);
       sut.setAppName(ImmichWorker.API);
 
       expect(sut['formatContext']('context')).toBe('[Api:context] ');

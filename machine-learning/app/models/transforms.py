@@ -4,6 +4,7 @@ from typing import IO
 
 import cv2
 import numpy as np
+import orjson
 from numpy.typing import NDArray
 from PIL import Image
 
@@ -69,3 +70,9 @@ def clean_text(text: str, canonicalize: bool = False) -> str:
     if canonicalize:
         text = text.translate(_PUNCTUATION_TRANS).lower()
     return text
+
+
+# this allows the client to use the array as a string without deserializing only to serialize back to a string
+# TODO: use this in a less invasive way
+def serialize_np_array(arr: NDArray[np.float32]) -> str:
+    return orjson.dumps(arr, option=orjson.OPT_SERIALIZE_NUMPY).decode()

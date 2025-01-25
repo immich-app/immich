@@ -19,8 +19,9 @@ import {
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
-import { OAuthProfile } from 'src/interfaces/oauth.interface';
+import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
+import { AuthApiKey } from 'src/types';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 
@@ -65,7 +66,7 @@ export class AuthService extends BaseService {
     if (user) {
       const isAuthenticated = this.validatePassword(dto.password, user);
       if (!isAuthenticated) {
-        user = null;
+        user = undefined;
       }
     }
 
@@ -309,7 +310,10 @@ export class AuthService extends BaseService {
     const hashedKey = this.cryptoRepository.hashSha256(key);
     const apiKey = await this.keyRepository.getKey(hashedKey);
     if (apiKey) {
-      return { user: apiKey.user, apiKey };
+      return {
+        user: apiKey.user as unknown as UserEntity,
+        apiKey: apiKey as unknown as AuthApiKey,
+      };
     }
 
     throw new UnauthorizedException('Invalid API key');
@@ -331,7 +335,7 @@ export class AuthService extends BaseService {
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
       if (diff.hours > 1) {
-        await this.sessionRepository.update({ id: session.id, updatedAt: new Date() });
+        await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
       return { user: session.user, session };
@@ -346,9 +350,9 @@ export class AuthService extends BaseService {
 
     await this.sessionRepository.create({
       token,
-      user,
       deviceOS: loginDetails.deviceOS,
       deviceType: loginDetails.deviceType,
+      userId: user.id,
     });
 
     return mapLoginResponse(user, key);

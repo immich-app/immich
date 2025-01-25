@@ -42,6 +42,34 @@
     assetViewingStore.showAssetViewer(false);
   });
 
+  const onNext = () => {
+    const index = getAssetIndex($viewingAsset.id) + 1;
+    if (index >= assets.length) {
+      return Promise.resolve(false);
+    }
+    setAsset(assets[index]);
+    return Promise.resolve(true);
+  };
+
+  const onPrevious = () => {
+    const index = getAssetIndex($viewingAsset.id) - 1;
+    if (index < 0) {
+      return Promise.resolve(false);
+    }
+    setAsset(assets[index]);
+    return Promise.resolve(true);
+  };
+
+  const onRandom = () => {
+    if (assets.length <= 0) {
+      return Promise.resolve(null);
+    }
+    const index = Math.floor(Math.random() * assets.length);
+    const asset = assets[index];
+    setAsset(asset);
+    return Promise.resolve(asset);
+  };
+
   const onSelectAsset = (asset: AssetResponseDto) => {
     if (selectedAssetIds.has(asset.id)) {
       selectedAssetIds.delete(asset.id);
@@ -153,14 +181,9 @@
       <AssetViewer
         asset={$viewingAsset}
         showNavigation={assets.length > 1}
-        onNext={() => {
-          const index = getAssetIndex($viewingAsset.id) + 1;
-          setAsset(assets[index % assets.length]);
-        }}
-        onPrevious={() => {
-          const index = getAssetIndex($viewingAsset.id) - 1 + assets.length;
-          setAsset(assets[index % assets.length]);
-        }}
+        {onNext}
+        {onPrevious}
+        {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

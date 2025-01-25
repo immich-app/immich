@@ -2,8 +2,44 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
+import { AccessRepository } from 'src/repositories/access.repository';
+import { ActivityRepository } from 'src/repositories/activity.repository';
+import { AlbumUserRepository } from 'src/repositories/album-user.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AuditRepository } from 'src/repositories/audit.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MapRepository } from 'src/repositories/map.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
+import { MemoryRepository } from 'src/repositories/memory.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { TrashRepository } from 'src/repositories/trash.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
+import {
+  IAccessRepository,
+  IActivityRepository,
+  IAlbumUserRepository,
+  IApiKeyRepository,
+  IAuditRepository,
+  ICronRepository,
+  ILoggingRepository,
+  IMapRepository,
+  IMediaRepository,
+  IMemoryRepository,
+  IMetadataRepository,
+  INotificationRepository,
+  IOAuthRepository,
+  IServerInfoRepository,
+  ITrashRepository,
+  IVersionHistoryRepository,
+  IViewRepository,
+} from 'src/types';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
 import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
@@ -18,7 +54,7 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { newLoggerRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
@@ -48,7 +84,7 @@ import { Mocked, vitest } from 'vitest';
 
 type Overrides = {
   worker?: ImmichWorker;
-  metadataRepository?: IMetadataRepository;
+  metadataRepository?: MetadataRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -62,7 +98,7 @@ export const newTestService = <T extends BaseService>(
   const { metadataRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
-  const loggerMock = newLoggerRepositoryMock();
+  const loggerMock = newLoggingRepositoryMock();
   const cronMock = newCronRepositoryMock();
   const cryptoMock = newCryptoRepositoryMock();
   const activityMock = newActivityRepositoryMock();
@@ -102,45 +138,45 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    loggerMock,
-    accessMock,
-    activityMock,
-    auditMock,
+    loggerMock as ILoggingRepository as LoggingRepository,
+    accessMock as IAccessRepository as AccessRepository,
+    activityMock as IActivityRepository as ActivityRepository,
+    auditMock as IAuditRepository as AuditRepository,
     albumMock,
-    albumUserMock,
+    albumUserMock as IAlbumUserRepository as AlbumUserRepository,
     assetMock,
     configMock,
-    cronMock,
+    cronMock as ICronRepository as CronRepository,
     cryptoMock,
     databaseMock,
     eventMock,
     jobMock,
-    keyMock,
+    keyMock as IApiKeyRepository as ApiKeyRepository,
     libraryMock,
     machineLearningMock,
-    mapMock,
-    mediaMock,
-    memoryMock,
-    metadataMock,
+    mapMock as IMapRepository as MapRepository,
+    mediaMock as IMediaRepository as MediaRepository,
+    memoryMock as IMemoryRepository as MemoryRepository,
+    metadataMock as IMetadataRepository as MetadataRepository,
     moveMock,
-    notificationMock,
-    oauthMock,
+    notificationMock as INotificationRepository as NotificationRepository,
+    oauthMock as IOAuthRepository as OAuthRepository,
     partnerMock,
     personMock,
     processMock,
     searchMock,
-    serverInfoMock,
+    serverInfoMock as IServerInfoRepository as ServerInfoRepository,
     sessionMock,
     sharedLinkMock,
     stackMock,
     storageMock,
     systemMock,
     tagMock,
-    telemetryMock,
-    trashMock,
+    telemetryMock as unknown as TelemetryRepository,
+    trashMock as ITrashRepository as TrashRepository,
     userMock,
-    versionHistoryMock,
-    viewMock,
+    versionHistoryMock as IVersionHistoryRepository as VersionHistoryRepository,
+    viewMock as IViewRepository as ViewRepository,
   );
 
   return {
@@ -250,3 +286,10 @@ export const mockSpawn = vitest.fn((exitCode: number, stdout: string, stderr: st
     }),
   } as unknown as ChildProcessWithoutNullStreams;
 });
+
+export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+  for (const item of items) {
+    await Promise.resolve();
+    yield item;
+  }
+}

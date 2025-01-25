@@ -12,15 +12,13 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
+import { DeepPartial, IConfigRepository, ILoggingRepository } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
-import { DeepPartial } from 'typeorm';
 import { Mocked } from 'vitest';
 
 const partialConfig = {
@@ -204,7 +202,7 @@ describe(SystemConfigService.name, () => {
 
   let configMock: Mocked<IConfigRepository>;
   let eventMock: Mocked<IEventRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
+  let loggerMock: Mocked<ILoggingRepository>;
   let systemMock: Mocked<ISystemMetadataRepository>;
 
   beforeEach(() => {

@@ -1,17 +1,20 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import LibraryImportPathsForm from '$lib/components/forms/library-import-paths-form.svelte';
   import LibraryRenameForm from '$lib/components/forms/library-rename-form.svelte';
   import LibraryScanSettingsForm from '$lib/components/forms/library-scan-settings-form.svelte';
   import LibraryUserPickerForm from '$lib/components/forms/library-user-picker-form.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
+  import { locale } from '$lib/stores/preferences.store';
   import { ByteUnit, getBytesWithUnit } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -26,15 +29,12 @@
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
+  import { Button, Text } from '@immich/ui';
   import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { fade, slide } from 'svelte/transition';
-  import LinkButton from '../../../lib/components/elements/buttons/link-button.svelte';
-  import type { PageData } from './$types';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import { fade, slide } from 'svelte/transition';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -220,19 +220,19 @@
   {#snippet buttons()}
     <div class="flex justify-end gap-2">
       {#if libraries.length > 0}
-        <LinkButton onclick={() => handleScanAll()}>
-          <div class="flex gap-1 text-sm">
-            <Icon path={mdiSync} size="18" />
-            <span>{$t('scan_all_libraries')}</span>
-          </div>
-        </LinkButton>
+        <Button leadingIcon={mdiSync} onclick={handleScanAll} size="small" variant="ghost" color="secondary">
+          <Text class="hidden md:block">{$t('scan_all_libraries')}</Text>
+        </Button>
       {/if}
-      <LinkButton onclick={() => (toCreateLibrary = true)}>
-        <div class="flex gap-1 text-sm">
-          <Icon path={mdiPlusBoxOutline} size="18" />
-          <span>{$t('create_library')}</span>
-        </div>
-      </LinkButton>
+      <Button
+        leadingIcon={mdiPlusBoxOutline}
+        onclick={() => (toCreateLibrary = true)}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('create_library')}</Text>
+      </Button>
     </div>
   {/snippet}
   <section class="my-4">
