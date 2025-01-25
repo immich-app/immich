@@ -511,7 +511,6 @@ export class LibraryService extends BaseService {
       await this.assetRepository.updateAll([asset.id], {
         isOffline: false,
         deletedAt: null,
-        fileCreatedAt: mtime,
         fileModifiedAt: mtime,
         originalFileName: parse(asset.originalPath).base,
       });
