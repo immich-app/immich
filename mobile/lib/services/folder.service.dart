@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
@@ -15,7 +16,7 @@ class FolderService {
 
   FolderService(this._folderApiRepository);
 
-  Future<RootFolder> getFolderStructure() async {
+  Future<RootFolder> getFolderStructure(SortOrder order) async {
     final paths = await _folderApiRepository.getAllUniquePaths();
 
     // Create folder structure
@@ -51,8 +52,12 @@ class FolderService {
               subfolders: [],
             ),
           );
-          // Sort folders alphanumerically after adding new folder
-          folderMap[parentPath]!.sort((a, b) => a.name.compareTo(b.name));
+          // Sort folders based on order parameter
+          folderMap[parentPath]!.sort(
+            (a, b) => order == SortOrder.desc
+                ? b.name.compareTo(a.name)
+                : a.name.compareTo(b.name),
+          );
         }
       }
     }
@@ -64,8 +69,12 @@ class FolderService {
 
       if (folderMap.containsKey(fullPath)) {
         folder.subfolders.addAll(folderMap[fullPath]!);
-        // Sort subfolders alphanumerically
-        folder.subfolders.sort((a, b) => a.name.compareTo(b.name));
+        // Sort subfolders based on order parameter
+        folder.subfolders.sort(
+          (a, b) => order == SortOrder.desc
+              ? b.name.compareTo(a.name)
+              : a.name.compareTo(b.name),
+        );
         for (var subfolder in folder.subfolders) {
           attachSubfolders(subfolder);
         }
@@ -73,8 +82,12 @@ class FolderService {
     }
 
     List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
-    // Sort root subfolders alphanumerically
-    rootSubfolders.sort((a, b) => a.name.compareTo(b.name));
+    // Sort root subfolders based on order parameter
+    rootSubfolders.sort(
+      (a, b) => order == SortOrder.desc
+          ? b.name.compareTo(a.name)
+          : a.name.compareTo(b.name),
+    );
 
     for (var folder in rootSubfolders) {
       attachSubfolders(folder);
@@ -85,13 +98,21 @@ class FolderService {
     );
   }
 
-  Future<List<Asset>> getFolderAssets(RootFolder folder) async {
+  Future<List<Asset>> getFolderAssets(
+      RootFolder folder, SortOrder order) async {
     try {
       if (folder is RecursiveFolder) {
         String fullPath =
             folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
         fullPath = fullPath[0] == '/' ? fullPath.substring(1) : fullPath;
-        final result = await _folderApiRepository.getAssetsForPath(fullPath);
+        var result = await _folderApiRepository.getAssetsForPath(fullPath);
+
+        if (order == SortOrder.desc) {
+          result.sort((a, b) => b.fileCreatedAt.compareTo(a.fileCreatedAt));
+        } else {
+          result.sort((a, b) => a.fileCreatedAt.compareTo(b.fileCreatedAt));
+        }
+
         return result;
       }
       final result = await _folderApiRepository.getAssetsForPath('/');

@@ -31,11 +31,24 @@ class FolderPage extends HookConsumerWidget {
       [],
     );
 
+    void onToggleSortOrder() {
+      if (folder != null) {
+        ref.read(folderRenderListProvider(folder!).notifier).toggleSortOrder();
+      }
+      ref.read(folderStructureProvider.notifier).toggleSortOrder();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(folder?.name ?? 'Root'),
         elevation: 0,
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.swap_vert),
+            onPressed: onToggleSortOrder,
+          ),
+        ],
       ),
       body: folderState.when(
         data: (rootFolder) {
