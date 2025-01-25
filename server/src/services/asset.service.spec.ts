@@ -430,6 +430,20 @@ describe(AssetService.name, () => {
       });
       expect(assetMock.updateAll).not.toHaveBeenCalled();
     });
+
+    it('should update Assets table if isArchived field is provided', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isArchived: undefined,
+        isFavorite: false,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(assetMock.updateAll).toHaveBeenCalled();
+    });
   });
 
   describe('deleteAll', () => {
