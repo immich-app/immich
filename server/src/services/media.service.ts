@@ -231,14 +231,9 @@ export class MediaService extends BaseService {
     const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
     const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
 
-    const { enabled: enableFullsizeImage, ...fullsizeImageOptions } = image.fullsize;
-    const shouldConvertFullsize = enableFullsizeImage && !mimeTypes.isWebSupportedImage(asset.originalFileName);
+    const shouldConvertFullsize = image.fullsize.enabled && !mimeTypes.isWebSupportedImage(asset.originalFileName);
     const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const decodeOptions: DecodeToBufferOptions = {
-      colorspace,
-      processInvalidImages,
-      size: image.preview.size,
-    };
+    const decodeOptions: DecodeToBufferOptions = { colorspace, processInvalidImages, size: image.preview.size };
 
     let useExtracted = false;
     let decodeInputPath: string = asset.originalPath;
@@ -253,7 +248,6 @@ export class MediaService extends BaseService {
 
     if (shouldExtractEmbedded) {
       // For RAW files, try extracting embedded preview first
-
       // Assume extracted image from RAW always in JPEG format, as implied from the `jpgFromRaw` tag name
       const extractedPath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, ImageFormat.JPEG);
       const didExtract = await this.mediaRepository.extract(asset.originalPath, extractedPath);
@@ -269,10 +263,8 @@ export class MediaService extends BaseService {
         decodeInputPath = extractedPath;
         if (asset.exifInfo) {
           // write essential orientation and colorspace EXIF for correct fullsize preview and subsequent processing
-          await this.mediaRepository.writeExif(
-            { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace },
-            extractedPath,
-          );
+          const exif = { orientation: asset.exifInfo.orientation, colorspace: asset.exifInfo.colorspace };
+          await this.mediaRepository.writeExif(exif, extractedPath);
         }
       }
     }
@@ -288,9 +280,8 @@ export class MediaService extends BaseService {
 
     // did not extract a usable image from RAW
     if (fullsizePath && !useExtracted) {
-      promises.push(
-        this.mediaRepository.generateThumbnail(data, { ...fullsizeImageOptions, ...thumbnailOptions }, fullsizePath),
-      );
+      const fullsizeOptions = { ...image.fullsize, ...thumbnailOptions, size: undefined };
+      promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
     }
     const outputs = await Promise.all(promises);
 
