@@ -40,7 +40,7 @@
 <div>
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="ml-4 mt-4 flex flex-col gap-4">
+      <div class="ml-4 mt-4">
         <SettingAccordion
           key="thumbnail-settings"
           title={$t('admin.image_thumbnail_title')}
@@ -147,6 +147,8 @@
             {disabled}
           />
 
+          <hr class="my-4" />
+
           <SettingSelect
             label={$t('admin.image_format')}
             desc={$t('admin.image_format_description')}
@@ -170,26 +172,30 @@
           />
         </SettingAccordion>
 
-        <SettingSwitch
-          title={$t('admin.image_prefer_wide_gamut')}
-          subtitle={$t('admin.image_prefer_wide_gamut_setting_description')}
-          checked={config.image.colorspace === Colorspace.P3}
-          onToggle={(isChecked) => (config.image.colorspace = isChecked ? Colorspace.P3 : Colorspace.Srgb)}
-          isEdited={config.image.colorspace !== savedConfig.image.colorspace}
-          {disabled}
-        />
+        <div class="mt-4">
+          <SettingSwitch
+            title={$t('admin.image_prefer_wide_gamut')}
+            subtitle={$t('admin.image_prefer_wide_gamut_setting_description')}
+            checked={config.image.colorspace === Colorspace.P3}
+            onToggle={(isChecked) => (config.image.colorspace = isChecked ? Colorspace.P3 : Colorspace.Srgb)}
+            isEdited={config.image.colorspace !== savedConfig.image.colorspace}
+            {disabled}
+          />
+        </div>
 
-        <SettingSwitch
-          title={$t('admin.image_prefer_embedded_preview')}
-          subtitle={$t('admin.image_prefer_embedded_preview_setting_description')}
-          checked={config.image.extractEmbedded}
-          onToggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
-          isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}
-          {disabled}
-        />
+        <div class="mt-4">
+          <SettingSwitch
+            title={$t('admin.image_prefer_embedded_preview')}
+            subtitle={$t('admin.image_prefer_embedded_preview_setting_description')}
+            checked={config.image.extractEmbedded}
+            onToggle={() => (config.image.extractEmbedded = !config.image.extractEmbedded)}
+            isEdited={config.image.extractEmbedded !== savedConfig.image.extractEmbedded}
+            {disabled}
+          />
+        </div>
       </div>
 
-      <div class="ml-4">
+      <div class="ml-4 mt-4">
         <SettingButtonsRow
           onReset={(options) => onReset({ ...options, configKeys: ['image'] })}
           onSave={() => onSave({ image: config.image })}
