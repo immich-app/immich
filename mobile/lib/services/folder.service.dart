@@ -48,10 +48,11 @@ class FolderService {
             RecursiveFolder(
               path: parentPath == '_root_' ? '' : parentPath,
               name: segments[i],
-              // assets: null,
               subfolders: [],
             ),
           );
+          // Sort folders alphanumerically after adding new folder
+          folderMap[parentPath]!.sort((a, b) => a.name.compareTo(b.name));
         }
       }
     }
@@ -63,6 +64,8 @@ class FolderService {
 
       if (folderMap.containsKey(fullPath)) {
         folder.subfolders.addAll(folderMap[fullPath]!);
+        // Sort subfolders alphanumerically
+        folder.subfolders.sort((a, b) => a.name.compareTo(b.name));
         for (var subfolder in folder.subfolders) {
           attachSubfolders(subfolder);
         }
@@ -70,6 +73,9 @@ class FolderService {
     }
 
     List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
+    // Sort root subfolders alphanumerically
+    rootSubfolders.sort((a, b) => a.name.compareTo(b.name));
+
     for (var folder in rootSubfolders) {
       attachSubfolders(folder);
     }
