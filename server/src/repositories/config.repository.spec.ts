@@ -180,7 +180,7 @@ describe('getEnv', () => {
 
       expect(database.config.kysely).toMatchObject({
         host: '/run/postgresql',
-        database: 'database1'
+        database: 'database1',
       });
     });
 
@@ -190,8 +190,8 @@ describe('getEnv', () => {
       const { database } = getEnv();
 
       expect(database.config.kysely).toMatchObject({
-        host : '/path/to/socket',
-        database: 'database2'
+        host: '/path/to/socket',
+        database: 'database2',
       });
     });
   });
