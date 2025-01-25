@@ -230,12 +230,10 @@ export class MediaService extends BaseService {
 
     const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
     const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
-    const imageIsWebSupported = mimeTypes.isWebSupportedImage(asset.originalFileName);
-    const imageIsRaw = mimeTypes.isRaw(asset.originalFileName);
 
     const { enabled: enableFullsizeImage, ...fullsizeImageOptions } = image.fullsize;
-    const shouldConvertFullsize = !imageIsWebSupported && enableFullsizeImage;
-    const shouldExtractEmbedded = imageIsRaw && image.extractEmbedded;
+    const shouldConvertFullsize = enableFullsizeImage && !mimeTypes.isWebSupportedImage(asset.originalFileName);
+    const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
     const decodeOptions: DecodeToBufferOptions = {
       colorspace,
       processInvalidImages,
@@ -282,20 +280,21 @@ export class MediaService extends BaseService {
     const { info, data } = await this.mediaRepository.decodeImage(decodeInputPath, decodeOptions);
 
     const thumbnailOptions = { colorspace, processInvalidImages, raw: info };
-    const outputs = await Promise.all([
+    const promises = [
       this.mediaRepository.generateThumbhash(data, thumbnailOptions),
       this.mediaRepository.generateThumbnail(data, { ...image.thumbnail, ...thumbnailOptions }, thumbnailPath),
       this.mediaRepository.generateThumbnail(data, { ...image.preview, ...thumbnailOptions }, previewPath),
-      fullsizePath &&
-        !useExtracted && // did not extract a usable image from RAW
-        this.mediaRepository.generateThumbnail(
-          data,
-          { ...fullsizeImageOptions, ...thumbnailOptions, size: undefined },
-          fullsizePath,
-        ),
-    ]);
+    ];
 
-    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] };
+    // did not extract a usable image from RAW
+    if (fullsizePath && !useExtracted) {
+      promises.push(
+        this.mediaRepository.generateThumbnail(data, { ...fullsizeImageOptions, ...thumbnailOptions }, fullsizePath),
+      );
+    }
+    const outputs = await Promise.all(promises);
+
+    return { previewPath, thumbnailPath, fullsizePath, thumbhash: outputs[0] as Buffer };
   }
 
   private async generateVideoThumbnails(asset: AssetEntity) {
