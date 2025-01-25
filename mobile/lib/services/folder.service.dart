@@ -92,17 +92,16 @@ class FolderService {
             folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
         fullPath = fullPath[0] == '/' ? fullPath.substring(1) : fullPath;
         final result = await _folderApiRepository.getAssetsForPath(fullPath);
-        print("Assets for folder $fullPath: $result");
         return result;
       }
       final result = await _folderApiRepository.getAssetsForPath('/');
-      print("Assets for root: $result");
       return result;
     } catch (e, stack) {
       _log.severe(
-          "Failed to fetch assets for folder ${folder is RecursiveFolder ? folder.name : "root"}",
-          e,
-          stack);
+        "Failed to fetch assets for folder ${folder is RecursiveFolder ? folder.name : "root"}",
+        e,
+        stack,
+      );
       return [];
     }
   }

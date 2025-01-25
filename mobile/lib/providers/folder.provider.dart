@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/services/folder.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:logging/logging.dart';
 
 class FolderStructureNotifier extends StateNotifier<AsyncValue<RootFolder>> {
@@ -29,18 +29,19 @@ final folderStructureProvider =
   );
 });
 
-class FolderAssetsNotifier extends StateNotifier<AsyncValue<List<Asset>>> {
+class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
   final FolderService _folderService;
   final RootFolder _folder;
   final Logger _log = Logger("FolderAssetsNotifier");
 
-  FolderAssetsNotifier(this._folderService, this._folder)
+  FolderRenderListNotifier(this._folderService, this._folder)
       : super(const AsyncLoading());
 
   Future<void> fetchAssets() async {
     try {
       final assets = await _folderService.getFolderAssets(_folder);
-      state = AsyncData(assets);
+      state =
+          AsyncData(await RenderList.fromAssets(assets, GroupAssetsBy.none));
     } catch (e, stack) {
       _log.severe("Failed to fetch folder assets", e, stack);
       state = AsyncError(e, stack);
@@ -48,9 +49,11 @@ class FolderAssetsNotifier extends StateNotifier<AsyncValue<List<Asset>>> {
   }
 }
 
-final folderAssetsProvider = StateNotifierProvider.family<FolderAssetsNotifier,
-    AsyncValue<List<Asset>>, RootFolder>((ref, folder) {
-  return FolderAssetsNotifier(
+final folderRenderListProvider = StateNotifierProvider.family<
+    FolderRenderListNotifier,
+    AsyncValue<RenderList>,
+    RootFolder>((ref, folder) {
+  return FolderRenderListNotifier(
     ref.watch(folderServiceProvider),
     folder,
   );

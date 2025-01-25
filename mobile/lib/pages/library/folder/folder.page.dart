@@ -8,6 +8,8 @@ import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
 import 'package:immich_mobile/providers/folder.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
@@ -68,14 +70,17 @@ class FolderContent extends HookConsumerWidget {
       return Center(child: const Text("Folder not found").tr());
     }
 
-    final folderAssetsState = ref.watch(folderAssetsProvider(folder!));
-    useEffect(() {
-      ref.read(folderAssetsProvider(folder!).notifier).fetchAssets();
-      return null;
-    }, [folder]);
+    final folderRenderlist = ref.watch(folderRenderListProvider(folder!));
+    useEffect(
+      () {
+        ref.read(folderRenderListProvider(folder!).notifier).fetchAssets();
+        return null;
+      },
+      [folder],
+    );
 
-    return folderAssetsState.when(
-      data: (assets) {
+    return folderRenderlist.when(
+      data: (list) {
         return ListView(
           children: [
             if (folder!.subfolders.isNotEmpty)
@@ -87,14 +92,48 @@ class FolderContent extends HookConsumerWidget {
                       context.pushRoute(FolderRoute(folder: subfolder)),
                 ),
               ),
-            if (assets.isNotEmpty)
-              ...assets.map(
+            if (!list.isEmpty &&
+                list.allAssets != null &&
+                list.allAssets!.isNotEmpty)
+              ...list.allAssets!.map(
                 (asset) => ListTile(
-                  title: Text(asset.name),
-                  subtitle: Text(asset.fileName),
+                  onTap: () => context.pushRoute(
+                    GalleryViewerRoute(
+                      renderList: list,
+                      initialIndex: list.allAssets!.indexOf(asset),
+                    ),
+                  ),
+                  leading: SizedBox(
+                    // height: 100,
+                    width: 80,
+                    child: ThumbnailImage(
+                      asset: asset,
+                      showStorageIndicator: false,
+                    ),
+                  ),
+                  title: Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          // Remove the file extension from the file name
+                          // Sometimes the file name has multiple dots (.TS.mp4)
+                          asset.fileName.split('.').first,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(
+                        // Display the file extension(s)
+                        ".${asset.fileName.substring(asset.fileName.indexOf('.') + 1)}",
+                      ),
+                    ],
+                  ),
+                  subtitle: Text(
+                    "${asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo?.fileSize ?? 0) : ""} ·  ${DateFormat.yMMMd().format(asset.fileCreatedAt)}",
+                  ),
                 ),
               ),
-            if (folder!.subfolders.isEmpty && assets.isEmpty)
+            if (folder!.subfolders.isEmpty && list.isEmpty)
               Center(child: const Text("No subfolders or assets").tr()),
           ],
         );
