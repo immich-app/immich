@@ -59,7 +59,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .selectFrom('assets')
         .selectAll('assets')
         .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
+        .select((eb) => eb.table('exif').as('exifInfo'))
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
@@ -124,8 +124,8 @@ export class AlbumRepository implements IAlbumRepository {
 
     return this.db
       .selectFrom('albums')
-      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
-      .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
+      .leftJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .leftJoin('assets', 'assets.id', 'album_assets.assetsId')
       .select('albums.id as albumId')
       .select((eb) => eb.fn.min('assets.fileCreatedAt').as('startDate'))
       .select((eb) => eb.fn.max('assets.fileCreatedAt').as('endDate'))
@@ -291,7 +291,6 @@ export class AlbumRepository implements IAlbumRepository {
         .selectAll()
         .where('id', '=', newAlbum.id)
         .select(withOwner)
-        .select(withSharedLink)
         .select(withAssets)
         .select(withAlbumUsers)
         .executeTakeFirst() as unknown as Promise<AlbumEntity>;
@@ -301,7 +300,7 @@ export class AlbumRepository implements IAlbumRepository {
   update(id: string, album: Updateable<Albums>): Promise<AlbumEntity> {
     return this.db
       .updateTable('albums')
-      .set({ ...album, updatedAt: new Date() })
+      .set(album)
       .where('id', '=', id)
       .returningAll('albums')
       .returning(withOwner)
@@ -344,7 +343,6 @@ export class AlbumRepository implements IAlbumRepository {
           .select('album_assets.assetsId')
           .orderBy('assets.fileCreatedAt', 'desc')
           .limit(1),
-        updatedAt: new Date(),
       }))
       .where((eb) =>
         eb.or([

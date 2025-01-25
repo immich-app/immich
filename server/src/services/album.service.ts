@@ -55,13 +55,7 @@ export class AlbumService extends BaseService {
     const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
     const albumMetadata: Record<string, AlbumAssetCount> = {};
     for (const metadata of results) {
-      const { albumId, assetCount, startDate, endDate } = metadata;
-      albumMetadata[albumId] = {
-        albumId,
-        assetCount,
-        startDate,
-        endDate,
-      };
+      albumMetadata[metadata.albumId] = metadata;
     }
 
     return Promise.all(
@@ -70,8 +64,8 @@ export class AlbumService extends BaseService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          startDate: albumMetadata[album.id].startDate,
-          endDate: albumMetadata[album.id].endDate,
+          startDate: albumMetadata[album.id].startDate ?? undefined,
+          endDate: albumMetadata[album.id].endDate ?? undefined,
           assetCount: albumMetadata[album.id].assetCount,
           lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
@@ -89,8 +83,8 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album, withAssets, auth),
-      startDate: albumMetadataForIds.startDate,
-      endDate: albumMetadataForIds.endDate,
+      startDate: albumMetadataForIds.startDate ?? undefined,
+      endDate: albumMetadataForIds.endDate ?? undefined,
       assetCount: albumMetadataForIds.assetCount,
       lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
     };
