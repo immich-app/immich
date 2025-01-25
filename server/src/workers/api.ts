@@ -7,9 +7,9 @@ import sirv from 'sirv';
 import { ApiModule } from 'src/app.module';
 import { excludePaths, serverVersion } from 'src/constants';
 import { ImmichEnvironment } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
 import { ApiService } from 'src/services/api.service';
 import { isStartUpError, useSwagger } from 'src/utils/misc';
@@ -23,7 +23,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
-  const logger = await app.resolve<ILoggerRepository>(ILoggerRepository);
+  const logger = await app.resolve(LoggingRepository);
   const configRepository = app.get(ConfigRepository);
 
   const { environment, host, port, resourcePaths } = configRepository.getEnv();
@@ -62,7 +62,7 @@ async function bootstrap() {
   app.use(app.get(ApiService).ssr(excludePaths));
 
   const server = await (host ? app.listen(port, host) : app.listen(port));
-  server.requestTimeout = 30 * 60 * 1000;
+  server.requestTimeout = 24 * 60 * 60 * 1000;
 
   logger.log(`Immich Server is listening on ${await app.getUrl()} [v${serverVersion}] [${environment}] `);
 }

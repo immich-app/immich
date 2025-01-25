@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -15,8 +15,8 @@ import {
   PersonUpdateDto,
 } from 'src/dtos/person.dto';
 import { Permission } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonService } from 'src/services/person.service';
 import { sendFile } from 'src/utils/file';
 import { UUIDParamDto } from 'src/validation';
@@ -26,7 +26,7 @@ import { UUIDParamDto } from 'src/validation';
 export class PersonController {
   constructor(
     private service: PersonService,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {}
 
   @Get()

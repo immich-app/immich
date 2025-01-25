@@ -13,7 +13,7 @@ if (immichApp) {
 let apiProcess: ChildProcess | undefined;
 
 const onError = (name: string, error: Error) => {
-  console.error(`${name} worker error: ${error}`);
+  console.error(`${name} worker error: ${error}, stack: ${error.stack}`);
 };
 
 const onExit = (name: string, exitCode: number | null) => {

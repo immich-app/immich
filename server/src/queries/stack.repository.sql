@@ -9,9 +9,18 @@ select
     from
       (
         select
-          *
+          "assets".*,
+          to_json("exifInfo") as "exifInfo"
         from
           "assets"
+          inner join lateral (
+            select
+              "exif".*
+            from
+              "exif"
+            where
+              "exif"."assetId" = "assets"."id"
+          ) as "exifInfo" on true
         where
           "assets"."deletedAt" is null
           and "assets"."stackId" = "asset_stack"."id"
@@ -31,7 +40,7 @@ select
     from
       (
         select
-          *,
+          "assets".*,
           (
             select
               coalesce(json_agg(agg), '[]')
@@ -45,9 +54,18 @@ select
                 where
                   "tag_asset"."assetsId" = "assets"."id"
               ) as agg
-          ) as "tags"
+          ) as "tags",
+          to_json("exifInfo") as "exifInfo"
         from
           "assets"
+          inner join lateral (
+            select
+              "exif".*
+            from
+              "exif"
+            where
+              "exif"."assetId" = "assets"."id"
+          ) as "exifInfo" on true
         where
           "assets"."deletedAt" is null
           and "assets"."stackId" = "asset_stack"."id"
@@ -67,7 +85,7 @@ select
     from
       (
         select
-          *,
+          "assets".*,
           (
             select
               coalesce(json_agg(agg), '[]')
@@ -81,9 +99,18 @@ select
                 where
                   "tag_asset"."assetsId" = "assets"."id"
               ) as agg
-          ) as "tags"
+          ) as "tags",
+          to_json("exifInfo") as "exifInfo"
         from
           "assets"
+          inner join lateral (
+            select
+              "exif".*
+            from
+              "exif"
+            where
+              "exif"."assetId" = "assets"."id"
+          ) as "exifInfo" on true
         where
           "assets"."deletedAt" is null
           and "assets"."stackId" = "asset_stack"."id"

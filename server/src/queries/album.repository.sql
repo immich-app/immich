@@ -82,7 +82,26 @@ select
         where
           "shared_links"."albumId" = "albums"."id"
       ) as agg
-  ) as "sharedLinks"
+  ) as "sharedLinks",
+  (
+    select
+      json_agg("asset") as "assets"
+    from
+      (
+        select
+          "assets".*,
+          to_json("exif") as "exifInfo"
+        from
+          "assets"
+          inner join "exif" on "assets"."id" = "exif"."assetId"
+          inner join "albums_assets_assets" on "albums_assets_assets"."assetsId" = "assets"."id"
+        where
+          "albums_assets_assets"."albumsId" = "albums"."id"
+          and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" desc
+      ) as "asset"
+  ) as "assets"
 from
   "albums"
 where

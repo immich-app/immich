@@ -192,6 +192,7 @@
       state: $t('state'),
       make: $t('camera_brand'),
       model: $t('camera_model'),
+      lensModel: $t('lens_model'),
       personIds: $t('people'),
       originalFileName: $t('file_name'),
     };

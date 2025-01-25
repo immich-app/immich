@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
@@ -8,7 +7,6 @@ import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import { Repository } from 'typeorm';
 
 const userColumns = [
   'id',
@@ -64,6 +62,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
+        .where('assets.deletedAt', 'is', null)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -73,12 +72,9 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
 
 @Injectable()
 export class AlbumRepository implements IAlbumRepository {
-  constructor(
-    @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
-    @InjectKysely() private db: Kysely<DB>,
-  ) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, {}] })
+  @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }] })
   async getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | undefined> {
     return this.db
       .selectFrom('albums')

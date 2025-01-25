@@ -13,8 +13,7 @@ insert into
   "system_metadata" ("key", "value")
 values
   ($1, $2)
-on conflict ("key") do
-update
+on conflict ("key") do update
 set
   "value" = $3
 

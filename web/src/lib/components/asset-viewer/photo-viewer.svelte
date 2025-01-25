@@ -187,7 +187,7 @@
   {:else if !imageError}
     <div
       use:zoomImageAction
-      use:swipe
+      use:swipe={() => ({})}
       onswipe={onSwipe}
       class="h-full w-full"
       transition:fade={{ duration: haveFadeTransition ? 150 : 0 }}
