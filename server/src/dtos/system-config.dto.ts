@@ -155,6 +155,34 @@ export class SystemConfigFFmpegDto {
   tonemap!: ToneMapping;
 }
 
+export class SystemConfigLiveFFmpegDto {
+  @ValidateBoolean()
+  enabled!: boolean;
+
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  threads!: number;
+
+  @IsString()
+  preset!: string;
+
+  @IsString()
+  preferredHwDevice!: string;
+
+  @IsEnum(TranscodePolicy)
+  @ApiProperty({ enumName: 'TranscodePolicy', enum: TranscodePolicy })
+  transcode!: TranscodePolicy;
+
+  @IsEnum(TranscodeHWAccel)
+  @ApiProperty({ enumName: 'TranscodeHWAccel', enum: TranscodeHWAccel })
+  accel!: TranscodeHWAccel;
+
+  @ValidateBoolean()
+  accelDecode!: boolean;
+}
+
 class JobSettingsDto {
   @IsInt()
   @IsPositive()
@@ -578,6 +606,11 @@ export class SystemConfigDto implements SystemConfig {
   @ValidateNested()
   @IsObject()
   ffmpeg!: SystemConfigFFmpegDto;
+
+  @Type(() => SystemConfigLiveFFmpegDto)
+  @ValidateNested()
+  @IsObject()
+  liveFfmpeg!: SystemConfigLiveFFmpegDto;
 
   @Type(() => SystemConfigLoggingDto)
   @ValidateNested()

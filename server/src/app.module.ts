@@ -118,6 +118,12 @@ export class MicroservicesModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.TRANSCODER }, SchedulerRegistry],
+})
+export class TranscoderModule extends BaseModule {}
+
+@Module({
+  imports: [...imports],
   providers: [...common, ...commands, SchedulerRegistry],
 })
 export class ImmichAdminModule implements OnModuleDestroy {

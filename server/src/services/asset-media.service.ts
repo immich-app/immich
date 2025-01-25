@@ -246,6 +246,20 @@ export class AssetMediaService extends BaseService {
     });
   }
 
+  async getPlaylist(auth: AuthDto, id: string): Promise<string> {
+    await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
+
+    const asset = await this.findOrFail(id);
+
+    if (asset.type !== AssetType.VIDEO) {
+      throw new BadRequestException('Asset is not a video');
+    }
+
+    const filepath = asset.originalPath;
+    await this.eventRepository.emit('media.liveTranscode', {id, path: filepath});
+    return await this.mediaRepository.getPlaylist(id);
+  }
+
   async checkExistingAssets(
     auth: AuthDto,
     checkExistingAssetsDto: CheckExistingAssetsDto,

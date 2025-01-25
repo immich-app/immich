@@ -99,7 +99,7 @@ export class AssetMediaController {
     @Auth() auth: AuthDto,
     @Param() { id }: UUIDParamDto,
     @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
-    files: UploadFiles,
+      files: UploadFiles,
     @Body() dto: AssetMediaReplaceDto,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AssetMediaResponseDto> {
@@ -133,7 +133,13 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
-    await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
+    const { liveFfmpeg } = await this.service.getConfig({ withCache: true });
+    if (liveFfmpeg.enabled) {
+      res.contentType('application/x-mpegURL');
+      return this.service.getPlaylist(auth, id);
+    } else {
+      await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
+    }
   }
 
   /**

@@ -45,6 +45,15 @@ export interface SystemConfig {
     accelDecode: boolean;
     tonemap: ToneMapping;
   };
+  liveFfmpeg: {
+    enabled: boolean;
+    threads: number;
+    preset: string;
+    preferredHwDevice: string;
+    transcode: TranscodePolicy;
+    accel: TranscodeHWAccel;
+    accelDecode: boolean;
+  };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
     enabled: boolean;
@@ -193,6 +202,15 @@ export const defaults = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.HABLE,
     accel: TranscodeHWAccel.DISABLED,
     accelDecode: false,
+  },
+  liveFfmpeg: {
+    enabled: true,
+    accelDecode: false,
+    accel: TranscodeHWAccel.DISABLED,
+    preferredHwDevice: 'auto',
+    threads: 0,
+    preset: 'veryfast',
+    transcode: TranscodePolicy.ALL,
   },
   job: {
     [QueueName.BACKGROUND_TASK]: { concurrency: 5 },

@@ -56,6 +56,9 @@ type EventMap = {
 
   // websocket events
   'websocket.connect': [{ userId: string }];
+
+  'media.liveTranscode': [{ id: string, path: string }];
+  'media.partReady': [{ id: string, part: string }];
 };
 
 export const serverEvents = ['config.update'] as const;

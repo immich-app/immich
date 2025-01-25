@@ -41,6 +41,10 @@ export class MediaRepository {
     this.logger.setContext(MediaRepository.name);
   }
 
+  async getPlaylist(id: string): Promise<string> {
+    return Promise.any(id);
+  }
+
   async extract(input: string, output: string): Promise<boolean> {
     try {
       await exiftool.extractJpgFromRaw(input, output);

@@ -364,6 +364,7 @@ export enum ImmichEnvironment {
 export enum ImmichWorker {
   API = 'api',
   MICROSERVICES = 'microservices',
+  TRANSCODER = 'transcoder'
 }
 
 export enum ImmichTelemetry {

@@ -72,6 +72,15 @@ const updatedConfig = Object.freeze<SystemConfig>({
     accelDecode: false,
     tonemap: ToneMapping.HABLE,
   },
+  liveFfmpeg: {
+    enabled: true,
+    threads: 0,
+    preset: 'veryfast',
+    preferredHwDevice: 'auto',
+    transcode: TranscodePolicy.REQUIRED,
+    accel: TranscodeHWAccel.DISABLED,
+    accelDecode: false,
+  },
   logging: {
     enabled: true,
     level: LogLevel.LOG,

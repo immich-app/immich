@@ -9,7 +9,7 @@ import {
   AssetPathType,
   AssetType,
   AudioCodec,
-  Colorspace,
+  Colorspace, ImmichWorker,
   LogLevel,
   StorageFolder,
   TranscodeHWAccel,
@@ -33,6 +33,8 @@ import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
+import child_process from 'node:child_process';
+import { ArgOf } from 'src/interfaces/event.interface';
 
 @Injectable()
 export class MediaService extends BaseService {
@@ -44,15 +46,55 @@ export class MediaService extends BaseService {
     this.videoInterfaces = { dri, mali };
   }
 
+  @OnEvent({ name: 'media.liveTranscode', workers: [ImmichWorker.TRANSCODER] })
+  liveTranscode({ id, path }: ArgOf<'media.liveTranscode'>) {
+    const s = child_process.spawn('ffmpeg', [
+      '-nostats', '-hide_banner', '-benchmark', '-loglevel', 'warning',
+      '-i', path,
+
+      '-c:v', 'libx264',
+      '-maxrate', '4000k',
+      '-bufsize', '1835k',
+
+      '-f', 'ssegment',
+      '-segment_format', 'mp4',
+      '-segment_list_type', 'csv',
+
+      '-copyts',
+      '-start_at_zero',
+
+      '-g', '5',
+
+      '-break_non_keyframes', '1',
+      '-segment_time', '1',
+
+      '-movflags', 'cmaf',
+
+      '-segment_list', 'pipe:1',
+
+      '-strict', '-2',
+      '/tmp/segments/%d.mp4']);
+    s.stdout.on('data', (data): void => {
+      this.eventRepository.emit('media.partReady', { id, part: data }).catch(console.error);
+      console.log('stdout: ' + data);
+    });
+    s.stderr.on('data', function(data) {
+      console.log('stderr: ' + data);
+    });
+    s.on('exit', function(code) {
+      console.log('child process exited with code ' + code);
+    });
+  }
+
   @OnJob({ name: JobName.QUEUE_GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.QUEUE_GENERATE_THUMBNAILS>): Promise<JobStatus> {
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
       return force
         ? this.assetRepository.getAll(pagination, {
-            isVisible: true,
-            withDeleted: true,
-            withArchived: true,
-          })
+          isVisible: true,
+          withDeleted: true,
+          withArchived: true,
+        })
         : this.assetRepository.getWithout(pagination, WithoutProperty.THUMBNAIL);
     });
 
