@@ -142,7 +142,12 @@ export class AssetService extends BaseService {
       await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
     }
 
-    if (options.isArchived || options.isFavorite || options.duplicateId || options.rating) {
+    if (
+      options.isArchived != undefined ||
+      options.isFavorite != undefined ||
+      options.duplicateId != undefined ||
+      options.rating != undefined
+    ) {
       await this.assetRepository.updateAll(ids, options);
     }
   }
