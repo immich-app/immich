@@ -210,6 +210,7 @@ from
   left join "assets" on "assets"."id" = "album_assets"."assetsId"
 where
   "albums"."id" in ($1)
+  and "assets"."deletedAt" is null
 group by
   "albums"."id"
 
