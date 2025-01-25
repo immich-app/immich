@@ -1,10 +1,9 @@
-import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Injectable, Scope } from '@nestjs/common';
 import { isLogLevelEnabled } from '@nestjs/common/services/utils/is-log-level-enabled.util';
 import { ClsService } from 'nestjs-cls';
 import { Telemetry } from 'src/decorators';
 import { LogLevel } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
 
 const LOG_LEVELS = [LogLevel.VERBOSE, LogLevel.DEBUG, LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
 
@@ -19,15 +18,15 @@ enum LogColor {
 
 @Injectable({ scope: Scope.TRANSIENT })
 @Telemetry({ enabled: false })
-export class LoggerRepository extends ConsoleLogger implements ILoggerRepository {
+export class LoggingRepository extends ConsoleLogger {
   private static logLevels: LogLevel[] = [LogLevel.LOG, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
   private noColor: boolean;
 
   constructor(
     private cls: ClsService,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
+    configRepository: ConfigRepository,
   ) {
-    super(LoggerRepository.name);
+    super(LoggingRepository.name);
 
     const { noColor } = configRepository.getEnv();
     this.noColor = noColor;
@@ -36,19 +35,19 @@ export class LoggerRepository extends ConsoleLogger implements ILoggerRepository
   private static appName?: string = undefined;
 
   setAppName(name: string): void {
-    LoggerRepository.appName = name.charAt(0).toUpperCase() + name.slice(1);
+    LoggingRepository.appName = name.charAt(0).toUpperCase() + name.slice(1);
   }
 
   isLevelEnabled(level: LogLevel) {
-    return isLogLevelEnabled(level, LoggerRepository.logLevels);
+    return isLogLevelEnabled(level, LoggingRepository.logLevels);
   }
 
   setLogLevel(level: LogLevel | false): void {
-    LoggerRepository.logLevels = level ? LOG_LEVELS.slice(LOG_LEVELS.indexOf(level)) : [];
+    LoggingRepository.logLevels = level ? LOG_LEVELS.slice(LOG_LEVELS.indexOf(level)) : [];
   }
 
   protected formatContext(context: string): string {
-    let prefix = LoggerRepository.appName || '';
+    let prefix = LoggingRepository.appName || '';
     if (context) {
       prefix += (prefix ? ':' : '') + context;
     }

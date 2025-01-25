@@ -28,10 +28,10 @@ export type FaceDetectionOptions = ModelOptions & { minScore: number };
 
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
-export type ClipVisualResponse = { [ModelTask.SEARCH]: number[] } & VisualResponse;
+export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
 
 export type ClipTextualRequest = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: ModelOptions } };
-export type ClipTextualResponse = { [ModelTask.SEARCH]: number[] };
+export type ClipTextualResponse = { [ModelTask.SEARCH]: string };
 
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
@@ -42,7 +42,7 @@ export type FacialRecognitionRequest = {
 
 export interface Face {
   boundingBox: BoundingBox;
-  embedding: number[];
+  embedding: string;
   score: number;
 }
 
@@ -51,7 +51,7 @@ export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest;
 
 export interface IMachineLearningRepository {
-  encodeImage(urls: string[], imagePath: string, config: ModelOptions): Promise<number[]>;
-  encodeText(urls: string[], text: string, config: ModelOptions): Promise<number[]>;
+  encodeImage(urls: string[], imagePath: string, config: ModelOptions): Promise<string>;
+  encodeText(urls: string[], text: string, config: ModelOptions): Promise<string>;
   detectFaces(urls: string[], imagePath: string, config: FaceDetectionOptions): Promise<DetectedFaces>;
 }

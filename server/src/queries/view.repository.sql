@@ -14,7 +14,7 @@ where
 -- ViewRepository.getAssetsByOriginalPath
 select
   "assets".*,
-  to_jsonb("exif") as "exifInfo"
+  to_json("exif") as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"

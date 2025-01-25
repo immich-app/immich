@@ -1,8 +1,7 @@
-import { PostgresJSDialect } from 'kysely-postgres-js';
-import postgres from 'postgres';
 import { ImmichEnvironment, ImmichWorker } from 'src/enum';
-import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { EnvData } from 'src/repositories/config.repository';
+import { IConfigRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 const envData: EnvData = {
@@ -23,12 +22,7 @@ const envData: EnvData = {
 
   database: {
     config: {
-      kysely: {
-        dialect: new PostgresJSDialect({
-          postgres: postgres({ database: 'immich', host: 'database', port: 5432 }),
-        }),
-        log: ['error'],
-      },
+      kysely: { database: 'immich', host: 'database', port: 5432 },
       typeorm: {
         connectionType: 'parts',
         database: 'immich',

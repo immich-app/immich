@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Libraries } from 'src/db';
@@ -100,10 +100,10 @@ export class LibraryRepository implements ILibraryRepository {
     const stats = await this.db
       .selectFrom('libraries')
       .innerJoin('assets', 'assets.libraryId', 'libraries.id')
-      .innerJoin('exif', 'exif.assetId', 'assets.id')
+      .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select((eb) =>
         eb.fn
-          .count('assets.id')
+          .countAll()
           .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.isVisible', '=', true)]))
           .as('photos'),
       )
@@ -118,8 +118,17 @@ export class LibraryRepository implements ILibraryRepository {
       .where('libraries.id', '=', id)
       .executeTakeFirst();
 
+    // possibly a new library with 0 assets
     if (!stats) {
-      return;
+      const zero = sql<number>`0::int`;
+      return this.db
+        .selectFrom('libraries')
+        .select(zero.as('photos'))
+        .select(zero.as('videos'))
+        .select(zero.as('usage'))
+        .select(zero.as('total'))
+        .where('libraries.id', '=', id)
+        .executeTakeFirst();
     }
 
     return {

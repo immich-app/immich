@@ -1,7 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import RestoreAssets from '$lib/components/photos-page/actions/restore-assets.svelte';
@@ -21,7 +20,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { emptyTrash, restoreTrash } from '@immich/sdk';
-  import { Button, HStack } from '@immich/ui';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiDeleteForeverOutline, mdiHistory } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -115,24 +114,24 @@
     {#snippet buttons()}
       <HStack gap={0}>
         <Button
+          leadingIcon={mdiHistory}
           onclick={handleRestoreTrash}
           disabled={assetInteraction.selectionActive}
           variant="ghost"
           color="secondary"
           size="small"
         >
-          <Icon path={mdiHistory} />
-          {$t('restore_all')}
+          <Text class="hidden md:block">{$t('restore_all')}</Text>
         </Button>
         <Button
+          leadingIcon={mdiDeleteForeverOutline}
           onclick={() => handleEmptyTrash()}
           disabled={assetInteraction.selectionActive}
           variant="ghost"
           color="secondary"
           size="small"
         >
-          <Icon path={mdiDeleteForeverOutline} />
-          {$t('empty_trash')}
+          <Text class="hidden md:block">{$t('empty_trash')}</Text>
         </Button>
       </HStack>
     {/snippet}

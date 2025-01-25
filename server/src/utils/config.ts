@@ -6,19 +6,17 @@ import * as _ from 'lodash';
 import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { SystemMetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { DeepPartial, IConfigRepository, ILoggingRepository } from 'src/types';
 import { getKeysDeep, unsetDeep } from 'src/utils/misc';
-import { DeepPartial } from 'typeorm';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
 type RepoDeps = {
   configRepo: IConfigRepository;
   metadataRepo: ISystemMetadataRepository;
-  logger: ILoggerRepository;
+  logger: ILoggingRepository;
 };
 
 const asyncLock = new AsyncLock();

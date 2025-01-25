@@ -2,12 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import { defaults, SystemConfig } from 'src/config';
 import { ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { IJobRepository, JobCommand, JobItem, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { JobService } from 'src/services/job.service';
+import { IConfigRepository, ILoggingRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
+import { ITelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 
@@ -16,8 +15,8 @@ describe(JobService.name, () => {
   let assetMock: Mocked<IAssetRepository>;
   let configMock: Mocked<IConfigRepository>;
   let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let telemetryMock: Mocked<ITelemetryRepository>;
+  let loggerMock: Mocked<ILoggingRepository>;
+  let telemetryMock: ITelemetryRepositoryMock;
 
   beforeEach(() => {
     ({ sut, assetMock, configMock, jobMock, loggerMock, telemetryMock } = newTestService(JobService, {}));
