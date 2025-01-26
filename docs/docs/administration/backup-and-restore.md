@@ -52,10 +52,10 @@ docker compose pull             # Update to latest version of Immich (if desired
 docker compose create           # Create Docker containers for Immich apps without running them
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
-# Check the database user if you deviated from the default
+# Check the database user if you deviated from the default (default is 'postgres')
 gunzip < "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| docker exec -i immich_postgres psql --dbname=postgres --username=<DB_USERNAME>  # Restore Backup
+| docker exec -i immich_postgres psql --dbname=immich --username=<DB_USERNAME>  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
 ```
 
@@ -76,10 +76,10 @@ docker compose create                             # Create Docker containers for
 docker start immich_postgres                      # Start Postgres server
 sleep 10                                          # Wait for Postgres server to start up
 docker exec -it immich_postgres bash              # Enter the Docker shell and run the following command
-# Check the database user if you deviated from the default. If your backup ends in `.gz`, replace `cat` with `gunzip`
+# Check the database user if you deviated from the default (default is 'postgres'). If your backup ends in `.gz`, replace `cat` with `gunzip`
 cat < "/dump.sql" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
-| psql --dbname=postgres --username=<DB_USERNAME> # Restore Backup
+| psql --dbname=immich --username=<DB_USERNAME> # Restore Backup
 exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```
