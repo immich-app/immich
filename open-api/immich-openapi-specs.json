@@ -7951,7 +7951,7 @@
           },
           "rating": {
             "maximum": 5,
-            "minimum": 0,
+            "minimum": -1,
             "type": "number"
           }
         },
@@ -12780,7 +12780,7 @@
           },
           "rating": {
             "maximum": 5,
-            "minimum": 0,
+            "minimum": -1,
             "type": "number"
           }
         },
