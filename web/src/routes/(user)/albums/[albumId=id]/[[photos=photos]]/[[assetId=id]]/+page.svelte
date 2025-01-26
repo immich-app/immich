@@ -672,7 +672,7 @@
               </section>
             {/if}
 
-            {#if album.assetCount === 0}
+            {#if album.assetCount === 0 || !album.assetCount}
               <section id="empty-album" class=" mt-[200px] flex place-content-center place-items-center">
                 <div class="w-[300px]">
                   <p class="text-xs dark:text-immich-dark-fg">{$t('add_photos').toUpperCase()}</p>
