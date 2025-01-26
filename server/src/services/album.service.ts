@@ -66,7 +66,7 @@ export class AlbumService extends BaseService {
           sharedLinks: undefined,
           startDate: albumMetadata[album.id]?.startDate ?? undefined,
           endDate: albumMetadata[album.id]?.endDate ?? undefined,
-          assetCount: albumMetadata[album.id]?.assetCount,
+          assetCount: albumMetadata[album.id]?.assetCount ?? 0,
           lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
       }),
@@ -85,7 +85,7 @@ export class AlbumService extends BaseService {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
-      assetCount: albumMetadataForIds?.assetCount,
+      assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
     };
   }
