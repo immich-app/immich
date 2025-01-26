@@ -52,7 +52,10 @@ describe('/albums', () => {
     user1Albums = await Promise.all([
       utils.createAlbum(user1.accessToken, {
         albumName: user1SharedEditorUser,
-        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }],
+        albumUsers: [
+          { userId: admin.userId, role: AlbumUserRole.Editor },
+          { userId: user2.userId, role: AlbumUserRole.Editor },
+        ],
         assetIds: [user1Asset1.id],
       }),
       utils.createAlbum(user1.accessToken, {
