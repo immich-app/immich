@@ -1,4 +1,5 @@
 <script lang="ts">
+  import PlacesCardGroup from './places-card-group.svelte';
   import { groupBy } from 'lodash-es';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { type AssetResponseDto } from '@immich/sdk';
@@ -8,15 +9,23 @@
 
   import { type PlacesGroup, getSelectedPlacesGroupOption } from '$lib/utils/places-utils';
   import { t } from 'svelte-i18n';
-  import PlacesCardGroup from './places-card-group.svelte';
+  import { run } from 'svelte/legacy';
 
-  export let places: AssetResponseDto[] = [];
-  export let searchQuery: string = '';
-  export let userSettings: PlacesViewSettings;
-  export let searchResultCount: number = 0;
-  export let placesGroupIds: string[] = [];
+  interface Props {
+    places?: AssetResponseDto[];
+    searchQuery?: string;
+    searchResultCount: number;
+    userSettings: PlacesViewSettings;
+    placesGroupIds?: string[];
+  }
 
-  $: hasPlaces = places.length > 0;
+  let {
+    places = $bindable([]),
+    searchQuery = '',
+    searchResultCount = $bindable(0),
+    userSettings,
+    placesGroupIds = $bindable([]),
+  }: Props = $props();
 
   interface PlacesGroupOption {
     [option: string]: (places: AssetResponseDto[]) => PlacesGroup[];
@@ -61,13 +70,15 @@
     },
   };
 
-  let filteredPlaces: AssetResponseDto[] = [];
-  let groupedPlaces: PlacesGroup[] = [];
+  let filteredPlaces: AssetResponseDto[] = $state([]);
+  let groupedPlaces: PlacesGroup[] = $state([]);
 
-  let placesGroupOption: string = PlacesGroupBy.None;
+  let placesGroupOption: string = $state(PlacesGroupBy.None);
+
+  let hasPlaces = $derived(places.length > 0);
 
   // Step 1: Filter using the given search query.
-  $: {
+  run(() => {
     if (searchQuery) {
       const searchQueryNormalized = normalizeSearchString(searchQuery);
 
@@ -79,16 +90,16 @@
     }
 
     searchResultCount = filteredPlaces.length;
-  }
+  });
 
   // Step 2: Group places.
-  $: {
+  run(() => {
     placesGroupOption = getSelectedPlacesGroupOption(userSettings);
     const groupFunc = groupOptions[placesGroupOption] ?? groupOptions[PlacesGroupBy.None];
     groupedPlaces = groupFunc(filteredPlaces);
 
     placesGroupIds = groupedPlaces.map(({ id }) => id);
-  }
+  });
 </script>
 
 {#if hasPlaces}

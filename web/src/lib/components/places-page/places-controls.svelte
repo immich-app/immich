@@ -1,7 +1,7 @@
 <script lang="ts">
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
+  import { IconButton } from '@immich/ui';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { PlacesGroupBy, placesViewSettings } from '$lib/stores/preferences.store';
   import {
     mdiFolderArrowUpOutline,
@@ -17,37 +17,30 @@
     expandAllPlacesGroups,
     collapseAllPlacesGroups,
   } from '$lib/utils/places-utils';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
 
-  export let searchQuery: string;
-  export let placesGroups: string[];
+  interface Props {
+    placesGroups: string[];
+    searchQuery: string;
+  }
+
+  let { placesGroups, searchQuery = $bindable() }: Props = $props();
 
   const handleChangeGroupBy = ({ id }: PlacesGroupOptionMetadata) => {
     $placesViewSettings.groupBy = id;
   };
 
-  let selectedGroupOption: PlacesGroupOptionMetadata;
-  let groupIcon: string;
+  let groupIcon = $derived.by(() => {
+    return selectedGroupOption.id === PlacesGroupBy.None ? mdiFolderRemoveOutline : mdiFolderArrowUpOutline; // OR mdiFolderArrowDownOutline
+  });
 
-  $: {
-    selectedGroupOption = findGroupOptionMetadata($placesViewSettings.groupBy);
-    if (selectedGroupOption.isDisabled()) {
-      selectedGroupOption = findGroupOptionMetadata(PlacesGroupBy.None);
-    }
-  }
+  let selectedGroupOption = $derived(findGroupOptionMetadata($placesViewSettings.groupBy));
 
-  $: {
-    groupIcon = selectedGroupOption.id === PlacesGroupBy.None ? mdiFolderRemoveOutline : mdiFolderArrowUpOutline; // OR mdiFolderArrowDownOutline
-  }
-
-  $: placesGroupByNames = ((): Record<PlacesGroupBy, string> => {
-    return {
-      [PlacesGroupBy.None]: $t('group_no'),
-      [PlacesGroupBy.Country]: $t('group_country'),
-    };
-  })();
+  let placesGroupByNames: Record<PlacesGroupBy, string> = $derived({
+    [PlacesGroupBy.None]: $t('group_no'),
+    [PlacesGroupBy.Country]: $t('group_country'),
+  });
 </script>
 
 <!-- Search Places -->
@@ -60,7 +53,7 @@
   title={$t('group_places_by')}
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
-  on:select={({ detail }) => handleChangeGroupBy(detail)}
+  onSelect={handleChangeGroupBy}
   render={({ id, isDisabled }) => ({
     title: placesGroupByNames[id],
     icon: groupIcon,
@@ -70,23 +63,29 @@
 
 {#if getSelectedPlacesGroupOption($placesViewSettings) !== PlacesGroupBy.None}
   <span in:fly={{ x: -50, duration: 250 }}>
-    <!-- Expand Countries -->
+    <!-- Expand Countries Groups -->
     <div class="hidden xl:flex gap-0">
       <div class="block">
-        <LinkButton title={$t('expand_all')} on:click={() => expandAllPlacesGroups()}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUnfoldMoreHorizontal} size="18" />
-          </div>
-        </LinkButton>
+        <IconButton
+          title={$t('expand_all')}
+          onclick={() => expandAllPlacesGroups()}
+          variant="ghost"
+          color="secondary"
+          shape="round"
+          icon={mdiUnfoldMoreHorizontal}
+        />
       </div>
 
-      <!-- Collapse Countries -->
+      <!-- Collapse Countries Groups -->
       <div class="block">
-        <LinkButton title={$t('collapse_all')} on:click={() => collapseAllPlacesGroups(placesGroups)}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUnfoldLessHorizontal} size="18" />
-          </div>
-        </LinkButton>
+        <IconButton
+          title={$t('collapse_all')}
+          onclick={() => collapseAllPlacesGroups(placesGroups)}
+          variant="ghost"
+          color="secondary"
+          shape="round"
+          icon={mdiUnfoldLessHorizontal}
+        />
       </div>
     </div>
   </span>

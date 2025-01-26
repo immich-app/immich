@@ -20,9 +20,9 @@
     };
   };
 
-  let searchQuery = '';
-  let searchResultCount = 0;
-  let placesGroups: string[] = [];
+  let searchQuery = $state('');
+  let searchResultCount = $state(0);
+  let placesGroups: string[] = $state([]);
 
   let places = $derived(data.items.filter((item): item is AssetWithCity => !!item.exifInfo?.city));
   let countVisiblePlaces = $derived(searchQuery ? searchResultCount : places.length);
@@ -36,9 +36,11 @@
   title={$t('places')}
   description={countVisiblePlaces === 0 && !searchQuery ? undefined : `(${countVisiblePlaces.toLocaleString($locale)})`}
 >
-  <div class="flex place-items-center gap-2" slot="buttons">
-    <PlacesControls {placesGroups} bind:searchQuery />
-  </div>
+  {#snippet buttons()}
+    <div class="flex place-items-center gap-2">
+      <PlacesControls {placesGroups} bind:searchQuery />
+    </div>
+  {/snippet}
 
   <Places
     {places}

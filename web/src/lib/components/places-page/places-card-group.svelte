@@ -9,19 +9,22 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
 
-  export let places: AssetResponseDto[];
-  export let group: PlacesGroup | undefined = undefined;
+  interface Props {
+    places: AssetResponseDto[];
+    group?: PlacesGroup | undefined;
+  }
 
-  $: isCollapsed = !!group && isPlacesGroupCollapsed($placesViewSettings, group.id);
+  let { places, group = undefined }: Props = $props();
 
-  $: iconRotation = isCollapsed ? 'rotate-0' : 'rotate-90';
+  let isCollapsed = $derived(!!group && isPlacesGroupCollapsed($placesViewSettings, group.id));
+  let iconRotation = $derived(isCollapsed ? 'rotate-0' : 'rotate-90');
 </script>
 
 {#if group}
   <div class="grid">
     <button
       type="button"
-      on:click={() => togglePlacesGroupCollapsing(group.id)}
+      onclick={() => togglePlacesGroupCollapsing(group.id)}
       class="w-fit mt-2 pt-2 pr-2 mb-2 dark:text-immich-dark-fg"
       aria-expanded={!isCollapsed}
     >
