@@ -207,8 +207,8 @@ select
   count("assets"."id")::int as "assetCount"
 from
   "albums"
-  left join "albums_assets_assets" as "album_assets" on "album_assets"."albumsId" = "albums"."id"
-  left join "assets" on "assets"."id" = "album_assets"."assetsId"
+  inner join "albums_assets_assets" as "album_assets" on "album_assets"."albumsId" = "albums"."id"
+  inner join "assets" on "assets"."id" = "album_assets"."assetsId"
 where
   "albums"."id" in ($1)
   and "assets"."deletedAt" is null
