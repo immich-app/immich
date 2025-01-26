@@ -73,7 +73,7 @@
     {/if}
 
     <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
-      {#if showItemCount}
+      {#if showItemCount && album.assetCount}
         <p>
           {$t('items_count', { values: { count: album.assetCount } })}
         </p>

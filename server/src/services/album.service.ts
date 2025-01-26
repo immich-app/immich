@@ -64,9 +64,9 @@ export class AlbumService extends BaseService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          startDate: albumMetadata[album.id].startDate ?? undefined,
-          endDate: albumMetadata[album.id].endDate ?? undefined,
-          assetCount: albumMetadata[album.id].assetCount,
+          startDate: albumMetadata[album.id]?.startDate ?? undefined,
+          endDate: albumMetadata[album.id]?.endDate ?? undefined,
+          assetCount: albumMetadata[album.id]?.assetCount,
           lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
       }),
@@ -83,9 +83,9 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album, withAssets, auth),
-      startDate: albumMetadataForIds.startDate ?? undefined,
-      endDate: albumMetadataForIds.endDate ?? undefined,
-      assetCount: albumMetadataForIds.assetCount,
+      startDate: albumMetadataForIds?.startDate ?? undefined,
+      endDate: albumMetadataForIds?.endDate ?? undefined,
+      assetCount: albumMetadataForIds?.assetCount,
       lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
     };
   }
