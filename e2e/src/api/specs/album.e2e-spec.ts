@@ -35,7 +35,6 @@ describe('/albums', () => {
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
   let deletedAssetAlbum: AlbumResponseDto;
-  let emptyAlbum: AlbumResponseDto;
   let user3: LoginResponseDto; // deleted
   let user4: LoginResponseDto;
 
@@ -57,7 +56,7 @@ describe('/albums', () => {
       utils.createAsset(user1.accessToken),
     ]);
 
-    [user1Albums, user2Albums, deletedAssetAlbum, emptyAlbum] = await Promise.all([
+    [user1Albums, user2Albums, deletedAssetAlbum] = await Promise.all([
       Promise.all([
         utils.createAlbum(user1.accessToken, {
           albumName: user1SharedEditorUser,
