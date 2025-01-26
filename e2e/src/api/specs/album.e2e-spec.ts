@@ -23,6 +23,7 @@ const user2SharedUser = 'user2SharedUser';
 const user2SharedLink = 'user2SharedLink';
 const user2NotShared = 'user2NotShared';
 const user4DeletedAsset = 'user4DeletedAsset';
+const user4Empty = 'user4Empty';
 
 describe('/albums', () => {
   let admin: LoginResponseDto;
@@ -34,6 +35,7 @@ describe('/albums', () => {
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
   let deletedAssetAlbum: AlbumResponseDto;
+  let emptyAlbum: AlbumResponseDto;
   let user3: LoginResponseDto; // deleted
   let user4: LoginResponseDto;
 
@@ -55,7 +57,7 @@ describe('/albums', () => {
       utils.createAsset(user1.accessToken),
     ]);
 
-    [user1Albums, user2Albums, , deletedAssetAlbum] = await Promise.all([
+    [user1Albums, user2Albums, deletedAssetAlbum, emptyAlbum] = await Promise.all([
       Promise.all([
         utils.createAlbum(user1.accessToken, {
           albumName: user1SharedEditorUser,
@@ -90,11 +92,12 @@ describe('/albums', () => {
         utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
         utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
       ]),
+      utils.createAlbum(user4.accessToken, { albumName: user4DeletedAsset }),
+      utils.createAlbum(user4.accessToken, { albumName: user4Empty }),
       utils.createAlbum(user3.accessToken, {
         albumName: 'Deleted',
         albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }],
       }),
-      utils.createAlbum(user4.accessToken, { albumName: user4DeletedAsset }),
     ]);
 
     await Promise.all([
@@ -300,10 +303,23 @@ describe('/albums', () => {
       expect(body).toHaveLength(5);
     });
 
-    it('should return albums where all assets are deleted', async () => {
+    it('should return empty albums and albums where all assets are deleted', async () => {
       const { status, body } = await request(app).get('/albums').set('Authorization', `Bearer ${user4.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toHaveLength(1);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            ownerId: user4.userId,
+            albumName: user4DeletedAsset,
+            shared: false,
+          }),
+          expect.objectContaining({
+            ownerId: user4.userId,
+            albumName: user4Empty,
+            shared: false,
+          }),
+        ]),
+      );
     });
   });
 
