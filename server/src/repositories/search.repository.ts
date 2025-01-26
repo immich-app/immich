@@ -72,8 +72,14 @@ export class SearchRepository implements ISearchRepository {
   async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
-    const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
-    const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
+    const lessThan = builder
+      .where('assets.id', '<', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
+    const greaterThan = builder
+      .where('assets.id', '>', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
     const { rows } = await sql`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
     return rows as any as AssetEntity[];
   }
