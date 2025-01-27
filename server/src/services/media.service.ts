@@ -194,7 +194,7 @@ export class MediaService extends BaseService {
       await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
     }
 
-    if (asset.thumbhash !== generated.thumbhash) {
+    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
       await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
     }
 
