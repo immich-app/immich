@@ -137,6 +137,7 @@ export class AssetRepository implements IAssetRepository {
         ),
       )
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
+      .where('localDateTime', '>=', new Date('1850-01-01'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
       .limit(10)
@@ -585,6 +586,7 @@ export class AssetRepository implements IAssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.localDateTime', '>=', new Date('1850-01-01'))
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
