@@ -31,6 +31,9 @@ from
     where
       "shared_links"."id" = "shared_link__asset"."sharedLinksId"
       and "assets"."deletedAt" is null
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
     order by
       "assets"."fileCreatedAt" asc
   ) as "a" on true
@@ -65,6 +68,9 @@ from
         where
           "albums_assets_assets"."assetsId" = "assets"."id"
           and "assets"."deletedAt" is null
+          and "assets"."fileCreatedAt" is not null
+          and "assets"."fileModifiedAt" is not null
+          and "assets"."localDateTime" is not null
         order by
           "assets"."fileCreatedAt" asc
       ) as "assets" on true
@@ -112,6 +118,9 @@ from
     where
       "assets"."id" = "shared_link__asset"."assetsId"
       and "assets"."deletedAt" is null
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
   ) as "assets" on true
   left join lateral (
     select

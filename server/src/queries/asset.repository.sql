@@ -37,8 +37,6 @@ with
           and (assets."localDateTime" at time zone 'UTC')::date = today.date
           and "assets"."ownerId" = any ($3::uuid[])
           and "assets"."isVisible" = $4
-          and "assets"."fileCreatedAt" is not null
-          and "assets"."fileModifiedAt" is not null
           and "assets"."isArchived" = $5
           and exists (
             select
@@ -49,6 +47,9 @@ with
               and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
+          and "assets"."fileCreatedAt" is not null
+          and "assets"."fileModifiedAt" is not null
+          and "assets"."localDateTime" is not null
         limit
           $7
       ) as "a" on true
@@ -266,6 +267,7 @@ with
       and "assets"."isVisible" = $2
       and "assets"."fileCreatedAt" is not null
       and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
   )
 select
   "timeBucket",
@@ -308,6 +310,7 @@ where
   and "assets"."isVisible" = $2
   and "assets"."fileCreatedAt" is not null
   and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and date_trunc($3, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
 order by
   "assets"."localDateTime" desc
@@ -336,6 +339,7 @@ with
       and "assets"."isVisible" = $2
       and "assets"."fileCreatedAt" is not null
       and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
     group by
       "assets"."duplicateId"
   ),

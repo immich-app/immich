@@ -128,7 +128,10 @@ export class PersonRepository implements IPersonRepository {
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
           .on('assets.isArchived', '=', false)
-          .on('assets.deletedAt', 'is', null),
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
       )
       .where('person.ownerId', '=', userId)
       .orderBy('person.isHidden', 'asc')
@@ -284,6 +287,9 @@ export class PersonRepository implements IPersonRepository {
           .on('asset_faces.personId', '=', personId)
           .on('assets.isArchived', '=', false)
           .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null)
           .on('assets.livePhotoVideoId', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -304,6 +310,9 @@ export class PersonRepository implements IPersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null)
           .on('assets.isArchived', '=', false),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))

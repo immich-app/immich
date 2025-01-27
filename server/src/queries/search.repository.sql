@@ -98,6 +98,9 @@ with
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
       and "assets"."isVisible" = $3
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
       and "assets"."type" = $4
       and "assets"."id" != $5::uuid
     order by
@@ -126,6 +129,9 @@ with
     where
       "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
     order by
       face_search.embedding <=> $3
     limit
@@ -178,6 +184,9 @@ with recursive
         and "assets"."isArchived" = $3
         and "assets"."type" = $4
         and "assets"."deletedAt" is null
+        and "assets"."fileCreatedAt" is not null
+        and "assets"."fileModifiedAt" is not null
+        and "assets"."localDateTime" is not null
       order by
         "city"
       limit
@@ -203,6 +212,9 @@ with recursive
             and "assets"."isArchived" = $8
             and "assets"."type" = $9
             and "assets"."deletedAt" is null
+            and "assets"."fileCreatedAt" is not null
+            and "assets"."fileModifiedAt" is not null
+            and "assets"."localDateTime" is not null
             and "exif"."city" > "cte"."city"
           order by
             "city"

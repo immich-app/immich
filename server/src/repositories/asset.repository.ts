@@ -112,8 +112,6 @@ export class AssetRepository implements IAssetRepository {
                 .where(sql`(assets."localDateTime" at time zone 'UTC')::date`, '=', sql`today.date`)
                 .where('assets.ownerId', '=', anyUuid(ownerIds))
                 .where('assets.isVisible', '=', true)
-                .where('assets.fileCreatedAt', 'is not', null)
-                .where('assets.fileModifiedAt', 'is not', null)
                 .where('assets.isArchived', '=', false)
                 .where((eb) =>
                   eb.exists((qb) =>
@@ -124,6 +122,9 @@ export class AssetRepository implements IAssetRepository {
                   ),
                 )
                 .where('assets.deletedAt', 'is', null)
+                .where('assets.fileCreatedAt', 'is not', null)
+                .where('assets.fileModifiedAt', 'is not', null)
+                .where('assets.localDateTime', 'is not', null)
                 .limit(20)
                 .as('a'),
             (join) => join.onTrue(),
@@ -608,6 +609,7 @@ export class AssetRepository implements IAssetRepository {
             .where('assets.isVisible', '=', true)
             .where('assets.fileCreatedAt', 'is not', null)
             .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -690,6 +692,7 @@ export class AssetRepository implements IAssetRepository {
       .where('assets.isVisible', '=', true)
       .where('assets.fileCreatedAt', 'is not', null)
       .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', options.order ?? 'desc')
       .execute() as any as Promise<AssetEntity[]>;
@@ -720,6 +723,7 @@ export class AssetRepository implements IAssetRepository {
             .where('assets.isVisible', '=', true)
             .where('assets.fileCreatedAt', 'is not', null)
             .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .groupBy('assets.duplicateId'),
         )
         .with('unique', (qb) =>
