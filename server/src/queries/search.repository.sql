@@ -36,7 +36,7 @@ offset
     and "assets"."deletedAt" is null
     and "assets"."id" < $6
   order by
-    "assets"."id"
+    random()
   limit
     $7
 )
@@ -56,7 +56,7 @@ union all
     and "assets"."deletedAt" is null
     and "assets"."id" > $13
   order by
-    "assets"."id"
+    random()
   limit
     $14
 )

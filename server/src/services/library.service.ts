@@ -503,7 +503,7 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-    const isAssetModified = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    const isAssetModified = asset.fileModifiedAt === null || mtime.toISOString() !== asset.fileModifiedAt.toISOString();
 
     if (asset.isOffline || isAssetModified) {
       this.logger.debug(`Asset was offline or modified, updating asset record ${asset.originalPath}`);

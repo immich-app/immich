@@ -179,6 +179,10 @@ describe(StorageTemplateService.name, () => {
 
       expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
 
+      if (asset.fileCreatedAt == null) {
+        throw new Error('fileCreatedAt must be set');
+      }
+
       expect(moveMock.create).toHaveBeenCalledWith({
         entityId: asset.id,
         newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${album.albumName}/${asset.originalFileName}`,
@@ -198,6 +202,10 @@ describe(StorageTemplateService.name, () => {
       assetMock.getByIds.mockResolvedValueOnce([asset]);
 
       expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+
+      if (asset.fileCreatedAt == null) {
+        throw new Error('fileCreatedAt must be set');
+      }
 
       const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
       expect(moveMock.create).toHaveBeenCalledWith({

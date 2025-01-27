@@ -310,6 +310,12 @@ export class StorageTemplateService extends BaseService {
 
     const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const zone = asset.exifInfo?.timeZone || systemTimeZone;
+
+    if (!asset.fileCreatedAt) {
+      this.logger.log(`Asset ${asset.id} is missing fileCreatedAt, skipping storage template migration`);
+      throw new Error(`Missing fileCreatedAt for asset ${asset.id}`);
+    }
+
     const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone });
 
     for (const token of Object.values(storageTokens).flat()) {

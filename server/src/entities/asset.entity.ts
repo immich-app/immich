@@ -100,14 +100,14 @@ export class AssetEntity {
   deletedAt!: Date | null;
 
   @Index('idx_asset_file_created_at')
-  @Column({ type: 'timestamptz' })
-  fileCreatedAt!: Date;
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  fileCreatedAt!: Date | null;
 
-  @Column({ type: 'timestamptz' })
-  localDateTime!: Date;
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  localDateTime!: Date | null;
 
-  @Column({ type: 'timestamptz' })
-  fileModifiedAt!: Date;
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  fileModifiedAt!: Date | null;
 
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
@@ -193,7 +193,7 @@ export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-    .select(sql<number[]>`smart_search.embedding`.as('embedding'));
+    .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
 export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
