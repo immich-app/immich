@@ -49,8 +49,11 @@ describe('PhotoViewer component', () => {
     const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Fullsize,
+      checksum: asset.checksum,
+    });
   });
 
   it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
@@ -58,8 +61,11 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Fullsize,
+      checksum: asset.checksum,
+    });
   });
 
   it('not loads original image when shared link download permission is false', () => {

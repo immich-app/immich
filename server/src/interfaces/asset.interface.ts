@@ -1,4 +1,4 @@
-import { Insertable, Updateable } from 'kysely';
+import { Insertable, Selectable, Updateable } from 'kysely';
 import { AssetFiles, AssetJobStatus, Assets, Exif } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
@@ -167,4 +167,5 @@ export interface IAssetRepository {
   getChangedDeltaSync(options: AssetDeltaSyncOptions): Promise<AssetEntity[]>;
   upsertFile(options: Insertable<AssetFiles>): Promise<void>;
   upsertFiles(options: Insertable<AssetFiles>[]): Promise<void>;
+  deleteFiles(options: Selectable<AssetFiles>[]): Promise<void>;
 }
