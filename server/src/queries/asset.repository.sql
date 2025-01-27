@@ -59,12 +59,14 @@ select
   json_agg("res") as "assets"
 from
   "res"
+where
+  "localDateTime" >= $8
 group by
   ("localDateTime" at time zone 'UTC')::date
 order by
   ("localDateTime" at time zone 'UTC')::date desc
 limit
-  $8
+  $9
 
 -- AssetRepository.getByIds
 select
@@ -258,6 +260,7 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
+      and "assets"."localDateTime" >= $3
   )
 select
   "timeBucket",
