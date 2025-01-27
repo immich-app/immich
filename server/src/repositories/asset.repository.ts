@@ -495,7 +495,6 @@ export class AssetRepository implements IAssetRepository {
       .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
         qb
           .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .select(withFiles)
           .where('assets.isVisible', '=', true)
           .where((eb) =>
             eb.or([
