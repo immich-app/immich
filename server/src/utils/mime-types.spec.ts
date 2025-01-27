@@ -25,6 +25,7 @@ describe('mimeTypes', () => {
     { mimetype: 'image/jpeg', extension: '.jpe' },
     { mimetype: 'image/jpeg', extension: '.jpeg' },
     { mimetype: 'image/jpeg', extension: '.jpg' },
+    { mimetype: 'image/jp2', extension: '.jp2' },
     { mimetype: 'image/jxl', extension: '.jxl' },
     { mimetype: 'image/k25', extension: '.k25' },
     { mimetype: 'image/kdc', extension: '.kdc' },

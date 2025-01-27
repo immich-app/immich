@@ -46,6 +46,7 @@ const image: Record<string, string[]> = {
   '.jpe': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],
+  '.jp2': ['image/jp2'],
   '.jxl': ['image/jxl'],
   '.png': ['image/png'],
   '.svg': ['image/svg'],

@@ -75,6 +75,7 @@ const validImages = [
   '.iiq',
   '.jpeg',
   '.jpg',
+  '.jp2',
   '.jxl',
   '.k25',
   '.kdc',
