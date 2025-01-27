@@ -25,6 +25,9 @@ from
   "activity"
   left join "assets" on "assets"."id" = "activity"."assetId"
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
 where
   "activity"."albumId" = $1
 order by
@@ -43,3 +46,6 @@ where
   and "activity"."albumId" = $2
   and "activity"."isLiked" = $3
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null

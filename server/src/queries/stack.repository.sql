@@ -23,6 +23,9 @@ select
           ) as "exifInfo" on true
         where
           "assets"."deletedAt" is null
+          and "assets"."fileCreatedAt" is not null
+          and "assets"."fileModifiedAt" is not null
+          and "assets"."localDateTime" is not null
           and "assets"."stackId" = "asset_stack"."id"
       ) as agg
   ) as "assets"
@@ -68,6 +71,9 @@ select
           ) as "exifInfo" on true
         where
           "assets"."deletedAt" is null
+          and "assets"."fileCreatedAt" is not null
+          and "assets"."fileModifiedAt" is not null
+          and "assets"."localDateTime" is not null
           and "assets"."stackId" = "asset_stack"."id"
       ) as agg
   ) as "assets"
@@ -113,6 +119,9 @@ select
           ) as "exifInfo" on true
         where
           "assets"."deletedAt" is null
+          and "assets"."fileCreatedAt" is not null
+          and "assets"."fileModifiedAt" is not null
+          and "assets"."localDateTime" is not null
           and "assets"."stackId" = "asset_stack"."id"
       ) as agg
   ) as "assets"

@@ -138,7 +138,12 @@ class AssetAccess {
       .selectFrom('albums')
       .innerJoin('albums_assets_assets as albumAssets', 'albums.id', 'albumAssets.albumsId')
       .innerJoin('assets', (join) =>
-        join.onRef('assets.id', '=', 'albumAssets.assetsId').on('assets.deletedAt', 'is', null),
+        join
+          .onRef('assets.id', '=', 'albumAssets.assetsId')
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
       )
       .leftJoin('albums_shared_users_users as albumUsers', 'albumUsers.albumsId', 'albums.id')
       .leftJoin('users', (join) => join.onRef('users.id', '=', 'albumUsers.usersId').on('users.deletedAt', 'is', null))
@@ -194,7 +199,12 @@ class AssetAccess {
         join.onRef('sharedBy.id', '=', 'partner.sharedById').on('sharedBy.deletedAt', 'is', null),
       )
       .innerJoin('assets', (join) =>
-        join.onRef('assets.ownerId', '=', 'sharedBy.id').on('assets.deletedAt', 'is', null),
+        join
+          .onRef('assets.ownerId', '=', 'sharedBy.id')
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
       )
       .select('assets.id')
       .where('partner.sharedWithId', '=', userId)
@@ -218,7 +228,12 @@ class AssetAccess {
       )
       .leftJoin('shared_link__asset', 'shared_link__asset.sharedLinksId', 'shared_links.id')
       .leftJoin('assets', (join) =>
-        join.onRef('assets.id', '=', 'shared_link__asset.assetsId').on('assets.deletedAt', 'is', null),
+        join
+          .onRef('assets.id', '=', 'shared_link__asset.assetsId')
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
       )
       .leftJoin('albums_assets_assets', 'albums_assets_assets.albumsId', 'albums.id')
       .leftJoin('assets as albumAssets', (join) =>
@@ -369,7 +384,12 @@ class PersonAccess {
       .selectFrom('asset_faces')
       .select('asset_faces.id')
       .leftJoin('assets', (join) =>
-        join.onRef('assets.id', '=', 'asset_faces.assetId').on('assets.deletedAt', 'is', null),
+        join
+          .onRef('assets.id', '=', 'asset_faces.assetId')
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
       )
       .where('asset_faces.id', 'in', [...assetFaceIds])
       .where('assets.ownerId', '=', userId)
