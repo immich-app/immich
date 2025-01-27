@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   export type AccordionState = Set<string>;
 
   const { get: getAccordionState, set: setAccordionState } = createContext<Writable<AccordionState>>();
@@ -8,20 +8,27 @@
 <script lang="ts">
   import { writable, type Writable } from 'svelte/store';
   import { createContext } from '$lib/utils/context';
-  import { page } from '$app/stores';
-  import { handlePromiseError } from '$lib/utils';
+  import { page } from '$app/state';
   import { goto } from '$app/navigation';
+  import type { Snippet } from 'svelte';
+  import { handlePromiseError } from '$lib/utils';
 
   const getParamValues = (param: string) => {
-    return new Set(($page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
+    return new Set((page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
   };
 
-  export let queryParam: string;
-  export let state: Writable<AccordionState> = writable(getParamValues(queryParam));
+  interface Props {
+    queryParam: string;
+    state?: Writable<AccordionState>;
+    children?: Snippet;
+  }
+
+  let { queryParam, state = writable(getParamValues(queryParam)), children }: Props = $props();
   setAccordionState(state);
 
-  $: if (queryParam && $state) {
-    const searchParams = new URLSearchParams($page.url.searchParams);
+  const searchParams = new URLSearchParams(page.url.searchParams);
+
+  $effect(() => {
     if ($state.size > 0) {
       searchParams.set(queryParam, [...$state].join(' '));
     } else {
@@ -29,7 +36,7 @@
     }
 
     handlePromiseError(goto(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true }));
-  }
+  });
 </script>
 
-<slot />
+{@render children?.()}

@@ -87,13 +87,18 @@ const ExifInfoSchema = CollectionSchema(
       name: r'model',
       type: IsarType.string,
     ),
-    r'state': PropertySchema(
+    r'orientation': PropertySchema(
       id: 14,
+      name: r'orientation',
+      type: IsarType.string,
+    ),
+    r'state': PropertySchema(
+      id: 15,
       name: r'state',
       type: IsarType.string,
     ),
     r'timeZone': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'timeZone',
       type: IsarType.string,
     )
@@ -109,7 +114,7 @@ const ExifInfoSchema = CollectionSchema(
   getId: _exifInfoGetId,
   getLinks: _exifInfoGetLinks,
   attach: _exifInfoAttach,
-  version: '3.1.0+1',
+  version: '3.1.8',
 );
 
 int _exifInfoEstimateSize(
@@ -155,6 +160,12 @@ int _exifInfoEstimateSize(
     }
   }
   {
+    final value = object.orientation;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
     final value = object.state;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
@@ -189,8 +200,9 @@ void _exifInfoSerialize(
   writer.writeString(offsets[11], object.make);
   writer.writeFloat(offsets[12], object.mm);
   writer.writeString(offsets[13], object.model);
-  writer.writeString(offsets[14], object.state);
-  writer.writeString(offsets[15], object.timeZone);
+  writer.writeString(offsets[14], object.orientation);
+  writer.writeString(offsets[15], object.state);
+  writer.writeString(offsets[16], object.timeZone);
 }
 
 ExifInfo _exifInfoDeserialize(
@@ -215,8 +227,9 @@ ExifInfo _exifInfoDeserialize(
     make: reader.readStringOrNull(offsets[11]),
     mm: reader.readFloatOrNull(offsets[12]),
     model: reader.readStringOrNull(offsets[13]),
-    state: reader.readStringOrNull(offsets[14]),
-    timeZone: reader.readStringOrNull(offsets[15]),
+    orientation: reader.readStringOrNull(offsets[14]),
+    state: reader.readStringOrNull(offsets[15]),
+    timeZone: reader.readStringOrNull(offsets[16]),
   );
   return object;
 }
@@ -259,6 +272,8 @@ P _exifInfoDeserializeProp<P>(
     case 14:
       return (reader.readStringOrNull(offset)) as P;
     case 15:
+      return (reader.readStringOrNull(offset)) as P;
+    case 16:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -1909,6 +1924,155 @@ extension ExifInfoQueryFilter
     });
   }
 
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'orientation',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+      orientationIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'orientation',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'orientation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+      orientationGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'orientation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'orientation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'orientation',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'orientation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'orientation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'orientation',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'orientation',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> orientationIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'orientation',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition>
+      orientationIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'orientation',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<ExifInfo, ExifInfo, QAfterFilterCondition> stateIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -2377,6 +2541,18 @@ extension ExifInfoQuerySortBy on QueryBuilder<ExifInfo, ExifInfo, QSortBy> {
     });
   }
 
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByOrientation() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'orientation', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByOrientationDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'orientation', Sort.desc);
+    });
+  }
+
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> sortByState() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'state', Sort.asc);
@@ -2584,6 +2760,18 @@ extension ExifInfoQuerySortThenBy
     });
   }
 
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByOrientation() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'orientation', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByOrientationDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'orientation', Sort.desc);
+    });
+  }
+
   QueryBuilder<ExifInfo, ExifInfo, QAfterSortBy> thenByState() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'state', Sort.asc);
@@ -2701,6 +2889,13 @@ extension ExifInfoQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByOrientation(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'orientation', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ExifInfo, ExifInfo, QDistinct> distinctByState(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -2806,6 +3001,12 @@ extension ExifInfoQueryProperty
   QueryBuilder<ExifInfo, String?, QQueryOperations> modelProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'model');
+    });
+  }
+
+  QueryBuilder<ExifInfo, String?, QQueryOperations> orientationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'orientation');
     });
   }
 

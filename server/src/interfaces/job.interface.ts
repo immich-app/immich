@@ -1,3 +1,4 @@
+import { ClassConstructor } from 'class-transformer';
 import { EmailImageAttachment } from 'src/interfaces/notification.interface';
 
 export enum QueueName {
@@ -238,8 +239,8 @@ export type JobItem =
 
   // Migration
   | { name: JobName.QUEUE_MIGRATION; data?: IBaseJob }
-  | { name: JobName.MIGRATE_ASSET; data?: IEntityJob }
-  | { name: JobName.MIGRATE_PERSON; data?: IEntityJob }
+  | { name: JobName.MIGRATE_ASSET; data: IEntityJob }
+  | { name: JobName.MIGRATE_PERSON; data: IEntityJob }
 
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
@@ -286,7 +287,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
-  | { name: JobName.LIBRARY_SYNC_ASSET; data: IEntityJob }
+  | { name: JobName.LIBRARY_SYNC_ASSET; data: ILibraryAssetJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
@@ -305,16 +306,15 @@ export enum JobStatus {
   FAILED = 'failed',
   SKIPPED = 'skipped',
 }
-
-export type JobHandler<T = any> = (data: T) => Promise<JobStatus>;
-export type JobItemHandler = (item: JobItem) => Promise<void>;
+export type Jobs = { [K in JobItem['name']]: (JobItem & { name: K })['data'] };
+export type JobOf<T extends JobName> = Jobs[T];
 
 export const IJobRepository = 'IJobRepository';
 
 export interface IJobRepository {
-  addHandler(queueName: QueueName, concurrency: number, handler: JobItemHandler): void;
-  addCronJob(name: string, expression: string, onTick: () => void, start?: boolean): void;
-  updateCronJob(name: string, expression?: string, start?: boolean): void;
+  setup(options: { services: ClassConstructor<unknown>[] }): void;
+  startWorkers(): void;
+  run(job: JobItem): Promise<JobStatus>;
   setConcurrency(queueName: QueueName, concurrency: number): void;
   queue(item: JobItem): Promise<void>;
   queueAll(items: JobItem[]): Promise<void>;

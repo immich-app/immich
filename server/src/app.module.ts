@@ -6,10 +6,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClsModule } from 'nestjs-cls';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { commands } from 'src/commands';
+import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
+import { IJobRepository } from 'src/interfaces/job.interface';
 import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
@@ -56,29 +58,31 @@ const imports = [
   TypeOrmModule.forFeature(entities),
 ];
 
-abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
-  private get worker() {
-    return this.getWorker();
-  }
-
+class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
+    @Inject(IWorker) private worker: ImmichWorker,
     @Inject(ILoggerRepository) logger: ILoggerRepository,
     @Inject(IEventRepository) private eventRepository: IEventRepository,
+    @Inject(IJobRepository) private jobRepository: IJobRepository,
     @Inject(ITelemetryRepository) private telemetryRepository: ITelemetryRepository,
   ) {
     logger.setAppName(this.worker);
   }
 
-  abstract getWorker(): ImmichWorker;
-
   async onModuleInit() {
     this.telemetryRepository.setup({ repositories: repositories.map(({ useClass }) => useClass) });
+
+    this.jobRepository.setup({ services });
+    if (this.worker === ImmichWorker.MICROSERVICES) {
+      this.jobRepository.startWorkers();
+    }
+
     this.eventRepository.setup({ services });
-    await this.eventRepository.emit('app.bootstrap', this.worker);
+    await this.eventRepository.emit('app.bootstrap');
   }
 
   async onModuleDestroy() {
-    await this.eventRepository.emit('app.shutdown', this.worker);
+    await this.eventRepository.emit('app.shutdown');
     await teardownTelemetry();
   }
 }
@@ -86,23 +90,15 @@ abstract class BaseModule implements OnModuleInit, OnModuleDestroy {
 @Module({
   imports: [...imports, ScheduleModule.forRoot()],
   controllers: [...controllers],
-  providers: [...common, ...middleware],
+  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
 })
-export class ApiModule extends BaseModule {
-  getWorker() {
-    return ImmichWorker.API;
-  }
-}
+export class ApiModule extends BaseModule {}
 
 @Module({
   imports: [...imports],
-  providers: [...common, SchedulerRegistry],
+  providers: [...common, { provide: IWorker, useValue: ImmichWorker.MICROSERVICES }, SchedulerRegistry],
 })
-export class MicroservicesModule extends BaseModule {
-  getWorker() {
-    return ImmichWorker.MICROSERVICES;
-  }
-}
+export class MicroservicesModule extends BaseModule {}
 
 @Module({
   imports: [...imports],

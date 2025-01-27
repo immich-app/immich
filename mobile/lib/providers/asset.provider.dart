@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
@@ -84,34 +85,48 @@ class AssetNotifier extends StateNotifier<bool> {
     _deleteInProgress = true;
     state = true;
     try {
+      // Filter the assets based on the backed-up status
       final assets = onlyBackedUp
           ? deleteAssets.where((e) => e.storage == AssetState.merged)
           : deleteAssets;
+
+      if (assets.isEmpty) {
+        return false; // No assets to delete
+      }
+
+      // Proceed with local deletion of the filtered assets
       final localDeleted = await _deleteLocalAssets(assets);
+
       if (localDeleted.isNotEmpty) {
-        final localOnlyIds = deleteAssets
+        final localOnlyIds = assets
             .where((e) => e.storage == AssetState.local)
             .map((e) => e.id)
             .toList();
-        // Update merged assets to remote only
+
+        // Update merged assets to remote-only
         final mergedAssets =
-            deleteAssets.where((e) => e.storage == AssetState.merged).map((e) {
+            assets.where((e) => e.storage == AssetState.merged).map((e) {
           e.localId = null;
           return e;
         }).toList();
+
+        // Update the local database
         await _db.writeTxn(() async {
           if (mergedAssets.isNotEmpty) {
-            await _db.assets.putAll(mergedAssets);
+            await _db.assets
+                .putAll(mergedAssets); // Use the filtered merged assets
           }
           await _db.exifInfos.deleteAll(localOnlyIds);
           await _db.assets.deleteAll(localOnlyIds);
         });
+
         return true;
       }
     } finally {
       _deleteInProgress = false;
       state = false;
     }
+
     return false;
   }
 
@@ -314,24 +329,31 @@ final assetWatcher =
   return db.assets.watchObject(asset.id, fireImmediately: true);
 });
 
-final assetsProvider = StreamProvider.family<RenderList, int?>((ref, userId) {
-  if (userId == null) return const Stream.empty();
-  final query = _commonFilterAndSort(
-    _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
-  );
-  return renderListGenerator(query, ref);
-});
+final assetsProvider = StreamProvider.family<RenderList, int?>(
+  (ref, userId) {
+    if (userId == null) return const Stream.empty();
+    ref.watch(localeProvider);
+    final query = _commonFilterAndSort(
+      _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
+    );
+    return renderListGenerator(query, ref);
+  },
+  dependencies: [localeProvider],
+);
 
-final multiUserAssetsProvider =
-    StreamProvider.family<RenderList, List<int>>((ref, userIds) {
-  if (userIds.isEmpty) return const Stream.empty();
-  final query = _commonFilterAndSort(
-    _assets(ref)
-        .where()
-        .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
-  );
-  return renderListGenerator(query, ref);
-});
+final multiUserAssetsProvider = StreamProvider.family<RenderList, List<int>>(
+  (ref, userIds) {
+    if (userIds.isEmpty) return const Stream.empty();
+    ref.watch(localeProvider);
+    final query = _commonFilterAndSort(
+      _assets(ref)
+          .where()
+          .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
+    );
+    return renderListGenerator(query, ref);
+  },
+  dependencies: [localeProvider],
+);
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
   final userId = ref.watch(currentUserProvider)?.isarId;

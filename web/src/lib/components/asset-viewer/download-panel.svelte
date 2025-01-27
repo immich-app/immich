@@ -32,7 +32,7 @@
             </div>
             <div class="flex place-items-center gap-2">
               <div class="h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                <div class="h-[7px] rounded-full bg-immich-primary" style={`width: ${download.percentage}%`} />
+                <div class="h-[7px] rounded-full bg-immich-primary" style={`width: ${download.percentage}%`}></div>
               </div>
               <p class="min-w-[4em] whitespace-nowrap text-right">
                 <span class="text-immich-primary">
@@ -44,7 +44,7 @@
           <div class="absolute right-2">
             <CircleIconButton
               title={$t('close')}
-              on:click={() => abort(downloadKey, download)}
+              onclick={() => abort(downloadKey, download)}
               size="20"
               icon={mdiClose}
               class="dark:text-immich-dark-gray"

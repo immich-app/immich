@@ -403,6 +403,8 @@ class SyncService {
     album.lastModifiedAssetTimestamp = originalDto.lastModifiedAssetTimestamp;
     album.shared = dto.shared;
     album.activityEnabled = dto.activityEnabled;
+    album.sortOrder = dto.sortOrder;
+
     final remoteThumbnailAssetId = dto.remoteThumbnailAssetId;
     if (remoteThumbnailAssetId != null &&
         album.thumbnail.value?.remoteId != remoteThumbnailAssetId) {

@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
+import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
@@ -10,7 +11,7 @@ import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUse
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { CacheControl, StorageFolder, UserMetadataKey } from 'src/enum';
-import { IEntityJob, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { UserFindOptions } from 'src/interfaces/user.interface';
 import { BaseService } from 'src/services/base.service';
 import { ImmichFileResponse } from 'src/utils/file';
@@ -18,8 +19,14 @@ import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/uti
 
 @Injectable()
 export class UserService extends BaseService {
-  async search(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.getList({ withDeleted: false });
+  async search(auth: AuthDto): Promise<UserResponseDto[]> {
+    const config = await this.getConfig({ withCache: false });
+
+    let users: UserEntity[] = [auth.user];
+    if (auth.user.isAdmin || config.server.publicUsers) {
+      users = await this.userRepository.getList({ withDeleted: false });
+    }
+
     return users.map((user) => mapUser(user));
   }
 
@@ -163,11 +170,13 @@ export class UserService extends BaseService {
     return licenseData;
   }
 
+  @OnJob({ name: JobName.USER_SYNC_USAGE, queue: QueueName.BACKGROUND_TASK })
   async handleUserSyncUsage(): Promise<JobStatus> {
     await this.userRepository.syncUsage();
     return JobStatus.SUCCESS;
   }
 
+  @OnJob({ name: JobName.USER_DELETE_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleUserDeleteCheck(): Promise<JobStatus> {
     const users = await this.userRepository.getDeletedUsers();
     const config = await this.getConfig({ withCache: false });
@@ -181,7 +190,8 @@ export class UserService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  async handleUserDelete({ id, force }: IEntityJob): Promise<JobStatus> {
+  @OnJob({ name: JobName.USER_DELETION, queue: QueueName.BACKGROUND_TASK })
+  async handleUserDelete({ id, force }: JobOf<JobName.USER_DELETION>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: false });
     const user = await this.userRepository.get(id, { withDeleted: true });
     if (!user) {

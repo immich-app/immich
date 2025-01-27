@@ -3,28 +3,36 @@
   import { isEqual } from 'lodash-es';
   import { fade } from 'svelte/transition';
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingInputField, {
-    SettingInputFieldType,
-  } from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
-  export let savedConfig: SystemConfigDto;
-  export let defaultConfig: SystemConfigDto;
-  export let config: SystemConfigDto; // this is the config that is being edited
-  export let disabled = false;
-  export let onReset: SettingsResetEvent;
-  export let onSave: SettingsSaveEvent;
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
+
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
   <div in:fade={{ duration: 500 }}>
-    <form autocomplete="off" on:submit|preventDefault>
+    <form autocomplete="off" {onsubmit}>
       <div class="mt-4 ml-4">
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_external_domain_settings')}
-          desc={$t('admin.server_external_domain_settings_description')}
+          description={$t('admin.server_external_domain_settings_description')}
           bind:value={config.server.externalDomain}
           isEdited={config.server.externalDomain !== savedConfig.server.externalDomain}
         />
@@ -32,9 +40,16 @@
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_welcome_message')}
-          desc={$t('admin.server_welcome_message_description')}
+          description={$t('admin.server_welcome_message_description')}
           bind:value={config.server.loginPageMessage}
           isEdited={config.server.loginPageMessage !== savedConfig.server.loginPageMessage}
+        />
+
+        <SettingSwitch
+          title={$t('admin.server_public_users')}
+          subtitle={$t('admin.server_public_users_description')}
+          {disabled}
+          bind:checked={config.server.publicUsers}
         />
 
         <div class="ml-4">

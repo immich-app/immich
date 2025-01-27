@@ -4,17 +4,20 @@
   import { updateMyUser } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
-  export let onSuccess: () => void;
+  interface Props {
+    onSuccess: () => void;
+  }
 
-  let errorMessage: string;
-  let success: string;
+  let { onSuccess }: Props = $props();
 
-  let password = '';
-  let passwordConfirm = '';
+  let errorMessage: string = $state('');
 
-  let valid = false;
+  let password = $state('');
+  let passwordConfirm = $state('');
 
-  $: {
+  let valid = $state(false);
+
+  $effect(() => {
     if (password !== passwordConfirm && passwordConfirm.length > 0) {
       errorMessage = $t('password_does_not_match');
       valid = false;
@@ -22,7 +25,7 @@
       errorMessage = '';
       valid = true;
     }
-  }
+  });
 
   async function changePassword() {
     if (valid) {
@@ -33,9 +36,14 @@
       onSuccess();
     }
   }
+
+  const onsubmit = async (event: Event) => {
+    event.preventDefault();
+    await changePassword();
+  };
 </script>
 
-<form on:submit|preventDefault={changePassword} method="post" class="mt-5 flex flex-col gap-5">
+<form {onsubmit} method="post" class="mt-5 flex flex-col gap-5">
   <div class="flex flex-col gap-2">
     <label class="immich-form-label" for="password">{$t('new_password')}</label>
     <PasswordField id="password" bind:password autocomplete="new-password" />
@@ -50,9 +58,6 @@
     <p class="text-sm text-red-400">{errorMessage}</p>
   {/if}
 
-  {#if success}
-    <p class="text-sm text-immich-primary">{success}</p>
-  {/if}
   <div class="my-5 flex w-full">
     <Button type="submit" size="lg" fullwidth>{$t('to_change_password')}</Button>
   </div>

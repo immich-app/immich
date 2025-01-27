@@ -8,25 +8,30 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
-  import { foldersStore } from '$lib/stores/folders.store';
+  import { foldersStore } from '$lib/stores/folders.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
-  import { type AssetResponseDto } from '@immich/sdk';
   import { mdiFolder, mdiFolderHome, mdiFolderOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
   import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
-  export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-  let selectedAssets: Set<AssetResponseDto> = new Set();
-  const viewport: Viewport = { width: 0, height: 0 };
+  let { data }: Props = $props();
 
-  $: pathSegments = data.path ? data.path.split('/') : [];
-  $: tree = buildTree($foldersStore?.uniquePaths || []);
-  $: currentPath = $page.url.searchParams.get(QueryParameter.PATH) || '';
-  $: currentTreeItems = currentPath ? data.currentFolders : Object.keys(tree);
+  const viewport: Viewport = $state({ width: 0, height: 0 });
+
+  let pathSegments = $derived(data.path ? data.path.split('/') : []);
+  let tree = $derived(buildTree(foldersStore.uniquePaths));
+  let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
+  let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
+
+  const assetInteraction = new AssetInteraction();
 
   onMount(async () => {
     await foldersStore.fetchUniquePaths();
@@ -37,7 +42,7 @@
   };
 
   const getLink = (path: string) => {
-    const url = new URL(AppRoute.FOLDERS, window.location.href);
+    const url = new URL(AppRoute.FOLDERS, globalThis.location.href);
     if (path) {
       url.searchParams.set(QueryParameter.PATH, path);
     }
@@ -48,20 +53,22 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <SideBarSection slot="sidebar">
-    <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} />
-    <section>
-      <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
-      <div class="h-full">
-        <TreeItems
-          icons={{ default: mdiFolderOutline, active: mdiFolder }}
-          items={tree}
-          active={currentPath}
-          {getLink}
-        />
-      </div>
-    </section>
-  </SideBarSection>
+  {#snippet sidebar()}
+    <SideBarSection>
+      <SkipLink target={`#${headerId}`} text={$t('skip_to_folders')} />
+      <section>
+        <div class="text-xs pl-4 mb-2 dark:text-white">{$t('explorer').toUpperCase()}</div>
+        <div class="h-full">
+          <TreeItems
+            icons={{ default: mdiFolderOutline, active: mdiFolder }}
+            items={tree}
+            active={currentPath}
+            {getLink}
+          />
+        </div>
+      </section>
+    </SideBarSection>
+  {/snippet}
 
   <Breadcrumbs {pathSegments} icon={mdiFolderHome} title={$t('folders')} {getLink} />
 
@@ -73,7 +80,7 @@
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
           assets={data.pathAssets}
-          bind:selectedAssets
+          {assetInteraction}
           {viewport}
           disableAssetSelect={true}
           showAssetName={true}

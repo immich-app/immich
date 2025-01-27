@@ -2,8 +2,9 @@ import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
-import { MetadataKey } from 'src/enum';
+import { ImmichWorker, MetadataKey } from 'src/enum';
 import { EmitEvent } from 'src/interfaces/event.interface';
+import { JobName, QueueName } from 'src/interfaces/job.interface';
 import { setUnion } from 'src/utils/set';
 
 // PostgreSQL uses a 16-bit integer to indicate the number of bound parameters. This means that the
@@ -119,8 +120,16 @@ export type EventConfig = {
   server?: boolean;
   /** lower value has higher priority, defaults to 0 */
   priority?: number;
+  /** register events for these workers, defaults to all workers */
+  workers?: ImmichWorker[];
 };
 export const OnEvent = (config: EventConfig) => SetMetadata(MetadataKey.EVENT_CONFIG, config);
+
+export type JobConfig = {
+  name: JobName;
+  queue: QueueName;
+};
+export const OnJob = (config: JobConfig) => SetMetadata(MetadataKey.JOB_CONFIG, config);
 
 type LifecycleRelease = 'NEXT_RELEASE' | string;
 type LifecycleMetadata = {

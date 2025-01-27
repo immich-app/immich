@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import Icon from '$lib/components/elements/icon.svelte';
   import { ActionQueryParameterValue, AppRoute, QueryParameter } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -19,26 +19,32 @@
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
 
-  export let person: PersonResponseDto;
-  export let onBack: () => void;
-  export let onMerge: (mergedPerson: PersonResponseDto) => void;
+  interface Props {
+    person: PersonResponseDto;
+    onBack: () => void;
+    onMerge: (mergedPerson: PersonResponseDto) => void;
+  }
 
-  let people: PersonResponseDto[] = [];
-  let selectedPeople: PersonResponseDto[] = [];
-  let screenHeight: number;
+  let { person = $bindable(), onBack, onMerge }: Props = $props();
 
-  $: hasSelection = selectedPeople.length > 0;
-  $: peopleToNotShow = [...selectedPeople, person];
+  let people: PersonResponseDto[] = $state([]);
+  let selectedPeople: PersonResponseDto[] = $state([]);
+  let screenHeight: number = $state(0);
 
-  onMount(async () => {
-    const data = await getAllPeople({ withHidden: false });
+  let hasSelection = $derived(selectedPeople.length > 0);
+  let peopleToNotShow = $derived([...selectedPeople, person]);
+
+  const handleSearch = async (sortFaces: boolean = false) => {
+    const data = await getAllPeople({ withHidden: false, closestPersonId: sortFaces ? person.id : undefined });
     people = data.people;
-  });
+  };
+
+  onMount(handleSearch);
 
   const handleSwapPeople = async () => {
     [person, selectedPeople[0]] = [selectedPeople[0], person];
-    $page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
-    await goto(`${AppRoute.PEOPLE}/${person.id}?${$page.url.searchParams.toString()}`);
+    page.url.searchParams.set(QueryParameter.ACTION, ActionQueryParameterValue.MERGE);
+    await goto(`${AppRoute.PEOPLE}/${person.id}?${page.url.searchParams.toString()}`);
   };
 
   const onSelect = async (selected: PersonResponseDto) => {
@@ -96,20 +102,20 @@
   class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
 >
   <ControlAppBar onClose={onBack}>
-    <svelte:fragment slot="leading">
+    {#snippet leading()}
       {#if hasSelection}
         {$t('selected_count', { values: { count: selectedPeople.length } })}
       {:else}
         {$t('merge_people')}
       {/if}
-      <div />
-    </svelte:fragment>
-    <svelte:fragment slot="trailing">
-      <Button size={'sm'} disabled={!hasSelection} on:click={handleMerge}>
+      <div></div>
+    {/snippet}
+    {#snippet trailing()}
+      <Button size={'sm'} disabled={!hasSelection} onclick={handleMerge}>
         <Icon path={mdiMerge} size={18} />
         <span class="ml-2">{$t('merge')}</span></Button
       >
-    </svelte:fragment>
+    {/snippet}
   </ControlAppBar>
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
     <section id="merge-face-selector relative">
@@ -135,7 +141,7 @@
                       title={$t('swap_merge_direction')}
                       icon={mdiSwapHorizontal}
                       size="24"
-                      on:click={handleSwapPeople}
+                      onclick={handleSwapPeople}
                     />
                   </div>
                 {/if}
@@ -145,8 +151,7 @@
           <FaceThumbnail {person} border circle selectable={false} thumbnailSize={180} />
         </div>
       </div>
-
-      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} />
+      <PeopleList {people} {peopleToNotShow} {screenHeight} {onSelect} {handleSearch} />
     </section>
   </section>
 </section>

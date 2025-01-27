@@ -1,6 +1,7 @@
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
+import { ImmichWorker } from 'src/enum';
 import { IMetadataRepository } from 'src/interfaces/metadata.interface';
 import { BaseService } from 'src/services/base.service';
 import { newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -11,6 +12,7 @@ import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock'
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
+import { newCronRepositoryMock } from 'test/repositories/cron.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
@@ -44,8 +46,9 @@ import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools';
 import { Mocked, vitest } from 'vitest';
 
-type RepositoryOverrides = {
-  metadataRepository: IMetadataRepository;
+type Overrides = {
+  worker?: ImmichWorker;
+  metadataRepository?: IMetadataRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -54,12 +57,13 @@ type Constructor<Type, Args extends Array<any>> = {
 
 export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
-  overrides?: RepositoryOverrides,
+  overrides?: Overrides,
 ) => {
   const { metadataRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggerRepositoryMock();
+  const cronMock = newCronRepositoryMock();
   const cryptoMock = newCryptoRepositoryMock();
   const activityMock = newActivityRepositoryMock();
   const auditMock = newAuditRepositoryMock();
@@ -106,6 +110,7 @@ export const newTestService = <T extends BaseService>(
     albumUserMock,
     assetMock,
     configMock,
+    cronMock,
     cryptoMock,
     databaseMock,
     eventMock,
@@ -142,6 +147,7 @@ export const newTestService = <T extends BaseService>(
     sut,
     accessMock,
     loggerMock,
+    cronMock,
     cryptoMock,
     activityMock,
     auditMock,

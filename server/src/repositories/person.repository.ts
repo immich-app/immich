@@ -83,10 +83,14 @@ export class PersonRepository implements IPersonRepository {
   }
 
   @GenerateSql({ params: [{ take: 10, skip: 10 }, DummyValue.UUID] })
-  getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions): Paginated<PersonEntity> {
+  async getAllForUser(
+    pagination: PaginationOptions,
+    userId: string,
+    options?: PersonSearchOptions,
+  ): Paginated<PersonEntity> {
     const queryBuilder = this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
+      .innerJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
@@ -95,13 +99,24 @@ export class PersonRepository implements IPersonRepository {
       .addOrderBy('COUNT(face.assetId)', 'DESC')
       .addOrderBy("NULLIF(person.name, '')", 'ASC', 'NULLS LAST')
       .addOrderBy('person.createdAt')
-      .andWhere("person.thumbnailPath != ''")
       .having("person.name != '' OR COUNT(face.assetId) >= :faces", { faces: options?.minimumFaceCount || 1 })
       .groupBy('person.id');
+    if (options?.closestFaceAssetId) {
+      const innerQueryBuilder = this.faceSearchRepository
+        .createQueryBuilder('face_search')
+        .select('embedding', 'embedding')
+        .where('"face_search"."faceId" = "person"."faceAssetId"');
+      const faceSelectQueryBuilder = this.faceSearchRepository
+        .createQueryBuilder('face_search')
+        .select('embedding', 'embedding')
+        .where('"face_search"."faceId" = :faceId', { faceId: options.closestFaceAssetId });
+      queryBuilder
+        .orderBy('(' + innerQueryBuilder.getQuery() + ') <=> (' + faceSelectQueryBuilder.getQuery() + ')')
+        .setParameters(faceSelectQueryBuilder.getParameters());
+    }
     if (!options?.withHidden) {
       queryBuilder.andWhere('person.isHidden = false');
     }
-
     return paginatedBuilder(queryBuilder, {
       mode: PaginationMode.LIMIT_OFFSET,
       ...pagination,
@@ -232,14 +247,12 @@ export class PersonRepository implements IPersonRepository {
   async getNumberOfPeople(userId: string): Promise<PeopleStatistics> {
     const items = await this.personRepository
       .createQueryBuilder('person')
-      .leftJoin('person.faces', 'face')
+      .innerJoin('person.faces', 'face')
       .where('person.ownerId = :userId', { userId })
       .innerJoin('face.asset', 'asset')
       .andWhere('asset.isArchived = false')
-      .andWhere("person.thumbnailPath != ''")
       .select('COUNT(DISTINCT(person.id))', 'total')
       .addSelect('COUNT(DISTINCT(person.id)) FILTER (WHERE person.isHidden = true)', 'hidden')
-      .having('COUNT(face.assetId) != 0')
       .getRawOne();
 
     if (items == undefined) {

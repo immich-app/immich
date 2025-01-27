@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
 import { CLS_ID } from 'nestjs-cls';
 import { join, resolve } from 'node:path';
-import { citiesFile, excludePaths } from 'src/constants';
+import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
 import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker } from 'src/enum';
@@ -228,12 +228,18 @@ let cached: EnvData | undefined;
 @Injectable()
 @Telemetry({ enabled: false })
 export class ConfigRepository implements IConfigRepository {
+  constructor(@Inject(IWorker) @Optional() private worker?: ImmichWorker) {}
+
   getEnv(): EnvData {
     if (!cached) {
       cached = getEnv();
     }
 
     return cached;
+  }
+
+  getWorker() {
+    return this.worker;
   }
 }
 

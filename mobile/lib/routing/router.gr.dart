@@ -139,13 +139,11 @@ class AlbumAssetSelectionRouteArgs {
 class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
   AlbumOptionsRoute({
     Key? key,
-    required Album album,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumOptionsRoute.name,
           args: AlbumOptionsRouteArgs(
             key: key,
-            album: album,
           ),
           initialChildren: children,
         );
@@ -158,25 +156,19 @@ class AlbumOptionsRoute extends PageRouteInfo<AlbumOptionsRouteArgs> {
       final args = data.argsAs<AlbumOptionsRouteArgs>();
       return AlbumOptionsPage(
         key: args.key,
-        album: args.album,
       );
     },
   );
 }
 
 class AlbumOptionsRouteArgs {
-  const AlbumOptionsRouteArgs({
-    this.key,
-    required this.album,
-  });
+  const AlbumOptionsRouteArgs({this.key});
 
   final Key? key;
 
-  final Album album;
-
   @override
   String toString() {
-    return 'AlbumOptionsRouteArgs{key: $key, album: $album}';
+    return 'AlbumOptionsRouteArgs{key: $key}';
   }
 }
 
@@ -1076,6 +1068,64 @@ class MemoryRouteArgs {
   @override
   String toString() {
     return 'MemoryRouteArgs{memories: $memories, memoryIndex: $memoryIndex, key: $key}';
+  }
+}
+
+/// generated route for
+/// [NativeVideoViewerPage]
+class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
+  NativeVideoViewerRoute({
+    Key? key,
+    required Asset asset,
+    required Widget image,
+    bool showControls = true,
+    List<PageRouteInfo>? children,
+  }) : super(
+          NativeVideoViewerRoute.name,
+          args: NativeVideoViewerRouteArgs(
+            key: key,
+            asset: asset,
+            image: image,
+            showControls: showControls,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'NativeVideoViewerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<NativeVideoViewerRouteArgs>();
+      return NativeVideoViewerPage(
+        key: args.key,
+        asset: args.asset,
+        image: args.image,
+        showControls: args.showControls,
+      );
+    },
+  );
+}
+
+class NativeVideoViewerRouteArgs {
+  const NativeVideoViewerRouteArgs({
+    this.key,
+    required this.asset,
+    required this.image,
+    this.showControls = true,
+  });
+
+  final Key? key;
+
+  final Asset asset;
+
+  final Widget image;
+
+  final bool showControls;
+
+  @override
+  String toString() {
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls}';
   }
 }
 

@@ -1,3 +1,4 @@
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 
 abstract interface class IAlbumApiRepository {
@@ -17,6 +18,7 @@ abstract interface class IAlbumApiRepository {
     String? thumbnailAssetId,
     String? description,
     bool? activityEnabled,
+    SortOrder? sortOrder,
   });
 
   Future<void> delete(String albumId);

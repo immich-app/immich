@@ -7,7 +7,7 @@ import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { WebSocketAdapter } from 'src/middleware/websocket.adapter';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { bootstrapTelemetry } from 'src/repositories/telemetry.repository';
-import { isStartUpError } from 'src/services/storage.service';
+import { isStartUpError } from 'src/utils/misc';
 
 export async function bootstrap() {
   const { telemetry } = new ConfigRepository().getEnv();

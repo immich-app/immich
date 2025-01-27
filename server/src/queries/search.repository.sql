@@ -279,13 +279,7 @@ LIMIT
 -- SearchRepository.searchSmart
 START TRANSACTION
 SET
-  LOCAL vectors.enable_prefilter = on;
-
-SET
-  LOCAL vectors.search_mode = vbase;
-
-SET
-  LOCAL vectors.hnsw_ef_search = 100;
+  LOCAL vectors.hnsw_ef_search = 200;
 SELECT
   "asset"."id" AS "asset_id",
   "asset"."deviceAssetId" AS "asset_deviceAssetId",
@@ -369,7 +363,7 @@ WHERE
 ORDER BY
   "search"."embedding" <= > $6 ASC
 LIMIT
-  101
+  201
 COMMIT
 
 -- SearchRepository.searchDuplicates
@@ -405,12 +399,6 @@ WHERE
 -- SearchRepository.searchFaces
 START TRANSACTION
 SET
-  LOCAL vectors.enable_prefilter = on;
-
-SET
-  LOCAL vectors.search_mode = vbase;
-
-SET
   LOCAL vectors.hnsw_ef_search = 100;
 WITH
   "cte" AS (
@@ -436,7 +424,7 @@ WITH
     ORDER BY
       "search"."embedding" <= > $1 ASC
     LIMIT
-      100
+      64
   )
 SELECT
   res.*
@@ -597,52 +585,57 @@ SELECT DISTINCT
   ON ("exif"."country") "exif"."country" AS "country"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
+  AND "exif"."country" != ''
+  AND "exif"."country" IS NOT NULL
 
 -- SearchRepository.getStates
 SELECT DISTINCT
   ON ("exif"."state") "exif"."state" AS "state"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."country" = $2
+  AND "exif"."state" != ''
+  AND "exif"."state" IS NOT NULL
 
 -- SearchRepository.getCities
 SELECT DISTINCT
   ON ("exif"."city") "exif"."city" AS "city"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."country" = $2
-  AND "exif"."state" = $3
+  AND "exif"."city" != ''
+  AND "exif"."city" IS NOT NULL
 
 -- SearchRepository.getCameraMakes
 SELECT DISTINCT
   ON ("exif"."make") "exif"."make" AS "make"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."model" = $2
+  AND "exif"."make" != ''
+  AND "exif"."make" IS NOT NULL
 
 -- SearchRepository.getCameraModels
 SELECT DISTINCT
   ON ("exif"."model") "exif"."model" AS "model"
 FROM
   "exif" "exif"
-  LEFT JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
+  INNER JOIN "assets" "asset" ON "asset"."id" = "exif"."assetId"
   AND ("asset"."deletedAt" IS NULL)
 WHERE
   "asset"."ownerId" IN ($1)
-  AND "exif"."make" = $2
+  AND "exif"."model" != ''
+  AND "exif"."model" IS NOT NULL

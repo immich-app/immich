@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, afterUpdate, onDestroy, tick } from 'svelte';
+  import { onMount, onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import { getAssetOriginalUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -17,11 +17,23 @@
     resetGlobalCropStore,
     rotateDegrees,
   } from '$lib/stores/asset-editor.store';
+  import type { AssetResponseDto } from '@immich/sdk';
 
-  export let asset;
-  let img: HTMLImageElement;
+  interface Props {
+    asset: AssetResponseDto;
+  }
 
-  $: imgElement.set(img);
+  let { asset }: Props = $props();
+
+  let img = $state<HTMLImageElement>();
+
+  $effect(() => {
+    if (!img) {
+      return;
+    }
+
+    imgElement.set(img);
+  });
 
   cropAspectRatio.subscribe((value) => {
     if (!img || !$cropAreaEl) {
@@ -45,16 +57,16 @@
       handleError(error, $t('error_loading_image'));
     });
 
-    window.addEventListener('mousemove', handleMouseMove);
+    globalThis.addEventListener('mousemove', handleMouseMove);
   });
 
   onDestroy(() => {
-    window.removeEventListener('mousemove', handleMouseMove);
+    globalThis.removeEventListener('mousemove', handleMouseMove);
     resetCropStore();
     resetGlobalCropStore();
   });
 
-  afterUpdate(() => {
+  $effect(() => {
     resizeCanvas();
   });
 </script>
@@ -64,8 +76,8 @@
     class={`crop-area ${$changedOriention ? 'changedOriention' : ''}`}
     style={`rotate:${$rotateDegrees}deg`}
     bind:this={$cropAreaEl}
-    on:mousedown={handleMouseDown}
-    on:mouseup={handleMouseUp}
+    onmousedown={handleMouseDown}
+    onmouseup={handleMouseUp}
     aria-label="Crop area"
     type="button"
   >

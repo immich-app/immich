@@ -1,9 +1,9 @@
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
-import { foldersStore } from '$lib/stores/folders.store';
+import { foldersStore } from '$lib/stores/folders.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
-import { serverInfo } from '$lib/stores/server-info.store';
 import { preferences as preferences$, resetSavedUser, user as user$ } from '$lib/stores/user.store';
+import { resetUserInteraction, userInteraction } from '$lib/stores/user.svelte';
 import { getAboutInfo, getMyPreferences, getMyUser, getStorage } from '@immich/sdk';
 import { redirect } from '@sveltejs/kit';
 import { DateTime } from 'luxon';
@@ -72,7 +72,7 @@ export const authenticate = async (options?: AuthOptions) => {
 export const requestServerInfo = async () => {
   if (get(user$)) {
     const data = await getStorage();
-    serverInfo.set(data);
+    userInteraction.serverInfo = data;
   }
 };
 
@@ -95,10 +95,11 @@ export const handleLogout = async (redirectUri: string) => {
     if (redirectUri.startsWith('/')) {
       await goto(redirectUri);
     } else {
-      window.location.href = redirectUri;
+      globalThis.location.href = redirectUri;
     }
   } finally {
     resetSavedUser();
+    resetUserInteraction();
     foldersStore.clearCache();
   }
 };

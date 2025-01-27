@@ -1,5 +1,9 @@
 # PR Checklist
 
+A minimal devcontainer is supplied with this repository. All commands can be executed directly inside this container to avoid tedious installation of the environment.
+:::warning
+The provided devcontainer isn't complete at the moment. At least all dockerized steps in the Makefile won't work (`make dev`, ....). Feel free to contribute!
+:::
 When contributing code through a pull request, please check the following:
 
 ## Web Checks
@@ -7,6 +11,7 @@ When contributing code through a pull request, please check the following:
 - [ ] `npm run lint` (linting via ESLint)
 - [ ] `npm run format` (formatting via Prettier)
 - [ ] `npm run check:svelte` (Type checking via SvelteKit)
+- [ ] `npm run check:typescript` (check typescript)
 - [ ] `npm test` (unit tests)
 
 ## Documentation
