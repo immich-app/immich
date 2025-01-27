@@ -124,8 +124,8 @@ export class AlbumRepository implements IAlbumRepository {
 
     return this.db
       .selectFrom('albums')
-      .leftJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
-      .leftJoin('assets', 'assets.id', 'album_assets.assetsId')
+      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
       .select('albums.id as albumId')
       .select((eb) => eb.fn.min('assets.fileCreatedAt').as('startDate'))
       .select((eb) => eb.fn.max('assets.fileCreatedAt').as('endDate'))
