@@ -2,11 +2,11 @@ import { BadRequestException } from '@nestjs/common';
 import _ from 'lodash';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { AlbumUserRole } from 'src/enum';
-import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AlbumService } from 'src/services/album.service';
+import { IAlbumUserRepository } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -52,8 +52,8 @@ describe(AlbumService.name, () => {
     it('gets list of albums for auth user', async () => {
       albumMock.getOwned.mockResolvedValue([albumStub.empty, albumStub.sharedWithUser]);
       albumMock.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
-        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
+        { albumId: albumStub.empty.id, assetCount: 0, startDate: null, endDate: null },
+        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: null, endDate: null },
       ]);
 
       const result = await sut.getAll(authStub.admin, {});
@@ -82,7 +82,7 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are shared', async () => {
       albumMock.getShared.mockResolvedValue([albumStub.sharedWithUser]);
       albumMock.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
+        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: null, endDate: null },
       ]);
 
       const result = await sut.getAll(authStub.admin, { shared: true });
@@ -94,7 +94,7 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are NOT shared', async () => {
       albumMock.getNotShared.mockResolvedValue([albumStub.empty]);
       albumMock.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
+        { albumId: albumStub.empty.id, assetCount: 0, startDate: null, endDate: null },
       ]);
 
       const result = await sut.getAll(authStub.admin, { shared: false });

@@ -4,10 +4,14 @@ import { InjectKysely } from 'nestjs-kysely';
 import { AlbumsSharedUsersUsers, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
-import { AlbumPermissionId, IAlbumUserRepository } from 'src/interfaces/album-user.interface';
+
+export type AlbumPermissionId = {
+  albumsId: string;
+  usersId: string;
+};
 
 @Injectable()
-export class AlbumUserRepository implements IAlbumUserRepository {
+export class AlbumUserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }] })
@@ -16,10 +20,7 @@ export class AlbumUserRepository implements IAlbumUserRepository {
   }
 
   @GenerateSql({ params: [{ usersId: DummyValue.UUID, albumsId: DummyValue.UUID }, { role: AlbumUserRole.VIEWER }] })
-  update(
-    { usersId, albumsId }: AlbumPermissionId,
-    dto: Updateable<AlbumsSharedUsersUsers>,
-  ): Promise<Selectable<AlbumsSharedUsersUsers>> {
+  update({ usersId, albumsId }: AlbumPermissionId, dto: Updateable<AlbumsSharedUsersUsers>) {
     return this.db
       .updateTable('albums_shared_users_users')
       .set(dto)

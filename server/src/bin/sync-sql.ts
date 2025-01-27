@@ -4,17 +4,19 @@ import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import postgres from 'postgres';
 import { format } from 'sql-formatter';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
 import { entities } from 'src/entities';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { providers, repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
 import { Logger } from 'typeorm';
 
@@ -62,7 +64,7 @@ class SqlGenerator {
         ...repositories.map((repository) => ({ provide: repository, useClass: repository as any })),
       ];
       for (const repository of targets) {
-        if (repository.provide === ILoggerRepository) {
+        if (repository.provide === LoggingRepository) {
           continue;
         }
         await this.process(repository);
@@ -84,7 +86,7 @@ class SqlGenerator {
     const moduleFixture = await Test.createTestingModule({
       imports: [
         KyselyModule.forRoot({
-          ...database.config.kysely,
+          dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
           log: (event) => {
             if (event.level === 'query') {
               this.sqlLogger.logQuery(event.query.sql);

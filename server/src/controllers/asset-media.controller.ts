@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Next,
   Param,
   ParseFilePipe,
@@ -36,10 +35,10 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichHeader, RouteKey } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { ImmichFileResponse, sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
@@ -48,7 +47,7 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 @Controller(RouteKey.ASSET)
 export class AssetMediaController {
   constructor(
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     private service: AssetMediaService,
   ) {}
 

@@ -1,4 +1,4 @@
-import { ITrashRepository } from 'src/interfaces/trash.interface';
+import { ITrashRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newTrashRepositoryMock = (): Mocked<ITrashRepository> => {

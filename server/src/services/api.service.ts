@@ -1,10 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
 import { ONE_HOUR } from 'src/constants';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
 import { JobService } from 'src/services/job.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
@@ -39,7 +39,7 @@ export class ApiService {
     private sharedLinkService: SharedLinkService,
     private versionService: VersionService,
     private configRepository: ConfigRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(ApiService.name);
   }

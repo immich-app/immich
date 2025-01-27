@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirectionExpression, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetType } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateSearch,
   AssetSearchOptions,
@@ -20,6 +19,7 @@ import {
   SearchPaginationOptions,
   SmartSearchOptions,
 } from 'src/interfaces/search.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import { Paginated } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -27,7 +27,7 @@ import { isValidInteger } from 'src/validation';
 @Injectable()
 export class SearchRepository implements ISearchRepository {
   constructor(
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<DB>,
   ) {
     this.logger.setContext(SearchRepository.name);
@@ -69,12 +69,19 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
+  async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
-    const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
-    const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
-    return sql`${lessThan} union all ${greaterThan}`.execute(this.db) as any as Promise<AssetEntity[]>;
+    const lessThan = builder
+      .where('assets.id', '<', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
+    const greaterThan = builder
+      .where('assets.id', '>', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
+    const { rows } = await sql`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
+    return rows as any as AssetEntity[];
   }
 
   @GenerateSql({
@@ -291,7 +298,7 @@ export class SearchRepository implements ISearchRepository {
       await sql`truncate ${sql.table('smart_search')}`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
-        .alterColumn('embedding', (col) => col.setDataType(sql.lit(`vector(${dimSize})`)))
+        .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
       await sql`reindex index clip_index`.execute(trx);
     });

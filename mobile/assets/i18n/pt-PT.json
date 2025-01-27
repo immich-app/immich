@@ -336,7 +336,7 @@
   "login_form_back_button_text": "Voltar",
   "login_form_button_text": "Login",
   "login_form_email_hint": "seuemail@email.com",
-  "login_form_endpoint_hint": "http://ip-do-seu-servidor:porta/api",
+  "login_form_endpoint_hint": "http://ip-do-seu-servidor:porta",
   "login_form_endpoint_url": "URL do servidor",
   "login_form_err_http": "Por favor especifique http:// ou https://",
   "login_form_err_invalid_email": "Email Inválido",

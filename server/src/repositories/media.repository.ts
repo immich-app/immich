@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
@@ -8,7 +8,7 @@ import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { Colorspace, LogLevel } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
@@ -38,7 +38,7 @@ type ProgressEvent = {
 
 @Injectable()
 export class MediaRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
   }
 

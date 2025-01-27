@@ -336,7 +336,7 @@
   "login_form_back_button_text": "Назад",
   "login_form_button_text": "Увійти",
   "login_form_email_hint": "youremail@email.com",
-  "login_form_endpoint_hint": "http://your-server-ip:port/api",
+  "login_form_endpoint_hint": "http://your-server-ip:port",
   "login_form_endpoint_url": "Адреса точки досупу на сервері",
   "login_form_err_http": "Вкажіть http:// або https://",
   "login_form_err_invalid_email": "Хибний імейл",

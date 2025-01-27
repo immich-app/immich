@@ -336,7 +336,7 @@
   "login_form_back_button_text": "กลับ",
   "login_form_button_text": "เข้าสู่ระบบ",
   "login_form_email_hint": "อีเมลคุณ@อีเมล.com",
-  "login_form_endpoint_hint": "http://ไอพีเชอร์ฟเวอร์คุณ:พอร์ต/api",
+  "login_form_endpoint_hint": "http://ไอพีเชอร์ฟเวอร์คุณ:พอร์ต",
   "login_form_endpoint_url": "URL ปลายทางของเซิร์ฟเวอร์",
   "login_form_err_http": "โปรดระบุ http:// หรือ https://",
   "login_form_err_invalid_email": "อีเมลไม่ถูกต้อง",

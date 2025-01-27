@@ -336,7 +336,7 @@
   "login_form_back_button_text": "Kembali",
   "login_form_button_text": "Masuk",
   "login_form_email_hint": "emailmu@email.com",
-  "login_form_endpoint_hint": "http://ip-server-anda:port/api",
+  "login_form_endpoint_hint": "http://ip-server-anda:port",
   "login_form_endpoint_url": "URL Endpoint Server",
   "login_form_err_http": "Harap tentukan http:// atau https://",
   "login_form_err_invalid_email": "Email Tidak Valid",
