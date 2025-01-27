@@ -27,7 +27,7 @@ The script will perform the following actions:
 1. Download [docker-compose.yml](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml), and the [.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file from the main branch of the [repository](https://github.com/immich-app/immich).
 2. Start the containers.
 
-The web application will be available at `http://<machine-ip-address>:2283`, and the server URL for the mobile app will be `http://<machine-ip-address>:2283/api`
+The web application and mobile app will be available at `http://<machine-ip-address>:2283`
 
 The directory which is used to store the library files is `./immich-app` relative to the current directory.
 

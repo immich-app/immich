@@ -10,7 +10,7 @@ from tokenizers import Encoding, Tokenizer
 
 from app.config import log
 from app.models.base import InferenceModel
-from app.models.transforms import clean_text
+from app.models.transforms import clean_text, serialize_np_array
 from app.schemas import ModelSession, ModelTask, ModelType
 
 
@@ -18,9 +18,9 @@ class BaseCLIPTextualEncoder(InferenceModel):
     depends = []
     identity = (ModelType.TEXTUAL, ModelTask.SEARCH)
 
-    def _predict(self, inputs: str, **kwargs: Any) -> NDArray[np.float32]:
+    def _predict(self, inputs: str, **kwargs: Any) -> str:
         res: NDArray[np.float32] = self.session.run(None, self.tokenize(inputs))[0][0]
-        return res
+        return serialize_np_array(res)
 
     def _load(self) -> ModelSession:
         session = super()._load()

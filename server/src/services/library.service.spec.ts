@@ -5,8 +5,6 @@ import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetType, ImmichWorker } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICronRepository } from 'src/interfaces/cron.interface';
 import { IDatabaseRepository } from 'src/interfaces/database.interface';
 import {
   IJobRepository,
@@ -19,6 +17,7 @@ import {
 import { ILibraryRepository } from 'src/interfaces/library.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { LibraryService } from 'src/services/library.service';
+import { IConfigRepository, ICronRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { libraryStub } from 'test/fixtures/library.stub';
@@ -338,11 +337,30 @@ describe(LibraryService.name, () => {
 
       expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.trashedOffline.id], {
         deletedAt: null,
-        fileCreatedAt: assetStub.trashedOffline.fileModifiedAt,
         fileModifiedAt: assetStub.trashedOffline.fileModifiedAt,
         isOffline: false,
         originalFileName: 'path.jpg',
       });
+    });
+
+    it('should not touch fileCreatedAt when un-trashing an asset previously marked as offline', async () => {
+      const mockAssetJob: ILibraryAssetJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+        exclusionPatterns: [],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.trashedOffline);
+      storageMock.stat.mockResolvedValue({ mtime: assetStub.trashedOffline.fileModifiedAt } as Stats);
+
+      await expect(sut.handleSyncAsset(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith(
+        [assetStub.trashedOffline.id],
+        expect.not.objectContaining({
+          fileCreatedAt: expect.anything(),
+        }),
+      );
     });
   });
 
@@ -361,7 +379,6 @@ describe(LibraryService.name, () => {
 
     expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
       fileModifiedAt: newMTime,
-      fileCreatedAt: newMTime,
       isOffline: false,
       originalFileName: 'photo.jpg',
       deletedAt: null,

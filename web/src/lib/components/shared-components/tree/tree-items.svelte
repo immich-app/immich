@@ -15,7 +15,7 @@
 </script>
 
 <ul class="list-none ml-2">
-  {#each Object.entries(items) as [path, tree]}
+  {#each Object.entries(items).sort() as [path, tree]}
     {@const value = normalizeTreePath(`${parent}/${path}`)}
     {@const key = value + getColor(value)}
     {#key key}

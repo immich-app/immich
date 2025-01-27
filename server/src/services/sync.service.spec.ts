@@ -1,9 +1,9 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { SyncService } from 'src/services/sync.service';
+import { IAuditRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';

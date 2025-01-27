@@ -11,16 +11,33 @@ import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { AssetEntity, withExif } from 'src/entities/asset.entity';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { LogLevel, SystemMetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import {
-  GeoPoint,
-  IMapRepository,
-  MapMarker,
-  MapMarkerSearchOptions,
-  ReverseGeocodeResult,
-} from 'src/interfaces/map.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+
+export interface MapMarkerSearchOptions {
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  fileCreatedBefore?: Date;
+  fileCreatedAfter?: Date;
+}
+
+export interface GeoPoint {
+  latitude: number;
+  longitude: number;
+}
+
+export interface ReverseGeocodeResult {
+  country: string | null;
+  state: string | null;
+  city: string | null;
+}
+
+export interface MapMarker extends ReverseGeocodeResult {
+  id: string;
+  lat: number;
+  lon: number;
+}
 
 interface MapDB extends DB {
   geodata_places_tmp: GeodataPlaces;
@@ -28,11 +45,11 @@ interface MapDB extends DB {
 }
 
 @Injectable()
-export class MapRepository implements IMapRepository {
+export class MapRepository {
   constructor(
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
+    private configRepository: ConfigRepository,
     @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<MapDB>,
   ) {
     this.logger.setContext(MapRepository.name);

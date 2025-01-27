@@ -1,7 +1,6 @@
 <script lang="ts">
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import GroupTab from '$lib/components/elements/group-tab.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import {
     AlbumFilter,
@@ -129,8 +128,13 @@
 </div>
 
 <!-- Create Album -->
-<Button onclick={() => createAlbumAndRedirect()} size="small" variant="ghost" color="secondary">
-  <Icon path={mdiPlusBoxOutline} />
+<Button
+  leadingIcon={mdiPlusBoxOutline}
+  onclick={() => createAlbumAndRedirect()}
+  size="small"
+  variant="ghost"
+  color="secondary"
+>
   <p class="hidden md:block">{$t('create_album')}</p>
 </Button>
 
@@ -190,12 +194,24 @@
 {/if}
 
 <!-- Cover/List Display Toggle -->
-<Button onclick={() => handleChangeListMode()} size="small" variant="ghost" color="secondary">
-  {#if $albumViewSettings.view === AlbumViewMode.List}
-    <Icon path={mdiViewGridOutline} />
+{#if $albumViewSettings.view === AlbumViewMode.List}
+  <Button
+    leadingIcon={mdiViewGridOutline}
+    onclick={() => handleChangeListMode()}
+    size="small"
+    variant="ghost"
+    color="secondary"
+  >
     <Text class="hidden md:block">{$t('covers')}</Text>
-  {:else}
-    <Icon path={mdiFormatListBulletedSquare} size="18" />
+  </Button>
+{:else}
+  <Button
+    leadingIcon={mdiFormatListBulletedSquare}
+    onclick={() => handleChangeListMode()}
+    size="small"
+    variant="ghost"
+    color="secondary"
+  >
     <Text class="hidden md:block">{$t('list')}</Text>
-  {/if}
-</Button>
+  </Button>
+{/if}

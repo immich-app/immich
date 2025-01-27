@@ -1,7 +1,6 @@
 <script lang="ts">
   import empty4Url from '$lib/assets/empty-4.svg';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import {
@@ -14,7 +13,7 @@
   import { downloadBlob } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { fixAuditFiles, getAuditFiles, getFileChecksums, type FileReportItemDto } from '@immich/sdk';
-  import { Button, HStack } from '@immich/ui';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiCheckAll, mdiContentCopy, mdiDownload, mdiRefresh, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -187,38 +186,37 @@
   {#snippet buttons()}
     <HStack gap={0}>
       <Button
+        leadingIcon={mdiWrench}
         onclick={() => handleRepair()}
         disabled={matches.length === 0 || repairing}
         size="small"
         variant="ghost"
         color="secondary"
       >
-        <Icon path={mdiWrench} />
-        {$t('admin.repair_all')}
+        <Text class="hidden md:block">{$t('admin.repair_all')}</Text>
       </Button>
       <Button
+        leadingIcon={mdiCheckAll}
         onclick={() => handleCheckAll()}
         disabled={extras.length === 0 || checking}
         size="small"
         variant="ghost"
         color="secondary"
       >
-        <Icon path={mdiCheckAll} />
-        {$t('admin.check_all')}
+        <Text class="hidden md:block">{$t('admin.check_all')}</Text>
       </Button>
       <Button
+        leadingIcon={mdiDownload}
         onclick={() => handleDownload()}
         disabled={extras.length + orphans.length === 0}
         size="small"
         variant="ghost"
         color="secondary"
       >
-        <Icon path={mdiDownload} />
-        {$t('export')}
+        <Text class="hidden md:block">{$t('export')}</Text>
       </Button>
-      <Button onclick={() => handleRefresh()} size="small" variant="ghost" color="secondary">
-        <Icon path={mdiRefresh} />
-        {$t('refresh')}
+      <Button leadingIcon={mdiRefresh} onclick={() => handleRefresh()} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('refresh')}</Text>
       </Button>
     </HStack>
   {/snippet}

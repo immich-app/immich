@@ -119,93 +119,84 @@ describe('/stacks', () => {
       const stacksAfter = await searchStacks({}, { headers: asBearerAuth(user1.accessToken) });
       expect(stacksAfter.length).toBe(stacksBefore.length);
     });
-
-    // it('should require a valid parent id', async () => {
-    //   const { status, body } = await request(app)
-    //     .put('/assets')
-    //     .set('Authorization', `Bearer ${user1.accessToken}`)
-    //     .send({ stackParentId: uuidDto.invalid, ids: [stackAssets[0].id] });
-
-    //   expect(status).toBe(400);
-    //   expect(body).toEqual(errorDto.badRequest(['stackParentId must be a UUID']));
-    // });
   });
 
-  // it('should require access to the parent', async () => {
-  //   const { status, body } = await request(app)
-  //     .put('/assets')
-  //     .set('Authorization', `Bearer ${user1.accessToken}`)
-  //     .send({ stackParentId: stackAssets[3].id, ids: [user1Assets[0].id] });
+  describe('GET /assets/:id', () => {
+    it('should include stack details for the primary asset', async () => {
+      const [asset1, asset2] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
 
-  //   expect(status).toBe(400);
-  //   expect(body).toEqual(errorDto.noPermission);
-  // });
+      await utils.createStack(user1.accessToken, [asset1.id, asset2.id]);
 
-  // it('should add stack children', async () => {
-  //   const { status } = await request(app)
-  //     .put('/assets')
-  //     .set('Authorization', `Bearer ${stackUser.accessToken}`)
-  //     .send({ stackParentId: stackAssets[0].id, ids: [stackAssets[3].id] });
+      const { status, body } = await request(app)
+        .get(`/assets/${asset1.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
 
-  //   expect(status).toBe(204);
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: asset1.id,
+          stack: {
+            id: expect.any(String),
+            assetCount: 2,
+            primaryAssetId: asset1.id,
+          },
+        }),
+      );
+    });
 
-  //   const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-  //   expect(asset.stack).not.toBeUndefined();
-  //   expect(asset.stack).toEqual(expect.arrayContaining([expect.objectContaining({ id: stackAssets[3].id })]));
-  // });
+    it('should include stack details for a non-primary asset', async () => {
+      const [asset1, asset2] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
 
-  // it('should remove stack children', async () => {
-  //   const { status } = await request(app)
-  //     .put('/assets')
-  //     .set('Authorization', `Bearer ${stackUser.accessToken}`)
-  //     .send({ removeParent: true, ids: [stackAssets[1].id] });
+      await utils.createStack(user1.accessToken, [asset1.id, asset2.id]);
 
-  //   expect(status).toBe(204);
+      const { status, body } = await request(app)
+        .get(`/assets/${asset2.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
 
-  //   const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-  //   expect(asset.stack).not.toBeUndefined();
-  //   expect(asset.stack).toEqual(
-  //     expect.arrayContaining([
-  //       expect.objectContaining({ id: stackAssets[2].id }),
-  //       expect.objectContaining({ id: stackAssets[3].id }),
-  //     ]),
-  //   );
-  // });
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: asset2.id,
+          stack: {
+            id: expect.any(String),
+            assetCount: 2,
+            primaryAssetId: asset1.id,
+          },
+        }),
+      );
+    });
+  });
 
-  // it('should remove all stack children', async () => {
-  //   const { status } = await request(app)
-  //     .put('/assets')
-  //     .set('Authorization', `Bearer ${stackUser.accessToken}`)
-  //     .send({ removeParent: true, ids: [stackAssets[2].id, stackAssets[3].id] });
+  describe('GET /stacks/:id', () => {
+    it('should include exifInfo in stack assets', async () => {
+      const [asset1, asset2] = await Promise.all([
+        utils.createAsset(user1.accessToken),
+        utils.createAsset(user1.accessToken),
+      ]);
 
-  //   expect(status).toBe(204);
+      const stack = await utils.createStack(user1.accessToken, [asset1.id, asset2.id]);
 
-  //   const asset = await getAssetInfo({ id: stackAssets[0].id }, { headers: asBearerAuth(stackUser.accessToken) });
-  //   expect(asset.stack).toBeUndefined();
-  // });
+      const { status, body } = await request(app)
+        .get(`/stacks/${stack.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
 
-  // it('should merge stack children', async () => {
-  //   // create stack after previous test removed stack children
-  //   await updateAssets(
-  //     { assetBulkUpdateDto: { stackParentId: stackAssets[0].id, ids: [stackAssets[1].id, stackAssets[2].id] } },
-  //     { headers: asBearerAuth(stackUser.accessToken) },
-  //   );
-
-  //   const { status } = await request(app)
-  //     .put('/assets')
-  //     .set('Authorization', `Bearer ${stackUser.accessToken}`)
-  //     .send({ stackParentId: stackAssets[3].id, ids: [stackAssets[0].id] });
-
-  //   expect(status).toBe(204);
-
-  //   const asset = await getAssetInfo({ id: stackAssets[3].id }, { headers: asBearerAuth(stackUser.accessToken) });
-  //   expect(asset.stack).not.toBeUndefined();
-  //   expect(asset.stack).toEqual(
-  //     expect.arrayContaining([
-  //       expect.objectContaining({ id: stackAssets[0].id }),
-  //       expect.objectContaining({ id: stackAssets[1].id }),
-  //       expect.objectContaining({ id: stackAssets[2].id }),
-  //     ]),
-  //   );
-  // });
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: stack.id,
+          primaryAssetId: asset1.id,
+          assets: expect.arrayContaining([
+            expect.objectContaining({ id: asset1.id, exifInfo: expect.any(Object) }),
+            expect.objectContaining({ id: asset2.id, exifInfo: expect.any(Object) }),
+          ]),
+        }),
+      );
+    });
+  });
 });

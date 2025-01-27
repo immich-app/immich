@@ -22,79 +22,92 @@ const user1NotShared = 'user1NotShared';
 const user2SharedUser = 'user2SharedUser';
 const user2SharedLink = 'user2SharedLink';
 const user2NotShared = 'user2NotShared';
+const user4DeletedAsset = 'user4DeletedAsset';
+const user4Empty = 'user4Empty';
 
 describe('/albums', () => {
   let admin: LoginResponseDto;
   let user1: LoginResponseDto;
   let user1Asset1: AssetMediaResponseDto;
   let user1Asset2: AssetMediaResponseDto;
+  let user4Asset1: AssetMediaResponseDto;
   let user1Albums: AlbumResponseDto[];
   let user2: LoginResponseDto;
   let user2Albums: AlbumResponseDto[];
+  let deletedAssetAlbum: AlbumResponseDto;
   let user3: LoginResponseDto; // deleted
+  let user4: LoginResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
 
     admin = await utils.adminSetup();
 
-    [user1, user2, user3] = await Promise.all([
+    [user1, user2, user3, user4] = await Promise.all([
       utils.userSetup(admin.accessToken, createUserDto.user1),
       utils.userSetup(admin.accessToken, createUserDto.user2),
       utils.userSetup(admin.accessToken, createUserDto.user3),
+      utils.userSetup(admin.accessToken, createUserDto.user4),
     ]);
 
-    [user1Asset1, user1Asset2] = await Promise.all([
+    [user1Asset1, user1Asset2, user4Asset1] = await Promise.all([
       utils.createAsset(user1.accessToken, { isFavorite: true }),
+      utils.createAsset(user1.accessToken),
       utils.createAsset(user1.accessToken),
     ]);
 
-    user1Albums = await Promise.all([
-      utils.createAlbum(user1.accessToken, {
-        albumName: user1SharedEditorUser,
-        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }],
-        assetIds: [user1Asset1.id],
-      }),
-      utils.createAlbum(user1.accessToken, {
-        albumName: user1SharedLink,
-        assetIds: [user1Asset1.id],
-      }),
-      utils.createAlbum(user1.accessToken, {
-        albumName: user1NotShared,
-        assetIds: [user1Asset1.id, user1Asset2.id],
-      }),
-      utils.createAlbum(user1.accessToken, {
-        albumName: user1SharedViewerUser,
-        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
-        assetIds: [user1Asset1.id],
+    [user1Albums, user2Albums, deletedAssetAlbum] = await Promise.all([
+      Promise.all([
+        utils.createAlbum(user1.accessToken, {
+          albumName: user1SharedEditorUser,
+          albumUsers: [
+            { userId: admin.userId, role: AlbumUserRole.Editor },
+            { userId: user2.userId, role: AlbumUserRole.Editor },
+          ],
+          assetIds: [user1Asset1.id],
+        }),
+        utils.createAlbum(user1.accessToken, {
+          albumName: user1SharedLink,
+          assetIds: [user1Asset1.id],
+        }),
+        utils.createAlbum(user1.accessToken, {
+          albumName: user1NotShared,
+          assetIds: [user1Asset1.id, user1Asset2.id],
+        }),
+        utils.createAlbum(user1.accessToken, {
+          albumName: user1SharedViewerUser,
+          albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Viewer }],
+          assetIds: [user1Asset1.id],
+        }),
+      ]),
+      Promise.all([
+        utils.createAlbum(user2.accessToken, {
+          albumName: user2SharedUser,
+          albumUsers: [
+            { userId: user1.userId, role: AlbumUserRole.Editor },
+            { userId: user3.userId, role: AlbumUserRole.Editor },
+          ],
+        }),
+        utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
+        utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
+      ]),
+      utils.createAlbum(user4.accessToken, { albumName: user4DeletedAsset }),
+      utils.createAlbum(user4.accessToken, { albumName: user4Empty }),
+      utils.createAlbum(user3.accessToken, {
+        albumName: 'Deleted',
+        albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }],
       }),
     ]);
-
-    user2Albums = await Promise.all([
-      utils.createAlbum(user2.accessToken, {
-        albumName: user2SharedUser,
-        albumUsers: [
-          { userId: user1.userId, role: AlbumUserRole.Editor },
-          { userId: user3.userId, role: AlbumUserRole.Editor },
-        ],
-      }),
-      utils.createAlbum(user2.accessToken, { albumName: user2SharedLink }),
-      utils.createAlbum(user2.accessToken, { albumName: user2NotShared }),
-    ]);
-
-    await utils.createAlbum(user3.accessToken, {
-      albumName: 'Deleted',
-      albumUsers: [{ userId: user1.userId, role: AlbumUserRole.Editor }],
-    });
-
-    await addAssetsToAlbum(
-      { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1.id, user1Asset2.id] } },
-      { headers: asBearerAuth(user1.accessToken) },
-    );
-
-    user2Albums[0] = await getAlbumInfo({ id: user2Albums[0].id }, { headers: asBearerAuth(user2.accessToken) });
 
     await Promise.all([
+      addAssetsToAlbum(
+        { id: user2Albums[0].id, bulkIdsDto: { ids: [user1Asset1.id, user1Asset2.id] } },
+        { headers: asBearerAuth(user1.accessToken) },
+      ),
+      addAssetsToAlbum(
+        { id: deletedAssetAlbum.id, bulkIdsDto: { ids: [user4Asset1.id] } },
+        { headers: asBearerAuth(user4.accessToken) },
+      ),
       // add shared link to user1SharedLink album
       utils.createSharedLink(user1.accessToken, {
         type: SharedLinkType.Album,
@@ -107,7 +120,11 @@ describe('/albums', () => {
       }),
     ]);
 
-    await deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+    [user2Albums[0]] = await Promise.all([
+      getAlbumInfo({ id: user2Albums[0].id }, { headers: asBearerAuth(user2.accessToken) }),
+      deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) }),
+      utils.deleteAssets(user1.accessToken, [user4Asset1.id]),
+    ]);
   });
 
   describe('GET /albums', () => {
@@ -284,6 +301,25 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toHaveLength(5);
     });
+
+    it('should return empty albums and albums where all assets are deleted', async () => {
+      const { status, body } = await request(app).get('/albums').set('Authorization', `Bearer ${user4.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            ownerId: user4.userId,
+            albumName: user4DeletedAsset,
+            shared: false,
+          }),
+          expect.objectContaining({
+            ownerId: user4.userId,
+            albumName: user4Empty,
+            shared: false,
+          }),
+        ]),
+      );
+    });
   });
 
   describe('GET /albums/:id', () => {
@@ -353,6 +389,26 @@ describe('/albums', () => {
       expect(status).toBe(200);
       expect(body).toEqual({
         ...user1Albums[0],
+        assets: [],
+        assetCount: 1,
+        lastModifiedAssetTimestamp: expect.any(String),
+        endDate: expect.any(String),
+        startDate: expect.any(String),
+        albumUsers: expect.any(Array),
+        shared: true,
+      });
+    });
+
+    it('should not count trashed assets', async () => {
+      await utils.deleteAssets(user1.accessToken, [user1Asset2.id]);
+
+      const { status, body } = await request(app)
+        .get(`/albums/${user2Albums[0].id}?withoutAssets=true`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toEqual({
+        ...user2Albums[0],
         assets: [],
         assetCount: 1,
         lastModifiedAssetTimestamp: expect.any(String),
