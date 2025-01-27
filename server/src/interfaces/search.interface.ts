@@ -63,6 +63,9 @@ export interface SearchStatusOptions {
   status?: AssetStatus;
   withArchived?: boolean;
   withDeleted?: boolean;
+  withNullLocalDateTime?: boolean;
+  withNullFileCreatedAt?: boolean;
+  withNullFileModifiedAt?: boolean;
 }
 
 export interface SearchOneToOneRelationOptions {

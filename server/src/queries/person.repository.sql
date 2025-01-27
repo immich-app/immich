@@ -169,6 +169,9 @@ from
   and "asset_faces"."personId" = $1
   and "assets"."isArchived" = $2
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "assets"."livePhotoVideoId" is null
 
 -- PersonRepository.getNumberOfPeople
@@ -183,6 +186,9 @@ from
   inner join "asset_faces" on "asset_faces"."personId" = "person"."id"
   inner join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "assets"."isArchived" = $2
 where
   "person"."ownerId" = $3

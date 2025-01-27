@@ -36,7 +36,14 @@ export class ActivityRepository {
       .selectFrom('activity')
       .selectAll('activity')
       .select(withUser)
-      .leftJoin('assets', (join) => join.onRef('assets.id', '=', 'activity.assetId').on('assets.deletedAt', 'is', null))
+      .leftJoin('assets', (join) =>
+        join
+          .onRef('assets.id', '=', 'activity.assetId')
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
+      )
       .$if(!!userId, (qb) => qb.where('activity.userId', '=', userId!))
       .$if(assetId === null, (qb) => qb.where('assetId', 'is', null))
       .$if(!!assetId, (qb) => qb.where('activity.assetId', '=', assetId!))
@@ -65,6 +72,9 @@ export class ActivityRepository {
       .where('activity.albumId', '=', albumId)
       .where('activity.isLiked', '=', false)
       .where('assets.deletedAt', 'is', null)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .executeTakeFirstOrThrow();
 
     return count as number;
