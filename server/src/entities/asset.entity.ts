@@ -193,7 +193,7 @@ export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-    .select(sql<number[]>`smart_search.embedding`.as('embedding'));
+    .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
 export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
