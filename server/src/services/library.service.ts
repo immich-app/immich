@@ -25,8 +25,6 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 
-const ASSET_IMPORT_DATE = new Date('9999-12-31');
-
 @Injectable()
 export class LibraryService extends BaseService {
   private watchLibraries = false;
@@ -381,9 +379,9 @@ export class LibraryService extends BaseService {
       checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
       originalPath: assetPath,
 
-      fileCreatedAt: ASSET_IMPORT_DATE,
-      fileModifiedAt: ASSET_IMPORT_DATE,
-      localDateTime: ASSET_IMPORT_DATE,
+      fileCreatedAt: null,
+      fileModifiedAt: null,
+      localDateTime: null,
       // TODO: device asset id is deprecated, remove it
       deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
       deviceId: 'Library Import',

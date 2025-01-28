@@ -4,7 +4,6 @@ import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
-import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
@@ -172,22 +171,13 @@ export class MetadataService extends BaseService {
       asset.fileModifiedAt = stats.mtime;
     }
 
-    const { dateTimeOriginal, localDateTime, timeZone, modifyDate, fileCreatedAt, fileModifiedAt } = this.getDates(
-      asset,
-      exifTags,
-      stats,
-    );
+    const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 
     const { width, height } = this.getImageDimensions(exifTags);
 
-    let fileCreatedAtDate = dateTimeOriginal;
-    let fileModifiedAtDate = modifyDate;
-
-    if (asset.isExternal) {
-      fileCreatedAtDate = fileCreatedAt;
-      fileModifiedAtDate = fileModifiedAt;
-    }
+    const fileCreatedAtDate = dateTimeOriginal;
+    const fileModifiedAtDate = modifyDate;
 
     const exifData: Insertable<Exif> = {
       assetId: asset.id,
@@ -483,7 +473,7 @@ export class MetadataService extends BaseService {
           asset.fileModifiedAt = stat.mtime;
         }
 
-        const dates = this.getDates(asset, tags, stat);
+        const dates = this.getDates(asset, tags);
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
           libraryId: asset.libraryId,
@@ -601,7 +591,7 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: AssetEntity, exifTags: ImmichTags, stat: Stats): AssetDatesDto {
+  private getDates(asset: AssetEntity, exifTags: ImmichTags): AssetDatesDto {
     // We first assert that fileCreatedAt and fileModifiedAt are not null since that should be set to a non-null value before calling this function
     if (asset.fileCreatedAt == null) {
       this.logger.warn(`Asset ${asset.id} has no file creation date`);
@@ -629,16 +619,8 @@ export class MetadataService extends BaseService {
       this.logger.verbose(`Asset ${asset.id} has no time zone information`);
     }
 
-    let fileCreatedAt = asset.fileCreatedAt;
-    let fileModifiedAt = asset.fileModifiedAt;
-
-    if (asset.isExternal) {
-      // With external assets we need to extract dates from the filesystem, this can't be done with uploades assets as that information is lost on upload
-      fileCreatedAt = stat.mtime;
-      fileModifiedAt = stat.mtime;
-
-      this.logger.verbose(`External asset ${asset.id} has a file modification time of ${fileCreatedAt.toISOString()}`);
-    }
+    const fileCreatedAt = asset.fileCreatedAt;
+    const fileModifiedAt = asset.fileModifiedAt;
 
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();

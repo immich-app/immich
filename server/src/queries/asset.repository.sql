@@ -263,9 +263,8 @@ with
     from
       "assets"
     where
-      "assets"."fileCreatedAt" <= $2
-      and "assets"."deletedAt" is null
-      and "assets"."isVisible" = $3
+      "assets"."deletedAt" is null
+      and "assets"."isVisible" = $2
       and "assets"."fileCreatedAt" is not null
       and "assets"."fileModifiedAt" is not null
       and "assets"."localDateTime" is not null
@@ -303,17 +302,16 @@ from
       "asset_stack"."id"
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
-  "assets"."fileCreatedAt" <= $2
-  and (
+  (
     "asset_stack"."primaryAssetId" = "assets"."id"
     or "assets"."stackId" is null
   )
   and "assets"."deletedAt" is null
-  and "assets"."isVisible" = $3
+  and "assets"."isVisible" = $2
   and "assets"."fileCreatedAt" is not null
   and "assets"."fileModifiedAt" is not null
   and "assets"."localDateTime" is not null
-  and date_trunc($4, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $5
+  and date_trunc($3, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
 order by
   "assets"."localDateTime" desc
 

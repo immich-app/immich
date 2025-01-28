@@ -49,8 +49,6 @@ import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
-const ASSET_CUTOFF_DATE = new Date('9000-01-01');
-
 @Injectable()
 export class AssetRepository implements IAssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
@@ -607,7 +605,6 @@ export class AssetRepository implements IAssetRepository {
     return this.db
       .selectFrom('assets')
       .selectAll('assets')
-      .where('assets.fileCreatedAt', '<=', ASSET_CUTOFF_DATE)
       .$call(withExif)
       .where('ownerId', '=', anyUuid(userIds))
       .where('isVisible', '=', true)
@@ -626,7 +623,6 @@ export class AssetRepository implements IAssetRepository {
         .with('assets', (qb) =>
           qb
             .selectFrom('assets')
-            .where('assets.fileCreatedAt', '<=', ASSET_CUTOFF_DATE)
             .select(truncatedDate<Date>(options.size).as('timeBucket'))
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
@@ -680,7 +676,6 @@ export class AssetRepository implements IAssetRepository {
   async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
     return hasPeople(this.db, options.personId ? [options.personId] : undefined)
       .selectAll('assets')
-      .where('assets.fileCreatedAt', '<=', ASSET_CUTOFF_DATE)
       .$call(withExif)
       .$if(!!options.albumId, (qb) => withAlbums(qb, { albumId: options.albumId }))
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
