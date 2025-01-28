@@ -456,6 +456,7 @@
   "asset_description_updated": "อัปเดตรายละเอียดสำเร็จ",
   "asset_filename_is_offline": "สื่อ {filename} ออฟไลน์อยู่",
   "asset_has_unassigned_faces": "สื่อไม่ได้ระบุใบหน้า",
+  "asset_hashing": "",
   "asset_list_group_by_sub_title": "กลุ่มโดย",
   "asset_list_layout_settings_dynamic_layout_title": "แผนผังปรับตัว",
   "asset_list_layout_settings_group_automatically": "อัตโนมัติ",
