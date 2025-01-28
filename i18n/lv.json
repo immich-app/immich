@@ -456,6 +456,7 @@
   "asset_description_updated": "",
   "asset_filename_is_offline": "",
   "asset_has_unassigned_faces": "",
+  "asset_hashing": "",
   "asset_list_group_by_sub_title": "Grupēt pēc",
   "asset_list_layout_settings_dynamic_layout_title": "Dinamiskais izkārtojums",
   "asset_list_layout_settings_group_automatically": "Automātiski",
