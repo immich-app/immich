@@ -100,7 +100,6 @@ export class PersonRepository implements IPersonRepository {
       .$if(!!options.personId, (qb) => qb.where('asset_faces.personId', '=', options.personId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_faces.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_faces.assetId', '=', options.assetId!))
-      .$if(!!options.assetId, (qb) => qb.where('asset_faces.assetId', '=', options.assetId!))
       .stream() as AsyncIterableIterator<AssetFaceEntity>;
   }
 
@@ -109,7 +108,7 @@ export class PersonRepository implements IPersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .$if(!!options.ownerId, (qb) => qb.where('person.ownerId', '=', options.ownerId!))
-      .$if(!!options.thumbnailPath, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
+      .$if(options.thumbnailPath !== undefined, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
       .$if(options.faceAssetId === null, (qb) => qb.where('person.faceAssetId', 'is', null))
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))

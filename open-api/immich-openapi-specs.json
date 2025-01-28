@@ -7454,7 +7454,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.125.2",
+    "version": "1.125.6",
     "contact": {}
   },
   "tags": [],
@@ -7951,7 +7951,7 @@
           },
           "rating": {
             "maximum": 5,
-            "minimum": 0,
+            "minimum": -1,
             "type": "number"
           }
         },
@@ -12780,7 +12780,7 @@
           },
           "rating": {
             "maximum": 5,
-            "minimum": 0,
+            "minimum": -1,
             "type": "number"
           }
         },
