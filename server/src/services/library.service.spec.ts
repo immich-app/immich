@@ -425,16 +425,17 @@ describe(LibraryService.name, () => {
     });
 
     it('should not touch fileCreatedAt when un-trashing an asset previously marked as offline', async () => {
-      const mockAssetJob: ILibraryAssetJob = {
-        id: assetStub.external.id,
+      const mockAssetJob: ILibraryBulkIdsJob = {
+        assetIds: [assetStub.trashedOffline.id],
+        libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/'],
         exclusionPatterns: [],
       };
 
-      assetMock.getById.mockResolvedValue(assetStub.trashedOffline);
+      assetMock.getByIds.mockResolvedValue([assetStub.trashedOffline]);
       storageMock.stat.mockResolvedValue({ mtime: assetStub.trashedOffline.fileModifiedAt } as Stats);
 
-      await expect(sut.handleSyncAsset(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
       expect(assetMock.updateAll).toHaveBeenCalledWith(
         [assetStub.trashedOffline.id],
@@ -451,6 +452,10 @@ describe(LibraryService.name, () => {
         importPaths: ['/'],
         exclusionPatterns: [],
       };
+
+      if (assetStub.external.fileModifiedAt == null) {
+        throw new Error('fileModifiedAt is null');
+      }
 
       assetMock.getByIds.mockResolvedValue([assetStub.external]);
       storageMock.stat.mockResolvedValue({ mtime: new Date(assetStub.external.fileModifiedAt.getDate() + 1) } as Stats);
