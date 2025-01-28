@@ -1162,6 +1162,17 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+    it('should handle valid negative rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags({ Rating: -1 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: -1,
+        }),
+      );
+    });
   });
 
   describe('handleQueueSidecar', () => {

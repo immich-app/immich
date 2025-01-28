@@ -701,6 +701,20 @@ describe('/asset', () => {
       expect(status).toEqual(200);
     });
 
+    it('should set the negative rating', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ rating: -1 });
+      expect(body).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({
+          rating: -1,
+        }),
+      });
+      expect(status).toEqual(200);
+    });
+
     it('should reject invalid rating', async () => {
       for (const test of [{ rating: 7 }, { rating: 3.5 }, { rating: null }]) {
         const { status, body } = await request(app)
