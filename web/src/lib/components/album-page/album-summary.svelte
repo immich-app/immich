@@ -11,7 +11,10 @@
   let { album }: Props = $props();
 
   const formatDate = (date?: string) => {
-    return date ? new Date(date).toLocaleDateString($locale, dateFormats.album) : undefined;
+    const dateWithoutTimeZone = date?.slice(0, -1);
+    return dateWithoutTimeZone
+      ? new Date(dateWithoutTimeZone).toLocaleDateString($locale, dateFormats.album)
+      : undefined;
   };
 
   const getDateRange = (start?: string, end?: string) => {
