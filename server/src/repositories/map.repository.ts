@@ -210,10 +210,7 @@ export class MapRepository {
         }
       }
     }
-    await this.db
-      .insertInto('naturalearth_countries_tmp')
-      .values(entities as unknown as NaturalEarthCountriesTempEntity)
-      .execute();
+    await this.db.insertInto('naturalearth_countries_tmp').values(entities).execute();
 
     await sql`ALTER TABLE naturalearth_countries_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db);
 

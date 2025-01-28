@@ -257,7 +257,7 @@ export interface NaturalearthCountries {
   admin: string;
   admin_a3: string;
   coordinates: string;
-  id: number;
+  id: Generated<number>;
   type: string;
 }
 
