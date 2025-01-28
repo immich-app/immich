@@ -298,6 +298,7 @@ describe('/libraries', () => {
       expect(status).toBe(204);
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
