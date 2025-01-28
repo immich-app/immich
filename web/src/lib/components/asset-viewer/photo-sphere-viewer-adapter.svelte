@@ -62,7 +62,7 @@
       container,
       touchmoveTwoFingers: false,
       mousewheelCtrlKey: false,
-      navbar: navbar,
+      navbar,
       minFov: 10,
       maxFov: 120,
       fisheye: false,
@@ -74,7 +74,7 @@
         // zoomLevel range: [0, 100]
         if (Math.round(zoomLevel) >= 75) {
           // Replace the preview with the original
-          resolutionPlugin.setResolution('original');
+          void resolutionPlugin.setResolution('original');
           viewer.removeEventListener(events.ZoomUpdatedEvent.type, zoomHandler);
         }
       };
