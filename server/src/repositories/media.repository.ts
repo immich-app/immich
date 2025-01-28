@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import { Duration } from 'luxon';
@@ -7,17 +7,16 @@ import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Colorspace, LogLevel } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
-  IMediaRepository,
   ImageDimensions,
   ProbeOptions,
   TranscodeCommand,
   VideoInfo,
-} from 'src/interfaces/media.interface';
+} from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
@@ -37,8 +36,8 @@ type ProgressEvent = {
 };
 
 @Injectable()
-export class MediaRepository implements IMediaRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+export class MediaRepository {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
   }
 

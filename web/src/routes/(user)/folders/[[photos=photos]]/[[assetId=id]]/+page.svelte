@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { goto, invalidateAll } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
@@ -44,9 +44,7 @@
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
   let tree = $derived(buildTree(foldersStore.uniquePaths));
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
-  let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
-
-  $inspect(data).with(console.log);
+  let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree).sort());
 
   const assetInteraction = new AssetInteraction();
 
@@ -66,9 +64,15 @@
     return url.href;
   };
 
+  afterNavigate(() => {
+    // Clear the asset selection when we navigate (like going to another folder)
+    cancelMultiselect(assetInteraction);
+  });
+
   const navigateToView = (path: string) => goto(getLink(path));
 
   const triggerAssetUpdate = async () => {
+    cancelMultiselect(assetInteraction);
     await foldersStore.refreshAssetsByPath(data.path);
     await invalidateAll();
   };
@@ -91,8 +95,8 @@
       <CreateSharedLink />
       <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
       <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
-        <AddToAlbum />
-        <AddToAlbum shared />
+        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
+        <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
 

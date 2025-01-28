@@ -59,7 +59,9 @@ export interface VectorUpdateResult {
 export const IDatabaseRepository = 'IDatabaseRepository';
 
 export interface IDatabaseRepository {
+  init(): void;
   reconnect(): Promise<boolean>;
+  shutdown(): Promise<void>;
   getExtensionVersion(extension: DatabaseExtension): Promise<ExtensionVersion>;
   getExtensionVersionRange(extension: VectorExtension): string;
   getPostgresVersion(): Promise<string>;

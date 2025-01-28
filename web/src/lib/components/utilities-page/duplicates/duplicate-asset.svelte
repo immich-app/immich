@@ -3,8 +3,8 @@
   import { getAssetThumbnailUrl } from '$lib/utils';
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { getAllAlbums, type AssetResponseDto } from '@immich/sdk';
-  import { mdiHeart, mdiMagnifyPlus, mdiImageMultipleOutline } from '@mdi/js';
+  import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
+  import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {

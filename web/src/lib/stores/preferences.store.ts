@@ -62,7 +62,7 @@ export interface MapSettings {
   dateBefore: string;
 }
 
-export const mapSettings = persisted<MapSettings>('map-settings', {
+const defaultMapSettings = {
   allowDarkMode: true,
   includeArchived: false,
   onlyFavorites: false,
@@ -71,7 +71,17 @@ export const mapSettings = persisted<MapSettings>('map-settings', {
   relativeDate: '',
   dateAfter: '',
   dateBefore: '',
-});
+};
+
+const persistedObject = <T>(key: string, defaults: T) =>
+  persisted<T>(key, defaults, {
+    serializer: {
+      parse: (text) => ({ ...defaultMapSettings, ...JSON.parse(text ?? null) }),
+      stringify: JSON.stringify,
+    },
+  });
+
+export const mapSettings = persistedObject<MapSettings>('map-settings', defaultMapSettings);
 
 export const videoViewerVolume = persisted<number>('video-viewer-volume', 1, {});
 export const videoViewerMuted = persisted<boolean>('video-viewer-muted', false, {});

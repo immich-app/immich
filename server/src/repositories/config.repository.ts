@@ -1,17 +1,119 @@
+import { RegisterQueueOptions } from '@nestjs/bullmq';
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { QueueOptions } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { Request, Response } from 'express';
-import { CLS_ID } from 'nestjs-cls';
+import { RedisOptions } from 'ioredis';
+import { CLS_ID, ClsModuleOptions } from 'nestjs-cls';
+import { OpenTelemetryModuleOptions } from 'nestjs-otel/lib/interfaces';
 import { join, resolve } from 'node:path';
+import { parse } from 'pg-connection-string';
+import { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
-import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker } from 'src/enum';
-import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
+import { DatabaseConnectionParams, DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
 import { QueueName } from 'src/interfaces/job.interface';
 import { setDifference } from 'src/utils/set';
+import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+
+type Ssl = 'require' | 'allow' | 'prefer' | 'verify-full' | boolean | object;
+type PostgresConnectionConfig = {
+  host?: string;
+  password?: string;
+  user?: string;
+  port?: number;
+  database?: string;
+  client_encoding?: string;
+  ssl?: Ssl;
+  application_name?: string;
+  fallback_application_name?: string;
+  options?: string;
+};
+
+export interface EnvData {
+  host?: string;
+  port: number;
+  environment: ImmichEnvironment;
+  configFile?: string;
+  logLevel?: LogLevel;
+
+  buildMetadata: {
+    build?: string;
+    buildUrl?: string;
+    buildImage?: string;
+    buildImageUrl?: string;
+    repository?: string;
+    repositoryUrl?: string;
+    sourceRef?: string;
+    sourceCommit?: string;
+    sourceUrl?: string;
+    thirdPartySourceUrl?: string;
+    thirdPartyBugFeatureUrl?: string;
+    thirdPartyDocumentationUrl?: string;
+    thirdPartySupportUrl?: string;
+  };
+
+  bull: {
+    config: QueueOptions;
+    queues: RegisterQueueOptions[];
+  };
+
+  cls: {
+    config: ClsModuleOptions;
+  };
+
+  database: {
+    config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: PostgresConnectionConfig };
+    skipMigrations: boolean;
+    vectorExtension: VectorExtension;
+  };
+
+  licensePublicKey: {
+    client: string;
+    server: string;
+  };
+
+  network: {
+    trustedProxies: string[];
+  };
+
+  otel: OpenTelemetryModuleOptions;
+
+  resourcePaths: {
+    lockFile: string;
+    geodata: {
+      dateFile: string;
+      admin1: string;
+      admin2: string;
+      cities500: string;
+      naturalEarthCountriesPath: string;
+    };
+    web: {
+      root: string;
+      indexHtml: string;
+    };
+  };
+
+  redis: RedisOptions;
+
+  telemetry: {
+    apiPort: number;
+    microservicesPort: number;
+    metrics: Set<ImmichTelemetry>;
+  };
+
+  storage: {
+    ignoreMountCheckErrors: boolean;
+  };
+
+  workers: ImmichWorker[];
+
+  noColor: boolean;
+  nodeVersion?: string;
+}
 
 const productionKeys = {
   client:
@@ -34,6 +136,9 @@ const asSet = <T>(value: string | undefined, defaults: T[]) => {
   const values = (value || '').replaceAll(/\s/g, '').split(',').filter(Boolean);
   return new Set(values.length === 0 ? defaults : (values as T[]));
 };
+
+const isValidSsl = (ssl?: string | boolean | object): ssl is Ssl =>
+  typeof ssl !== 'string' || ssl === 'require' || ssl === 'allow' || ssl === 'prefer' || ssl === 'verify-full';
 
 const getEnv = (): EnvData => {
   const dto = plainToInstance(EnvDto, process.env);
@@ -96,6 +201,55 @@ const getEnv = (): EnvData => {
     }
   }
 
+  const parts = {
+    connectionType: 'parts',
+    host: dto.DB_HOSTNAME || 'database',
+    port: dto.DB_PORT || 5432,
+    username: dto.DB_USERNAME || 'postgres',
+    password: dto.DB_PASSWORD || 'postgres',
+    database: dto.DB_DATABASE_NAME || 'immich',
+  } as const;
+
+  let parsedOptions: PostgresConnectionConfig = parts;
+  if (dto.DB_URL) {
+    const parsed = parse(dto.DB_URL);
+    if (!isValidSsl(parsed.ssl)) {
+      throw new Error(`Invalid ssl option: ${parsed.ssl}`);
+    }
+
+    parsedOptions = {
+      ...parsed,
+      ssl: parsed.ssl,
+      host: parsed.host ?? undefined,
+      port: parsed.port ? Number(parsed.port) : undefined,
+      database: parsed.database ?? undefined,
+    };
+  }
+
+  const driverOptions = {
+    onnotice: (notice: Notice) => {
+      if (notice['severity'] !== 'NOTICE') {
+        console.warn('Postgres notice:', notice);
+      }
+    },
+    max: 10,
+    types: {
+      date: {
+        to: 1184,
+        from: [1082, 1114, 1184],
+        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
+        parse: (x: string) => new Date(x),
+      },
+      bigint: {
+        to: 20,
+        from: [20],
+        parse: (value: string) => Number.parseInt(value),
+        serialize: (value: number) => value.toString(),
+      },
+    },
+    ...parsedOptions,
+  };
+
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
@@ -150,24 +304,18 @@ const getEnv = (): EnvData => {
 
     database: {
       config: {
-        type: 'postgres',
-        entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
-        migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
-        subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
-        migrationsRun: false,
-        synchronize: false,
-        connectTimeoutMS: 10_000, // 10 seconds
-        parseInt8: true,
-        ...(databaseUrl
-          ? { connectionType: 'url', url: databaseUrl }
-          : {
-              connectionType: 'parts',
-              host: dto.DB_HOSTNAME || 'database',
-              port: dto.DB_PORT || 5432,
-              username: dto.DB_USERNAME || 'postgres',
-              password: dto.DB_PASSWORD || 'postgres',
-              database: dto.DB_DATABASE_NAME || 'immich',
-            }),
+        typeorm: {
+          type: 'postgres',
+          entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
+          migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
+          subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
+          migrationsRun: false,
+          synchronize: false,
+          connectTimeoutMS: 10_000, // 10 seconds
+          parseInt8: true,
+          ...(databaseUrl ? { connectionType: 'url', url: databaseUrl } : parts),
+        },
+        kysely: driverOptions,
       },
 
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
@@ -227,10 +375,10 @@ let cached: EnvData | undefined;
 
 @Injectable()
 @Telemetry({ enabled: false })
-export class ConfigRepository implements IConfigRepository {
+export class ConfigRepository {
   constructor(@Inject(IWorker) @Optional() private worker?: ImmichWorker) {}
 
-  getEnv(): EnvData {
+  getEnv() {
     if (!cached) {
       cached = getEnv();
     }

@@ -51,9 +51,7 @@ describe(AssetService.name, () => {
   });
 
   const mockGetById = (assets: AssetEntity[]) => {
-    assetMock.getById.mockImplementation((assetId) =>
-      Promise.resolve(assets.find((asset) => asset.id === assetId) ?? null),
-    );
+    assetMock.getById.mockImplementation((assetId) => Promise.resolve(assets.find((asset) => asset.id === assetId)));
   };
 
   beforeEach(() => {
@@ -250,27 +248,34 @@ describe(AssetService.name, () => {
     it('should update the asset', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       assetMock.getById.mockResolvedValue(assetStub.image);
+      assetMock.update.mockResolvedValue(assetStub.image);
+
       await sut.update(authStub.admin, 'asset-1', { isFavorite: true });
+
       expect(assetMock.update).toHaveBeenCalledWith({ id: 'asset-1', isFavorite: true });
     });
 
     it('should update the exif description', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
       assetMock.getById.mockResolvedValue(assetStub.image);
+      assetMock.update.mockResolvedValue(assetStub.image);
+
       await sut.update(authStub.admin, 'asset-1', { description: 'Test description' });
+
       expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', description: 'Test description' });
     });
 
     it('should update the exif rating', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getById.mockResolvedValue(assetStub.image);
+      assetMock.getById.mockResolvedValueOnce(assetStub.image);
+      assetMock.update.mockResolvedValueOnce(assetStub.image);
+
       await sut.update(authStub.admin, 'asset-1', { rating: 3 });
       expect(assetMock.upsertExif).toHaveBeenCalledWith({ assetId: 'asset-1', rating: 3 });
     });
 
     it('should fail linking a live video if the motion part could not be found', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      assetMock.getById.mockResolvedValue(null);
 
       await expect(
         sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
@@ -339,6 +344,7 @@ describe(AssetService.name, () => {
         isVisible: true,
       });
       assetMock.getById.mockResolvedValueOnce(assetStub.image);
+      assetMock.update.mockResolvedValue(assetStub.image);
 
       await sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, {
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
@@ -366,7 +372,7 @@ describe(AssetService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
       assetMock.getById.mockResolvedValueOnce(assetStub.livePhotoStillAsset);
       assetMock.getById.mockResolvedValueOnce(assetStub.livePhotoMotionAsset);
-      assetMock.getById.mockResolvedValueOnce(assetStub.image);
+      assetMock.update.mockResolvedValueOnce(assetStub.image);
 
       await sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null });
 
@@ -383,15 +389,15 @@ describe(AssetService.name, () => {
 
     it('should fail unlinking a live video if the asset could not be found', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.livePhotoStillAsset.id]));
-      assetMock.getById.mockResolvedValue(null);
+      // eslint-disable-next-line unicorn/no-useless-undefined
+      assetMock.getById.mockResolvedValueOnce(undefined);
 
       await expect(
         sut.update(authStub.admin, assetStub.livePhotoStillAsset.id, { livePhotoVideoId: null }),
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(assetMock.update).not.toHaveBeenCalled();
-      expect(assetMock.update).not.toHaveBeenCalledWith();
-      expect(eventMock.emit).not.toHaveBeenCalledWith();
+      expect(eventMock.emit).not.toHaveBeenCalled();
     });
   });
 
@@ -409,6 +415,34 @@ describe(AssetService.name, () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
       await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
       expect(assetMock.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
+    });
+
+    it('should not update Assets table if no relevant fields are provided', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isArchived: undefined,
+        isFavorite: undefined,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(assetMock.updateAll).not.toHaveBeenCalled();
+    });
+
+    it('should update Assets table if isArchived field is provided', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isArchived: undefined,
+        isFavorite: false,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(assetMock.updateAll).toHaveBeenCalled();
     });
   });
 
@@ -514,7 +548,7 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
-      expect(stackMock.update).toHaveBeenCalledWith({
+      expect(stackMock.update).toHaveBeenCalledWith('stack-1', {
         id: 'stack-1',
         primaryAssetId: 'stack-child-asset-1',
       });

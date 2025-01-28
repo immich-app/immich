@@ -311,7 +311,7 @@ export class LibraryService extends BaseService {
       }
     }
 
-    const library = await this.libraryRepository.update({ id, ...dto });
+    const library = await this.libraryRepository.update(id, dto);
     return mapLibrary(library);
   }
 
@@ -426,7 +426,7 @@ export class LibraryService extends BaseService {
     // We queue a sidecar discovery which, in turn, queues metadata extraction
     await this.jobRepository.queue({
       name: JobName.SIDECAR_DISCOVERY,
-      data: { id: asset.id },
+      data: { id: asset.id, source: 'upload' },
     });
   }
 
@@ -511,7 +511,6 @@ export class LibraryService extends BaseService {
       await this.assetRepository.updateAll([asset.id], {
         isOffline: false,
         deletedAt: null,
-        fileCreatedAt: mtime,
         fileModifiedAt: mtime,
         originalFileName: parse(asset.originalPath).base,
       });
@@ -571,7 +570,7 @@ export class LibraryService extends BaseService {
       this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
     }
 
-    await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });
+    await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }

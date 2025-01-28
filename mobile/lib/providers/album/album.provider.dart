@@ -46,8 +46,18 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   ) =>
       _albumService.createAlbum(albumTitle, assets, []);
 
-  Future<Album?> getAlbumByName(String albumName, {bool remoteOnly = false}) =>
-      _albumService.getAlbumByName(albumName, remoteOnly);
+  Future<Album?> getAlbumByName(
+    String albumName, {
+    bool? remote,
+    bool? shared,
+    bool? owner,
+  }) =>
+      _albumService.getAlbumByName(
+        albumName,
+        remote: remote,
+        shared: shared,
+        owner: owner,
+      );
 
   /// Create an album on the server with the same name as the selected album for backup
   /// First this will check if the album already exists on the server with name
@@ -55,7 +65,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   Future<void> createSyncAlbum(
     String albumName,
   ) async {
-    final album = await getAlbumByName(albumName, remoteOnly: true);
+    final album = await getAlbumByName(albumName, remote: true, owner: true);
     if (album != null) {
       return;
     }

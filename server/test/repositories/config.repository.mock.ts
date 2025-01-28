@@ -1,6 +1,7 @@
 import { ImmichEnvironment, ImmichWorker } from 'src/enum';
-import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
 import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { EnvData } from 'src/repositories/config.repository';
+import { IConfigRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 const envData: EnvData = {
@@ -21,16 +22,19 @@ const envData: EnvData = {
 
   database: {
     config: {
-      connectionType: 'parts',
-      database: 'immich',
-      type: 'postgres',
-      host: 'database',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      name: 'immich',
-      synchronize: false,
-      migrationsRun: true,
+      kysely: { database: 'immich', host: 'database', port: 5432 },
+      typeorm: {
+        connectionType: 'parts',
+        database: 'immich',
+        type: 'postgres',
+        host: 'database',
+        port: 5432,
+        username: 'postgres',
+        password: 'postgres',
+        name: 'immich',
+        synchronize: false,
+        migrationsRun: true,
+      },
     },
 
     skipMigrations: false,

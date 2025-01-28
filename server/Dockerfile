@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:20241224@sha256:6832c632c2a8cba5e20053ab694c9a8080e621841c784ed5d4675ef9dd203588 AS dev
+FROM ghcr.io/immich-app/base-server-dev:20250123@sha256:04eba5cd87d61bc3d20a3915b2302f04d08fbc329c55ee0cde103c502f59f412 AS dev
 
 RUN apt-get install --no-install-recommends -yqq tini
 WORKDIR /usr/src/app
@@ -9,7 +9,6 @@ RUN npm ci && \
   # they're marked as optional dependencies, so we need to copy them manually after pruning
   rm -rf node_modules/@img/sharp-libvips* && \
   rm -rf node_modules/@img/sharp-linuxmusl-x64
-COPY server .
 ENV PATH="${PATH}:/usr/src/app/bin" \
   IMMICH_ENV=development \
   NVIDIA_DRIVER_CAPABILITIES=all \
@@ -19,13 +18,14 @@ ENTRYPOINT ["tini", "--", "/bin/sh"]
 
 FROM dev AS prod
 
+COPY server .
 RUN npm run build
 RUN npm prune --omit=dev --omit=optional
 COPY --from=dev /usr/src/app/node_modules/@img ./node_modules/@img
 COPY --from=dev /usr/src/app/node_modules/exiftool-vendored.pl ./node_modules/exiftool-vendored.pl
 
 # web build
-FROM node:22.12.0-alpine3.20@sha256:96cc8323e25c8cc6ddcb8b965e135cfd57846e8003ec0d7bcec16c5fd5f6d39f AS web
+FROM node:22.13.1-alpine3.20@sha256:c52e20859a92b3eccbd3a36c5e1a90adc20617d8d421d65e8a622e87b5dac963 AS web
 
 WORKDIR /usr/src/open-api/typescript-sdk
 COPY open-api/typescript-sdk/package*.json open-api/typescript-sdk/tsconfig*.json ./
@@ -42,7 +42,7 @@ RUN npm run build
 
 
 # prod build
-FROM ghcr.io/immich-app/base-server-prod:20241224@sha256:69da007c241a961d6927d3d03f1c83ef0ec5c70bf656bff3ced32546a777e6f6
+FROM ghcr.io/immich-app/base-server-prod:20250123@sha256:591739983913f82672d8191258f3a1a24c123db0d619ff91fca8fef431ee1338
 
 WORKDIR /usr/src/app
 ENV NODE_ENV=production \

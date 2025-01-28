@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
@@ -50,6 +50,8 @@
     mdiDotsVertical,
     mdiEyeOffOutline,
     mdiEyeOutline,
+    mdiHeart,
+    mdiHeartOutline,
     mdiPlus,
   } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
@@ -92,6 +94,7 @@
   let personMerge1: PersonResponseDto | undefined = $state();
   let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
+  let isSuggestionSelectedByUser = $state(false);
 
   let personName = '';
   let suggestedPeople: PersonResponseDto[] = $state([]);
@@ -180,6 +183,25 @@
     }
   };
 
+  const toggleFavoritePerson = async () => {
+    try {
+      const updatedPerson = await updatePerson({
+        id: person.id,
+        personUpdateDto: { isFavorite: !person.isFavorite },
+      });
+
+      // Invalidate to reload the page data and have the favorite status updated
+      await invalidateAll();
+
+      notificationController.show({
+        message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: person.isFavorite } }));
+    }
+  };
+
   const handleMerge = async (person: PersonResponseDto) => {
     await updateAssetCount();
     await handleGoBack();
@@ -233,15 +255,22 @@
     personName = person.name;
     personMerge1 = person;
     personMerge2 = person2;
+    isSuggestionSelectedByUser = true;
     viewMode = PersonPageViewMode.SUGGEST_MERGE;
   };
 
   const changeName = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
     person.name = personName;
-    try {
-      isEditingName = false;
+    isEditingName = false;
 
+    if (isSuggestionSelectedByUser) {
+      // User canceled the merge
+      isSuggestionSelectedByUser = false;
+      return;
+    }
+
+    try {
       person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
@@ -328,6 +357,11 @@
     }
   };
 
+  const handleDeleteAssets = async (assetIds: string[]) => {
+    $assetStore.removeAssets(assetIds);
+    await updateAssetCount();
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -404,7 +438,7 @@
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
@@ -431,6 +465,11 @@
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
               onClick={() => (viewMode = PersonPageViewMode.MERGE_PEOPLE)}
+            />
+            <MenuOption
+              icon={person.isFavorite ? mdiHeart : mdiHeartOutline}
+              text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+              onClick={() => toggleFavoritePerson()}
             />
           </ButtonContextMenu>
         {/snippet}

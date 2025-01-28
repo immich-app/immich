@@ -37,7 +37,7 @@ describe(PartnerService.name, () => {
 
   describe('create', () => {
     it('should create a new partner', async () => {
-      partnerMock.get.mockResolvedValue(null);
+      partnerMock.get.mockResolvedValue(void 0);
       partnerMock.create.mockResolvedValue(partnerStub.adminToUser1);
 
       await expect(sut.create(authStub.admin, authStub.user1.user.id)).resolves.toBeDefined();
@@ -67,7 +67,7 @@ describe(PartnerService.name, () => {
     });
 
     it('should throw an error when the partner does not exist', async () => {
-      partnerMock.get.mockResolvedValue(null);
+      partnerMock.get.mockResolvedValue(void 0);
 
       await expect(sut.remove(authStub.admin, authStub.user1.user.id)).rejects.toBeInstanceOf(BadRequestException);
 
@@ -87,11 +87,10 @@ describe(PartnerService.name, () => {
       partnerMock.update.mockResolvedValue(partnerStub.adminToUser1);
 
       await expect(sut.update(authStub.admin, 'shared-by-id', { inTimeline: true })).resolves.toBeDefined();
-      expect(partnerMock.update).toHaveBeenCalledWith({
-        sharedById: 'shared-by-id',
-        sharedWithId: authStub.admin.user.id,
-        inTimeline: true,
-      });
+      expect(partnerMock.update).toHaveBeenCalledWith(
+        { sharedById: 'shared-by-id', sharedWithId: authStub.admin.user.id },
+        { inTimeline: true },
+      );
     });
   });
 });

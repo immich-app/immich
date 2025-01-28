@@ -9,7 +9,7 @@ import {
   VideoFormat,
   VideoInterfaces,
   VideoStreamInfo,
-} from 'src/interfaces/media.interface';
+} from 'src/types';
 
 export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
@@ -272,7 +272,7 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getBitrateUnit() {
     const maxBitrate = this.getMaxBitrateValue();
-    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length); // use inputted unit if provided
+    return this.config.maxBitrate.trim().slice(maxBitrate.toString().length) || 'k'; // use inputted unit if provided, else default to kbps
   }
 
   getMaxBitrateValue() {

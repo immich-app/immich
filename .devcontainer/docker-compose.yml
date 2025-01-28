@@ -1,0 +1,8 @@
+services:
+  immich-devcontainer:
+    build:
+      dockerfile: Dockerfile
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    volumes:
+      - ..:/immich:cached

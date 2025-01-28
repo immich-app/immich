@@ -34,6 +34,7 @@
     isShowDeleteConfirmation?: boolean;
     onPrevious?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onNext?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+    onRandom?: (() => Promise<AssetResponseDto | undefined>) | undefined;
   }
 
   let {
@@ -47,6 +48,7 @@
     isShowDeleteConfirmation = $bindable(false),
     onPrevious = undefined,
     onNext = undefined,
+    onRandom = undefined,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -202,35 +204,71 @@
     })(),
   );
 
-  const handleNext = async () => {
+  const handleNext = async (): Promise<boolean> => {
     try {
       let asset: AssetResponseDto | undefined;
       if (onNext) {
         asset = await onNext();
       } else {
-        currentViewAssetIndex = Math.min(currentViewAssetIndex + 1, assets.length - 1);
-        asset = assets[currentViewAssetIndex];
+        currentViewAssetIndex = currentViewAssetIndex + 1;
+        asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
+      }
+
+      if (!asset) {
+        return false;
       }
 
       await navigateToAsset(asset);
+      return true;
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_next_asset'));
+      return false;
     }
   };
 
-  const handlePrevious = async () => {
+  const handleRandom = async (): Promise<AssetResponseDto | null> => {
+    try {
+      let asset: AssetResponseDto | undefined;
+      if (onRandom) {
+        asset = await onRandom();
+      } else {
+        if (assets.length > 0) {
+          const randomIndex = Math.floor(Math.random() * assets.length);
+          asset = assets[randomIndex];
+        }
+      }
+
+      if (!asset) {
+        return null;
+      }
+
+      await navigateToAsset(asset);
+      return asset;
+    } catch (error) {
+      handleError(error, $t('errors.cannot_navigate_next_asset'));
+      return null;
+    }
+  };
+
+  const handlePrevious = async (): Promise<boolean> => {
     try {
       let asset: AssetResponseDto | undefined;
       if (onPrevious) {
         asset = await onPrevious();
       } else {
-        currentViewAssetIndex = Math.max(currentViewAssetIndex - 1, 0);
-        asset = assets[currentViewAssetIndex];
+        currentViewAssetIndex = currentViewAssetIndex - 1;
+        asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
+      }
+
+      if (!asset) {
+        return false;
       }
 
       await navigateToAsset(asset);
+      return true;
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_previous_asset'));
+      return false;
     }
   };
 
@@ -354,7 +392,7 @@
         />
         {#if showAssetName}
           <div
-            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis"
+            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
           >
             {asset.originalFileName}
           </div>
@@ -372,6 +410,7 @@
       onAction={handleAction}
       onPrevious={handlePrevious}
       onNext={handleNext}
+      onRandom={handleRandom}
       onClose={() => {
         assetViewingStore.showAssetViewer(false);
         handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

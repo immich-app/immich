@@ -10,6 +10,7 @@ import {
   Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
+  UpdateLibraryDto,
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
   ValidateLibraryDto,
@@ -35,6 +36,7 @@ import {
   updateAlbumUser,
   updateAssets,
   updateConfig,
+  updateLibrary,
   updateMyPreferences,
   upsertTags,
   validate,
@@ -42,7 +44,7 @@ import {
 import { BrowserContext } from '@playwright/test';
 import { exec, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
 import { setTimeout as setAsyncTimeout } from 'node:timers/promises';
@@ -74,6 +76,7 @@ export const immichCli = (args: string[]) =>
 export const immichAdmin = (args: string[]) =>
   executeCommand('docker', ['exec', '-i', 'immich-e2e-server', '/bin/bash', '-c', `immich-admin ${args.join(' ')}`]);
 export const specialCharStrings = ["'", '"', ',', '{', '}', '*'];
+export const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const executeCommand = (command: string, args: string[]) => {
   let _resolve: (value: CommandResponse) => void;
@@ -392,6 +395,14 @@ export const utils = {
     rmSync(path);
   },
 
+  renameImageFile: (oldPath: string, newPath: string) => {
+    if (!existsSync(oldPath)) {
+      return;
+    }
+
+    renameSync(oldPath, newPath);
+  },
+
   removeDirectory: (path: string) => {
     if (!existsSync(path)) {
       return;
@@ -446,6 +457,9 @@ export const utils = {
 
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  updateLibrary: (accessToken: string, id: string, dto: UpdateLibraryDto) =>
+    updateLibrary({ id, updateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
 
   createPartner: (accessToken: string, id: string) => createPartner({ id }, { headers: asBearerAuth(accessToken) }),
 

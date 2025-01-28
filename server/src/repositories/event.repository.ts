@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import {
   OnGatewayConnection,
@@ -12,7 +12,6 @@ import _ from 'lodash';
 import { Server, Socket } from 'socket.io';
 import { EventConfig } from 'src/decorators';
 import { ImmichWorker, MetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import {
   ArgsOf,
   ClientEventMap,
@@ -23,8 +22,8 @@ import {
   serverEvents,
   ServerEvents,
 } from 'src/interfaces/event.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
 import { handlePromiseError } from 'src/utils/misc';
 
@@ -52,8 +51,8 @@ export class EventRepository implements OnGatewayConnection, OnGatewayDisconnect
 
   constructor(
     private moduleRef: ModuleRef,
-    @Inject(IConfigRepository) private configRepository: ConfigRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private configRepository: ConfigRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(EventRepository.name);
   }

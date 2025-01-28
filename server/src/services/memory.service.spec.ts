@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { MemoryType } from 'src/enum';
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
 import { MemoryService } from 'src/services/memory.service';
+import { IMemoryRepository } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { memoryStub } from 'test/fixtures/memory.stub';
 import { userStub } from 'test/fixtures/user.stub';
@@ -69,7 +69,17 @@ describe(MemoryService.name, () => {
           memoryAt: new Date(2024),
         }),
       ).resolves.toMatchObject({ assets: [] });
-      expect(memoryMock.create).toHaveBeenCalledWith(expect.objectContaining({ assets: [] }));
+      expect(memoryMock.create).toHaveBeenCalledWith(
+        {
+          ownerId: 'admin_id',
+          memoryAt: expect.any(Date),
+          type: MemoryType.ON_THIS_DAY,
+          isSaved: undefined,
+          sendAt: undefined,
+          data: { year: 2024 },
+        },
+        new Set(),
+      );
     });
 
     it('should create a memory', async () => {
@@ -80,14 +90,14 @@ describe(MemoryService.name, () => {
           type: MemoryType.ON_THIS_DAY,
           data: { year: 2024 },
           assetIds: ['asset1'],
-          memoryAt: new Date(2024),
+          memoryAt: new Date(2024, 0, 1),
         }),
       ).resolves.toBeDefined();
       expect(memoryMock.create).toHaveBeenCalledWith(
         expect.objectContaining({
           ownerId: userStub.admin.id,
-          assets: [{ id: 'asset1' }],
         }),
+        new Set(['asset1']),
       );
     });
 
@@ -115,12 +125,7 @@ describe(MemoryService.name, () => {
       accessMock.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
       memoryMock.update.mockResolvedValue(memoryStub.memory1);
       await expect(sut.update(authStub.admin, 'memory1', { isSaved: true })).resolves.toBeDefined();
-      expect(memoryMock.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'memory1',
-          isSaved: true,
-        }),
-      );
+      expect(memoryMock.update).toHaveBeenCalledWith('memory1', expect.objectContaining({ isSaved: true }));
     });
   });
 

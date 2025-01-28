@@ -17,7 +17,7 @@
 </script>
 
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { Button } from '@immich/ui';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
   import SearchPeopleSection from './search-people-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
@@ -163,7 +163,7 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
-    <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
+    <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}>{$t('clear_all')}</Button>
+    <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
   {/snippet}
 </FullScreenModal>

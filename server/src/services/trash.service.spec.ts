@@ -1,11 +1,18 @@
 import { BadRequestException } from '@nestjs/common';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ITrashRepository } from 'src/interfaces/trash.interface';
 import { TrashService } from 'src/services/trash.service';
+import { ITrashRepository } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
+
+async function* makeAssetIdStream(count: number): AsyncIterableIterator<{ id: string }> {
+  for (let i = 0; i < count; i++) {
+    await Promise.resolve();
+    yield { id: `asset-${i + 1}` };
+  }
+}
 
 describe(TrashService.name, () => {
   let sut: TrashService;
@@ -48,14 +55,14 @@ describe(TrashService.name, () => {
 
   describe('restore', () => {
     it('should handle an empty trash', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: [], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue(makeAssetIdStream(0));
       trashMock.restore.mockResolvedValue(0);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 0 });
       expect(trashMock.restore).toHaveBeenCalledWith('user-id');
     });
 
     it('should restore', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue(makeAssetIdStream(1));
       trashMock.restore.mockResolvedValue(1);
       await expect(sut.restore(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.restore).toHaveBeenCalledWith('user-id');
@@ -64,14 +71,14 @@ describe(TrashService.name, () => {
 
   describe('empty', () => {
     it('should handle an empty trash', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: [], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue(makeAssetIdStream(0));
       trashMock.empty.mockResolvedValue(0);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 0 });
       expect(jobMock.queue).not.toHaveBeenCalled();
     });
 
     it('should empty the trash', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
+      trashMock.getDeletedIds.mockResolvedValue(makeAssetIdStream(1));
       trashMock.empty.mockResolvedValue(1);
       await expect(sut.empty(authStub.user1)).resolves.toEqual({ count: 1 });
       expect(trashMock.empty).toHaveBeenCalledWith('user-id');
@@ -88,7 +95,7 @@ describe(TrashService.name, () => {
 
   describe('handleQueueEmptyTrash', () => {
     it('should queue asset delete jobs', async () => {
-      trashMock.getDeletedIds.mockResolvedValue({ items: ['asset-1'], hasNextPage: false });
+      trashMock.getDeletedIds.mockReturnValue(makeAssetIdStream(1));
       await expect(sut.handleQueueEmptyTrash()).resolves.toEqual(JobStatus.SUCCESS);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {

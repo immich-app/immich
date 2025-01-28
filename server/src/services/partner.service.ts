@@ -43,7 +43,7 @@ export class PartnerService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.PARTNER_UPDATE, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
-    const entity = await this.partnerRepository.update({ ...partnerId, inTimeline: dto.inTimeline });
+    const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
     return this.mapPartner(entity, PartnerDirection.SharedWith);
   }
 
