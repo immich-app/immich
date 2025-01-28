@@ -9,7 +9,7 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 ## Image formats
 
 | Format      | Extension(s)                  |     Supported?     | Notes           |
-| :--------   | :---------------------------- | :----------------: | :-------------- |
+| :---------- | :---------------------------- | :----------------: | :-------------- |
 | `AVIF`      | `.avif`                       | :white_check_mark: |                 |
 | `BMP`       | `.bmp`                        | :white_check_mark: |                 |
 | `GIF`       | `.gif`                        | :white_check_mark: |                 |
