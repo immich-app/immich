@@ -92,6 +92,7 @@
   let personMerge1: PersonResponseDto | undefined = $state();
   let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
+  let isSuggestionSelectedByUser = $state(false);
 
   let personName = '';
   let suggestedPeople: PersonResponseDto[] = $state([]);
@@ -233,15 +234,22 @@
     personName = person.name;
     personMerge1 = person;
     personMerge2 = person2;
+    isSuggestionSelectedByUser = true;
     viewMode = PersonPageViewMode.SUGGEST_MERGE;
   };
 
   const changeName = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
     person.name = personName;
-    try {
-      isEditingName = false;
+    isEditingName = false;
 
+    if (isSuggestionSelectedByUser) {
+      // User canceled the merge
+      isSuggestionSelectedByUser = false;
+      return;
+    }
+
+    try {
       person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
