@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
@@ -11,6 +11,7 @@ import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
+import { AssetDatesDto } from 'src/dtos/asset.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -162,6 +163,14 @@ export class MetadataService extends BaseService {
     const exifTags = await this.getExifTags(asset);
 
     this.logger.verbose('Exif Tags', exifTags);
+
+    if (!asset.fileCreatedAt) {
+      asset.fileCreatedAt = stats.birthtime;
+    }
+
+    if (!asset.fileModifiedAt) {
+      asset.fileModifiedAt = stats.mtime;
+    }
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate, fileCreatedAt, fileModifiedAt } = this.getDates(
       asset,
@@ -465,6 +474,15 @@ export class MetadataService extends BaseService {
         }
       } else {
         const motionAssetId = this.cryptoRepository.randomUUID();
+
+        if (!asset.fileCreatedAt) {
+          asset.fileCreatedAt = stat.birthtime;
+        }
+
+        if (!asset.fileModifiedAt) {
+          asset.fileModifiedAt = stat.mtime;
+        }
+
         const dates = this.getDates(asset, tags, stat);
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
@@ -583,7 +601,17 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: AssetEntity, exifTags: ImmichTags, stat: Stats) {
+  private getDates(asset: AssetEntity, exifTags: ImmichTags, stat: Stats): AssetDatesDto {
+    // We first assert that fileCreatedAt and fileModifiedAt are not null since that should be set to a non-null value before calling this function
+    if (asset.fileCreatedAt == null) {
+      this.logger.warn(`Asset ${asset.id} has no file creation date`);
+      throw new BadRequestException(`Asset ${asset.id} has no file creation date`);
+    }
+    if (asset.fileModifiedAt == null) {
+      this.logger.warn(`Asset ${asset.id} has no file modification date`);
+      throw new BadRequestException(`Asset ${asset.id} has no file modification date`);
+    }
+
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
     this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
 
@@ -623,7 +651,11 @@ export class MetadataService extends BaseService {
       localDateTime = earliestDate;
     }
 
-    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    if (localDateTime) {
+      this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    } else {
+      this.logger.verbose(`Asset ${asset.id} has no time set`);
+    }
 
     let modifyDate = asset.fileModifiedAt;
     try {

@@ -126,8 +126,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp;
-  fileModifiedAt: Timestamp;
+  fileCreatedAt: Timestamp | null;
+  fileModifiedAt: Timestamp | null;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
@@ -136,7 +136,7 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp;
+  localDateTime: Timestamp | null;
   originalFileName: string;
   originalPath: string;
   ownerId: string;
@@ -214,6 +214,20 @@ export interface GeodataPlaces {
   name: string;
 }
 
+export interface GeodataPlacesTmp {
+  admin1Code: string | null;
+  admin1Name: string | null;
+  admin2Code: string | null;
+  admin2Name: string | null;
+  alternateNames: string | null;
+  countryCode: string;
+  id: number;
+  latitude: number;
+  longitude: number;
+  modificationDate: Timestamp;
+  name: string;
+}
+
 export interface Libraries {
   createdAt: Generated<Timestamp>;
   deletedAt: Timestamp | null;
@@ -259,6 +273,14 @@ export interface MoveHistory {
 }
 
 export interface NaturalearthCountries {
+  admin: string;
+  admin_a3: string;
+  coordinates: string;
+  id: Generated<number>;
+  type: string;
+}
+
+export interface NaturalearthCountriesTmp {
   admin: string;
   admin_a3: string;
   coordinates: string;
@@ -418,12 +440,14 @@ export interface DB {
   exif: Exif;
   face_search: FaceSearch;
   geodata_places: GeodataPlaces;
+  geodata_places_tmp: GeodataPlacesTmp;
   libraries: Libraries;
   memories: Memories;
   memories_assets_assets: MemoriesAssetsAssets;
   migrations: Migrations;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
+  naturalearth_countries_tmp: NaturalearthCountriesTmp;
   partners: Partners;
   person: Person;
   sessions: Sessions;

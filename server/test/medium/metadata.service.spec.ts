@@ -29,6 +29,8 @@ type TimeZoneTest = {
   description: string;
   serverTimeZone?: string;
   exifData: Record<string, any>;
+  fileCreatedAt: Date;
+  fileModifiedAt: Date;
   expected: {
     localDateTime: string;
     dateTimeOriginal: string;
@@ -58,6 +60,8 @@ describe(MetadataService.name, () => {
     const timeZoneTests: TimeZoneTest[] = [
       {
         description: 'should handle no time zone information',
+        fileCreatedAt: new Date('2022-01-01T00:00:00.000Z'),
+        fileModifiedAt: new Date('2022-01-01T00:00:00.000Z'),
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
         },
@@ -69,6 +73,8 @@ describe(MetadataService.name, () => {
       },
       {
         description: 'should handle no time zone information and server behind UTC',
+        fileCreatedAt: new Date('2022-01-01T00:00:00.000Z'),
+        fileModifiedAt: new Date('2022-01-01T00:00:00.000Z'),
         serverTimeZone: 'America/Los_Angeles',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
@@ -81,6 +87,8 @@ describe(MetadataService.name, () => {
       },
       {
         description: 'should handle no time zone information and server ahead of UTC',
+        fileCreatedAt: new Date('2022-01-01T00:00:00.000Z'),
+        fileModifiedAt: new Date('2022-01-01T00:00:00.000Z'),
         serverTimeZone: 'Europe/Brussels',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
@@ -93,6 +101,8 @@ describe(MetadataService.name, () => {
       },
       {
         description: 'should handle no time zone information and server ahead of UTC in the summer',
+        fileCreatedAt: new Date('2022-01-01T00:00:00.000Z'),
+        fileModifiedAt: new Date('2022-01-01T00:00:00.000Z'),
         serverTimeZone: 'Europe/Brussels',
         exifData: {
           DateTimeOriginal: '2022:06:01 00:00:00',
@@ -105,6 +115,8 @@ describe(MetadataService.name, () => {
       },
       {
         description: 'should handle a +13:00 time zone',
+        fileCreatedAt: new Date('2022-01-01T00:00:00.000Z'),
+        fileModifiedAt: new Date('2022-01-01T00:00:00.000Z'),
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00+13:00',
         },
@@ -116,26 +128,32 @@ describe(MetadataService.name, () => {
       },
     ];
 
-    it.each(timeZoneTests)('$description', async ({ exifData, serverTimeZone, expected }) => {
-      process.env.TZ = serverTimeZone ?? undefined;
+    it.each(timeZoneTests)(
+      '$description',
+      async ({ exifData, serverTimeZone, expected, fileCreatedAt, fileModifiedAt }) => {
+        // TODO: the TZ environment variable is no longer used, remove it
+        process.env.TZ = serverTimeZone ?? undefined;
 
-      const { filePath } = await createTestFile(exifData);
-      assetMock.getByIds.mockResolvedValue([{ id: 'asset-1', originalPath: filePath } as AssetEntity]);
+        const { filePath } = await createTestFile(exifData);
+        assetMock.getByIds.mockResolvedValue([
+          { id: 'asset-1', originalPath: filePath, fileCreatedAt, fileModifiedAt } as AssetEntity,
+        ]);
 
-      await sut.handleMetadataExtraction({ id: 'asset-1' });
+        await sut.handleMetadataExtraction({ id: 'asset-1' });
 
-      expect(assetMock.upsertExif).toHaveBeenCalledWith(
-        expect.objectContaining({
-          dateTimeOriginal: new Date(expected.dateTimeOriginal),
-          timeZone: expected.timeZone,
-        }),
-      );
+        expect(assetMock.upsertExif).toHaveBeenCalledWith(
+          expect.objectContaining({
+            dateTimeOriginal: new Date(expected.dateTimeOriginal),
+            timeZone: expected.timeZone,
+          }),
+        );
 
-      expect(assetMock.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          localDateTime: new Date(expected.localDateTime),
-        }),
-      );
-    });
+        expect(assetMock.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            localDateTime: new Date(expected.localDateTime),
+          }),
+        );
+      },
+    );
   });
 });

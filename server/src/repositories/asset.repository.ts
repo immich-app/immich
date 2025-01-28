@@ -129,6 +129,9 @@ export class AssetRepository implements IAssetRepository {
                   ),
                 )
                 .where('assets.deletedAt', 'is', null)
+                .where('assets.fileCreatedAt', 'is not', null)
+                .where('assets.fileModifiedAt', 'is not', null)
+                .where('assets.localDateTime', 'is not', null)
                 .limit(20)
                 .as('a'),
             (join) => join.onTrue(),
@@ -309,6 +312,8 @@ export class AssetRepository implements IAssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -480,7 +485,9 @@ export class AssetRepository implements IAssetRepository {
           .where('job_status.duplicatesDetectedAt', 'is', null)
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true),
+          .where('assets.isVisible', '=', true)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null),
       )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
@@ -491,6 +498,8 @@ export class AssetRepository implements IAssetRepository {
         qb
           .innerJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
           .where('job_status.metadataExtractedAt', 'is', null)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.FACES, (qb) =>
@@ -498,17 +507,23 @@ export class AssetRepository implements IAssetRepository {
           .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
           .where('job_status.previewAt', 'is not', null)
           .where('job_status.facesRecognizedAt', 'is', null)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.SIDECAR, (qb) =>
         qb
           .where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)]))
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.SMART_SEARCH, (qb) =>
         qb
           .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
           .where('job_status.previewAt', 'is not', null)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
           .where('assets.isVisible', '=', true)
           .where((eb) =>
             eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))),
@@ -517,7 +532,8 @@ export class AssetRepository implements IAssetRepository {
       .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
         qb
           .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .select(withFiles)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
           .where('assets.isVisible', '=', true)
           .where((eb) =>
             eb.or([
@@ -557,6 +573,8 @@ export class AssetRepository implements IAssetRepository {
       .where('ownerId', '=', anyUuid(ownerIds))
       .where('latitude', 'is not', null)
       .where('longitude', 'is not', null)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('isVisible', '=', true)
       .where('deletedAt', 'is', null)
       .$if(!!isArchived, (qb) => qb.where('isArchived', '=', isArchived!))
@@ -575,6 +593,8 @@ export class AssetRepository implements IAssetRepository {
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
@@ -591,6 +611,8 @@ export class AssetRepository implements IAssetRepository {
       .$call(withExif)
       .where('ownerId', '=', anyUuid(userIds))
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('deletedAt', 'is', null)
       .orderBy((eb) => eb.fn('random'))
       .limit(take)
@@ -609,6 +631,9 @@ export class AssetRepository implements IAssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.fileCreatedAt', 'is not', null)
+            .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -690,6 +715,9 @@ export class AssetRepository implements IAssetRepository {
       .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
       .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
       .where('assets.isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
       .orderBy('assets.localDateTime', options.order ?? 'desc')
       .execute() as any as Promise<AssetEntity[]>;
@@ -718,6 +746,9 @@ export class AssetRepository implements IAssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .where('assets.deletedAt', 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.fileCreatedAt', 'is not', null)
+            .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .groupBy('assets.duplicateId'),
         )
         .with('unique', (qb) =>
@@ -764,6 +795,8 @@ export class AssetRepository implements IAssetRepository {
       .select(['assetId as data', 'exif.city as value'])
       .where('ownerId', '=', asUuid(ownerId))
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('isArchived', '=', false)
       .where('type', '=', AssetType.IMAGE)
       .where('deletedAt', 'is', null)
@@ -804,6 +837,8 @@ export class AssetRepository implements IAssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
@@ -832,6 +867,8 @@ export class AssetRepository implements IAssetRepository {
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
       .where('updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;

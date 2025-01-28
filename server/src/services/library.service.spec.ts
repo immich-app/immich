@@ -424,6 +424,26 @@ describe(LibraryService.name, () => {
       expect(assetMock.updateAll).not.toHaveBeenCalled();
     });
 
+    it('should not touch fileCreatedAt when un-trashing an asset previously marked as offline', async () => {
+      const mockAssetJob: ILibraryAssetJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+        exclusionPatterns: [],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.trashedOffline);
+      storageMock.stat.mockResolvedValue({ mtime: assetStub.trashedOffline.fileModifiedAt } as Stats);
+
+      await expect(sut.handleSyncAsset(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith(
+        [assetStub.trashedOffline.id],
+        expect.not.objectContaining({
+          fileCreatedAt: expect.anything(),
+        }),
+      );
+    });
+
     it('should update with online assets that have changed', async () => {
       const mockAssetJob: ILibraryBulkIdsJob = {
         assetIds: [assetStub.external.id],

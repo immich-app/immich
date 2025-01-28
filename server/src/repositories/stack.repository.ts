@@ -30,6 +30,9 @@ const withAssets = (eb: ExpressionBuilder<DB, 'asset_stack'>, withTags = false) 
       )
       .select((eb) => eb.fn.toJson('exifInfo').as('exifInfo'))
       .where('assets.deletedAt', 'is', null)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .whereRef('assets.stackId', '=', 'asset_stack.id'),
   ).as('assets');
 };
@@ -62,7 +65,10 @@ export class StackRepository implements IStackRepository {
               .selectFrom('assets')
               .select('assets.id')
               .whereRef('assets.stackId', '=', 'asset_stack.id')
-              .where('assets.deletedAt', 'is', null),
+              .where('assets.deletedAt', 'is', null)
+              .where('assets.fileCreatedAt', 'is not', null)
+              .where('assets.fileModifiedAt', 'is not', null)
+              .where('assets.localDateTime', 'is not', null),
           ).as('assets'),
         )
         .execute();

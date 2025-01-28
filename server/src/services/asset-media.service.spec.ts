@@ -541,6 +541,11 @@ describe(AssetMediaService.name, () => {
 
     it('should throw an error if the requested preview file does not exist', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+
+      if (!assetStub.image.fileCreatedAt) {
+        throw new Error('fileCreatedAt is missing');
+      }
+
       assetMock.getById.mockResolvedValue({
         ...assetStub.image,
         files: [
@@ -561,6 +566,11 @@ describe(AssetMediaService.name, () => {
 
     it('should fall back to preview if the requested thumbnail file does not exist', async () => {
       accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set([assetStub.image.id]));
+
+      if (!assetStub.image.fileCreatedAt) {
+        throw new Error('fileCreatedAt is missing');
+      }
+
       assetMock.getById.mockResolvedValue({
         ...assetStub.image,
         files: [

@@ -126,6 +126,15 @@ export class AssetStatsResponseDto {
   total!: number;
 }
 
+export class AssetDatesDto {
+  dateTimeOriginal!: Date;
+  timeZone!: string | null;
+  localDateTime!: Date;
+  modifyDate!: Date;
+  fileCreatedAt!: Date;
+  fileModifiedAt!: Date;
+}
+
 export const mapStats = (stats: AssetStats): AssetStatsResponseDto => {
   return {
     images: stats[AssetType.IMAGE],

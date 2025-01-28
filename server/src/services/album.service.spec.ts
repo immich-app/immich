@@ -52,8 +52,8 @@ describe(AlbumService.name, () => {
     it('gets list of albums for auth user', async () => {
       albumMock.getOwned.mockResolvedValue([albumStub.empty, albumStub.sharedWithUser]);
       albumMock.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
-        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
+        { albumId: albumStub.empty.id, assetCount: 0, startDate: null, endDate: null },
+        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: null, endDate: null },
       ]);
 
       const result = await sut.getAll(authStub.admin, {});
@@ -82,7 +82,7 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are shared', async () => {
       albumMock.getShared.mockResolvedValue([albumStub.sharedWithUser]);
       albumMock.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: undefined, endDate: undefined },
+        { albumId: albumStub.sharedWithUser.id, assetCount: 0, startDate: null, endDate: null },
       ]);
 
       const result = await sut.getAll(authStub.admin, { shared: true });
@@ -94,7 +94,7 @@ describe(AlbumService.name, () => {
     it('gets list of albums that are NOT shared', async () => {
       albumMock.getNotShared.mockResolvedValue([albumStub.empty]);
       albumMock.getMetadataForIds.mockResolvedValue([
-        { albumId: albumStub.empty.id, assetCount: 0, startDate: undefined, endDate: undefined },
+        { albumId: albumStub.empty.id, assetCount: 0, startDate: null, endDate: null },
       ]);
 
       const result = await sut.getAll(authStub.admin, { shared: false });

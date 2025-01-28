@@ -100,7 +100,6 @@ export class PersonRepository implements IPersonRepository {
       .$if(!!options.personId, (qb) => qb.where('asset_faces.personId', '=', options.personId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_faces.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_faces.assetId', '=', options.assetId!))
-      .$if(!!options.assetId, (qb) => qb.where('asset_faces.assetId', '=', options.assetId!))
       .stream() as AsyncIterableIterator<AssetFaceEntity>;
   }
 
@@ -109,7 +108,7 @@ export class PersonRepository implements IPersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .$if(!!options.ownerId, (qb) => qb.where('person.ownerId', '=', options.ownerId!))
-      .$if(!!options.thumbnailPath, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
+      .$if(options.thumbnailPath !== undefined, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
       .$if(options.faceAssetId === null, (qb) => qb.where('person.faceAssetId', 'is', null))
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))
@@ -129,7 +128,10 @@ export class PersonRepository implements IPersonRepository {
         join
           .onRef('asset_faces.assetId', '=', 'assets.id')
           .on('assets.isArchived', '=', false)
-          .on('assets.deletedAt', 'is', null),
+          .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null),
       )
       .where('person.ownerId', '=', userId)
       .orderBy('person.isHidden', 'asc')
@@ -285,6 +287,9 @@ export class PersonRepository implements IPersonRepository {
           .on('asset_faces.personId', '=', personId)
           .on('assets.isArchived', '=', false)
           .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null)
           .on('assets.livePhotoVideoId', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
@@ -305,6 +310,9 @@ export class PersonRepository implements IPersonRepository {
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('assets.deletedAt', 'is', null)
+          .on('assets.fileCreatedAt', 'is not', null)
+          .on('assets.fileModifiedAt', 'is not', null)
+          .on('assets.localDateTime', 'is not', null)
           .on('assets.isArchived', '=', false),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['person.id'])).as('total'))

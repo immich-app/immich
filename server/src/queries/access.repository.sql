@@ -79,6 +79,9 @@ from
   inner join "albums_assets_assets" as "albumAssets" on "albums"."id" = "albumAssets"."albumsId"
   inner join "assets" on "assets"."id" = "albumAssets"."assetsId"
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   left join "albums_shared_users_users" as "albumUsers" on "albumUsers"."albumsId" = "albums"."id"
   left join "users" on "users"."id" = "albumUsers"."usersId"
   and "users"."deletedAt" is null
@@ -108,6 +111,9 @@ from
   and "sharedBy"."deletedAt" is null
   inner join "assets" on "assets"."ownerId" = "sharedBy"."id"
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
 where
   "partner"."sharedWithId" = $1
   and "assets"."isArchived" = $2
@@ -126,6 +132,9 @@ from
   left join "shared_link__asset" on "shared_link__asset"."sharedLinksId" = "shared_links"."id"
   left join "assets" on "assets"."id" = "shared_link__asset"."assetsId"
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   left join "albums_assets_assets" on "albums_assets_assets"."albumsId" = "albums"."id"
   left join "assets" as "albumAssets" on "albumAssets"."id" = "albums_assets_assets"."assetsId"
   and "albumAssets"."deletedAt" is null
@@ -173,6 +182,9 @@ from
   "asset_faces"
   left join "assets" on "assets"."id" = "asset_faces"."assetId"
   and "assets"."deletedAt" is null
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
 where
   "asset_faces"."id" in ($1)
   and "assets"."ownerId" = $2

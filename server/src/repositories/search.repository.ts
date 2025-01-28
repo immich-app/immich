@@ -72,8 +72,14 @@ export class SearchRepository implements ISearchRepository {
   async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
-    const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
-    const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
+    const lessThan = builder
+      .where('assets.id', '<', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
+    const greaterThan = builder
+      .where('assets.id', '>', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
     const { rows } = await sql`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
     return rows as any as AssetEntity[];
   }
@@ -133,6 +139,9 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
           .where('assets.isVisible', '=', true)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
+          .where('assets.localDateTime', 'is not', null)
           .where('assets.type', '=', type)
           .where('assets.id', '!=', asUuid(assetId))
           .orderBy(sql`smart_search.embedding <=> ${embedding}`)
@@ -172,6 +181,9 @@ export class SearchRepository implements ISearchRepository {
           .innerJoin('face_search', 'face_search.faceId', 'asset_faces.id')
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
+          .where('assets.localDateTime', 'is not', null)
           .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
           .orderBy(sql`face_search.embedding <=> ${embedding}`)
           .limit(numResults),
@@ -222,6 +234,9 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.isArchived', '=', false)
           .where('assets.type', '=', 'IMAGE')
           .where('assets.deletedAt', 'is', null)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
+          .where('assets.localDateTime', 'is not', null)
           .orderBy('city')
           .limit(1);
 
@@ -239,6 +254,9 @@ export class SearchRepository implements ISearchRepository {
                 .where('assets.isArchived', '=', false)
                 .where('assets.type', '=', 'IMAGE')
                 .where('assets.deletedAt', 'is', null)
+                .where('assets.fileCreatedAt', 'is not', null)
+                .where('assets.fileModifiedAt', 'is not', null)
+                .where('assets.localDateTime', 'is not', null)
                 .whereRef('exif.city', '>', 'cte.city')
                 .orderBy('city')
                 .limit(1)
@@ -292,7 +310,7 @@ export class SearchRepository implements ISearchRepository {
       await sql`truncate ${sql.table('smart_search')}`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
-        .alterColumn('embedding', (col) => col.setDataType(sql.lit(`vector(${dimSize})`)))
+        .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
       await sql`reindex index clip_index`.execute(trx);
     });

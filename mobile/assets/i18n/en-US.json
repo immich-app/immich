@@ -248,6 +248,7 @@
   "download_waiting_to_retry": "Waiting to retry",
   "edit_date_time_dialog_date_time": "Date and Time",
   "edit_date_time_dialog_timezone": "Timezone",
+  "edit_date_time_dialog_search_timezone": "Search timezone...",
   "edit_image_title": "Edit",
   "edit_location_dialog_title": "Location",
   "end_date": "End date",

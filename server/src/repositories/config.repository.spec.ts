@@ -172,6 +172,28 @@ describe('getEnv', () => {
 
       expect(() => getEnv()).toThrowError('Invalid ssl option: invalid');
     });
+
+    it('should handle socket: URLs', () => {
+      process.env.DB_URL = 'socket:/run/postgresql?db=database1';
+
+      const { database } = getEnv();
+
+      expect(database.config.kysely).toMatchObject({
+        host: '/run/postgresql',
+        database: 'database1',
+      });
+    });
+
+    it('should handle sockets in postgres: URLs', () => {
+      process.env.DB_URL = 'postgres:///database2?host=/path/to/socket';
+
+      const { database } = getEnv();
+
+      expect(database.config.kysely).toMatchObject({
+        host: '/path/to/socket',
+        database: 'database2',
+      });
+    });
   });
 
   describe('redis', () => {
