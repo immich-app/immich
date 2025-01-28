@@ -227,6 +227,7 @@
     "reset_settings_to_default": "सेटिंग्स को डिफ़ॉल्ट पर रीसेट करें",
     "reset_settings_to_recent_saved": "सेटिंग्स को हाल ही में सहेजी गई सेटिंग्स पर रीसेट करें",
     "scanning_library": "",
+    "search_jobs": "",
     "send_welcome_email": "स्वागत ईमेल भेजें",
     "server_external_domain_settings": "बाहरी डोमेन",
     "server_external_domain_settings_description": "सार्वजनिक साझा लिंक के लिए डोमेन, जिसमें http(s):// शामिल है",
