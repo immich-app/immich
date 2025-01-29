@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
@@ -75,6 +75,7 @@ export class UserAdminController {
 
   @Post(':id/restore')
   @Authenticated({ permission: Permission.ADMIN_USER_DELETE, admin: true })
+  @HttpCode(HttpStatus.OK)
   restoreUserAdmin(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<UserAdminResponseDto> {
     return this.service.restore(auth, id);
   }

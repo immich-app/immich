@@ -1475,7 +1475,7 @@ export function restoreUserAdmin({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
         ...opts,

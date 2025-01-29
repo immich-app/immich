@@ -102,7 +102,7 @@ export class UserAdminService extends BaseService {
   async restore(auth: AuthDto, id: string): Promise<UserAdminResponseDto> {
     await this.findOrFail(id, { withDeleted: true });
     await this.albumRepository.restoreAll(id);
-    const user = await this.userRepository.update(id, { deletedAt: null, status: UserStatus.ACTIVE });
+    const user = await this.userRepository.restore(id);
     return mapUserAdmin(user);
   }
 
