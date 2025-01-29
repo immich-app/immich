@@ -35,6 +35,7 @@
     locale,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
+  import { userInteraction } from '$lib/stores/user.svelte';
   import { goto } from '$app/navigation';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
@@ -293,6 +294,15 @@
     sharedAlbums[sharedAlbums.findIndex(({ id }) => id === album.id)] = album;
   };
 
+  const updateRecentAlbumInfo = (album: AlbumResponseDto) => {
+    if (userInteraction.recentAlbums) {
+      const index = userInteraction.recentAlbums.findIndex((recentAlbum) => recentAlbum.id === album.id);
+      if (index !== -1) {
+        userInteraction.recentAlbums[index] = { ...userInteraction.recentAlbums[index], ...album };
+      }
+    }
+  };
+
   const successEditAlbumInfo = (album: AlbumResponseDto) => {
     albumToEdit = null;
 
@@ -308,6 +318,7 @@
     });
 
     updateAlbumInfo(album);
+    updateRecentAlbumInfo(album);
   };
 
   const handleAddUsers = async (albumUsers: AlbumUserAddDto[]) => {
