@@ -476,6 +476,7 @@
   "search_filter_media_type_video": "Video",
   "search_filter_people": "People",
   "search_filter_people_title": "Select people",
+  "search_filter_people_hint": "Filter people",
   "search_page_categories": "Categories",
   "search_page_favorites": "Favorites",
   "search_page_motion_photos": "Motion Photos",
