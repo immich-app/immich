@@ -58,7 +58,7 @@
         } else if (b === unknownCountry) {
           return -1;
         } else {
-          return a > b;
+          return a.localeCompare(b);
         }
       });
 
