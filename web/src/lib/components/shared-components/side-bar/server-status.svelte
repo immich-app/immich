@@ -11,13 +11,7 @@
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
-  import {
-    mdiAlert,
-    mdiInformation,
-    mdiInformationOffOutline,
-    mdiInformationOutline,
-    mdiInformationOff,
-  } from '@mdi/js';
+  import { mdiAlert, mdiInformationOutline } from '@mdi/js';
   import { userInteraction } from '$lib/stores/user.svelte';
 
   const { serverVersion, connected } = websocketStore;
