@@ -11,7 +11,13 @@
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlert } from '@mdi/js';
+  import {
+    mdiAlert,
+    mdiInformation,
+    mdiInformationOffOutline,
+    mdiInformationOutline,
+    mdiInformationOff,
+  } from '@mdi/js';
   import { userInteraction } from '$lib/stores/user.svelte';
 
   const { serverVersion, connected } = websocketStore;
@@ -62,7 +68,7 @@
         {#if isMain}
           <Icon path={mdiAlert} size="1.5em" color="#ffcc4d" /> {info?.sourceRef}
         {:else}
-          {version}
+          {version}<Icon path={mdiInformationOutline} size="1.5em" color="#ffffff" />
         {/if}
       </button>
     {:else}
