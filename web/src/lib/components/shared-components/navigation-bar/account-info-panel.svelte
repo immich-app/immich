@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
@@ -14,6 +12,8 @@
   import { NotificationType, notificationController } from '../notification/notification';
   import UserAvatar from '../user-avatar.svelte';
   import AvatarSelector from './avatar-selector.svelte';
+  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
+  import { Button } from '@immich/ui';
 
   interface Props {
     onLogout: () => void;
@@ -76,32 +76,33 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <Button href={AppRoute.USER_SETTINGS} onclick={onClose} color="dark-gray" size="sm" shadow={false} border>
-        <div class="flex place-content-center place-items-center text-center gap-2 px-2">
-          <Icon path={mdiCog} size="18" ariaHidden />
-          {$t('account_settings')}
-        </div>
+      <Button
+        href={AppRoute.USER_SETTINGS}
+        leadingIcon={mdiCog}
+        variant="outline"
+        color="secondary"
+        size="small"
+        shape="round"
+      >
+        {$t('account_settings')}
       </Button>
       {#if $user.isAdmin}
         <Button
           href={AppRoute.ADMIN_USER_MANAGEMENT}
-          onclick={onClose}
-          color="dark-gray"
-          size="sm"
-          shadow={false}
-          border
-          aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
+          leadingIcon={mdiWrench}
+          variant="outline"
+          color="secondary"
+          size="small"
+          shape="round"
         >
-          <div class="flex place-content-center place-items-center text-center gap-2 px-2">
-            <Icon path={mdiWrench} size="18" ariaHidden />
-            {$t('administration')}
-          </div>
+          {$t('administration')}
         </Button>
       {/if}
+      <ThemeButton showText />
     </div>
   </div>
 
-  <div class="mb-4 flex flex-col">
+  <div class="mb-4 flex flex-row">
     <button
       type="button"
       class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"

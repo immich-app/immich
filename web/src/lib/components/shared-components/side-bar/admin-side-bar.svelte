@@ -7,7 +7,7 @@
   import { t } from 'svelte-i18n';
 </script>
 
-<SideBarSection peek>
+<SideBarSection>
   <nav aria-label={$t('primary')}>
     <SideBarLink title={$t('users')} routeId={AppRoute.ADMIN_USER_MANAGEMENT} icon={mdiAccountMultipleOutline} />
     <SideBarLink title={$t('jobs')} routeId={AppRoute.ADMIN_JOBS} icon={mdiSync} />

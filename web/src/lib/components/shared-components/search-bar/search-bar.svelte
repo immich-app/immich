@@ -32,6 +32,7 @@
   let showFilter = $state(false);
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
+  let focusOutTimer: ReturnType<typeof setTimeout>;
 
   const listboxId = generateId();
 
@@ -69,7 +70,11 @@
   };
 
   const onFocusOut = () => {
-    const focusOutTimer = setTimeout(() => {
+    if (focusOutTimer) {
+      clearTimeout(focusOutTimer);
+    }
+
+    focusOutTimer = setTimeout(() => {
       if ($isSearchEnabled) {
         $preventRaceConditionSearchBar = true;
       }
@@ -78,8 +83,6 @@
       $isSearchEnabled = false;
       showFilter = false;
     }, 100);
-
-    clearTimeout(focusOutTimer);
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {

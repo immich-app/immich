@@ -43,7 +43,7 @@
   let isUtilitiesSelected: boolean = $state(false);
 </script>
 
-<SideBarSection peek>
+<SideBarSection>
   <nav aria-label={$t('primary')}>
     <SideBarLink
       title={$t('photos')}
@@ -86,8 +86,7 @@
     ></SideBarLink>
 
     <div class="text-xs transition-all duration-200 dark:text-immich-dark-fg">
-      <p class="p-6 {$isOpen ? 'block' : 'hidden'}">{$t('library').toUpperCase()}</p>
-      <hr class="mx-4 mb-[31px] mt-8 {$isOpen ? 'hidden' : 'block'}" />
+      <p class="p-6">{$t('library').toUpperCase()}</p>
     </div>
 
     <SideBarLink

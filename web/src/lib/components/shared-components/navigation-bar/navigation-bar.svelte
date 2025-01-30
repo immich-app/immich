@@ -21,7 +21,6 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
   import { isOpen } from '$lib/stores/side-bar.store';
@@ -77,16 +76,18 @@
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
-      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:flex items-center gap-2">
+      <div class="flex items-center gap-2 max-w-5xl w-full">
         <a data-sveltekit-preload-data="hover" class="md:hidden" href={AppRoute.PHOTOS}>
-          <ImmichLogo width="45em" noText={true} />
+          <ImmichLogo width="40em" noText={true} class="max-w-none" />
         </a>
-        {#if $featureFlags.search}
-          <SearchBar grayTheme={true} />
-        {/if}
+        <div class="hidden flex-1 tall:pl-0 sm:block">
+          {#if $featureFlags.search}
+            <SearchBar grayTheme={true} />
+          {/if}
+        </div>
       </div>
 
-      <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
+      <section class="flex place-items-center justify-end gap-1 w-full sm:w-auto">
         {#if $featureFlags.search}
           <CircleIconButton
             href={AppRoute.SEARCH}
@@ -98,8 +99,6 @@
             onclick={() => {}}
           />
         {/if}
-
-        <ThemeButton padding="2" />
 
         <div
           use:clickOutside={{
@@ -122,10 +121,11 @@
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}
-            class="hidden lg:flex"
+            class="hidden lg:flex px-2"
             variant="ghost"
             color="secondary"
-            >{$t('upload')}
+          >
+            {$t('upload')}
           </Button>
           <CircleIconButton
             onclick={onUploadClick}
