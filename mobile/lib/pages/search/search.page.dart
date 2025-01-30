@@ -49,7 +49,7 @@ class SearchPage extends HookConsumerWidget {
       ),
     );
 
-    final previousFilter = useState(filter.value);
+    final previousFilter = useState<SearchFilter?>(null);
 
     final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
@@ -596,10 +596,15 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          SearchResultGrid(
-            onScrollEnd: loadMoreSearchResult,
-            isSearching: isSearching.value,
-          ),
+          if (isSearching.value)
+            const Expanded(
+              child: Center(child: CircularProgressIndicator.adaptive()),
+            )
+          else
+            SearchResultGrid(
+              onScrollEnd: loadMoreSearchResult,
+              isSearching: isSearching.value,
+            ),
         ],
       ),
     );
