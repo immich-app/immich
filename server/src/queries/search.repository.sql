@@ -9,7 +9,7 @@ from
 where
   "assets"."fileCreatedAt" >= $1
   and "exif"."lensModel" = $2
-  and "assets"."ownerId" = any ($3::uuid [])
+  and "assets"."ownerId" = any ($3::uuid[])
   and "assets"."isFavorite" = $4
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
@@ -30,13 +30,13 @@ offset
   where
     "assets"."fileCreatedAt" >= $1
     and "exif"."lensModel" = $2
-    and "assets"."ownerId" = any ($3::uuid [])
+    and "assets"."ownerId" = any ($3::uuid[])
     and "assets"."isFavorite" = $4
     and "assets"."isArchived" = $5
     and "assets"."deletedAt" is null
     and "assets"."id" < $6
   order by
-    "assets"."id"
+    random()
   limit
     $7
 )
@@ -50,16 +50,18 @@ union all
   where
     "assets"."fileCreatedAt" >= $8
     and "exif"."lensModel" = $9
-    and "assets"."ownerId" = any ($10::uuid [])
+    and "assets"."ownerId" = any ($10::uuid[])
     and "assets"."isFavorite" = $11
     and "assets"."isArchived" = $12
     and "assets"."deletedAt" is null
     and "assets"."id" > $13
   order by
-    "assets"."id"
+    random()
   limit
     $14
 )
+limit
+  $15
 
 -- SearchRepository.searchSmart
 select
@@ -71,12 +73,12 @@ from
 where
   "assets"."fileCreatedAt" >= $1
   and "exif"."lensModel" = $2
-  and "assets"."ownerId" = any ($3::uuid [])
+  and "assets"."ownerId" = any ($3::uuid[])
   and "assets"."isFavorite" = $4
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
 order by
-  smart_search.embedding <= > $6::vector
+  smart_search.embedding <=> $6
 limit
   $7
 offset
@@ -88,18 +90,18 @@ with
     select
       "assets"."id" as "assetId",
       "assets"."duplicateId",
-      smart_search.embedding <= > $1::vector as "distance"
+      smart_search.embedding <=> $1 as "distance"
     from
       "assets"
       inner join "smart_search" on "assets"."id" = "smart_search"."assetId"
     where
-      "assets"."ownerId" = any ($2::uuid [])
+      "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
       and "assets"."isVisible" = $3
       and "assets"."type" = $4
       and "assets"."id" != $5::uuid
     order by
-      smart_search.embedding <= > $6::vector
+      smart_search.embedding <=> $6
     limit
       $7
   )
@@ -116,16 +118,16 @@ with
     select
       "asset_faces"."id",
       "asset_faces"."personId",
-      face_search.embedding <= > $1::vector as "distance"
+      face_search.embedding <=> $1 as "distance"
     from
       "asset_faces"
       inner join "assets" on "assets"."id" = "asset_faces"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_faces"."id"
     where
-      "assets"."ownerId" = any ($2::uuid [])
+      "assets"."ownerId" = any ($2::uuid[])
       and "assets"."deletedAt" is null
     order by
-      face_search.embedding <= > $3::vector
+      face_search.embedding <=> $3
     limit
       $4
   )
@@ -171,7 +173,7 @@ with recursive
         "exif"
         inner join "assets" on "assets"."id" = "exif"."assetId"
       where
-        "assets"."ownerId" = any ($1::uuid [])
+        "assets"."ownerId" = any ($1::uuid[])
         and "assets"."isVisible" = $2
         and "assets"."isArchived" = $3
         and "assets"."type" = $4
@@ -196,7 +198,7 @@ with recursive
             "exif"
             inner join "assets" on "assets"."id" = "exif"."assetId"
           where
-            "assets"."ownerId" = any ($6::uuid [])
+            "assets"."ownerId" = any ($6::uuid[])
             and "assets"."isVisible" = $7
             and "assets"."isArchived" = $8
             and "assets"."type" = $9
@@ -226,7 +228,7 @@ from
   "exif"
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
-  "ownerId" = any ($1::uuid [])
+  "ownerId" = any ($1::uuid[])
   and "isVisible" = $2
   and "deletedAt" is null
   and "state" is not null
@@ -238,7 +240,7 @@ from
   "exif"
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
-  "ownerId" = any ($1::uuid [])
+  "ownerId" = any ($1::uuid[])
   and "isVisible" = $2
   and "deletedAt" is null
   and "city" is not null
@@ -250,7 +252,7 @@ from
   "exif"
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
-  "ownerId" = any ($1::uuid [])
+  "ownerId" = any ($1::uuid[])
   and "isVisible" = $2
   and "deletedAt" is null
   and "make" is not null
@@ -262,7 +264,7 @@ from
   "exif"
   inner join "assets" on "assets"."id" = "exif"."assetId"
 where
-  "ownerId" = any ($1::uuid [])
+  "ownerId" = any ($1::uuid[])
   and "isVisible" = $2
   and "deletedAt" is null
   and "model" is not null

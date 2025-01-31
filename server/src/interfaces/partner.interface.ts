@@ -1,3 +1,5 @@
+import { Updateable } from 'kysely';
+import { Partners } from 'src/db';
 import { PartnerEntity } from 'src/entities/partner.entity';
 
 export interface PartnerIds {
@@ -14,8 +16,8 @@ export const IPartnerRepository = 'IPartnerRepository';
 
 export interface IPartnerRepository {
   getAll(userId: string): Promise<PartnerEntity[]>;
-  get(partner: PartnerIds): Promise<PartnerEntity | null>;
+  get(partner: PartnerIds): Promise<PartnerEntity | undefined>;
   create(partner: PartnerIds): Promise<PartnerEntity>;
-  remove(entity: PartnerEntity): Promise<void>;
-  update(entity: Partial<PartnerEntity>): Promise<PartnerEntity>;
+  remove(partner: PartnerIds): Promise<void>;
+  update(partner: PartnerIds, entity: Updateable<Partners>): Promise<PartnerEntity>;
 }

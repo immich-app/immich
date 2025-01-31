@@ -1,6 +1,6 @@
-import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, Selectable, SelectQueryBuilder, sql } from 'kysely';
+import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { Assets, DB } from 'src/db';
+import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
@@ -181,21 +181,19 @@ export class AssetEntity {
 }
 
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb
-    .leftJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo'));
+  return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .innerJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo'));
+    .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-    .select(sql<number[]>`smart_search.embedding`.as('embedding'));
+    .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
 export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
@@ -248,7 +246,7 @@ export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
       .select('assetId')
       .where('personId', '=', anyUuid(personIds!))
       .groupBy('assetId')
-      .having((eb) => eb.fn.count('personId'), '>=', personIds.length),
+      .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length),
   );
 }
 
@@ -266,48 +264,6 @@ export function withLibrary(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonObjectFrom(eb.selectFrom('libraries').selectAll().whereRef('libraries.id', '=', 'assets.libraryId')).as(
     'library',
   );
-}
-
-export function withStackedAssets<O>(qb: SelectQueryBuilder<DB, 'assets' | 'asset_stack', O>) {
-  return qb
-    .innerJoinLateral(
-      (eb: ExpressionBuilder<DB, 'assets' | 'asset_stack'>) =>
-        eb
-          .selectFrom('assets as stacked')
-          .select((eb) => eb.fn<Selectable<Assets>[]>('array_agg', [eb.table('stacked')]).as('assets'))
-          .whereRef('asset_stack.id', '=', 'stacked.stackId')
-          .whereRef('asset_stack.primaryAssetId', '!=', 'stacked.id')
-          .as('s'),
-      (join) =>
-        join.on((eb) =>
-          eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
-        ),
-    )
-    .select('s.assets');
-}
-
-export function withStack<O>(
-  qb: SelectQueryBuilder<DB, 'assets', O>,
-  { assets, count }: { assets: boolean; count: boolean },
-) {
-  return qb
-    .leftJoinLateral(
-      (eb) =>
-        eb
-          .selectFrom('asset_stack')
-          .selectAll('asset_stack')
-          .whereRef('assets.stackId', '=', 'asset_stack.id')
-          .$if(assets, withStackedAssets)
-          .$if(count, (qb) =>
-            // There is no `selectNoFrom` method for expression builders
-            qb.select(
-              sql`(select count(*) as "assetCount" where "asset_stack"."id" = "assets"."stackId")`.as('assetCount'),
-            ),
-          )
-          .as('stacked_assets'),
-      (join) => join.onTrue(),
-    )
-    .select((eb) => eb.fn('to_jsonb', [eb.table('stacked_assets')]).as('stack'));
 }
 
 export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId }: { albumId?: string }) {
@@ -350,6 +306,18 @@ export function withTags(eb: ExpressionBuilder<DB, 'assets'>) {
 
 export function truncatedDate<O>(size: TimeBucketSize) {
   return sql<O>`date_trunc(${size}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
+}
+
+export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
+  return qb.where((eb) =>
+    eb.exists(
+      eb
+        .selectFrom('tags_closure')
+        .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .whereRef('tag_asset.assetsId', '=', 'assets.id')
+        .where('tags_closure.id_ancestor', '=', tagId),
+    ),
+  );
 }
 
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();

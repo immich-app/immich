@@ -215,7 +215,10 @@
       viewMode = AlbumPageViewMode.VIEW;
       return;
     }
-
+    if (viewMode === AlbumPageViewMode.SELECT_THUMBNAIL) {
+      viewMode = AlbumPageViewMode.VIEW;
+      return;
+    }
     if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
       await handleCloseSelectAssets();
       return;
@@ -354,10 +357,10 @@
       return;
     }
 
+    await updateThumbnail(assetId);
+
     viewMode = AlbumPageViewMode.VIEW;
     assetInteraction.clearMultiselect();
-
-    await updateThumbnail(assetId);
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
@@ -375,6 +378,10 @@
         updateAlbumDto: {
           albumThumbnailAssetId: assetId,
         },
+      });
+      notificationController.show({
+        type: NotificationType.Info,
+        message: $t('album_cover_updated'),
       });
     } catch (error) {
       handleError(error, $t('errors.unable_to_update_album_cover'));

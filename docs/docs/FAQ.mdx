@@ -53,10 +53,18 @@ On iOS (iPhone and iPad), the operating system determines if a particular app ca
 - Disable Background App Refresh for apps that don't need background tasks to run. This will reduce the competition for background task invocation for Immich.
 - Use the Immich app more often.
 
-### Why are features not working with a self-signed cert or mTLS?
+### Why are features in the mobile app not working with a self-signed certificate, Basic Auth, custom headers, or mutual TLS?
 
-Due to limitations in the upstream app/video library, using a self-signed TLS certificate or mutual TLS may break video playback or asset upload (both foreground and/or background).
-We recommend using a real SSL certificate from a free provider, for example [Let's Encrypt](https://letsencrypt.org/).
+These network features are experimental. They often do not work with video playback, asset upload or download, and other features.
+Many of these limitations are tracked in [#15230](https://github.com/immich-app/immich/issues/15230).
+Instead of these experimental features, we recommend using the URL switching feature, a VPN, or a [free trusted SSL certificate](https://letsencrypt.org/) for your domain.
+
+We are not actively developing these features and will not be able to provide support, but welcome contributions to improve them.
+Please discuss any large PRs with our dev team to ensure your time is not wasted.
+
+### Why isn't the mobile app updated yet?
+
+The app stores can take a few days to approve new builds of the app. If you're impatient, android APKs can be downloaded from the GitHub releases.
 
 ---
 
@@ -155,6 +163,35 @@ For example, say you have existing transcodes with the policy "Videos higher tha
 ### Is it possible to compress images during backup?
 
 No. Our design principle is that the original assets should always be untouched.
+
+### How can I mount a CIFS/Samba volume within Docker?
+
+If you aren't able to or prefer not to mount Samba on the host (such as Windows environment), you can mount the volume within Docker.
+Below is an example in the `docker-compose.yml`.
+
+Change your username, password, local IP, and share name, and see below where the line `- originals:/usr/src/app/originals`,
+corrolates to the section where the volume `originals` was created. You can call this whatever you like, and map it to the docker container as you like.
+For example you could change `originals:` to `Photos:`, and change `- originals:/usr/src/app/originals` to `Photos:/usr/src/app/photos`.
+
+```diff
+...
+services:
+  immich-server:
+...
+    volumes:
+      # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
++     - originals:/usr/src/app/originals
+...
+volumes:
+  model-cache:
++ originals:
++   driver_opts:
++     type: cifs
++     o: 'iocharset=utf8,username=USERNAMEHERE,password=PASSWORDHERE,rw' # change to `ro` if read only desired
++     device: '//localipaddress/sharename'
+```
 
 ---
 
@@ -278,7 +315,7 @@ The initial backup is the most intensive due to the number of jobs running. The 
   - For facial recognition on new images to work properly, You must re-run the Face Detection job for all images after this.
 - At the container level, you can [set resource constraints](/docs/FAQ#can-i-limit-cpu-and-ram-usage) to lower usage further.
   - It's recommended to only apply these constraints _after_ taking some of the measures here for best performance.
-- If these changes are not enough, see [below](/docs/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
+- If these changes are not enough, see [above](/docs/FAQ#how-can-i-disable-machine-learning) for instructions on how to disable machine learning.
 
 ### Can I limit CPU and RAM usage?
 
@@ -421,7 +458,7 @@ A result of `on` means that checksums are enabled.
 <summary>Check if checksums are enabled</summary>
 
 ```bash
-docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="show data_checksums"
+docker exec -it immich_postgres psql --dbname=postgres --username=<DB_USERNAME> --command="show data_checksums"
  data_checksums
 ----------------
  on
@@ -436,7 +473,7 @@ If checksums are enabled, you can check the status of the database with the foll
 <summary>Check for database corruption</summary>
 
 ```bash
-docker exec -it immich_postgres psql --dbname=immich --username=<DB_USERNAME> --command="SELECT datname, checksum_failures, checksum_last_failure FROM pg_stat_database WHERE datname IS NOT NULL"
+docker exec -it immich_postgres psql --dbname=postgres --username=<DB_USERNAME> --command="SELECT datname, checksum_failures, checksum_last_failure FROM pg_stat_database WHERE datname IS NOT NULL"
   datname  | checksum_failures | checksum_last_failure
 -----------+-------------------+-----------------------
  postgres  |                 0 |

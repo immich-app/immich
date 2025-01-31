@@ -1,3 +1,5 @@
+import { Insertable, Updateable } from 'kysely';
+import { Users } from 'src/db';
 import { UserMetadata } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 
@@ -23,17 +25,18 @@ export interface UserFindOptions {
 export const IUserRepository = 'IUserRepository';
 
 export interface IUserRepository {
-  get(id: string, options: UserFindOptions): Promise<UserEntity | null>;
-  getAdmin(): Promise<UserEntity | null>;
+  get(id: string, options: UserFindOptions): Promise<UserEntity | undefined>;
+  getAdmin(): Promise<UserEntity | undefined>;
   hasAdmin(): Promise<boolean>;
-  getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | null>;
-  getByStorageLabel(storageLabel: string): Promise<UserEntity | null>;
-  getByOAuthId(oauthId: string): Promise<UserEntity | null>;
+  getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | undefined>;
+  getByStorageLabel(storageLabel: string): Promise<UserEntity | undefined>;
+  getByOAuthId(oauthId: string): Promise<UserEntity | undefined>;
   getDeletedUsers(): Promise<UserEntity[]>;
   getList(filter?: UserListFilter): Promise<UserEntity[]>;
   getUserStats(): Promise<UserStatsQueryResponse[]>;
-  create(user: Partial<UserEntity>): Promise<UserEntity>;
-  update(id: string, user: Partial<UserEntity>): Promise<UserEntity>;
+  create(user: Insertable<Users>): Promise<UserEntity>;
+  update(id: string, user: Updateable<Users>): Promise<UserEntity>;
+  restore(id: string): Promise<UserEntity>;
   upsertMetadata<T extends keyof UserMetadata>(id: string, item: { key: T; value: UserMetadata[T] }): Promise<void>;
   deleteMetadata<T extends keyof UserMetadata>(id: string, key: T): Promise<void>;
   delete(user: UserEntity, hard?: boolean): Promise<UserEntity>;

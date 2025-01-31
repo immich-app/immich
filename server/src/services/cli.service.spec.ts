@@ -25,7 +25,7 @@ describe(CliService.name, () => {
 
   describe('resetAdminPassword', () => {
     it('should only work when there is an admin account', async () => {
-      userMock.getAdmin.mockResolvedValue(null);
+      userMock.getAdmin.mockResolvedValue(void 0);
       const ask = vitest.fn().mockResolvedValue('new-password');
 
       await expect(sut.resetAdminPassword(ask)).rejects.toThrowError('Admin account does not exist');

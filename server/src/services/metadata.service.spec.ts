@@ -7,19 +7,17 @@ import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
 import { IAlbumRepository } from 'src/interfaces/album.interface';
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { IMapRepository } from 'src/interfaces/map.interface';
-import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMetadataRepository, ImmichTags } from 'src/interfaces/metadata.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
+import { ImmichTags } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
+import { IConfigRepository, IMapRepository, IMediaRepository, IMetadataRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { probeStub } from 'test/fixtures/media.stub';
@@ -337,8 +335,8 @@ describe(MetadataService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
-        fileCreatedAt: assetStub.image.createdAt,
-        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+        fileCreatedAt: assetStub.image.fileCreatedAt,
+        localDateTime: assetStub.image.fileCreatedAt,
       });
     });
 
@@ -1086,7 +1084,9 @@ describe(MetadataService.name, () => {
         ],
         [],
       );
-      expect(personMock.updateAll).toHaveBeenCalledWith([{ id: 'random-uuid', faceAssetId: 'random-uuid' }]);
+      expect(personMock.updateAll).toHaveBeenCalledWith([
+        { id: 'random-uuid', ownerId: 'admin-id', faceAssetId: 'random-uuid' },
+      ]);
       expect(jobMock.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.GENERATE_PERSON_THUMBNAIL,
@@ -1159,6 +1159,17 @@ describe(MetadataService.name, () => {
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           rating: 5,
+        }),
+      );
+    });
+    it('should handle valid negative rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags({ Rating: -1 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: -1,
         }),
       );
     });

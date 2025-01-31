@@ -24,7 +24,7 @@
   {:then [data, { default: PhotoSphereViewer }]}
     <PhotoSphereViewer
       panorama={data}
-      originalImageUrl={isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : undefined}
+      originalPanorama={isWebCompatibleImage(asset) ? getAssetOriginalUrl(asset.id) : undefined}
     />
   {:catch}
     {$t('errors.failed_to_load_asset')}

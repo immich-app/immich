@@ -14,9 +14,29 @@ from uvicorn import Server
 from uvicorn.workers import UvicornWorker
 
 
+class ClipSettings(BaseModel):
+    textual: str | None = None
+    visual: str | None = None
+
+
+class FacialRecognitionSettings(BaseModel):
+    recognition: str | None = None
+    detection: str | None = None
+
+
 class PreloadModelData(BaseModel):
-    clip: str | None = None
-    facial_recognition: str | None = None
+    clip_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__CLIP", None)
+    facial_recognition_fallback: str | None = os.getenv("MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION", None)
+    if clip_fallback is not None:
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = clip_fallback
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = clip_fallback
+        del os.environ["MACHINE_LEARNING_PRELOAD__CLIP"]
+    if facial_recognition_fallback is not None:
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = facial_recognition_fallback
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = facial_recognition_fallback
+        del os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"]
+    clip: ClipSettings = ClipSettings()
+    facial_recognition: FacialRecognitionSettings = FacialRecognitionSettings()
 
 
 class MaxBatchSize(BaseModel):

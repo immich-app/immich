@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Next,
   Param,
   ParseFilePipe,
@@ -15,7 +14,7 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { EndpointLifecycle } from 'src/decorators';
 import {
@@ -34,10 +33,10 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichHeader, RouteKey } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AssetUploadInterceptor } from 'src/middleware/asset-upload.interceptor';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
 import { FileUploadInterceptor, UploadFiles, getFiles } from 'src/middleware/file-upload.interceptor';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
@@ -46,7 +45,7 @@ import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
 @Controller(RouteKey.ASSET)
 export class AssetMediaController {
   constructor(
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     private service: AssetMediaService,
   ) {}
 
@@ -95,6 +94,10 @@ export class AssetMediaController {
   @UseInterceptors(FileUploadInterceptor)
   @ApiConsumes('multipart/form-data')
   @EndpointLifecycle({ addedAt: 'v1.106.0' })
+  @ApiOperation({
+    summary: 'replaceAsset',
+    description: 'Replace the asset with new file, without changing its id',
+  })
   @Authenticated({ sharedLink: true })
   async replaceAsset(
     @Auth() auth: AuthDto,
@@ -142,6 +145,10 @@ export class AssetMediaController {
    */
   @Post('exist')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'checkExistingAssets',
+    description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
+  })
   @Authenticated()
   checkExistingAssets(
     @Auth() auth: AuthDto,
@@ -155,6 +162,10 @@ export class AssetMediaController {
    */
   @Post('bulk-upload-check')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'checkBulkUpload',
+    description: 'Checks if assets exist by checksums',
+  })
   @Authenticated()
   checkBulkUpload(
     @Auth() auth: AuthDto,

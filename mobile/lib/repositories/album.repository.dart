@@ -34,10 +34,24 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   Future<Album> create(Album album) => txn(() => db.albums.store(album));
 
   @override
-  Future<Album?> getByName(String name, {bool? shared, bool? remote}) {
+  Future<Album?> getByName(
+    String name, {
+    bool? shared,
+    bool? remote,
+    bool? owner,
+  }) {
     var query = db.albums.filter().nameEqualTo(name);
     if (shared != null) {
       query = query.sharedEqualTo(shared);
+    }
+    if (owner == true) {
+      query = query.owner(
+        (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+      );
+    } else if (owner == false) {
+      query = query.owner(
+        (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+      );
     }
     if (remote == true) {
       query = query.localIdIsNull();

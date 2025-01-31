@@ -32,6 +32,13 @@
   const assetStore = new AssetStore({ isFavorite: true });
   const assetInteraction = new AssetInteraction();
 
+  const handleEscape = () => {
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -68,7 +75,13 @@
 {/if}
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNFAVORITE}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNFAVORITE}
+    onEscape={handleEscape}
+  >
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_favorites_message')} />
     {/snippet}

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirectionExpression, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
 import { AssetType } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import {
   AssetDuplicateSearch,
   AssetSearchOptions,
@@ -20,14 +19,15 @@ import {
   SearchPaginationOptions,
   SmartSearchOptions,
 } from 'src/interfaces/search.interface';
-import { anyUuid, asUuid, asVector } from 'src/utils/database';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { anyUuid, asUuid } from 'src/utils/database';
 import { Paginated } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
 @Injectable()
 export class SearchRepository implements ISearchRepository {
   constructor(
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<DB>,
   ) {
     this.logger.setContext(SearchRepository.name);
@@ -69,12 +69,19 @@ export class SearchRepository implements ISearchRepository {
       },
     ],
   })
-  searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
+  async searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]> {
     const uuid = randomUUID();
     const builder = searchAssetBuilder(this.db, options);
-    const lessThan = builder.where('assets.id', '<', uuid).orderBy('assets.id').limit(size);
-    const greaterThan = builder.where('assets.id', '>', uuid).orderBy('assets.id').limit(size);
-    return sql`${lessThan} union all ${greaterThan}`.execute(this.db) as any as Promise<AssetEntity[]>;
+    const lessThan = builder
+      .where('assets.id', '<', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
+    const greaterThan = builder
+      .where('assets.id', '>', uuid)
+      .orderBy(sql`random()`)
+      .limit(size);
+    const { rows } = await sql`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
+    return rows as any as AssetEntity[];
   }
 
   @GenerateSql({
@@ -82,7 +89,7 @@ export class SearchRepository implements ISearchRepository {
       { page: 1, size: 200 },
       {
         takenAfter: DummyValue.DATE,
-        embedding: Array.from({ length: 512 }, Math.random),
+        embedding: DummyValue.VECTOR,
         lensModel: DummyValue.STRING,
         withStacked: true,
         isFavorite: true,
@@ -97,7 +104,7 @@ export class SearchRepository implements ISearchRepository {
 
     const items = (await searchAssetBuilder(this.db, options)
       .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
-      .orderBy(sql`smart_search.embedding <=> ${asVector(options.embedding)}`)
+      .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute()) as any as AssetEntity[];
@@ -111,7 +118,7 @@ export class SearchRepository implements ISearchRepository {
     params: [
       {
         assetId: DummyValue.UUID,
-        embedding: Array.from({ length: 512 }, Math.random),
+        embedding: DummyValue.VECTOR,
         maxDistance: 0.6,
         type: AssetType.IMAGE,
         userIds: [DummyValue.UUID],
@@ -119,7 +126,6 @@ export class SearchRepository implements ISearchRepository {
     ],
   })
   searchDuplicates({ assetId, embedding, maxDistance, type, userIds }: AssetDuplicateSearch) {
-    const vector = asVector(embedding);
     return this.db
       .with('cte', (qb) =>
         qb
@@ -127,7 +133,7 @@ export class SearchRepository implements ISearchRepository {
           .select([
             'assets.id as assetId',
             'assets.duplicateId',
-            sql<number>`smart_search.embedding <=> ${vector}`.as('distance'),
+            sql<number>`smart_search.embedding <=> ${embedding}`.as('distance'),
           ])
           .innerJoin('smart_search', 'assets.id', 'smart_search.assetId')
           .where('assets.ownerId', '=', anyUuid(userIds))
@@ -135,7 +141,7 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.isVisible', '=', true)
           .where('assets.type', '=', type)
           .where('assets.id', '!=', asUuid(assetId))
-          .orderBy(sql`smart_search.embedding <=> ${vector}`)
+          .orderBy(sql`smart_search.embedding <=> ${embedding}`)
           .limit(64),
       )
       .selectFrom('cte')
@@ -148,7 +154,7 @@ export class SearchRepository implements ISearchRepository {
     params: [
       {
         userIds: [DummyValue.UUID],
-        embedding: Array.from({ length: 512 }, Math.random),
+        embedding: DummyValue.VECTOR,
         numResults: 10,
         maxDistance: 0.6,
       },
@@ -159,7 +165,6 @@ export class SearchRepository implements ISearchRepository {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 
-    const vector = asVector(embedding);
     return this.db
       .with('cte', (qb) =>
         qb
@@ -167,14 +172,14 @@ export class SearchRepository implements ISearchRepository {
           .select([
             'asset_faces.id',
             'asset_faces.personId',
-            sql<number>`face_search.embedding <=> ${vector}`.as('distance'),
+            sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
           ])
           .innerJoin('assets', 'assets.id', 'asset_faces.assetId')
           .innerJoin('face_search', 'face_search.faceId', 'asset_faces.id')
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
           .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
-          .orderBy(sql`face_search.embedding <=> ${vector}`)
+          .orderBy(sql`face_search.embedding <=> ${embedding}`)
           .limit(numResults),
       )
       .selectFrom('cte')
@@ -258,12 +263,11 @@ export class SearchRepository implements ISearchRepository {
       .execute() as any as Promise<AssetEntity[]>;
   }
 
-  async upsert(assetId: string, embedding: number[]): Promise<void> {
-    const vector = asVector(embedding);
+  async upsert(assetId: string, embedding: string): Promise<void> {
     await this.db
       .insertInto('smart_search')
-      .values({ assetId: asUuid(assetId), embedding: vector } as any)
-      .onConflict((oc) => oc.column('assetId').doUpdateSet({ embedding: vector } as any))
+      .values({ assetId: asUuid(assetId), embedding } as any)
+      .onConflict((oc) => oc.column('assetId').doUpdateSet({ embedding } as any))
       .execute();
   }
 
@@ -294,7 +298,7 @@ export class SearchRepository implements ISearchRepository {
       await sql`truncate ${sql.table('smart_search')}`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
-        .alterColumn('embedding', (col) => col.setDataType(sql.lit(`vector(${dimSize})`)))
+        .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
       await sql`reindex index clip_index`.execute(trx);
     });

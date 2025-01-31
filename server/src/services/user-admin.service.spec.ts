@@ -19,13 +19,13 @@ describe(UserAdminService.name, () => {
     ({ sut, jobMock, userMock } = newTestService(UserAdminService));
 
     userMock.get.mockImplementation((userId) =>
-      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? null),
+      Promise.resolve([userStub.admin, userStub.user1].find((user) => user.id === userId) ?? undefined),
     );
   });
 
   describe('create', () => {
     it('should not create a user if there is no local admin account', async () => {
-      userMock.getAdmin.mockResolvedValueOnce(null);
+      userMock.getAdmin.mockResolvedValueOnce(void 0);
 
       await expect(
         sut.create({
@@ -66,8 +66,8 @@ describe(UserAdminService.name, () => {
         email: 'immich@test.com',
         storageLabel: 'storage_label',
       };
-      userMock.getByEmail.mockResolvedValue(null);
-      userMock.getByStorageLabel.mockResolvedValue(null);
+      userMock.getByEmail.mockResolvedValue(void 0);
+      userMock.getByStorageLabel.mockResolvedValue(void 0);
       userMock.update.mockResolvedValue(userStub.user1);
 
       await sut.update(authStub.user1, userStub.user1.id, update);
@@ -108,7 +108,7 @@ describe(UserAdminService.name, () => {
     });
 
     it('update user information should throw error if user not found', async () => {
-      userMock.get.mockResolvedValueOnce(null);
+      userMock.get.mockResolvedValueOnce(void 0);
 
       await expect(
         sut.update(authStub.admin, userStub.user1.id, { shouldChangePassword: true }),
@@ -118,7 +118,7 @@ describe(UserAdminService.name, () => {
 
   describe('delete', () => {
     it('should throw error if user could not be found', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
 
       await expect(sut.delete(authStub.admin, userStub.admin.id, {})).rejects.toThrowError(BadRequestException);
       expect(userMock.delete).not.toHaveBeenCalled();
@@ -166,16 +166,16 @@ describe(UserAdminService.name, () => {
 
   describe('restore', () => {
     it('should throw error if user could not be found', async () => {
-      userMock.get.mockResolvedValue(null);
+      userMock.get.mockResolvedValue(void 0);
       await expect(sut.restore(authStub.admin, userStub.admin.id)).rejects.toThrowError(BadRequestException);
       expect(userMock.update).not.toHaveBeenCalled();
     });
 
     it('should restore an user', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      userMock.update.mockResolvedValue(userStub.user1);
+      userMock.restore.mockResolvedValue(userStub.user1);
       await expect(sut.restore(authStub.admin, userStub.user1.id)).resolves.toEqual(mapUserAdmin(userStub.user1));
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { status: UserStatus.ACTIVE, deletedAt: null });
+      expect(userMock.restore).toHaveBeenCalledWith(userStub.user1.id);
     });
   });
 });

@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.124.2+175
+version: 1.125.7+182
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -65,7 +65,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: ac78487
+      ref: '4530808'
 
   #image editing packages
   crop_image: ^1.0.13
@@ -77,6 +77,7 @@ dependencies:
   image_picker: ^1.0.7 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
   logging: ^1.2.0
   file_picker: ^8.0.0+1
+  share_handler: ^0.0.22
 
 # This is uncommented in F-Droid build script
 # Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105

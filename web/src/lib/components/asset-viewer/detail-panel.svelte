@@ -45,6 +45,7 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
 
   interface Props {
     asset: AssetResponseDto;
@@ -364,7 +365,7 @@
       <div><Icon path={mdiImageOutline} size="24" /></div>
 
       <div>
-        <p class="break-all flex place-items-center gap-2">
+        <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
           {asset.originalFileName}
           {#if isOwner}
             <CircleIconButton
@@ -381,7 +382,7 @@
             class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
             transition:slide={{ duration: 250 }}
           >
-            <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')}>
+            <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
               {asset.originalPath}
             </a>
           </p>
@@ -410,7 +411,36 @@
         <div><Icon path={mdiCameraIris} size="24" /></div>
 
         <div>
-          <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
+          {#if asset.exifInfo?.make || asset.exifInfo?.model}
+            <p>
+              <a
+                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({
+                  ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
+                  ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
+                })}"
+                title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
+                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+              >
+                {asset.exifInfo.make || ''}
+                {asset.exifInfo.model || ''}
+              </a>
+            </p>
+          {/if}
+
+          {#if asset.exifInfo?.lensModel}
+            <div class="flex gap-2 text-sm">
+              <p>
+                <a
+                  href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
+                  title="{$t('search_for')} {asset.exifInfo.lensModel}"
+                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
+                >
+                  {asset.exifInfo.lensModel}
+                </a>
+              </p>
+            </div>
+          {/if}
+
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
               <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>

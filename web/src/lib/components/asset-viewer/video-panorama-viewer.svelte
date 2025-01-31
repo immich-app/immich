@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getAssetOriginalUrl } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetOriginalUrl } from '$lib/utils';
   import { fade } from 'svelte/transition';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { t } from 'svelte-i18n';
@@ -22,7 +22,13 @@
   {#await modules}
     <LoadingSpinner />
   {:then [PhotoSphereViewer, adapter, videoPlugin]}
-    <PhotoSphereViewer panorama={{ source: getAssetOriginalUrl(assetId) }} plugins={[videoPlugin]} {adapter} navbar />
+    <PhotoSphereViewer
+      panorama={{ source: getAssetPlaybackUrl(assetId) }}
+      originalPanorama={{ source: getAssetOriginalUrl(assetId) }}
+      plugins={[videoPlugin]}
+      {adapter}
+      navbar
+    />
   {:catch}
     {$t('errors.failed_to_load_asset')}
   {/await}

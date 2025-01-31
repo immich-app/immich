@@ -122,7 +122,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.3.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
@@ -174,7 +174,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.12.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}
@@ -213,7 +213,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.2.0
+        uses: docker/setup-qemu-action@v3.3.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.8.0
@@ -265,7 +265,7 @@ jobs:
           fi
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.10.0
+        uses: docker/build-push-action@v6.12.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}

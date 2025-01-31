@@ -1,4 +1,4 @@
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
+import { IServerInfoRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newServerInfoRepositoryMock = (): Mocked<IServerInfoRepository> => {

@@ -275,7 +275,8 @@ class SearchPage extends HookConsumerWidget {
         errorInvalidText: 'invalid_date'.tr(),
         fieldStartHintText: 'start_date'.tr(),
         fieldEndHintText: 'end_date'.tr(),
-        initialEntryMode: DatePickerEntryMode.input,
+        initialEntryMode: DatePickerEntryMode.calendar,
+        keyboardType: TextInputType.text,
       );
 
       if (date == null) {

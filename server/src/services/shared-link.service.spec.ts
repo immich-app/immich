@@ -76,7 +76,6 @@ describe(SharedLinkService.name, () => {
 
   describe('get', () => {
     it('should throw an error for an invalid shared link', async () => {
-      sharedLinkMock.get.mockResolvedValue(null);
       await expect(sut.get(authStub.user1, 'missing-id')).rejects.toBeInstanceOf(BadRequestException);
       expect(sharedLinkMock.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(sharedLinkMock.update).not.toHaveBeenCalled();
@@ -130,7 +129,6 @@ describe(SharedLinkService.name, () => {
         albumId: albumStub.oneAsset.id,
         allowDownload: true,
         allowUpload: true,
-        assets: [],
         description: null,
         expiresAt: null,
         showExif: true,
@@ -160,7 +158,7 @@ describe(SharedLinkService.name, () => {
         albumId: null,
         allowDownload: true,
         allowUpload: true,
-        assets: [{ id: assetStub.image.id }],
+        assetIds: [assetStub.image.id],
         description: null,
         expiresAt: null,
         showExif: true,
@@ -190,7 +188,7 @@ describe(SharedLinkService.name, () => {
         albumId: null,
         allowDownload: false,
         allowUpload: true,
-        assets: [{ id: assetStub.image.id }],
+        assetIds: [assetStub.image.id],
         description: null,
         expiresAt: null,
         showExif: false,
@@ -201,7 +199,6 @@ describe(SharedLinkService.name, () => {
 
   describe('update', () => {
     it('should throw an error for an invalid shared link', async () => {
-      sharedLinkMock.get.mockResolvedValue(null);
       await expect(sut.update(authStub.user1, 'missing-id', {})).rejects.toBeInstanceOf(BadRequestException);
       expect(sharedLinkMock.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(sharedLinkMock.update).not.toHaveBeenCalled();
@@ -222,7 +219,6 @@ describe(SharedLinkService.name, () => {
 
   describe('remove', () => {
     it('should throw an error for an invalid shared link', async () => {
-      sharedLinkMock.get.mockResolvedValue(null);
       await expect(sut.remove(authStub.user1, 'missing-id')).rejects.toBeInstanceOf(BadRequestException);
       expect(sharedLinkMock.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(sharedLinkMock.update).not.toHaveBeenCalled();
@@ -258,9 +254,10 @@ describe(SharedLinkService.name, () => {
       ]);
 
       expect(accessMock.asset.checkOwnerAccess).toHaveBeenCalledTimes(1);
+      expect(sharedLinkMock.update).toHaveBeenCalled();
       expect(sharedLinkMock.update).toHaveBeenCalledWith({
         ...sharedLinkStub.individual,
-        assets: [assetStub.image, { id: 'asset-3' }],
+        assetIds: ['asset-3'],
       });
     });
   });

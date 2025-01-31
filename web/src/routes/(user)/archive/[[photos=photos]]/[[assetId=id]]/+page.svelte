@@ -28,6 +28,13 @@
   const assetStore = new AssetStore({ isArchived: true });
   const assetInteraction = new AssetInteraction();
 
+  const handleEscape = () => {
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -54,7 +61,13 @@
 {/if}
 
 <UserPageLayout hideNavbar={assetInteraction.selectionActive} title={data.meta.title} scrollbar={false}>
-  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
+  <AssetGrid
+    enableRouting={true}
+    {assetStore}
+    {assetInteraction}
+    removeAction={AssetAction.UNARCHIVE}
+    onEscape={handleEscape}
+  >
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_archived_assets_message')} />
     {/snippet}
