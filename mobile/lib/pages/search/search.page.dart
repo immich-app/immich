@@ -73,7 +73,13 @@ class SearchPage extends HookConsumerWidget {
     }
 
     search() async {
-      if (prefilter == null && filter.value == previousFilter.value) return;
+      if (filter.value.isEmpty) {
+        return;
+      }
+
+      if (prefilter == null && filter.value == previousFilter.value) {
+        return;
+      }
 
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();

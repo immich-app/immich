@@ -255,6 +255,23 @@ class SearchFilter {
     required this.mediaType,
   });
 
+  bool get isEmpty {
+    return (context == null || (context != null && context!.isEmpty)) &&
+        (filename == null || (filename!.isEmpty)) &&
+        people.isEmpty &&
+        location.country == null &&
+        location.state == null &&
+        location.city == null &&
+        camera.make == null &&
+        camera.model == null &&
+        date.takenBefore == null &&
+        date.takenAfter == null &&
+        display.isNotInAlbum == false &&
+        display.isArchive == false &&
+        display.isFavorite == false &&
+        mediaType == AssetType.other;
+  }
+
   SearchFilter copyWith({
     String? context,
     String? filename,
