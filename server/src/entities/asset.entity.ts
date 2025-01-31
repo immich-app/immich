@@ -267,12 +267,6 @@ export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: stri
   );
 }
 
-export function hasPeople(db: Kysely<DB>, personIds?: string[]) {
-  return personIds && personIds.length > 0
-    ? hasPeopleCte(db, personIds).selectFrom('assets').innerJoin('has_people', 'has_people.assetId', 'assets.id')
-    : db.selectFrom('assets');
-}
-
 export function withOwner(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonObjectFrom(eb.selectFrom('users').selectAll().whereRef('users.id', '=', 'assets.ownerId')).as('owner');
 }
