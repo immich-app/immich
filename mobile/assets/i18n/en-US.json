@@ -1,4 +1,6 @@
 {
+  "search_no_result": "No results found, try a different search term or combination",
+  "search_no_more_result": "No more results",
   "action_common_back": "Back",
   "action_common_cancel": "Cancel",
   "action_common_clear": "Clear",

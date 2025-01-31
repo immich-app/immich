@@ -19,17 +19,23 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
   PaginatedSearchNotifier(this._searchService)
       : super(SearchResult(assets: [], nextPage: 1));
 
-  search(SearchFilter filter) async {
-    if (state.nextPage == null) return;
+  Future<bool> search(SearchFilter filter) async {
+    if (state.nextPage == null) {
+      return false;
+    }
 
     final result = await _searchService.search(filter, state.nextPage!);
 
-    if (result == null) return;
+    if (result == null) {
+      return false;
+    }
 
     state = SearchResult(
       assets: [...state.assets, ...result.assets],
       nextPage: result.nextPage,
     );
+
+    return true;
   }
 
   clear() {
