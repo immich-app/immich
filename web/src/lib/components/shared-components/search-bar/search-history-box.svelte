@@ -2,15 +2,17 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { savedSearchTerms } from '$lib/stores/search.store';
   import { mdiMagnify, mdiClose } from '@mdi/js';
-  import { fly } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import MetadataSuggestionTip from '$lib/components/shared-components/search-bar/metadata-suggestion-tip.svelte';
 
   interface Props {
     id: string;
     searchQuery?: string;
     isSearchSuggestions?: boolean;
     isOpen?: boolean;
+    showMetadataSuggestions?: boolean;
     onSelectSearchTerm: (searchTerm: string) => void;
     onClearSearchTerm: (searchTerm: string) => void;
     onClearAllSearchTerms: () => void;
@@ -22,6 +24,7 @@
     searchQuery = '',
     isSearchSuggestions = $bindable(false),
     isOpen = false,
+    showMetadataSuggestions = false,
     onSelectSearchTerm,
     onClearSearchTerm,
     onClearAllSearchTerms,
@@ -89,6 +92,57 @@
     }
     return `${id}-${index}`;
   };
+
+  type MetadataSuggestion = {
+    value: string;
+    description: string;
+    example: string;
+  };
+
+  let metadataExample: Array<MetadataSuggestion> = [
+    { value: 'm:name:', description: 'File Name', example: 'm:name:img123.jpg' },
+    { value: 'm:ctx', description: 'Context', example: 'm:ctx:sunrise on the beach' },
+    {
+      value: 'm:desc:',
+      description: 'Description',
+      example: 'm:desc:a table full of cats',
+    },
+    {
+      value: 'm:orien:',
+      description: 'Orientation',
+      example: 'm:orientation:landscape',
+    },
+    {
+      value: 'm:width:',
+      description: 'Media width',
+      example: 'm:width:1920',
+    },
+    {
+      value: 'm:height:',
+      description: 'Media height',
+      example: 'm:height:1080',
+    },
+    {
+      value: 'm:size:',
+      description: 'File size',
+      example: 'm:size:1MB, m:size:1GB',
+    },
+    {
+      value: 'm:date-from:',
+      description: 'Date from',
+      example: 'm:date-from:2020-01-01',
+    },
+    {
+      value: 'm:date-to:',
+      description: 'Date to',
+      example: 'm:date-to:2024-12-31',
+    },
+    {
+      value: 'm:rating:',
+      description: 'Rating',
+      example: 'm:rating:5',
+    },
+  ];
 </script>
 
 <div role="listbox" {id} aria-label={$t('recent_searches')} bind:this={element}>
@@ -97,6 +151,17 @@
       transition:fly={{ y: 25, duration: 150 }}
       class="absolute w-full rounded-b-3xl border-2 border-t-0 border-gray-200 bg-white pb-5 shadow-2xl transition-all dark:border-gray-700 dark:bg-immich-dark-gray dark:text-gray-300"
     >
+      {#if showMetadataSuggestions}
+        <div in:fly={{ x: -50 }} class="flex items-center justify-between px-5 pt-5 text-xs">
+          <p class="py-2" aria-hidden={true}>{'searchable metadata'.toUpperCase()}</p>
+        </div>
+        <div in:fly={{ x: 50 }} class="px-5 grid grid-rows-3 grid-cols-2 gap-1 justify-items-start text-xs mt-1">
+          {#each metadataExample as example}
+            <MetadataSuggestionTip value={example.value} description={example.description} example={example.example} />
+          {/each}
+        </div>
+      {/if}
+
       <div class="flex items-center justify-between px-5 pt-5 text-xs">
         <p class="py-2" aria-hidden={true}>{$t('recent_searches').toUpperCase()}</p>
         {#if showClearAll}

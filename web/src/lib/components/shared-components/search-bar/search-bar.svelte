@@ -32,6 +32,7 @@
   let showFilter = $state(false);
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
+  let showMetadataSuggestions = $state(false);
 
   const listboxId = generateId();
 
@@ -128,6 +129,15 @@
   const onInput = () => {
     openDropdown();
     searchHistoryBox?.clearSelection();
+
+    const hasMetadataShortcut = value.startsWith('m:');
+
+    if (hasMetadataShortcut) {
+      showMetadataSuggestions = true;
+      isSearchSuggestions = true;
+    } else {
+      showMetadataSuggestions = false;
+    }
   };
 
   const openDropdown = () => {
@@ -204,6 +214,7 @@
         id={listboxId}
         searchQuery={value}
         isOpen={showSuggestions}
+        {showMetadataSuggestions}
         onClearAllSearchTerms={clearAllSearchTerms}
         onClearSearchTerm={(searchTerm) => clearSearchTerm(searchTerm)}
         onSelectSearchTerm={(searchTerm) => handlePromiseError(onHistoryTermClick(searchTerm))}
