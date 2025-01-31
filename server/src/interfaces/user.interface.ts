@@ -36,6 +36,7 @@ export interface IUserRepository {
   getUserStats(): Promise<UserStatsQueryResponse[]>;
   create(user: Insertable<Users>): Promise<UserEntity>;
   update(id: string, user: Updateable<Users>): Promise<UserEntity>;
+  restore(id: string): Promise<UserEntity>;
   upsertMetadata<T extends keyof UserMetadata>(id: string, item: { key: T; value: UserMetadata[T] }): Promise<void>;
   deleteMetadata<T extends keyof UserMetadata>(id: string, key: T): Promise<void>;
   delete(user: UserEntity, hard?: boolean): Promise<UserEntity>;

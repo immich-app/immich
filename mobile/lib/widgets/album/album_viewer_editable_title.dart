@@ -16,7 +16,14 @@ class AlbumViewerEditableTitle extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleTextEditController = useTextEditingController(text: albumName);
+    final albumViewerState = ref.watch(albumViewerProvider);
+
+    final titleTextEditController = useTextEditingController(
+      text: albumViewerState.isEditAlbum &&
+              albumViewerState.editTitleText.isNotEmpty
+          ? albumViewerState.editTitleText
+          : albumName,
+    );
 
     void onFocusModeChange() {
       if (!titleFocusNode.hasFocus && titleTextEditController.text.isEmpty) {
