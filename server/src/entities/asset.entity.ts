@@ -252,6 +252,21 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
   );
 }
 
+export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetsId')
+        .innerJoin('tags_closure', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .where('tags_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        .as('has_tags'),
+    (join) => join.onRef('has_tags.assetsId', '=', 'assets.id'),
+  );
+}
+
 export function withOwner(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonObjectFrom(eb.selectFrom('users').selectAll().whereRef('users.id', '=', 'assets.ownerId')).as('owner');
 }
@@ -326,6 +341,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
     .selectAll('assets')
+    .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))

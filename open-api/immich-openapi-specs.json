@@ -10036,6 +10036,13 @@
             "nullable": true,
             "type": "string"
           },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
+          },
           "takenAfter": {
             "format": "date-time",
             "type": "string"
@@ -10648,6 +10655,13 @@
           "state": {
             "nullable": true,
             "type": "string"
+          },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "takenAfter": {
             "format": "date-time",
@@ -11563,6 +11577,13 @@
           "state": {
             "nullable": true,
             "type": "string"
+          },
+          "tagIds": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": "array"
           },
           "takenAfter": {
             "format": "date-time",
