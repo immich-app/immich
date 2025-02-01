@@ -8,6 +8,7 @@
     query: string;
     queryType: 'smart' | 'metadata';
     personIds: SvelteSet<string>;
+    tagIds: SvelteSet<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
     date: SearchDateFilter;
@@ -20,6 +21,7 @@
   import { Button } from '@immich/ui';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
   import SearchPeopleSection from './search-people-section.svelte';
+  import SearchTagsSection from './search-tags-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
   import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
@@ -54,6 +56,7 @@
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: 'query' in searchQuery ? 'smart' : 'metadata',
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
+    tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),
@@ -85,6 +88,7 @@
       query: '',
       queryType: 'smart',
       personIds: new SvelteSet(),
+      tagIds: new SvelteSet(),
       location: {},
       camera: {},
       date: {},
@@ -117,6 +121,7 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
     };
 
@@ -142,6 +147,9 @@
 
       <!-- TEXT -->
       <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
+
+      <!-- TAGS -->
+      <SearchTagsSection bind:selectedTags={filter.tagIds} />
 
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />

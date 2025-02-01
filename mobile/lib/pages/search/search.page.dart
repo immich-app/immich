@@ -49,7 +49,7 @@ class SearchPage extends HookConsumerWidget {
       ),
     );
 
-    final previousFilter = useState(filter.value);
+    final previousFilter = useState<SearchFilter?>(null);
 
     final peopleCurrentFilterWidget = useState<Widget?>(null);
     final dateRangeCurrentFilterWidget = useState<Widget?>(null);
@@ -60,19 +60,55 @@ class SearchPage extends HookConsumerWidget {
 
     final isSearching = useState(false);
 
+    SnackBar searchInfoSnackBar(String message) {
+      return SnackBar(
+        content: Text(
+          message,
+          style: context.textTheme.labelLarge,
+        ),
+        showCloseIcon: true,
+        behavior: SnackBarBehavior.fixed,
+        closeIconColor: context.colorScheme.onSurface,
+      );
+    }
+
     search() async {
-      if (prefilter == null && filter.value == previousFilter.value) return;
+      if (filter.value.isEmpty) {
+        return;
+      }
+
+      if (prefilter == null && filter.value == previousFilter.value) {
+        return;
+      }
 
       isSearching.value = true;
       ref.watch(paginatedSearchProvider.notifier).clear();
-      await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      final hasResult = await ref
+          .watch(paginatedSearchProvider.notifier)
+          .search(filter.value);
+
+      if (!hasResult) {
+        context.showSnackBar(
+          searchInfoSnackBar('search_no_result'.tr()),
+        );
+      }
+
       previousFilter.value = filter.value;
       isSearching.value = false;
     }
 
     loadMoreSearchResult() async {
       isSearching.value = true;
-      await ref.watch(paginatedSearchProvider.notifier).search(filter.value);
+      final hasResult = await ref
+          .watch(paginatedSearchProvider.notifier)
+          .search(filter.value);
+
+      if (!hasResult) {
+        context.showSnackBar(
+          searchInfoSnackBar('search_no_more_result'.tr()),
+        );
+      }
+
       isSearching.value = false;
     }
 
@@ -277,7 +313,6 @@ class SearchPage extends HookConsumerWidget {
         fieldEndHintText: 'end_date'.tr(),
         initialEntryMode: DatePickerEntryMode.calendar,
         keyboardType: TextInputType.text,
-        locale: context.locale,
       );
 
       if (date == null) {
@@ -597,10 +632,15 @@ class SearchPage extends HookConsumerWidget {
               ),
             ),
           ),
-          SearchResultGrid(
-            onScrollEnd: loadMoreSearchResult,
-            isSearching: isSearching.value,
-          ),
+          if (isSearching.value)
+            const Expanded(
+              child: Center(child: CircularProgressIndicator.adaptive()),
+            )
+          else
+            SearchResultGrid(
+              onScrollEnd: loadMoreSearchResult,
+              isSearching: isSearching.value,
+            ),
         ],
       ),
     );

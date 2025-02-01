@@ -337,11 +337,30 @@ describe(LibraryService.name, () => {
 
       expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.trashedOffline.id], {
         deletedAt: null,
-        fileCreatedAt: assetStub.trashedOffline.fileModifiedAt,
         fileModifiedAt: assetStub.trashedOffline.fileModifiedAt,
         isOffline: false,
         originalFileName: 'path.jpg',
       });
+    });
+
+    it('should not touch fileCreatedAt when un-trashing an asset previously marked as offline', async () => {
+      const mockAssetJob: ILibraryAssetJob = {
+        id: assetStub.external.id,
+        importPaths: ['/'],
+        exclusionPatterns: [],
+      };
+
+      assetMock.getById.mockResolvedValue(assetStub.trashedOffline);
+      storageMock.stat.mockResolvedValue({ mtime: assetStub.trashedOffline.fileModifiedAt } as Stats);
+
+      await expect(sut.handleSyncAsset(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(assetMock.updateAll).toHaveBeenCalledWith(
+        [assetStub.trashedOffline.id],
+        expect.not.objectContaining({
+          fileCreatedAt: expect.anything(),
+        }),
+      );
     });
   });
 
@@ -360,7 +379,6 @@ describe(LibraryService.name, () => {
 
     expect(assetMock.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
       fileModifiedAt: newMTime,
-      fileCreatedAt: newMTime,
       isOffline: false,
       originalFileName: 'photo.jpg',
       deletedAt: null,

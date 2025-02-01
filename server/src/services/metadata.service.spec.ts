@@ -335,8 +335,8 @@ describe(MetadataService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
-        fileCreatedAt: assetStub.image.createdAt,
-        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+        fileCreatedAt: assetStub.image.fileCreatedAt,
+        localDateTime: assetStub.image.fileCreatedAt,
       });
     });
 
@@ -1159,6 +1159,17 @@ describe(MetadataService.name, () => {
       expect(assetMock.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           rating: 5,
+        }),
+      );
+    });
+    it('should handle valid negative rating value', async () => {
+      assetMock.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags({ Rating: -1 });
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          rating: -1,
         }),
       );
     });
