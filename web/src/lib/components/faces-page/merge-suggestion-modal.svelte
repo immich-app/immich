@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount, tick } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
@@ -36,6 +37,13 @@
     [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
+
+  let confirmButtonRef: Button | null = null;
+
+  onMount(async () => {
+    await tick();
+    confirmButtonRef?.focus();
+  });
 </script>
 
 <FullScreenModal title="{$t('merge_people')} - {title}" {onClose}>
@@ -114,6 +122,8 @@
 
   {#snippet stickyBottom()}
     <Button fullwidth color="gray" onclick={onReject}>{$t('no')}</Button>
-    <Button fullwidth onclick={() => onConfirm([personMerge1, personMerge2])}>{$t('yes')}</Button>
+    <Button fullwidth bind:this={confirmButtonRef} onclick={() => onConfirm([personMerge1, personMerge2])}>
+      {$t('yes')}
+    </Button>
   {/snippet}
 </FullScreenModal>
