@@ -95,6 +95,7 @@ class FolderService {
 
     return RootFolder(
       subfolders: rootSubfolders,
+      path: '/',
     );
   }
 

@@ -9,23 +9,16 @@ class FolderStructureNotifier extends StateNotifier<AsyncValue<RootFolder>> {
   final FolderService _folderService;
   final Logger _log = Logger("FolderStructureNotifier");
 
-  var sortOrder = SortOrder.asc;
-
   FolderStructureNotifier(this._folderService) : super(const AsyncLoading());
 
-  Future<void> fetchFolders() async {
+  Future<void> fetchFolders(SortOrder order) async {
     try {
-      final folders = await _folderService.getFolderStructure(sortOrder);
+      final folders = await _folderService.getFolderStructure(order);
       state = AsyncData(folders);
     } catch (e, stack) {
       _log.severe("Failed to build folder structure", e, stack);
       state = AsyncError(e, stack);
     }
-  }
-
-  Future<void> toggleSortOrder() {
-    sortOrder = sortOrder == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
-    return fetchFolders();
   }
 }
 
@@ -42,26 +35,19 @@ class FolderRenderListNotifier extends StateNotifier<AsyncValue<RenderList>> {
   final RootFolder _folder;
   final Logger _log = Logger("FolderAssetsNotifier");
 
-  var sortOrder = SortOrder.asc;
-
   FolderRenderListNotifier(this._folderService, this._folder)
       : super(const AsyncLoading());
 
-  Future<void> fetchAssets() async {
+  Future<void> fetchAssets(SortOrder order) async {
     try {
-      final assets = await _folderService.getFolderAssets(_folder, sortOrder);
-
-      state =
-          AsyncData(await RenderList.fromAssets(assets, GroupAssetsBy.none));
+      final assets = await _folderService.getFolderAssets(_folder, order);
+      final renderList =
+          await RenderList.fromAssets(assets, GroupAssetsBy.none);
+      state = AsyncData(renderList);
     } catch (e, stack) {
       _log.severe("Failed to fetch folder assets", e, stack);
       state = AsyncError(e, stack);
     }
-  }
-
-  Future<void> toggleSortOrder() {
-    sortOrder = sortOrder == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
-    return fetchAssets();
   }
 }
 

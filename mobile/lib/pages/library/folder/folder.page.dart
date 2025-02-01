@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
@@ -11,6 +12,23 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+
+RecursiveFolder? _findFolderInStructure(
+  RootFolder rootFolder,
+  RecursiveFolder targetFolder,
+) {
+  for (var folder in rootFolder.subfolders) {
+    if (folder.path == targetFolder.path && folder.name == targetFolder.name) {
+      return folder;
+    }
+
+    if (folder.subfolders.isNotEmpty) {
+      final found = _findFolderInStructure(folder, targetFolder);
+      if (found != null) return found;
+    }
+  }
+  return null;
+}
 
 @RoutePage()
 class FolderPage extends HookConsumerWidget {
@@ -21,26 +39,48 @@ class FolderPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final folderState = ref.watch(folderStructureProvider);
+    final currentFolder = useState<RecursiveFolder?>(folder);
+    final sortOrder = useState<SortOrder>(SortOrder.asc);
+
     useEffect(
       () {
         if (folder == null) {
-          ref.read(folderStructureProvider.notifier).fetchFolders();
+          ref
+              .read(folderStructureProvider.notifier)
+              .fetchFolders(sortOrder.value);
         }
         return null;
       },
       [],
     );
 
+    // Update current folder when root structure changes
+    useEffect(
+      () {
+        if (folder != null && folderState.hasValue) {
+          final updatedFolder =
+              _findFolderInStructure(folderState.value!, folder!);
+          if (updatedFolder != null) {
+            currentFolder.value = updatedFolder;
+          }
+        }
+        return null;
+      },
+      [folderState],
+    );
+
     void onToggleSortOrder() {
-      if (folder != null) {
-        ref.read(folderRenderListProvider(folder!).notifier).toggleSortOrder();
-      }
-      ref.read(folderStructureProvider.notifier).toggleSortOrder();
+      var newOrder =
+          sortOrder.value == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
+
+      ref.read(folderStructureProvider.notifier).fetchFolders(newOrder);
+
+      sortOrder.value = newOrder;
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(folder?.name ?? 'Root'),
+        title: Text(currentFolder.value?.name ?? tr("folders")),
         elevation: 0,
         centerTitle: false,
         actions: [
@@ -53,19 +93,27 @@ class FolderPage extends HookConsumerWidget {
       body: folderState.when(
         data: (rootFolder) {
           if (folder == null) {
-            return FolderContent(folder: rootFolder);
+            return FolderContent(
+              folder: rootFolder,
+              sortOrder: sortOrder.value,
+            );
           } else {
-            return FolderContent(folder: folder!);
+            return FolderContent(
+              folder: currentFolder.value!,
+              sortOrder: sortOrder.value,
+            );
           }
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
         error: (error, stack) {
           ImmichToast.show(
             context: context,
-            msg: "Failed to load folder".tr(),
+            msg: "failed_to_load_folder".tr(),
             toastType: ToastType.error,
           );
-          return Center(child: const Text("Failed to load folder").tr());
+          return Center(child: const Text("failed_to_load_folder").tr());
         },
       ),
     );
@@ -74,23 +122,29 @@ class FolderPage extends HookConsumerWidget {
 
 class FolderContent extends HookConsumerWidget {
   final RootFolder? folder;
+  final SortOrder sortOrder;
 
-  const FolderContent({super.key, this.folder});
+  const FolderContent({super.key, this.folder, this.sortOrder = SortOrder.asc});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (folder == null) {
-      return Center(child: const Text("Folder not found").tr());
-    }
-
     final folderRenderlist = ref.watch(folderRenderListProvider(folder!));
+
+    // Initial asset fetch
     useEffect(
       () {
-        ref.read(folderRenderListProvider(folder!).notifier).fetchAssets();
+        if (folder == null) return;
+        ref
+            .read(folderRenderListProvider(folder!).notifier)
+            .fetchAssets(sortOrder);
         return null;
       },
       [folder],
     );
+
+    if (folder == null) {
+      return Center(child: const Text("folder_not_found").tr());
+    }
 
     return folderRenderlist.when(
       data: (list) {
@@ -147,18 +201,20 @@ class FolderContent extends HookConsumerWidget {
                 ),
               ),
             if (folder!.subfolders.isEmpty && list.isEmpty)
-              Center(child: const Text("No subfolders or assets").tr()),
+              Center(child: const Text("empty_folder").tr()),
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(
+        child: CircularProgressIndicator(),
+      ),
       error: (error, stack) {
         ImmichToast.show(
           context: context,
-          msg: "Failed to load assets".tr(),
+          msg: "failed_to_load_assets".tr(),
           toastType: ToastType.error,
         );
-        return Center(child: const Text("Failed to load assets").tr());
+        return Center(child: const Text("failed_to_load_assets").tr());
       },
     );
   }

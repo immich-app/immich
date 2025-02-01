@@ -34,7 +34,6 @@ class FolderApiRepository extends ApiRepository
   Future<List<Asset>> getAssetsForPath(String? path) async {
     try {
       final list = await _api.getAssetsByOriginalPath(path ?? '/');
-      print("Assets for path: $path -> $list");
       return list != null ? list.map(Asset.remote).toList() : [];
     } catch (e, stack) {
       _log.severe("Failed to fetch Assets by original path", e, stack);
