@@ -110,16 +110,15 @@ const hexOrBufferToBase64 = (encoded: string | Buffer) => {
   return encoded.toString('base64');
 };
 
-export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
+export function mapAsset(
+  entity: AssetEntity & { localDateTime: NonNullable<AssetEntity['localDateTime']> } & {
+    fileCreatedAt: NonNullable<AssetEntity['fileCreatedAt']>;
+  } & {
+    fileModifiedAt: NonNullable<AssetEntity['fileModifiedAt']>;
+  },
+  options: AssetMapOptions = {},
+): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
-
-  if (!entity.localDateTime) {
-    throw new Error('Asset localDateTime is missing');
-  } else if (!entity.fileCreatedAt) {
-    throw new Error('Asset fileCreatedAt is missing');
-  } else if (!entity.fileModifiedAt) {
-    throw new Error('Asset fileModifiedAt is missing');
-  }
 
   if (stripMetadata) {
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
