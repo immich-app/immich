@@ -397,7 +397,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       ),
     )
     .$if(!!options.description, (qb) =>
-      qb.innerJoin('exif', 'assets.id', 'exif.assetId').where('exif.description', 'ilike', `%${options.description}%`),
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
     )
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
