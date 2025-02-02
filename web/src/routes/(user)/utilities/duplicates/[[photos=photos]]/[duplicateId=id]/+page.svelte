@@ -54,6 +54,7 @@
     ],
   };
 
+  let activeDuplicate = $state(data.activeDuplicate);
   let duplicates = $state(data.duplicates);
   let hasDuplicates = $derived(duplicates.length > 0);
   const withConfirmation = async (callback: () => Promise<void>, prompt?: string, confirmText?: string) => {
@@ -90,9 +91,16 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
 
+        console.log('handleResolve', duplicateId, duplicateAssetIds, trashIds);
+
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
+
+        // Move to the next duplicate
+        if (duplicates.length > 0) {
+          activeDuplicate = duplicates[0];
+        }
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
@@ -104,6 +112,11 @@
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
+
+    // Move to the next duplicate
+    if (duplicates.length > 0) {
+      activeDuplicate = duplicates[0];
+    }
   };
 
   const handleDeduplicateAll = async () => {
@@ -209,12 +222,12 @@
         />
       </div>
 
-      {#key duplicates[0].duplicateId}
+      {#key activeDuplicate.duplicateId}
         <DuplicatesCompareControl
-          assets={duplicates[0].assets}
+          assets={activeDuplicate.assets}
           onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
-          onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}
+            handleResolve(activeDuplicate.duplicateId, duplicateAssetIds, trashIds)}
+          onStack={(assets) => handleStack(activeDuplicate.duplicateId, assets)}
         />
       {/key}
     {:else}
