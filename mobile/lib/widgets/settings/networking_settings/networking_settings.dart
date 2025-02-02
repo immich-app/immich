@@ -220,23 +220,20 @@ class NetworkStatusIcon extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon(BuildContext context) {
-    switch (status) {
-      case AuxCheckStatus.loading:
-        return Padding(
-          padding: const EdgeInsets.only(left: 4.0),
-          child: SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(
-              color: context.primaryColor,
-              strokeWidth: 2,
-              key: const ValueKey('loading'),
+  Widget _buildIcon(BuildContext context) => switch (status) {
+        AuxCheckStatus.loading => Padding(
+            padding: const EdgeInsets.only(left: 4.0),
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                color: context.primaryColor,
+                strokeWidth: 2,
+                key: const ValueKey('loading'),
+              ),
             ),
           ),
-        );
-      case AuxCheckStatus.valid:
-        return enabled
+        AuxCheckStatus.valid => enabled
             ? const Icon(
                 Icons.check_circle_rounded,
                 color: Colors.green,
@@ -246,9 +243,8 @@ class NetworkStatusIcon extends StatelessWidget {
                 Icons.check_circle_rounded,
                 color: context.colorScheme.onSurface.withAlpha(100),
                 key: const ValueKey('success'),
-              );
-      case AuxCheckStatus.error:
-        return enabled
+              ),
+        AuxCheckStatus.error => enabled
             ? const Icon(
                 Icons.error_rounded,
                 color: Colors.red,
@@ -258,9 +254,7 @@ class NetworkStatusIcon extends StatelessWidget {
                 Icons.error_rounded,
                 color: Colors.grey,
                 key: ValueKey('error'),
-              );
-      default:
-        return const Icon(Icons.circle_outlined, key: ValueKey('unknown'));
-    }
-  }
+              ),
+        _ => const Icon(Icons.circle_outlined, key: ValueKey('unknown')),
+      };
 }
