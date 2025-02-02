@@ -1,4 +1,7 @@
 {
+  "search_filter_contextual": "Search by context",
+  "search_filter_filename": "Search by file name",
+  "search_filter_description": "Search by description",
   "search_no_result": "No results found, try a different search term or combination",
   "search_no_more_result": "No more results",
   "action_common_back": "Back",

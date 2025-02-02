@@ -493,22 +493,124 @@ class SearchPage extends HookConsumerWidget {
       search();
     }
 
+    showTextSearchOption() {
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          clipBehavior: Clip.hardEdge,
+          alignment: Alignment.center,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: GridView(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            shrinkWrap: true,
+            children: [
+              InkWell(
+                onTap: () {},
+                child: GridTile(
+                  header: Text(
+                    'search_filter_contextual'.tr(),
+                    style: context.textTheme.labelLarge,
+                  ),
+                  child: const Icon(
+                    Icons.image_search_rounded,
+                    size: 48,
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {},
+                child: GridTile(
+                  header: Text(
+                    'search_filter_filename'.tr(),
+                    style: context.textTheme.labelLarge,
+                  ),
+                  child: const Icon(Icons.abc_rounded, size: 48),
+                ),
+              ),
+              InkWell(
+                onTap: () {},
+                child: GridTile(
+                  header: Text(
+                    'search_filter_description'.tr(),
+                    style: context.textTheme.labelLarge,
+                  ),
+                  child: const Icon(Icons.text_snippet_outlined, size: 48),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    showDropdownMenu() {}
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 14.0),
-            child: IconButton(
-              key: const Key('contextual_search_button'),
-              icon: isContextualSearch.value
-                  ? const Icon(Icons.abc_rounded)
-                  : const Icon(Icons.image_search_rounded),
-              onPressed: () {
-                isContextualSearch.value = !isContextualSearch.value;
-                textSearchController.clear();
+            padding: const EdgeInsets.only(right: 16.0),
+            // child: IconButton(
+            //   key: const Key('text_search_option'),
+            //   iconSize: 28,
+            //   splashRadius: 32,
+            //   // icon: isContextualSearch.value
+            //   //     ? const Icon(Icons.abc_rounded)
+            //   //     : const Icon(Icons.image_search_rounded),
+            //   icon: const Icon(Icons.text_fields_rounded),
+            //   onPressed: () {
+            //     showTextSearchOption();
+            //     // isContextualSearch.value = !isContextualSearch.value;
+            //     // textSearchController.clear();
+            //   },
+
+            child: MenuAnchor(
+              builder: (
+                BuildContext context,
+                MenuController controller,
+                Widget? child,
+              ) {
+                return IconButton(
+                  onPressed: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  },
+                  icon: const Icon(Icons.more_vert_rounded),
+                  tooltip: 'Show menu',
+                );
               },
+              menuChildren: [
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.image_search_rounded),
+                    title: Text('search_filter_contextual'.tr()),
+                  ),
+                ),
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.abc_rounded),
+                    title: Text('search_filter_filename'.tr()),
+                  ),
+                ),
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.text_snippet_outlined),
+                    title: Text('search_filter_description'.tr()),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
