@@ -91,15 +91,15 @@
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
         await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
 
-        console.log('handleResolve', duplicateId, duplicateAssetIds, trashIds);
-
+        const currentDuplicateIndex = duplicates.findIndex((duplicate) => duplicate.duplicateId === duplicateId);
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
         deletedNotification(trashIds.length);
 
         // Move to the next duplicate
         if (duplicates.length > 0) {
-          activeDuplicate = duplicates[0];
+          // The index of the next duplicate is the same as the current one, since we removed the current one
+          activeDuplicate = duplicates[currentDuplicateIndex] || duplicates[0];
         }
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
@@ -111,11 +111,13 @@
     await stackAssets(assets, false);
     const duplicateAssetIds = assets.map((asset) => asset.id);
     await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+    const currentDuplicateIndex = duplicates.findIndex((duplicate) => duplicate.duplicateId === duplicateId);
     duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
     // Move to the next duplicate
     if (duplicates.length > 0) {
-      activeDuplicate = duplicates[0];
+      // The index of the next duplicate is the same as the current one, since we removed the current one
+      activeDuplicate = duplicates[currentDuplicateIndex] || duplicates[0];
     }
   };
 
