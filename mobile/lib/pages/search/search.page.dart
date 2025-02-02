@@ -485,6 +485,7 @@ class SearchPage extends HookConsumerWidget {
           filter.value = filter.value.copyWith(
             filename: '',
             context: value,
+            description: '',
           );
 
           break;
@@ -492,6 +493,7 @@ class SearchPage extends HookConsumerWidget {
           filter.value = filter.value.copyWith(
             filename: value,
             context: '',
+            description: '',
           );
 
           break;
@@ -499,8 +501,8 @@ class SearchPage extends HookConsumerWidget {
           filter.value = filter.value.copyWith(
             filename: '',
             context: '',
+            description: value,
           );
-
           break;
       }
 
