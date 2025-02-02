@@ -509,6 +509,19 @@ class SearchPage extends HookConsumerWidget {
       search();
     }
 
+    IconData getSearchPrefixIcon() {
+      switch (textSearchType.value) {
+        case TextSearchType.context:
+          return Icons.image_search_rounded;
+        case TextSearchType.filename:
+          return Icons.abc_rounded;
+        case TextSearchType.description:
+          return Icons.text_snippet_outlined;
+        default:
+          return Icons.search_rounded;
+      }
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -639,7 +652,7 @@ class SearchPage extends HookConsumerWidget {
               prefixIcon: prefilter != null
                   ? null
                   : Icon(
-                      Icons.search_rounded,
+                      getSearchPrefixIcon(),
                       color: context.colorScheme.primary,
                     ),
               hintText: searchHintText.value,
