@@ -216,7 +216,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, 0, 5),
+      rating: validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -465,14 +465,6 @@ export class MetadataService extends BaseService {
       } else {
         const motionAssetId = this.cryptoRepository.randomUUID();
 
-        if (!asset.fileCreatedAt) {
-          asset.fileCreatedAt = stat.birthtime;
-        }
-
-        if (!asset.fileModifiedAt) {
-          asset.fileModifiedAt = stat.mtime;
-        }
-
         const dates = this.getDates(asset, tags);
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
@@ -593,11 +585,11 @@ export class MetadataService extends BaseService {
 
   private getDates(asset: AssetEntity, exifTags: ImmichTags): AssetDatesDto {
     // We first assert that fileCreatedAt and fileModifiedAt are not null since that should be set to a non-null value before calling this function
-    if (asset.fileCreatedAt == null) {
+    if (asset.fileCreatedAt === null) {
       this.logger.warn(`Asset ${asset.id} has no file creation date`);
       throw new BadRequestException(`Asset ${asset.id} has no file creation date`);
     }
-    if (asset.fileModifiedAt == null) {
+    if (asset.fileModifiedAt === null) {
       this.logger.warn(`Asset ${asset.id} has no file modification date`);
       throw new BadRequestException(`Asset ${asset.id} has no file modification date`);
     }

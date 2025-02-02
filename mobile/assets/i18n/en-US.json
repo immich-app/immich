@@ -1,4 +1,6 @@
 {
+  "search_no_result": "No results found, try a different search term or combination",
+  "search_no_more_result": "No more results",
   "action_common_back": "Back",
   "action_common_cancel": "Cancel",
   "action_common_clear": "Clear",
@@ -476,6 +478,7 @@
   "search_filter_media_type_video": "Video",
   "search_filter_people": "People",
   "search_filter_people_title": "Select people",
+  "search_filter_people_hint": "Filter people",
   "search_page_categories": "Categories",
   "search_page_favorites": "Favorites",
   "search_page_motion_photos": "Motion Photos",

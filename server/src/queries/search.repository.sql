@@ -13,8 +13,8 @@ where
   and "assets"."isFavorite" = $4
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
-  and "assets"."fileModifiedAt" is not null
   and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
   and "assets"."localDateTime" is not null
 order by
   "assets"."fileCreatedAt" desc
@@ -37,8 +37,8 @@ offset
     and "assets"."isFavorite" = $4
     and "assets"."isArchived" = $5
     and "assets"."deletedAt" is null
-    and "assets"."fileModifiedAt" is not null
     and "assets"."fileCreatedAt" is not null
+    and "assets"."fileModifiedAt" is not null
     and "assets"."localDateTime" is not null
     and "assets"."id" < $6
   order by
@@ -60,8 +60,8 @@ union all
     and "assets"."isFavorite" = $11
     and "assets"."isArchived" = $12
     and "assets"."deletedAt" is null
-    and "assets"."fileModifiedAt" is not null
     and "assets"."fileCreatedAt" is not null
+    and "assets"."fileModifiedAt" is not null
     and "assets"."localDateTime" is not null
     and "assets"."id" > $13
   order by
@@ -86,8 +86,8 @@ where
   and "assets"."isFavorite" = $4
   and "assets"."isArchived" = $5
   and "assets"."deletedAt" is null
-  and "assets"."fileModifiedAt" is not null
   and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
   and "assets"."localDateTime" is not null
 order by
   smart_search.embedding <=> $6
