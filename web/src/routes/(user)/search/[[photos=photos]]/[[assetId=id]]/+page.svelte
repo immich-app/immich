@@ -197,6 +197,7 @@
       personIds: $t('people'),
       tagIds: $t('tags'),
       originalFileName: $t('file_name'),
+      description: $t('description'),
     };
     return keyMap[key] || key;
   }
