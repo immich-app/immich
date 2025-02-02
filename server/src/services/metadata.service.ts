@@ -164,7 +164,7 @@ export class MetadataService extends BaseService {
     this.logger.verbose('Exif Tags', exifTags);
 
     if (!asset.fileCreatedAt) {
-      asset.fileCreatedAt = stats.birthtime;
+      asset.fileCreatedAt = stats.mtime;
     }
 
     if (!asset.fileModifiedAt) {
@@ -213,7 +213,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, 0, 5),
+      rating: validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,

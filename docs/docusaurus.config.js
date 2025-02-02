@@ -110,9 +110,9 @@ const config = {
             label: 'API',
           },
           {
-            to: '/blog',
+            href: 'https://immich.store',
             position: 'right',
-            label: 'Blog',
+            label: 'Merch',
           },
           {
             href: 'https://github.com/immich-app/immich',

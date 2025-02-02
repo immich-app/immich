@@ -173,9 +173,9 @@ describe(UserAdminService.name, () => {
 
     it('should restore an user', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      userMock.update.mockResolvedValue(userStub.user1);
+      userMock.restore.mockResolvedValue(userStub.user1);
       await expect(sut.restore(authStub.admin, userStub.user1.id)).resolves.toEqual(mapUserAdmin(userStub.user1));
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { status: UserStatus.ACTIVE, deletedAt: null });
+      expect(userMock.restore).toHaveBeenCalledWith(userStub.user1.id);
     });
   });
 });
