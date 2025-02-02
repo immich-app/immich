@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
@@ -31,7 +32,8 @@ class SearchPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isContextualSearch = useState(true);
+    final textSearchType = useState<TextSearchType>(TextSearchType.context);
+    final searchHintText = useState<String>('contextual_search'.tr());
     final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
       SearchFilter(
@@ -478,19 +480,46 @@ class SearchPage extends HookConsumerWidget {
     }
 
     handleTextSubmitted(String value) {
-      if (isContextualSearch.value) {
-        filter.value = filter.value.copyWith(
-          filename: '',
-          context: value,
-        );
-      } else {
-        filter.value = filter.value.copyWith(
-          filename: value,
-          context: '',
-        );
+      switch (textSearchType.value) {
+        case TextSearchType.context:
+          filter.value = filter.value.copyWith(
+            filename: '',
+            context: value,
+            description: '',
+          );
+
+          break;
+        case TextSearchType.filename:
+          filter.value = filter.value.copyWith(
+            filename: value,
+            context: '',
+            description: '',
+          );
+
+          break;
+        case TextSearchType.description:
+          filter.value = filter.value.copyWith(
+            filename: '',
+            context: '',
+            description: value,
+          );
+          break;
       }
 
       search();
+    }
+
+    IconData getSearchPrefixIcon() {
+      switch (textSearchType.value) {
+        case TextSearchType.context:
+          return Icons.image_search_rounded;
+        case TextSearchType.filename:
+          return Icons.abc_rounded;
+        case TextSearchType.description:
+          return Icons.text_snippet_outlined;
+        default:
+          return Icons.search_rounded;
+      }
     }
 
     return Scaffold(
@@ -499,16 +528,100 @@ class SearchPage extends HookConsumerWidget {
         automaticallyImplyLeading: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 14.0),
-            child: IconButton(
-              key: const Key('contextual_search_button'),
-              icon: isContextualSearch.value
-                  ? const Icon(Icons.abc_rounded)
-                  : const Icon(Icons.image_search_rounded),
-              onPressed: () {
-                isContextualSearch.value = !isContextualSearch.value;
-                textSearchController.clear();
+            padding: const EdgeInsets.only(right: 16.0),
+            child: MenuAnchor(
+              style: MenuStyle(
+                elevation: const WidgetStatePropertyAll(1),
+                shape: WidgetStateProperty.all(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                padding: const WidgetStatePropertyAll(
+                  EdgeInsets.all(4),
+                ),
+              ),
+              builder: (
+                BuildContext context,
+                MenuController controller,
+                Widget? child,
+              ) {
+                return IconButton(
+                  onPressed: () {
+                    if (controller.isOpen) {
+                      controller.close();
+                    } else {
+                      controller.open();
+                    }
+                  },
+                  icon: const Icon(Icons.more_vert_rounded),
+                  tooltip: 'Show text search menu',
+                );
               },
+              menuChildren: [
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.image_search_rounded),
+                    title: Text(
+                      'search_filter_contextual'.tr(),
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: textSearchType.value == TextSearchType.context
+                            ? context.colorScheme.primary
+                            : null,
+                      ),
+                    ),
+                    selectedColor: context.colorScheme.primary,
+                    selected: textSearchType.value == TextSearchType.context,
+                  ),
+                  onPressed: () {
+                    textSearchType.value = TextSearchType.context;
+                    searchHintText.value = 'contextual_search'.tr();
+                  },
+                ),
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.abc_rounded),
+                    title: Text(
+                      'search_filter_filename'.tr(),
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: textSearchType.value == TextSearchType.filename
+                            ? context.colorScheme.primary
+                            : null,
+                      ),
+                    ),
+                    selectedColor: context.colorScheme.primary,
+                    selected: textSearchType.value == TextSearchType.filename,
+                  ),
+                  onPressed: () {
+                    textSearchType.value = TextSearchType.filename;
+                    searchHintText.value = 'filename_search'.tr();
+                  },
+                ),
+                MenuItemButton(
+                  child: ListTile(
+                    leading: const Icon(Icons.text_snippet_outlined),
+                    title: Text(
+                      'search_filter_description'.tr(),
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color:
+                            textSearchType.value == TextSearchType.description
+                                ? context.colorScheme.primary
+                                : null,
+                      ),
+                    ),
+                    selectedColor: context.colorScheme.primary,
+                    selected:
+                        textSearchType.value == TextSearchType.description,
+                  ),
+                  onPressed: () {
+                    textSearchType.value = TextSearchType.description;
+                    searchHintText.value = 'description_search'.tr();
+                  },
+                ),
+              ],
             ),
           ),
         ],
@@ -539,12 +652,10 @@ class SearchPage extends HookConsumerWidget {
               prefixIcon: prefilter != null
                   ? null
                   : Icon(
-                      Icons.search_rounded,
+                      getSearchPrefixIcon(),
                       color: context.colorScheme.primary,
                     ),
-              hintText: isContextualSearch.value
-                  ? 'contextual_search'.tr()
-                  : 'filename_search'.tr(),
+              hintText: searchHintText.value,
               hintStyle: context.textTheme.bodyLarge?.copyWith(
                 color: context.themeData.colorScheme.onSurfaceSecondary,
               ),

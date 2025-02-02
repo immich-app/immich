@@ -769,6 +769,7 @@ export type MetadataSearchDto = {
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    description?: string;
     deviceAssetId?: string;
     deviceId?: string;
     encodedVideoPath?: string;
