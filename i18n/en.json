@@ -537,6 +537,7 @@
   "delete_library": "Delete Library",
   "delete_link": "Delete link",
   "delete_others": "Delete others",
+  "has_duplicates": "Has duplicates",
   "delete_shared_link": "Delete shared link",
   "delete_tag": "Delete tag",
   "delete_tag_confirmation_prompt": "Are you sure you want to delete {tagName} tag?",

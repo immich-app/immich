@@ -31,6 +31,7 @@
     mdiClose,
     mdiEye,
     mdiEyeOff,
+    mdiImageMultipleOutline,
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
@@ -460,6 +461,23 @@
               </p>
             {/if}
           </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if asset.duplicateId}
+      <div class="flex gap-4 py-4">
+        <div><Icon path={mdiImageMultipleOutline} size="24" /></div>
+
+        <div>
+          <p>
+            <a
+              href="{AppRoute.DUPLICATES}/{asset.duplicateId}"
+              class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+            >
+              {$t('has_duplicates')}
+            </a>
+          </p>
         </div>
       </div>
     {/if}
