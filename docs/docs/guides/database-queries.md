@@ -27,7 +27,7 @@ SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09
 SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
-```sql title="Find by ID"
+````sql title="Find by ID"
 SELECT * FROM "assets" WHERE "id" = '9f94e60f-65b6-47b7-bc12-a4df7b57f0e9';
 ``
 
@@ -39,7 +39,7 @@ You can calculate the checksum for a particular file by using the command `sha1s
 SELECT encode("checksum", 'hex') FROM "assets";
 SELECT * FROM "assets" WHERE "checksum" = decode('69de19c87658c4c15d9cacb9967b8e033bf74dd1', 'hex');
 SELECT * FROM "assets" WHERE "checksum" = '\x69de19c87658c4c15d9cacb9967b8e033bf74dd1'; -- alternate notation
-```
+````
 
 ```sql title="Find duplicate assets with identical checksum (SHA-1) (excluding trashed files)"
 SELECT T1."checksum", array_agg(T2."id") ids FROM "assets" T1
