@@ -8,7 +8,6 @@ import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AssetEntity,
   hasPeople,
-  hasPeopleCte,
   searchAssetBuilder,
   truncatedDate,
   withAlbums,
@@ -599,7 +598,7 @@ export class AssetRepository implements IAssetRepository {
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
     return (
-      ((options.personId ? hasPeopleCte(this.db, [options.personId]) : this.db) as Kysely<DB>)
+      this.db
         .with('assets', (qb) =>
           qb
             .selectFrom('assets')
@@ -615,11 +614,7 @@ export class AssetRepository implements IAssetRepository {
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
                 .where('albums_assets_assets.albumsId', '=', asUuid(options.albumId!)),
             )
-            .$if(!!options.personId, (qb) =>
-              qb.innerJoin(sql.table('has_people').as('has_people'), (join) =>
-                join.onRef(sql`has_people."assetId"`, '=', 'assets.id'),
-              ),
-            )
+            .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
             .$if(!!options.withStacked, (qb) =>
               qb
                 .leftJoin('asset_stack', (join) =>
@@ -654,10 +649,12 @@ export class AssetRepository implements IAssetRepository {
 
   @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }] })
   async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
-    return hasPeople(this.db, options.personId ? [options.personId] : undefined)
+    return this.db
+      .selectFrom('assets')
       .selectAll('assets')
       .$call(withExif)
       .$if(!!options.albumId, (qb) => withAlbums(qb, { albumId: options.albumId }))
+      .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
       .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
       .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
       .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))

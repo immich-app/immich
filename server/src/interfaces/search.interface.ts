@@ -112,6 +112,10 @@ export interface SearchPeopleOptions {
   personIds?: string[];
 }
 
+export interface SearchTagOptions {
+  tagIds?: string[];
+}
+
 export interface SearchOrderOptions {
   orderDirection?: 'asc' | 'desc';
 }
@@ -128,7 +132,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPathOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchTagOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -142,7 +147,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchTagOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
