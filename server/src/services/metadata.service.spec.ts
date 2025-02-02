@@ -335,8 +335,8 @@ describe(MetadataService.name, () => {
       expect(assetMock.update).toHaveBeenCalledWith({
         id: assetStub.image.id,
         duration: null,
-        fileCreatedAt: assetStub.image.createdAt,
-        localDateTime: new Date('2023-02-23T05:06:29.716Z'),
+        fileCreatedAt: assetStub.image.fileCreatedAt,
+        localDateTime: assetStub.image.fileCreatedAt,
       });
     });
 

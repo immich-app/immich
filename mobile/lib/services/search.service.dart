@@ -101,7 +101,7 @@ class SearchService {
         );
       }
 
-      if (response == null) {
+      if (response == null || response.assets.items.isEmpty) {
         return null;
       }
 
