@@ -96,25 +96,16 @@ class StoreValue {
   int? intValue;
   String? strValue;
 
-  T? _extract<T>(StoreKey<T> key) {
-    switch (key.type) {
-      case const (int):
-        return intValue as T?;
-      case const (bool):
-        return intValue == null ? null : (intValue! == 1) as T;
-      case const (DateTime):
-        return intValue == null
+  T? _extract<T>(StoreKey<T> key) => switch (key.type) {
+        const (int) => intValue as T?,
+        const (bool) => intValue == null ? null : (intValue! == 1) as T,
+        const (DateTime) => intValue == null
             ? null
-            : DateTime.fromMicrosecondsSinceEpoch(intValue!) as T;
-      case const (String):
-        return strValue as T?;
-      default:
-        if (key.fromDb != null) {
-          return key.fromDb!.call(Store._db, intValue!);
-        }
-    }
-    throw TypeError();
-  }
+            : DateTime.fromMicrosecondsSinceEpoch(intValue!) as T,
+        const (String) => strValue as T?,
+        _ when key.fromDb != null => key.fromDb!.call(Store._db, intValue!),
+        _ => throw TypeError(),
+      };
 
   static Future<StoreValue> _of<T>(T? value, StoreKey<T> key) async {
     int? i;

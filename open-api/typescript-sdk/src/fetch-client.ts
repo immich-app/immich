@@ -769,6 +769,7 @@ export type MetadataSearchDto = {
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    description?: string;
     deviceAssetId?: string;
     deviceId?: string;
     encodedVideoPath?: string;
@@ -792,6 +793,7 @@ export type MetadataSearchDto = {
     previewPath?: string;
     size?: number;
     state?: string | null;
+    tagIds?: string[];
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -858,6 +860,7 @@ export type RandomSearchDto = {
     personIds?: string[];
     size?: number;
     state?: string | null;
+    tagIds?: string[];
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -893,6 +896,7 @@ export type SmartSearchDto = {
     query: string;
     size?: number;
     state?: string | null;
+    tagIds?: string[];
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;

@@ -111,6 +111,9 @@ class BaseSearchDto {
 
   @ValidateUUID({ each: true, optional: true })
   personIds?: string[];
+
+  @ValidateUUID({ each: true, optional: true })
+  tagIds?: string[];
 }
 
 export class RandomSearchDto extends BaseSearchDto {
@@ -129,6 +132,11 @@ export class MetadataSearchDto extends RandomSearchDto {
   @IsNotEmpty()
   @Optional()
   deviceAssetId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
+  description?: string;
 
   @IsString()
   @IsNotEmpty()
