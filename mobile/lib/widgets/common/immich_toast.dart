@@ -15,36 +15,26 @@ class ImmichToast {
     final fToast = FToast();
     fToast.init(context);
 
-    Color getColor(ToastType type, BuildContext context) {
-      switch (type) {
-        case ToastType.info:
-          return context.primaryColor;
-        case ToastType.success:
-          return const Color.fromARGB(255, 78, 140, 124);
-        case ToastType.error:
-          return const Color.fromARGB(255, 220, 48, 85);
-      }
-    }
+    Color getColor(ToastType type, BuildContext context) => switch (type) {
+          ToastType.info => context.primaryColor,
+          ToastType.success => const Color.fromARGB(255, 78, 140, 124),
+          ToastType.error => const Color.fromARGB(255, 220, 48, 85),
+        };
 
-    Icon getIcon(ToastType type) {
-      switch (type) {
-        case ToastType.info:
-          return Icon(
-            Icons.info_outline_rounded,
-            color: context.primaryColor,
-          );
-        case ToastType.success:
-          return const Icon(
-            Icons.check_circle_rounded,
-            color: Color.fromARGB(255, 78, 140, 124),
-          );
-        case ToastType.error:
-          return const Icon(
-            Icons.error_outline_rounded,
-            color: Color.fromARGB(255, 240, 162, 156),
-          );
-      }
-    }
+    Icon getIcon(ToastType type) => switch (type) {
+          ToastType.info => Icon(
+              Icons.info_outline_rounded,
+              color: context.primaryColor,
+            ),
+          ToastType.success => const Icon(
+              Icons.check_circle_rounded,
+              color: Color.fromARGB(255, 78, 140, 124),
+            ),
+          ToastType.error => const Icon(
+              Icons.error_outline_rounded,
+              color: Color.fromARGB(255, 240, 162, 156),
+            ),
+        };
 
     fToast.showToast(
       child: Container(

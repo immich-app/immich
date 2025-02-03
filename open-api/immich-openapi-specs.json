@@ -9949,6 +9949,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "deviceAssetId": {
             "type": "string"
           },

@@ -25,13 +25,10 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
     final int userId = Store.get(StoreKey.currentUser).isarId;
     final QueryBuilder<User, User, QAfterWhereClause> afterWhere =
         self ? baseQuery.noOp() : baseQuery.isarIdNotEqualTo(userId);
-    final QueryBuilder<User, User, QAfterSortBy> query;
-    switch (sortBy) {
-      case null:
-        query = afterWhere.noOp();
-      case UserSort.id:
-        query = afterWhere.sortById();
-    }
+    final QueryBuilder<User, User, QAfterSortBy> query = switch (sortBy) {
+      null => afterWhere.noOp(),
+      UserSort.id => afterWhere.sortById(),
+    };
     return query.findAll();
   }
 
