@@ -13,6 +13,7 @@ export const newUserRepositoryMock = (): Mocked<IUserRepository> => {
     create: vitest.fn(),
     update: vitest.fn(),
     delete: vitest.fn(),
+    restore: vitest.fn(),
     getDeletedUsers: vitest.fn(),
     hasAdmin: vitest.fn(),
     updateUsage: vitest.fn(),

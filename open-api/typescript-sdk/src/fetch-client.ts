@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.124.2
+ * 1.125.7
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -769,6 +769,7 @@ export type MetadataSearchDto = {
     country?: string | null;
     createdAfter?: string;
     createdBefore?: string;
+    description?: string;
     deviceAssetId?: string;
     deviceId?: string;
     encodedVideoPath?: string;
@@ -792,6 +793,7 @@ export type MetadataSearchDto = {
     previewPath?: string;
     size?: number;
     state?: string | null;
+    tagIds?: string[];
     takenAfter?: string;
     takenBefore?: string;
     thumbnailPath?: string;
@@ -858,6 +860,7 @@ export type RandomSearchDto = {
     personIds?: string[];
     size?: number;
     state?: string | null;
+    tagIds?: string[];
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -893,6 +896,7 @@ export type SmartSearchDto = {
     query: string;
     size?: number;
     state?: string | null;
+    tagIds?: string[];
     takenAfter?: string;
     takenBefore?: string;
     trashedAfter?: string;
@@ -1475,7 +1479,7 @@ export function restoreUserAdmin({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
-        status: 201;
+        status: 200;
         data: UserAdminResponseDto;
     }>(`/admin/users/${encodeURIComponent(id)}/restore`, {
         ...opts,
@@ -1703,7 +1707,7 @@ export function updateAssets({ assetBulkUpdateDto }: {
     })));
 }
 /**
- * Checks if assets exist by checksums
+ * checkBulkUpload
  */
 export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     assetBulkUploadCheckDto: AssetBulkUploadCheckDto;
@@ -1718,7 +1722,7 @@ export function checkBulkUpload({ assetBulkUploadCheckDto }: {
     })));
 }
 /**
- * Get all asset of a device that are in the database, ID only.
+ * getAllUserAssetsByDeviceId
  */
 export function getAllUserAssetsByDeviceId({ deviceId }: {
     deviceId: string;
@@ -1731,7 +1735,7 @@ export function getAllUserAssetsByDeviceId({ deviceId }: {
     }));
 }
 /**
- * Checks if multiple assets exist on the server and returns all existing - used by background backup
+ * checkExistingAssets
  */
 export function checkExistingAssets({ checkExistingAssetsDto }: {
     checkExistingAssetsDto: CheckExistingAssetsDto;
@@ -1839,7 +1843,7 @@ export function downloadAsset({ id, key }: {
     }));
 }
 /**
- * Replace the asset with new file, without changing its id
+ * replaceAsset
  */
 export function replaceAsset({ id, key, assetMediaReplaceDto }: {
     id: string;

@@ -1,8 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { JsonObject } from 'src/db';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
@@ -29,15 +29,17 @@ export class MemoryService extends BaseService {
       permission: Permission.ASSET_SHARE,
       ids: assetIds,
     });
-    const memory = await this.memoryRepository.create({
-      ownerId: auth.user.id,
-      type: dto.type,
-      data: dto.data,
-      isSaved: dto.isSaved,
-      memoryAt: dto.memoryAt,
-      seenAt: dto.seenAt,
-      assets: [...allowedAssetIds].map((id) => ({ id }) as AssetEntity),
-    });
+    const memory = await this.memoryRepository.create(
+      {
+        ownerId: auth.user.id,
+        type: dto.type,
+        data: dto.data as unknown as JsonObject,
+        isSaved: dto.isSaved,
+        memoryAt: dto.memoryAt,
+        seenAt: dto.seenAt,
+      },
+      allowedAssetIds,
+    );
 
     return mapMemory(memory);
   }
@@ -45,8 +47,7 @@ export class MemoryService extends BaseService {
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
     await this.requireAccess({ auth, permission: Permission.MEMORY_UPDATE, ids: [id] });
 
-    const memory = await this.memoryRepository.update({
-      id,
+    const memory = await this.memoryRepository.update(id, {
       isSaved: dto.isSaved,
       memoryAt: dto.memoryAt,
       seenAt: dto.seenAt,
@@ -68,7 +69,7 @@ export class MemoryService extends BaseService {
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
-      await this.memoryRepository.update({ id, updatedAt: new Date() });
+      await this.memoryRepository.update(id, { updatedAt: new Date() });
     }
 
     return results;
@@ -86,7 +87,7 @@ export class MemoryService extends BaseService {
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
-      await this.memoryRepository.update({ id, updatedAt: new Date() });
+      await this.memoryRepository.update(id, { id, updatedAt: new Date() });
     }
 
     return results;

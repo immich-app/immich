@@ -63,6 +63,17 @@ If you only want to do web development connected to an existing, remote backend,
 IMMICH_SERVER_URL=https://demo.immich.app/ npm run dev
 ```
 
+#### `@immich/ui`
+
+To see local changes to `@immich/ui` in Immich, do the following:
+
+1. Install `@immich/ui` as a sibling to `immich/`, for example `/home/user/immich` and `/home/user/ui`
+1. Build the `@immich/ui` project via `npm run build`
+1. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yaml` file (`../../ui:/usr/ui`)
+1. Uncomment the corresponding alias in the `web/vite.config.js` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui')`)
+1. Start up the stack via `make dev`
+1. After making changes in `@immich/ui`, rebuild it (`npm run build`)
+
 ### Mobile app
 
 The mobile app `(/mobile)` will required Flutter toolchain 3.13.x to be installed on your system.

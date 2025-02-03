@@ -141,7 +141,10 @@ describe(StackService.name, () => {
       await sut.update(authStub.admin, 'stack-id', { primaryAssetId: assetStub.image1.id });
 
       expect(stackMock.getById).toHaveBeenCalledWith('stack-id');
-      expect(stackMock.update).toHaveBeenCalledWith({ id: 'stack-id', primaryAssetId: assetStub.image1.id });
+      expect(stackMock.update).toHaveBeenCalledWith('stack-id', {
+        id: 'stack-id',
+        primaryAssetId: assetStub.image1.id,
+      });
       expect(eventMock.emit).toHaveBeenCalledWith('stack.update', {
         stackId: 'stack-id',
         userId: authStub.admin.user.id,

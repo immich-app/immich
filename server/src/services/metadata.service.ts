@@ -18,8 +18,8 @@ import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { DatabaseLock } from 'src/interfaces/database.interface';
 import { ArgOf } from 'src/interfaces/event.interface';
 import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { ReverseGeocodeResult } from 'src/interfaces/map.interface';
-import { ImmichTags } from 'src/interfaces/metadata.interface';
+import { ReverseGeocodeResult } from 'src/repositories/map.repository';
+import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -204,7 +204,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: validateRange(exifTags.Rating, 0, 5),
+      rating: validateRange(exifTags.Rating, -1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -509,11 +509,11 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const facesToAdd: Partial<AssetFaceEntity>[] = [];
+    const facesToAdd: (Partial<AssetFaceEntity> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: Partial<PersonEntity>[] = [];
-    const missingWithFaceAsset: Partial<PersonEntity>[] = [];
+    const missing: (Partial<PersonEntity> & { ownerId: string })[] = [];
+    const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
     for (const region of tags.RegionInfo.RegionList) {
       if (!region.Name) {
         continue;
@@ -540,7 +540,7 @@ export class MetadataService extends BaseService {
       facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
         missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
-        missingWithFaceAsset.push({ id: personId, faceAssetId: face.id });
+        missingWithFaceAsset.push({ id: personId, ownerId: asset.ownerId, faceAssetId: face.id });
       }
     }
 
@@ -557,7 +557,7 @@ export class MetadataService extends BaseService {
     }
 
     if (facesToAdd.length > 0) {
-      this.logger.debug(`Creating ${facesToAdd} faces from metadata for asset ${asset.id}`);
+      this.logger.debug(`Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}`);
     }
 
     if (facesToRemove.length > 0 || facesToAdd.length > 0) {

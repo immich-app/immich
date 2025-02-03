@@ -170,7 +170,12 @@ class AlbumService {
     try {
       await _userService.refreshUsers();
       final (sharedAlbum, ownedAlbum) = await (
+        // Note: `shared: true` is required to get albums that don't belong to
+        // us due to unusual behaviour on the API but this will also return our
+        // own shared albums
         _albumApiRepository.getAll(shared: true),
+        // Passing null (or nothing) for `shared` returns only albums that
+        // explicitly belong to us
         _albumApiRepository.getAll(shared: null)
       ).wait;
 
@@ -212,7 +217,7 @@ class AlbumService {
     for (int round = 0;; round++) {
       final proposedName = "$baseName${round == 0 ? "" : " ($round)"}";
 
-      if (null == await _albumRepository.getByName(proposedName)) {
+      if (null == await _albumRepository.getByName(proposedName, owner: true)) {
         return proposedName;
       }
     }
@@ -408,8 +413,18 @@ class AlbumService {
     }
   }
 
-  Future<Album?> getAlbumByName(String name, bool remoteOnly) =>
-      _albumRepository.getByName(name, remote: remoteOnly ? true : null);
+  Future<Album?> getAlbumByName(
+    String name, {
+    bool? remote,
+    bool? shared,
+    bool? owner,
+  }) =>
+      _albumRepository.getByName(
+        name,
+        remote: remote,
+        shared: shared,
+        owner: owner,
+      );
 
   ///
   /// Add the uploaded asset to the selected albums
@@ -419,7 +434,7 @@ class AlbumService {
     List<String> assetIds,
   ) async {
     for (final albumName in albumNames) {
-      Album? album = await getAlbumByName(albumName, true);
+      Album? album = await getAlbumByName(albumName, remote: true, owner: true);
       album ??= await createAlbum(albumName, []);
       if (album != null && album.remoteId != null) {
         await _albumApiRepository.addAssets(album.remoteId!, assetIds);

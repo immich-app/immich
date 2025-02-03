@@ -97,8 +97,8 @@ download:
     - file: mobile/assets/i18n/id-ID.json
       locale_code: id-ID
     - file: mobile/assets/i18n/gl.json
-      locale_code: gl-ES
+      locale_code: gl
     - file: mobile/assets/i18n/ga.json
-      locale_code: ga-IE
+      locale_code: ga
     - file: mobile/assets/i18n/tr-TR.json
       locale_code: tr-TR

@@ -416,6 +416,34 @@ describe(AssetService.name, () => {
       await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
       expect(assetMock.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
     });
+
+    it('should not update Assets table if no relevant fields are provided', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isArchived: undefined,
+        isFavorite: undefined,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(assetMock.updateAll).not.toHaveBeenCalled();
+    });
+
+    it('should update Assets table if isArchived field is provided', async () => {
+      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 0,
+        longitude: 0,
+        isArchived: undefined,
+        isFavorite: false,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(assetMock.updateAll).toHaveBeenCalled();
+    });
   });
 
   describe('deleteAll', () => {
@@ -520,7 +548,7 @@ describe(AssetService.name, () => {
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
 
-      expect(stackMock.update).toHaveBeenCalledWith({
+      expect(stackMock.update).toHaveBeenCalledWith('stack-1', {
         id: 'stack-1',
         primaryAssetId: 'stack-child-asset-1',
       });

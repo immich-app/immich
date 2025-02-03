@@ -15,12 +15,36 @@
 
     /* dark */
     --immich-dark-primary: 172 203 250;
-    --immich-dark-bg: 0 0 0;
+    --immich-dark-bg: 10 10 10;
     --immich-dark-fg: 229 231 235;
     --immich-dark-gray: 33 33 33;
     --immich-dark-error: 211 47 47;
     --immich-dark-success: 56 142 60;
     --immich-dark-warning: 245 124 0;
+  }
+
+  :root {
+    /* light */
+    --immich-ui-primary: 66 80 175;
+    --immich-ui-dark: 58 58 58;
+    --immich-ui-light: 255 255 255;
+    --immich-ui-success: 34 197 94;
+    --immich-ui-danger: 180 0 0;
+    --immich-ui-warning: 255 170 0;
+    --immich-ui-info: 14 165 233;
+    --immich-ui-default-border: 209 213 219;
+  }
+
+  .dark {
+    /* dark */
+    --immich-ui-primary: 172 203 250;
+    --immich-ui-light: 0 0 0;
+    --immich-ui-dark: 229 231 235;
+    /* --immich-success: 56 142 60; */
+    --immich-ui-danger: 239 68 68;
+    --immich-ui-warning: 255 170 0;
+    --immich-ui-info: 14 165 233;
+    --immich-ui-default-border: 55 65 81;
   }
 }
 

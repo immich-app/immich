@@ -3,11 +3,11 @@ import {
   AssetMediaStatus,
   AssetResponseDto,
   AssetTypeEnum,
-  LoginResponseDto,
-  SharedLinkType,
   getAssetInfo,
   getConfig,
   getMyUser,
+  LoginResponseDto,
+  SharedLinkType,
   updateConfig,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
@@ -19,7 +19,7 @@ import { Socket } from 'socket.io-client';
 import { createUserDto, uuidDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, tempDir, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, tempDir, TEN_TIMES, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -40,8 +40,6 @@ const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
 
   return dto;
 };
-
-const TEN_TIMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
@@ -698,6 +696,20 @@ describe('/asset', () => {
         id: user1Assets[0].id,
         exifInfo: expect.objectContaining({
           rating: 2,
+        }),
+      });
+      expect(status).toEqual(200);
+    });
+
+    it('should set the negative rating', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ rating: -1 });
+      expect(body).toMatchObject({
+        id: user1Assets[0].id,
+        exifInfo: expect.objectContaining({
+          rating: -1,
         }),
       });
       expect(status).toEqual(200);

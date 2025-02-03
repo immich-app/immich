@@ -101,15 +101,20 @@ export interface SearchExifOptions {
   make?: string | null;
   model?: string | null;
   state?: string | null;
+  description?: string | null;
 }
 
 export interface SearchEmbeddingOptions {
-  embedding: number[];
+  embedding: string;
   userIds: string[];
 }
 
 export interface SearchPeopleOptions {
   personIds?: string[];
+}
+
+export interface SearchTagOptions {
+  tagIds?: string[];
 }
 
 export interface SearchOrderOptions {
@@ -128,7 +133,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPathOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchTagOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -142,7 +148,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchTagOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;
@@ -152,7 +159,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 
 export interface AssetDuplicateSearch {
   assetId: string;
-  embedding: number[];
+  embedding: string;
   maxDistance: number;
   type: AssetType;
   userIds: string[];
@@ -192,7 +199,7 @@ export interface ISearchRepository {
   searchDuplicates(options: AssetDuplicateSearch): Promise<AssetDuplicateResult[]>;
   searchFaces(search: FaceEmbeddingSearch): Promise<FaceSearchResult[]>;
   searchRandom(size: number, options: AssetSearchOptions): Promise<AssetEntity[]>;
-  upsert(assetId: string, embedding: number[]): Promise<void>;
+  upsert(assetId: string, embedding: string): Promise<void>;
   searchPlaces(placeName: string): Promise<GeodataPlacesEntity[]>;
   getAssetsByCity(userIds: string[]): Promise<AssetEntity[]>;
   deleteAllSearchEmbeddings(): Promise<void>;

@@ -170,7 +170,7 @@ describe('/shared-links', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          album,
+          album: expect.objectContaining({ id: album.id }),
           userId: user1.userId,
           type: SharedLinkType.Album,
         }),
@@ -208,7 +208,7 @@ describe('/shared-links', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          album,
+          album: expect.objectContaining({ id: album.id }),
           userId: user1.userId,
           type: SharedLinkType.Album,
         }),
@@ -262,7 +262,7 @@ describe('/shared-links', () => {
       expect(status).toBe(200);
       expect(body).toEqual(
         expect.objectContaining({
-          album,
+          album: expect.objectContaining({ id: album.id }),
           userId: user1.userId,
           type: SharedLinkType.Album,
         }),

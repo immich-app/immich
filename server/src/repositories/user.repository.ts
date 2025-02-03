@@ -5,6 +5,7 @@ import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserMetadata } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
+import { UserStatus } from 'src/enum';
 import {
   IUserRepository,
   UserFindOptions,
@@ -135,6 +136,16 @@ export class UserRepository implements IUserRepository {
       .set(dto)
       .where('users.id', '=', asUuid(id))
       .where('users.deletedAt', 'is', null)
+      .returning(columns)
+      .returning(withMetadata)
+      .executeTakeFirst() as unknown as Promise<UserEntity>;
+  }
+
+  restore(id: string): Promise<UserEntity> {
+    return this.db
+      .updateTable('users')
+      .set({ status: UserStatus.ACTIVE, deletedAt: null })
+      .where('users.id', '=', asUuid(id))
       .returning(columns)
       .returning(withMetadata)
       .executeTakeFirst() as unknown as Promise<UserEntity>;
