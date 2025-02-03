@@ -30,11 +30,11 @@
       role="switch"
       aria-checked={isDark ? 'true' : 'false'}
     >
-      {$t('toggle_theme')}
+      {$t('dark_theme')}
     </Button>
   {:else}
     <CircleIconButton
-      title={$t('toggle_theme')}
+      title={$t('dark_theme')}
       {icon}
       {viewBox}
       role="switch"
