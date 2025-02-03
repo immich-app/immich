@@ -121,6 +121,7 @@ export class AssetRepository implements IAssetRepository {
                   ),
                 )
                 .where('assets.deletedAt', 'is', null)
+                .orderBy(sql`(assets."localDateTime" at time zone 'UTC')::date`, 'desc')
                 .limit(20)
                 .as('a'),
             (join) => join.onTrue(),
