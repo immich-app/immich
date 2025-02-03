@@ -208,7 +208,7 @@ class ThumbnailImage extends ConsumerWidget {
                       Shadow(
                         blurRadius: 5.0,
                         color: Colors.black.withOpacity(0.6),
-                        offset: Offset(0.0, 0.0),
+                        offset: const Offset(0.0, 0.0),
                       ),
                     ],
                   ),
