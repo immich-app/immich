@@ -36,6 +36,7 @@ class MemoryPage extends HookConsumerWidget {
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
     const bgColor = Colors.black;
+    final currentAsset = useState<Asset?>(null);
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers =
@@ -141,6 +142,7 @@ class MemoryPage extends HookConsumerWidget {
       updateProgressText();
 
       final asset = currentMemory.value.assets[otherIndex];
+      currentAsset.value = asset;
       ref.read(currentAssetProvider.notifier).set(asset);
       if (asset.isVideo || asset.isMotionPhoto) {
         ref.read(videoPlaybackValueProvider.notifier).reset();
@@ -285,6 +287,16 @@ class MemoryPage extends HookConsumerWidget {
                             ),
                           ),
                         ),
+                        if (currentAsset.value != null &&
+                            currentAsset.value!.isVideo)
+                          Positioned(
+                            bottom: 24,
+                            right: 32,
+                            child: Icon(
+                              Icons.videocam_outlined,
+                              color: Colors.grey[200],
+                            ),
+                          ),
                       ],
                     ),
                   ),
