@@ -377,7 +377,7 @@
   "album_options": "Album options",
   "album_remove_user": "Remove user?",
   "album_remove_user_confirmation": "Are you sure you want to remove {user}?",
-  "album_share_no_users": "Looks like you have shared this album with all users or you don't have any user to share with.",
+  "album_share_no_users": "Looks like you don't have any/additional users to share with, ask admin to check settings > server settings > public users",
   "album_updated": "Album updated",
   "album_updated_setting_description": "Receive an email notification when a shared album has new assets",
   "album_user_left": "Left {album}",
