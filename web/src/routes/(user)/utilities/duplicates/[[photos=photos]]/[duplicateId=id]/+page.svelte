@@ -20,6 +20,8 @@
   import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { AppRoute } from '$lib/constants';
+  import { goto } from '$app/navigation';
 
   interface Props {
     data: PageData;
@@ -100,6 +102,9 @@
         if (duplicates.length > 0) {
           // The index of the next duplicate is the same as the current one, since we removed the current one
           activeDuplicate = duplicates[currentDuplicateIndex] || duplicates[0];
+        } else {
+          // If there are no more duplicates, redirect to the duplicates page
+          await goto(AppRoute.DUPLICATES);
         }
       },
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
@@ -118,6 +123,9 @@
     if (duplicates.length > 0) {
       // The index of the next duplicate is the same as the current one, since we removed the current one
       activeDuplicate = duplicates[currentDuplicateIndex] || duplicates[0];
+    } else {
+      // If there are no more duplicates, redirect to the duplicates page
+      await goto(AppRoute.DUPLICATES);
     }
   };
 
