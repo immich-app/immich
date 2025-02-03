@@ -47,6 +47,8 @@ with
               and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
+        order by
+          "assets"."localDateTime" desc
         limit
           $7
       ) as "a" on true
