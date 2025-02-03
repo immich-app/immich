@@ -48,7 +48,7 @@ with
           )
           and "assets"."deletedAt" is null
         order by
-          "assets"."localDateTime" desc
+          (assets."localDateTime" at time zone 'UTC')::date desc
         limit
           $7
       ) as "a" on true
