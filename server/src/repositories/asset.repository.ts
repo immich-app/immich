@@ -466,8 +466,8 @@ export class AssetRepository implements IAssetRepository {
       )
       .$if(property === WithoutProperty.EXIF, (qb) =>
         qb
-          .innerJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
-          .where('job_status.metadataExtractedAt', 'is', null)
+          .leftJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
+          .where((eb) => eb.or([eb('job_status.metadataExtractedAt', 'is', null), eb('assetId', 'is', null)]))
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.FACES, (qb) =>
