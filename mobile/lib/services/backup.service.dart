@@ -519,18 +519,12 @@ class BackupService {
     return responseBody.containsKey('id') ? responseBody['id'] : null;
   }
 
-  String _getAssetType(AssetType assetType) {
-    switch (assetType) {
-      case AssetType.audio:
-        return "AUDIO";
-      case AssetType.image:
-        return "IMAGE";
-      case AssetType.video:
-        return "VIDEO";
-      case AssetType.other:
-        return "OTHER";
-    }
-  }
+  String _getAssetType(AssetType assetType) => switch (assetType) {
+        AssetType.audio => "AUDIO",
+        AssetType.image => "IMAGE",
+        AssetType.video => "VIDEO",
+        AssetType.other => "OTHER",
+      };
 }
 
 class MultipartRequest extends http.MultipartRequest {

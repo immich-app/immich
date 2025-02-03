@@ -101,6 +101,7 @@ export interface SearchExifOptions {
   make?: string | null;
   model?: string | null;
   state?: string | null;
+  description?: string | null;
 }
 
 export interface SearchEmbeddingOptions {
@@ -110,6 +111,10 @@ export interface SearchEmbeddingOptions {
 
 export interface SearchPeopleOptions {
   personIds?: string[];
+}
+
+export interface SearchTagOptions {
+  tagIds?: string[];
 }
 
 export interface SearchOrderOptions {
@@ -128,7 +133,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPathOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchTagOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
@@ -142,7 +148,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchOneToOneRelationOptions &
   SearchStatusOptions &
   SearchUserIdOptions &
-  SearchPeopleOptions;
+  SearchPeopleOptions &
+  SearchTagOptions;
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
   hasPerson?: boolean;

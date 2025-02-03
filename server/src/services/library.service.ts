@@ -223,7 +223,7 @@ export class LibraryService extends BaseService {
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*'],
+      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*', '**/#recycle/**', '**/#snapshot/**'],
     });
     return mapLibrary(library);
   }
@@ -511,7 +511,6 @@ export class LibraryService extends BaseService {
       await this.assetRepository.updateAll([asset.id], {
         isOffline: false,
         deletedAt: null,
-        fileCreatedAt: mtime,
         fileModifiedAt: mtime,
         originalFileName: parse(asset.originalPath).base,
       });

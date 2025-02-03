@@ -193,7 +193,7 @@ export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-    .select(sql<number[]>`smart_search.embedding`.as('embedding'));
+    .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
 export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
@@ -238,22 +238,33 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
     .as('faces');
 }
 
-/** Adds a `has_people` CTE that can be inner joined on to filter out assets */
-export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
-  return db.with('has_people', (qb) =>
-    qb
-      .selectFrom('asset_faces')
-      .select('assetId')
-      .where('personId', '=', anyUuid(personIds!))
-      .groupBy('assetId')
-      .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length),
+export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_faces')
+        .select('assetId')
+        .where('personId', '=', anyUuid(personIds!))
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        .as('has_people'),
+    (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
   );
 }
 
-export function hasPeople(db: Kysely<DB>, personIds?: string[]) {
-  return personIds && personIds.length > 0
-    ? hasPeopleCte(db, personIds).selectFrom('assets').innerJoin('has_people', 'has_people.assetId', 'assets.id')
-    : db.selectFrom('assets');
+export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetsId')
+        .innerJoin('tags_closure', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .where('tags_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        .as('has_tags'),
+    (join) => join.onRef('has_tags.assetsId', '=', 'assets.id'),
+  );
 }
 
 export function withOwner(eb: ExpressionBuilder<DB, 'assets'>) {
@@ -326,8 +337,12 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
-  return hasPeople(kysely.withPlugin(joinDeduplicationPlugin), options.personIds)
+  return kysely
+    .withPlugin(joinDeduplicationPlugin)
+    .selectFrom('assets')
     .selectAll('assets')
+    .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
+    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))
@@ -380,6 +395,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         'ilike',
         sql`'%' || f_unaccent(${options.originalFileName}) || '%'`,
       ),
+    )
+    .$if(!!options.description, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
     )
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))

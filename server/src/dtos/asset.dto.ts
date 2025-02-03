@@ -52,7 +52,7 @@ export class UpdateAssetBase {
   @Optional()
   @IsInt()
   @Max(5)
-  @Min(0)
+  @Min(-1)
   rating?: number;
 }
 

@@ -18,15 +18,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   @override
   Future<int> count({bool? local}) {
     final baseQuery = db.albums.where();
-    final QueryBuilder<Album, Album, QAfterWhereClause> query;
-    switch (local) {
-      case null:
-        query = baseQuery.noOp();
-      case true:
-        query = baseQuery.localIdIsNotNull();
-      case false:
-        query = baseQuery.remoteIdIsNotNull();
-    }
+    final QueryBuilder<Album, Album, QAfterWhereClause> query = switch (local) {
+      null => baseQuery.noOp(),
+      true => baseQuery.localIdIsNotNull(),
+      false => baseQuery.remoteIdIsNotNull(),
+    };
     return query.count();
   }
 
@@ -91,15 +87,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     if (ownerId != null) {
       filterQuery = filterQuery.owner((q) => q.isarIdEqualTo(ownerId));
     }
-    final QueryBuilder<Album, Album, QAfterSortBy> query;
-    switch (sortBy) {
-      case null:
-        query = filterQuery.noOp();
-      case AlbumSort.remoteId:
-        query = filterQuery.sortByRemoteId();
-      case AlbumSort.localId:
-        query = filterQuery.sortByLocalId();
-    }
+    final QueryBuilder<Album, Album, QAfterSortBy> query = switch (sortBy) {
+      null => filterQuery.noOp(),
+      AlbumSort.remoteId => filterQuery.sortByRemoteId(),
+      AlbumSort.localId => filterQuery.sortByLocalId(),
+    };
     return query.findAll();
   }
 
@@ -150,14 +142,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
         query = query.owner(
           (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
         );
-        break;
       case QuickFilterMode.myAlbums:
         query = query.owner(
           (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
         );
-        break;
       case QuickFilterMode.all:
-      default:
         break;
     }
 

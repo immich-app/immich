@@ -18,6 +18,7 @@ class MetadataSearchDto {
     this.country,
     this.createdAfter,
     this.createdBefore,
+    this.description,
     this.deviceAssetId,
     this.deviceId,
     this.encodedVideoPath,
@@ -41,6 +42,7 @@ class MetadataSearchDto {
     this.previewPath,
     this.size,
     this.state,
+    this.tagIds = const [],
     this.takenAfter,
     this.takenBefore,
     this.thumbnailPath,
@@ -83,6 +85,14 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   DateTime? createdBefore;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -235,6 +245,8 @@ class MetadataSearchDto {
 
   String? state;
 
+  List<String> tagIds;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -340,6 +352,7 @@ class MetadataSearchDto {
     other.country == country &&
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
+    other.description == description &&
     other.deviceAssetId == deviceAssetId &&
     other.deviceId == deviceId &&
     other.encodedVideoPath == encodedVideoPath &&
@@ -363,6 +376,7 @@ class MetadataSearchDto {
     other.previewPath == previewPath &&
     other.size == size &&
     other.state == state &&
+    _deepEquality.equals(other.tagIds, tagIds) &&
     other.takenAfter == takenAfter &&
     other.takenBefore == takenBefore &&
     other.thumbnailPath == thumbnailPath &&
@@ -385,6 +399,7 @@ class MetadataSearchDto {
     (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (deviceAssetId == null ? 0 : deviceAssetId!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
@@ -408,6 +423,7 @@ class MetadataSearchDto {
     (previewPath == null ? 0 : previewPath!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
+    (tagIds.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
     (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
@@ -423,7 +439,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -451,6 +467,11 @@ class MetadataSearchDto {
       json[r'createdBefore'] = this.createdBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'createdBefore'] = null;
+    }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
     }
     if (this.deviceAssetId != null) {
       json[r'deviceAssetId'] = this.deviceAssetId;
@@ -559,6 +580,7 @@ class MetadataSearchDto {
     } else {
     //  json[r'state'] = null;
     }
+      json[r'tagIds'] = this.tagIds;
     if (this.takenAfter != null) {
       json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
     } else {
@@ -637,6 +659,7 @@ class MetadataSearchDto {
         country: mapValueOfType<String>(json, r'country'),
         createdAfter: mapDateTime(json, r'createdAfter', r''),
         createdBefore: mapDateTime(json, r'createdBefore', r''),
+        description: mapValueOfType<String>(json, r'description'),
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
         encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
@@ -662,6 +685,9 @@ class MetadataSearchDto {
         previewPath: mapValueOfType<String>(json, r'previewPath'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
+        tagIds: json[r'tagIds'] is Iterable
+            ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         takenAfter: mapDateTime(json, r'takenAfter', r''),
         takenBefore: mapDateTime(json, r'takenBefore', r''),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),
