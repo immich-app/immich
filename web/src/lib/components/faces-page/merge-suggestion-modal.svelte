@@ -4,9 +4,9 @@
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiMerge } from '@mdi/js';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
@@ -38,11 +38,9 @@
     choosePersonToMerge = false;
   };
 
-  let confirmButtonRef: Button | null = null;
-
   onMount(async () => {
     await tick();
-    confirmButtonRef?.focus();
+    document.querySelector<HTMLElement>('#merge-confirm-button')?.focus();
   });
 </script>
 
@@ -121,8 +119,8 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="gray" onclick={onReject}>{$t('no')}</Button>
-    <Button fullwidth bind:this={confirmButtonRef} onclick={() => onConfirm([personMerge1, personMerge2])}>
+    <Button fullWidth shape="round" color="secondary" onclick={onReject}>{$t('no')}</Button>
+    <Button id="merge-confirm-button" fullWidth shape="round" onclick={() => onConfirm([personMerge1, personMerge2])}>
       {$t('yes')}
     </Button>
   {/snippet}

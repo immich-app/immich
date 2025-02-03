@@ -107,19 +107,12 @@
       .filter(Boolean)
       .join(' '),
   );
-
-  let linkOrButton: HTMLAnchorElement | HTMLButtonElement | null = null;
-
-  export function focus() {
-    linkOrButton?.focus();
-  }
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href ? 'a' : 'button'}
   type={href ? undefined : type}
-  bind:this={linkOrButton}
   {href}
   {onclick}
   {onfocus}
