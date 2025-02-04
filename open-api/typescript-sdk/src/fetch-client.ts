@@ -215,6 +215,8 @@ export type PersonWithFacesResponseDto = {
     birthDate: string | null;
     faces: AssetFaceWithoutPersonResponseDto[];
     id: string;
+    /** This property was added in v1.126.0 */
+    isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
@@ -492,6 +494,8 @@ export type DuplicateResponseDto = {
 export type PersonResponseDto = {
     birthDate: string | null;
     id: string;
+    /** This property was added in v1.126.0 */
+    isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
@@ -689,6 +693,7 @@ export type PersonCreateDto = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
     birthDate?: string | null;
+    isFavorite?: boolean;
     /** Person visibility */
     isHidden?: boolean;
     /** Person name. */
@@ -702,6 +707,7 @@ export type PeopleUpdateItem = {
     featureFaceAssetId?: string;
     /** Person id. */
     id: string;
+    isFavorite?: boolean;
     /** Person visibility */
     isHidden?: boolean;
     /** Person name. */
@@ -716,6 +722,7 @@ export type PersonUpdateDto = {
     birthDate?: string | null;
     /** Asset is used to get the feature face thumbnail. */
     featureFaceAssetId?: string;
+    isFavorite?: boolean;
     /** Person visibility */
     isHidden?: boolean;
     /** Person name. */

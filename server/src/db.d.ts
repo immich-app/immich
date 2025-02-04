@@ -279,6 +279,7 @@ export interface Person {
   createdAt: Generated<Timestamp>;
   faceAssetId: string | null;
   id: Generated<string>;
+  isFavorite: Generated<boolean>;
   isHidden: Generated<boolean>;
   name: Generated<string>;
   ownerId: string;
@@ -327,11 +328,6 @@ export interface SocketIoAttachments {
   payload: Buffer | null;
 }
 
-export interface SystemConfig {
-  key: string;
-  value: string | null;
-}
-
 export interface SystemMetadata {
   key: string;
   value: Json;
@@ -355,6 +351,15 @@ export interface Tags {
 export interface TagsClosure {
   id_ancestor: string;
   id_descendant: string;
+}
+
+export interface TypeormMetadata {
+  database: string | null;
+  name: string | null;
+  schema: string | null;
+  table: string | null;
+  type: string;
+  value: string | null;
 }
 
 export interface UserMetadata {
@@ -431,11 +436,11 @@ export interface DB {
   shared_links: SharedLinks;
   smart_search: SmartSearch;
   socket_io_attachments: SocketIoAttachments;
-  system_config: SystemConfig;
   system_metadata: SystemMetadata;
   tag_asset: TagAsset;
   tags: Tags;
   tags_closure: TagsClosure;
+  typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
   users: Users;
   "vectors.pg_vector_index_stat": VectorsPgVectorIndexStat;

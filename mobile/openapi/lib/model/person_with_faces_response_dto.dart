@@ -16,6 +16,7 @@ class PersonWithFacesResponseDto {
     required this.birthDate,
     this.faces = const [],
     required this.id,
+    this.isFavorite,
     required this.isHidden,
     required this.name,
     required this.thumbnailPath,
@@ -27,6 +28,15 @@ class PersonWithFacesResponseDto {
   List<AssetFaceWithoutPersonResponseDto> faces;
 
   String id;
+
+  /// This property was added in v1.126.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
 
   bool isHidden;
 
@@ -48,6 +58,7 @@ class PersonWithFacesResponseDto {
     other.birthDate == birthDate &&
     _deepEquality.equals(other.faces, faces) &&
     other.id == id &&
+    other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name &&
     other.thumbnailPath == thumbnailPath &&
@@ -59,13 +70,14 @@ class PersonWithFacesResponseDto {
     (birthDate == null ? 0 : birthDate!.hashCode) +
     (faces.hashCode) +
     (id.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
     (name.hashCode) +
     (thumbnailPath.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, faces=$faces, id=$id, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'PersonWithFacesResponseDto[birthDate=$birthDate, faces=$faces, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -76,6 +88,11 @@ class PersonWithFacesResponseDto {
     }
       json[r'faces'] = this.faces;
       json[r'id'] = this.id;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
+    }
       json[r'isHidden'] = this.isHidden;
       json[r'name'] = this.name;
       json[r'thumbnailPath'] = this.thumbnailPath;
@@ -99,6 +116,7 @@ class PersonWithFacesResponseDto {
         birthDate: mapDateTime(json, r'birthDate', r''),
         faces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'faces']),
         id: mapValueOfType<String>(json, r'id')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
         name: mapValueOfType<String>(json, r'name')!,
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
