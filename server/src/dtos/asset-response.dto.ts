@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ExifResponseDto, mapExif } from 'src/dtos/exif.dto';
@@ -139,9 +140,9 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
     originalFileName: entity.originalFileName,
     originalMimeType: mimeTypes.lookup(entity.originalFileName),
     thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
-    fileCreatedAt: entity.fileCreatedAt,
-    fileModifiedAt: entity.fileModifiedAt,
-    localDateTime: entity.localDateTime,
+    fileCreatedAt: DateTime.fromJSDate(entity.fileCreatedAt).isValid ? entity.fileCreatedAt : new Date('1970-01-01'),
+    fileModifiedAt: DateTime.fromJSDate(entity.fileModifiedAt).isValid ? entity.fileModifiedAt : new Date('1970-01-01'),
+    localDateTime: DateTime.fromJSDate(entity.localDateTime).isValid ? entity.fileModifiedAt : new Date('1970-01-01'),
     updatedAt: entity.updatedAt,
     isFavorite: options.auth?.user.id === entity.ownerId ? entity.isFavorite : false,
     isArchived: entity.isArchived,
