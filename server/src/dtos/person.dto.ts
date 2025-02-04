@@ -33,7 +33,6 @@ export class PersonCreateDto {
   @ValidateBoolean({ optional: true })
   isHidden?: boolean;
 
-  @ApiProperty()
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
 }
@@ -101,8 +100,7 @@ export class PersonResponseDto {
   isHidden!: boolean;
   @PropertyLifecycle({ addedAt: 'v1.107.0' })
   updatedAt?: Date;
-  @ApiProperty()
-  @PropertyLifecycle({ addedAt: 'v1.124.0' })
+  @PropertyLifecycle({ addedAt: 'v1.126.0' })
   isFavorite?: boolean;
 }
 

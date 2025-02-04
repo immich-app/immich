@@ -3,16 +3,21 @@
  * Please do not edit it manually.
  */
 
-import type { ColumnType } from 'kysely';
+import type { ColumnType } from "kysely";
 
-export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
+export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[]
+  ? U[]
+  : ArrayTypeImpl<T>;
 
-export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
+export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U>
+  ? ColumnType<S[], I[], U[]>
+  : T[];
 
-export type AssetsStatusEnum = 'active' | 'deleted' | 'trashed';
+export type AssetsStatusEnum = "active" | "deleted" | "trashed";
 
-export type Generated<T> =
-  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
+export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
+  ? ColumnType<S, I | undefined, U>
+  : ColumnType<T, T | undefined, T>;
 
 export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
 
@@ -28,7 +33,7 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
-export type Sourcetype = 'exif' | 'machine-learning';
+export type Sourcetype = "exif" | "machine-learning";
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -323,11 +328,6 @@ export interface SocketIoAttachments {
   payload: Buffer | null;
 }
 
-export interface SystemConfig {
-  key: string;
-  value: string | null;
-}
-
 export interface SystemMetadata {
   key: string;
   value: Json;
@@ -351,6 +351,15 @@ export interface Tags {
 export interface TagsClosure {
   id_ancestor: string;
   id_descendant: string;
+}
+
+export interface TypeormMetadata {
+  database: string | null;
+  name: string | null;
+  schema: string | null;
+  table: string | null;
+  type: string;
+  value: string | null;
 }
 
 export interface UserMetadata {
@@ -427,13 +436,13 @@ export interface DB {
   shared_links: SharedLinks;
   smart_search: SmartSearch;
   socket_io_attachments: SocketIoAttachments;
-  system_config: SystemConfig;
   system_metadata: SystemMetadata;
   tag_asset: TagAsset;
   tags: Tags;
   tags_closure: TagsClosure;
+  typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
   users: Users;
-  'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
+  "vectors.pg_vector_index_stat": VectorsPgVectorIndexStat;
   version_history: VersionHistory;
 }

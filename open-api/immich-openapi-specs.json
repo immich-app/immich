@@ -10427,7 +10427,7 @@
             "type": "string"
           },
           "isFavorite": {
-            "description": "This property was added in v1.124.0",
+            "description": "This property was added in v1.126.0",
             "type": "boolean"
           },
           "isHidden": {
@@ -10508,7 +10508,7 @@
             "type": "string"
           },
           "isFavorite": {
-            "description": "This property was added in v1.124.0",
+            "description": "This property was added in v1.126.0",
             "type": "boolean"
           },
           "isHidden": {
