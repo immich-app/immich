@@ -164,7 +164,7 @@ export class MetadataService extends BaseService {
     this.logger.verbose('Exif Tags', exifTags);
 
     if (!asset.fileCreatedAt) {
-      asset.fileCreatedAt = stats.birthtime;
+      asset.fileCreatedAt = stats.mtime;
     }
 
     if (!asset.fileModifiedAt) {
