@@ -28,6 +28,7 @@ import {
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
+  getConfig,
   getConfigDefaults,
   login,
   searchAssets,
@@ -413,6 +414,8 @@ export const utils = {
 
     rmSync(path, { recursive: true });
   },
+
+  getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 

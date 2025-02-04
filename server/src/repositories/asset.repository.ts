@@ -473,9 +473,13 @@ export class AssetRepository implements IAssetRepository {
       )
       .$if(property === WithoutProperty.FACES, (qb) =>
         qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .where('job_status.previewAt', 'is not', null)
-          .where('job_status.facesRecognizedAt', 'is', null)
+          .leftJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+          .where((eb) =>
+            eb.or([
+              eb.and([eb('job_status.previewAt', 'is not', null), eb('job_status.facesRecognizedAt', 'is', null)]),
+              eb('assetId', 'is', null),
+            ]),
+          )
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.SIDECAR, (qb) =>
@@ -494,10 +498,11 @@ export class AssetRepository implements IAssetRepository {
       )
       .$if(property === WithoutProperty.THUMBNAIL, (qb) =>
         qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+          .leftJoin('asset_job_status as job_status', 'assetId', 'assets.id')
           .where('assets.isVisible', '=', true)
           .where((eb) =>
             eb.or([
+              eb('assetId', 'is', null),
               eb('job_status.previewAt', 'is', null),
               eb('job_status.thumbnailAt', 'is', null),
               eb('assets.thumbhash', 'is', null),

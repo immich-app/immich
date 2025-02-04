@@ -4,7 +4,6 @@ import {
   AssetResponseDto,
   AssetTypeEnum,
   getAssetInfo,
-  getConfig,
   getMyUser,
   LoginResponseDto,
   SharedLinkType,
@@ -44,8 +43,6 @@ const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
 const locationAssetFilepath = `${testAssetDir}/metadata/gps-position/thompson-springs.jpg`;
 const ratingAssetFilepath = `${testAssetDir}/metadata/rating/mongolels.jpg`;
 const facesAssetFilepath = `${testAssetDir}/metadata/faces/portrait.jpg`;
-
-const getSystemConfig = (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) });
 
 const readTags = async (bytes: Buffer, filename: string) => {
   const filepath = join(tempDir, filename);
@@ -228,7 +225,7 @@ describe('/asset', () => {
     });
 
     it('should get the asset faces', async () => {
-      const config = await getSystemConfig(admin.accessToken);
+      const config = await utils.getSystemConfig(admin.accessToken);
       config.metadata.faces.import = true;
       await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
 

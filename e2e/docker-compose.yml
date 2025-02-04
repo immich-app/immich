@@ -33,6 +33,28 @@ services:
     ports:
       - 2285:2285
 
+  immich-machine-learning:
+    container_name: immich-e2e-machine_learning
+    image: immich-machine-learning-dev:latest
+    # extends:
+    #   file: hwaccel.ml.yml
+    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    build:
+      context: ../machine-learning
+      dockerfile: Dockerfile
+      args:
+        - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    ports:
+      - 3003:3003
+    volumes:
+      - ../machine-learning:/usr/src/app
+      - model-cache:/cache
+    depends_on:
+      - database
+    restart: unless-stopped
+    healthcheck:
+      disable: false
+
   redis:
     image: redis:6.2-alpine@sha256:905c4ee67b8e0aa955331960d2aa745781e6bd89afc44a8584bfd13bc890f0ae
 
@@ -45,3 +67,6 @@ services:
       POSTGRES_DB: immich
     ports:
       - 5435:5432
+
+volumes:
+  model-cache:
