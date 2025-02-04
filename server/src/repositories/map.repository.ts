@@ -96,8 +96,6 @@ export class MapRepository {
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
       .where('deletedAt', 'is', null)
-      .where('exif.latitude', 'is not', null)
-      .where('exif.longitude', 'is not', null)
       .where((builder) => {
         const expression: Expression<SqlBool>[] = [];
 
