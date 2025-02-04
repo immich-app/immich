@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
-import { AssetEntity, withExif } from 'src/entities/asset.entity';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { LogLevel, SystemMetadataKey } from 'src/enum';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
@@ -76,17 +76,19 @@ export class MapRepository {
     this.logger.log('Geodata import completed');
   }
 
-  async getMapMarkers(
-    ownerIds: string[],
-    albumIds: string[],
-    options: MapMarkerSearchOptions = {},
-  ): Promise<MapMarker[]> {
+  @GenerateSql({ params: [[DummyValue.UUID], []] })
+  getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}) {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
-    const assets = (await this.db
+    return this.db
       .selectFrom('assets')
-      .$call(withExif)
-      .select('id')
+      .innerJoin('exif', (builder) =>
+        builder
+          .onRef('assets.id', '=', 'exif.assetId')
+          .on('exif.latitude', 'is not', null)
+          .on('exif.longitude', 'is not', null),
+      )
+      .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
       .leftJoin('albums_assets_assets', (join) => join.onRef('assets.id', '=', 'albums_assets_assets.assetsId'))
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
@@ -96,30 +98,21 @@ export class MapRepository {
       .where('deletedAt', 'is', null)
       .where('exif.latitude', 'is not', null)
       .where('exif.longitude', 'is not', null)
-      .where((eb) => {
-        const ors: Expression<SqlBool>[] = [];
+      .where((builder) => {
+        const expression: Expression<SqlBool>[] = [];
 
         if (ownerIds.length > 0) {
-          ors.push(eb('ownerId', 'in', ownerIds));
+          expression.push(builder('ownerId', 'in', ownerIds));
         }
 
         if (albumIds.length > 0) {
-          ors.push(eb('albums_assets_assets.albumsId', 'in', albumIds));
+          expression.push(builder('albums_assets_assets.albumsId', 'in', albumIds));
         }
 
-        return eb.or(ors);
+        return builder.or(expression);
       })
       .orderBy('fileCreatedAt', 'desc')
-      .execute()) as any as AssetEntity[];
-
-    return assets.map((asset) => ({
-      id: asset.id,
-      lat: asset.exifInfo!.latitude!,
-      lon: asset.exifInfo!.longitude!,
-      city: asset.exifInfo!.city,
-      state: asset.exifInfo!.state,
-      country: asset.exifInfo!.country,
-    }));
+      .execute() as Promise<MapMarker[]>;
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
