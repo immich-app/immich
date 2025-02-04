@@ -17,8 +17,6 @@ from
 where
   "isVisible" = $1
   and "deletedAt" is null
-  and "exif"."latitude" is not null
-  and "exif"."longitude" is not null
   and "ownerId" in ($2)
 order by
   "fileCreatedAt" desc
