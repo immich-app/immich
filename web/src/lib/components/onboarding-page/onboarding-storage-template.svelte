@@ -54,7 +54,7 @@
               <div class="w-full flex place-content-start">
                 <Button class="flex gap-2 place-content-center" onclick={() => onPrevious()}>
                   <Icon path={mdiArrowLeft} size="18" />
-                  <p>{$t('theme')}</p>
+                  <p>{$t('privacy')}</p>
                 </Button>
               </div>
               <div class="flex w-full place-content-end">
