@@ -89,7 +89,7 @@ describe('/shared-links', () => {
     await deleteUserAdmin({ id: user2.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
   });
 
-  describe('GET /share/${key}', () => {
+  describe('GET /share/:key', () => {
     it('should have correct asset count in meta tag for non-empty album', async () => {
       const resp = await request(shareUrl).get(`/${linkWithMetadata.key}`);
       expect(resp.status).toBe(200);
@@ -139,7 +139,10 @@ describe('/shared-links', () => {
       expect(body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ id: linkWithAlbum.id }),
-          expect.objectContaining({ id: linkWithAssets.id }),
+          expect.objectContaining({
+            id: linkWithAssets.id,
+            assets: expect.arrayContaining([expect.objectContaining({ id: asset1.id })]),
+          }),
           expect.objectContaining({ id: linkWithPassword.id }),
           expect.objectContaining({ id: linkWithMetadata.id }),
           expect.objectContaining({ id: linkWithoutMetadata.id }),

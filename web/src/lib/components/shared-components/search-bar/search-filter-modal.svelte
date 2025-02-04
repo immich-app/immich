@@ -6,7 +6,7 @@
 
   export type SearchFilter = {
     query: string;
-    queryType: 'smart' | 'metadata';
+    queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
     tagIds: SvelteSet<string>;
     location: SearchLocationFilter;
@@ -110,6 +110,7 @@
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
+      description: filter.queryType === 'description' ? query : undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,

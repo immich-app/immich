@@ -104,6 +104,7 @@ export interface SearchExifOptions {
   make?: string | null;
   model?: string | null;
   state?: string | null;
+  description?: string | null;
 }
 
 export interface SearchEmbeddingOptions {
