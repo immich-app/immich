@@ -23,6 +23,7 @@ services:
       - IMMICH_ENV=testing
       - IMMICH_PORT=2285
       - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
+      - IMMICH_LOG_LEVEL=verbose
     volumes:
       - ./test-assets:/test-assets
     extra_hosts:

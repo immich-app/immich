@@ -454,8 +454,8 @@ export class AssetRepository implements IAssetRepository {
       .selectAll('assets')
       .$if(property === WithoutProperty.DUPLICATE, (qb) =>
         qb
-          .innerJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
-          .where('job_status.duplicatesDetectedAt', 'is', null)
+          .leftJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
+          .where((eb) => eb.or([eb('job_status.duplicatesDetectedAt', 'is', null), eb('assetId', 'is', null)]))
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
           .where('assets.isVisible', '=', true),
@@ -474,12 +474,8 @@ export class AssetRepository implements IAssetRepository {
       .$if(property === WithoutProperty.FACES, (qb) =>
         qb
           .leftJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .where((eb) =>
-            eb.or([
-              eb.and([eb('job_status.previewAt', 'is not', null), eb('job_status.facesRecognizedAt', 'is', null)]),
-              eb('assetId', 'is', null),
-            ]),
-          )
+          .where((eb) => eb.or([eb('job_status.facesRecognizedAt', 'is', null), eb('assetId', 'is', null)]))
+          .where('job_status.previewAt', 'is not', null)
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.SIDECAR, (qb) =>
@@ -489,8 +485,8 @@ export class AssetRepository implements IAssetRepository {
       )
       .$if(property === WithoutProperty.SMART_SEARCH, (qb) =>
         qb
-          .innerJoin('asset_job_status as job_status', 'assetId', 'assets.id')
-          .where('job_status.previewAt', 'is not', null)
+          .leftJoin('asset_job_status as job_status', 'assetId', 'assets.id')
+          .where((eb) => eb.or([eb('job_status.previewAt', 'is not', null), eb('assetId', 'is', null)]))
           .where('assets.isVisible', '=', true)
           .where((eb) =>
             eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'assets.id'))),

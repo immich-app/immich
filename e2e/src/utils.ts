@@ -12,6 +12,8 @@ import {
   Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
+  SmartSearchDto,
+  SystemConfigDto,
   UpdateLibraryDto,
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
@@ -32,6 +34,7 @@ import {
   getConfigDefaults,
   login,
   searchAssets,
+  searchSmart,
   sendJobCommand,
   setBaseUrl,
   signUpAdmin,
@@ -58,9 +61,10 @@ import { io, type Socket } from 'socket.io-client';
 import { loginDto, signupDto } from 'src/fixtures';
 import { makeRandomImage } from 'src/generators';
 import request from 'supertest';
+import { a } from 'vitest/dist/chunks/suite.B2jumIFP.js';
 
 type CommandResponse = { stdout: string; stderr: string; exitCode: number | null };
-type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden';
+type EventType = 'assetUpload' | 'assetUpdate' | 'assetDelete' | 'userDelete' | 'assetHidden' | 'configUpdate';
 type WaitOptions = { event: EventType; id?: string; total?: number; timeout?: number };
 type AdminSetupOptions = { onboarding?: boolean };
 type FileData = { bytes?: Buffer; filename: string };
@@ -111,6 +115,7 @@ const events: Record<EventType, Set<string>> = {
   assetUpdate: new Set<string>(),
   assetDelete: new Set<string>(),
   userDelete: new Set<string>(),
+  configUpdate: new Set<string>(),
 };
 
 const idCallbacks: Record<string, () => void> = {};
@@ -118,15 +123,18 @@ const countCallbacks: Record<string, { count: number; callback: () => void }> = 
 
 const execPromise = promisify(exec);
 
-const onEvent = ({ event, id }: { event: EventType; id: string }) => {
+const onEvent = ({ event, id }: { event: EventType; id?: string }) => {
   // console.log(`Received event: ${event} [id=${id}]`);
   const set = events[event];
-  set.add(id);
 
-  const idCallback = idCallbacks[id];
-  if (idCallback) {
-    idCallback();
-    delete idCallbacks[id];
+  if (id) {
+    set.add(id);
+
+    const idCallback = idCallbacks[id];
+    if (idCallback) {
+      idCallback();
+      delete idCallbacks[id];
+    }
   }
 
   const item = countCallbacks[event];
@@ -217,6 +225,8 @@ export const utils = {
         .on('on_asset_hidden', (assetId: string) => onEvent({ event: 'assetHidden', id: assetId }))
         .on('on_asset_delete', (assetId: string) => onEvent({ event: 'assetDelete', id: assetId }))
         .on('on_user_delete', (userId: string) => onEvent({ event: 'userDelete', id: userId }))
+        //.on('on_config_update', () => onEvent({ event: 'configUpdate' }))
+        .onAny((event, ...args) => console.log(`Received event: ${event}`, args))
         .connect();
     });
   },
@@ -239,6 +249,10 @@ export const utils = {
 
   waitForWebsocketEvent: ({ event, id, total: count, timeout: ms }: WaitOptions): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
+      if (event === 'configUpdate') {
+        count = 1;
+      }
+
       if (!id && !count) {
         reject(new Error('id or count must be provided for waitForWebsocketEvent'));
       }
@@ -424,6 +438,10 @@ export const utils = {
 
   searchAssets: async (accessToken: string, dto: MetadataSearchDto) => {
     return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
+  },
+
+  searchSmart: async (accessToken: string, dto: SmartSearchDto) => {
+    return searchSmart({ smartSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
 
   archiveAssets: (accessToken: string, ids: string[]) =>
