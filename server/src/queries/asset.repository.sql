@@ -47,9 +47,6 @@ with
               and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
-          and "assets"."fileCreatedAt" is not null
-          and "assets"."fileModifiedAt" is not null
-          and "assets"."localDateTime" is not null
         order by
           (assets."localDateTime" at time zone 'UTC')::date desc
         limit
@@ -164,6 +161,7 @@ where
   and "isVisible" = $3
   and "assets"."fileCreatedAt" is not null
   and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -246,8 +244,6 @@ where
     "assets"."sidecarPath" = $1
     or "assets"."sidecarPath" is null
   )
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
   and "assets"."isVisible" = $2
   and "deletedAt" is null
 order by
@@ -310,9 +306,6 @@ where
   )
   and "assets"."deletedAt" is null
   and "assets"."isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
   and date_trunc($3, "localDateTime" at time zone 'UTC') at time zone 'UTC' = $4
 order by
   "assets"."localDateTime" desc
@@ -339,9 +332,6 @@ with
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
-      and "assets"."fileCreatedAt" is not null
-      and "assets"."fileModifiedAt" is not null
-      and "assets"."localDateTime" is not null
     group by
       "assets"."duplicateId"
   ),
@@ -399,8 +389,6 @@ from
 where
   "ownerId" = $2::uuid
   and "isVisible" = $3
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
   and "isArchived" = $4
   and "type" = $5
   and "deletedAt" is null
@@ -430,8 +418,6 @@ from
 where
   "assets"."ownerId" = $1::uuid
   and "isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
   and "updatedAt" <= $3
   and "assets"."id" > $4
 order by
@@ -462,8 +448,6 @@ from
 where
   "assets"."ownerId" = any ($1::uuid[])
   and "isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
   and "updatedAt" > $3
 limit
   $4

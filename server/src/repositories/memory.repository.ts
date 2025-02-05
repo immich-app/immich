@@ -105,10 +105,7 @@ export class MemoryRepository implements IBulkAsset {
             .selectAll('assets')
             .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
             .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
-            .where('assets.deletedAt', 'is', null)
-            .where('assets.fileCreatedAt', 'is not', null)
-            .where('assets.fileModifiedAt', 'is not', null)
-            .where('assets.localDateTime', 'is not', null),
+            .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )
       .where('id', '=', id)
