@@ -33,13 +33,17 @@ class PersonNameEditForm extends HookConsumerWidget {
     final contacts = useState<List<Contact>>([]);
     final filteredContacts = useState<List<Contact>>([]);
     final isLoading = useState(false);
-    final isEditing = useState(true);
 
     useEffect(
       () {
-        loadContacts() async {
+        Future<void> loadContacts() async {
           try {
-            final status = await Permission.contacts.request();
+            var status = await Permission.contacts.status;
+            // Check status and re-request permission if not needed
+            if (!status.isGranted && !status.isPermanentlyDenied) {
+              status = await Permission.contacts.request();
+            }
+
             if (status.isGranted) {
               isLoading.value = true;
               contacts.value = await FastContacts.getAllContacts();
@@ -60,7 +64,7 @@ class PersonNameEditForm extends HookConsumerWidget {
       () {
         // Filter contacts based on the input name
         void filterContacts() {
-          if (controller.text.isEmpty || !isEditing.value) {
+          if (controller.text.isEmpty) {
             filteredContacts.value = [];
             return;
           }
@@ -89,7 +93,7 @@ class PersonNameEditForm extends HookConsumerWidget {
         style: TextStyle(fontWeight: FontWeight.bold),
       ).tr(),
       content: SizedBox(
-        width: double.maxFinite,
+        width: MediaQuery.of(context).size.width * 0.6,
         height: filteredContacts.value.isEmpty
             ? 80
             : MediaQuery.of(context).size.height * 0.4,
@@ -98,9 +102,6 @@ class PersonNameEditForm extends HookConsumerWidget {
             TextFormField(
               controller: controller,
               autofocus: true,
-              onTap: () {
-                isEditing.value = true;
-              },
               decoration: InputDecoration(
                 hintText: 'search_page_person_add_name_dialog_hint'.tr(),
                 border: const OutlineInputBorder(),
@@ -149,7 +150,6 @@ class PersonNameEditForm extends HookConsumerWidget {
                           onTap: () {
                             controller.text = contact.displayName;
                             filteredContacts.value = [];
-                            isEditing.value = false;
                             FocusScope.of(context).unfocus();
                           },
                         );
