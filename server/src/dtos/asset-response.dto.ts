@@ -113,16 +113,6 @@ const hexOrBufferToBase64 = (encoded: string | Buffer) => {
 export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): AssetResponseDto {
   const { stripMetadata = false, withStack = false } = options;
 
-  if (entity.localDateTime === null) {
-    throw new Error(`Asset ${entity.id} has no localDateTime`);
-  }
-  if (entity.fileCreatedAt === null) {
-    throw new Error(`Asset ${entity.id} has no fileCreatedAt`);
-  }
-  if (entity.fileModifiedAt === null) {
-    throw new Error(`Asset ${entity.id} has no fileModifiedAt`);
-  }
-
   if (stripMetadata) {
     const sanitizedAssetResponse: SanitizedAssetResponseDto = {
       id: entity.id,
