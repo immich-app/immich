@@ -37,6 +37,9 @@ export class ViewRepository {
       .where('deletedAt', 'is', null)
       .where('originalPath', 'like', `%${normalizedPath}/%`)
       .where('originalPath', 'not like', `%${normalizedPath}/%/%`)
+      .$narrowType<{ fileCreatedAt: Date }>()
+      .$narrowType<{ fileModifiedAt: Date }>()
+      .$narrowType<{ localDateTime: Date }>()
       .orderBy(
         (eb) => eb.fn('regexp_replace', ['assets.originalPath', eb.val('.*/(.+)'), eb.val(String.raw`\1`)]),
         'asc',
