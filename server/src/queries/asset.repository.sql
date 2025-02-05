@@ -49,6 +49,7 @@ with
           and "assets"."deletedAt" is null
           and "assets"."fileCreatedAt" is not null
           and "assets"."fileModifiedAt" is not null
+          and "assets"."localDateTime" is not null
         order by
           (assets."localDateTime" at time zone 'UTC')::date desc
         limit
@@ -461,8 +462,6 @@ from
 where
   "assets"."ownerId" = any ($1::uuid[])
   and "isVisible" = $2
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
   and "updatedAt" > $3
 limit
   $4

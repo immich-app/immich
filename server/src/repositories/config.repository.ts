@@ -227,6 +227,7 @@ const getEnv = (): EnvData => {
   }
 
   const driverOptions = {
+    ...parsedOptions,
     onnotice: (notice: Notice) => {
       if (notice['severity'] !== 'NOTICE') {
         console.warn('Postgres notice:', notice);
@@ -247,7 +248,9 @@ const getEnv = (): EnvData => {
         serialize: (value: number) => value.toString(),
       },
     },
-    ...parsedOptions,
+    connection: {
+      TimeZone: 'UTC',
+    },
   };
 
   return {
