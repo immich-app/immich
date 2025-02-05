@@ -9,25 +9,20 @@ double getScaleForScaleState(
   PhotoViewScaleState scaleState,
   ScaleBoundaries scaleBoundaries,
 ) {
-  switch (scaleState) {
-    case PhotoViewScaleState.initial:
-    case PhotoViewScaleState.zoomedIn:
-    case PhotoViewScaleState.zoomedOut:
-      return _clampSize(scaleBoundaries.initialScale, scaleBoundaries);
-    case PhotoViewScaleState.covering:
-      return _clampSize(
+  return switch (scaleState) {
+    PhotoViewScaleState.initial ||
+    PhotoViewScaleState.zoomedIn ||
+    PhotoViewScaleState.zoomedOut =>
+      _clampSize(scaleBoundaries.initialScale, scaleBoundaries),
+    PhotoViewScaleState.covering => _clampSize(
         _scaleForCovering(
           scaleBoundaries.outerSize,
           scaleBoundaries.childSize,
         ),
         scaleBoundaries,
-      );
-    case PhotoViewScaleState.originalSize:
-      return _clampSize(1.0, scaleBoundaries);
-    // Will never be reached
-    default:
-      return 0;
-  }
+      ),
+    PhotoViewScaleState.originalSize => _clampSize(1.0, scaleBoundaries),
+  };
 }
 
 /// Internal class to wraps custom scale boundaries (min, max and initial)

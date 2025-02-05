@@ -106,13 +106,14 @@ order by
 -- SharedLinkRepository.getAll
 select distinct
   on ("shared_links"."createdAt") "shared_links".*,
+  to_json("assets") as "assets",
   to_json("album") as "album"
 from
   "shared_links"
   left join "shared_link__asset" on "shared_link__asset"."sharedLinksId" = "shared_links"."id"
   left join lateral (
     select
-      "assets".*
+      json_agg("assets") as "assets"
     from
       "assets"
     where

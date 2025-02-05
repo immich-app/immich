@@ -32,6 +32,9 @@ export class PersonCreateDto {
    */
   @ValidateBoolean({ optional: true })
   isHidden?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
 }
 
 export class PersonUpdateDto extends PersonCreateDto {
@@ -97,6 +100,8 @@ export class PersonResponseDto {
   isHidden!: boolean;
   @PropertyLifecycle({ addedAt: 'v1.107.0' })
   updatedAt?: Date;
+  @PropertyLifecycle({ addedAt: 'v1.126.0' })
+  isFavorite?: boolean;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -170,6 +175,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     birthDate: person.birthDate,
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
+    isFavorite: person.isFavorite,
     updatedAt: person.updatedAt,
   };
 }

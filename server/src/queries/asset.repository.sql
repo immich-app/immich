@@ -50,6 +50,8 @@ with
           and "assets"."fileCreatedAt" is not null
           and "assets"."fileModifiedAt" is not null
           and "assets"."localDateTime" is not null
+        order by
+          (assets."localDateTime" at time zone 'UTC')::date desc
         limit
           $7
       ) as "a" on true

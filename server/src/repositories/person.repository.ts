@@ -135,6 +135,7 @@ export class PersonRepository implements IPersonRepository {
       )
       .where('person.ownerId', '=', userId)
       .orderBy('person.isHidden', 'asc')
+      .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
         eb.or([
           eb('person.name', '!=', ''),
