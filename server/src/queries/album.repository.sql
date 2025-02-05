@@ -98,9 +98,6 @@ select
         where
           "albums_assets_assets"."albumsId" = "albums"."id"
           and "assets"."deletedAt" is null
-          and "assets"."fileCreatedAt" is not null
-          and "assets"."fileModifiedAt" is not null
-          and "assets"."localDateTime" is not null
         order by
           "assets"."fileCreatedAt" desc
       ) as "asset"
@@ -215,9 +212,6 @@ from
 where
   "albums"."id" in ($1)
   and "assets"."deletedAt" is null
-  and "assets"."fileCreatedAt" is not null
-  and "assets"."fileModifiedAt" is not null
-  and "assets"."localDateTime" is not null
 group by
   "albums"."id"
 

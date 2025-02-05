@@ -63,9 +63,6 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
-        .where('assets.fileCreatedAt', 'is not', null)
-        .where('assets.fileModifiedAt', 'is not', null)
-        .where('assets.localDateTime', 'is not', null)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -135,9 +132,6 @@ export class AlbumRepository implements IAlbumRepository {
       .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
       .where('albums.id', 'in', ids)
       .where('assets.deletedAt', 'is', null)
-      .where('assets.fileCreatedAt', 'is not', null)
-      .where('assets.fileModifiedAt', 'is not', null)
-      .where('assets.localDateTime', 'is not', null)
       .groupBy('albums.id')
       .execute();
   }
@@ -377,12 +371,7 @@ export class AlbumRepository implements IAlbumRepository {
     return eb
       .selectFrom('albums_assets_assets as album_assets')
       .innerJoin('assets', (join) =>
-        join
-          .onRef('album_assets.assetsId', '=', 'assets.id')
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.fileCreatedAt', 'is not', null)
-          .on('assets.fileModifiedAt', 'is not', null)
-          .on('assets.localDateTime', 'is not', null),
+        join.onRef('album_assets.assetsId', '=', 'assets.id').on('assets.deletedAt', 'is', null),
       )
       .whereRef('album_assets.albumsId', '=', 'albums.id');
   }
