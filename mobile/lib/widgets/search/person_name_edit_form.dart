@@ -39,8 +39,8 @@ class PersonNameEditForm extends HookConsumerWidget {
         Future<void> loadContacts() async {
           try {
             var status = await Permission.contacts.status;
-            // Check status and re-request permission if not needed
-            if (!status.isGranted && !status.isPermanentlyDenied) {
+            // Check status and re-request permission if needed
+            if (!status.isPermanentlyDenied) {
               status = await Permission.contacts.request();
             }
 
@@ -80,6 +80,9 @@ class PersonNameEditForm extends HookConsumerWidget {
               )
               .toList();
         }
+
+        // Filter contacts on first load too
+        filterContacts();
 
         controller.addListener(filterContacts);
         return () => controller.removeListener(filterContacts);
