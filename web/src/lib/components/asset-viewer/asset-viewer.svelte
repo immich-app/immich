@@ -47,6 +47,7 @@
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
   import ImagePanoramaViewer from './image-panorama-viewer.svelte';
+  import FaceEditor from '$lib/components/asset-viewer/face-editor.svelte';
 
   type HasAsset = boolean;
 
@@ -552,6 +553,8 @@
         {/if}
       {/key}
     {/if}
+
+    <FaceEditor />
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
