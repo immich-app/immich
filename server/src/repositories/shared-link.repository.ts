@@ -25,9 +25,6 @@ export class SharedLinkRepository implements ISharedLinkRepository {
             .whereRef('shared_links.id', '=', 'shared_link__asset.sharedLinksId')
             .innerJoin('assets', 'assets.id', 'shared_link__asset.assetsId')
             .where('assets.deletedAt', 'is', null)
-            .where('assets.fileCreatedAt', 'is not', null)
-            .where('assets.fileModifiedAt', 'is not', null)
-            .where('assets.localDateTime', 'is not', null)
             .selectAll('assets')
             .innerJoinLateral(
               (eb) => eb.selectFrom('exif').selectAll('exif').whereRef('exif.assetId', '=', 'assets.id').as('exifInfo'),
@@ -53,9 +50,6 @@ export class SharedLinkRepository implements ISharedLinkRepository {
                   .selectAll('assets')
                   .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
                   .where('assets.deletedAt', 'is', null)
-                  .where('assets.fileCreatedAt', 'is not', null)
-                  .where('assets.fileModifiedAt', 'is not', null)
-                  .where('assets.localDateTime', 'is not', null)
                   .innerJoinLateral(
                     (eb) =>
                       eb
@@ -112,9 +106,6 @@ export class SharedLinkRepository implements ISharedLinkRepository {
             .select((eb) => eb.fn.jsonAgg('assets').as('assets'))
             .whereRef('assets.id', '=', 'shared_link__asset.assetsId')
             .where('assets.deletedAt', 'is', null)
-            .where('assets.fileCreatedAt', 'is not', null)
-            .where('assets.fileModifiedAt', 'is not', null)
-            .where('assets.localDateTime', 'is not', null)
             .as('assets'),
         (join) => join.onTrue(),
       )

@@ -101,13 +101,13 @@ export class AssetEntity {
 
   @Index('idx_asset_file_created_at')
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  fileCreatedAt!: Date | null;
+  fileCreatedAt!: Date;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  localDateTime!: Date | null;
+  localDateTime!: Date;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  fileModifiedAt!: Date | null;
+  fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
   isFavorite!: boolean;
@@ -179,6 +179,12 @@ export class AssetEntity {
   @Column({ type: 'uuid', nullable: true })
   duplicateId!: string | null;
 }
+
+export type AssetEntityPlaceholder = AssetEntity & {
+  fileCreatedAt: Date | null;
+  fileModifiedAt: Date | null;
+  localDateTime: Date | null;
+};
 
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));

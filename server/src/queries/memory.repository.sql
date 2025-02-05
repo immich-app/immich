@@ -26,9 +26,6 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
-          and "assets"."fileCreatedAt" is not null
-          and "assets"."fileModifiedAt" is not null
-          and "assets"."localDateTime" is not null
       ) as agg
   ) as "assets"
 from
@@ -59,9 +56,6 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
-          and "assets"."fileCreatedAt" is not null
-          and "assets"."fileModifiedAt" is not null
-          and "assets"."localDateTime" is not null
       ) as agg
   ) as "assets"
 from
