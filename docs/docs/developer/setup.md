@@ -76,7 +76,7 @@ To see local changes to `@immich/ui` in Immich, do the following:
 
 ### Mobile app
 
-The mobile app `(/mobile)` will required Flutter toolchain 3.13.x to be installed on your system.
+The mobile app `(/mobile)` will required Flutter toolchain 3.13.x and FVM to be installed on your system.
 
 Please refer to the [Flutter's official documentation](https://flutter.dev/docs/get-started/install) for more information on setting up the toolchain on your machine.
 
