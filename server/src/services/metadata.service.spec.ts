@@ -339,6 +339,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: assetStub.image.fileCreatedAt,
+        fileModifiedAt: assetStub.image.fileModifiedAt,
         localDateTime: assetStub.image.fileCreatedAt,
       });
     });

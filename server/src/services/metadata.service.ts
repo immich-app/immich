@@ -10,7 +10,6 @@ import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetDatesDto } from 'src/dtos/asset.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
@@ -37,6 +36,13 @@ const EXIF_DATE_TAGS: Array<keyof Tags> = [
   'MediaCreateDate',
   'DateTimeCreated',
 ];
+
+class AssetDatesDto {
+  dateTimeOriginal!: Date;
+  timeZone!: string | null;
+  localDateTime!: Date;
+  modifyDate!: Date;
+}
 
 const validate = <T>(value: T): NonNullable<T> | null => {
   // handle lists of numbers
@@ -464,7 +470,6 @@ export class MetadataService extends BaseService {
         }
       } else {
         const motionAssetId = this.cryptoRepository.randomUUID();
-
         const dates = this.getDates(asset, tags);
         motionAsset = await this.assetRepository.create({
           id: motionAssetId,
@@ -641,8 +646,6 @@ export class MetadataService extends BaseService {
       timeZone,
       localDateTime,
       modifyDate,
-      fileCreatedAt,
-      fileModifiedAt,
     };
   }
 
