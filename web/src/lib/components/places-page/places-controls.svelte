@@ -44,12 +44,13 @@
 </script>
 
 <!-- Search Places -->
-<div class="hidden xl:block h-10 xl:w-60 2xl:w-80">
+<div class="hidden md:block h-10 xl:w-60 2xl:w-80">
   <SearchBar placeholder={$t('search_places')} bind:name={searchQuery} showLoadingSpinner={false} />
 </div>
 
 <!-- Group Places -->
 <Dropdown
+  position="bottom-right"
   title={$t('group_places_by')}
   options={Object.values(groupOptionsMetadata)}
   selectedOption={selectedGroupOption}
