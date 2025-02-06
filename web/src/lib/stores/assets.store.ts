@@ -463,7 +463,7 @@ export class AssetStore {
       }
     }
 
-    const viewPortWidth = this.viewport.width;
+    const viewportWidth = this.viewport.width;
     if (!bucket.isBucketHeightActual) {
       const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewPortWidth);
