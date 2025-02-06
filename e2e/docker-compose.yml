@@ -32,6 +32,9 @@ services:
       - database
     ports:
       - 2285:2285
+    cap_drop:
+      # We need this to perform testing on permission errors
+      - DAC_OVERRIDE
 
   redis:
     image: redis:6.2-alpine@sha256:905c4ee67b8e0aa955331960d2aa745781e6bd89afc44a8584bfd13bc890f0ae

@@ -1,5 +1,5 @@
 import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
-import { cpSync, existsSync, rmSync, unlinkSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, promises, rmSync, unlinkSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
@@ -490,6 +490,34 @@ describe('/libraries', () => {
 
       utils.removeImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
       utils.removeImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
+    });
+
+    it('should handle permission errors on import paths without error', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/`],
+      });
+
+      const stat = await promises.stat(`${testAssetDir}/temp/directoryA`);
+      const mode = stat.mode;
+
+      chmodSync(`${testAssetDir}/temp/directoryB`, 0o000);
+
+      const { status } = await request(app)
+        .post(`/libraries/${library.id}/scan`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send();
+      expect(status).toBe(204);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'library');
+
+      chmodSync(`${testAssetDir}/temp/directoryB`, mode);
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(1);
+      expect(assets.items.find((asset) => asset.originalPath.includes('directoryA'))).toBeDefined();
+      expect(assets.items.find((asset) => asset.originalPath.includes('directoryB'))).not.toBeDefined();
     });
 
     it('should reimport a modified file', async () => {
