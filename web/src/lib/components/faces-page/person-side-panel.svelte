@@ -24,7 +24,7 @@
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
-  import { photoViewer } from '$lib/stores/assets.store';
+  import { photoViewerImgElement } from '$lib/stores/assets.store';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -242,7 +242,7 @@
                     hidden={face.person.isHidden}
                   />
                 {:else}
-                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewer)}
+                  {#await zoomImageToBase64(face, assetId, assetType, $photoViewerImgElement)}
                     <ImageThumbnail
                       curve
                       shadow
