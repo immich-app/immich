@@ -15,6 +15,7 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -36,6 +37,7 @@ import {
   IMetadataRepository,
   INotificationRepository,
   IOAuthRepository,
+  IProcessRepository,
   IServerInfoRepository,
   ISystemMetadataRepository,
   ITrashRepository,
@@ -165,7 +167,7 @@ export const newTestService = <T extends BaseService>(
     oauthMock as IOAuthRepository as OAuthRepository,
     partnerMock,
     personMock,
-    processMock,
+    processMock as IProcessRepository as ProcessRepository,
     searchMock,
     serverInfoMock as IServerInfoRepository as ServerInfoRepository,
     sessionMock,
