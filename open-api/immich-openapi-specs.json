@@ -10286,6 +10286,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -10402,6 +10406,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "isFavorite": {
             "type": "boolean"
           },
@@ -10421,6 +10429,10 @@
           "birthDate": {
             "format": "date",
             "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "description": "This property was added in v1.126.0",
             "type": "string"
           },
           "id": {
@@ -10473,6 +10485,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -10496,6 +10512,10 @@
           "birthDate": {
             "format": "date",
             "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "description": "This property was added in v1.126.0",
             "type": "string"
           },
           "faces": {
@@ -12611,7 +12631,6 @@
         "properties": {
           "color": {
             "nullable": true,
-            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           }
         },

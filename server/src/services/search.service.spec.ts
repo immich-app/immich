@@ -31,6 +31,8 @@ describe(SearchService.name, () => {
     it('should pass options to search', async () => {
       const { name } = personStub.withName;
 
+      personMock.getByName.mockResolvedValue([]);
+
       await sut.searchPerson(authStub.user1, { name, withHidden: false });
 
       expect(personMock.getByName).toHaveBeenCalledWith(authStub.user1.user.id, name, { withHidden: false });

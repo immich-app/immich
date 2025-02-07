@@ -14,6 +14,7 @@ class PersonResponseDto {
   /// Returns a new [PersonResponseDto] instance.
   PersonResponseDto({
     required this.birthDate,
+    this.color,
     required this.id,
     this.isFavorite,
     required this.isHidden,
@@ -23,6 +24,15 @@ class PersonResponseDto {
   });
 
   DateTime? birthDate;
+
+  /// This property was added in v1.126.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? color;
 
   String id;
 
@@ -53,6 +63,7 @@ class PersonResponseDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonResponseDto &&
     other.birthDate == birthDate &&
+    other.color == color &&
     other.id == id &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
@@ -64,6 +75,7 @@ class PersonResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
@@ -72,7 +84,7 @@ class PersonResponseDto {
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
-  String toString() => 'PersonResponseDto[birthDate=$birthDate, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
+  String toString() => 'PersonResponseDto[birthDate=$birthDate, color=$color, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name, thumbnailPath=$thumbnailPath, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -80,6 +92,11 @@ class PersonResponseDto {
       json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
     } else {
     //  json[r'birthDate'] = null;
+    }
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+    //  json[r'color'] = null;
     }
       json[r'id'] = this.id;
     if (this.isFavorite != null) {
@@ -108,6 +125,7 @@ class PersonResponseDto {
 
       return PersonResponseDto(
         birthDate: mapDateTime(json, r'birthDate', r''),
+        color: mapValueOfType<String>(json, r'color'),
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,

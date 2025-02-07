@@ -276,6 +276,7 @@ export interface Partners {
 
 export interface Person {
   birthDate: Timestamp | null;
+  color: string | null;
   createdAt: Generated<Timestamp>;
   faceAssetId: string | null;
   id: Generated<string>;

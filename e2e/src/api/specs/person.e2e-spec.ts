@@ -195,6 +195,7 @@ describe('/people', () => {
         .send({
           name: 'New Person',
           birthDate: '1990-01-01',
+          color: '#333',
         });
       expect(status).toBe(201);
       expect(body).toMatchObject({
@@ -271,6 +272,24 @@ describe('/people', () => {
         .send({ birthDate: null });
       expect(status).toBe(200);
       expect(body).toMatchObject({ birthDate: null });
+    });
+
+    it('should set a color', async () => {
+      const { status, body } = await request(app)
+        .put(`/people/${visiblePerson.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ color: '#555' });
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ color: '#555' });
+    });
+
+    it('should clear a color', async () => {
+      const { status, body } = await request(app)
+        .put(`/people/${visiblePerson.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ color: null });
+      expect(status).toBe(200);
+      expect(body.color).toBeUndefined();
     });
 
     it('should mark a person as favorite', async () => {
