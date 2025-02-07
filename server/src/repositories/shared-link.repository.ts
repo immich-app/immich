@@ -103,12 +103,13 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         (eb) =>
           eb
             .selectFrom('assets')
+            .select((eb) => eb.fn.jsonAgg('assets').as('assets'))
             .whereRef('assets.id', '=', 'shared_link__asset.assetsId')
             .where('assets.deletedAt', 'is', null)
-            .selectAll('assets')
             .as('assets'),
         (join) => join.onTrue(),
       )
+      .select((eb) => eb.fn.toJson('assets').as('assets'))
       .leftJoinLateral(
         (eb) =>
           eb

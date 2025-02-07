@@ -9949,6 +9949,9 @@
             "format": "date-time",
             "type": "string"
           },
+          "description": {
+            "type": "string"
+          },
           "deviceAssetId": {
             "type": "string"
           },
@@ -10283,6 +10286,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -10290,6 +10297,9 @@
           "id": {
             "description": "Person id.",
             "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
           },
           "isHidden": {
             "description": "Person visibility",
@@ -10396,6 +10406,13 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
           "isHidden": {
             "description": "Person visibility",
             "type": "boolean"
@@ -10414,8 +10431,16 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "description": "This property was added in v1.126.0",
+            "type": "string"
+          },
           "id": {
             "type": "string"
+          },
+          "isFavorite": {
+            "description": "This property was added in v1.126.0",
+            "type": "boolean"
           },
           "isHidden": {
             "type": "boolean"
@@ -10460,9 +10485,16 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
           },
           "isHidden": {
             "description": "Person visibility",
@@ -10482,6 +10514,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "description": "This property was added in v1.126.0",
+            "type": "string"
+          },
           "faces": {
             "items": {
               "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
@@ -10490,6 +10526,10 @@
           },
           "id": {
             "type": "string"
+          },
+          "isFavorite": {
+            "description": "This property was added in v1.126.0",
+            "type": "boolean"
           },
           "isHidden": {
             "type": "boolean"
@@ -12591,7 +12631,6 @@
         "properties": {
           "color": {
             "nullable": true,
-            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           }
         },

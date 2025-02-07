@@ -47,6 +47,8 @@ with
               and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
+        order by
+          (assets."localDateTime" at time zone 'UTC')::date desc
         limit
           $7
       ) as "a" on true

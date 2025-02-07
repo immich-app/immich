@@ -104,7 +104,7 @@ export class PersonService extends BaseService {
         await this.personRepository.reassignFace(face.id, personId);
       }
 
-      result.push(person);
+      result.push(mapPerson(person));
     }
     if (changeFeaturePhoto.length > 0) {
       // Remove duplicates
@@ -178,19 +178,23 @@ export class PersonService extends BaseService {
     });
   }
 
-  create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
-    return this.personRepository.create({
+  async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    const person = await this.personRepository.create({
       ownerId: auth.user.id,
       name: dto.name,
       birthDate: dto.birthDate,
       isHidden: dto.isHidden,
+      isFavorite: dto.isFavorite,
+      color: dto.color,
     });
+
+    return mapPerson(person);
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PERSON_UPDATE, ids: [id] });
 
-    const { name, birthDate, isHidden, featureFaceAssetId: assetId } = dto;
+    const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     // TODO: set by faceId directly
     let faceId: string | undefined = undefined;
     if (assetId) {
@@ -203,7 +207,15 @@ export class PersonService extends BaseService {
       faceId = face.id;
     }
 
-    const person = await this.personRepository.update({ id, faceAssetId: faceId, name, birthDate, isHidden });
+    const person = await this.personRepository.update({
+      id,
+      faceAssetId: faceId,
+      name,
+      birthDate,
+      isHidden,
+      isFavorite,
+      color,
+    });
 
     if (assetId) {
       await this.jobRepository.queue({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } });
@@ -221,6 +233,7 @@ export class PersonService extends BaseService {
           name: person.name,
           birthDate: person.birthDate,
           featureFaceAssetId: person.featureFaceAssetId,
+          isFavorite: person.isFavorite,
         });
         results.push({ id: person.id, success: true });
       } catch (error: Error | any) {

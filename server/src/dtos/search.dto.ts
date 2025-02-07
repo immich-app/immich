@@ -136,6 +136,11 @@ export class MetadataSearchDto extends RandomSearchDto {
   @IsString()
   @IsNotEmpty()
   @Optional()
+  description?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Optional()
   checksum?: string;
 
   @IsString()

@@ -72,7 +72,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
         </ul>
     </details>
 
-5.  Click "**Save Changes**", you will be promoted to edit stack UI labels, just leave this blank and click "**Ok**"
+5.  Click "**Save Changes**", you will be prompted to edit stack UI labels, just leave this blank and click "**Ok**"
 6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
 7.  Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
 
