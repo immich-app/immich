@@ -228,14 +228,13 @@ export class LibraryService extends BaseService {
     return mapLibrary(library);
   }
 
-  private async syncFiles({ id, ownerId }: LibraryEntity, assetPaths: string[]) {
+  private async syncFiles({ id }: LibraryEntity, assetPaths: string[]) {
     await this.jobRepository.queueAll(
       assetPaths.map((assetPath) => ({
         name: JobName.LIBRARY_SYNC_FILE,
         data: {
           id,
           assetPath,
-          ownerId,
         },
       })),
     );
@@ -401,7 +400,7 @@ export class LibraryService extends BaseService {
     const mtime = stat.mtime;
 
     asset = await this.assetRepository.create({
-      ownerId: job.ownerId,
+      ownerId: library.ownerId,
       libraryId: job.id,
       checksum: pathHash,
       originalPath: assetPath,
@@ -433,12 +432,18 @@ export class LibraryService extends BaseService {
   async queueScan(id: string) {
     await this.findOrFail(id);
 
+    // We purge any existing scan jobs for this library. This is because the scan settings
+    // might have changed and the user wants to start a new scan with these settings.
+    await this.jobRepository.removeJob(id, JobName.LIBRARY_QUEUE_SYNC_FILES);
+    await this.jobRepository.removeJob(id, JobName.LIBRARY_QUEUE_SYNC_ASSETS);
+
     await this.jobRepository.queue({
       name: JobName.LIBRARY_QUEUE_SYNC_FILES,
       data: {
         id,
       },
     });
+
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 

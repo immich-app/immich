@@ -181,7 +181,6 @@ describe(LibraryService.name, () => {
           name: JobName.LIBRARY_SYNC_FILE,
           data: {
             id: libraryStub.externalLibrary1.id,
-            ownerId: libraryStub.externalLibrary1.owner.id,
             assetPath: '/data/user1/photo.jpg',
           },
         },
@@ -401,7 +400,6 @@ describe(LibraryService.name, () => {
     it('should import a new asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
       };
 
@@ -445,7 +443,6 @@ describe(LibraryService.name, () => {
     it('should import a new video', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
         assetPath: '/data/user1/video.mp4',
       };
 
@@ -489,7 +486,6 @@ describe(LibraryService.name, () => {
     it('should not import an asset to a soft deleted library', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
       };
 
@@ -504,7 +500,6 @@ describe(LibraryService.name, () => {
     it('should not refresh a file whose mtime matches existing asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
         assetPath: assetStub.hasFileExtension.originalPath,
       };
 
@@ -522,10 +517,9 @@ describe(LibraryService.name, () => {
       expect(jobMock.queueAll).not.toHaveBeenCalled();
     });
 
-    it('should skip existing asset', async () => {
+    it('should skip an existing asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
         assetPath: '/data/user1/photo.jpg',
       };
 
@@ -537,7 +531,6 @@ describe(LibraryService.name, () => {
     it('should not refresh an asset trashed by user', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: mockUser.id,
         assetPath: assetStub.hasFileExtension.originalPath,
       };
 
@@ -554,7 +547,6 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
       };
 
@@ -572,7 +564,6 @@ describe(LibraryService.name, () => {
 
       const mockLibraryJob: ILibraryFileJob = {
         id: libraryStub.externalLibrary1.id,
-        ownerId: userStub.admin.id,
         assetPath: '/data/user1/photo.jpg',
       };
 
@@ -923,7 +914,6 @@ describe(LibraryService.name, () => {
             data: {
               id: libraryStub.externalLibraryWithImportPaths1.id,
               assetPath: '/foo/photo.jpg',
-              ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
             },
           },
         ]);
@@ -948,7 +938,6 @@ describe(LibraryService.name, () => {
             data: {
               id: libraryStub.externalLibraryWithImportPaths1.id,
               assetPath: '/foo/photo.jpg',
-              ownerId: libraryStub.externalLibraryWithImportPaths1.owner.id,
             },
           },
         ]);

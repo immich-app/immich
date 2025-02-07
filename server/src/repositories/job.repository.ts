@@ -216,6 +216,17 @@ export class JobRepository implements IJobRepository {
 
   private getJobOptions(item: JobItem): JobsOptions | null {
     switch (item.name) {
+      case JobName.LIBRARY_QUEUE_SYNC_ASSETS:
+      case JobName.LIBRARY_QUEUE_SYNC_FILES:
+      case JobName.LIBRARY_SYNC_ASSET:
+      case JobName.LIBRARY_DELETE:
+      case JobName.SIDECAR_SYNC:
+      case JobName.SIDECAR_DISCOVERY: {
+        return { jobId: `${item.data.id}-${item.name}` };
+      }
+      case JobName.LIBRARY_SYNC_FILE: {
+        return { jobId: `${item.data.id}-${item.data.assetPath}` };
+      }
       case JobName.NOTIFY_ALBUM_UPDATE: {
         return { jobId: item.data.id, delay: item.data?.delay };
       }
@@ -227,6 +238,11 @@ export class JobRepository implements IJobRepository {
       }
       case JobName.QUEUE_FACIAL_RECOGNITION: {
         return { jobId: JobName.QUEUE_FACIAL_RECOGNITION };
+      }
+      case JobName.LIBRARY_QUEUE_SYNC_ALL:
+      case JobName.LIBRARY_QUEUE_CLEANUP: {
+        // These jobs are globally unique and should only have one instance running at a time
+        return { jobId: item.name };
       }
       default: {
         return null;

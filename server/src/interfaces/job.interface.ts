@@ -144,7 +144,6 @@ export interface IAssetDeleteJob extends IEntityJob {
 }
 
 export interface ILibraryFileJob extends IEntityJob {
-  ownerId: string;
   assetPath: string;
 }
 
