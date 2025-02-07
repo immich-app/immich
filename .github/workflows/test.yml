@@ -390,7 +390,7 @@ jobs:
           poetry run black --check app export
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive --strict app/
+          mkdir .mypy_cache && poetry run mypy --install-types --non-interactive --strict app/
       - name: Run tests and coverage
         run: |
           poetry run pytest app --cov=app --cov-report term-missing

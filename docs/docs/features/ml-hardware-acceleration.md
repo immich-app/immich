@@ -12,6 +12,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - ARM NN (Mali)
 - CUDA (NVIDIA GPUs with [compute capability](https://developer.nvidia.com/cuda-gpus) 5.2 or higher)
 - OpenVINO (Intel discrete GPUs such as Iris Xe and Arc)
+- RKNN (Rockchip)
 
 ## Limitations
 
@@ -45,6 +46,15 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 - The server must have a discrete GPU, i.e. Iris Xe or Arc. Expect issues when attempting to use integrated graphics.
 - Ensure the server's kernel version is new enough to use the device for hardware accceleration.
+
+#### RKNN
+
+- You must have a supported Rockchip SoC, only RK3566 and RK3588 are supported at this moment.
+- Make sure you have the appropriate linux kernel driver installed
+  - This is usually pre-installed on the device vendor's Linux images
+- RKNPU driver V0.9.8 or later must be available in the host server
+  - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
+- Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for RKNN specific settings
 
 ## Setup
 

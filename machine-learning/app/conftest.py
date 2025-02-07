@@ -137,6 +137,12 @@ def ann_session() -> Iterator[mock.Mock]:
 
 
 @pytest.fixture(scope="function")
+def rknn_session() -> Iterator[mock.Mock]:
+    with mock.patch("app.sessions.rknn.RknnPoolExecutor") as mocked:
+        yield mocked
+
+
+@pytest.fixture(scope="function")
 def rmtree() -> Iterator[mock.Mock]:
     with mock.patch("app.models.base.rmtree", autospec=True) as mocked:
         mocked.avoids_symlink_attacks = True

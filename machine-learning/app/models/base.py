@@ -8,7 +8,9 @@ from typing import Any, ClassVar
 from huggingface_hub import snapshot_download
 
 import ann.ann
+import rknn.rknnpool
 from app.sessions.ort import OrtSession
+from app.sessions.rknn import RknnSession
 
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
@@ -66,12 +68,17 @@ class InferenceModel(ABC):
         pass
 
     def _download(self) -> None:
-        ignore_patterns = [] if self.model_format == ModelFormat.ARMNN else ["*.armnn"]
+        ignored_patterns: dict[ModelFormat, list[str]] = {
+            ModelFormat.ONNX: ["*.armnn", "*.rknn"],
+            ModelFormat.ARMNN: ["*.rknn"],
+            ModelFormat.RKNN: ["*.armnn"],
+        }
+
         snapshot_download(
             f"immich-app/{clean_name(self.model_name)}",
             cache_dir=self.cache_dir,
             local_dir=self.cache_dir,
-            ignore_patterns=ignore_patterns,
+            ignore_patterns=ignored_patterns.get(self.model_format, []),
         )
 
     def _load(self) -> ModelSession:
@@ -108,6 +115,8 @@ class InferenceModel(ABC):
                 session: ModelSession = AnnSession(model_path)
             case ".onnx":
                 session = OrtSession(model_path)
+            case ".rknn":
+                session = RknnSession(model_path)
             case _:
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
@@ -155,4 +164,9 @@ class InferenceModel(ABC):
 
     @property
     def _model_format_default(self) -> ModelFormat:
-        return ModelFormat.ARMNN if ann.ann.is_available and settings.ann else ModelFormat.ONNX
+        if rknn.rknnpool.is_available and settings.rknn:
+            return ModelFormat.RKNN
+        elif ann.ann.is_available and settings.ann:
+            return ModelFormat.ARMNN
+        else:
+            return ModelFormat.ONNX
