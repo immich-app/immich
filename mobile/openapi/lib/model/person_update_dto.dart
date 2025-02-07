@@ -14,6 +14,7 @@ class PersonUpdateDto {
   /// Returns a new [PersonUpdateDto] instance.
   PersonUpdateDto({
     this.birthDate,
+    this.color,
     this.featureFaceAssetId,
     this.isFavorite,
     this.isHidden,
@@ -22,6 +23,8 @@ class PersonUpdateDto {
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
   DateTime? birthDate;
+
+  String? color;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -61,6 +64,7 @@ class PersonUpdateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
     other.birthDate == birthDate &&
+    other.color == color &&
     other.featureFaceAssetId == featureFaceAssetId &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
@@ -70,13 +74,14 @@ class PersonUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
+  String toString() => 'PersonUpdateDto[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -84,6 +89,11 @@ class PersonUpdateDto {
       json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
     } else {
     //  json[r'birthDate'] = null;
+    }
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+    //  json[r'color'] = null;
     }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
@@ -118,6 +128,7 @@ class PersonUpdateDto {
 
       return PersonUpdateDto(
         birthDate: mapDateTime(json, r'birthDate', r''),
+        color: mapValueOfType<String>(json, r'color'),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),

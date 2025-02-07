@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { AssetMapOptions, AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { PersonResponseDto } from 'src/dtos/person.dto';
+import { mapPerson, PersonResponseDto } from 'src/dtos/person.dto';
 import {
+  mapPlaces,
   MetadataSearchDto,
   PlacesResponseDto,
   RandomSearchDto,
@@ -12,7 +13,6 @@ import {
   SearchSuggestionRequestDto,
   SearchSuggestionType,
   SmartSearchDto,
-  mapPlaces,
 } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
@@ -24,7 +24,8 @@ import { isSmartSearchEnabled } from 'src/utils/misc';
 @Injectable()
 export class SearchService extends BaseService {
   async searchPerson(auth: AuthDto, dto: SearchPeopleDto): Promise<PersonResponseDto[]> {
-    return this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
+    const people = await this.personRepository.getByName(auth.user.id, dto.name, { withHidden: dto.withHidden });
+    return people.map((person) => mapPerson(person));
   }
 
   async searchPlaces(dto: SearchPlacesDto): Promise<PlacesResponseDto[]> {

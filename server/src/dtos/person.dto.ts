@@ -7,7 +7,14 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
-import { IsDateStringFormat, MaxDateString, Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import {
+  IsDateStringFormat,
+  MaxDateString,
+  Optional,
+  ValidateBoolean,
+  ValidateHexColor,
+  ValidateUUID,
+} from 'src/validation';
 
 export class PersonCreateDto {
   /**
@@ -35,6 +42,10 @@ export class PersonCreateDto {
 
   @ValidateBoolean({ optional: true })
   isFavorite?: boolean;
+
+  @Optional({ emptyToNull: true, nullable: true })
+  @ValidateHexColor()
+  color?: string | null;
 }
 
 export class PersonUpdateDto extends PersonCreateDto {
@@ -102,6 +113,8 @@ export class PersonResponseDto {
   updatedAt?: Date;
   @PropertyLifecycle({ addedAt: 'v1.126.0' })
   isFavorite?: boolean;
+  @PropertyLifecycle({ addedAt: 'v1.126.0' })
+  color?: string;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -176,6 +189,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
+    color: person.color ?? undefined,
     updatedAt: person.updatedAt,
   };
 }
