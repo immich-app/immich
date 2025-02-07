@@ -9,7 +9,6 @@ import { IMachineLearningRepository } from 'src/interfaces/machine-learning.inte
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -72,6 +71,7 @@ export const repositories = [
   MetadataRepository,
   NotificationRepository,
   OAuthRepository,
+  ProcessRepository,
   ServerInfoRepository,
   SystemMetadataRepository,
   TelemetryRepository,
@@ -92,7 +92,6 @@ export const providers = [
   { provide: IMoveRepository, useClass: MoveRepository },
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
-  { provide: IProcessRepository, useClass: ProcessRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
   { provide: ISessionRepository, useClass: SessionRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },

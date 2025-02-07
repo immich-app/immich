@@ -17,7 +17,6 @@ import { IMachineLearningRepository } from 'src/interfaces/machine-learning.inte
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
 import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
@@ -39,6 +38,7 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -77,7 +77,7 @@ export class BaseService {
     protected oauthRepository: OAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
-    @Inject(IProcessRepository) protected processRepository: IProcessRepository,
+    protected processRepository: ProcessRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
     protected serverInfoRepository: ServerInfoRepository,
     @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,

@@ -1,4 +1,4 @@
-import { IProcessRepository } from 'src/interfaces/process.interface';
+import { IProcessRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newProcessRepositoryMock = (): Mocked<IProcessRepository> => {
