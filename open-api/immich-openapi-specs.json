@@ -3070,7 +3070,41 @@
     "/memories": {
       "get": {
         "operationId": "searchMemories",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "for",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSaved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemoryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -9618,7 +9652,9 @@
         "enum": [
           "person-cleanup",
           "tag-cleanup",
-          "user-cleanup"
+          "user-cleanup",
+          "memory-cleanup",
+          "memory-create"
         ],
         "type": "string"
       },
@@ -9775,6 +9811,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "hideAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -9789,6 +9829,10 @@
             "type": "string"
           },
           "seenAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "showAt": {
             "format": "date-time",
             "type": "string"
           },

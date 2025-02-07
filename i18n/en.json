@@ -354,6 +354,8 @@
     "version_check_enabled_description": "Enable version check",
     "version_check_implications": "The version check feature relies on periodic communication with github.com",
     "version_check_settings": "Version Check",
+    "memory_cleanup_job": "Memory cleanup",
+    "memory_generate_job": "Memory generation",
     "version_check_settings_description": "Enable/disable the new version notification",
     "video_conversion_job": "Transcode videos",
     "video_conversion_job_description": "Transcode videos for wider compatibility with browsers and devices"
@@ -1076,6 +1078,8 @@
   "remove_url": "Remove URL",
   "remove_user": "Remove user",
   "removed_api_key": "Removed API Key: {name}",
+  "removed_memory": "Removed memory",
+  "removed_photo_from_memory": "Removed photo from memory",
   "removed_from_archive": "Removed from archive",
   "removed_from_favorites": "Removed from favorites",
   "removed_from_favorites_count": "{count, plural, other {Removed #}} from favorites",
