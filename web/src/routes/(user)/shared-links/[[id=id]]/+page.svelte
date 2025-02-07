@@ -27,7 +27,7 @@
   let sharedLink = $derived(sharedLinks.find(({ id }) => id === page.params.id));
 
   const refresh = async () => {
-    sharedLinks = await getAllSharedLinks();
+    sharedLinks = await getAllSharedLinks({});
   };
 
   onMount(async () => {

@@ -29,11 +29,11 @@ describe(SharedLinkService.name, () => {
   describe('getAll', () => {
     it('should return all shared links for a user', async () => {
       sharedLinkMock.getAll.mockResolvedValue([sharedLinkStub.expired, sharedLinkStub.valid]);
-      await expect(sut.getAll(authStub.user1)).resolves.toEqual([
+      await expect(sut.getAll(authStub.user1, {})).resolves.toEqual([
         sharedLinkResponseStub.expired,
         sharedLinkResponseStub.valid,
       ]);
-      expect(sharedLinkMock.getAll).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(sharedLinkMock.getAll).toHaveBeenCalledWith({ userId: authStub.user1.user.id });
     });
   });
 
