@@ -1,4 +1,4 @@
-import { ISessionRepository } from 'src/interfaces/session.interface';
+import { ISessionRepository } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 export const newSessionRepositoryMock = (): Mocked<ISessionRepository> => {

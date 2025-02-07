@@ -10,7 +10,6 @@ import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
@@ -72,6 +71,7 @@ export const repositories = [
   NotificationRepository,
   OAuthRepository,
   ProcessRepository,
+  SessionRepository,
   ServerInfoRepository,
   SystemMetadataRepository,
   TelemetryRepository,
@@ -93,7 +93,6 @@ export const providers = [
   { provide: IPartnerRepository, useClass: PartnerRepository },
   { provide: IPersonRepository, useClass: PersonRepository },
   { provide: ISearchRepository, useClass: SearchRepository },
-  { provide: ISessionRepository, useClass: SessionRepository },
   { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
   { provide: IStackRepository, useClass: StackRepository },
   { provide: IStorageRepository, useClass: StorageRepository },

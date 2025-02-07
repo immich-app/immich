@@ -16,6 +16,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { SessionRepository } from 'src/repositories/session.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { MetricGroupRepository, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
@@ -61,6 +62,7 @@ export type IMetricGroupRepository = RepositoryInterface<MetricGroupRepository>;
 export type INotificationRepository = RepositoryInterface<NotificationRepository>;
 export type IOAuthRepository = RepositoryInterface<OAuthRepository>;
 export type IProcessRepository = RepositoryInterface<ProcessRepository>;
+export type ISessionRepository = RepositoryInterface<SessionRepository>;
 export type IServerInfoRepository = RepositoryInterface<ServerInfoRepository>;
 export type ISystemMetadataRepository = RepositoryInterface<SystemMetadataRepository>;
 export type ITelemetryRepository = RepositoryInterface<TelemetryRepository>;
@@ -80,6 +82,8 @@ export type ApiKeyItem =
 export type MemoryItem =
   | Awaited<ReturnType<IMemoryRepository['create']>>
   | Awaited<ReturnType<IMemoryRepository['search']>>[0];
+
+export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
 
 export interface CropOptions {
   top: number;
