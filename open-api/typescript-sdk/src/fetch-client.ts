@@ -113,6 +113,10 @@ export type PurchaseResponse = {
 export type RatingsResponse = {
     enabled: boolean;
 };
+export type SharedLinksResponse = {
+    enabled: boolean;
+    sidebarWeb: boolean;
+};
 export type TagsResponse = {
     enabled: boolean;
     sidebarWeb: boolean;
@@ -126,6 +130,7 @@ export type UserPreferencesResponseDto = {
     people: PeopleResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
+    sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
 export type AvatarUpdate = {
@@ -158,6 +163,10 @@ export type PurchaseUpdate = {
 export type RatingsUpdate = {
     enabled?: boolean;
 };
+export type SharedLinksUpdate = {
+    enabled?: boolean;
+    sidebarWeb?: boolean;
+};
 export type TagsUpdate = {
     enabled?: boolean;
     sidebarWeb?: boolean;
@@ -171,6 +180,7 @@ export type UserPreferencesUpdateDto = {
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
+    sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
 export type AlbumUserResponseDto = {
