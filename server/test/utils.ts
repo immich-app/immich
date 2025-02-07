@@ -16,6 +16,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -36,6 +37,7 @@ import {
   INotificationRepository,
   IOAuthRepository,
   IServerInfoRepository,
+  ISystemMetadataRepository,
   ITrashRepository,
   IVersionHistoryRepository,
   IViewRepository,
@@ -170,7 +172,7 @@ export const newTestService = <T extends BaseService>(
     sharedLinkMock,
     stackMock,
     storageMock,
-    systemMock,
+    systemMock as ISystemMetadataRepository as SystemMetadataRepository,
     tagMock,
     telemetryMock as unknown as TelemetryRepository,
     trashMock as ITrashRepository as TrashRepository,

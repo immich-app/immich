@@ -18,9 +18,8 @@ import { IJobRepository, JobCounts, JobName, JobStatus } from 'src/interfaces/jo
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { MediaService } from 'src/services/media.service';
-import { ILoggingRepository, IMediaRepository, RawImageInfo } from 'src/types';
+import { ILoggingRepository, IMediaRepository, ISystemMetadataRepository, RawImageInfo } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';
