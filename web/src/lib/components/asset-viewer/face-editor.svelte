@@ -1,8 +1,7 @@
 <script lang="ts">
   import { Button } from '@immich/ui';
-  import { Canvas, Rect } from 'fabric';
+  import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets.store';
 
   interface Props {
     imgElement: HTMLImageElement;
@@ -16,31 +15,40 @@
   let canvas: Canvas | undefined = $state();
   let faceRect: Rect | undefined = $state();
 
+  const configureControlStyle = () => {
+    InteractiveFabricObject.ownDefaults = {
+      ...InteractiveFabricObject.ownDefaults,
+      cornerStyle: 'circle',
+      cornerStrokeColor: 'rgb(172,203,250)',
+      cornerColor: 'rgb(172,203,250)',
+      cornerSize: 10,
+      padding: 4,
+      transparentCorners: false,
+      lockRotation: true,
+      hasBorders: true,
+    };
+  };
+
   onMount(() => {
     if (!canvasEl || !imgElement) {
       return;
     }
 
     canvas = new Canvas(canvasEl);
+    configureControlStyle();
 
     faceRect = new Rect({
-      left: 100,
-      top: 50,
-      fill: 'transparent',
+      fill: 'rgba(66,80,175,0.35)',
       width: 200,
-      height: 100,
+      height: 200,
       objectCaching: true,
-      stroke: 'rgb(66,80,175)',
-      strokeWidth: 2,
+      rx: 4,
+      ry: 4,
     });
 
     canvas.add(faceRect);
     canvas.setActiveObject(faceRect);
   });
-
-  let test1 = $state(0);
-  let test2 = $state(0);
-  let test3 = $state(0);
 
   $effect(() => {
     const { actualWidth, actualHeight } = getContainedSize(imgElement);
@@ -75,9 +83,6 @@
 
     // Update controls border
     faceRect.setCoords();
-
-    canvas.setActiveObject(faceRect);
-    canvas.requestRenderAll();
   });
 
   const getContainedSize = (img: HTMLImageElement): { actualWidth: number; actualHeight: number } => {
@@ -92,18 +97,18 @@
   };
 
   const test = () => {
-    console.log(faceRect);
+    console.log(`${faceRect?.height} x ${faceRect?.width} TOP: ${faceRect?.top} LEFT: ${faceRect?.left}`);
+    console.log('RECT', faceRect?.aCoords);
   };
 </script>
 
-<div class="absolute left-0 top-0 z-50">
-  <canvas
-    bind:this={canvasEl}
-    id="face-editor"
-    class="absolute top-0 left-0 bg-blue-100/10 border-2 border-green-300 z-[500]"
-  ></canvas>
-  <div class="absolute bottom-0 right-0 z-[600] bg-white">
-    <p>Bounding box: {faceRect?.get('top')}</p>
-    <Button onclick={test}>Test W: {containerWidth} - H: {containerHeight}</Button>
+<div class="absolute left-0 top-0">
+  <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 left-0"></canvas>
+
+  <div
+    class="absolute bottom-20 right-[calc(50%-97px)] flex gap-2 place-items-center place-content-center bg-gray-50 backdrop-blur-sm p-2 rounded-xl"
+  >
+    <Button size="small" onclick={test} class="shadow-xl font-normal">Tag person</Button>
+    <Button size="small" onclick={test} color="danger">Cancel</Button>
   </div>
 </div>

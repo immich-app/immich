@@ -176,7 +176,12 @@
 {/if}
 <!-- svelte-ignore a11y_missing_attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
-<div bind:this={element} class="relative h-full select-none">
+<div
+  bind:this={element}
+  class="relative h-full select-none"
+  bind:clientWidth={containerWidth}
+  bind:clientHeight={containerHeight}
+>
   <img
     style="display:none"
     src={imageLoaderUrl}
@@ -206,8 +211,6 @@
       {/if}
       <img
         bind:this={$photoViewerImgElement}
-        bind:clientWidth={containerWidth}
-        bind:clientHeight={containerHeight}
         src={assetFileUrl}
         alt={$getAltText(asset)}
         class="h-full w-full {$slideshowState === SlideshowState.None
@@ -221,10 +224,6 @@
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}
-
-      <div class="text-lg text-green-600 absolute top-40 right-50 z-50">
-        WIDTH = {containerWidth}
-      </div>
     </div>
 
     <FaceEditor imgElement={$photoViewerImgElement} {containerWidth} {containerHeight} />
