@@ -10,9 +10,8 @@ import { DetectedFaces, IMachineLearningRepository } from 'src/interfaces/machin
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { FaceSearchResult, ISearchRepository } from 'src/interfaces/search.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { PersonService } from 'src/services/person.service';
-import { IMediaRepository } from 'src/types';
+import { IMediaRepository, ISystemMetadataRepository } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';

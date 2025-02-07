@@ -14,9 +14,8 @@ import {
 } from 'src/enum';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { QueueName } from 'src/interfaces/job.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
-import { DeepPartial, IConfigRepository, ILoggingRepository } from 'src/types';
+import { DeepPartial, IConfigRepository, ILoggingRepository, ISystemMetadataRepository } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';

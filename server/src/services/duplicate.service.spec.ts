@@ -1,10 +1,9 @@
 import { IAssetRepository, WithoutProperty } from 'src/interfaces/asset.interface';
 import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';
-import { ILoggingRepository } from 'src/types';
+import { ILoggingRepository, ISystemMetadataRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService } from 'test/utils';

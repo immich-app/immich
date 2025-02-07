@@ -23,7 +23,6 @@ import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -41,6 +40,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -84,7 +84,7 @@ export class BaseService {
     @Inject(ISharedLinkRepository) protected sharedLinkRepository: ISharedLinkRepository,
     @Inject(IStackRepository) protected stackRepository: IStackRepository,
     @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
+    protected systemMetadataRepository: SystemMetadataRepository,
     @Inject(ITagRepository) protected tagRepository: ITagRepository,
     protected telemetryRepository: TelemetryRepository,
     protected trashRepository: TrashRepository,
