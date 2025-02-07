@@ -553,8 +553,6 @@
         {/if}
       {/key}
     {/if}
-
-    <FaceEditor />
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
