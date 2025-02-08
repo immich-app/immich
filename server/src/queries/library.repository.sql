@@ -132,7 +132,10 @@ from
   inner join "assets" on "assets"."libraryId" = "libraries"."id"
   left join "exif" on "exif"."assetId" = "assets"."id"
 where
-  "libraries"."id" = $6
+  "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
+  and "libraries"."id" = $6
 group by
   "libraries"."id"
 select

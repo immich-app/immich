@@ -574,9 +574,14 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-    const isTimeUpdated = !asset.fileModifiedAt || mtime.toISOString() !== asset.fileModifiedAt.toISOString();
 
-    if (isTimeUpdated) {
+    if (!asset.fileModifiedAt || !asset.fileCreatedAt || !asset.localDateTime) {
+      this.logger.verbose(`Asset ${asset.originalPath} needs metadata extraction in library ${libraryId}`);
+
+      return AssetSyncResult.UPDATE;
+    }
+
+    if (mtime.toISOString() !== asset.fileModifiedAt.toISOString()) {
       this.logger.verbose(
         `Asset ${asset.originalPath} modification time changed from ${asset.fileModifiedAt?.toISOString()} to ${mtime.toISOString()}, queuing re-import in library ${libraryId}`,
       );

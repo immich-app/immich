@@ -138,9 +138,6 @@ export class AssetRepository implements IAssetRepository {
           )
           .innerJoin('exif', 'a.id', 'exif.assetId')
           .selectAll('a')
-          .$narrowType<{ fileCreatedAt: NotNull }>()
-          .$narrowType<{ fileModifiedAt: NotNull }>()
-          .$narrowType<{ localDateTime: NotNull }>()
           .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo')),
       )
       .selectFrom('res')

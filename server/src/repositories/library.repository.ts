@@ -100,6 +100,9 @@ export class LibraryRepository implements ILibraryRepository {
     const stats = await this.db
       .selectFrom('libraries')
       .innerJoin('assets', 'assets.libraryId', 'libraries.id')
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .leftJoin('exif', 'exif.assetId', 'assets.id')
       .select((eb) =>
         eb.fn
