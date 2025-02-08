@@ -98,7 +98,7 @@ class PersonNameEditForm extends HookConsumerWidget {
       content: SizedBox(
         width: MediaQuery.of(context).size.width * 0.6,
         height: filteredContacts.value.isEmpty
-            ? 80
+            ? 64
             : MediaQuery.of(context).size.height * 0.4,
         child: Column(
           children: [
