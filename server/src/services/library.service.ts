@@ -574,8 +574,7 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-
-    const isTimeUpdated = asset.fileModifiedAt === null || mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    const isTimeUpdated = !asset.fileModifiedAt || mtime.toISOString() !== asset.fileModifiedAt.toISOString();
 
     if (isTimeUpdated) {
       this.logger.verbose(

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
@@ -588,17 +588,7 @@ export class MetadataService extends BaseService {
     }
   }
 
-  private getDates(asset: AssetEntity, exifTags: ImmichTags): AssetDatesDto {
-    // We first assert that fileCreatedAt and fileModifiedAt are not null since that should be set to a non-null value before calling this function
-    if (asset.fileCreatedAt === null) {
-      this.logger.warn(`Asset ${asset.id} has no file creation date`);
-      throw new BadRequestException(`Asset ${asset.id} has no file creation date`);
-    }
-    if (asset.fileModifiedAt === null) {
-      this.logger.warn(`Asset ${asset.id} has no file modification date`);
-      throw new BadRequestException(`Asset ${asset.id} has no file modification date`);
-    }
-
+  private getDates(asset: AssetEntity, exifTags: ImmichTags) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
     this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
 
@@ -630,11 +620,7 @@ export class MetadataService extends BaseService {
       localDateTime = earliestDate;
     }
 
-    if (localDateTime) {
-      this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
-    } else {
-      this.logger.verbose(`Asset ${asset.id} has no time set`);
-    }
+    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
 
     let modifyDate = asset.fileModifiedAt;
     try {
