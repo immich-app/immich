@@ -43,7 +43,12 @@ export class OAuthRepository {
     const params = client.callbackParams(url);
     try {
       const tokens = await client.callback(redirectUrl, params, { state: params.state });
-      return await client.userinfo<OAuthProfile>(tokens.access_token || '');
+      const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
+      if (!profile.sub) {
+        throw new Error('Unexpected profile response, no `sub`');
+      }
+
+      return profile;
     } catch (error: Error | any) {
       if (error.message.includes('unexpected JWT alg received')) {
         this.logger.warn(
