@@ -34,6 +34,8 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
+    mdiPlus,
+    mdiPlusBox,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -186,7 +188,7 @@
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
 
-  {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
+  {#if !isSharedLink()}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
@@ -277,6 +279,14 @@
             </a>
           {/if}
         {/each}
+
+        <button
+          class="w-[90px] h-[90px] flex items-center justify-center bg-transparent border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-200"
+          type="button"
+          onclick={() => {}}
+        >
+          <Icon path={mdiPlus} size={24} />
+        </button>
       </div>
     </section>
   {/if}

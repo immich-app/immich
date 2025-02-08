@@ -38,12 +38,12 @@
     configureControlStyle();
 
     faceRect = new Rect({
-      fill: 'rgba(66,80,175,0.35)',
+      fill: 'rgba(250,250,250,0.5)',
       width: 200,
       height: 200,
       objectCaching: true,
-      rx: 4,
-      ry: 4,
+      rx: 8,
+      ry: 8,
     });
 
     canvas.add(faceRect);
