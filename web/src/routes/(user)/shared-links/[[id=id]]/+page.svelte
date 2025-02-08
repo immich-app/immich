@@ -97,7 +97,7 @@
     </div>
   {/snippet}
 
-  <div>
+  <div class="w-full max-w-3xl m-auto">
     {#if sharedLinks.length === 0}
       <div
         class="flex place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"

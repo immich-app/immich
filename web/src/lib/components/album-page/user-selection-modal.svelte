@@ -154,16 +154,18 @@
   <hr class="my-4" />
 
   <Stack gap={6}>
-    <div class="flex justify-between items-center">
-      <Text>{$t('shared_links')}</Text>
-      <Link href={AppRoute.SHARED_LINKS} class="text-sm">{$t('view_all')}</Link>
-    </div>
+    {#if sharedLinks.length > 0}
+      <div class="flex justify-between items-center">
+        <Text>{$t('shared_links')}</Text>
+        <Link href={AppRoute.SHARED_LINKS} class="text-sm">{$t('view_all')}</Link>
+      </div>
 
-    <Stack gap={4}>
-      {#each sharedLinks as sharedLink}
-        <AlbumSharedLink {album} {sharedLink} />
-      {/each}
-    </Stack>
+      <Stack gap={4}>
+        {#each sharedLinks as sharedLink}
+          <AlbumSharedLink {album} {sharedLink} />
+        {/each}
+      </Stack>
+    {/if}
 
     <Button leadingIcon={mdiLink} size="small" shape="round" fullWidth onclick={onShare}>{$t('create_link')}</Button>
   </Stack>
