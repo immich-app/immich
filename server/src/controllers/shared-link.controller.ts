@@ -9,6 +9,7 @@ import {
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
+  SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
 import { ImmichCookie, Permission } from 'src/enum';
 import { Auth, Authenticated, GetLoginDetails } from 'src/middleware/auth.guard';
@@ -24,8 +25,8 @@ export class SharedLinkController {
 
   @Get()
   @Authenticated({ permission: Permission.SHARED_LINK_READ })
-  getAllSharedLinks(@Auth() auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.service.getAll(auth);
+  getAllSharedLinks(@Auth() auth: AuthDto, @Query() dto: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
+    return this.service.getAll(auth, dto);
   }
 
   @Get('me')

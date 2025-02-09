@@ -5230,7 +5230,17 @@
     "/shared-links": {
       "get": {
         "operationId": "getAllSharedLinks",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -10286,6 +10296,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
@@ -10293,6 +10307,9 @@
           "id": {
             "description": "Person id.",
             "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
           },
           "isHidden": {
             "description": "Person visibility",
@@ -10399,6 +10416,13 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
           "isHidden": {
             "description": "Person visibility",
             "type": "boolean"
@@ -10417,8 +10441,16 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "description": "This property was added in v1.126.0",
+            "type": "string"
+          },
           "id": {
             "type": "string"
+          },
+          "isFavorite": {
+            "description": "This property was added in v1.126.0",
+            "type": "boolean"
           },
           "isHidden": {
             "type": "boolean"
@@ -10463,9 +10495,16 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "nullable": true,
+            "type": "string"
+          },
           "featureFaceAssetId": {
             "description": "Asset is used to get the feature face thumbnail.",
             "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
           },
           "isHidden": {
             "description": "Person visibility",
@@ -10485,6 +10524,10 @@
             "nullable": true,
             "type": "string"
           },
+          "color": {
+            "description": "This property was added in v1.126.0",
+            "type": "string"
+          },
           "faces": {
             "items": {
               "$ref": "#/components/schemas/AssetFaceWithoutPersonResponseDto"
@@ -10493,6 +10536,10 @@
           },
           "id": {
             "type": "string"
+          },
+          "isFavorite": {
+            "description": "This property was added in v1.126.0",
+            "type": "boolean"
           },
           "isHidden": {
             "type": "boolean"
@@ -11476,6 +11523,34 @@
           "INDIVIDUAL"
         ],
         "type": "string"
+      },
+      "SharedLinksResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "SharedLinksUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "SignUpDto": {
         "properties": {
@@ -12594,7 +12669,6 @@
         "properties": {
           "color": {
             "nullable": true,
-            "pattern": "^#?([0-9A-F]{3}|[0-9A-F]{4}|[0-9A-F]{6}|[0-9A-F]{8})$",
             "type": "string"
           }
         },
@@ -13124,6 +13198,9 @@
           "ratings": {
             "$ref": "#/components/schemas/RatingsResponse"
           },
+          "sharedLinks": {
+            "$ref": "#/components/schemas/SharedLinksResponse"
+          },
           "tags": {
             "$ref": "#/components/schemas/TagsResponse"
           }
@@ -13137,6 +13214,7 @@
           "people",
           "purchase",
           "ratings",
+          "sharedLinks",
           "tags"
         ],
         "type": "object"
@@ -13166,6 +13244,9 @@
           },
           "ratings": {
             "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "sharedLinks": {
+            "$ref": "#/components/schemas/SharedLinksUpdate"
           },
           "tags": {
             "$ref": "#/components/schemas/TagsUpdate"

@@ -9,8 +9,7 @@ import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IConfigRepository, ILoggingRepository } from 'src/types';
+import { IConfigRepository, ILoggingRepository, ISystemMetadataRepository } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 

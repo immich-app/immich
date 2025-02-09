@@ -101,6 +101,14 @@ export interface AlbumViewSettings {
   };
 }
 
+export interface PlacesViewSettings {
+  groupBy: string;
+  collapsedGroups: {
+    // Grouping Option => Array<Group ID>
+    [group: string]: string[];
+  };
+}
+
 export interface SidebarSettings {
   people: boolean;
   sharing: boolean;
@@ -144,6 +152,16 @@ export const albumViewSettings = persisted<AlbumViewSettings>('album-view-settin
   groupOrder: SortOrder.Desc,
   sortBy: AlbumSortBy.MostRecentPhoto,
   sortOrder: SortOrder.Desc,
+  collapsedGroups: {},
+});
+
+export enum PlacesGroupBy {
+  None = 'None',
+  Country = 'Country',
+}
+
+export const placesViewSettings = persisted<PlacesViewSettings>('places-view-settings', {
+  groupBy: PlacesGroupBy.None,
   collapsedGroups: {},
 });
 

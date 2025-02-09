@@ -17,13 +17,10 @@ import { IMachineLearningRepository } from 'src/interfaces/machine-learning.inte
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IProcessRepository } from 'src/interfaces/process.interface';
 import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
 import { IStackRepository } from 'src/interfaces/stack.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ITagRepository } from 'src/interfaces/tag.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -40,7 +37,10 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { SessionRepository } from 'src/repositories/session.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -77,14 +77,14 @@ export class BaseService {
     protected oauthRepository: OAuthRepository,
     @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
     @Inject(IPersonRepository) protected personRepository: IPersonRepository,
-    @Inject(IProcessRepository) protected processRepository: IProcessRepository,
+    protected processRepository: ProcessRepository,
     @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
     protected serverInfoRepository: ServerInfoRepository,
-    @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,
+    protected sessionRepository: SessionRepository,
     @Inject(ISharedLinkRepository) protected sharedLinkRepository: ISharedLinkRepository,
     @Inject(IStackRepository) protected stackRepository: IStackRepository,
     @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
+    protected systemMetadataRepository: SystemMetadataRepository,
     @Inject(ITagRepository) protected tagRepository: ITagRepository,
     protected telemetryRepository: TelemetryRepository,
     protected trashRepository: TrashRepository,

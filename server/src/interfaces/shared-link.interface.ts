@@ -4,8 +4,13 @@ import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 
 export const ISharedLinkRepository = 'ISharedLinkRepository';
 
+export type SharedLinkSearchOptions = {
+  userId: string;
+  albumId?: string;
+};
+
 export interface ISharedLinkRepository {
-  getAll(userId: string): Promise<SharedLinkEntity[]>;
+  getAll(options: SharedLinkSearchOptions): Promise<SharedLinkEntity[]>;
   get(userId: string, id: string): Promise<SharedLinkEntity | undefined>;
   getByKey(key: Buffer): Promise<SharedLinkEntity | undefined>;
   create(entity: Insertable<SharedLinks> & { assetIds?: string[] }): Promise<SharedLinkEntity>;

@@ -7,7 +7,7 @@ import { DB, SharedLinks } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SharedLinkType } from 'src/enum';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
+import { ISharedLinkRepository, SharedLinkSearchOptions } from 'src/interfaces/shared-link.interface';
 
 @Injectable()
 export class SharedLinkRepository implements ISharedLinkRepository {
@@ -93,7 +93,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(userId: string): Promise<SharedLinkEntity[]> {
+  getAll({ userId, albumId }: SharedLinkSearchOptions): Promise<SharedLinkEntity[]> {
     return this.db
       .selectFrom('shared_links')
       .selectAll('shared_links')
@@ -103,12 +103,13 @@ export class SharedLinkRepository implements ISharedLinkRepository {
         (eb) =>
           eb
             .selectFrom('assets')
+            .select((eb) => eb.fn.jsonAgg('assets').as('assets'))
             .whereRef('assets.id', '=', 'shared_link__asset.assetsId')
             .where('assets.deletedAt', 'is', null)
-            .selectAll('assets')
             .as('assets'),
         (join) => join.onTrue(),
       )
+      .select((eb) => eb.fn.toJson('assets').as('assets'))
       .leftJoinLateral(
         (eb) =>
           eb
@@ -148,6 +149,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       )
       .select((eb) => eb.fn.toJson('album').as('album'))
       .where((eb) => eb.or([eb('shared_links.type', '=', SharedLinkType.INDIVIDUAL), eb('album.id', 'is not', null)]))
+      .$if(!!albumId, (eb) => eb.where('shared_links.albumId', '=', albumId!))
       .orderBy('shared_links.createdAt', 'desc')
       .distinctOn(['shared_links.createdAt'])
       .execute() as unknown as Promise<SharedLinkEntity[]>;

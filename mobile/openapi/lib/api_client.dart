@@ -496,6 +496,10 @@ class ApiClient {
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':
           return SharedLinkTypeTypeTransformer().decode(value);
+        case 'SharedLinksResponse':
+          return SharedLinksResponse.fromJson(value);
+        case 'SharedLinksUpdate':
+          return SharedLinksUpdate.fromJson(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
         case 'SmartSearchDto':

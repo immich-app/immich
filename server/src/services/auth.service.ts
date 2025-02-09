@@ -17,6 +17,7 @@ import {
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
+import { SessionEntity } from 'src/entities/session.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
@@ -338,7 +339,7 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
-      return { user: session.user, session };
+      return { user: session.user as unknown as UserEntity, session: session as unknown as SessionEntity };
     }
 
     throw new UnauthorizedException('Invalid user token');

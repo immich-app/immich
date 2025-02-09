@@ -34,6 +34,10 @@ export interface UserPreferences {
   ratings: {
     enabled: boolean;
   };
+  sharedLinks: {
+    enabled: boolean;
+    sidebarWeb: boolean;
+  };
   tags: {
     enabled: boolean;
     sidebarWeb: boolean;
@@ -71,6 +75,10 @@ export const getDefaultPreferences = (user: { email: string }): UserPreferences 
       enabled: true,
     },
     people: {
+      enabled: true,
+      sidebarWeb: false,
+    },
+    sharedLinks: {
       enabled: true,
       sidebarWeb: false,
     },

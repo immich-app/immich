@@ -1,6 +1,6 @@
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { CliService } from 'src/services/cli.service';
+import { ISystemMetadataRepository } from 'src/types';
 import { userStub } from 'test/fixtures/user.stub';
 import { newTestService } from 'test/utils';
 import { Mocked, describe, it } from 'vitest';

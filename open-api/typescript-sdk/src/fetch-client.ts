@@ -113,6 +113,10 @@ export type PurchaseResponse = {
 export type RatingsResponse = {
     enabled: boolean;
 };
+export type SharedLinksResponse = {
+    enabled: boolean;
+    sidebarWeb: boolean;
+};
 export type TagsResponse = {
     enabled: boolean;
     sidebarWeb: boolean;
@@ -126,6 +130,7 @@ export type UserPreferencesResponseDto = {
     people: PeopleResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
+    sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
 export type AvatarUpdate = {
@@ -158,6 +163,10 @@ export type PurchaseUpdate = {
 export type RatingsUpdate = {
     enabled?: boolean;
 };
+export type SharedLinksUpdate = {
+    enabled?: boolean;
+    sidebarWeb?: boolean;
+};
 export type TagsUpdate = {
     enabled?: boolean;
     sidebarWeb?: boolean;
@@ -171,6 +180,7 @@ export type UserPreferencesUpdateDto = {
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
+    sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
 export type AlbumUserResponseDto = {
@@ -213,8 +223,12 @@ export type AssetFaceWithoutPersonResponseDto = {
 };
 export type PersonWithFacesResponseDto = {
     birthDate: string | null;
+    /** This property was added in v1.126.0 */
+    color?: string;
     faces: AssetFaceWithoutPersonResponseDto[];
     id: string;
+    /** This property was added in v1.126.0 */
+    isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
@@ -491,7 +505,11 @@ export type DuplicateResponseDto = {
 };
 export type PersonResponseDto = {
     birthDate: string | null;
+    /** This property was added in v1.126.0 */
+    color?: string;
     id: string;
+    /** This property was added in v1.126.0 */
+    isFavorite?: boolean;
     isHidden: boolean;
     name: string;
     thumbnailPath: string;
@@ -689,6 +707,8 @@ export type PersonCreateDto = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
     birthDate?: string | null;
+    color?: string | null;
+    isFavorite?: boolean;
     /** Person visibility */
     isHidden?: boolean;
     /** Person name. */
@@ -698,10 +718,12 @@ export type PeopleUpdateItem = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
     birthDate?: string | null;
+    color?: string | null;
     /** Asset is used to get the feature face thumbnail. */
     featureFaceAssetId?: string;
     /** Person id. */
     id: string;
+    isFavorite?: boolean;
     /** Person visibility */
     isHidden?: boolean;
     /** Person name. */
@@ -714,8 +736,10 @@ export type PersonUpdateDto = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
     birthDate?: string | null;
+    color?: string | null;
     /** Asset is used to get the feature face thumbnail. */
     featureFaceAssetId?: string;
+    isFavorite?: boolean;
     /** Person visibility */
     isHidden?: boolean;
     /** Person name. */
@@ -2738,11 +2762,15 @@ export function deleteSession({ id }: {
         method: "DELETE"
     }));
 }
-export function getAllSharedLinks(opts?: Oazapfts.RequestOpts) {
+export function getAllSharedLinks({ albumId }: {
+    albumId?: string;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SharedLinkResponseDto[];
-    }>("/shared-links", {
+    }>(`/shared-links${QS.query(QS.explode({
+        albumId
+    }))}`, {
         ...opts
     }));
 }

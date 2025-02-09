@@ -1,6 +1,6 @@
 import { SystemMetadataKey } from 'src/enum';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { SystemMetadataService } from 'src/services/system-metadata.service';
+import { ISystemMetadataRepository } from 'src/types';
 import { newTestService } from 'test/utils';
 import { Mocked } from 'vitest';
 

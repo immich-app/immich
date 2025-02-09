@@ -1,7 +1,6 @@
-import { UserEntity } from 'src/entities/user.entity';
 import { JobStatus } from 'src/interfaces/job.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
 import { SessionService } from 'src/services/session.service';
+import { ISessionRepository } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
 import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
@@ -38,7 +37,6 @@ describe('SessionService', () => {
           deviceType: '',
           id: '123',
           token: '420',
-          user: {} as UserEntity,
           userId: '42',
         },
       ]);
@@ -50,7 +48,7 @@ describe('SessionService', () => {
 
   describe('getAll', () => {
     it('should get the devices', async () => {
-      sessionMock.getByUserId.mockResolvedValue([sessionStub.valid, sessionStub.inactive]);
+      sessionMock.getByUserId.mockResolvedValue([sessionStub.valid as any, sessionStub.inactive]);
       await expect(sut.getAll(authStub.user1)).resolves.toEqual([
         {
           createdAt: '2021-01-01T00:00:00.000Z',
@@ -76,7 +74,7 @@ describe('SessionService', () => {
 
   describe('logoutDevices', () => {
     it('should logout all devices', async () => {
-      sessionMock.getByUserId.mockResolvedValue([sessionStub.inactive, sessionStub.valid]);
+      sessionMock.getByUserId.mockResolvedValue([sessionStub.inactive, sessionStub.valid] as any[]);
 
       await sut.deleteAll(authStub.user1);
 

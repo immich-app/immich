@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AlbumSharedLink from '$lib/components/album-page/album-shared-link.svelte';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
@@ -12,11 +13,11 @@
     type SharedLinkResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
-  import { mdiCheck, mdiEye, mdiLink, mdiPencil, mdiShareCircle } from '@mdi/js';
+  import { Button, Link, Stack, Text } from '@immich/ui';
+  import { mdiCheck, mdiEye, mdiLink, mdiPencil } from '@mdi/js';
   import { onMount } from 'svelte';
-  import Button from '../elements/buttons/button.svelte';
-  import UserAvatar from '../shared-components/user-avatar.svelte';
   import { t } from 'svelte-i18n';
+  import UserAvatar from '../shared-components/user-avatar.svelte';
 
   interface Props {
     album: AlbumResponseDto;
@@ -38,7 +39,7 @@
 
   let sharedLinks: SharedLinkResponseDto[] = $state([]);
   onMount(async () => {
-    await getSharedLinks();
+    sharedLinks = await getAllSharedLinks({ albumId: album.id });
     const data = await searchUsers();
 
     // remove album owner
@@ -49,11 +50,6 @@
       users = users.filter((user) => user.id !== sharedUser.user.id);
     }
   });
-
-  const getSharedLinks = async () => {
-    const data = await getAllSharedLinks();
-    sharedLinks = data.filter((link) => link.album?.id === album.id);
-  };
 
   const handleToggle = (user: UserResponseDto) => {
     if (Object.keys(selectedUsers).includes(user.id)) {
@@ -72,10 +68,10 @@
   };
 </script>
 
-<FullScreenModal title={$t('invite_to_album')} showLogo {onClose}>
+<FullScreenModal title={$t('share')} showLogo {onClose}>
   {#if Object.keys(selectedUsers).length > 0}
     <div class="mb-2 py-2 sticky">
-      <p class="text-xs font-medium">{$t('selected').toUpperCase()}</p>
+      <p class="text-xs font-medium">{$t('selected')}</p>
       <div class="my-2">
         {#each Object.values(selectedUsers) as { user }}
           {#key user.id}
@@ -117,7 +113,7 @@
 
   <div class="immich-scrollbar max-h-[500px] overflow-y-auto">
     {#if users.length > 0 && users.length !== Object.keys(selectedUsers).length}
-      <p class="text-xs font-medium">{$t('suggestions').toUpperCase()}</p>
+      <Text>{$t('users')}</Text>
 
       <div class="my-2">
         {#each users as user}
@@ -144,9 +140,9 @@
   {#if users.length > 0}
     <div class="py-3">
       <Button
-        size="sm"
-        fullwidth
-        rounded="full"
+        size="small"
+        fullWidth
+        shape="round"
         disabled={Object.keys(selectedUsers).length === 0}
         onclick={() =>
           onSelect(Object.values(selectedUsers).map(({ user, ...rest }) => ({ userId: user.id, ...rest })))}
@@ -155,26 +151,22 @@
     </div>
   {/if}
 
-  <hr />
+  <hr class="my-4" />
 
-  <div id="shared-buttons" class="mt-4 flex place-content-center place-items-center justify-around">
-    <button
-      type="button"
-      class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
-      onclick={onShare}
-    >
-      <Icon path={mdiLink} size={24} />
-      <p class="text-sm">{$t('create_link')}</p>
-    </button>
+  <Stack gap={6}>
+    {#if sharedLinks.length > 0}
+      <div class="flex justify-between items-center">
+        <Text>{$t('shared_links')}</Text>
+        <Link href={AppRoute.SHARED_LINKS} class="text-sm">{$t('view_all')}</Link>
+      </div>
 
-    {#if sharedLinks.length}
-      <a
-        href={AppRoute.SHARED_LINKS}
-        class="flex flex-col place-content-center place-items-center gap-2 hover:cursor-pointer"
-      >
-        <Icon path={mdiShareCircle} size={24} />
-        <p class="text-sm">{$t('view_links')}</p>
-      </a>
+      <Stack gap={4}>
+        {#each sharedLinks as sharedLink}
+          <AlbumSharedLink {album} {sharedLink} />
+        {/each}
+      </Stack>
     {/if}
-  </div>
+
+    <Button leadingIcon={mdiLink} size="small" shape="round" fullWidth onclick={onShare}>{$t('create_link')}</Button>
+  </Stack>
 </FullScreenModal>

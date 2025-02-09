@@ -1,4 +1,4 @@
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ISystemMetadataRepository } from 'src/types';
 import { clearConfigCache } from 'src/utils/config';
 import { Mocked, vitest } from 'vitest';
 

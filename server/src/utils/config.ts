@@ -7,8 +7,7 @@ import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
 import { SystemMetadataKey } from 'src/enum';
 import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { DeepPartial, IConfigRepository, ILoggingRepository } from 'src/types';
+import { DeepPartial, IConfigRepository, ILoggingRepository, ISystemMetadataRepository } from 'src/types';
 import { getKeysDeep, unsetDeep } from 'src/utils/misc';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;

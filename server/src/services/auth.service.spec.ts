@@ -5,12 +5,10 @@ import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
 import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
 import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { IUserRepository } from 'src/interfaces/user.interface';
 import { AuthService } from 'src/services/auth.service';
-import { IApiKeyRepository, IOAuthRepository } from 'src/types';
+import { IApiKeyRepository, IOAuthRepository, ISessionRepository, ISystemMetadataRepository } from 'src/types';
 import { keyStub } from 'test/fixtures/api-key.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
@@ -258,7 +256,7 @@ describe('AuthService', () => {
 
     it('should validate using authorization header', async () => {
       userMock.get.mockResolvedValue(userStub.user1);
-      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.valid as any);
       await expect(
         sut.authenticate({
           headers: { authorization: 'Bearer auth_token' },
@@ -363,7 +361,7 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.valid as any);
       await expect(
         sut.authenticate({
           headers: { cookie: 'immich_access_token=auth_token' },
@@ -377,7 +375,7 @@ describe('AuthService', () => {
     });
 
     it('should throw if admin route and not an admin', async () => {
-      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.valid as any);
       await expect(
         sut.authenticate({
           headers: { cookie: 'immich_access_token=auth_token' },
@@ -388,7 +386,7 @@ describe('AuthService', () => {
     });
 
     it('should update when access time exceeds an hour', async () => {
-      sessionMock.getByToken.mockResolvedValue(sessionStub.inactive);
+      sessionMock.getByToken.mockResolvedValue(sessionStub.inactive as any);
       sessionMock.update.mockResolvedValue(sessionStub.valid);
       await expect(
         sut.authenticate({
