@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Button } from '@immich/ui';
-  import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
-  import { onMount } from 'svelte';
+  import {Button} from '@immich/ui';
+  import {Canvas, InteractiveFabricObject, Rect} from 'fabric';
+  import {onMount} from 'svelte';
 
   interface Props {
     imgElement: HTMLImageElement;
@@ -9,7 +9,7 @@
     containerHeight: number;
   }
 
-  let { imgElement, containerWidth, containerHeight }: Props = $props();
+  let {imgElement, containerWidth, containerHeight}: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -19,10 +19,9 @@
     InteractiveFabricObject.ownDefaults = {
       ...InteractiveFabricObject.ownDefaults,
       cornerStyle: 'circle',
-      cornerStrokeColor: 'rgb(172,203,250)',
-      cornerColor: 'rgb(172,203,250)',
+      cornerColor: 'rgb(153,166,251)',
       cornerSize: 10,
-      padding: 4,
+      padding: 8,
       transparentCorners: false,
       lockRotation: true,
       hasBorders: true,
@@ -38,9 +37,9 @@
     configureControlStyle();
 
     faceRect = new Rect({
-      fill: 'rgba(250,250,250,0.5)',
-      width: 200,
-      height: 200,
+      fill: 'rgba(66,80,175,0.5)',
+      width: 112,
+      height: 112,
       objectCaching: true,
       rx: 8,
       ry: 8,
@@ -51,7 +50,7 @@
   });
 
   $effect(() => {
-    const { actualWidth, actualHeight } = getContainedSize(imgElement);
+    const {actualWidth, actualHeight} = getContainedSize(imgElement);
     const offsetArea = {
       width: (containerWidth - actualWidth) / 2,
       height: (containerHeight - actualHeight) / 2,
@@ -93,22 +92,64 @@
       actualWidth = img.width;
       actualHeight = img.width / ratio;
     }
-    return { actualWidth, actualHeight };
+    return {actualWidth, actualHeight};
   };
 
   const test = () => {
     console.log(`${faceRect?.height} x ${faceRect?.width} TOP: ${faceRect?.top} LEFT: ${faceRect?.left}`);
     console.log('RECT', faceRect?.aCoords);
   };
+
+  const people = ['Person 1', 'Person 2', 'Person 3', 'Person 4', 'Person 5'];
 </script>
 
 <div class="absolute left-0 top-0">
   <canvas bind:this={canvasEl} id="face-editor" class="absolute top-0 left-0"></canvas>
 
   <div
-    class="absolute bottom-20 right-[calc(50%-97px)] flex gap-2 place-items-center place-content-center bg-gray-50 backdrop-blur-sm p-2 rounded-xl"
+    class="absolute bottom-20 right-[calc(50%-97px)] bg-gray-50 backdrop-blur-sm p-4 rounded-xl"
   >
-    <Button size="small" onclick={test} class="shadow-xl font-normal">Tag person</Button>
-    <Button size="small" onclick={test} color="danger">Cancel</Button>
+    <div>
+      <p>Create a new person or add existing one</p>
+    </div>
+    <div class="flex gap-2 place-items-center place-content-center mt-4">
+      <Button size="small" onclick={test} class="shadow-xl font-normal">Tag person</Button>
+      <Button size="small" onclick={test} color="danger">Cancel</Button>
+    </div>
+
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

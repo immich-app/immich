@@ -35,7 +35,6 @@
     mdiInformationOutline,
     mdiPencil,
     mdiPlus,
-    mdiPlusBox,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -276,14 +275,15 @@
                   </p>
                 {/if}
               {/if}
-            </a>
+            </a>,
           {/if}
         {/each}
 
         <button
-          class="w-[90px] h-[90px] flex items-center justify-center bg-transparent border border-gray-200 rounded-xl text-gray-500 hover:bg-gray-200"
+          class="w-[90px] h-[90px] flex items-center justify-center bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 hover:bg-gray-200 dark:hover:bg-immich-dark-gray dark:hover:text-gray-200"
           type="button"
           onclick={() => {}}
+          title={$t('tag_people')}
         >
           <Icon path={mdiPlus} size={24} />
         </button>
