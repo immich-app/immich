@@ -385,3 +385,8 @@ export enum ToggleVisibility {
   HIDE_UNNANEMD = 'hide-unnamed',
   SHOW_ALL = 'show-all',
 }
+
+export enum FaceEditorDisplayMode {
+  EDITING,
+  CONFIRMATION
+}
