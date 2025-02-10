@@ -388,5 +388,6 @@ export enum ToggleVisibility {
 
 export enum FaceEditorDisplayMode {
   EDITING,
-  CONFIRMATION
+  FACE_SELECTOR,
+  CREATE_PERSON,
 }
