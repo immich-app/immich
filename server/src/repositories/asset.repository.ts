@@ -524,7 +524,7 @@ export class AssetRepository implements IAssetRepository {
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
   }
 
-  getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+  private getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     return this.db

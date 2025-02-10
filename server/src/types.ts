@@ -1,27 +1,9 @@
 import { UserEntity } from 'src/entities/user.entity';
 import { ExifOrientation, ImageFormat, Permission, TranscodeTarget, VideoCodec } from 'src/enum';
-import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
-import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
-import { AuditRepository } from 'src/repositories/audit.repository';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { CronRepository } from 'src/repositories/cron.repository';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { MapRepository } from 'src/repositories/map.repository';
-import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
-import { MetadataRepository } from 'src/repositories/metadata.repository';
-import { NotificationRepository } from 'src/repositories/notification.repository';
-import { OAuthRepository } from 'src/repositories/oauth.repository';
-import { ProcessRepository } from 'src/repositories/process.repository';
-import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
-import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
-import { MetricGroupRepository, TelemetryRepository } from 'src/repositories/telemetry.repository';
-import { TrashRepository } from 'src/repositories/trash.repository';
-import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
-import { ViewRepository } from 'src/repositories/view-repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 
@@ -34,41 +16,10 @@ export type AuthApiKey = {
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 
-export type IActivityRepository = RepositoryInterface<ActivityRepository>;
-export type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInterface<AccessRepository[K]> };
-export type IAlbumUserRepository = RepositoryInterface<AlbumUserRepository>;
-export type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
-export type IAuditRepository = RepositoryInterface<AuditRepository>;
-export type IConfigRepository = RepositoryInterface<ConfigRepository>;
-export type ICronRepository = RepositoryInterface<CronRepository>;
-export type ILoggingRepository = Pick<
-  LoggingRepository,
-  | 'verbose'
-  | 'log'
-  | 'debug'
-  | 'warn'
-  | 'error'
-  | 'fatal'
-  | 'isLevelEnabled'
-  | 'setLogLevel'
-  | 'setContext'
-  | 'setAppName'
->;
-export type IMapRepository = RepositoryInterface<MapRepository>;
-export type IMediaRepository = RepositoryInterface<MediaRepository>;
-export type IMemoryRepository = RepositoryInterface<MemoryRepository>;
-export type IMetadataRepository = RepositoryInterface<MetadataRepository>;
-export type IMetricGroupRepository = RepositoryInterface<MetricGroupRepository>;
-export type INotificationRepository = RepositoryInterface<NotificationRepository>;
-export type IOAuthRepository = RepositoryInterface<OAuthRepository>;
-export type IProcessRepository = RepositoryInterface<ProcessRepository>;
-export type ISessionRepository = RepositoryInterface<SessionRepository>;
-export type IServerInfoRepository = RepositoryInterface<ServerInfoRepository>;
-export type ISystemMetadataRepository = RepositoryInterface<SystemMetadataRepository>;
-export type ITelemetryRepository = RepositoryInterface<TelemetryRepository>;
-export type ITrashRepository = RepositoryInterface<TrashRepository>;
-export type IViewRepository = RepositoryInterface<ViewRepository>;
-export type IVersionHistoryRepository = RepositoryInterface<VersionHistoryRepository>;
+type IActivityRepository = RepositoryInterface<ActivityRepository>;
+type IApiKeyRepository = RepositoryInterface<ApiKeyRepository>;
+type IMemoryRepository = RepositoryInterface<MemoryRepository>;
+type ISessionRepository = RepositoryInterface<SessionRepository>;
 
 export type ActivityItem =
   | Awaited<ReturnType<IActivityRepository['create']>>
