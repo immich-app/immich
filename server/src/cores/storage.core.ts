@@ -5,11 +5,13 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
 import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IMoveRepository } from 'src/interfaces/move.interface';
 import { IPersonRepository } from 'src/interfaces/person.interface';
 import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { IConfigRepository, ILoggingRepository, ISystemMetadataRepository } from 'src/types';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
 
@@ -32,24 +34,24 @@ let instance: StorageCore | null;
 export class StorageCore {
   private constructor(
     private assetRepository: IAssetRepository,
-    private configRepository: IConfigRepository,
-    private cryptoRepository: ICryptoRepository,
+    private configRepository: ConfigRepository,
+    private cryptoRepository: CryptoRepository,
     private moveRepository: IMoveRepository,
     private personRepository: IPersonRepository,
     private storageRepository: IStorageRepository,
-    private systemMetadataRepository: ISystemMetadataRepository,
-    private logger: ILoggingRepository,
+    private systemMetadataRepository: SystemMetadataRepository,
+    private logger: LoggingRepository,
   ) {}
 
   static create(
     assetRepository: IAssetRepository,
-    configRepository: IConfigRepository,
-    cryptoRepository: ICryptoRepository,
+    configRepository: ConfigRepository,
+    cryptoRepository: CryptoRepository,
     moveRepository: IMoveRepository,
     personRepository: IPersonRepository,
     storageRepository: IStorageRepository,
-    systemMetadataRepository: ISystemMetadataRepository,
-    logger: ILoggingRepository,
+    systemMetadataRepository: SystemMetadataRepository,
+    logger: LoggingRepository,
   ) {
     if (!instance) {
       instance = new StorageCore(

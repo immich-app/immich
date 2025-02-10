@@ -30,6 +30,7 @@ import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
@@ -61,7 +62,7 @@ export class BaseService {
     @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
-    @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
+    @Inject(ICryptoRepository) protected cryptoRepository: CryptoRepository,
     @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
     @Inject(IEventRepository) protected eventRepository: IEventRepository,
     @Inject(IJobRepository) protected jobRepository: IJobRepository,
