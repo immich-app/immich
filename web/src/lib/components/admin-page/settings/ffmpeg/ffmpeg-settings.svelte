@@ -151,6 +151,14 @@
                 sortBy(savedConfig.ffmpeg.acceptedContainers),
               )}
             />
+
+            <SettingSwitch
+              title={$t('admin.transcoding_transcode_hdr')}
+              {disabled}
+              subtitle={$t('admin.transcoding_transcode_hdr_setting_description')}
+              bind:checked={config.ffmpeg.transcodeHDR}
+              isEdited={config.ffmpeg.transcodeHDR !== savedConfig.ffmpeg.transcodeHDR}
+            />
           </div>
         </SettingAccordion>
 

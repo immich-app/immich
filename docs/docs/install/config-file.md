@@ -23,6 +23,7 @@ The default configuration looks like this:
     "acceptedContainers": ["mov", "ogg", "webm"],
     "targetResolution": "720",
     "maxBitrate": "0",
+    "transcodeHDR": true,
     "bframes": -1,
     "refs": 0,
     "gopSize": 0,

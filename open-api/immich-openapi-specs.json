@@ -11966,6 +11966,9 @@
               }
             ]
           },
+          "transcodeHDR": {
+            "type": "boolean"
+          },
           "twoPass": {
             "type": "boolean"
           }
@@ -11991,6 +11994,7 @@
           "threads",
           "tonemap",
           "transcode",
+          "transcodeHDR",
           "twoPass"
         ],
         "type": "object"

@@ -106,6 +106,9 @@ export class SystemConfigFFmpegDto {
   @IsString()
   maxBitrate!: string;
 
+  @ValidateBoolean()
+  transcodeHDR!: boolean;
+
   @IsInt()
   @Min(-1)
   @Max(16)
