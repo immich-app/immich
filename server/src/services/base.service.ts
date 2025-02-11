@@ -6,9 +6,7 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -20,8 +18,10 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -63,11 +63,11 @@ export class BaseService {
     protected cronRepository: CronRepository,
     protected cryptoRepository: CryptoRepository,
     protected databaseRepository: DatabaseRepository,
-    @Inject(IEventRepository) protected eventRepository: IEventRepository,
+    protected eventRepository: EventRepository,
     @Inject(IJobRepository) protected jobRepository: IJobRepository,
     protected keyRepository: ApiKeyRepository,
     protected libraryRepository: LibraryRepository,
-    @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
+    protected machineLearningRepository: MachineLearningRepository,
     protected mapRepository: MapRepository,
     protected mediaRepository: MediaRepository,
     protected memoryRepository: MemoryRepository,

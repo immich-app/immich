@@ -17,9 +17,9 @@ import {
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType, ImmichWorker } from 'src/enum';
-import { ArgOf } from 'src/interfaces/event.interface';
 import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { DatabaseLock } from 'src/repositories/database.repository';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';

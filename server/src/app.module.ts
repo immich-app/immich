@@ -13,7 +13,6 @@ import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
@@ -22,9 +21,11 @@ import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
 import { providers, repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
+import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 
@@ -78,9 +79,10 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
+    private eventRepository: EventRepository,
     @Inject(IJobRepository) private jobRepository: IJobRepository,
     private telemetryRepository: TelemetryRepository,
+    private authService: AuthService,
   ) {
     logger.setAppName(this.worker);
   }
@@ -92,6 +94,14 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     if (this.worker === ImmichWorker.MICROSERVICES) {
       this.jobRepository.startWorkers();
     }
+
+    this.eventRepository.setAuthFn(async (client) =>
+      this.authService.authenticate({
+        headers: client.request.headers,
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
+      }),
+    );
 
     this.eventRepository.setup({ services });
     await this.eventRepository.emit('app.bootstrap');

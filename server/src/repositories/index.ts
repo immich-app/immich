@@ -1,6 +1,4 @@
-import { IEventRepository } from 'src/interfaces/event.interface';
 import { IJobRepository } from 'src/interfaces/job.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -53,8 +51,10 @@ export const repositories = [
   CronRepository,
   CryptoRepository,
   DatabaseRepository,
+  EventRepository,
   LibraryRepository,
   LoggingRepository,
+  MachineLearningRepository,
   MapRepository,
   MediaRepository,
   MemoryRepository,
@@ -80,8 +80,4 @@ export const repositories = [
   VersionHistoryRepository,
 ];
 
-export const providers = [
-  { provide: IEventRepository, useClass: EventRepository },
-  { provide: IJobRepository, useClass: JobRepository },
-  { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
-];
+export const providers = [{ provide: IJobRepository, useClass: JobRepository }];
