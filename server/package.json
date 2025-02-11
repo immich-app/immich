@@ -35,10 +35,13 @@
     "email:dev": "email dev -p 3050 --dir src/emails"
   },
   "dependencies": {
+    "@apollo/server": "^4.11.3",
+    "@nestjs/apollo": "^13.0.2",
     "@nestjs/bullmq": "^11.0.1",
     "@nestjs/common": "^11.0.4",
     "@nestjs/core": "^11.0.4",
     "@nestjs/event-emitter": "^3.0.0",
+    "@nestjs/graphql": "^13.0.2",
     "@nestjs/platform-express": "^11.0.4",
     "@nestjs/platform-socket.io": "^11.0.4",
     "@nestjs/schedule": "^5.0.0",
@@ -63,6 +66,7 @@
     "fast-glob": "^3.3.2",
     "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^8.0.0",
+    "graphql": "^16.10.0",
     "handlebars": "^4.7.8",
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.3.2",

@@ -1,8 +1,18 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
-import { Response } from 'express';
+import { GqlContextType } from '@nestjs/graphql';
+import { GraphQLError } from 'graphql';
 import { ClsService } from 'nestjs-cls';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { logGlobalError } from 'src/utils/logger';
+import { getReqRes } from 'src/utils/request';
+
+type StructuredError = {
+  status: number;
+  body: {
+    [key: string]: unknown;
+    message?: string;
+  };
+};
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
@@ -14,15 +24,20 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   }
 
   catch(error: Error, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
+    const { res } = getReqRes(host);
     const { status, body } = this.fromError(error);
-    if (!response.headersSent) {
-      response.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+    const message = { ...body, statusCode: status, correlationId: this.cls.getId() };
+
+    if (host.getType<GqlContextType>() === 'graphql') {
+      throw new GraphQLError(body?.message || 'Error', { extensions: message });
+    }
+
+    if (!res.headersSent) {
+      res.status(status).json(message);
     }
   }
 
-  private fromError(error: Error) {
+  private fromError(error: Error): StructuredError {
     logGlobalError(this.logger, error);
 
     if (error instanceof HttpException) {
@@ -34,7 +49,7 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
         body = { message: body };
       }
 
-      return { status, body };
+      return { status, body } as StructuredError;
     }
 
     return {

@@ -1,12 +1,15 @@
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
+import { GraphQLModule } from '@nestjs/graphql';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import { join } from 'node:path';
 import postgres from 'postgres';
 import { commands } from 'src/commands';
 import { IWorker } from 'src/constants';
@@ -24,6 +27,7 @@ import { providers, repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { resolvers } from 'src/resolvers';
 import { services } from 'src/services';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
@@ -104,9 +108,28 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
 }
 
 @Module({
-  imports: [...imports, ScheduleModule.forRoot()],
+  imports: [
+    ...imports,
+    ScheduleModule.forRoot(),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      playground: true,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      debug: true,
+      buildSchemaOptions: {
+        numberScalarMode: 'integer',
+      },
+    }),
+  ],
   controllers: [...controllers],
-  providers: [...common, ...middleware, { provide: IWorker, useValue: ImmichWorker.API }],
+  providers: [
+    //
+    ...common,
+    ...middleware,
+    ...resolvers,
+    { provide: IWorker, useValue: ImmichWorker.API },
+  ],
 })
 export class ApiModule extends BaseModule {}
 

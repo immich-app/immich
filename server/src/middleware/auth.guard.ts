@@ -13,6 +13,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichQuery, MetadataKey, Permission } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService, LoginDetails } from 'src/services/auth.service';
+import { getReqRes } from 'src/utils/request';
 import { UAParser } from 'ua-parser-js';
 
 type AdminRoute = { admin?: true };
@@ -35,7 +36,8 @@ export const Authenticated = (options?: AuthenticatedOptions): MethodDecorator =
 };
 
 export const Auth = createParamDecorator((data, context: ExecutionContext): AuthDto => {
-  return context.switchToHttp().getRequest<AuthenticatedRequest>().user;
+  const { req } = getReqRes<AuthenticatedRequest>(context);
+  return req.user;
 });
 
 export const FileResponse = () =>
@@ -86,12 +88,12 @@ export class AuthGuard implements CanActivate {
       sharedLink: sharedLinkRoute,
       permission,
     } = { sharedLink: false, admin: false, ...options };
-    const request = context.switchToHttp().getRequest<AuthRequest>();
+    const { req } = getReqRes<AuthenticatedRequest>(context);
 
-    request.user = await this.authService.authenticate({
-      headers: request.headers,
-      queryParams: request.query as Record<string, string>,
-      metadata: { adminRoute, sharedLinkRoute, permission, uri: request.path },
+    req.user = await this.authService.authenticate({
+      headers: req.headers,
+      queryParams: req.query as Record<string, string>,
+      metadata: { adminRoute, sharedLinkRoute, permission, uri: req.path },
     });
 
     return true;

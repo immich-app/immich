@@ -26,6 +26,7 @@ export default defineConfig({
     // connect to a remote backend during web-only development
     proxy: {
       '/api': upstream,
+      '/graphql': upstream,
       '/.well-known/immich': upstream,
       '/custom.css': upstream,
     },

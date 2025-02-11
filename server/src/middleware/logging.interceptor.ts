@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { Request, Response } from 'express';
 import { Observable, finalize } from 'rxjs';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { getReqRes } from 'src/utils/request';
 
 const maxArrayLength = 100;
 const replacer = (key: string, value: unknown) => {
@@ -23,10 +23,7 @@ export class LoggingInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
-    const handler = context.switchToHttp();
-    const req = handler.getRequest<Request>();
-    const res = handler.getResponse<Response>();
-
+    const { req, res } = getReqRes(context);
     const { method, ip, url } = req;
 
     const start = performance.now();
@@ -35,9 +32,7 @@ export class LoggingInterceptor implements NestInterceptor {
       finalize(() => {
         const finish = performance.now();
         const duration = (finish - start).toFixed(2);
-        const { statusCode } = res;
-
-        this.logger.debug(`${method} ${url} ${statusCode} ${duration}ms ${ip}`);
+        this.logger.debug(`${method} ${url} ${res?.statusCode || ''} ${duration}ms ${ip}`);
         if (req.body && Object.keys(req.body).length > 0) {
           this.logger.verbose(JSON.stringify(req.body, replacer));
         }

@@ -1,0 +1,35 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Query {
+  user(id: Int!): User!
+  users: [User!]!
+}
+
+type User {
+  avatarColor: UserAvatarColor!
+  email: String!
+  id: String!
+  name: String!
+  profileChangedAt: DateTime
+  profileImagePath: String!
+}
+
+enum UserAvatarColor {
+  AMBER
+  BLUE
+  GRAY
+  GREEN
+  ORANGE
+  PINK
+  PRIMARY
+  PURPLE
+  RED
+  YELLOW
+}

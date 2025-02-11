@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Res,
   UploadedFile,
   UseInterceptors,
@@ -38,8 +39,21 @@ export class UserController {
 
   @Get()
   @Authenticated()
-  searchUsers(@Auth() auth: AuthDto): Promise<UserResponseDto[]> {
-    return this.service.search(auth);
+  async searchUsers(@Req() req: Request): Promise<UserResponseDto[]> {
+    const response = await fetch(`http://localhost:2283/graphql`, {
+      method: 'POST',
+      body: JSON.stringify({
+        operationName: null,
+        query: '{ users { id name email } }',
+      }),
+      headers: {
+        ...req.headers,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const { data } = await response.json();
+    return data.users;
   }
 
   @Get('me')
