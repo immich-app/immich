@@ -4,8 +4,8 @@ import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemFlags } from 'src/entities/system-metadata.entity';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
 import { JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { DatabaseLock } from 'src/repositories/database.repository';
 import { BaseService } from 'src/services/base.service';
 import { ImmichStartupError } from 'src/utils/misc';
 

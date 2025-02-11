@@ -13,8 +13,8 @@ import {
   TranscodePolicy,
   VideoCodec,
 } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
 import { JobCounts, JobName, JobStatus } from 'src/interfaces/job.interface';
+import { WithoutProperty } from 'src/repositories/asset.repository';
 import { MediaService } from 'src/services/media.service';
 import { RawImageInfo } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';

@@ -3,7 +3,7 @@ import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TimeBucketAssetDto, TimeBucketDto, TimeBucketResponseDto } from 'src/dtos/time-bucket.dto';
 import { Permission } from 'src/enum';
-import { TimeBucketOptions } from 'src/interfaces/asset.interface';
+import { TimeBucketOptions } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 

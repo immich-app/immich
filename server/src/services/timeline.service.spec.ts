@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { TimeBucketSize } from 'src/interfaces/asset.interface';
+import { TimeBucketSize } from 'src/repositories/asset.repository';
 import { TimelineService } from 'src/services/timeline.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';

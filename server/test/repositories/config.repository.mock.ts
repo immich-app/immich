@@ -1,5 +1,4 @@
-import { ImmichEnvironment, ImmichWorker } from 'src/enum';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker } from 'src/enum';
 import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
 import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';

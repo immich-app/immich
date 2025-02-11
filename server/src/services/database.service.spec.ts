@@ -1,4 +1,5 @@
-import { DatabaseExtension, EXTENSION_NAMES, VectorExtension } from 'src/interfaces/database.interface';
+import { DatabaseExtension } from 'src/enum';
+import { EXTENSION_NAMES, VectorExtension } from 'src/repositories/database.repository';
 import { DatabaseService } from 'src/services/database.service';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService, ServiceMocks } from 'test/utils';

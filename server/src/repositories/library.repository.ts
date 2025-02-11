@@ -7,7 +7,6 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType } from 'src/enum';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
 
 const userColumns = [
   'users.id',
@@ -34,7 +33,7 @@ const withOwner = (eb: ExpressionBuilder<DB, 'libraries'>) => {
 };
 
 @Injectable()
-export class LibraryRepository implements ILibraryRepository {
+export class LibraryRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })

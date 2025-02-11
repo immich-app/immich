@@ -4,8 +4,8 @@ import { access, constants } from 'node:fs/promises';
 import { basename, extname, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
-import { ImmichReadStream } from 'src/interfaces/storage.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { isConnectionAborted } from 'src/utils/misc';
 
 export function getFileNameWithoutExtension(path: string): string {

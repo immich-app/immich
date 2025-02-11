@@ -13,9 +13,9 @@ import { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
-import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
-import { DatabaseConnectionParams, DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
+import { DatabaseExtension, ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
 import { QueueName } from 'src/interfaces/job.interface';
+import { DatabaseConnectionParams, VectorExtension } from 'src/repositories/database.repository';
 import { setDifference } from 'src/utils/set';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
