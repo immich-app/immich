@@ -74,6 +74,7 @@
           color="secondary"
           shape="round"
           icon={mdiUnfoldMoreHorizontal}
+          aria-label={$t('expand_all')}
         />
       </div>
 
@@ -86,6 +87,7 @@
           color="secondary"
           shape="round"
           icon={mdiUnfoldLessHorizontal}
+          aria-label={$t('collapse_all')}
         />
       </div>
     </div>
