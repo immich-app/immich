@@ -1,7 +1,6 @@
 import { BadRequestException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserEntity } from 'src/entities/user.entity';
-import { CacheControl, UserMetadataKey } from 'src/enum';
-import { JobName } from 'src/interfaces/job.interface';
+import { CacheControl, JobName, UserMetadataKey } from 'src/enum';
 import { UserService } from 'src/services/user.service';
 import { ImmichFileResponse } from 'src/utils/file';
 import { authStub } from 'test/fixtures/auth.stub';

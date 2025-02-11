@@ -5,22 +5,11 @@ import { JobsOptions, Queue, Worker } from 'bullmq';
 import { ClassConstructor } from 'class-transformer';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
-import { MetadataKey } from 'src/enum';
-import {
-  IEntityJob,
-  IJobRepository,
-  JobCounts,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueCleanType,
-  QueueName,
-  QueueStatus,
-} from 'src/interfaces/job.interface';
+import { JobName, JobStatus, MetadataKey, QueueCleanType, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { IEntityJob, JobCounts, JobItem, JobOf, QueueStatus } from 'src/types';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
 type JobMapItem = {
@@ -31,7 +20,7 @@ type JobMapItem = {
 };
 
 @Injectable()
-export class JobRepository implements IJobRepository {
+export class JobRepository {
   private workers: Partial<Record<QueueName, Worker>> = {};
   private handlers: Partial<Record<JobName, JobMapItem>> = {};
 

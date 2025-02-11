@@ -13,15 +13,15 @@ import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
 import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
-import { IJobRepository } from 'src/interfaces/job.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
-import { providers, repositories } from 'src/repositories';
+import { repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
@@ -29,7 +29,7 @@ import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 
-const common = [...services, ...providers, ...repositories];
+const common = [...repositories, ...services];
 
 const middleware = [
   FileUploadInterceptor,
@@ -80,7 +80,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
     private eventRepository: EventRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
+    private jobRepository: JobRepository,
     private telemetryRepository: TelemetryRepository,
     private authService: AuthService,
   ) {
@@ -88,7 +88,7 @@ class BaseModule implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    this.telemetryRepository.setup({ repositories: [...providers.map(({ useClass }) => useClass), ...repositories] });
+    this.telemetryRepository.setup({ repositories });
 
     this.jobRepository.setup({ services });
     if (this.worker === ImmichWorker.MICROSERVICES) {

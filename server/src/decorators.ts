@@ -2,8 +2,7 @@ import { SetMetadata, applyDecorators } from '@nestjs/common';
 import { ApiExtension, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ADDED_IN_PREFIX, DEPRECATED_IN_PREFIX, LIFECYCLE_EXTENSION } from 'src/constants';
-import { ImmichWorker, MetadataKey } from 'src/enum';
-import { JobName, QueueName } from 'src/interfaces/job.interface';
+import { ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
 import { setUnion } from 'src/utils/set';
 

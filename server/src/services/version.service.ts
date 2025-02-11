@@ -5,9 +5,7 @@ import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
-import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
-import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { DatabaseLock } from 'src/repositories/database.repository';
+import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 

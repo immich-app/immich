@@ -1,8 +1,7 @@
 import { PassThrough } from 'node:stream';
 import { defaults, SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
-import { ImmichWorker, StorageFolder } from 'src/enum';
-import { JobStatus } from 'src/interfaces/job.interface';
+import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum';
 import { BackupService } from 'src/services/backup.service';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { mockSpawn, newTestService, ServiceMocks } from 'test/utils';

@@ -3,7 +3,7 @@ import { instanceToPlain } from 'class-transformer';
 import _ from 'lodash';
 import { defaults } from 'src/config';
 import { OnEvent } from 'src/decorators';
-import { SystemConfigDto, mapConfig } from 'src/dtos/system-config.dto';
+import { mapConfig, SystemConfigDto } from 'src/dtos/system-config.dto';
 import { BootstrapEventPriority } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';

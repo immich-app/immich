@@ -15,10 +15,10 @@ import { EventConfig } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { ImmichWorker, MetadataKey } from 'src/enum';
-import { JobItem, QueueName } from 'src/interfaces/job.interface';
+import { ImmichWorker, MetadataKey, QueueName } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { JobItem } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;

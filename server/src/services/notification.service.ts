@@ -2,18 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
-import {
-  IEntityJob,
-  INotifyAlbumUpdateJob,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
-import { EmailImageAttachment, EmailTemplate } from 'src/repositories/notification.repository';
+import { EmailTemplate } from 'src/repositories/notification.repository';
 import { BaseService } from 'src/services/base.service';
+import { EmailImageAttachment, IEntityJob, INotifyAlbumUpdateJob, JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getFilenameExtension } from 'src/utils/file';
 import { getExternalDomain } from 'src/utils/misc';

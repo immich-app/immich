@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FACE_THUMBNAIL_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -27,24 +27,19 @@ import {
   AssetType,
   CacheControl,
   ImageFormat,
+  JobName,
+  JobStatus,
   Permission,
   PersonPathType,
+  QueueName,
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import {
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
-import { CropOptions, ImageDimensions, InputDimensions } from 'src/types';
+import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';

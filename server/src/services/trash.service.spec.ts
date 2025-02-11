@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus } from 'src/enum';
 import { TrashService } from 'src/services/trash.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';

@@ -1,4 +1,3 @@
-import { IJobRepository } from 'src/interfaces/job.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -52,6 +51,7 @@ export const repositories = [
   CryptoRepository,
   DatabaseRepository,
   EventRepository,
+  JobRepository,
   LibraryRepository,
   LoggingRepository,
   MachineLearningRepository,
@@ -79,5 +79,3 @@ export const repositories = [
   ViewRepository,
   VersionHistoryRepository,
 ];
-
-export const providers = [{ provide: IJobRepository, useClass: JobRepository }];
