@@ -1,12 +1,11 @@
 import { getQueueToken } from '@nestjs/bullmq';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { ClassConstructor } from 'class-transformer';
 import { setTimeout } from 'node:timers/promises';
 import { JobConfig } from 'src/decorators';
 import { MetadataKey } from 'src/enum';
-import { IEventRepository } from 'src/interfaces/event.interface';
 import {
   IEntityJob,
   IJobRepository,
@@ -20,6 +19,7 @@ import {
   QueueStatus,
 } from 'src/interfaces/job.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { getKeyByValue, getMethodNames, ImmichStartupError } from 'src/utils/misc';
 
@@ -38,7 +38,7 @@ export class JobRepository implements IJobRepository {
   constructor(
     private moduleRef: ModuleRef,
     private configRepository: ConfigRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
+    private eventRepository: EventRepository,
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(JobRepository.name);

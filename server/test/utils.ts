@@ -2,8 +2,6 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -15,9 +13,11 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
@@ -108,11 +108,11 @@ export type ServiceMocks = {
   cron: Mocked<RepositoryInterface<CronRepository>>;
   crypto: Mocked<RepositoryInterface<CryptoRepository>>;
   database: Mocked<RepositoryInterface<DatabaseRepository>>;
-  event: Mocked<IEventRepository>;
+  event: Mocked<RepositoryInterface<EventRepository>>;
   job: Mocked<RepositoryInterface<JobRepository>>;
   library: Mocked<RepositoryInterface<LibraryRepository>>;
   logger: Mocked<ILoggingRepository>;
-  machineLearning: Mocked<IMachineLearningRepository>;
+  machineLearning: Mocked<RepositoryInterface<MachineLearningRepository>>;
   map: Mocked<RepositoryInterface<MapRepository>>;
   media: Mocked<RepositoryInterface<MediaRepository>>;
   memory: Mocked<RepositoryInterface<MemoryRepository>>;
@@ -198,11 +198,11 @@ export const newTestService = <T extends BaseService>(
     cronMock as RepositoryInterface<CronRepository> as CronRepository,
     cryptoMock as RepositoryInterface<CryptoRepository> as CryptoRepository,
     databaseMock as RepositoryInterface<DatabaseRepository> as DatabaseRepository,
-    eventMock,
+    eventMock as RepositoryInterface<EventRepository> as EventRepository,
     jobMock,
     apiKeyMock as RepositoryInterface<ApiKeyRepository> as ApiKeyRepository,
     libraryMock as RepositoryInterface<LibraryRepository> as LibraryRepository,
-    machineLearningMock,
+    machineLearningMock as RepositoryInterface<MachineLearningRepository> as MachineLearningRepository,
     mapMock as RepositoryInterface<MapRepository> as MapRepository,
     mediaMock as RepositoryInterface<MediaRepository> as MediaRepository,
     memoryMock as RepositoryInterface<MemoryRepository> as MemoryRepository,
