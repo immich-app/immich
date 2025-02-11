@@ -4,13 +4,13 @@ import { APP_MEDIA_LOCATION } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MoveRepository } from 'src/repositories/move.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getConfig } from 'src/utils/config';
@@ -33,23 +33,23 @@ let instance: StorageCore | null;
 
 export class StorageCore {
   private constructor(
-    private assetRepository: IAssetRepository,
+    private assetRepository: AssetRepository,
     private configRepository: ConfigRepository,
     private cryptoRepository: CryptoRepository,
-    private moveRepository: IMoveRepository,
-    private personRepository: IPersonRepository,
-    private storageRepository: IStorageRepository,
+    private moveRepository: MoveRepository,
+    private personRepository: PersonRepository,
+    private storageRepository: StorageRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
   ) {}
 
   static create(
-    assetRepository: IAssetRepository,
+    assetRepository: AssetRepository,
     configRepository: ConfigRepository,
     cryptoRepository: CryptoRepository,
-    moveRepository: IMoveRepository,
-    personRepository: IPersonRepository,
-    storageRepository: IStorageRepository,
+    moveRepository: MoveRepository,
+    personRepository: PersonRepository,
+    storageRepository: StorageRepository,
     systemMetadataRepository: SystemMetadataRepository,
     logger: LoggingRepository,
   ) {

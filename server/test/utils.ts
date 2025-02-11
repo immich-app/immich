@@ -2,16 +2,14 @@ import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
 import { PNG } from 'pngjs';
 import { ImmichWorker } from 'src/enum';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
 import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
+import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
@@ -40,6 +38,7 @@ import { SystemMetadataRepository } from 'src/repositories/system-metadata.repos
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
@@ -100,14 +99,14 @@ type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInterface<Ac
 export type ServiceMocks = {
   access: IAccessRepositoryMock;
   activity: Mocked<RepositoryInterface<ActivityRepository>>;
-  album: Mocked<IAlbumRepository>;
+  album: Mocked<RepositoryInterface<AlbumRepository>>;
   albumUser: Mocked<RepositoryInterface<AlbumUserRepository>>;
   apiKey: Mocked<RepositoryInterface<ApiKeyRepository>>;
   audit: Mocked<RepositoryInterface<AuditRepository>>;
-  asset: Mocked<IAssetRepository>;
+  asset: Mocked<RepositoryInterface<AssetRepository>>;
   config: Mocked<RepositoryInterface<ConfigRepository>>;
   cron: Mocked<RepositoryInterface<CronRepository>>;
-  crypto: Mocked<ICryptoRepository>;
+  crypto: Mocked<RepositoryInterface<CryptoRepository>>;
   database: Mocked<RepositoryInterface<DatabaseRepository>>;
   event: Mocked<IEventRepository>;
   job: Mocked<RepositoryInterface<JobRepository>>;
@@ -134,7 +133,7 @@ export type ServiceMocks = {
   tag: Mocked<RepositoryInterface<TagRepository>>;
   telemetry: ITelemetryRepositoryMock;
   trash: Mocked<RepositoryInterface<TrashRepository>>;
-  user: Mocked<IUserRepository>;
+  user: Mocked<RepositoryInterface<UserRepository>>;
   versionHistory: Mocked<RepositoryInterface<VersionHistoryRepository>>;
   view: Mocked<RepositoryInterface<ViewRepository>>;
 };
@@ -192,39 +191,39 @@ export const newTestService = <T extends BaseService>(
     accessMock as IAccessRepository as AccessRepository,
     activityMock as RepositoryInterface<ActivityRepository> as ActivityRepository,
     auditMock as RepositoryInterface<AuditRepository> as AuditRepository,
-    albumMock,
+    albumMock as RepositoryInterface<AlbumRepository> as AlbumRepository,
     albumUserMock as RepositoryInterface<AlbumUserRepository> as AlbumUserRepository,
-    assetMock,
+    assetMock as RepositoryInterface<AssetRepository> as AssetRepository,
     configMock,
     cronMock as RepositoryInterface<CronRepository> as CronRepository,
     cryptoMock as RepositoryInterface<CryptoRepository> as CryptoRepository,
-    databaseMock,
+    databaseMock as RepositoryInterface<DatabaseRepository> as DatabaseRepository,
     eventMock,
     jobMock,
     apiKeyMock as RepositoryInterface<ApiKeyRepository> as ApiKeyRepository,
-    libraryMock,
+    libraryMock as RepositoryInterface<LibraryRepository> as LibraryRepository,
     machineLearningMock,
     mapMock as RepositoryInterface<MapRepository> as MapRepository,
     mediaMock as RepositoryInterface<MediaRepository> as MediaRepository,
     memoryMock as RepositoryInterface<MemoryRepository> as MemoryRepository,
     metadataMock as RepositoryInterface<MetadataRepository> as MetadataRepository,
-    moveMock,
+    moveMock as RepositoryInterface<MoveRepository> as MoveRepository,
     notificationMock as RepositoryInterface<NotificationRepository> as NotificationRepository,
     oauthMock as RepositoryInterface<OAuthRepository> as OAuthRepository,
-    partnerMock,
-    personMock,
+    partnerMock as RepositoryInterface<PartnerRepository> as PartnerRepository,
+    personMock as RepositoryInterface<PersonRepository> as PersonRepository,
     processMock as RepositoryInterface<ProcessRepository> as ProcessRepository,
-    searchMock,
+    searchMock as RepositoryInterface<SearchRepository> as SearchRepository,
     serverInfoMock as RepositoryInterface<ServerInfoRepository> as ServerInfoRepository,
     sessionMock as RepositoryInterface<SessionRepository> as SessionRepository,
-    sharedLinkMock,
-    stackMock,
-    storageMock,
+    sharedLinkMock as RepositoryInterface<SharedLinkRepository> as SharedLinkRepository,
+    stackMock as RepositoryInterface<StackRepository> as StackRepository,
+    storageMock as RepositoryInterface<StorageRepository> as StorageRepository,
     systemMock as RepositoryInterface<SystemMetadataRepository> as SystemMetadataRepository,
-    tagMock,
+    tagMock as RepositoryInterface<TagRepository> as TagRepository,
     telemetryMock as unknown as TelemetryRepository,
     trashMock as RepositoryInterface<TrashRepository> as TrashRepository,
-    userMock,
+    userMock as RepositoryInterface<UserRepository> as UserRepository,
     versionHistoryMock as RepositoryInterface<VersionHistoryRepository> as VersionHistoryRepository,
     viewMock as RepositoryInterface<ViewRepository> as ViewRepository,
   );

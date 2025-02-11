@@ -2,14 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import semver from 'semver';
 import { OnEvent } from 'src/decorators';
-import {
-  DatabaseExtension,
-  DatabaseLock,
-  EXTENSION_NAMES,
-  VectorExtension,
-  VectorIndex,
-} from 'src/interfaces/database.interface';
+import { DatabaseExtension } from 'src/enum';
 import { BootstrapEventPriority } from 'src/interfaces/event.interface';
+import { DatabaseLock, EXTENSION_NAMES, VectorExtension, VectorIndex } from 'src/repositories/database.repository';
 import { BaseService } from 'src/services/base.service';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };

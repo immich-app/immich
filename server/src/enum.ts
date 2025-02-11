@@ -384,3 +384,10 @@ export enum ExifOrientation {
   MirrorHorizontalRotate90CW = 7,
   Rotate270CW = 8,
 }
+
+export enum DatabaseExtension {
+  CUBE = 'cube',
+  EARTH_DISTANCE = 'earthdistance',
+  VECTOR = 'vector',
+  VECTORS = 'vectors',
+}

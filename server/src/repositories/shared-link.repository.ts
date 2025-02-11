@@ -7,10 +7,14 @@ import { DB, SharedLinks } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SharedLinkType } from 'src/enum';
-import { ISharedLinkRepository, SharedLinkSearchOptions } from 'src/interfaces/shared-link.interface';
+
+export type SharedLinkSearchOptions = {
+  userId: string;
+  albumId?: string;
+};
 
 @Injectable()
-export class SharedLinkRepository implements ISharedLinkRepository {
+export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })

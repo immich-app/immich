@@ -16,7 +16,7 @@ import {
 } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetOrder } from 'src/enum';
-import { SearchExploreItem } from 'src/interfaces/search.interface';
+import { SearchExploreItem } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { getMyPartnerIds } from 'src/utils/asset.util';
 import { isSmartSearchEnabled } from 'src/utils/misc';
@@ -109,7 +109,7 @@ export class SearchService extends BaseService {
     return suggestions;
   }
 
-  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto) {
+  private getSuggestions(userIds: string[], dto: SearchSuggestionRequestDto): Promise<Array<string | null>> {
     switch (dto.type) {
       case SearchSuggestionType.COUNTRY: {
         return this.searchRepository.getCountries(userIds);
@@ -127,7 +127,7 @@ export class SearchService extends BaseService {
         return this.searchRepository.getCameraModels(userIds, dto);
       }
       default: {
-        return [] as (string | null)[];
+        return Promise.resolve([]);
       }
     }
   }

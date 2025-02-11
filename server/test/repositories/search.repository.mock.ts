@@ -1,7 +1,8 @@
-import { ISearchRepository } from 'src/interfaces/search.interface';
+import { SearchRepository } from 'src/repositories/search.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newSearchRepositoryMock = (): Mocked<ISearchRepository> => {
+export const newSearchRepositoryMock = (): Mocked<RepositoryInterface<SearchRepository>> => {
   return {
     searchMetadata: vitest.fn(),
     searchSmart: vitest.fn(),

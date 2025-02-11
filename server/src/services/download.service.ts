@@ -6,7 +6,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
-import { ImmichReadStream } from 'src/interfaces/storage.interface';
+import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';

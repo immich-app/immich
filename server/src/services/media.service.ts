@@ -18,7 +18,6 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
 import {
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
@@ -27,6 +26,7 @@ import {
   JobStatus,
   QueueName,
 } from 'src/interfaces/job.interface';
+import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
 import { AudioStreamInfo, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';

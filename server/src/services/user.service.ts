@@ -12,7 +12,7 @@ import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { CacheControl, StorageFolder, UserMetadataKey } from 'src/enum';
 import { JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { UserFindOptions } from 'src/interfaces/user.interface';
+import { UserFindOptions } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
 import { ImmichFileResponse } from 'src/utils/file';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';

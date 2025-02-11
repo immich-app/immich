@@ -5,12 +5,12 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
 import { IEventRepository } from 'src/interfaces/event.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { ImmichFile } from 'src/middleware/file-upload.interceptor';
 import { AccessRepository } from 'src/repositories/access.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
+import { PartnerRepository } from 'src/repositories/partner.repository';
 import { UploadFile } from 'src/services/asset-media.service';
 import { checkAccess } from 'src/utils/access';
 
@@ -111,7 +111,7 @@ export const removeAssets = async (
 
 export type PartnerIdOptions = {
   userId: string;
-  repository: IPartnerRepository;
+  repository: PartnerRepository;
   /** only include partners with `inTimeline: true` */
   timelineEnabled?: boolean;
 };
@@ -139,7 +139,7 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
   return [...partnerIds];
 };
 
-export type AssetHookRepositories = { asset: IAssetRepository; event: IEventRepository };
+export type AssetHookRepositories = { asset: AssetRepository; event: IEventRepository };
 
 export const onBeforeLink = async (
   { asset: assetRepository, event: eventRepository }: AssetHookRepositories,

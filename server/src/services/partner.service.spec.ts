@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { PartnerDirection } from 'src/interfaces/partner.interface';
+import { PartnerDirection } from 'src/repositories/partner.repository';
 import { PartnerService } from 'src/services/partner.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';

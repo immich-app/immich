@@ -32,7 +32,6 @@ import {
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
 import {
   JOBS_ASSET_PAGINATION_SIZE,
   JobItem,
@@ -42,7 +41,8 @@ import {
   QueueName,
 } from 'src/interfaces/job.interface';
 import { BoundingBox } from 'src/interfaces/machine-learning.interface';
-import { UpdateFacesData } from 'src/interfaces/person.interface';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
 import { CropOptions, ImageDimensions, InputDimensions } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';

@@ -5,6 +5,7 @@ vitest.mock('src/constants', () => ({
   APP_MEDIA_LOCATION: '/photos',
   ADDED_IN_PREFIX: 'This property was added in ',
   DEPRECATED_IN_PREFIX: 'This property was deprecated in ',
+  IWorker: 'IWorker',
 }));
 
 describe('StorageCore', () => {

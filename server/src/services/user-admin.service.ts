@@ -12,7 +12,7 @@ import {
 } from 'src/dtos/user.dto';
 import { UserMetadataKey, UserStatus } from 'src/enum';
 import { JobName } from 'src/interfaces/job.interface';
-import { UserFindOptions } from 'src/interfaces/user.interface';
+import { UserFindOptions } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 

@@ -6,24 +6,66 @@ import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
 import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
-import {
-  DatabaseExtension,
-  DatabaseLock,
-  EXTENSION_NAMES,
-  ExtensionVersion,
-  IDatabaseRepository,
-  VectorExtension,
-  VectorIndex,
-  VectorUpdateResult,
-} from 'src/interfaces/database.interface';
+import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { UPSERT_COLUMNS } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, EntityMetadata, QueryRunner } from 'typeorm';
 
+export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
+
+export type DatabaseConnectionURL = {
+  connectionType: 'url';
+  url: string;
+};
+
+export type DatabaseConnectionParts = {
+  connectionType: 'parts';
+  host: string;
+  port: number;
+  username: string;
+  password: string;
+  database: string;
+};
+
+export type DatabaseConnectionParams = DatabaseConnectionURL | DatabaseConnectionParts;
+
+export enum VectorIndex {
+  CLIP = 'clip_index',
+  FACE = 'face_index',
+}
+
+export enum DatabaseLock {
+  GeodataImport = 100,
+  Migrations = 200,
+  SystemFileMounts = 300,
+  StorageTemplateMigration = 420,
+  VersionHistory = 500,
+  CLIPDimSize = 512,
+  Library = 1337,
+  GetSystemConfig = 69,
+  BackupDatabase = 42,
+}
+
+export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
+  cube: 'cube',
+  earthdistance: 'earthdistance',
+  vector: 'pgvector',
+  vectors: 'pgvecto.rs',
+} as const;
+
+export interface ExtensionVersion {
+  availableVersion: string | null;
+  installedVersion: string | null;
+}
+
+export interface VectorUpdateResult {
+  restartRequired: boolean;
+}
+
 @Injectable()
-export class DatabaseRepository implements IDatabaseRepository {
+export class DatabaseRepository {
   private vectorExtension: VectorExtension;
   private readonly asyncLock = new AsyncLock();
 
