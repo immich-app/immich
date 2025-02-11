@@ -18,7 +18,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
-  import FaceEditor from '$lib/components/asset-viewer/face-editor.svelte';
+  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets.store';
 
   interface Props {

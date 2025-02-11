@@ -11748,8 +11748,7 @@
       "SourceType": {
         "enum": [
           "machine-learning",
-          "exif",
-          "manual-tagging"
+          "exif"
         ],
         "type": "string"
       },

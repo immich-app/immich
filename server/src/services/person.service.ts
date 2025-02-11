@@ -56,6 +56,7 @@ import { usePagination } from 'src/utils/pagination';
 export class PersonService extends BaseService {
   async tagFace(auth: AuthDto, dto: TagFaceDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] });
+
     await this.personRepository.createAssetFace({
       personId: dto.personId,
       assetId: dto.assetId,

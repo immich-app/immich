@@ -95,7 +95,6 @@ export class PersonController {
   @Post('tag-face')
   @Authenticated()
   tagFace(@Auth() auth: AuthDto, @Body() dto: TagFaceDto) {
-    console.log('Tagging person', dto);
     return this.service.tagFace(auth, dto);
   }
 

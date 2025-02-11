@@ -1,9 +1,12 @@
 <script lang="ts">
+  import CreatePeopleForm from '$lib/components/asset-viewer/face-editor/create-people-form.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { notificationController } from '$lib/components/shared-components/notification/notification';
   import { FaceEditorDisplayMode } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
-  import { Button, Checkbox, Field, Input, Stack } from '@immich/ui';
+  import { Button } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
@@ -92,14 +95,13 @@
       return;
     }
 
-    // canvas.centerObject(faceRect);
     faceRect.set({
-      top: imageBoundingBox.top,
-      left: imageBoundingBox.left,
+      top: imageBoundingBox.top + 200,
+      left: imageBoundingBox.left + 200,
     });
 
-    // Update controls border
     faceRect.setCoords();
+    positionFaceSelector();
   });
 
   const getContainedSize = (img: HTMLImageElement): { actualWidth: number; actualHeight: number } => {
@@ -169,20 +171,8 @@
     }
   });
 
-  const confirmCrop = () => {
-    displayMode = FaceEditorDisplayMode.FACE_SELECTOR;
-    positionFaceSelector();
-    // canvas?.discardActiveObject();
-    // faceRect?.set({ selectable: false });
-  };
-
   const openCreatePersonForm = () => {
     displayMode = FaceEditorDisplayMode.CREATE_PERSON;
-  };
-
-  let personName = $state('');
-  const createPerson = (event: Event) => {
-    event.preventDefault();
   };
 
   const getFaceCroppedCoordinates = () => {
@@ -222,6 +212,17 @@
   const tag = async (person: PersonResponseDto) => {
     const data = getFaceCroppedCoordinates();
     if (!data) {
+      notificationController.show({
+        message: 'Error tagging face - cannot geting bounding box coordinates',
+      });
+      return;
+    }
+
+    const isConfirmed = await dialogController.show({
+      prompt: `Do you want to tag this face as ${person.name}?`,
+    });
+
+    if (!isConfirmed) {
       return;
     }
 
@@ -245,49 +246,35 @@
   >
     <p class="text-center text-sm">Select a person to tag</p>
 
-    <!-- {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON} -->
-    <div class="max-h-[250px] overflow-y-auto mt-2">
-      <div class="mt-2 rounded-lg">
-        {#each candidates as person}
-          <button
-            onclick={() => tag(person)}
-            type="button"
-            class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
-          >
-            <ImageThumbnail
-              curve
-              shadow
-              url={getPeopleThumbnailUrl(person)}
-              altText={person.name}
-              title={person.name}
-              widthStyle="30px"
-              heightStyle="30px"
-            />
-            <p class="text-sm">
-              {person.name}
-            </p>
-          </button>
-        {/each}
+    {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON}
+      <div class="max-h-[250px] overflow-y-auto mt-2">
+        <div class="mt-2 rounded-lg">
+          {#each candidates as person}
+            <button
+              onclick={() => tag(person)}
+              type="button"
+              class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
+            >
+              <ImageThumbnail
+                curve
+                shadow
+                url={getPeopleThumbnailUrl(person)}
+                altText={person.name}
+                title={person.name}
+                widthStyle="30px"
+                heightStyle="30px"
+              />
+              <p class="text-sm">
+                {person.name}
+              </p>
+            </button>
+          {/each}
+        </div>
       </div>
-    </div>
-    <!-- {/if} -->
+    {/if}
 
     {#if displayMode === FaceEditorDisplayMode.CREATE_PERSON}
-      <form onsubmit={createPerson} autocomplete="off" id="create-new-person-form" class="mt-4 text-sm">
-        <Stack gap={4}>
-          <Field label={'Person name'} required>
-            <Input bind:value={personName} type="text" />
-          </Field>
-
-          <Field label="Favorite">
-            <Checkbox checked />
-          </Field>
-        </Stack>
-
-        <Button leadingIcon={mdiPlus} size="small" fullWidth class="mt-4" onclick={openCreatePersonForm}
-          >Create and tag</Button
-        >
-      </form>
+      <CreatePeopleForm onDone={(person) => tag(person)} />
     {/if}
 
     {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON}
@@ -295,20 +282,6 @@
         >Create new person</Button
       >
     {/if}
+    <Button size="small" fullWidth onclick={test} color="danger" class="mt-2">Cancel</Button>
   </div>
-
-  {#if displayMode === FaceEditorDisplayMode.EDITING}
-    <div
-      id="face-editor-controller"
-      class="absolute bottom-20 right-[calc(50%-167px)] bg-gray-50/75 backdrop-blur-sm p-4 rounded-xl"
-    >
-      <div>
-        <p>Create a new person or tag an existing one</p>
-      </div>
-      <div class="flex gap-2 place-items-center place-content-center mt-4">
-        <Button size="small" onclick={confirmCrop} class="shadow-xl font-normal">Confirm</Button>
-        <Button size="small" onclick={test} color="danger">Cancel</Button>
-      </div>
-    </div>
-  {/if}
 </div>
