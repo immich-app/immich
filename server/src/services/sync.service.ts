@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
@@ -10,6 +11,7 @@ import { setIsEqual } from 'src/utils/set';
 
 const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 
+@Injectable()
 export class SyncService extends BaseService {
   async getFullSync(auth: AuthDto, dto: AssetFullSyncDto): Promise<AssetResponseDto[]> {
     // mobile implementation is faster if this is a single id

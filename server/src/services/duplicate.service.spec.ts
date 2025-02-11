@@ -1,4 +1,4 @@
-import { JobName, JobStatus } from 'src/interfaces/job.interface';
+import { JobName, JobStatus } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { DuplicateService } from 'src/services/duplicate.service';
 import { SearchService } from 'src/services/search.service';

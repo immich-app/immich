@@ -1,7 +1,14 @@
 import { BadRequestException } from '@nestjs/common';
 import { FileReportItemDto } from 'src/dtos/audit.dto';
-import { AssetFileType, AssetPathType, DatabaseAction, EntityType, PersonPathType, UserPathType } from 'src/enum';
-import { JobStatus } from 'src/interfaces/job.interface';
+import {
+  AssetFileType,
+  AssetPathType,
+  DatabaseAction,
+  EntityType,
+  JobStatus,
+  PersonPathType,
+  UserPathType,
+} from 'src/enum';
 import { AuditService } from 'src/services/audit.service';
 import { auditStub } from 'test/fixtures/audit.stub';
 import { authStub } from 'test/fixtures/auth.stub';

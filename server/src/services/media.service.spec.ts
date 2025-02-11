@@ -9,14 +9,15 @@ import {
   AudioCodec,
   Colorspace,
   ImageFormat,
+  JobName,
+  JobStatus,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
 } from 'src/enum';
-import { JobCounts, JobName, JobStatus } from 'src/interfaces/job.interface';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { MediaService } from 'src/services/media.service';
-import { RawImageInfo } from 'src/types';
+import { JobCounts, RawImageInfo } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { probeStub } from 'test/fixtures/media.stub';

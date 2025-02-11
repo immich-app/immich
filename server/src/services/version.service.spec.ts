@@ -1,8 +1,7 @@
 import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
-import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
-import { JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService, ServiceMocks } from 'test/utils';

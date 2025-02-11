@@ -1,8 +1,7 @@
 import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType } from 'src/enum';
-import { JobStatus } from 'src/interfaces/job.interface';
+import { AssetPathType, JobStatus } from 'src/enum';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';

@@ -6,13 +6,13 @@ import {
   CQMode,
   ImageFormat,
   LogLevel,
+  QueueName,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { QueueName } from 'src/interfaces/job.interface';
 import { SystemConfigService } from 'src/services/system-config.service';
 import { DeepPartial } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';

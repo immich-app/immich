@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { defaults, SystemConfig } from 'src/config';
-import { ImmichWorker } from 'src/enum';
-import { JobCommand, JobItem, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { ImmichWorker, JobCommand, JobName, JobStatus, QueueName } from 'src/enum';
 import { JobService } from 'src/services/job.service';
+import { JobItem } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 

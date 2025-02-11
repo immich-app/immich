@@ -1,17 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { AssetType, ImmichWorker } from 'src/enum';
-import {
-  ILibraryAssetJob,
-  ILibraryFileJob,
-  JobName,
-  JOBS_LIBRARY_PAGINATION_SIZE,
-  JobStatus,
-} from 'src/interfaces/job.interface';
+import { AssetType, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
+import { ILibraryAssetJob, ILibraryFileJob } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { libraryStub } from 'test/fixtures/library.stub';

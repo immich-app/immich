@@ -1,6 +1,5 @@
 import { SystemConfig } from 'src/config';
-import { ImmichWorker } from 'src/enum';
-import { JobName, JobStatus } from 'src/interfaces/job.interface';
+import { ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { SmartInfoService } from 'src/services/smart-info.service';
 import { getCLIPModelInfo } from 'src/utils/misc';

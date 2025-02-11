@@ -1,4 +1,4 @@
-import { JobStatus } from 'src/interfaces/job.interface';
+import { JobStatus } from 'src/enum';
 import { SessionService } from 'src/services/session.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
