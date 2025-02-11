@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -179,6 +179,44 @@ export class PeopleResponseDto {
   // TODO: make required after a few versions
   @PropertyLifecycle({ addedAt: 'v1.110.0' })
   hasNextPage?: boolean;
+}
+
+export class TagFaceDto {
+  @ValidateUUID()
+  personId!: string;
+
+  @ValidateUUID()
+  assetId!: string;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageWidth!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageHeight!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  boundingBoxX1!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  boundingBoxX2!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  boundingBoxY1!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  boundingBoxY2!: number;
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {

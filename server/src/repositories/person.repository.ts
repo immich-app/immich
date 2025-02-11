@@ -427,6 +427,11 @@ export class PersonRepository implements IPersonRepository {
     return result?.latestDate;
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async createAssetFace(face: Insertable<AssetFaces>): Promise<void> {
+    await this.db.insertInto('asset_faces').values(face).executeTakeFirst();
+  }
+
   private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
     await sql`VACUUM ANALYZE asset_faces, face_search, person`.execute(this.db);
     await sql`REINDEX TABLE asset_faces`.execute(this.db);

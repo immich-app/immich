@@ -227,6 +227,7 @@ export enum AssetStatus {
 export enum SourceType {
   MACHINE_LEARNING = 'machine-learning',
   EXIF = 'exif',
+  MANUAL_TAGGING = 'manual-tagging',
 }
 
 export enum ManualJobName {

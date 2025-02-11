@@ -226,7 +226,7 @@
       {/each}
     </div>
 
-    <FaceEditor imgElement={$photoViewerImgElement} {containerWidth} {containerHeight} />
+    <FaceEditor imgElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
   {/if}
 </div>
 

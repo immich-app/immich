@@ -162,6 +162,7 @@ Class | Method | HTTP request | Description
 *PeopleApi* | [**getPersonThumbnail**](doc//PeopleApi.md#getpersonthumbnail) | **GET** /people/{id}/thumbnail | 
 *PeopleApi* | [**mergePerson**](doc//PeopleApi.md#mergeperson) | **POST** /people/{id}/merge | 
 *PeopleApi* | [**reassignFaces**](doc//PeopleApi.md#reassignfaces) | **PUT** /people/{id}/reassign | 
+*PeopleApi* | [**tagFace**](doc//PeopleApi.md#tagface) | **POST** /people/tag-face | 
 *PeopleApi* | [**updatePeople**](doc//PeopleApi.md#updatepeople) | **PUT** /people | 
 *PeopleApi* | [**updatePerson**](doc//PeopleApi.md#updateperson) | **PUT** /people/{id} | 
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | 
@@ -448,6 +449,7 @@ Class | Method | HTTP request | Description
  - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)
+ - [TagFaceDto](doc//TagFaceDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagUpdateDto](doc//TagUpdateDto.md)
  - [TagUpsertDto](doc//TagUpsertDto.md)

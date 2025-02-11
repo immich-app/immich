@@ -16,6 +16,7 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
+  TagFaceDto,
   mapFaces,
   mapPerson,
 } from 'src/dtos/person.dto';
@@ -53,6 +54,20 @@ import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class PersonService extends BaseService {
+  async tagFace(auth: AuthDto, dto: TagFaceDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] });
+    await this.personRepository.createAssetFace({
+      personId: dto.personId,
+      assetId: dto.assetId,
+      imageHeight: dto.imageHeight,
+      imageWidth: dto.imageWidth,
+      boundingBoxX1: dto.boundingBoxX1,
+      boundingBoxX2: dto.boundingBoxX2,
+      boundingBoxY1: dto.boundingBoxY1,
+      boundingBoxY2: dto.boundingBoxY2,
+    });
+  }
+
   async getAll(auth: AuthDto, dto: PersonSearchDto): Promise<PeopleResponseDto> {
     const { withHidden = false, closestAssetId, closestPersonId, page, size } = dto;
     let closestFaceAssetId = closestAssetId;

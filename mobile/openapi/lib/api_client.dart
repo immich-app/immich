@@ -576,6 +576,8 @@ class ApiClient {
           return TagBulkAssetsResponseDto.fromJson(value);
         case 'TagCreateDto':
           return TagCreateDto.fromJson(value);
+        case 'TagFaceDto':
+          return TagFaceDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagUpdateDto':

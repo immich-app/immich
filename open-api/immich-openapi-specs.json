@@ -4011,6 +4011,41 @@
         ]
       }
     },
+    "/people/tag-face": {
+      "post": {
+        "operationId": "tagFace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagFaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      }
+    },
     "/people/{id}": {
       "get": {
         "operationId": "getPerson",
@@ -11713,7 +11748,8 @@
       "SourceType": {
         "enum": [
           "machine-learning",
-          "exif"
+          "exif",
+          "manual-tagging"
         ],
         "type": "string"
       },
@@ -12627,6 +12663,47 @@
         },
         "required": [
           "name"
+        ],
+        "type": "object"
+      },
+      "TagFaceDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "imageHeight",
+          "imageWidth",
+          "personId"
         ],
         "type": "object"
       },

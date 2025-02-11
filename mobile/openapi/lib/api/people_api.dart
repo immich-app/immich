@@ -400,6 +400,45 @@ class PeopleApi {
     return null;
   }
 
+  /// Performs an HTTP 'POST /people/tag-face' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [TagFaceDto] tagFaceDto (required):
+  Future<Response> tagFaceWithHttpInfo(TagFaceDto tagFaceDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/people/tag-face';
+
+    // ignore: prefer_final_locals
+    Object? postBody = tagFaceDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [TagFaceDto] tagFaceDto (required):
+  Future<void> tagFace(TagFaceDto tagFaceDto,) async {
+    final response = await tagFaceWithHttpInfo(tagFaceDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'PUT /people' operation and returns the [Response].
   /// Parameters:
   ///

@@ -732,6 +732,16 @@ export type PeopleUpdateItem = {
 export type PeopleUpdateDto = {
     people: PeopleUpdateItem[];
 };
+export type TagFaceDto = {
+    assetId: string;
+    boundingBoxX1: number;
+    boundingBoxX2: number;
+    boundingBoxY1: number;
+    boundingBoxY2: number;
+    imageHeight: number;
+    imageWidth: number;
+    personId: string;
+};
 export type PersonUpdateDto = {
     /** Person date of birth.
     Note: the mobile app cannot currently set the birth date to null. */
@@ -2434,6 +2444,15 @@ export function updatePeople({ peopleUpdateDto }: {
         body: peopleUpdateDto
     })));
 }
+export function tagFace({ tagFaceDto }: {
+    tagFaceDto: TagFaceDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people/tag-face", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: tagFaceDto
+    })));
+}
 export function getPerson({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3378,7 +3397,8 @@ export enum AlbumUserRole {
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
-    Exif = "exif"
+    Exif = "exif",
+    ManualTagging = "manual-tagging"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",

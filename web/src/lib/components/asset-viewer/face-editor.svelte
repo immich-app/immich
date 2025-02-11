@@ -2,7 +2,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { FaceEditorDisplayMode } from '$lib/constants';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
+  import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
   import { Button, Checkbox, Field, Input, Stack } from '@immich/ui';
   import { mdiPlus } from '@mdi/js';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
@@ -12,9 +12,10 @@
     imgElement: HTMLImageElement;
     containerWidth: number;
     containerHeight: number;
+    assetId: string;
   }
 
-  let { imgElement, containerWidth, containerHeight }: Props = $props();
+  let { imgElement, containerWidth, containerHeight, assetId }: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -44,7 +45,10 @@
     configureControlStyle();
 
     faceRect = new Rect({
-      fill: 'rgba(255,255,255,0.75)',
+      fill: 'rgba(66,80,175,0.25)',
+      stroke: 'rgb(66,80,175)',
+      strokeWidth: 2,
+      strokeUniform: true,
       width: 112,
       height: 112,
       objectCaching: true,
@@ -166,7 +170,6 @@
   });
 
   const confirmCrop = () => {
-    // Put face faceSelectorEl on the bottom of the faceRect
     displayMode = FaceEditorDisplayMode.FACE_SELECTOR;
     positionFaceSelector();
     // canvas?.discardActiveObject();
@@ -181,6 +184,55 @@
   const createPerson = (event: Event) => {
     event.preventDefault();
   };
+
+  const getFaceCroppedCoordinates = () => {
+    if (!faceRect || !imgElement) {
+      return;
+    }
+
+    const { left, top, width, height } = faceRect.getBoundingRect();
+    const { actualWidth, actualHeight } = getContainedSize(imgElement);
+
+    const offsetArea = {
+      width: (containerWidth - actualWidth) / 2,
+      height: (containerHeight - actualHeight) / 2,
+    };
+
+    const x1Coeff = (left - offsetArea.width) / actualWidth;
+    const y1Coeff = (top - offsetArea.height) / actualHeight;
+    const x2Coeff = (left + width - offsetArea.width) / actualWidth;
+    const y2Coeff = (top + height - offsetArea.height) / actualHeight;
+
+    // transpose to the natural image location
+    const x1 = x1Coeff * imgElement.naturalWidth;
+    const y1 = y1Coeff * imgElement.naturalHeight;
+    const x2 = x2Coeff * imgElement.naturalWidth;
+    const y2 = y2Coeff * imgElement.naturalHeight;
+
+    return {
+      imageWidth: imgElement.naturalWidth,
+      imageHeight: imgElement.naturalHeight,
+      boundingBoxX1: Math.floor(x1),
+      boundingBoxY1: Math.floor(y1),
+      boundingBoxX2: Math.floor(x2),
+      boundingBoxY2: Math.floor(y2),
+    };
+  };
+
+  const tag = async (person: PersonResponseDto) => {
+    const data = getFaceCroppedCoordinates();
+    if (!data) {
+      return;
+    }
+
+    await tagFace({
+      tagFaceDto: {
+        assetId,
+        personId: person.id,
+        ...data,
+      },
+    });
+  };
 </script>
 
 <div class="absolute left-0 top-0">
@@ -190,36 +242,35 @@
     id="face-selector"
     bind:this={faceSelectorEl}
     class="absolute top-[calc(50%-250px)] left-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200"
-    hidden={displayMode == FaceEditorDisplayMode.EDITING}
   >
     <p class="text-center text-sm">Select a person to tag</p>
 
-    {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON}
-      <div class="max-h-[300px] overflow-y-auto mt-2">
-        <div class="mt-2 rounded-lg">
-          {#each candidates as person}
-            <button
-              onclick={() => {}}
-              type="button"
-              class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
-            >
-              <ImageThumbnail
-                curve
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                title={person.name}
-                widthStyle="30px"
-                heightStyle="30px"
-              />
-              <p class="text-sm">
-                {person.name}
-              </p>
-            </button>
-          {/each}
-        </div>
+    <!-- {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON} -->
+    <div class="max-h-[250px] overflow-y-auto mt-2">
+      <div class="mt-2 rounded-lg">
+        {#each candidates as person}
+          <button
+            onclick={() => tag(person)}
+            type="button"
+            class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
+          >
+            <ImageThumbnail
+              curve
+              shadow
+              url={getPeopleThumbnailUrl(person)}
+              altText={person.name}
+              title={person.name}
+              widthStyle="30px"
+              heightStyle="30px"
+            />
+            <p class="text-sm">
+              {person.name}
+            </p>
+          </button>
+        {/each}
       </div>
-    {/if}
+    </div>
+    <!-- {/if} -->
 
     {#if displayMode === FaceEditorDisplayMode.CREATE_PERSON}
       <form onsubmit={createPerson} autocomplete="off" id="create-new-person-form" class="mt-4 text-sm">

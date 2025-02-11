@@ -86,4 +86,5 @@ export interface IPersonRepository {
   update(person: Updateable<Person> & { id: string }): Promise<PersonEntity>;
   updateAll(people: Insertable<Person>[]): Promise<void>;
   getLatestFaceDate(): Promise<string | undefined>;
+  createAssetFace(face: Insertable<AssetFaces>): Promise<void>;
 }
