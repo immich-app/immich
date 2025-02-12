@@ -458,12 +458,12 @@ export class PersonRepository {
   }
 
   async createAssetFace(face: Insertable<AssetFaces>): Promise<void> {
-    await this.db.insertInto('asset_faces').values(face).executeTakeFirst();
+    await this.db.insertInto('asset_faces').values(face).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteAssetFace(assetFaceId: string): Promise<void> {
-    await this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', assetFaceId).execute();
+  async deleteAssetFace(id: string): Promise<void> {
+    await this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', id).execute();
   }
 
   private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {

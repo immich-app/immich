@@ -503,10 +503,6 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
 };
-export type DeleteFaceDto = {
-    assetFaceId: string;
-    personId: string;
-};
 export type PersonResponseDto = {
     birthDate: string | null;
     /** This property was added in v1.126.0 */
@@ -531,15 +527,15 @@ export type AssetFaceResponseDto = {
     person: (PersonResponseDto) | null;
     sourceType?: SourceType;
 };
-export type CreateFaceDto = {
+export type AssetFaceCreateDto = {
     assetId: string;
-    boundingBoxX1: number;
-    boundingBoxX2: number;
-    boundingBoxY1: number;
-    boundingBoxY2: number;
+    height: number;
     imageHeight: number;
     imageWidth: number;
     personId: string;
+    width: number;
+    x: number;
+    y: number;
 };
 export type FaceDto = {
     id: string;
@@ -2035,15 +2031,6 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
-export function deleteFace({ deleteFaceDto }: {
-    deleteFaceDto: DeleteFaceDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/faces", oazapfts.json({
-        ...opts,
-        method: "DELETE",
-        body: deleteFaceDto
-    })));
-}
 export function getFaces({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2056,14 +2043,22 @@ export function getFaces({ id }: {
         ...opts
     }));
 }
-export function createFace({ createFaceDto }: {
-    createFaceDto: CreateFaceDto;
+export function createFace({ assetFaceCreateDto }: {
+    assetFaceCreateDto: AssetFaceCreateDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchText("/faces", oazapfts.json({
         ...opts,
         method: "POST",
-        body: createFaceDto
+        body: assetFaceCreateDto
     })));
+}
+export function deleteFace({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/faces/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
 }
 export function reassignFacesById({ id, faceDto }: {
     id: string;

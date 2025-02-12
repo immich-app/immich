@@ -19,13 +19,13 @@ class FacesApi {
   /// Performs an HTTP 'POST /faces' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [CreateFaceDto] createFaceDto (required):
-  Future<Response> createFaceWithHttpInfo(CreateFaceDto createFaceDto,) async {
+  /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
+  Future<Response> createFaceWithHttpInfo(AssetFaceCreateDto assetFaceCreateDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/faces';
 
     // ignore: prefer_final_locals
-    Object? postBody = createFaceDto;
+    Object? postBody = assetFaceCreateDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -47,30 +47,31 @@ class FacesApi {
 
   /// Parameters:
   ///
-  /// * [CreateFaceDto] createFaceDto (required):
-  Future<void> createFace(CreateFaceDto createFaceDto,) async {
-    final response = await createFaceWithHttpInfo(createFaceDto,);
+  /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
+  Future<void> createFace(AssetFaceCreateDto assetFaceCreateDto,) async {
+    final response = await createFaceWithHttpInfo(assetFaceCreateDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
-  /// Performs an HTTP 'DELETE /faces' operation and returns the [Response].
+  /// Performs an HTTP 'DELETE /faces/{id}' operation and returns the [Response].
   /// Parameters:
   ///
-  /// * [DeleteFaceDto] deleteFaceDto (required):
-  Future<Response> deleteFaceWithHttpInfo(DeleteFaceDto deleteFaceDto,) async {
+  /// * [String] id (required):
+  Future<Response> deleteFaceWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces';
+    final path = r'/faces/{id}'
+      .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody = deleteFaceDto;
+    Object? postBody;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>['application/json'];
+    const contentTypes = <String>[];
 
 
     return apiClient.invokeAPI(
@@ -86,9 +87,9 @@ class FacesApi {
 
   /// Parameters:
   ///
-  /// * [DeleteFaceDto] deleteFaceDto (required):
-  Future<void> deleteFace(DeleteFaceDto deleteFaceDto,) async {
-    final response = await deleteFaceWithHttpInfo(deleteFaceDto,);
+  /// * [String] id (required):
+  Future<void> deleteFace(String id,) async {
+    final response = await deleteFaceWithHttpInfo(id,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

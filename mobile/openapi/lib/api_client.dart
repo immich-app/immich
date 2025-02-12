@@ -230,6 +230,8 @@ class ApiClient {
           return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':
           return AssetDeltaSyncResponseDto.fromJson(value);
+        case 'AssetFaceCreateDto':
+          return AssetFaceCreateDto.fromJson(value);
         case 'AssetFaceResponseDto':
           return AssetFaceResponseDto.fromJson(value);
         case 'AssetFaceUpdateDto':
@@ -290,16 +292,12 @@ class ApiClient {
           return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
-        case 'CreateFaceDto':
-          return CreateFaceDto.fromJson(value);
         case 'CreateLibraryDto':
           return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
-        case 'DeleteFaceDto':
-          return DeleteFaceDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':

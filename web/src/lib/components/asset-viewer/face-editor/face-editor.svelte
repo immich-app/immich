@@ -228,10 +228,10 @@
     return {
       imageWidth: imgElement.naturalWidth,
       imageHeight: imgElement.naturalHeight,
-      boundingBoxX1: Math.floor(x1),
-      boundingBoxY1: Math.floor(y1),
-      boundingBoxX2: Math.floor(x2),
-      boundingBoxY2: Math.floor(y2),
+      x: Math.floor(x1),
+      y: Math.floor(y1),
+      width: Math.floor(x2 - x1),
+      height: Math.floor(y2 - y1),
     };
   };
 
@@ -254,7 +254,7 @@
       }
 
       await createFace({
-        createFaceDto: {
+        assetFaceCreateDto: {
           assetId,
           personId: person.id,
           ...data,

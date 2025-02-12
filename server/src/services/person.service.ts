@@ -5,10 +5,9 @@ import { OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  AssetFaceCreateDto,
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
-  CreateFaceDto,
-  DeleteFaceDto,
   FaceDto,
   mapFaces,
   mapPerson,
@@ -720,24 +719,27 @@ export class PersonService extends BaseService {
     };
   }
 
-  async tagFace(auth: AuthDto, dto: CreateFaceDto): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] });
+  // TODO return a asset face response
+  async createFace(auth: AuthDto, dto: AssetFaceCreateDto): Promise<void> {
+    await Promise.all([
+      this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [dto.assetId] }),
+      this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] }),
+    ]);
 
     await this.personRepository.createAssetFace({
       personId: dto.personId,
       assetId: dto.assetId,
       imageHeight: dto.imageHeight,
       imageWidth: dto.imageWidth,
-      boundingBoxX1: dto.boundingBoxX1,
-      boundingBoxX2: dto.boundingBoxX2,
-      boundingBoxY1: dto.boundingBoxY1,
-      boundingBoxY2: dto.boundingBoxY2,
+      boundingBoxX1: dto.x,
+      boundingBoxX2: dto.x + dto.width,
+      boundingBoxY1: dto.y,
+      boundingBoxY2: dto.y + dto.height,
     });
   }
 
-  async deleteFace(auth: AuthDto, dto: DeleteFaceDto): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] });
-
-    return this.personRepository.deleteAssetFace(dto.assetFaceId);
+  async deleteFace(auth: AuthDto, id: string): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.FACE_DELETE, ids: [id] });
+    return this.personRepository.deleteAssetFace(id);
   }
 }

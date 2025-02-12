@@ -164,6 +164,38 @@ export class AssetFaceUpdateItem {
   assetId!: string;
 }
 
+export class AssetFaceCreateDto extends AssetFaceUpdateItem {
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageWidth!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageHeight!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  x!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  y!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  width!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  height!: number;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
@@ -179,52 +211,6 @@ export class PeopleResponseDto {
   // TODO: make required after a few versions
   @PropertyLifecycle({ addedAt: 'v1.110.0' })
   hasNextPage?: boolean;
-}
-
-export class CreateFaceDto {
-  @ValidateUUID()
-  personId!: string;
-
-  @ValidateUUID()
-  assetId!: string;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  imageWidth!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  imageHeight!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  boundingBoxX1!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  boundingBoxX2!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  boundingBoxY1!: number;
-
-  @ApiProperty({ type: 'integer' })
-  @IsNotEmpty()
-  @IsNumber()
-  boundingBoxY2!: number;
-}
-
-export class DeleteFaceDto {
-  @ValidateUUID()
-  assetFaceId!: string;
-
-  @ValidateUUID()
-  personId!: string;
 }
 
 export function mapPerson(person: PersonEntity): PersonResponseDto {

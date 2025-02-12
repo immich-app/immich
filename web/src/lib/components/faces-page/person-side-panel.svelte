@@ -181,7 +181,7 @@
         return;
       }
 
-      await deleteFace({ deleteFaceDto: { assetFaceId: face.id, personId: face.person.id } });
+      await deleteFace({ id: face.id });
 
       peopleWithFaces = peopleWithFaces.filter((f) => f.id !== face.id);
 

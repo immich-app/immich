@@ -2445,39 +2445,6 @@
       }
     },
     "/faces": {
-      "delete": {
-        "operationId": "deleteFace",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteFaceDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Faces"
-        ]
-      },
       "get": {
         "operationId": "getFaces",
         "parameters": [
@@ -2528,7 +2495,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateFaceDto"
+                "$ref": "#/components/schemas/AssetFaceCreateDto"
               }
             }
           },
@@ -2556,6 +2523,39 @@
       }
     },
     "/faces/{id}": {
+      "delete": {
+        "operationId": "deleteFace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
+      },
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [
@@ -8161,6 +8161,47 @@
         ],
         "type": "object"
       },
+      "AssetFaceCreateDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          },
+          "x": {
+            "type": "integer"
+          },
+          "y": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assetId",
+          "height",
+          "imageHeight",
+          "imageWidth",
+          "personId",
+          "width",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
       "AssetFaceResponseDto": {
         "properties": {
           "boundingBoxX1": {
@@ -8901,47 +8942,6 @@
         ],
         "type": "object"
       },
-      "CreateFaceDto": {
-        "properties": {
-          "assetId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "boundingBoxX1": {
-            "type": "integer"
-          },
-          "boundingBoxX2": {
-            "type": "integer"
-          },
-          "boundingBoxY1": {
-            "type": "integer"
-          },
-          "boundingBoxY2": {
-            "type": "integer"
-          },
-          "imageHeight": {
-            "type": "integer"
-          },
-          "imageWidth": {
-            "type": "integer"
-          },
-          "personId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetId",
-          "boundingBoxX1",
-          "boundingBoxX2",
-          "boundingBoxY1",
-          "boundingBoxY2",
-          "imageHeight",
-          "imageWidth",
-          "personId"
-        ],
-        "type": "object"
-      },
       "CreateLibraryDto": {
         "properties": {
           "exclusionPatterns": {
@@ -9022,23 +9022,6 @@
           "cronExpression",
           "enabled",
           "keepLastAmount"
-        ],
-        "type": "object"
-      },
-      "DeleteFaceDto": {
-        "properties": {
-          "assetFaceId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "personId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetFaceId",
-          "personId"
         ],
         "type": "object"
       },
