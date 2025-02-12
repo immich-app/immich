@@ -5,6 +5,8 @@
   import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
   import SettingTextarea from '$lib/components/shared-components/settings/setting-textarea.svelte';
   import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingColorPicker from '$lib/components/shared-components/settings/setting-color-picker.svelte';
+  import SettingSlider from '$lib/components/shared-components/settings/setting-slider.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -27,6 +29,48 @@
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
       <div class="ml-4 mt-4 flex flex-col gap-4">
+        <SettingColorPicker
+          label={$t('admin.theme_primary_color')}
+          bind:value={config.theme.primaryColor}
+          onChange={(value) => (config.theme.primaryColor = value)}
+          {disabled}
+        />
+        <SettingColorPicker
+          label={$t('admin.theme_background_color')}
+          bind:value={config.theme.backgroundColor}
+          onChange={(value) => (config.theme.backgroundColor = value)}
+          {disabled}
+        />
+        <SettingColorPicker
+          label={$t('admin.theme_foreground_color')}
+          bind:value={config.theme.foregroundColor}
+          onChange={(value) => (config.theme.foregroundColor = value)}
+          {disabled}
+        />
+        <SettingSlider
+          label={$t('admin.theme_padding')}
+          bind:value={config.theme.padding}
+          min={0}
+          max={50}
+          onChange={(value) => (config.theme.padding = value)}
+          {disabled}
+        />
+        <SettingSlider
+          label={$t('admin.theme_margin')}
+          bind:value={config.theme.margin}
+          min={0}
+          max={50}
+          onChange={(value) => (config.theme.margin = value)}
+          {disabled}
+        />
+        <SettingSlider
+          label={$t('admin.theme_rounded_corners')}
+          bind:value={config.theme.roundedCorners}
+          min={0}
+          max={50}
+          onChange={(value) => (config.theme.roundedCorners = value)}
+          {disabled}
+        />
         <SettingTextarea
           {disabled}
           label={$t('admin.theme_custom_css_settings')}

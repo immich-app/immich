@@ -21,6 +21,11 @@
     --immich-dark-error: 211 47 47;
     --immich-dark-success: 56 142 60;
     --immich-dark-warning: 245 124 0;
+
+    /* padding, margin, and rounded corners */
+    --immich-padding: 16px;
+    --immich-margin: 16px;
+    --immich-rounded-corners: 8px;
   }
 
   :root {
