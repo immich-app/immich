@@ -2,7 +2,7 @@
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
-  import { FaceEditorDisplayMode } from '$lib/constants';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
@@ -22,7 +22,6 @@
   let canvas: Canvas | undefined = $state();
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
-  let displayMode: FaceEditorDisplayMode = $state(FaceEditorDisplayMode.EDITING);
 
   const configureControlStyle = () => {
     InteractiveFabricObject.ownDefaults = {
@@ -113,8 +112,8 @@
     return { actualWidth, actualHeight };
   };
 
-  const test = () => {
-    console.log(faceRect?.getBoundingRect());
+  const cancel = () => {
+    isFaceEditMode.value = false;
   };
 
   let page = $state(1);
@@ -296,6 +295,6 @@
       </div>
     </div>
 
-    <Button size="small" fullWidth onclick={test} color="danger" class="mt-2">Cancel</Button>
+    <Button size="small" fullWidth onclick={cancel} color="danger" class="mt-2">Cancel</Button>
   </div>
 </div>
