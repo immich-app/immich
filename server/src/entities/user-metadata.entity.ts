@@ -4,13 +4,18 @@ import { DeepPartial } from 'src/types';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
+export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
+  key: T;
+  value: UserMetadata[T];
+};
+
 @Entity('user_metadata')
-export class UserMetadataEntity<T extends keyof UserMetadata = UserMetadataKey> {
+export class UserMetadataEntity<T extends keyof UserMetadata = UserMetadataKey> implements UserMetadataItem<T> {
   @PrimaryColumn({ type: 'uuid' })
   userId!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.metadata, { onUpdate: 'CASCADE', onDelete: 'CASCADE' })
-  user!: UserEntity;
+  user?: UserEntity;
 
   @PrimaryColumn({ type: 'varchar' })
   key!: T;

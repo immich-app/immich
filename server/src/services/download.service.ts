@@ -19,7 +19,8 @@ export class DownloadService extends BaseService {
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
-    const preferences = getPreferences(auth.user);
+    const metadata = await this.userRepository.getMetadata(auth.user.id);
+    const preferences = getPreferences(auth.user.email, metadata);
 
     const assetPagination = await this.getDownloadAssets(auth, dto);
     for await (const assets of assetPagination) {

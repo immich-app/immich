@@ -106,21 +106,24 @@ export class UserAdminService extends BaseService {
   }
 
   async getPreferences(auth: AuthDto, id: string): Promise<UserPreferencesResponseDto> {
-    const user = await this.findOrFail(id, { withDeleted: false });
-    const preferences = getPreferences(user);
+    const { email } = await this.findOrFail(id, { withDeleted: true });
+    const metadata = await this.userRepository.getMetadata(id);
+    const preferences = getPreferences(email, metadata);
     return mapPreferences(preferences);
   }
 
   async updatePreferences(auth: AuthDto, id: string, dto: UserPreferencesUpdateDto) {
-    const user = await this.findOrFail(id, { withDeleted: false });
-    const preferences = mergePreferences(user, dto);
+    const { email } = await this.findOrFail(id, { withDeleted: false });
+    const metadata = await this.userRepository.getMetadata(id);
+    const preferences = getPreferences(email, metadata);
+    const newPreferences = mergePreferences(preferences, dto);
 
-    await this.userRepository.upsertMetadata(user.id, {
+    await this.userRepository.upsertMetadata(id, {
       key: UserMetadataKey.PREFERENCES,
-      value: getPreferencesPartial(user, preferences),
+      value: getPreferencesPartial({ email }, newPreferences),
     });
 
-    return mapPreferences(preferences);
+    return mapPreferences(newPreferences);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

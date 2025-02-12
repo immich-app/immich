@@ -1,10 +1,8 @@
-import { UserEntity } from 'src/entities/user.entity';
 import {
   DatabaseExtension,
   ExifOrientation,
   ImageFormat,
   JobName,
-  Permission,
   QueueName,
   TranscodeTarget,
   VideoCodec,
@@ -15,13 +13,6 @@ import { MemoryRepository } from 'src/repositories/memory.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 
 export type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
-
-export type AuthApiKey = {
-  id: string;
-  key: string;
-  user: UserEntity;
-  permissions: Permission[];
-};
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 

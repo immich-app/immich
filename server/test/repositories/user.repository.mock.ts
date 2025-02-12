@@ -5,6 +5,7 @@ import { Mocked, vitest } from 'vitest';
 export const newUserRepositoryMock = (): Mocked<RepositoryInterface<UserRepository>> => {
   return {
     get: vitest.fn(),
+    getMetadata: vitest.fn().mockResolvedValue([]),
     getAdmin: vitest.fn(),
     getByEmail: vitest.fn(),
     getByStorageLabel: vitest.fn(),

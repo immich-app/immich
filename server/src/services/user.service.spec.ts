@@ -77,9 +77,9 @@ describe(UserService.name, () => {
   });
 
   describe('getMe', () => {
-    it("should get the auth user's info", () => {
+    it("should get the auth user's info", async () => {
       const user = authStub.admin.user;
-      expect(sut.getMe(authStub.admin)).toMatchObject({
+      await expect(sut.getMe(authStub.admin)).resolves.toMatchObject({
         id: user.id,
         email: user.email,
       });
