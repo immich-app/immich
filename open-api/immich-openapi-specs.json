@@ -4011,6 +4011,41 @@
         ]
       }
     },
+    "/people/delete-face": {
+      "delete": {
+        "operationId": "deleteFace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAssetFaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "People"
+        ]
+      }
+    },
     "/people/tag-face": {
       "post": {
         "operationId": "tagFace",
@@ -8950,6 +8985,23 @@
           "cronExpression",
           "enabled",
           "keepLastAmount"
+        ],
+        "type": "object"
+      },
+      "DeleteAssetFaceDto": {
+        "properties": {
+          "assetFaceId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetFaceId",
+          "personId"
         ],
         "type": "object"
       },

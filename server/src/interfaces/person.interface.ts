@@ -63,6 +63,7 @@ export interface IPersonRepository {
   createAll(people: Insertable<Person>[]): Promise<string[]>;
   delete(entities: PersonEntity[]): Promise<void>;
   deleteFaces(options: DeleteFacesOptions): Promise<void>;
+  deleteAssetFace(id: string): Promise<void>;
   refreshFaces(
     facesToAdd: Insertable<AssetFaces>[],
     faceIdsToRemove: string[],

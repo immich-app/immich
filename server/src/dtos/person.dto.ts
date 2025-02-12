@@ -219,6 +219,14 @@ export class TagFaceDto {
   boundingBoxY2!: number;
 }
 
+export class DeleteAssetFaceDto {
+  @ValidateUUID()
+  assetFaceId!: string;
+
+  @ValidateUUID()
+  personId!: string;
+}
+
 export function mapPerson(person: PersonEntity): PersonResponseDto {
   return {
     id: person.id,

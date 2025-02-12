@@ -156,6 +156,7 @@ Class | Method | HTTP request | Description
 *PartnersApi* | [**removePartner**](doc//PartnersApi.md#removepartner) | **DELETE** /partners/{id} | 
 *PartnersApi* | [**updatePartner**](doc//PartnersApi.md#updatepartner) | **PUT** /partners/{id} | 
 *PeopleApi* | [**createPerson**](doc//PeopleApi.md#createperson) | **POST** /people | 
+*PeopleApi* | [**deleteFace**](doc//PeopleApi.md#deleteface) | **DELETE** /people/delete-face | 
 *PeopleApi* | [**getAllPeople**](doc//PeopleApi.md#getallpeople) | **GET** /people | 
 *PeopleApi* | [**getPerson**](doc//PeopleApi.md#getperson) | **GET** /people/{id} | 
 *PeopleApi* | [**getPersonStatistics**](doc//PeopleApi.md#getpersonstatistics) | **GET** /people/{id}/statistics | 
@@ -309,6 +310,7 @@ Class | Method | HTTP request | Description
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
+ - [DeleteAssetFaceDto](doc//DeleteAssetFaceDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
  - [DownloadResponse](doc//DownloadResponse.md)

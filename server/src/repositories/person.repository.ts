@@ -432,6 +432,11 @@ export class PersonRepository implements IPersonRepository {
     await this.db.insertInto('asset_faces').values(face).executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async deleteAssetFace(assetFaceId: string): Promise<void> {
+    await this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', assetFaceId).execute();
+  }
+
   private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
     await sql`VACUUM ANALYZE asset_faces, face_search, person`.execute(this.db);
     await sql`REINDEX TABLE asset_faces`.execute(this.db);

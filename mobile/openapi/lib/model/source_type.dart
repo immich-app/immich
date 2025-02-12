@@ -25,13 +25,11 @@ class SourceType {
 
   static const machineLearning = SourceType._(r'machine-learning');
   static const exif = SourceType._(r'exif');
-  static const manualTagging = SourceType._(r'manual-tagging');
 
   /// List of all possible values in this [enum][SourceType].
   static const values = <SourceType>[
     machineLearning,
     exif,
-    manualTagging,
   ];
 
   static SourceType? fromJson(dynamic value) => SourceTypeTypeTransformer().decode(value);
@@ -72,7 +70,6 @@ class SourceTypeTypeTransformer {
       switch (data) {
         case r'machine-learning': return SourceType.machineLearning;
         case r'exif': return SourceType.exif;
-        case r'manual-tagging': return SourceType.manualTagging;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

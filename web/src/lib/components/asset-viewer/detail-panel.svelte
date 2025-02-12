@@ -188,20 +188,11 @@
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
 
-  {#if !isSharedLink()}
+  {#if !isSharedLink() && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
-          {#if unassignedFaces.length > 0}
-            <Icon
-              ariaLabel={$t('asset_has_unassigned_faces')}
-              title={$t('asset_has_unassigned_faces')}
-              color="currentColor"
-              path={mdiAccountOff}
-              size="24"
-            />
-          {/if}
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
               title={$t('show_hidden_people')}
@@ -212,13 +203,24 @@
             />
           {/if}
           <CircleIconButton
-            title={$t('edit_people')}
-            icon={mdiPencil}
+            title={$t('tag_people')}
+            icon={mdiPlus}
             padding="1"
             size="20"
             buttonSize="32"
-            onclick={() => (showEditFaces = true)}
+            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
           />
+
+          {#if people.length > 0 || unassignedFaces.length > 0}
+            <CircleIconButton
+              title={$t('edit_people')}
+              icon={mdiPencil}
+              padding="1"
+              size="20"
+              buttonSize="32"
+              onclick={() => (showEditFaces = true)}
+            />
+          {/if}
         </div>
       </div>
 
@@ -279,15 +281,6 @@
             </a>
           {/if}
         {/each}
-
-        <button
-          class="w-[90px] h-[90px] flex items-center justify-center bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 hover:bg-gray-200 dark:hover:bg-immich-dark-gray dark:hover:text-gray-200"
-          type="button"
-          onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
-          title={$t('tag_people')}
-        >
-          <Icon path={mdiPlus} size={24} />
-        </button>
       </div>
     </section>
   {/if}

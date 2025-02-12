@@ -1,13 +1,15 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { notificationController } from '$lib/components/shared-components/notification/notification';
-  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
-  import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
-  import { onMount } from 'svelte';
+  import {dialogController} from '$lib/components/shared-components/dialog/dialog';
+  import {notificationController} from '$lib/components/shared-components/notification/notification';
+  import {isFaceEditMode} from '$lib/stores/face-edit.svelte';
+  import {getPeopleThumbnailUrl} from '$lib/utils';
+  import {getAllPeople, tagFace, type PersonResponseDto} from '@immich/sdk';
+  import {Button} from '@immich/ui';
+  import {Canvas, InteractiveFabricObject, Rect} from 'fabric';
+  import {onMount} from 'svelte';
+  import {assetViewingStore} from "$lib/stores/asset-viewing.store";
+  import {handleError} from "$lib/utils/handle-error";
 
   interface Props {
     imgElement: HTMLImageElement;
@@ -16,7 +18,7 @@
     assetId: string;
   }
 
-  let { imgElement, containerWidth, containerHeight, assetId }: Props = $props();
+  let {imgElement, containerWidth, containerHeight, assetId}: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -66,7 +68,7 @@
   });
 
   $effect(() => {
-    const { actualWidth, actualHeight } = getContainedSize(imgElement);
+    const {actualWidth, actualHeight} = getContainedSize(imgElement);
     const offsetArea = {
       width: (containerWidth - actualWidth) / 2,
       height: (containerHeight - actualHeight) / 2,
@@ -109,7 +111,7 @@
       actualWidth = img.width;
       actualHeight = img.width / ratio;
     }
-    return { actualWidth, actualHeight };
+    return {actualWidth, actualHeight};
   };
 
   const cancel = () => {
@@ -120,7 +122,7 @@
   let candidates = $state<PersonResponseDto[]>([]);
 
   const getPeople = async () => {
-    const { hasNextPage, people, total } = await getAllPeople({ page, size: 50, withHidden: false });
+    const {hasNextPage, people, total} = await getAllPeople({page, size: 50, withHidden: false});
 
     if (candidates.length === total) {
       return;
@@ -204,8 +206,8 @@
       return;
     }
 
-    const { left, top, width, height } = faceRect.getBoundingRect();
-    const { actualWidth, actualHeight } = getContainedSize(imgElement);
+    const {left, top, width, height} = faceRect.getBoundingRect();
+    const {actualWidth, actualHeight} = getContainedSize(imgElement);
 
     const offsetArea = {
       width: (containerWidth - actualWidth) / 2,
@@ -234,29 +236,39 @@
   };
 
   const tag = async (person: PersonResponseDto) => {
-    const data = getFaceCroppedCoordinates();
-    if (!data) {
-      notificationController.show({
-        message: 'Error tagging face - cannot geting bounding box coordinates',
+    try {
+      const data = getFaceCroppedCoordinates();
+      if (!data) {
+        notificationController.show({
+          message: 'Error tagging face - cannot getting bounding box coordinates',
+        });
+        return;
+      }
+
+      const isConfirmed = await dialogController.show({
+        prompt: `Do you want to tag this face as ${person.name}?`,
       });
-      return;
+
+      if (!isConfirmed) {
+        return;
+      }
+
+      await tagFace({
+        tagFaceDto: {
+          assetId,
+          personId: person.id,
+          ...data,
+        },
+      });
+
+      await assetViewingStore.setAssetId(assetId);
+
+    } catch (error) {
+      handleError(error, 'Error tagging face');
+    } finally {
+      isFaceEditMode.value = false;
     }
 
-    const isConfirmed = await dialogController.show({
-      prompt: `Do you want to tag this face as ${person.name}?`,
-    });
-
-    if (!isConfirmed) {
-      return;
-    }
-
-    await tagFace({
-      tagFaceDto: {
-        assetId,
-        personId: person.id,
-        ...data,
-      },
-    });
   };
 </script>
 

@@ -732,6 +732,10 @@ export type PeopleUpdateItem = {
 export type PeopleUpdateDto = {
     people: PeopleUpdateItem[];
 };
+export type DeleteAssetFaceDto = {
+    assetFaceId: string;
+    personId: string;
+};
 export type TagFaceDto = {
     assetId: string;
     boundingBoxX1: number;
@@ -2444,6 +2448,15 @@ export function updatePeople({ peopleUpdateDto }: {
         body: peopleUpdateDto
     })));
 }
+export function deleteFace({ deleteAssetFaceDto }: {
+    deleteAssetFaceDto: DeleteAssetFaceDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/people/delete-face", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: deleteAssetFaceDto
+    })));
+}
 export function tagFace({ tagFaceDto }: {
     tagFaceDto: TagFaceDto;
 }, opts?: Oazapfts.RequestOpts) {
@@ -3397,8 +3410,7 @@ export enum AlbumUserRole {
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
-    Exif = "exif",
-    ManualTagging = "manual-tagging"
+    Exif = "exif"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",
