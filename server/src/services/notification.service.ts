@@ -276,7 +276,7 @@ export class NotificationService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const { emailNotifications } = getPreferences(recipient);
+    const { emailNotifications } = getPreferences(recipient.email, recipient.metadata);
 
     if (!emailNotifications.enabled || !emailNotifications.albumInvite) {
       return JobStatus.SKIPPED;
@@ -340,7 +340,7 @@ export class NotificationService extends BaseService {
         continue;
       }
 
-      const { emailNotifications } = getPreferences(user);
+      const { emailNotifications } = getPreferences(user.email, user.metadata);
 
       if (!emailNotifications.enabled || !emailNotifications.albumUpdate) {
         continue;

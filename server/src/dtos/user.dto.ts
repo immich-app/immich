@@ -47,7 +47,7 @@ export const mapUser = (entity: UserEntity): UserResponseDto => {
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor: getPreferences(entity).avatar.color,
+    avatarColor: getPreferences(entity.email, entity.metadata || []).avatar.color,
     profileChangedAt: entity.profileChangedAt,
   };
 };
