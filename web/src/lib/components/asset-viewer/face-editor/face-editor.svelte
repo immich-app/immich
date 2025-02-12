@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CreatePeopleForm from '$lib/components/asset-viewer/face-editor/create-people-form.svelte';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { notificationController } from '$lib/components/shared-components/notification/notification';
@@ -7,7 +6,6 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
-  import { mdiPlus } from '@mdi/js';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
 
@@ -145,11 +143,34 @@
     const selectorWidth = faceSelectorEl.offsetWidth;
     const selectorHeight = faceSelectorEl.offsetHeight;
 
-    let top = rect.top + rect.height + 15;
-    let left = rect.left;
+    const spaceAbove = rect.top;
+    const spaceBelow = containerHeight - (rect.top + rect.height);
+    const spaceLeft = rect.left;
+    const spaceRight = containerWidth - (rect.left + rect.width);
 
-    if (top + selectorHeight > containerHeight) {
+    let top, left;
+
+    if (
+      spaceBelow >= selectorHeight ||
+      (spaceBelow >= spaceAbove && spaceBelow >= spaceLeft && spaceBelow >= spaceRight)
+    ) {
+      top = rect.top + rect.height + 15;
+      left = rect.left;
+    } else if (
+      spaceAbove >= selectorHeight ||
+      (spaceAbove >= spaceBelow && spaceAbove >= spaceLeft && spaceAbove >= spaceRight)
+    ) {
       top = rect.top - selectorHeight - 15;
+      left = rect.left;
+    } else if (
+      spaceRight >= selectorWidth ||
+      (spaceRight >= spaceLeft && spaceRight >= spaceAbove && spaceRight >= spaceBelow)
+    ) {
+      top = rect.top;
+      left = rect.left + rect.width + 15;
+    } else {
+      top = rect.top;
+      left = rect.left - selectorWidth - 15;
     }
 
     if (left + selectorWidth > containerWidth) {
@@ -158,6 +179,14 @@
 
     if (left < 0) {
       left = 15;
+    }
+
+    if (top + selectorHeight > containerHeight) {
+      top = containerHeight - selectorHeight - 15;
+    }
+
+    if (top < 0) {
+      top = 15;
     }
 
     faceSelectorEl.style.top = `${top}px`;
@@ -170,10 +199,6 @@
       faceRect.on('scaling', positionFaceSelector);
     }
   });
-
-  const openCreatePersonForm = () => {
-    displayMode = FaceEditorDisplayMode.CREATE_PERSON;
-  };
 
   const getFaceCroppedCoordinates = () => {
     if (!faceRect || !imgElement) {
@@ -246,42 +271,31 @@
   >
     <p class="text-center text-sm">Select a person to tag</p>
 
-    {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON}
-      <div class="max-h-[250px] overflow-y-auto mt-2">
-        <div class="mt-2 rounded-lg">
-          {#each candidates as person}
-            <button
-              onclick={() => tag(person)}
-              type="button"
-              class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
-            >
-              <ImageThumbnail
-                curve
-                shadow
-                url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                title={person.name}
-                widthStyle="30px"
-                heightStyle="30px"
-              />
-              <p class="text-sm">
-                {person.name}
-              </p>
-            </button>
-          {/each}
-        </div>
+    <div class="max-h-[250px] overflow-y-auto mt-2">
+      <div class="mt-2 rounded-lg">
+        {#each candidates as person}
+          <button
+            onclick={() => tag(person)}
+            type="button"
+            class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
+          >
+            <ImageThumbnail
+              curve
+              shadow
+              url={getPeopleThumbnailUrl(person)}
+              altText={person.name}
+              title={person.name}
+              widthStyle="30px"
+              heightStyle="30px"
+            />
+            <p class="text-sm">
+              {person.name}
+            </p>
+          </button>
+        {/each}
       </div>
-    {/if}
+    </div>
 
-    {#if displayMode === FaceEditorDisplayMode.CREATE_PERSON}
-      <CreatePeopleForm onDone={(person) => tag(person)} />
-    {/if}
-
-    {#if displayMode !== FaceEditorDisplayMode.CREATE_PERSON}
-      <Button leadingIcon={mdiPlus} size="small" fullWidth class="mt-4" onclick={openCreatePersonForm}
-        >Create new person</Button
-      >
-    {/if}
     <Button size="small" fullWidth onclick={test} color="danger" class="mt-2">Cancel</Button>
   </div>
 </div>

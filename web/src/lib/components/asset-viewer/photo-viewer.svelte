@@ -20,6 +20,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets.store';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -106,6 +107,12 @@
   zoomToggle = () => {
     $zoomed = $zoomed ? false : true;
   };
+
+  $effect(() => {
+    if (isFaceEditMode.value && $photoZoomState.currentZoom > 1) {
+      zoomToggle();
+    }
+  });
 
   const onCopyShortcut = (event: KeyboardEvent) => {
     if (globalThis.getSelection()?.type === 'Range') {
@@ -226,7 +233,9 @@
       {/each}
     </div>
 
-    <FaceEditor imgElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
+    {#if isFaceEditMode.value}
+      <FaceEditor imgElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
+    {/if}
   {/if}
 </div>
 

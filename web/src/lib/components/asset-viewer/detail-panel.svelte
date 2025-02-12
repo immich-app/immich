@@ -47,6 +47,7 @@
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -282,7 +283,7 @@
         <button
           class="w-[90px] h-[90px] flex items-center justify-center bg-transparent border border-gray-200 dark:border-gray-700 rounded-xl text-gray-500 hover:bg-gray-200 dark:hover:bg-immich-dark-gray dark:hover:text-gray-200"
           type="button"
-          onclick={() => {}}
+          onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
           title={$t('tag_people')}
         >
           <Icon path={mdiPlus} size={24} />
