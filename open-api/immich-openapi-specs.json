@@ -2445,6 +2445,39 @@
       }
     },
     "/faces": {
+      "delete": {
+        "operationId": "deleteFace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteFaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
+      },
       "get": {
         "operationId": "getFaces",
         "parameters": [
@@ -2470,6 +2503,39 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
+      },
+      "post": {
+        "operationId": "createFace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFaceDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3992,76 +4058,6 @@
                 }
               }
             },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "People"
-        ]
-      }
-    },
-    "/people/delete-face": {
-      "delete": {
-        "operationId": "deleteFace",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeleteAssetFaceDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "People"
-        ]
-      }
-    },
-    "/people/tag-face": {
-      "post": {
-        "operationId": "tagFace",
-        "parameters": [],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/TagFaceDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
             "description": ""
           }
         },
@@ -8905,6 +8901,47 @@
         ],
         "type": "object"
       },
+      "CreateFaceDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "boundingBoxX1": {
+            "type": "integer"
+          },
+          "boundingBoxX2": {
+            "type": "integer"
+          },
+          "boundingBoxY1": {
+            "type": "integer"
+          },
+          "boundingBoxY2": {
+            "type": "integer"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "boundingBoxX1",
+          "boundingBoxX2",
+          "boundingBoxY1",
+          "boundingBoxY2",
+          "imageHeight",
+          "imageWidth",
+          "personId"
+        ],
+        "type": "object"
+      },
       "CreateLibraryDto": {
         "properties": {
           "exclusionPatterns": {
@@ -8988,7 +9025,7 @@
         ],
         "type": "object"
       },
-      "DeleteAssetFaceDto": {
+      "DeleteFaceDto": {
         "properties": {
           "assetFaceId": {
             "format": "uuid",
@@ -12714,47 +12751,6 @@
         },
         "required": [
           "name"
-        ],
-        "type": "object"
-      },
-      "TagFaceDto": {
-        "properties": {
-          "assetId": {
-            "format": "uuid",
-            "type": "string"
-          },
-          "boundingBoxX1": {
-            "type": "integer"
-          },
-          "boundingBoxX2": {
-            "type": "integer"
-          },
-          "boundingBoxY1": {
-            "type": "integer"
-          },
-          "boundingBoxY2": {
-            "type": "integer"
-          },
-          "imageHeight": {
-            "type": "integer"
-          },
-          "imageWidth": {
-            "type": "integer"
-          },
-          "personId": {
-            "format": "uuid",
-            "type": "string"
-          }
-        },
-        "required": [
-          "assetId",
-          "boundingBoxX1",
-          "boundingBoxX2",
-          "boundingBoxY1",
-          "boundingBoxY2",
-          "imageHeight",
-          "imageWidth",
-          "personId"
         ],
         "type": "object"
       },

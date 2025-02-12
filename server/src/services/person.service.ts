@@ -7,8 +7,11 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
-  DeleteAssetFaceDto,
+  CreateFaceDto,
+  DeleteFaceDto,
   FaceDto,
+  mapFaces,
+  mapPerson,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -17,9 +20,6 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-  TagFaceDto,
-  mapFaces,
-  mapPerson,
 } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -720,7 +720,7 @@ export class PersonService extends BaseService {
     };
   }
 
-  async tagFace(auth: AuthDto, dto: TagFaceDto): Promise<void> {
+  async tagFace(auth: AuthDto, dto: CreateFaceDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] });
 
     await this.personRepository.createAssetFace({
@@ -735,7 +735,7 @@ export class PersonService extends BaseService {
     });
   }
 
-  async deleteFace(auth: AuthDto, dto: DeleteAssetFaceDto): Promise<void> {
+  async deleteFace(auth: AuthDto, dto: DeleteFaceDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] });
 
     return this.personRepository.deleteAssetFace(dto.assetFaceId);

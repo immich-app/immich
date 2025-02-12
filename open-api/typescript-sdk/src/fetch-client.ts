@@ -503,6 +503,10 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
 };
+export type DeleteFaceDto = {
+    assetFaceId: string;
+    personId: string;
+};
 export type PersonResponseDto = {
     birthDate: string | null;
     /** This property was added in v1.126.0 */
@@ -526,6 +530,16 @@ export type AssetFaceResponseDto = {
     imageWidth: number;
     person: (PersonResponseDto) | null;
     sourceType?: SourceType;
+};
+export type CreateFaceDto = {
+    assetId: string;
+    boundingBoxX1: number;
+    boundingBoxX2: number;
+    boundingBoxY1: number;
+    boundingBoxY2: number;
+    imageHeight: number;
+    imageWidth: number;
+    personId: string;
 };
 export type FaceDto = {
     id: string;
@@ -731,20 +745,6 @@ export type PeopleUpdateItem = {
 };
 export type PeopleUpdateDto = {
     people: PeopleUpdateItem[];
-};
-export type DeleteAssetFaceDto = {
-    assetFaceId: string;
-    personId: string;
-};
-export type TagFaceDto = {
-    assetId: string;
-    boundingBoxX1: number;
-    boundingBoxX2: number;
-    boundingBoxY1: number;
-    boundingBoxY2: number;
-    imageHeight: number;
-    imageWidth: number;
-    personId: string;
 };
 export type PersonUpdateDto = {
     /** Person date of birth.
@@ -2035,6 +2035,15 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
         ...opts
     }));
 }
+export function deleteFace({ deleteFaceDto }: {
+    deleteFaceDto: DeleteFaceDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/faces", oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: deleteFaceDto
+    })));
+}
 export function getFaces({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -2046,6 +2055,15 @@ export function getFaces({ id }: {
     }))}`, {
         ...opts
     }));
+}
+export function createFace({ createFaceDto }: {
+    createFaceDto: CreateFaceDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/faces", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: createFaceDto
+    })));
 }
 export function reassignFacesById({ id, faceDto }: {
     id: string;
@@ -2446,24 +2464,6 @@ export function updatePeople({ peopleUpdateDto }: {
         ...opts,
         method: "PUT",
         body: peopleUpdateDto
-    })));
-}
-export function deleteFace({ deleteAssetFaceDto }: {
-    deleteAssetFaceDto: DeleteAssetFaceDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/people/delete-face", oazapfts.json({
-        ...opts,
-        method: "DELETE",
-        body: deleteAssetFaceDto
-    })));
-}
-export function tagFace({ tagFaceDto }: {
-    tagFaceDto: TagFaceDto;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText("/people/tag-face", oazapfts.json({
-        ...opts,
-        method: "POST",
-        body: tagFaceDto
     })));
 }
 export function getPerson({ id }: {

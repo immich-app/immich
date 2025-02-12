@@ -33,5 +33,8 @@ export const newPersonRepositoryMock = (): Mocked<RepositoryInterface<PersonRepo
     getFaceByIdWithAssets: vitest.fn(),
     getNumberOfPeople: vitest.fn(),
     getLatestFaceDate: vitest.fn(),
+
+    createAssetFace: vitest.fn(),
+    deleteAssetFace: vitest.fn(),
   };
 };

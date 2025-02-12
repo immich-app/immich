@@ -290,14 +290,16 @@ class ApiClient {
           return ColorspaceTypeTransformer().decode(value);
         case 'CreateAlbumDto':
           return CreateAlbumDto.fromJson(value);
+        case 'CreateFaceDto':
+          return CreateFaceDto.fromJson(value);
         case 'CreateLibraryDto':
           return CreateLibraryDto.fromJson(value);
         case 'CreateProfileImageResponseDto':
           return CreateProfileImageResponseDto.fromJson(value);
         case 'DatabaseBackupConfig':
           return DatabaseBackupConfig.fromJson(value);
-        case 'DeleteAssetFaceDto':
-          return DeleteAssetFaceDto.fromJson(value);
+        case 'DeleteFaceDto':
+          return DeleteFaceDto.fromJson(value);
         case 'DownloadArchiveInfo':
           return DownloadArchiveInfo.fromJson(value);
         case 'DownloadInfoDto':
@@ -578,8 +580,6 @@ class ApiClient {
           return TagBulkAssetsResponseDto.fromJson(value);
         case 'TagCreateDto':
           return TagCreateDto.fromJson(value);
-        case 'TagFaceDto':
-          return TagFaceDto.fromJson(value);
         case 'TagResponseDto':
           return TagResponseDto.fromJson(value);
         case 'TagUpdateDto':

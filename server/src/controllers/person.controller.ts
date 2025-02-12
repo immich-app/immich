@@ -1,11 +1,10 @@
-import { Body, Controller, Delete, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Next, Param, Post, Put, Query, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceUpdateDto,
-  DeleteAssetFaceDto,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -14,7 +13,6 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-  TagFaceDto,
 } from 'src/dtos/person.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
@@ -91,18 +89,6 @@ export class PersonController {
     @Body() dto: AssetFaceUpdateDto,
   ): Promise<PersonResponseDto[]> {
     return this.service.reassignFaces(auth, id, dto);
-  }
-
-  @Post('tag-face')
-  @Authenticated()
-  tagFace(@Auth() auth: AuthDto, @Body() dto: TagFaceDto) {
-    return this.service.tagFace(auth, dto);
-  }
-
-  @Delete('delete-face')
-  @Authenticated()
-  deleteFace(@Auth() auth: AuthDto, @Body() dto: DeleteAssetFaceDto) {
-    return this.service.deleteFace(auth, dto);
   }
 
   @Post(':id/merge')

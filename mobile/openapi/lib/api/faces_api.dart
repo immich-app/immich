@@ -16,6 +16,84 @@ class FacesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'POST /faces' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [CreateFaceDto] createFaceDto (required):
+  Future<Response> createFaceWithHttpInfo(CreateFaceDto createFaceDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/faces';
+
+    // ignore: prefer_final_locals
+    Object? postBody = createFaceDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [CreateFaceDto] createFaceDto (required):
+  Future<void> createFace(CreateFaceDto createFaceDto,) async {
+    final response = await createFaceWithHttpInfo(createFaceDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'DELETE /faces' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [DeleteFaceDto] deleteFaceDto (required):
+  Future<Response> deleteFaceWithHttpInfo(DeleteFaceDto deleteFaceDto,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/faces';
+
+    // ignore: prefer_final_locals
+    Object? postBody = deleteFaceDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [DeleteFaceDto] deleteFaceDto (required):
+  Future<void> deleteFace(DeleteFaceDto deleteFaceDto,) async {
+    final response = await deleteFaceWithHttpInfo(deleteFaceDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /faces' operation and returns the [Response].
   /// Parameters:
   ///

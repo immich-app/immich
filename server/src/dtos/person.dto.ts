@@ -181,7 +181,7 @@ export class PeopleResponseDto {
   hasNextPage?: boolean;
 }
 
-export class TagFaceDto {
+export class CreateFaceDto {
   @ValidateUUID()
   personId!: string;
 
@@ -219,7 +219,7 @@ export class TagFaceDto {
   boundingBoxY2!: number;
 }
 
-export class DeleteAssetFaceDto {
+export class DeleteFaceDto {
   @ValidateUUID()
   assetFaceId!: string;
 

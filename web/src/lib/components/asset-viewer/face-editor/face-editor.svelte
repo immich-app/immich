@@ -4,7 +4,7 @@
   import { notificationController } from '$lib/components/shared-components/notification/notification';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
+  import { getAllPeople, createFace, type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
@@ -235,7 +235,7 @@
     };
   };
 
-  const tag = async (person: PersonResponseDto) => {
+  const tagFace = async (person: PersonResponseDto) => {
     try {
       const data = getFaceCroppedCoordinates();
       if (!data) {
@@ -253,8 +253,8 @@
         return;
       }
 
-      await tagFace({
-        tagFaceDto: {
+      await createFace({
+        createFaceDto: {
           assetId,
           personId: person.id,
           ...data,
@@ -284,7 +284,7 @@
       <div class="mt-2 rounded-lg">
         {#each candidates as person}
           <button
-            onclick={() => tag(person)}
+            onclick={() => tagFace(person)}
             type="button"
             class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
           >
