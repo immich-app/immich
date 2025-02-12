@@ -25,7 +25,6 @@
     type ExifResponseDto,
   } from '@immich/sdk';
   import {
-    mdiAccountOff,
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
