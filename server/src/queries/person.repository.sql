@@ -250,3 +250,88 @@ select
   max("asset_job_status"."facesRecognizedAt")::text as "latestDate"
 from
   "asset_job_status"
+
+-- PersonRepository.createAssetFace
+insert into
+  "asset_faces" (
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "30",
+    "31",
+    "32",
+    "33",
+    "34",
+    "35"
+  )
+values
+  (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14,
+    $15,
+    $16,
+    $17,
+    $18,
+    $19,
+    $20,
+    $21,
+    $22,
+    $23,
+    $24,
+    $25,
+    $26,
+    $27,
+    $28,
+    $29,
+    $30,
+    $31,
+    $32,
+    $33,
+    $34,
+    $35,
+    $36
+  )
+
+-- PersonRepository.deleteAssetFace
+delete from "asset_faces"
+where
+  "asset_faces"."id" = $1
