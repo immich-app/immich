@@ -1,15 +1,15 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
-  import {dialogController} from '$lib/components/shared-components/dialog/dialog';
-  import {notificationController} from '$lib/components/shared-components/notification/notification';
-  import {isFaceEditMode} from '$lib/stores/face-edit.svelte';
-  import {getPeopleThumbnailUrl} from '$lib/utils';
-  import {getAllPeople, tagFace, type PersonResponseDto} from '@immich/sdk';
-  import {Button} from '@immich/ui';
-  import {Canvas, InteractiveFabricObject, Rect} from 'fabric';
-  import {onMount} from 'svelte';
-  import {assetViewingStore} from "$lib/stores/asset-viewing.store";
-  import {handleError} from "$lib/utils/handle-error";
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { notificationController } from '$lib/components/shared-components/notification/notification';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAllPeople, tagFace, type PersonResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
+  import { onMount } from 'svelte';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { handleError } from '$lib/utils/handle-error';
 
   interface Props {
     imgElement: HTMLImageElement;
@@ -18,7 +18,7 @@
     assetId: string;
   }
 
-  let {imgElement, containerWidth, containerHeight, assetId}: Props = $props();
+  let { imgElement, containerWidth, containerHeight, assetId }: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -68,7 +68,7 @@
   });
 
   $effect(() => {
-    const {actualWidth, actualHeight} = getContainedSize(imgElement);
+    const { actualWidth, actualHeight } = getContainedSize(imgElement);
     const offsetArea = {
       width: (containerWidth - actualWidth) / 2,
       height: (containerHeight - actualHeight) / 2,
@@ -111,7 +111,7 @@
       actualWidth = img.width;
       actualHeight = img.width / ratio;
     }
-    return {actualWidth, actualHeight};
+    return { actualWidth, actualHeight };
   };
 
   const cancel = () => {
@@ -122,7 +122,7 @@
   let candidates = $state<PersonResponseDto[]>([]);
 
   const getPeople = async () => {
-    const {hasNextPage, people, total} = await getAllPeople({page, size: 50, withHidden: false});
+    const { hasNextPage, people, total } = await getAllPeople({ page, size: 250, withHidden: false });
 
     if (candidates.length === total) {
       return;
@@ -206,8 +206,8 @@
       return;
     }
 
-    const {left, top, width, height} = faceRect.getBoundingRect();
-    const {actualWidth, actualHeight} = getContainedSize(imgElement);
+    const { left, top, width, height } = faceRect.getBoundingRect();
+    const { actualWidth, actualHeight } = getContainedSize(imgElement);
 
     const offsetArea = {
       width: (containerWidth - actualWidth) / 2,
@@ -262,13 +262,11 @@
       });
 
       await assetViewingStore.setAssetId(assetId);
-
     } catch (error) {
       handleError(error, 'Error tagging face');
     } finally {
       isFaceEditMode.value = false;
     }
-
   };
 </script>
 
