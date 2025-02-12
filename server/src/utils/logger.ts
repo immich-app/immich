@@ -1,8 +1,8 @@
 import { HttpException } from '@nestjs/common';
-import { ILoggingRepository } from 'src/types';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { TypeORMError } from 'typeorm';
 
-export const logGlobalError = (logger: ILoggingRepository, error: Error) => {
+export const logGlobalError = (logger: LoggingRepository, error: Error) => {
   if (error instanceof HttpException) {
     const status = error.getStatus();
     const response = error.getResponse();

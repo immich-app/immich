@@ -13,8 +13,8 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import { TimeBucketSize } from 'src/interfaces/asset.interface';
-import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
+import { TimeBucketSize } from 'src/repositories/asset.repository';
+import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import {
   Column,

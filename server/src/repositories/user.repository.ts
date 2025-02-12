@@ -6,12 +6,6 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserMetadata } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
 import { UserStatus } from 'src/enum';
-import {
-  IUserRepository,
-  UserFindOptions,
-  UserListFilter,
-  UserStatsQueryResponse,
-} from 'src/interfaces/user.interface';
 import { asUuid } from 'src/utils/database';
 
 const columns = [
@@ -34,8 +28,27 @@ const columns = [
 
 type Upsert = Insertable<DbUserMetadata>;
 
+export interface UserListFilter {
+  withDeleted?: boolean;
+}
+
+export interface UserStatsQueryResponse {
+  userId: string;
+  userName: string;
+  photos: number;
+  videos: number;
+  usage: number;
+  usagePhotos: number;
+  usageVideos: number;
+  quotaSizeInBytes: number | null;
+}
+
+export interface UserFindOptions {
+  withDeleted?: boolean;
+}
+
 @Injectable()
-export class UserRepository implements IUserRepository {
+export class UserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
