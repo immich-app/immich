@@ -34,6 +34,8 @@
         { key: ['i'], action: $t('show_or_hide_info') },
         { key: ['s'], action: $t('stack_selected_photos') },
         { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
+        { key: ['r'], action: $t('rotate_right') },
+        { key: ['⇧', 'r'], action: $t('rotate_left') },
         { key: ['⇧', 'd'], action: $t('download') },
         { key: ['Space'], action: $t('play_or_pause_video') },
         { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },

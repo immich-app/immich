@@ -101,6 +101,7 @@ export class MetadataRepository {
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+    this.logger.verbose(`Writing tags ${JSON.stringify(tags)} to ${path}`);
     try {
       await this.exiftool.write(path, tags);
     } catch (error) {

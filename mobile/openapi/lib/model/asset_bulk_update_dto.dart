@@ -20,6 +20,7 @@ class AssetBulkUpdateDto {
     this.isFavorite,
     this.latitude,
     this.longitude,
+    this.orientation,
     this.rating,
   });
 
@@ -67,6 +68,8 @@ class AssetBulkUpdateDto {
   ///
   num? longitude;
 
+  AssetBulkUpdateDtoOrientationEnum? orientation;
+
   /// Minimum value: -1
   /// Maximum value: 5
   ///
@@ -86,6 +89,7 @@ class AssetBulkUpdateDto {
     other.isFavorite == isFavorite &&
     other.latitude == latitude &&
     other.longitude == longitude &&
+    other.orientation == orientation &&
     other.rating == rating;
 
   @override
@@ -98,10 +102,11 @@ class AssetBulkUpdateDto {
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (latitude == null ? 0 : latitude!.hashCode) +
     (longitude == null ? 0 : longitude!.hashCode) +
+    (orientation == null ? 0 : orientation!.hashCode) +
     (rating == null ? 0 : rating!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, rating=$rating]';
+  String toString() => 'AssetBulkUpdateDto[dateTimeOriginal=$dateTimeOriginal, duplicateId=$duplicateId, ids=$ids, isArchived=$isArchived, isFavorite=$isFavorite, latitude=$latitude, longitude=$longitude, orientation=$orientation, rating=$rating]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -136,6 +141,11 @@ class AssetBulkUpdateDto {
     } else {
     //  json[r'longitude'] = null;
     }
+    if (this.orientation != null) {
+      json[r'orientation'] = this.orientation;
+    } else {
+    //  json[r'orientation'] = null;
+    }
     if (this.rating != null) {
       json[r'rating'] = this.rating;
     } else {
@@ -162,6 +172,7 @@ class AssetBulkUpdateDto {
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         latitude: num.parse('${json[r'latitude']}'),
         longitude: num.parse('${json[r'longitude']}'),
+        orientation: AssetBulkUpdateDtoOrientationEnum.fromJson(json[r'orientation']),
         rating: num.parse('${json[r'rating']}'),
       );
     }
@@ -213,4 +224,96 @@ class AssetBulkUpdateDto {
     'ids',
   };
 }
+
+
+class AssetBulkUpdateDtoOrientationEnum {
+  /// Instantiate a new enum with the provided [value].
+  const AssetBulkUpdateDtoOrientationEnum._(this.value);
+
+  /// The underlying value of this enum member.
+  final int value;
+
+  @override
+  String toString() => value.toString();
+
+  int toJson() => value;
+
+  static const number1 = AssetBulkUpdateDtoOrientationEnum._(1);
+  static const number2 = AssetBulkUpdateDtoOrientationEnum._(2);
+  static const number3 = AssetBulkUpdateDtoOrientationEnum._(3);
+  static const number4 = AssetBulkUpdateDtoOrientationEnum._(4);
+  static const number5 = AssetBulkUpdateDtoOrientationEnum._(5);
+  static const number6 = AssetBulkUpdateDtoOrientationEnum._(6);
+  static const number7 = AssetBulkUpdateDtoOrientationEnum._(7);
+  static const number8 = AssetBulkUpdateDtoOrientationEnum._(8);
+
+  /// List of all possible values in this [enum][AssetBulkUpdateDtoOrientationEnum].
+  static const values = <AssetBulkUpdateDtoOrientationEnum>[
+    number1,
+    number2,
+    number3,
+    number4,
+    number5,
+    number6,
+    number7,
+    number8,
+  ];
+
+  static AssetBulkUpdateDtoOrientationEnum? fromJson(dynamic value) => AssetBulkUpdateDtoOrientationEnumTypeTransformer().decode(value);
+
+  static List<AssetBulkUpdateDtoOrientationEnum> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <AssetBulkUpdateDtoOrientationEnum>[];
+    if (json is List && json.isNotEmpty) {
+      for (final row in json) {
+        final value = AssetBulkUpdateDtoOrientationEnum.fromJson(row);
+        if (value != null) {
+          result.add(value);
+        }
+      }
+    }
+    return result.toList(growable: growable);
+  }
+}
+
+/// Transformation class that can [encode] an instance of [AssetBulkUpdateDtoOrientationEnum] to int,
+/// and [decode] dynamic data back to [AssetBulkUpdateDtoOrientationEnum].
+class AssetBulkUpdateDtoOrientationEnumTypeTransformer {
+  factory AssetBulkUpdateDtoOrientationEnumTypeTransformer() => _instance ??= const AssetBulkUpdateDtoOrientationEnumTypeTransformer._();
+
+  const AssetBulkUpdateDtoOrientationEnumTypeTransformer._();
+
+  int encode(AssetBulkUpdateDtoOrientationEnum data) => data.value;
+
+  /// Decodes a [dynamic value][data] to a AssetBulkUpdateDtoOrientationEnum.
+  ///
+  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
+  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
+  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
+  ///
+  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
+  /// and users are still using an old app with the old code.
+  AssetBulkUpdateDtoOrientationEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data != null) {
+      switch (data) {
+        case 1: return AssetBulkUpdateDtoOrientationEnum.number1;
+        case 2: return AssetBulkUpdateDtoOrientationEnum.number2;
+        case 3: return AssetBulkUpdateDtoOrientationEnum.number3;
+        case 4: return AssetBulkUpdateDtoOrientationEnum.number4;
+        case 5: return AssetBulkUpdateDtoOrientationEnum.number5;
+        case 6: return AssetBulkUpdateDtoOrientationEnum.number6;
+        case 7: return AssetBulkUpdateDtoOrientationEnum.number7;
+        case 8: return AssetBulkUpdateDtoOrientationEnum.number8;
+        default:
+          if (!allowNull) {
+            throw ArgumentError('Unknown enum value to decode: $data');
+          }
+      }
+    }
+    return null;
+  }
+
+  /// Singleton [AssetBulkUpdateDtoOrientationEnumTypeTransformer] instance.
+  static AssetBulkUpdateDtoOrientationEnumTypeTransformer? _instance;
+}
+
 

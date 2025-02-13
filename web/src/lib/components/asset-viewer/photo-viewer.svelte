@@ -70,19 +70,19 @@
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
+        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.thumbhash);
       }
     }
   };
 
-  const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+  const getAssetUrl = (id: string, useOriginal: boolean, cacheKey: string | null) => {
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
     }
 
     return useOriginal
-      ? getAssetOriginalUrl({ id, checksum })
-      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+      ? getAssetOriginalUrl({ id, cacheKey })
+      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
   };
 
   copyImage = async () => {
@@ -144,7 +144,7 @@
       loader?.removeEventListener('error', onerror);
     };
   });
-  let isWebCompatible = $derived(isWebCompatibleImage(asset));
+  let isWebCompatible = $derived(isWebCompatibleImage(asset) && !asset?.exifInfo?.orientation);
   let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
   // when true, will force loading of the original image
 
@@ -158,7 +158,7 @@
     preload(useOriginalImage, preloadAssets);
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.checksum));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.thumbhash));
 </script>
 
 <svelte:window

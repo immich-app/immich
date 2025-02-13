@@ -40,7 +40,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      checksum: asset.checksum,
+      cacheKey: asset.thumbhash,
     });
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
@@ -50,7 +50,7 @@ describe('PhotoViewer component', () => {
     render(PhotoViewer, { asset });
 
     expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
   it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
@@ -59,7 +59,7 @@ describe('PhotoViewer component', () => {
     render(PhotoViewer, { asset, sharedLink });
 
     expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, checksum: asset.checksum });
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
   it('not loads original image when shared link download permission is false', () => {
@@ -70,7 +70,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      checksum: asset.checksum,
+      cacheKey: asset.thumbhash,
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
@@ -84,7 +84,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      checksum: asset.checksum,
+      cacheKey: asset.thumbhash,
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();

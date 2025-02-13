@@ -222,6 +222,7 @@ export interface ISidecarWriteJob extends IEntityJob {
   latitude?: number;
   longitude?: number;
   rating?: number;
+  orientation?: ExifOrientation;
   tags?: true;
 }
 

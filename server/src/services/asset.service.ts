@@ -100,7 +100,7 @@ export class AssetService extends BaseService {
   async update(auth: AuthDto, id: string, dto: UpdateAssetDto): Promise<AssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids: [id] });
 
-    const { description, dateTimeOriginal, latitude, longitude, rating, ...rest } = dto;
+    const { description, dateTimeOriginal, latitude, longitude, rating, orientation, ...rest } = dto;
     const repos = { asset: this.assetRepository, event: this.eventRepository };
 
     let previousMotion: AssetEntity | null = null;
@@ -113,7 +113,7 @@ export class AssetService extends BaseService {
       }
     }
 
-    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
+    await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating, orientation });
 
     const asset = await this.assetRepository.update({ id, ...rest });
 
@@ -129,11 +129,12 @@ export class AssetService extends BaseService {
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
-    const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
+    const { ids, dateTimeOriginal, latitude, longitude, orientation, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
+    // TODO rewrite this to support batching
     for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude, orientation });
     }
 
     if (
@@ -284,11 +285,14 @@ export class AssetService extends BaseService {
   }
 
   private async updateMetadata(dto: ISidecarWriteJob) {
-    const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
-    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating }, _.isUndefined);
+    const { id, description, dateTimeOriginal, latitude, longitude, rating, orientation } = dto;
+    const writes = _.omitBy({ description, dateTimeOriginal, latitude, longitude, rating, orientation }, _.isUndefined);
     if (Object.keys(writes).length > 0) {
       await this.assetRepository.upsertExif({ assetId: id, ...writes });
       await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id, ...writes } });
+      if (orientation !== undefined) {
+        await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: { id, notify: true } });
+      }
     }
   }
 }
