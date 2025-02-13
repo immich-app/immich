@@ -58,7 +58,7 @@
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
 
-  // loads in savedIndex
+  // loads in savedIndex from localStorage
   const savedIndex = localStorage.getItem('galleryViewerIndex');
   if (savedIndex) {
     currentViewAssetIndex = parseInt(savedIndex);
@@ -219,13 +219,13 @@
       } else {
         currentViewAssetIndex = currentViewAssetIndex + 1;
         asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
+        localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
       }
 
       if (!asset) {
         return false;
       }
 
-      localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
       await navigateToAsset(asset);
       return true;
     } catch (error) {
@@ -266,6 +266,7 @@
       } else {
         currentViewAssetIndex = currentViewAssetIndex - 1;
         asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
+        localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
       }
 
       if (!asset) {
@@ -302,6 +303,7 @@
           await handlePrevious();
         } else {
           setAsset(assets[currentViewAssetIndex]);
+          localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
         }
         break;
       }
