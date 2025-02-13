@@ -53,6 +53,9 @@ docker compose up -d
 :::info Docker version
 If you get an error such as `unknown shorthand flag: 'd' in -d` or `open <location of your .env file>: permission denied`, you are probably running the wrong Docker version. (This happens, for example, with the docker.io package in Ubuntu 22.04.3 LTS.) You can correct the problem by following the complete [Docker Engine install](https://docs.docker.com/engine/install/) procedure for your distribution, crucially the "Uninstall old versions" and "Install using the apt/rpm repository" sections. These replace the distro's Docker packages with Docker's official ones.
 
+:::info Synology NAS firewall
+In order to access the Immich server, you will need to create two firewall rules - one for port 2283 and another one for the local IP address of the Immich Docker container.
+
 Note that the correct command really is `docker compose`, not `docker-compose`. If you try the latter on vanilla Ubuntu 22.04, it will fail in a different way:
 
 ```
