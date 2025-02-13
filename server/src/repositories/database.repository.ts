@@ -4,26 +4,18 @@ import AsyncLock from 'async-lock';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
-import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
+import { EXTENSION_NAMES, POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
-import {
-  DatabaseExtension,
-  DatabaseLock,
-  EXTENSION_NAMES,
-  ExtensionVersion,
-  IDatabaseRepository,
-  VectorExtension,
-  VectorIndex,
-  VectorUpdateResult,
-} from 'src/interfaces/database.interface';
+import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { UPSERT_COLUMNS } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, EntityMetadata, QueryRunner } from 'typeorm';
 
 @Injectable()
-export class DatabaseRepository implements IDatabaseRepository {
+export class DatabaseRepository {
   private vectorExtension: VectorExtension;
   private readonly asyncLock = new AsyncLock();
 

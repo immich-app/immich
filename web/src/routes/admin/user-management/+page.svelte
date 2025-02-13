@@ -170,6 +170,7 @@
                   variant="ghost"
                   onclick={() => copyToClipboard(newPassword)}
                   title={$t('copy_password')}
+                  aria-label={$t('copy_password')}
                 />
               </div>
 
@@ -225,6 +226,7 @@
                       icon={mdiPencilOutline}
                       title={$t('edit_user')}
                       onclick={() => editUserHandler(immichUser)}
+                      aria-label={$t('edit_user')}
                     />
                     {#if immichUser.id !== $user.id}
                       <IconButton
@@ -233,6 +235,7 @@
                         icon={mdiTrashCanOutline}
                         title={$t('delete_user')}
                         onclick={() => deleteUserHandler(immichUser)}
+                        aria-label={$t('delete_user')}
                       />
                     {/if}
                   {/if}
@@ -245,6 +248,7 @@
                         values: { date: getDeleteDate(immichUser.deletedAt) },
                       })}
                       onclick={() => restoreUserHandler(immichUser)}
+                      aria-label={$t('admin.user_restore_scheduled_removal')}
                     />
                   {/if}
                 </td>

@@ -49,7 +49,7 @@ export default function VersionSwitcher(): JSX.Element {
         mobile={windowSize === 'mobile'}
         items={versions.map(({ label, url }) => ({
           label,
-          to: url + location.pathname,
+          to: url + location.pathname + location.hash,
           target: '_self',
         }))}
       />

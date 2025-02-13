@@ -3,29 +3,28 @@
 -- ApiKeyRepository.getKey
 select
   "api_keys"."id",
-  "api_keys"."key",
-  "api_keys"."userId",
   "api_keys"."permissions",
-  to_json("user") as "user"
-from
-  "api_keys"
-  inner join lateral (
+  (
     select
-      "users".*,
+      to_json(obj)
+    from
       (
         select
-          array_agg("user_metadata") as "metadata"
+          "users"."id",
+          "users"."name",
+          "users"."email",
+          "users"."isAdmin",
+          "users"."quotaUsageInBytes",
+          "users"."quotaSizeInBytes"
         from
-          "user_metadata"
+          "users"
         where
-          "users"."id" = "user_metadata"."userId"
-      ) as "metadata"
-    from
-      "users"
-    where
-      "users"."id" = "api_keys"."userId"
-      and "users"."deletedAt" is null
-  ) as "user" on true
+          "users"."id" = "api_keys"."userId"
+          and "users"."deletedAt" is null
+      ) as obj
+  ) as "user"
+from
+  "api_keys"
 where
   "api_keys"."key" = $1
 

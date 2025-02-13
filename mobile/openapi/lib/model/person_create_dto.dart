@@ -14,6 +14,7 @@ class PersonCreateDto {
   /// Returns a new [PersonCreateDto] instance.
   PersonCreateDto({
     this.birthDate,
+    this.color,
     this.isFavorite,
     this.isHidden,
     this.name,
@@ -21,6 +22,8 @@ class PersonCreateDto {
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
   DateTime? birthDate;
+
+  String? color;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -51,6 +54,7 @@ class PersonCreateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonCreateDto &&
     other.birthDate == birthDate &&
+    other.color == color &&
     other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name;
@@ -59,12 +63,13 @@ class PersonCreateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonCreateDto[birthDate=$birthDate, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
+  String toString() => 'PersonCreateDto[birthDate=$birthDate, color=$color, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -72,6 +77,11 @@ class PersonCreateDto {
       json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
     } else {
     //  json[r'birthDate'] = null;
+    }
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+    //  json[r'color'] = null;
     }
     if (this.isFavorite != null) {
       json[r'isFavorite'] = this.isFavorite;
@@ -101,6 +111,7 @@ class PersonCreateDto {
 
       return PersonCreateDto(
         birthDate: mapDateTime(json, r'birthDate', r''),
+        color: mapValueOfType<String>(json, r'color'),
         isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),

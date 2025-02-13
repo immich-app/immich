@@ -1,7 +1,8 @@
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newCryptoRepositoryMock = (): Mocked<ICryptoRepository> => {
+export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepository>> => {
   return {
     randomUUID: vitest.fn().mockReturnValue('random-uuid'),
     randomBytes: vitest.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),

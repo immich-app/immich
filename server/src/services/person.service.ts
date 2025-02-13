@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FACE_THUMBNAIL_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
@@ -27,24 +27,19 @@ import {
   AssetType,
   CacheControl,
   ImageFormat,
+  JobName,
+  JobStatus,
   Permission,
   PersonPathType,
+  QueueName,
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
-import {
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
-import { BoundingBox } from 'src/interfaces/machine-learning.interface';
-import { UpdateFacesData } from 'src/interfaces/person.interface';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { BoundingBox } from 'src/repositories/machine-learning.repository';
+import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
-import { CropOptions, ImageDimensions, InputDimensions } from 'src/types';
+import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -104,7 +99,7 @@ export class PersonService extends BaseService {
         await this.personRepository.reassignFace(face.id, personId);
       }
 
-      result.push(person);
+      result.push(mapPerson(person));
     }
     if (changeFeaturePhoto.length > 0) {
       // Remove duplicates
@@ -178,20 +173,23 @@ export class PersonService extends BaseService {
     });
   }
 
-  create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
-    return this.personRepository.create({
+  async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
+    const person = await this.personRepository.create({
       ownerId: auth.user.id,
       name: dto.name,
       birthDate: dto.birthDate,
       isHidden: dto.isHidden,
       isFavorite: dto.isFavorite,
+      color: dto.color,
     });
+
+    return mapPerson(person);
   }
 
   async update(auth: AuthDto, id: string, dto: PersonUpdateDto): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PERSON_UPDATE, ids: [id] });
 
-    const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite } = dto;
+    const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     // TODO: set by faceId directly
     let faceId: string | undefined = undefined;
     if (assetId) {
@@ -211,6 +209,7 @@ export class PersonService extends BaseService {
       birthDate,
       isHidden,
       isFavorite,
+      color,
     });
 
     if (assetId) {
