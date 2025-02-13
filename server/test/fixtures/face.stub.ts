@@ -3,8 +3,10 @@ import { SourceType } from 'src/enum';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { personStub } from 'test/fixtures/person.stub';
 
+type NonNullableProperty<T> = { [P in keyof T]: NonNullable<T[P]> };
+
 export const faceStub = {
-  face1: Object.freeze<AssetFaceEntity>({
+  face1: Object.freeze<NonNullableProperty<AssetFaceEntity>>({
     id: 'assetFaceId1',
     assetId: assetStub.image.id,
     asset: assetStub.image,
@@ -18,7 +20,7 @@ export const faceStub = {
     imageWidth: 1024,
     sourceType: SourceType.MACHINE_LEARNING,
     faceSearch: { faceId: 'assetFaceId1', embedding: '[1, 2, 3, 4]' },
-    deletedAt: null,
+    deletedAt: new Date(),
   }),
   primaryFace1: Object.freeze<AssetFaceEntity>({
     id: 'assetFaceId2',
