@@ -139,6 +139,7 @@ export interface GetByIdsRelations {
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
+  withDeletedFace?: boolean;
 }
 
 export interface DuplicateGroup {
@@ -251,14 +252,16 @@ export class AssetRepository {
   @ChunkedArray()
   async getByIds(
     ids: string[],
-    { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {},
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, withDeletedFace }: GetByIdsRelations = {},
   ): Promise<AssetEntity[]> {
     const res = await this.db
       .selectFrom('assets')
       .selectAll('assets')
       .where('assets.id', '=', anyUuid(ids))
       .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces))
+      .$if(!!faces, (qb) =>
+        qb.select((eb) => (faces?.person ? withFacesAndPeople(eb, withDeletedFace) : withFaces(eb, withDeletedFace))),
+      )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))

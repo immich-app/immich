@@ -296,7 +296,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { exifInfo: true, faces: { person: false }, files: true };
+    const relations = { exifInfo: true, faces: { person: false }, files: true, withDeletedFace: true };
     const [asset] = await this.assetRepository.getByIds([id], relations);
     const { previewFile } = getAssetFiles(asset.files);
     if (!asset || !previewFile) {
@@ -740,6 +740,6 @@ export class PersonService extends BaseService {
 
   async deleteFace(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FACE_DELETE, ids: [id] });
-    return this.personRepository.deleteAssetFace(id);
+    return this.personRepository.deleteAssetFace(id, true);
   }
 }
