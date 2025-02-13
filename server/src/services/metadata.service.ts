@@ -171,6 +171,14 @@ export class MetadataService extends BaseService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
+    if (!asset.fileCreatedAt) {
+      asset.fileCreatedAt = stats.mtime;
+    }
+
+    if (!asset.fileModifiedAt) {
+      asset.fileModifiedAt = stats.mtime;
+    }
+
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 

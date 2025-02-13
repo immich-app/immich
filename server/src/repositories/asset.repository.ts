@@ -7,6 +7,7 @@ import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AssetEntity,
+  AssetEntityPlaceholder,
   hasPeople,
   searchAssetBuilder,
   truncatedDate,
@@ -183,8 +184,12 @@ export class AssetRepository {
       .execute();
   }
 
-  create(asset: Insertable<Assets>): Promise<AssetEntity> {
-    return this.db.insertInto('assets').values(asset).returningAll().executeTakeFirst() as any as Promise<AssetEntity>;
+  create(asset: Insertable<Assets>): Promise<AssetEntityPlaceholder> {
+    return this.db
+      .insertInto('assets')
+      .values(asset)
+      .returningAll()
+      .executeTakeFirst() as any as Promise<AssetEntityPlaceholder>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
@@ -395,6 +400,9 @@ export class AssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -562,7 +570,10 @@ export class AssetRepository {
           .where('job_status.duplicatesDetectedAt', 'is', null)
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true),
+          .where('assets.isVisible', '=', true)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
+          .where('assets.localDateTime', 'is not', null),
       )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
@@ -656,6 +667,9 @@ export class AssetRepository {
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
@@ -688,6 +702,9 @@ export class AssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.fileCreatedAt', 'is not', null)
+            .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')

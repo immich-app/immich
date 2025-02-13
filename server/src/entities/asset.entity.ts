@@ -100,13 +100,13 @@ export class AssetEntity {
   deletedAt!: Date | null;
 
   @Index('idx_asset_file_created_at')
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileCreatedAt!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   localDateTime!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
@@ -179,6 +179,12 @@ export class AssetEntity {
   @Column({ type: 'uuid', nullable: true })
   duplicateId!: string | null;
 }
+
+export type AssetEntityPlaceholder = AssetEntity & {
+  fileCreatedAt: Date | null;
+  fileModifiedAt: Date | null;
+  localDateTime: Date | null;
+};
 
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
@@ -419,5 +425,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
+    .where('assets.fileCreatedAt', 'is not', null)
+    .where('assets.fileModifiedAt', 'is not', null)
+    .where('assets.localDateTime', 'is not', null);
 }
