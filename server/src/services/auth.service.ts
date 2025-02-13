@@ -17,12 +17,10 @@ import {
   mapLoginResponse,
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
-import { SessionEntity } from 'src/entities/session.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
-import { AuthApiKey } from 'src/types';
 import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 
@@ -298,11 +296,11 @@ export class AuthService extends BaseService {
 
     const bytes = Buffer.from(key, key.length === 100 ? 'hex' : 'base64url');
     const sharedLink = await this.sharedLinkRepository.getByKey(bytes);
-    if (sharedLink && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
-      const user = sharedLink.user;
-      if (user) {
-        return { user, sharedLink };
-      }
+    if (sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date())) {
+      return {
+        user: sharedLink.user,
+        sharedLink,
+      };
     }
     throw new UnauthorizedException('Invalid share key');
   }
@@ -310,10 +308,10 @@ export class AuthService extends BaseService {
   private async validateApiKey(key: string): Promise<AuthDto> {
     const hashedKey = this.cryptoRepository.hashSha256(key);
     const apiKey = await this.keyRepository.getKey(hashedKey);
-    if (apiKey) {
+    if (apiKey?.user) {
       return {
-        user: apiKey.user as unknown as UserEntity,
-        apiKey: apiKey as unknown as AuthApiKey,
+        user: apiKey.user,
+        apiKey,
       };
     }
 
@@ -330,7 +328,6 @@ export class AuthService extends BaseService {
   private async validateSession(tokenValue: string): Promise<AuthDto> {
     const hashedToken = this.cryptoRepository.hashSha256(tokenValue);
     const session = await this.sessionRepository.getByToken(hashedToken);
-
     if (session?.user) {
       const now = DateTime.now();
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
@@ -339,7 +336,10 @@ export class AuthService extends BaseService {
         await this.sessionRepository.update(session.id, { id: session.id, updatedAt: new Date() });
       }
 
-      return { user: session.user as unknown as UserEntity, session: session as unknown as SessionEntity };
+      return {
+        user: session.user,
+        session,
+      };
     }
 
     throw new UnauthorizedException('Invalid user token');

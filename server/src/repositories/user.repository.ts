@@ -3,7 +3,7 @@ import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { UserMetadata } from 'src/entities/user-metadata.entity';
+import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
 import { UserStatus } from 'src/enum';
 import { asUuid } from 'src/utils/database';
@@ -62,6 +62,14 @@ export class UserRepository {
       .where('users.id', '=', userId)
       .$if(!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
       .executeTakeFirst() as Promise<UserEntity | undefined>;
+  }
+
+  getMetadata(userId: string) {
+    return this.db
+      .selectFrom('user_metadata')
+      .select(['key', 'value'])
+      .where('user_metadata.userId', '=', userId)
+      .execute() as Promise<UserMetadataItem[]>;
   }
 
   @GenerateSql()
@@ -263,7 +271,7 @@ export class UserRepository {
           eb
             .selectFrom('assets')
             .leftJoin('exif', 'exif.assetId', 'assets.id')
-            .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
+            .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
             .where('assets.libraryId', 'is', null)
             .where('assets.ownerId', '=', eb.ref('users.id')),
         updatedAt: new Date(),
