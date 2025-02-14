@@ -8,7 +8,6 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 
 final isRefreshingRemoteAlbumProvider = StateProvider<bool>((ref) => false);
@@ -139,32 +138,27 @@ final albumProvider =
 });
 
 final albumWatcher =
-    StreamProvider.autoDispose.family<Album, int>((ref, albumId) async* {
-  final db = ref.watch(dbProvider);
-  final a = await db.albums.get(albumId);
-  if (a != null) yield a;
-  await for (final a in db.albums.watchObject(albumId, fireImmediately: true)) {
-    if (a != null) yield a;
+    StreamProvider.autoDispose.family<Album, int>((ref, id) async* {
+  final albumService = ref.watch(albumServiceProvider);
+
+  final album = await albumService.getAlbumById(id);
+  if (album != null) {
+    yield album;
+  }
+
+  await for (final album in albumService.watchAlbum(id)) {
+    if (album != null) {
+      yield album;
+    }
   }
 });
 
 final albumRenderlistProvider =
-    StreamProvider.autoDispose.family<RenderList, int>((ref, albumId) {
-  final album = ref.watch(albumWatcher(albumId)).value;
+    StreamProvider.autoDispose.family<RenderList, int>((ref, id) {
+  final album = ref.watch(albumWatcher(id)).value;
 
   if (album != null) {
-    final query = album.assets.filter().isTrashedEqualTo(false);
-    if (album.sortOrder == SortOrder.asc) {
-      return renderListGeneratorWithGroupBy(
-        query.sortByFileCreatedAt(),
-        GroupAssetsBy.none,
-      );
-    } else if (album.sortOrder == SortOrder.desc) {
-      return renderListGeneratorWithGroupBy(
-        query.sortByFileCreatedAtDesc(),
-        GroupAssetsBy.none,
-      );
-    }
+    return ref.watch(albumServiceProvider).getRenderListGenerator(album);
   }
 
   return const Stream.empty();
