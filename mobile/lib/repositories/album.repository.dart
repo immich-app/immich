@@ -152,4 +152,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
 
     return await query.findAll();
   }
+
+  @override
+  Future<void> dropTable() async {
+    await db.writeTxn(() async {
+      await db.albums.clear();
+    });
+  }
 }

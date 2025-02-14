@@ -103,4 +103,8 @@ class UserService {
     if (users == null) return false;
     return _syncService.syncUsersFromServer(users);
   }
+
+  Future<void> dropTable() {
+    return _userRepository.dropTable();
+  }
 }

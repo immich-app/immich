@@ -432,4 +432,8 @@ class AssetService {
   Future<List<Asset>> getStackAssets(String stackId) {
     return _assetRepository.getStackAssets(stackId);
   }
+
+  Future<void> dropTable() {
+    return _assetRepository.dropTable();
+  }
 }

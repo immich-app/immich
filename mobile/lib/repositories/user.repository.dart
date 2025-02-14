@@ -57,4 +57,11 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .or()
       .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
       .findAll();
+
+  @override
+  Future<void> dropTable() async {
+    await db.writeTxn(() async {
+      await db.users.clear();
+    });
+  }
 }

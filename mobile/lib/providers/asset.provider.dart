@@ -9,20 +9,33 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
+import 'package:immich_mobile/services/etag.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
-import 'package:immich_mobile/utils/db.dart';
 import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
+
+final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
+  return AssetNotifier(
+    ref.watch(assetServiceProvider),
+    ref.watch(albumServiceProvider),
+    ref.watch(userServiceProvider),
+    ref.watch(syncServiceProvider),
+    ref.watch(etagServiceProvider),
+    ref.watch(dbProvider),
+    ref,
+  );
+});
 
 class AssetNotifier extends StateNotifier<bool> {
   final AssetService _assetService;
   final AlbumService _albumService;
   final UserService _userService;
   final SyncService _syncService;
+  final ETagService _etagService;
   final Isar _db;
   final StateNotifierProviderRef _ref;
   final log = Logger('AssetNotifier');
@@ -34,6 +47,7 @@ class AssetNotifier extends StateNotifier<bool> {
     this._albumService,
     this._userService,
     this._syncService,
+    this._etagService,
     this._db,
     this._ref,
   ) : super(false);
@@ -48,7 +62,7 @@ class AssetNotifier extends StateNotifier<bool> {
       _getAllAssetInProgress = true;
       state = true;
       if (clear) {
-        await clearAssetsAndAlbums(_db);
+        await clearAllAssets();
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
       final bool changedUsers = await _userService.refreshUsers();
@@ -68,8 +82,14 @@ class AssetNotifier extends StateNotifier<bool> {
     }
   }
 
-  Future<void> clearAllAsset() {
-    return clearAssetsAndAlbums(_db);
+  Future<void> clearAllAssets() async {
+    await Store.delete(StoreKey.assetETag);
+    await Future.wait([
+      _assetService.dropTable(),
+      _albumService.dropTable(),
+      _userService.dropTable(),
+      _etagService.dropTable(),
+    ]);
   }
 
   Future<void> onNewAssetUploaded(Asset newAsset) async {
@@ -300,17 +320,6 @@ class AssetNotifier extends StateNotifier<bool> {
     return _assetService.changeArchiveStatus(assets, status);
   }
 }
-
-final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
-  return AssetNotifier(
-    ref.watch(assetServiceProvider),
-    ref.watch(albumServiceProvider),
-    ref.watch(userServiceProvider),
-    ref.watch(syncServiceProvider),
-    ref.watch(dbProvider),
-    ref,
-  );
-});
 
 final assetDetailProvider =
     StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {

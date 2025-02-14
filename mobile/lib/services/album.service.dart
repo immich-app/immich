@@ -465,4 +465,8 @@ class AlbumService {
     }
     return null;
   }
+
+  Future<void> dropTable() async {
+    await _albumRepository.dropTable();
+  }
 }

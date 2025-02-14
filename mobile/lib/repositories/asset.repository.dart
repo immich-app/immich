@@ -210,6 +210,14 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .thenByFileCreatedAtDesc()
         .findAll();
   }
+
+  @override
+  Future<void> dropTable() async {
+    await db.writeTxn(() async {
+      await db.assets.clear();
+      await db.exifInfos.clear();
+    });
+  }
 }
 
 Future<List<Asset>> _getMatchesImpl(
