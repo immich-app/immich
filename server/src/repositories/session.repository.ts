@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
+import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { DB, Sessions } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { withUser } from 'src/entities/session.entity';
@@ -25,9 +27,16 @@ export class SessionRepository {
   getByToken(token: string) {
     return this.db
       .selectFrom('sessions')
-      .innerJoinLateral(withUser, (join) => join.onTrue())
-      .selectAll('sessions')
-      .select((eb) => eb.fn.toJson('user').as('user'))
+      .select((eb) => [
+        ...columns.authSession,
+        jsonObjectFrom(
+          eb
+            .selectFrom('users')
+            .select(columns.authUser)
+            .whereRef('users.id', '=', 'sessions.userId')
+            .where('users.deletedAt', 'is', null),
+        ).as('user'),
+      ])
       .where('sessions.token', '=', token)
       .executeTakeFirst();
   }

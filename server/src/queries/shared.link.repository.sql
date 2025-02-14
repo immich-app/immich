@@ -153,12 +153,19 @@ where
     "shared_links"."type" = $2
     or "album"."id" is not null
   )
+  and "shared_links"."albumId" = $3
 order by
   "shared_links"."createdAt" desc
 
 -- SharedLinkRepository.getByKey
 select
-  "shared_links".*,
+  "shared_links"."id",
+  "shared_links"."userId",
+  "shared_links"."expiresAt",
+  "shared_links"."showExif",
+  "shared_links"."allowUpload",
+  "shared_links"."allowDownload",
+  "shared_links"."password",
   (
     select
       to_json(obj)
@@ -166,20 +173,11 @@ select
       (
         select
           "users"."id",
-          "users"."email",
-          "users"."createdAt",
-          "users"."profileImagePath",
-          "users"."isAdmin",
-          "users"."shouldChangePassword",
-          "users"."deletedAt",
-          "users"."oauthId",
-          "users"."updatedAt",
-          "users"."storageLabel",
           "users"."name",
-          "users"."quotaSizeInBytes",
+          "users"."email",
+          "users"."isAdmin",
           "users"."quotaUsageInBytes",
-          "users"."status",
-          "users"."profileChangedAt"
+          "users"."quotaSizeInBytes"
         from
           "users"
         where

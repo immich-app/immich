@@ -1,7 +1,8 @@
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newSharedLinkRepositoryMock = (): Mocked<ISharedLinkRepository> => {
+export const newSharedLinkRepositoryMock = (): Mocked<RepositoryInterface<SharedLinkRepository>> => {
   return {
     getAll: vitest.fn(),
     get: vitest.fn(),

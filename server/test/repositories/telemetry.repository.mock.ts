@@ -1,4 +1,5 @@
-import { ITelemetryRepository, RepositoryInterface } from 'src/types';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 const newMetricGroupMock = () => {
@@ -9,6 +10,8 @@ const newMetricGroupMock = () => {
     configure: vitest.fn(),
   };
 };
+
+type ITelemetryRepository = RepositoryInterface<TelemetryRepository>;
 
 export type ITelemetryRepositoryMock = {
   [K in keyof ITelemetryRepository]: Mocked<RepositoryInterface<ITelemetryRepository[K]>>;
