@@ -442,8 +442,20 @@ class AlbumService {
     }
   }
 
-  Future<List<Album>> getAll() async {
+  Future<List<Album>> getAllRemoteAlbums() async {
     return _albumRepository.getAll(remote: true);
+  }
+
+  Future<List<Album>> getAllLocalAlbums() async {
+    return _albumRepository.getAll(remote: false);
+  }
+
+  Stream<List<Album>> getRemoteAlbumStream() {
+    return _albumRepository.getRemoteAlbumStream();
+  }
+
+  Stream<List<Album>> getLocalAlbumStream() {
+    return _albumRepository.getLocalAlbumStream();
   }
 
   Future<List<Album>> search(

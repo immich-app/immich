@@ -152,4 +152,14 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
 
     return await query.findAll();
   }
+
+  @override
+  Stream<List<Album>> getRemoteAlbumStream() {
+    return db.albums.where().remoteIdIsNotNull().watch();
+  }
+
+  @override
+  Stream<List<Album>> getLocalAlbumStream() {
+    return db.albums.where().localIdIsNotNull().watch();
+  }
 }
