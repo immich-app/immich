@@ -27,12 +27,12 @@
     imgElement.style.width = '100%';
   });
 
-  const hasTransparentPixels = async (blob: Blob, heightOfImage:number, widthOfImage:number) => {
+  const hasTransparentPixels = async (blob: Blob, heightOfImage: number, widthOfImage: number) => {
     const img = new Image();
     img.src = URL.createObjectURL(blob);
     await img.decode();
     const canvas = document.createElement('canvas');
-    canvas.width =widthOfImage;
+    canvas.width = widthOfImage;
     canvas.height = heightOfImage;
     const context = canvas.getContext('2d');
     if (!context) {
@@ -47,8 +47,9 @@
     for (let index = 0; index < data.length; index += 4) {
       if (data[index + 3] < 255) {
         return {
-          hasTransparency: true, croppedBlob: blob
-        }
+          hasTransparency: true,
+          croppedBlob: blob,
+        };
       }
     }
     // Convert canvas to Blob
@@ -62,7 +63,8 @@
       }, 'image/png');
     });
     return {
-      hasTransparency: false, croppedBlob
+      hasTransparency: false,
+      croppedBlob,
     };
   };
 
@@ -72,8 +74,8 @@
     }
 
     try {
-      const imgElementHeight = imgElement.offsetHeight
-      const imgElementWidth = imgElement.offsetWidth
+      const imgElementHeight = imgElement.offsetHeight;
+      const imgElementWidth = imgElement.offsetWidth;
       const blob = await domtoimage.toBlob(imgElement);
       const { hasTransparency, croppedBlob } = await hasTransparentPixels(blob, imgElementWidth, imgElementHeight);
 
