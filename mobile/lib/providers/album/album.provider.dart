@@ -20,7 +20,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     });
 
     _streamSub =
-        albumService.getRemoteAlbumStream().listen((data) => state = data);
+        albumService.watchRemoteAlbums().listen((data) => state = data);
   }
 
   final AlbumService albumService;
@@ -171,8 +171,7 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
       }
     });
 
-    _streamSub =
-        albumService.getLocalAlbumStream().listen((data) => state = data);
+    _streamSub = albumService.watchLocalAlbums().listen((data) => state = data);
   }
 
   final AlbumService albumService;

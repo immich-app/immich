@@ -8,7 +8,6 @@ import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
-import 'package:immich_mobile/utils/renderlist_generator.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
@@ -157,12 +156,12 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
-  Stream<List<Album>> getRemoteAlbumStream() {
+  Stream<List<Album>> watchRemoteAlbums() {
     return db.albums.where().remoteIdIsNotNull().watch();
   }
 
   @override
-  Stream<List<Album>> getLocalAlbumStream() {
+  Stream<List<Album>> watchLocalAlbums() {
     return db.albums.where().localIdIsNotNull().watch();
   }
 
@@ -172,20 +171,20 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
-  Stream<RenderList> getRenderListStream(Album album) {
+  Stream<RenderList> getRenderListStream(Album album) async* {
     final query = album.assets.filter().isTrashedEqualTo(false);
-    if (album.sortOrder == SortOrder.asc) {
-      return renderListGeneratorWithGroupBy(
-        query.sortByFileCreatedAt(),
-        GroupAssetsBy.none,
-      );
-    } else if (album.sortOrder == SortOrder.desc) {
-      return renderListGeneratorWithGroupBy(
-        query.sortByFileCreatedAtDesc(),
-        GroupAssetsBy.none,
-      );
-    }
+    final withSortedOption = switch (album.sortOrder) {
+      SortOrder.asc => query.sortByFileCreatedAt(),
+      SortOrder.desc => query.sortByFileCreatedAtDesc(),
+    };
 
-    return const Stream.empty();
+    yield await RenderList.fromQuery(
+      withSortedOption,
+      GroupAssetsBy.none,
+    );
+
+    await for (final _ in query.watchLazy()) {
+      yield await RenderList.fromQuery(withSortedOption, GroupAssetsBy.none);
+    }
   }
 }

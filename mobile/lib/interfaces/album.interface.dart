@@ -44,9 +44,9 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
 
   Future<List<Album>> search(String searchTerm, QuickFilterMode filterMode);
 
-  Stream<List<Album>> getRemoteAlbumStream();
+  Stream<List<Album>> watchRemoteAlbums();
 
-  Stream<List<Album>> getLocalAlbumStream();
+  Stream<List<Album>> watchLocalAlbums();
 
   Stream<Album?> watchAlbum(int id);
 

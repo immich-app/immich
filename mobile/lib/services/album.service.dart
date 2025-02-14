@@ -451,12 +451,12 @@ class AlbumService {
     return _albumRepository.getAll(remote: false);
   }
 
-  Stream<List<Album>> getRemoteAlbumStream() {
-    return _albumRepository.getRemoteAlbumStream();
+  Stream<List<Album>> watchRemoteAlbums() {
+    return _albumRepository.watchRemoteAlbums();
   }
 
-  Stream<List<Album>> getLocalAlbumStream() {
-    return _albumRepository.getLocalAlbumStream();
+  Stream<List<Album>> watchLocalAlbums() {
+    return _albumRepository.watchLocalAlbums();
   }
 
   /// Get album by Isar ID
