@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BinaryField, DefaultReadTaskOptions, ExifTool, Tags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
+import { LogLevel } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 interface ExifDuration {
@@ -101,7 +102,9 @@ export class MetadataRepository {
   }
 
   async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
-    this.logger.verbose(`Writing tags ${JSON.stringify(tags)} to ${path}`);
+    if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
+      this.logger.verbose(`Writing tags ${JSON.stringify(tags)} to ${path}`);
+    }
     try {
       await this.exiftool.write(path, tags);
     } catch (error) {

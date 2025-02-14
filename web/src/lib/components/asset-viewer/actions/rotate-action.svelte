@@ -60,8 +60,12 @@
   };
 
   const handleRotate = async () => {
-    const current = Number(asset.exifInfo?.orientation);
-    if (!current && current !== 0) {
+    if (!asset.exifInfo?.orientation) {
+      return;
+    }
+
+    const current = Number(asset.exifInfo.orientation);
+    if (Number.isNaN(current)) {
       return;
     }
 
