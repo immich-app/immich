@@ -46,7 +46,7 @@
     }
     for (let index = 0; index < data.length; index += 4) {
       if (data[index + 3] < 255) {
-       return true;
+        return true;
       }
     }
     return false;
@@ -62,7 +62,7 @@
       const imgElementWidth = imgElement.offsetWidth;
       const blob = await domtoimage.toBlob(imgElement, {
         width: imgElementWidth,
-        height: imgElementHeight
+        height: imgElementHeight,
       });
 
       if (await hasTransparentPixels(blob)) {
