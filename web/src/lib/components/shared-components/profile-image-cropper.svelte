@@ -27,13 +27,13 @@
     imgElement.style.width = '100%';
   });
 
-  const hasTransparentPixels = async (blob: Blob) => {
+  const hasTransparentPixels = async (blob: Blob, heightOfImage:number, widthOfImage:number) => {
     const img = new Image();
     img.src = URL.createObjectURL(blob);
     await img.decode();
     const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width =widthOfImage;
+    canvas.height = heightOfImage;
     const context = canvas.getContext('2d');
     if (!context) {
       throw new Error('Could not get canvas context.');
@@ -46,10 +46,24 @@
     }
     for (let index = 0; index < data.length; index += 4) {
       if (data[index + 3] < 255) {
-        return true;
+        return {
+          hasTransparency: true, croppedBlob: blob
+        }
       }
     }
-    return false;
+    // Convert canvas to Blob
+    const croppedBlob: Blob = await new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Failed to create cropped blob.'));
+        }
+      }, 'image/png');
+    });
+    return {
+      hasTransparency: false, croppedBlob
+    };
   };
 
   const handleSetProfilePicture = async () => {
@@ -58,8 +72,12 @@
     }
 
     try {
+      const imgElementHeight = imgElement.offsetHeight
+      const imgElementWidth = imgElement.offsetWidth
       const blob = await domtoimage.toBlob(imgElement);
-      if (await hasTransparentPixels(blob)) {
+      const { hasTransparency, croppedBlob } = await hasTransparentPixels(blob, imgElementWidth, imgElementHeight);
+
+      if (hasTransparency) {
         notificationController.show({
           type: NotificationType.Error,
           message: $t('errors.profile_picture_transparent_pixels'),
@@ -67,7 +85,7 @@
         });
         return;
       }
-      const file = new File([blob], 'profile-picture.png', { type: 'image/png' });
+      const file = new File([croppedBlob], 'profile-picture.png', { type: 'image/png' });
       const { profileImagePath, profileChangedAt } = await createProfileImage({ createProfileImageDto: { file } });
       notificationController.show({
         type: NotificationType.Info,
