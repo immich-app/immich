@@ -1060,6 +1060,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
     required Asset asset,
     required Widget image,
     bool showControls = true,
+    int playbackDelayFactor = 1,
     List<PageRouteInfo>? children,
   }) : super(
           NativeVideoViewerRoute.name,
@@ -1068,6 +1069,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
             asset: asset,
             image: image,
             showControls: showControls,
+            playbackDelayFactor: playbackDelayFactor,
           ),
           initialChildren: children,
         );
@@ -1083,6 +1085,7 @@ class NativeVideoViewerRoute extends PageRouteInfo<NativeVideoViewerRouteArgs> {
         asset: args.asset,
         image: args.image,
         showControls: args.showControls,
+        playbackDelayFactor: args.playbackDelayFactor,
       );
     },
   );
@@ -1094,6 +1097,7 @@ class NativeVideoViewerRouteArgs {
     required this.asset,
     required this.image,
     this.showControls = true,
+    this.playbackDelayFactor = 1,
   });
 
   final Key? key;
@@ -1104,9 +1108,11 @@ class NativeVideoViewerRouteArgs {
 
   final bool showControls;
 
+  final int playbackDelayFactor;
+
   @override
   String toString() {
-    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls}';
+    return 'NativeVideoViewerRouteArgs{key: $key, asset: $asset, image: $image, showControls: $showControls, playbackDelayFactor: $playbackDelayFactor}';
   }
 }
 
