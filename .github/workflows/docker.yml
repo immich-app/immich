@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_run_server: ${{ steps.found_paths.outputs.server == 'true' || steps.should_force.outputs.should_force == 'true' }}
-      # TODO: Remove this before merging
       should_run_ml: ${{ steps.found_paths.outputs.machine-learning == 'true' || steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
@@ -187,7 +186,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.device }}-${{ env.PLATFORM_PAIR }}
+          name: ml-digests-${{ matrix.device }}-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -216,10 +215,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-${{ matrix.device }}-*
+          pattern: ml-digests-${{ matrix.device }}-*
           merge-multiple: true
 
       - name: Login to Docker Hub
+        if: ${{ github.event_name == 'release' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -337,7 +337,7 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
+          name: server-digests-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -356,10 +356,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-*
+          pattern: server-digests-*
           merge-multiple: true
 
       - name: Login to Docker Hub
+        if: ${{ github.event_name == 'release' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
