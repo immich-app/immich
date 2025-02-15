@@ -2444,6 +2444,83 @@
         ]
       }
     },
+    "/duplicates/info": {
+      "get": {
+        "operationId": "getAllDuplicatesInfo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DuplicateInfoResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
+    "/duplicates/{id}": {
+      "get": {
+        "operationId": "getDuplicateById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Duplicates"
+        ]
+      }
+    },
     "/faces": {
       "get": {
         "operationId": "getFaces",
@@ -9021,6 +9098,21 @@
         "required": [
           "enabled",
           "maxDistance"
+        ],
+        "type": "object"
+      },
+      "DuplicateInfoResponseDto": {
+        "properties": {
+          "duplicateId": {
+            "type": "string"
+          },
+          "exampleAsset": {
+            "$ref": "#/components/schemas/AssetResponseDto"
+          }
+        },
+        "required": [
+          "duplicateId",
+          "exampleAsset"
         ],
         "type": "object"
       },

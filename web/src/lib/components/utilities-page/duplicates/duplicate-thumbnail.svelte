@@ -22,7 +22,10 @@
   );
 </script>
 
-<a href="{AppRoute.DUPLICATES}/{duplicate.duplicateId}" class="block relative w-full">
+<a
+  href="{AppRoute.DUPLICATES}/{duplicate.duplicateId}"
+  class="block relative w-full rounded-xl outline outline-4 outline-transparent hover:outline-gray-300 dark:hover:outline-gray-700"
+>
   <img
     src={getAssetThumbnailUrl(assetToDisplay.id)}
     alt={$getAltText(assetToDisplay)}

@@ -16,6 +16,50 @@ class DuplicatesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'GET /duplicates/info' operation and returns the [Response].
+  Future<Response> getAllDuplicatesInfoWithHttpInfo() async {
+    // ignore: prefer_const_declarations
+    final path = r'/duplicates/info';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  Future<List<DuplicateInfoResponseDto>?> getAllDuplicatesInfo() async {
+    final response = await getAllDuplicatesInfoWithHttpInfo();
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<DuplicateInfoResponseDto>') as List)
+        .cast<DuplicateInfoResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Performs an HTTP 'GET /duplicates' operation and returns the [Response].
   Future<Response> getAssetDuplicatesWithHttpInfo() async {
     // ignore: prefer_const_declarations
@@ -56,6 +100,54 @@ class DuplicatesApi {
         .cast<DuplicateResponseDto>()
         .toList(growable: false);
 
+    }
+    return null;
+  }
+
+  /// Performs an HTTP 'GET /duplicates/{id}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getDuplicateByIdWithHttpInfo(String id,) async {
+    // ignore: prefer_const_declarations
+    final path = r'/duplicates/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<DuplicateResponseDto?> getDuplicateById(String id,) async {
+    final response = await getDuplicateByIdWithHttpInfo(id,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'DuplicateResponseDto',) as DuplicateResponseDto;
+    
     }
     return null;
   }

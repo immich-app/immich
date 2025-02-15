@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
+import { DuplicateInfoResponseDto, DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { JobName, JobStatus, QueueName } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
@@ -22,6 +22,27 @@ export class DuplicateService extends BaseService {
       duplicateId,
       assets: assets.map((asset) => mapAsset(asset, { auth })),
     }));
+  }
+
+  async getDuplicatesInfo(auth: AuthDto): Promise<DuplicateInfoResponseDto[]> {
+    const duplicatesInfo = await this.assetRepository.getDuplicatesInfo(auth.user.id);
+    return duplicatesInfo.map(({ duplicateId, exampleAsset }) => ({
+      duplicateId,
+      exampleAsset: mapAsset(exampleAsset, { auth }),
+    }));
+  }
+
+  async getDuplicateById(auth: AuthDto, id: string): Promise<DuplicateResponseDto> {
+    const duplicate = await this.assetRepository.getDuplicateById(auth.user.id, id);
+
+    if (!duplicate) {
+      throw new BadRequestException('Duplicate not found');
+    }
+
+    return {
+      duplicateId: duplicate.duplicateId,
+      assets: duplicate.assets.map((asset) => mapAsset(asset, { auth })),
+    };
   }
 
   @OnJob({ name: JobName.QUEUE_DUPLICATE_DETECTION, queue: QueueName.DUPLICATE_DETECTION })

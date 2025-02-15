@@ -87,6 +87,7 @@
     "svelte-i18n": "^4.0.1",
     "svelte-local-storage-store": "^0.6.4",
     "svelte-maplibre": "^0.9.13",
+    "svelte-virtual": "^1.0.0-next.22",
     "thumbhash": "^0.1.1"
   },
   "volta": {

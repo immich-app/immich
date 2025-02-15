@@ -503,6 +503,10 @@ export type DuplicateResponseDto = {
     assets: AssetResponseDto[];
     duplicateId: string;
 };
+export type DuplicateInfoResponseDto = {
+    duplicateId: string;
+    exampleAsset: AssetResponseDto;
+};
 export type PersonResponseDto = {
     birthDate: string | null;
     /** This property was added in v1.126.0 */
@@ -2018,6 +2022,24 @@ export function getAssetDuplicates(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: DuplicateResponseDto[];
     }>("/duplicates", {
+        ...opts
+    }));
+}
+export function getAllDuplicatesInfo(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DuplicateInfoResponseDto[];
+    }>("/duplicates/info", {
+        ...opts
+    }));
+}
+export function getDuplicateById({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DuplicateResponseDto;
+    }>(`/duplicates/${encodeURIComponent(id)}`, {
         ...opts
     }));
 }

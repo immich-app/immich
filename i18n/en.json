@@ -573,6 +573,8 @@
   "drop_files_to_upload": "Drop files anywhere to upload",
   "duplicates": "Duplicates",
   "duplicates_description": "Resolve each group by indicating which, if any, are duplicates",
+  "duplicates_description_single": "Resolve this duplicate group by indicating which, if any, are duplicates",
+  "duplicates_description_all": "Resolve each group by clicking on it, or use the bulk actions in the top right",
   "duration": "Duration",
   "edit": "Edit",
   "edit_album": "Edit album",
