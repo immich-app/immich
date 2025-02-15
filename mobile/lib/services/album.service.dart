@@ -26,6 +26,7 @@ import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:logging/logging.dart';
 
 final albumServiceProvider = Provider(
@@ -442,8 +443,33 @@ class AlbumService {
     }
   }
 
-  Future<List<Album>> getAll() async {
+  Future<List<Album>> getAllRemoteAlbums() async {
     return _albumRepository.getAll(remote: true);
+  }
+
+  Future<List<Album>> getAllLocalAlbums() async {
+    return _albumRepository.getAll(remote: false);
+  }
+
+  Stream<List<Album>> watchRemoteAlbums() {
+    return _albumRepository.watchRemoteAlbums();
+  }
+
+  Stream<List<Album>> watchLocalAlbums() {
+    return _albumRepository.watchLocalAlbums();
+  }
+
+  /// Get album by Isar ID
+  Future<Album?> getAlbumById(int id) {
+    return _albumRepository.get(id);
+  }
+
+  Stream<Album?> watchAlbum(int id) {
+    return _albumRepository.watchAlbum(id);
+  }
+
+  Stream<RenderList> getRenderListGenerator(Album album) {
+    return _albumRepository.getRenderListStream(album);
   }
 
   Future<List<Album>> search(
