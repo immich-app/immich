@@ -13,13 +13,7 @@
   let { duplicate }: Props = $props();
 
   let assetToDisplay = duplicate.assets[0];
-  let title = $derived(
-    JSON.stringify(
-      duplicate.assets.map((asset) => asset.originalFileName),
-      null,
-      2,
-    ),
-  );
+  let title = $derived(`${assetToDisplay.originalFileName} duplicates`);
 </script>
 
 <a
