@@ -33,7 +33,9 @@
     mdiEyeOff,
     mdiImageMultipleOutline,
     mdiImageOutline,
+    mdiImageSearch,
     mdiInformationOutline,
+    mdiOpenInNew,
     mdiPencil,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
@@ -466,20 +468,25 @@
     {/if}
 
     {#if asset.duplicateId}
-      <div class="flex gap-4 py-4">
-        <div><Icon path={mdiImageMultipleOutline} size="24" /></div>
+      <a
+        href="{AppRoute.DUPLICATES}/{asset.duplicateId}"
+        target="_blank"
+        class="flex relative w-full justify-between items-center gap-4 py-4 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+      >
+        <div class="flex gap-4">
+          <Icon path={mdiImageMultipleOutline} size="24" />
 
-        <div>
-          <p>
-            <a
-              href="{AppRoute.DUPLICATES}/{asset.duplicateId}"
-              class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
-            >
+          <div>
+            <p>
               {$t('has_duplicates')}
-            </a>
-          </p>
+            </p>
+            <p class="text-xs opacity-50 break-all">
+              {$t('asset_view_duplicates')}
+            </p>
+          </div>
         </div>
-      </div>
+        <Icon path={mdiOpenInNew} size="20" />
+      </a>
     {/if}
 
     <DetailPanelLocation {isOwner} {asset} />
