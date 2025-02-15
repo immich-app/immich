@@ -9,6 +9,7 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
+import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/backup.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
@@ -43,6 +45,7 @@ final assetServiceProvider = Provider(
     ref.watch(userServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(albumServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   ),
 );
 
@@ -58,6 +61,7 @@ class AssetService {
   final UserService _userService;
   final BackupService _backupService;
   final AlbumService _albumService;
+  final IAssetMediaRepository _assetMediaRepository;
   final log = Logger('AssetService');
 
   AssetService(
@@ -72,6 +76,7 @@ class AssetService {
     this._userService,
     this._backupService,
     this._albumService,
+    this._assetMediaRepository,
   );
 
   /// Checks the server for updated assets and updates the local database if
@@ -435,5 +440,20 @@ class AssetService {
 
   Future<void> dropTable() {
     return _assetRepository.dropTable();
+  }
+
+  Future<bool> deleteLocalOnlyAssets(
+    Iterable<Asset> assets,
+    bool onlyBackedUp,
+  ) async {
+    final candidates = onlyBackedUp
+        ? assets.where((a) => a.storage == AssetState.merged)
+        : assets;
+
+    if (candidates.isEmpty) {
+      return false;
+    }
+
+    return true;
   }
 }

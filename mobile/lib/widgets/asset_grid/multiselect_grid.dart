@@ -200,23 +200,28 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
-    void onDeleteLocal(bool onlyBackedUp) async {
+    void onDeleteLocal(bool isMergedAsset) async {
       processing.value = true;
       try {
-        // Select only the local assets from the selection
-        final localIds = selection.value.where((a) => a.isLocal).toList();
+        final localAssets = selection.value.where((a) => a.isLocal).toList();
 
-        // Delete only the backed-up assets if 'onlyBackedUp' is true
+        final candidates = isMergedAsset
+            ? localAssets.where((e) => e.storage == AssetState.merged)
+            : localAssets;
+
+        if (candidates.isEmpty) {
+          return;
+        }
+
         final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteLocalOnlyAssets(localIds, onlyBackedUp: onlyBackedUp);
+            .deleteLocalOnlyAssets(candidates.toList());
 
         if (isDeleted) {
-          // Show a toast with the correct number of deleted assets
-          final deletedCount = localIds
+          final deletedCount = localAssets
               .where(
-                (e) => !onlyBackedUp || e.isRemote,
-              ) // Only count backed-up assets
+                (e) => !isMergedAsset || e.isRemote,
+              )
               .length;
 
           ImmichToast.show(
@@ -226,7 +231,6 @@ class MultiselectGrid extends HookConsumerWidget {
             gravity: ToastGravity.BOTTOM,
           );
 
-          // Reset the selection
           selectionEnabledHook.value = false;
         }
       } finally {

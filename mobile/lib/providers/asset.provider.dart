@@ -98,23 +98,10 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<bool> deleteLocalOnlyAssets(
-    Iterable<Asset> deleteAssets, {
-    bool onlyBackedUp = false,
-  }) async {
+  Future<bool> deleteLocalOnlyAssets(List<Asset> assets) async {
     _deleteInProgress = true;
     state = true;
     try {
-      // Filter the assets based on the backed-up status
-      final assets = onlyBackedUp
-          ? deleteAssets.where((e) => e.storage == AssetState.merged)
-          : deleteAssets;
-
-      if (assets.isEmpty) {
-        return false; // No assets to delete
-      }
-
-      // Proceed with local deletion of the filtered assets
       final localDeleted = await _deleteLocalAssets(assets);
 
       if (localDeleted.isNotEmpty) {
