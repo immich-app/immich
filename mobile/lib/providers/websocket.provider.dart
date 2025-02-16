@@ -22,6 +22,7 @@ enum PendingAction {
   assetDelete,
   assetUploaded,
   assetHidden,
+  assetTrash,
 }
 
 class PendingChange {
@@ -159,7 +160,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_upload_success', _handleOnUploadSuccess);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_asset_delete', _handleOnAssetDelete);
-        socket.on('on_asset_trash', _handleServerUpdates);
+        socket.on('on_asset_trash', _handleOnAssetTrash);
         socket.on('on_asset_restore', _handleServerUpdates);
         socket.on('on_asset_update', _handleServerUpdates);
         socket.on('on_asset_stack_update', _handleServerUpdates);
@@ -222,6 +223,26 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     }
   }
 
+  Future<void> _handlePendingTrashes() async {
+    final trashChanges = state.pendingChanges
+        .where((c) => c.action == PendingAction.assetTrash)
+        .toList();
+    if (trashChanges.isNotEmpty) {
+      List<String> remoteIds = trashChanges
+          .expand((a) => (a.value as List).map((e) => e.toString()))
+          .toList();
+
+      await _ref.read(syncServiceProvider).handleRemoteAssetRemoval(remoteIds);
+      await _ref.read(assetProvider.notifier).getAllAsset();
+
+      state = state.copyWith(
+        pendingChanges: state.pendingChanges
+            .whereNot((c) => trashChanges.contains(c))
+            .toList(),
+      );
+    }
+  }
+
   Future<void> _handlePendingUploaded() async {
     final uploadedChanges = state.pendingChanges
         .where((c) => c.action == PendingAction.assetUploaded)
@@ -266,6 +287,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     await _handlePendingUploaded();
     await _handlePendingDeletes();
     await _handlingPendingHidden();
+    await _handlePendingTrashes();
   }
 
   void _handleOnConfigUpdate(dynamic _) {
@@ -283,6 +305,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
   void _handleOnAssetDelete(dynamic data) =>
       addPendingChange(PendingAction.assetDelete, data);
+
+  void _handleOnAssetTrash(dynamic data) =>
+      addPendingChange(PendingAction.assetTrash, data);
 
   void _handleOnAssetHidden(dynamic data) =>
       addPendingChange(PendingAction.assetHidden, data);
