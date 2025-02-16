@@ -180,28 +180,30 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetOriginalUrl = (options: string | { id: string; checksum?: string }) => {
+type AssetUrlOptions = { id: string; cacheKey?: string | null };
+
+export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, checksum } = options;
-  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: checksum });
+  const { id, cacheKey } = options;
+  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: cacheKey });
 };
 
-export const getAssetThumbnailUrl = (options: string | { id: string; size?: AssetMediaSize; checksum?: string }) => {
+export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, size, checksum } = options;
-  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: checksum });
+  const { id, size, cacheKey } = options;
+  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: cacheKey });
 };
 
-export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: string }) => {
+export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, checksum } = options;
-  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: checksum });
+  const { id, cacheKey } = options;
+  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: cacheKey });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>
