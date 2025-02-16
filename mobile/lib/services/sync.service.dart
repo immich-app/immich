@@ -29,6 +29,7 @@ import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 final syncServiceProvider = Provider(
   (ref) => SyncService(
@@ -223,22 +224,22 @@ class SyncService {
   }
 
   Future<void> _deleteMatchedAssets(Iterable<String> idsToDelete) async {
-    // Fetch assets by their remote IDs
     final List<Asset> assets =
         await _assetRepository.getAllByRemoteId(idsToDelete);
 
-    // Check if there are any assets
     if (assets.isNotEmpty) {
-      // Fetch all local assets
       final localAssets = await _assetRepository.getAllLocal();
 
       // Find the local assets that match the remote assets by fileName
       final matchedAssets = localAssets
-          .where((localAsset) => assets.any((remoteAsset) =>
-              remoteAsset.fileName.contains(localAsset.fileName)))
+          .where(
+            (localAsset) => assets.any(
+              (remoteAsset) =>
+                  remoteAsset.fileName.contains(localAsset.fileName),
+            ),
+          )
           .toList();
 
-      // Loop through each matched asset and delete it
       for (var asset in matchedAssets) {
         Uri? fileUri = await _getGalleryPhotoPath(asset.fileName);
         if (fileUri != null) {
@@ -248,15 +249,26 @@ class SyncService {
     }
   }
 
+  Future<String?> _getDCIMPath() async {
+    Directory? externalDir = await getExternalStorageDirectory();
+    if (externalDir == null) return null;
+
+    String rootPath = externalDir.path.split('/Android').first;
+    String dcimPath = '$rootPath/DCIM';
+
+    return dcimPath;
+  }
+
   Future<Uri?> _getGalleryPhotoPath(String fileName) async {
-    String rootPath = "/storage/emulated/0/DCIM/";
+    String? rootPath = await _getDCIMPath();
+    if (rootPath == null) return null;
+
     final directory = Directory(rootPath);
     List<FileSystemEntity> albums = directory.listSync();
 
-    // Iterate through albums and find the file path
     for (var album in albums) {
       if (album is Directory) {
-        String path = "${album.path}/$fileName";
+        String path = '${album.path}/$fileName';
         final result = await MediaStore().getUriFromFilePath(path: path);
         if (result != null) {
           return result;
@@ -278,7 +290,6 @@ class SyncService {
         state: AssetState.merged,
       );
 
-      //Delete local files on Android
       if (Platform.isAndroid) {
         _deleteMatchedAssets(idsToDelete);
       }
@@ -801,7 +812,6 @@ class SyncService {
   }
 
   Future<void> _deleteTrashedAssets(List<Asset> assetsList) async {
-    // Iterate over each asset in the list
     for (var asset in assetsList) {
       if (asset.isTrashed) {
         // Call delete function for trashed asset
