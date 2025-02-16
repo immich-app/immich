@@ -41,7 +41,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state});
 
-  Future<void> deleteById(List<int> ids);
+  Future<void> deleteByIds(List<int> ids);
 
   Future<List<Asset>> getMatches({
     required List<Asset> assets,

@@ -57,7 +57,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<void> deleteById(List<int> ids) => txn(() async {
+  Future<void> deleteByIds(List<int> ids) => txn(() async {
         await db.assets.deleteAll(ids);
         await db.exifInfos.deleteAll(ids);
       });

@@ -98,43 +98,19 @@ class AssetNotifier extends StateNotifier<bool> {
     await _syncService.syncNewAssetToDb(newAsset);
   }
 
-  Future<bool> deleteLocalOnlyAssets(List<Asset> assets) async {
+  Future<bool> deleteLocalAssets(List<Asset> assets) async {
     _deleteInProgress = true;
     state = true;
     try {
-      final localDeleted = await _deleteLocalAssets(assets);
-
-      if (localDeleted.isNotEmpty) {
-        final localOnlyIds = assets
-            .where((e) => e.storage == AssetState.local)
-            .map((e) => e.id)
-            .toList();
-
-        // Update merged assets to remote-only
-        final mergedAssets =
-            assets.where((e) => e.storage == AssetState.merged).map((e) {
-          e.localId = null;
-          return e;
-        }).toList();
-
-        // Update the local database
-        await _db.writeTxn(() async {
-          if (mergedAssets.isNotEmpty) {
-            await _db.assets
-                .putAll(mergedAssets); // Use the filtered merged assets
-          }
-          await _db.exifInfos.deleteAll(localOnlyIds);
-          await _db.assets.deleteAll(localOnlyIds);
-        });
-
-        return true;
-      }
+      await _assetService.deleteLocalAssets(assets);
+      return true;
+    } catch (error) {
+      log.severe("Failed to delete local assets", error);
+      return false;
     } finally {
       _deleteInProgress = false;
       state = false;
     }
-
-    return false;
   }
 
   Future<bool> deleteRemoteOnlyAssets(

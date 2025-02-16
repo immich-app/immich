@@ -442,18 +442,30 @@ class AssetService {
     return _assetRepository.dropTable();
   }
 
-  Future<bool> deleteLocalOnlyAssets(
-    Iterable<Asset> assets,
-    bool onlyBackedUp,
-  ) async {
-    final candidates = onlyBackedUp
-        ? assets.where((a) => a.storage == AssetState.merged)
-        : assets;
+  Future<void> deleteLocalAssets(Iterable<Asset> assets) async {
+    // Delete files from local gallery
+    final List<String> ids =
+        assets.where((a) => a.isLocal).map((a) => a.localId!).toList();
 
-    if (candidates.isEmpty) {
-      return false;
+    final deletedIds = await _assetMediaRepository.deleteAll(ids);
+
+    // Modify local database by removing the reference to the local assets
+    if (deletedIds.isNotEmpty) {
+      // Delete records from local database
+      final isarIds = assets
+          .where((e) => e.storage == AssetState.local)
+          .map((e) => e.id)
+          .toList();
+      await _assetRepository.deleteByIds(isarIds);
+
+      // Modify Merged asset to be remote only
+      final updatedAssets =
+          assets.where((e) => e.storage == AssetState.merged).map((e) {
+        e.localId = null;
+        return e;
+      }).toList();
+
+      await _assetRepository.updateAll(updatedAssets);
     }
-
-    return true;
   }
 }

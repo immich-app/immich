@@ -310,7 +310,7 @@ class AlbumService {
         final List<int> idsToRemove =
             _syncService.sharedAssetsToRemove(foreignAssets, existing);
         if (idsToRemove.isNotEmpty) {
-          await _assetRepository.deleteById(idsToRemove);
+          await _assetRepository.deleteByIds(idsToRemove);
         }
       } else {
         await _albumRepository.delete(album.id);

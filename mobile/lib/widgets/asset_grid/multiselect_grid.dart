@@ -215,14 +215,11 @@ class MultiselectGrid extends HookConsumerWidget {
 
         final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteLocalOnlyAssets(candidates.toList());
+            .deleteLocalAssets(candidates.toList());
 
         if (isDeleted) {
-          final deletedCount = localAssets
-              .where(
-                (e) => !isMergedAsset || e.isRemote,
-              )
-              .length;
+          final deletedCount =
+              localAssets.where((e) => !isMergedAsset || e.isRemote).length;
 
           ImmichToast.show(
             context: context,
