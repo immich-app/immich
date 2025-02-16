@@ -82,6 +82,7 @@ export class MapRepository {
 
     return this.db
       .selectFrom('assets')
+      .distinctOn(['assets.id'])
       .innerJoin('exif', (builder) =>
         builder
           .onRef('assets.id', '=', 'exif.assetId')
@@ -109,6 +110,7 @@ export class MapRepository {
 
         return builder.or(expression);
       })
+      .orderBy('assets.id', 'asc')
       .orderBy('fileCreatedAt', 'desc')
       .execute() as Promise<MapMarker[]>;
   }
