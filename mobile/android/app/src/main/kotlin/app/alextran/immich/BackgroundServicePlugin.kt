@@ -40,7 +40,7 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     methodChannel = null
   }
 
-  private fun digestFile(buf, digest, path) {
+  private fun digestFile(buf: ByteArray, digest: MessageDigest, path: String): ByteArray? {
     var len = 0
     try {
       val file = FileInputStream(path)
@@ -55,8 +55,9 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       return digest.digest()
     } catch (e: Exception) {
       // skip this file
-      Log.w(TAG, "Failed to hash file ${args[i]}: $e")
+      Log.w(TAG, "Failed to hash file ${path}: $e")
     }
+    return null
   }
 
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
