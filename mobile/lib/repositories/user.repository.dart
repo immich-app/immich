@@ -29,7 +29,7 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
 
   @override
   Future<List<User>> getAll({bool self = true, UserSort? sortBy}) {
-    final user = _authService.getCurrentUser().toOldUser();
+    final user = _authService.getUser().toOldUser();
     final baseQuery = db.users.where();
     final int userId = user.isarId;
     final QueryBuilder<User, User, QAfterWhereClause> afterWhere =
@@ -48,7 +48,7 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
   }
 
   @override
-  Future<User> me() => Future.value(_authService.getCurrentUser().toOldUser());
+  Future<User> me() => Future.value(_authService.getUser().toOldUser());
 
   @override
   Future<void> deleteById(List<int> ids) => txn(() => db.users.deleteAll(ids));
@@ -64,6 +64,6 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .filter()
       .isPartnerSharedWithEqualTo(true)
       .or()
-      .isarIdEqualTo(_authService.getCurrentUser().toOldUser().isarId)
+      .isarIdEqualTo(_authService.getUser().toOldUser().isarId)
       .findAll();
 }

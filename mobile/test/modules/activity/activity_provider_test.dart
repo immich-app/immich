@@ -17,7 +17,7 @@ final _activities = [
     type: ActivityType.comment,
     comment: 'First Activity',
     assetId: 'asset-2',
-    user: UserStub.admin,
+    user: UserStub.adminOld,
   ),
   Activity(
     id: '2',
@@ -31,7 +31,7 @@ final _activities = [
     createdAt: DateTime(300),
     type: ActivityType.like,
     assetId: 'asset-1',
-    user: UserStub.admin,
+    user: UserStub.adminOld,
   ),
   Activity(
     id: '4',
@@ -108,7 +108,7 @@ void main() {
         id: '5',
         createdAt: DateTime(2023),
         type: ActivityType.like,
-        user: UserStub.admin,
+        user: UserStub.adminOld,
       );
 
       when(
@@ -142,7 +142,7 @@ void main() {
         id: '5',
         createdAt: DateTime(2023),
         type: ActivityType.like,
-        user: UserStub.admin,
+        user: UserStub.adminOld,
       );
       when(
         () => activityMock.addActivity(
@@ -242,7 +242,7 @@ void main() {
         id: '5',
         createdAt: DateTime(2023),
         type: ActivityType.comment,
-        user: UserStub.admin,
+        user: UserStub.adminOld,
         comment: 'Test-Comment',
         assetId: 'test-asset',
       );
@@ -283,7 +283,7 @@ void main() {
         id: '5',
         createdAt: DateTime(2023),
         type: ActivityType.comment,
-        user: UserStub.admin,
+        user: UserStub.adminOld,
         assetId: 'test-asset',
         comment: 'Test-Comment',
       );
@@ -324,7 +324,7 @@ void main() {
         id: '5',
         createdAt: DateTime(2023),
         type: ActivityType.comment,
-        user: UserStub.admin,
+        user: UserStub.adminOld,
         comment: 'Test-Comment',
         assetId: 'test-asset',
       );

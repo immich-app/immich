@@ -34,7 +34,7 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     StoreService.init(IsarStoreRepository(db));
-    Store.put(StoreKey.currentUserId, UserStub.admin.id);
+    Store.put(StoreKey.currentUserId, UserStub.adminOld.id);
     Store.put(StoreKey.serverEndpoint, '');
   });
 

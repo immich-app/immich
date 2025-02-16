@@ -51,7 +51,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     if (shared != null) {
       query = query.sharedEqualTo(shared);
     }
-    final user = _authService.getCurrentUser().toOldUser();
+    final user = _authService.getUser().toOldUser();
     if (owner == true) {
       query = query.owner((q) => q.isarIdEqualTo(user.isarId));
     } else if (owner == false) {
@@ -140,7 +140,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     String searchTerm,
     QuickFilterMode filterMode,
   ) async {
-    final user = _authService.getCurrentUser().toOldUser();
+    final user = _authService.getUser().toOldUser();
     var query = db.albums
         .filter()
         .nameContains(searchTerm, caseSensitive: false)

@@ -19,7 +19,7 @@ final activity = Activity(
   id: '1',
   createdAt: DateTime(100),
   type: ActivityType.like,
-  user: UserStub.admin,
+  user: UserStub.adminOld,
 );
 
 void main() {

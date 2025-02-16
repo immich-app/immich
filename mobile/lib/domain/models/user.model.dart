@@ -11,8 +11,8 @@ class User {
     this.profileImagePath = '',
     this.memoryEnabled = true,
     this.inTimeline = false,
-    required this.quotaSizeInBytes,
-    required this.quotaUsageInBytes,
+    this.quotaSizeInBytes = 0,
+    this.quotaUsageInBytes = 0,
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
   });

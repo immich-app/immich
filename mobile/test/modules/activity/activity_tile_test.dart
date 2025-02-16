@@ -30,7 +30,7 @@ void main() {
     db = await TestUtils.initIsar();
     // For UserCircleAvatar
     StoreService.init(IsarStoreRepository(db));
-    await Store.put(StoreKey.currentUserId, UserStub.admin.id);
+    await Store.put(StoreKey.currentUserId, UserStub.adminOld.id);
     await Store.put(StoreKey.serverEndpoint, '');
     await Store.put(StoreKey.accessToken, '');
   });
@@ -47,7 +47,7 @@ void main() {
           id: '1',
           createdAt: DateTime(100),
           type: ActivityType.like,
-          user: UserStub.admin,
+          user: UserStub.adminOld,
         ),
       ),
       overrides: overrides,
@@ -64,7 +64,7 @@ void main() {
           id: '1',
           createdAt: DateTime(100),
           type: ActivityType.like,
-          user: UserStub.admin,
+          user: UserStub.adminOld,
         ),
       ),
       overrides: overrides,
@@ -83,7 +83,7 @@ void main() {
           id: '1',
           createdAt: DateTime(100),
           type: ActivityType.like,
-          user: UserStub.admin,
+          user: UserStub.adminOld,
           assetId: '1',
         ),
       ),
@@ -102,7 +102,7 @@ void main() {
           id: '1',
           createdAt: DateTime(100),
           type: ActivityType.like,
-          user: UserStub.admin,
+          user: UserStub.adminOld,
           assetId: '1',
         ),
       ),
@@ -121,7 +121,7 @@ void main() {
       id: '1',
       createdAt: DateTime(100),
       type: ActivityType.like,
-      user: UserStub.admin,
+      user: UserStub.adminOld,
     );
 
     testWidgets('Like contains filled heart as leading', (tester) async {
@@ -172,7 +172,7 @@ void main() {
       createdAt: DateTime(100),
       type: ActivityType.comment,
       comment: 'This is a test comment',
-      user: UserStub.admin,
+      user: UserStub.adminOld,
     );
 
     testWidgets('Comment contains User Circle Avatar as leading',

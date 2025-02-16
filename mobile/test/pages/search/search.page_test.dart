@@ -36,7 +36,7 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     await StoreService.init(IsarStoreRepository(db));
-    await Store.put(StoreKey.currentUserId, UserStub.admin.id);
+    await Store.put(StoreKey.currentUserId, UserStub.adminOld.id);
     mockApiService = MockApiService();
     mockSearchApi = MockSearchApi();
     when(() => mockApiService.searchApi).thenReturn(mockSearchApi);

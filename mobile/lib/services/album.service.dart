@@ -295,7 +295,7 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = _authService.getCurrentUser().toOldUser().isarId;
+      final userId = _authService.getUser().toOldUser().isarId;
       if (album.owner.value?.isarId == userId) {
         await _albumApiRepository.delete(album.remoteId!);
       }

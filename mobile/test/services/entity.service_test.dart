@@ -34,10 +34,10 @@ void main() {
         ..remoteThumbnailAssetId = AssetStub.image1.remoteId
         ..assets.addAll([AssetStub.image1, AssetStub.image1])
         ..owner.value = UserStub.user1
-        ..sharedUsers.addAll([UserStub.admin, UserStub.admin]);
+        ..sharedUsers.addAll([UserStub.adminOld, UserStub.adminOld]);
 
       when(() => userRepository.get(album.ownerId!))
-          .thenAnswer((_) async => UserStub.admin);
+          .thenAnswer((_) async => UserStub.adminOld);
 
       when(() => assetRepository.getByRemoteId(AssetStub.image1.remoteId!))
           .thenAnswer((_) async => AssetStub.image1);
@@ -49,7 +49,7 @@ void main() {
           .thenAnswer((_) async => [AssetStub.image1, AssetStub.image2]);
 
       await sut.fillAlbumWithDatabaseEntities(album);
-      expect(album.owner.value, UserStub.admin);
+      expect(album.owner.value, UserStub.adminOld);
       expect(album.thumbnail.value, AssetStub.image1);
       expect(album.remoteUsers.toSet(), {UserStub.user1, UserStub.user2});
       expect(album.remoteAssets.toSet(), {AssetStub.image1, AssetStub.image2});

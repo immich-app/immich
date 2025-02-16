@@ -24,15 +24,19 @@ class StoreService {
     return _instance!;
   }
 
+  // TODO: Replace the implementation with the one from create after removing the typedef
   /// Initializes the store with the given [storeRepository]
   static Future<StoreService> init(IStoreRepository storeRepository) async {
-    if (_instance != null) {
-      return _instance!;
-    }
-    _instance = StoreService._(storeRepository);
-    await _instance!._populateCache();
-    _instance!._subscription = _instance!._listenForChange();
+    _instance ??= await create(storeRepository);
     return _instance!;
+  }
+
+  /// Initializes the store with the given [storeRepository]
+  static Future<StoreService> create(IStoreRepository storeRepository) async {
+    final instance = StoreService._(storeRepository);
+    await instance._populateCache();
+    instance._subscription = instance._listenForChange();
+    return instance;
   }
 
   /// Fills the cache with the values from the DB

@@ -33,7 +33,7 @@ class AssetMediaRepository implements IAssetMediaRepository {
     final Asset asset = Asset(
       checksum: "",
       localId: local.id,
-      ownerId: authService.getCurrentUser().toOldUser().isarId,
+      ownerId: authService.getUser().toOldUser().isarId,
       fileCreatedAt: local.createDateTime,
       fileModifiedAt: local.modifiedDateTime,
       updatedAt: local.modifiedDateTime,

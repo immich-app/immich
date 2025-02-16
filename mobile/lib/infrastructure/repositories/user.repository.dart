@@ -16,7 +16,7 @@ class IsarUserRepository extends IsarDatabaseRepository
   }
 
   @override
-  Future<User?> update(User user) {
+  Future<User> update(User user) {
     return nestTxn(() async {
       await _db.users.put(user.toOldUser());
       return user;

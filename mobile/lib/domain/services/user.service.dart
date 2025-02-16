@@ -6,5 +6,5 @@ class UserService {
 
   const UserService({required IUserRepository userRepo}) : _userRepo = userRepo;
 
-  Future<User?> updateUser(User user) => _userRepo.update(user);
+  Future<User> updateUser(User user) => _userRepo.update(user);
 }

@@ -98,7 +98,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       shared: false,
       activityEnabled: false,
     );
-    album.owner.value = _authService.getCurrentUser().toOldUser();
+    album.owner.value = _authService.getUser().toOldUser();
     album.localId = assetPathEntity.id;
     album.isAll = assetPathEntity.isAll;
     return album;

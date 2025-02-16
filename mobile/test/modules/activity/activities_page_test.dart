@@ -39,7 +39,7 @@ final _activities = [
     type: ActivityType.comment,
     comment: 'First Activity',
     assetId: 'asset-2',
-    user: UserStub.admin,
+    user: UserStub.adminOld,
   ),
   Activity(
     id: '2',
@@ -74,7 +74,7 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     StoreService.init(IsarStoreRepository(db));
-    await Store.put(StoreKey.currentUserId, UserStub.admin.id);
+    await Store.put(StoreKey.currentUserId, UserStub.adminOld.id);
     await Store.put(StoreKey.serverEndpoint, '');
     await Store.put(StoreKey.accessToken, '');
   });
@@ -95,7 +95,7 @@ void main() {
     await db.writeTxn(() async {
       await db.clear();
       // Save all assets
-      await db.users.put(UserStub.admin);
+      await db.users.put(UserStub.adminOld);
       await db.assets.putAll([AssetStub.image1, AssetStub.image2]);
       await db.albums.put(AlbumStub.twoAsset);
       await AlbumStub.twoAsset.owner.save();
