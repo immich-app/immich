@@ -40,6 +40,25 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     methodChannel = null
   }
 
+  private fun digestFile(buf, digest, path) {
+    var len = 0
+    try {
+      val file = FileInputStream(path)
+      file.use { assetFile ->
+        while (true) {
+          len = assetFile.read(buf)
+          if (len != BUFFER_SIZE) break
+          digest.update(buf)
+        }
+      }
+      digest.update(buf, 0, len)
+      return digest.digest()
+    } catch (e: Exception) {
+      // skip this file
+      Log.w(TAG, "Failed to hash file ${args[i]}: $e")
+    }
+  }
+
   override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
     val ctx = context!!
     when (call.method) {
@@ -85,29 +104,30 @@ class BackgroundServicePlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         result.success(BackupWorker.isIgnoringBatteryOptimizations(ctx))
       }
 
+      "digestFile" -> {
+        val path = call.arguments<String>()!!
+        GlobalScope.launch(Dispatchers.IO) {
+          val buf = ByteArray(BUFFER_SIZE)
+          val digest: MessageDigest = MessageDigest.getInstance("SHA-1")
+          val hash = digestFile(buf, digest, path)
+          if (hash != null) {
+            result.success(hash)
+          }
+        }
+      }
+
       "digestFiles" -> {
         val args = call.arguments<ArrayList<String>>()!!
         GlobalScope.launch(Dispatchers.IO) {
           val buf = ByteArray(BUFFER_SIZE)
           val digest: MessageDigest = MessageDigest.getInstance("SHA-1")
+
           val hashes = arrayOfNulls<ByteArray>(args.size)
           for (i in args.indices) {
             val path = args[i]
-            var len = 0
-            try {
-              val file = FileInputStream(path)
-              file.use { assetFile ->
-                while (true) {
-                  len = assetFile.read(buf)
-                  if (len != BUFFER_SIZE) break
-                  digest.update(buf)
-                }
-              }
-              digest.update(buf, 0, len)
-              hashes[i] = digest.digest()
-            } catch (e: Exception) {
-              // skip this file
-              Log.w(TAG, "Failed to hash file ${args[i]}: $e")
+            val hash = digestFile(buf, digest, path)
+            if (hash != null) {
+              hashes[i] = hash
             }
           }
           result.success(hashes.asList())

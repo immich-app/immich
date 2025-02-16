@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -27,6 +28,7 @@ import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/services/background.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -38,6 +40,7 @@ final backupServiceProvider = Provider(
     ref.watch(apiServiceProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(albumServiceProvider),
+    ref.watch(backgroundServiceProvider),
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(assetRepositoryProvider),
@@ -50,6 +53,7 @@ class BackupService {
   final ApiService _apiService;
   final Logger _log = Logger("BackupService");
   final AppSettingsService _appSetting;
+  final BackgroundService _backgroundService;
   final AlbumService _albumService;
   final IAlbumMediaRepository _albumMediaRepository;
   final IFileMediaRepository _fileMediaRepository;
@@ -60,6 +64,7 @@ class BackupService {
     this._apiService,
     this._appSetting,
     this._albumService,
+    this._backgroundService,
     this._albumMediaRepository,
     this._fileMediaRepository,
     this._assetRepository,
@@ -335,6 +340,10 @@ class BackupService {
             }
           }
 
+
+          final hash = await _backgroundService.digestFile(file.path);
+          final base64Hash = hash != null ? base64.encode(hash) : null;
+
           final fileStream = file.openRead();
           final assetRawUploadData = http.MultipartFile(
             "assetData",
@@ -351,6 +360,10 @@ class BackupService {
 
           baseRequest.headers.addAll(ApiService.getRequestHeaders());
           baseRequest.headers["Transfer-Encoding"] = "chunked";
+          if (base64Hash != null) {
+            baseRequest.headers["x-immich-checksum"] = base64Hash;
+          }
+
           baseRequest.fields['deviceAssetId'] = asset.localId!;
           baseRequest.fields['deviceId'] = deviceId;
           baseRequest.fields['fileCreatedAt'] =
