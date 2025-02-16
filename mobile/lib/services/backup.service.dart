@@ -269,6 +269,7 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     final List<String> duplicatedAssetIds = [];
+    final List<Asset> localAssets = await _assetRepository.getAllLocal();
     bool anyErrors = false;
 
     final hasPermission = await _checkPermissions();
@@ -340,9 +341,18 @@ class BackupService {
             }
           }
 
+          final localAsset = localAssets.firstWhereOrNull(
+            (localAsset) => localAsset.localId == asset.localId,
+          );
 
-          final hash = await _backgroundService.digestFile(file.path);
-          final base64Hash = hash != null ? base64.encode(hash) : null;
+          String? base64Hash;
+
+          if (localAsset != null && localAsset.checksum.isNotEmpty) {
+            base64Hash = localAsset.checksum;
+          } else {
+            final hash = await _backgroundService.digestFile(file.path);
+            base64Hash = hash != null ? base64.encode(hash) : null;
+          }
 
           final fileStream = file.openRead();
           final assetRawUploadData = http.MultipartFile(
