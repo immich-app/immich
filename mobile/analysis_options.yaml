@@ -77,7 +77,7 @@ custom_lint:
         - test/**.dart
         # refactor the remaining providers
         - lib/providers/{archive,asset,authentication,db,favorite,partner,trash,user}.provider.dart
-        - lib/providers/{album/album,album/shared_album,asset_viewer/asset_stack,asset_viewer/render_list,backup/backup,search/all_motion_photos,search/recently_added_asset}.provider.dart
+        - lib/providers/{asset_viewer/render_list,backup/backup,search/all_motion_photos,search/recently_added_asset}.provider.dart
 
     - import_rule_openapi:
       message: openapi must only be used through ApiRepositories
