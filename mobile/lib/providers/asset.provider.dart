@@ -113,50 +113,28 @@ class AssetNotifier extends StateNotifier<bool> {
     }
   }
 
-  Future<bool> deleteRemoteOnlyAssets(
+  /// Delete remote asset only
+  ///
+  /// Default behavior is trashing the asset
+  Future<bool> deleteRemoteAssets(
     Iterable<Asset> deleteAssets, {
-    bool force = false,
+    bool shouldDeletePermanently = false,
   }) async {
     _deleteInProgress = true;
     state = true;
     try {
-      final remoteDeleted = await _deleteRemoteAssets(deleteAssets, force);
-      if (remoteDeleted.isNotEmpty) {
-        final assetsToUpdate = force
-
-            /// If force, only update merged only assets and remove remote assets
-            ? remoteDeleted
-                .where((e) => e.storage == AssetState.merged)
-                .map((e) {
-                e.remoteId = null;
-                return e;
-              })
-            // If not force, trash everything
-            : remoteDeleted.where((e) => e.isRemote).map((e) {
-                e.isTrashed = true;
-                return e;
-              });
-
-        await _db.writeTxn(() async {
-          if (assetsToUpdate.isNotEmpty) {
-            await _db.assets.putAll(assetsToUpdate.toList());
-          }
-          if (force) {
-            final remoteOnly = remoteDeleted
-                .where((e) => e.storage == AssetState.remote)
-                .map((e) => e.id)
-                .toList();
-            await _db.exifInfos.deleteAll(remoteOnly);
-            await _db.assets.deleteAll(remoteOnly);
-          }
-        });
-        return true;
-      }
+      await _assetService.deleteRemoteAssets(
+        deleteAssets,
+        shouldDeletePermanently: shouldDeletePermanently,
+      );
+      return true;
+    } catch (error) {
+      log.severe("Failed to delete remote assets", error);
+      return false;
     } finally {
       _deleteInProgress = false;
       state = false;
     }
-    return false;
   }
 
   Future<bool> deleteAssets(

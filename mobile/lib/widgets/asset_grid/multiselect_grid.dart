@@ -205,17 +205,17 @@ class MultiselectGrid extends HookConsumerWidget {
       try {
         final localAssets = selection.value.where((a) => a.isLocal).toList();
 
-        final candidates = isMergedAsset
+        final toDelete = isMergedAsset
             ? localAssets.where((e) => e.storage == AssetState.merged)
             : localAssets;
 
-        if (candidates.isEmpty) {
+        if (toDelete.isEmpty) {
           return;
         }
 
         final isDeleted = await ref
             .read(assetProvider.notifier)
-            .deleteLocalAssets(candidates.toList());
+            .deleteLocalAssets(toDelete.toList());
 
         if (isDeleted) {
           final deletedCount =
@@ -235,7 +235,7 @@ class MultiselectGrid extends HookConsumerWidget {
       }
     }
 
-    void onDeleteRemote([bool force = false]) async {
+    void onDeleteRemote([bool shouldDeletePermanently = false]) async {
       processing.value = true;
       try {
         final toDelete = ownedRemoteSelection(
@@ -243,13 +243,15 @@ class MultiselectGrid extends HookConsumerWidget {
           ownerErrorMessage: 'home_page_delete_err_partner'.tr(),
         ).toList();
 
-        final isDeleted = await ref
-            .read(assetProvider.notifier)
-            .deleteRemoteOnlyAssets(toDelete, force: force);
+        final isDeleted =
+            await ref.read(assetProvider.notifier).deleteRemoteAssets(
+                  toDelete,
+                  shouldDeletePermanently: shouldDeletePermanently,
+                );
         if (isDeleted) {
           ImmichToast.show(
             context: context,
-            msg: force
+            msg: shouldDeletePermanently
                 ? 'assets_deleted_permanently_from_server'
                     .tr(args: ["${toDelete.length}"])
                 : 'assets_trashed_from_server'.tr(args: ["${toDelete.length}"]),

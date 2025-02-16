@@ -468,4 +468,43 @@ class AssetService {
       await _assetRepository.updateAll(updatedAssets);
     }
   }
+
+  Future<void> deleteRemoteAssets(
+    Iterable<Asset> assets, {
+    bool shouldDeletePermanently = false,
+  }) async {
+    final candidates = assets.where((a) => a.isRemote);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    final isSuccess =
+        await deleteAssets(candidates, force: shouldDeletePermanently);
+    if (!isSuccess) {
+      return;
+    }
+
+    /// Update asset info bassed on the deletion type.
+    final payload = shouldDeletePermanently
+        ? assets.where((a) => a.storage == AssetState.merged).map((a) {
+            a.remoteId = null;
+            return a;
+          })
+        : assets.where((a) => a.isRemote).map((a) {
+            a.isTrashed = true;
+            return a;
+          });
+
+    await _assetRepository.transaction(() async {
+      await _assetRepository.updateAll(payload.toList());
+
+      if (shouldDeletePermanently) {
+        final remoteAssetIds = assets
+            .where((a) => a.storage == AssetState.remote)
+            .map((a) => a.id)
+            .toList();
+        await _assetRepository.deleteByIds(remoteAssetIds);
+      }
+    });
+  }
 }
