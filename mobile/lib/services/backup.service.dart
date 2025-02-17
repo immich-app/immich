@@ -281,7 +281,6 @@ class BackupService {
       candidates = _sortPhotosFirst(candidates);
     }
 
-
     for (final candidate in candidates) {
       final Asset asset = candidate.asset;
       File? file;
