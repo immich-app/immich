@@ -150,7 +150,7 @@ class LoginForm extends HookConsumerWidget {
 
     useEffect(
       () {
-        final serverUrl = Store.tryGet(StoreKey.serverUrl);
+        final serverUrl = getServerUrl();
         if (serverUrl != null) {
           serverEndpointController.text = serverUrl;
         }
