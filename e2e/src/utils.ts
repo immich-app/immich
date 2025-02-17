@@ -30,6 +30,7 @@ import {
   getAssetInfo,
   getConfigDefaults,
   login,
+  scanLibrary,
   searchAssets,
   sendJobCommand,
   setBaseUrl,
@@ -552,6 +553,16 @@ export const utils = {
     const key = await utils.createApiKey(accessToken, [Permission.All]);
     await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
+  },
+
+  scan: async (accessToken: string, id: string, wait = false) => {
+    await scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
+
+    if (wait) {
+      await utils.waitForQueueFinish(accessToken, 'library');
+      await utils.waitForQueueFinish(accessToken, 'sidecar');
+      await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
+    }
   },
 };
 

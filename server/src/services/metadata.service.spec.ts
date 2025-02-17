@@ -323,7 +323,7 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
-        fileModifiedAt: new Date('2023-02-22T05:06:29.716Z'),
+        fileModifiedAt: assetStub.withLocation.fileModifiedAt,
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
     });
