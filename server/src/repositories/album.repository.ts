@@ -6,7 +6,17 @@ import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+
+export interface AlbumAssetCount {
+  albumId: string;
+  assetCount: number;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface AlbumInfoOptions {
+  withAssets: boolean;
+}
 
 const userColumns = [
   'id',
@@ -71,7 +81,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
 };
 
 @Injectable()
-export class AlbumRepository implements IAlbumRepository {
+export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }] })
@@ -127,8 +137,8 @@ export class AlbumRepository implements IAlbumRepository {
       .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
       .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
       .select('albums.id as albumId')
-      .select((eb) => eb.fn.min('assets.fileCreatedAt').as('startDate'))
-      .select((eb) => eb.fn.max('assets.fileCreatedAt').as('endDate'))
+      .select((eb) => eb.fn.min('assets.localDateTime').as('startDate'))
+      .select((eb) => eb.fn.max('assets.localDateTime').as('endDate'))
       .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
       .where('albums.id', 'in', ids)
       .where('assets.deletedAt', 'is', null)

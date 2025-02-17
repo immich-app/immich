@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Memories } from 'src/db';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
-import { IBulkAsset } from 'src/utils/asset.util';
+import { IBulkAsset } from 'src/types';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {

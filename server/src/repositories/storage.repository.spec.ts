@@ -2,8 +2,8 @@ import mockfs from 'mock-fs';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
-import { ILoggingRepository } from 'src/types';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { ILoggingRepository, newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { Mocked } from 'vitest';
 
 interface Test {
   test: string;
@@ -182,11 +182,11 @@ const tests: Test[] = [
 
 describe(StorageRepository.name, () => {
   let sut: StorageRepository;
-  let logger: ILoggingRepository;
+  let logger: Mocked<ILoggingRepository>;
 
   beforeEach(() => {
     logger = newLoggingRepositoryMock();
-    sut = new StorageRepository(logger as LoggingRepository);
+    sut = new StorageRepository(logger as ILoggingRepository as LoggingRepository);
   });
 
   afterEach(() => {

@@ -3,15 +3,11 @@ import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
-import { ILoggingRepository } from 'src/types';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newRandomImage, newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { ILoggingRepository, newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
 const metadataRepository = new MetadataRepository(
   newLoggingRepositoryMock() as ILoggingRepository as LoggingRepository,
@@ -38,14 +34,12 @@ type TimeZoneTest = {
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;
-
-  let assetMock: Mocked<IAssetRepository>;
-  let storageMock: Mocked<IStorageRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, assetMock, storageMock } = newTestService(MetadataService, { metadataRepository }));
+    ({ sut, mocks } = newTestService(MetadataService, { metadataRepository }));
 
-    storageMock.stat.mockResolvedValue({ size: 123_456 } as Stats);
+    mocks.storage.stat.mockResolvedValue({ size: 123_456 } as Stats);
 
     delete process.env.TZ;
   });
@@ -120,18 +114,18 @@ describe(MetadataService.name, () => {
       process.env.TZ = serverTimeZone ?? undefined;
 
       const { filePath } = await createTestFile(exifData);
-      assetMock.getByIds.mockResolvedValue([{ id: 'asset-1', originalPath: filePath } as AssetEntity]);
+      mocks.asset.getByIds.mockResolvedValue([{ id: 'asset-1', originalPath: filePath } as AssetEntity]);
 
       await sut.handleMetadataExtraction({ id: 'asset-1' });
 
-      expect(assetMock.upsertExif).toHaveBeenCalledWith(
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           dateTimeOriginal: new Date(expected.dateTimeOriginal),
           timeZone: expected.timeZone,
         }),
       );
 
-      expect(assetMock.update).toHaveBeenCalledWith(
+      expect(mocks.asset.update).toHaveBeenCalledWith(
         expect.objectContaining({
           localDateTime: new Date(expected.localDateTime),
         }),

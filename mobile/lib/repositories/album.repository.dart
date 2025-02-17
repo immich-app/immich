@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -7,6 +8,7 @@ import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
 final albumRepositoryProvider =
@@ -18,15 +20,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   @override
   Future<int> count({bool? local}) {
     final baseQuery = db.albums.where();
-    final QueryBuilder<Album, Album, QAfterWhereClause> query;
-    switch (local) {
-      case null:
-        query = baseQuery.noOp();
-      case true:
-        query = baseQuery.localIdIsNotNull();
-      case false:
-        query = baseQuery.remoteIdIsNotNull();
-    }
+    final QueryBuilder<Album, Album, QAfterWhereClause> query = switch (local) {
+      null => baseQuery.noOp(),
+      true => baseQuery.localIdIsNotNull(),
+      false => baseQuery.remoteIdIsNotNull(),
+    };
     return query.count();
   }
 
@@ -91,15 +89,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     if (ownerId != null) {
       filterQuery = filterQuery.owner((q) => q.isarIdEqualTo(ownerId));
     }
-    final QueryBuilder<Album, Album, QAfterSortBy> query;
-    switch (sortBy) {
-      case null:
-        query = filterQuery.noOp();
-      case AlbumSort.remoteId:
-        query = filterQuery.sortByRemoteId();
-      case AlbumSort.localId:
-        query = filterQuery.sortByLocalId();
-    }
+    final QueryBuilder<Album, Album, QAfterSortBy> query = switch (sortBy) {
+      null => filterQuery.noOp(),
+      AlbumSort.remoteId => filterQuery.sortByRemoteId(),
+      AlbumSort.localId => filterQuery.sortByLocalId(),
+    };
     return query.findAll();
   }
 
@@ -150,17 +144,47 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
         query = query.owner(
           (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
         );
-        break;
       case QuickFilterMode.myAlbums:
         query = query.owner(
           (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
         );
-        break;
       case QuickFilterMode.all:
-      default:
         break;
     }
 
     return await query.findAll();
+  }
+
+  @override
+  Stream<List<Album>> watchRemoteAlbums() {
+    return db.albums.where().remoteIdIsNotNull().watch();
+  }
+
+  @override
+  Stream<List<Album>> watchLocalAlbums() {
+    return db.albums.where().localIdIsNotNull().watch();
+  }
+
+  @override
+  Stream<Album?> watchAlbum(int id) {
+    return db.albums.watchObject(id, fireImmediately: true);
+  }
+
+  @override
+  Stream<RenderList> getRenderListStream(Album album) async* {
+    final query = album.assets.filter().isTrashedEqualTo(false);
+    final withSortedOption = switch (album.sortOrder) {
+      SortOrder.asc => query.sortByFileCreatedAt(),
+      SortOrder.desc => query.sortByFileCreatedAtDesc(),
+    };
+
+    yield await RenderList.fromQuery(
+      withSortedOption,
+      GroupAssetsBy.none,
+    );
+
+    await for (final _ in query.watchLazy()) {
+      yield await RenderList.fromQuery(withSortedOption, GroupAssetsBy.none);
+    }
   }
 }

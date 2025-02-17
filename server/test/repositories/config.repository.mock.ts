@@ -1,7 +1,6 @@
-import { ImmichEnvironment, ImmichWorker } from 'src/enum';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
-import { EnvData } from 'src/repositories/config.repository';
-import { IConfigRepository } from 'src/types';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker } from 'src/enum';
+import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 const envData: EnvData = {
@@ -97,7 +96,7 @@ const envData: EnvData = {
 };
 
 export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });
-export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {
+export const newConfigRepositoryMock = (): Mocked<RepositoryInterface<ConfigRepository>> => {
   return {
     getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
     getWorker: vitest.fn().mockReturnValue(ImmichWorker.API),

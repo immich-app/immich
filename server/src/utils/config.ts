@@ -5,18 +5,19 @@ import { load as loadYaml } from 'js-yaml';
 import * as _ from 'lodash';
 import { SystemConfig, defaults } from 'src/config';
 import { SystemConfigDto } from 'src/dtos/system-config.dto';
-import { SystemMetadataKey } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { DeepPartial, IConfigRepository, ILoggingRepository } from 'src/types';
+import { DatabaseLock, SystemMetadataKey } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { DeepPartial } from 'src/types';
 import { getKeysDeep, unsetDeep } from 'src/utils/misc';
 
 export type SystemConfigValidator = (config: SystemConfig, newConfig: SystemConfig) => void | Promise<void>;
 
 type RepoDeps = {
-  configRepo: IConfigRepository;
-  metadataRepo: ISystemMetadataRepository;
-  logger: ILoggingRepository;
+  configRepo: ConfigRepository;
+  metadataRepo: SystemMetadataRepository;
+  logger: LoggingRepository;
 };
 
 const asyncLock = new AsyncLock();

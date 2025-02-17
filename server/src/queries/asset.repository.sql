@@ -47,6 +47,8 @@ with
               and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
+        order by
+          (assets."localDateTime" at time zone 'UTC')::date desc
         limit
           $7
       ) as "a" on true
@@ -157,6 +159,9 @@ where
   "ownerId" = $1::uuid
   and "deviceId" = $2
   and "isVisible" = $3
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -258,6 +263,9 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
   )
 select
   "timeBucket",

@@ -13,8 +13,8 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import { TimeBucketSize } from 'src/interfaces/asset.interface';
-import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
+import { TimeBucketSize } from 'src/repositories/asset.repository';
+import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import {
   Column,
@@ -100,13 +100,13 @@ export class AssetEntity {
   deletedAt!: Date | null;
 
   @Index('idx_asset_file_created_at')
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileCreatedAt!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   localDateTime!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
@@ -180,6 +180,12 @@ export class AssetEntity {
   duplicateId!: string | null;
 }
 
+export type AssetEntityPlaceholder = AssetEntity & {
+  fileCreatedAt: Date | null;
+  fileModifiedAt: Date | null;
+  localDateTime: Date | null;
+};
+
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
 }
@@ -238,22 +244,33 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
     .as('faces');
 }
 
-/** Adds a `has_people` CTE that can be inner joined on to filter out assets */
-export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
-  return db.with('has_people', (qb) =>
-    qb
-      .selectFrom('asset_faces')
-      .select('assetId')
-      .where('personId', '=', anyUuid(personIds!))
-      .groupBy('assetId')
-      .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length),
+export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_faces')
+        .select('assetId')
+        .where('personId', '=', anyUuid(personIds!))
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        .as('has_people'),
+    (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
   );
 }
 
-export function hasPeople(db: Kysely<DB>, personIds?: string[]) {
-  return personIds && personIds.length > 0
-    ? hasPeopleCte(db, personIds).selectFrom('assets').innerJoin('has_people', 'has_people.assetId', 'assets.id')
-    : db.selectFrom('assets');
+export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetsId')
+        .innerJoin('tags_closure', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .where('tags_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        .as('has_tags'),
+    (join) => join.onRef('has_tags.assetsId', '=', 'assets.id'),
+  );
 }
 
 export function withOwner(eb: ExpressionBuilder<DB, 'assets'>) {
@@ -326,8 +343,12 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
-  return hasPeople(kysely.withPlugin(joinDeduplicationPlugin), options.personIds)
+  return kysely
+    .withPlugin(joinDeduplicationPlugin)
+    .selectFrom('assets')
     .selectAll('assets')
+    .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
+    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))
@@ -381,6 +402,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         sql`'%' || f_unaccent(${options.originalFileName}) || '%'`,
       ),
     )
+    .$if(!!options.description, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
+    )
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('assets.isOffline', '=', options.isOffline!))
@@ -399,5 +425,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
+    .where('assets.fileCreatedAt', 'is not', null)
+    .where('assets.fileModifiedAt', 'is not', null)
+    .where('assets.localDateTime', 'is not', null);
 }

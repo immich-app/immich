@@ -428,4 +428,8 @@ class AssetService {
 
     return 1.0;
   }
+
+  Future<List<Asset>> getStackAssets(String stackId) {
+    return _assetRepository.getStackAssets(stackId);
+  }
 }

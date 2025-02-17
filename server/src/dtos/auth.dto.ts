@@ -1,11 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { SessionEntity } from 'src/entities/session.entity';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { AuthApiKey, AuthSession, AuthSharedLink, AuthUser } from 'src/database';
 import { UserEntity } from 'src/entities/user.entity';
 import { ImmichCookie } from 'src/enum';
-import { AuthApiKey } from 'src/types';
 import { toEmail } from 'src/validation';
 
 export type CookieResponse = {
@@ -14,11 +12,11 @@ export type CookieResponse = {
 };
 
 export class AuthDto {
-  user!: UserEntity;
+  user!: AuthUser;
 
   apiKey?: AuthApiKey;
-  sharedLink?: SharedLinkEntity;
-  session?: SessionEntity;
+  sharedLink?: AuthSharedLink;
+  session?: AuthSession;
 }
 
 export class LoginCredentialDto {

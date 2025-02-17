@@ -49,4 +49,10 @@ export class PersonEntity {
 
   @Column({ default: false })
   isHidden!: boolean;
+
+  @Column({ default: false })
+  isFavorite!: boolean;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  color?: string | null;
 }

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
-import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
+import { AUDIT_LOG_MAX_DURATION, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import {
@@ -17,12 +17,14 @@ import {
   AssetFileType,
   AssetPathType,
   DatabaseAction,
+  JobName,
+  JobStatus,
   Permission,
   PersonPathType,
+  QueueName,
   StorageFolder,
   UserPathType,
 } from 'src/enum';
-import { JobName, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';

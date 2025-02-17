@@ -14,14 +14,18 @@ class PeopleUpdateItem {
   /// Returns a new [PeopleUpdateItem] instance.
   PeopleUpdateItem({
     this.birthDate,
+    this.color,
     this.featureFaceAssetId,
     required this.id,
+    this.isFavorite,
     this.isHidden,
     this.name,
   });
 
   /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
   DateTime? birthDate;
+
+  String? color;
 
   /// Asset is used to get the feature face thumbnail.
   ///
@@ -34,6 +38,14 @@ class PeopleUpdateItem {
 
   /// Person id.
   String id;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
 
   /// Person visibility
   ///
@@ -56,8 +68,10 @@ class PeopleUpdateItem {
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateItem &&
     other.birthDate == birthDate &&
+    other.color == color &&
     other.featureFaceAssetId == featureFaceAssetId &&
     other.id == id &&
+    other.isFavorite == isFavorite &&
     other.isHidden == isHidden &&
     other.name == name;
 
@@ -65,13 +79,15 @@ class PeopleUpdateItem {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (birthDate == null ? 0 : birthDate!.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
     (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
     (id.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden == null ? 0 : isHidden!.hashCode) +
     (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, id=$id, isHidden=$isHidden, name=$name]';
+  String toString() => 'PeopleUpdateItem[birthDate=$birthDate, color=$color, featureFaceAssetId=$featureFaceAssetId, id=$id, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -80,12 +96,22 @@ class PeopleUpdateItem {
     } else {
     //  json[r'birthDate'] = null;
     }
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+    //  json[r'color'] = null;
+    }
     if (this.featureFaceAssetId != null) {
       json[r'featureFaceAssetId'] = this.featureFaceAssetId;
     } else {
     //  json[r'featureFaceAssetId'] = null;
     }
       json[r'id'] = this.id;
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
+    }
     if (this.isHidden != null) {
       json[r'isHidden'] = this.isHidden;
     } else {
@@ -109,8 +135,10 @@ class PeopleUpdateItem {
 
       return PeopleUpdateItem(
         birthDate: mapDateTime(json, r'birthDate', r''),
+        color: mapValueOfType<String>(json, r'color'),
         featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
         id: mapValueOfType<String>(json, r'id')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
         isHidden: mapValueOfType<bool>(json, r'isHidden'),
         name: mapValueOfType<String>(json, r'name'),
       );

@@ -1,31 +1,27 @@
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { CliService } from 'src/services/cli.service';
 import { userStub } from 'test/fixtures/user.stub';
-import { newTestService } from 'test/utils';
-import { Mocked, describe, it } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
+import { describe, it } from 'vitest';
 
 describe(CliService.name, () => {
   let sut: CliService;
-
-  let userMock: Mocked<IUserRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, userMock, systemMock } = newTestService(CliService));
+    ({ sut, mocks } = newTestService(CliService));
   });
 
   describe('listUsers', () => {
     it('should list users', async () => {
-      userMock.getList.mockResolvedValue([userStub.admin]);
+      mocks.user.getList.mockResolvedValue([userStub.admin]);
       await expect(sut.listUsers()).resolves.toEqual([expect.objectContaining({ isAdmin: true })]);
-      expect(userMock.getList).toHaveBeenCalledWith({ withDeleted: true });
+      expect(mocks.user.getList).toHaveBeenCalledWith({ withDeleted: true });
     });
   });
 
   describe('resetAdminPassword', () => {
     it('should only work when there is an admin account', async () => {
-      userMock.getAdmin.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(void 0);
       const ask = vitest.fn().mockResolvedValue('new-password');
 
       await expect(sut.resetAdminPassword(ask)).rejects.toThrowError('Admin account does not exist');
@@ -34,12 +30,12 @@ describe(CliService.name, () => {
     });
 
     it('should default to a random password', async () => {
-      userMock.getAdmin.mockResolvedValue(userStub.admin);
+      mocks.user.getAdmin.mockResolvedValue(userStub.admin);
       const ask = vitest.fn().mockImplementation(() => {});
 
       const response = await sut.resetAdminPassword(ask);
 
-      const [id, update] = userMock.update.mock.calls[0];
+      const [id, update] = mocks.user.update.mock.calls[0];
 
       expect(response.provided).toBe(false);
       expect(ask).toHaveBeenCalled();
@@ -48,12 +44,12 @@ describe(CliService.name, () => {
     });
 
     it('should use the supplied password', async () => {
-      userMock.getAdmin.mockResolvedValue(userStub.admin);
+      mocks.user.getAdmin.mockResolvedValue(userStub.admin);
       const ask = vitest.fn().mockResolvedValue('new-password');
 
       const response = await sut.resetAdminPassword(ask);
 
-      const [id, update] = userMock.update.mock.calls[0];
+      const [id, update] = mocks.user.update.mock.calls[0];
 
       expect(response.provided).toBe(true);
       expect(ask).toHaveBeenCalled();
@@ -65,28 +61,28 @@ describe(CliService.name, () => {
   describe('disablePasswordLogin', () => {
     it('should disable password login', async () => {
       await sut.disablePasswordLogin();
-      expect(systemMock.set).toHaveBeenCalledWith('system-config', { passwordLogin: { enabled: false } });
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith('system-config', { passwordLogin: { enabled: false } });
     });
   });
 
   describe('enablePasswordLogin', () => {
     it('should enable password login', async () => {
       await sut.enablePasswordLogin();
-      expect(systemMock.set).toHaveBeenCalledWith('system-config', {});
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith('system-config', {});
     });
   });
 
   describe('disableOAuthLogin', () => {
     it('should disable oauth login', async () => {
       await sut.disableOAuthLogin();
-      expect(systemMock.set).toHaveBeenCalledWith('system-config', {});
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith('system-config', {});
     });
   });
 
   describe('enableOAuthLogin', () => {
     it('should enable oauth login', async () => {
       await sut.enableOAuthLogin();
-      expect(systemMock.set).toHaveBeenCalledWith('system-config', { oauth: { enabled: true } });
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith('system-config', { oauth: { enabled: true } });
     });
   });
 });

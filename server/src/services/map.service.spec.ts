@@ -1,23 +1,16 @@
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { MapService } from 'src/services/map.service';
-import { IMapRepository } from 'src/types';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MapService.name, () => {
   let sut: MapService;
-
-  let albumMock: Mocked<IAlbumRepository>;
-  let mapMock: Mocked<IMapRepository>;
-  let partnerMock: Mocked<IPartnerRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, albumMock, mapMock, partnerMock } = newTestService(MapService));
+    ({ sut, mocks } = newTestService(MapService));
   });
 
   describe('getMapMarkers', () => {
@@ -31,8 +24,8 @@ describe(MapService.name, () => {
         state: asset.exifInfo!.state,
         country: asset.exifInfo!.country,
       };
-      partnerMock.getAll.mockResolvedValue([]);
-      mapMock.getMapMarkers.mockResolvedValue([marker]);
+      mocks.partner.getAll.mockResolvedValue([]);
+      mocks.map.getMapMarkers.mockResolvedValue([marker]);
 
       const markers = await sut.getMapMarkers(authStub.user1, {});
 
@@ -50,12 +43,12 @@ describe(MapService.name, () => {
         state: asset.exifInfo!.state,
         country: asset.exifInfo!.country,
       };
-      partnerMock.getAll.mockResolvedValue([partnerStub.adminToUser1]);
-      mapMock.getMapMarkers.mockResolvedValue([marker]);
+      mocks.partner.getAll.mockResolvedValue([partnerStub.adminToUser1]);
+      mocks.map.getMapMarkers.mockResolvedValue([marker]);
 
       const markers = await sut.getMapMarkers(authStub.user1, { withPartners: true });
 
-      expect(mapMock.getMapMarkers).toHaveBeenCalledWith(
+      expect(mocks.map.getMapMarkers).toHaveBeenCalledWith(
         [authStub.user1.user.id, partnerStub.adminToUser1.sharedById],
         expect.arrayContaining([]),
         { withPartners: true },
@@ -74,10 +67,10 @@ describe(MapService.name, () => {
         state: asset.exifInfo!.state,
         country: asset.exifInfo!.country,
       };
-      partnerMock.getAll.mockResolvedValue([]);
-      mapMock.getMapMarkers.mockResolvedValue([marker]);
-      albumMock.getOwned.mockResolvedValue([albumStub.empty]);
-      albumMock.getShared.mockResolvedValue([albumStub.sharedWithUser]);
+      mocks.partner.getAll.mockResolvedValue([]);
+      mocks.map.getMapMarkers.mockResolvedValue([marker]);
+      mocks.album.getOwned.mockResolvedValue([albumStub.empty]);
+      mocks.album.getShared.mockResolvedValue([albumStub.sharedWithUser]);
 
       const markers = await sut.getMapMarkers(authStub.user1, { withSharedAlbums: true });
 
@@ -88,13 +81,13 @@ describe(MapService.name, () => {
 
   describe('reverseGeocode', () => {
     it('should reverse geocode a location', async () => {
-      mapMock.reverseGeocode.mockResolvedValue({ city: 'foo', state: 'bar', country: 'baz' });
+      mocks.map.reverseGeocode.mockResolvedValue({ city: 'foo', state: 'bar', country: 'baz' });
 
       await expect(sut.reverseGeocode({ lat: 42, lon: 69 })).resolves.toEqual([
         { city: 'foo', state: 'bar', country: 'baz' },
       ]);
 
-      expect(mapMock.reverseGeocode).toHaveBeenCalledWith({ latitude: 42, longitude: 69 });
+      expect(mocks.map.reverseGeocode).toHaveBeenCalledWith({ latitude: 42, longitude: 69 });
     });
   });
 });

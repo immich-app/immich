@@ -169,7 +169,6 @@ from
   and "asset_faces"."personId" = $1
   and "assets"."isArchived" = $2
   and "assets"."deletedAt" is null
-  and "assets"."livePhotoVideoId" is null
 
 -- PersonRepository.getNumberOfPeople
 select
