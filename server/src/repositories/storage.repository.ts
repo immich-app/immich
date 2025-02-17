@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
+import { ErrnoException } from 'fast-glob/out/types';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -188,6 +189,19 @@ export class StorageRepository {
     });
   }
 
+  private errorHandler = (error: ErrnoException) => {
+    if (error.code === 'ENOENT') {
+      this.logger.warn(`Path ${error.path} does not exist, ignoring.`);
+      return true;
+    } else if (error.code === 'EACCES') {
+      this.logger.warn(`Permission denied for path ${error.path}, ignoring.`);
+      return true;
+    }
+
+    this.logger.error(`Error while walking path ${error.path}: ${error.message}`);
+    return false;
+  };
+
   async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
     const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
     if (pathsToCrawl.length === 0) {
@@ -203,6 +217,7 @@ export class StorageRepository {
       onlyFiles: true,
       dot: includeHidden,
       ignore: exclusionPatterns,
+      errorHandler: this.errorHandler,
     });
 
     let batch: string[] = [];
