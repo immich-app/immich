@@ -36,10 +36,12 @@ jobs:
               - 'i18n/**'
             machine-learning:
               - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/docker.yml'
 
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
 
   retag_ml:
     name: Re-Tag ML
