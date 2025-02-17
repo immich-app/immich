@@ -3,23 +3,19 @@
  * Please do not edit it manually.
  */
 
-import type { ColumnType } from "kysely";
+import type { ColumnType } from 'kysely';
+import { Permission } from 'src/enum';
 
-export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[]
-  ? U[]
-  : ArrayTypeImpl<T>;
+export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
-export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S[], I[], U[]>
-  : T[];
+export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
 
-export type AssetsStatusEnum = "active" | "deleted" | "trashed";
+export type AssetsStatusEnum = 'active' | 'deleted' | 'trashed';
 
-export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S, I | undefined, U>
-  : ColumnType<T, T | undefined, T>;
+export type Generated<T> =
+  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
 
-export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
+export type Int8 = ColumnType<number>;
 
 export type Json = JsonValue;
 
@@ -33,7 +29,7 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
-export type Sourcetype = "exif" | "machine-learning";
+export type Sourcetype = 'exif' | 'machine-learning';
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -81,7 +77,7 @@ export interface ApiKeys {
   id: Generated<string>;
   key: string;
   name: string;
-  permissions: string[];
+  permissions: Permission[];
   updatedAt: Generated<Timestamp>;
   userId: string;
 }
@@ -126,8 +122,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp;
-  fileModifiedAt: Timestamp;
+  fileCreatedAt: Timestamp | null;
+  fileModifiedAt: Timestamp | null;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
@@ -136,7 +132,7 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp;
+  localDateTime: Timestamp | null;
   originalFileName: string;
   originalPath: string;
   ownerId: string;
@@ -444,6 +440,6 @@ export interface DB {
   typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
   users: Users;
-  "vectors.pg_vector_index_stat": VectorsPgVectorIndexStat;
+  'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
   version_history: VersionHistory;
 }

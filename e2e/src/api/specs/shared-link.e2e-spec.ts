@@ -150,6 +150,30 @@ describe('/shared-links', () => {
       );
     });
 
+    it('should filter on albumId', async () => {
+      const { status, body } = await request(app)
+        .get(`/shared-links?albumId=${album.id}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(2);
+      expect(body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ id: linkWithAlbum.id }),
+          expect.objectContaining({ id: linkWithPassword.id }),
+        ]),
+      );
+    });
+
+    it('should find 0 albums', async () => {
+      const { status, body } = await request(app)
+        .get(`/shared-links?albumId=${uuidDto.notFound}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body).toHaveLength(0);
+    });
+
     it('should not get shared links created by other users', async () => {
       const { status, body } = await request(app)
         .get('/shared-links')

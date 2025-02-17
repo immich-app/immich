@@ -5230,7 +5230,17 @@
     "/shared-links": {
       "get": {
         "operationId": "getAllSharedLinks",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -7458,7 +7468,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.125.7",
+    "version": "1.126.1",
     "contact": {}
   },
   "tags": [],

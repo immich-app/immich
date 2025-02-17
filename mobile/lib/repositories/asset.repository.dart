@@ -197,6 +197,19 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   @override
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state}) =>
       txn(() => _getAllByRemoteIdImpl(ids, state).deleteAll());
+
+  @override
+  Future<List<Asset>> getStackAssets(String stackId) {
+    return db.assets
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackIdEqualTo(stackId)
+        // orders primary asset first as its ID is null
+        .sortByStackPrimaryAssetId()
+        .thenByFileCreatedAtDesc()
+        .findAll();
+  }
 }
 
 Future<List<Asset>> _getMatchesImpl(

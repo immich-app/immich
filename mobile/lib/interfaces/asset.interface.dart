@@ -57,6 +57,8 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
   Future<void> upsertDuplicatedAssets(Iterable<String> duplicatedAssets);
 
   Future<List<String>> getAllDuplicatedAssetIds();
+
+  Future<List<Asset>> getStackAssets(String stackId);
 }
 
 enum AssetSort { checksum, ownerIdChecksum }

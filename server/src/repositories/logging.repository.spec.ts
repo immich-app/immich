@@ -1,14 +1,14 @@
 import { ClsService } from 'nestjs-cls';
 import { ImmichWorker } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { IConfigRepository } from 'src/types';
 import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(LoggingRepository.name, () => {
   let sut: LoggingRepository;
 
-  let configMock: Mocked<IConfigRepository>;
+  let configMock: Mocked<ConfigRepository>;
   let clsMock: Mocked<ClsService>;
 
   beforeEach(() => {

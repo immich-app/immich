@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
 import { Expression, Kysely, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
@@ -11,9 +11,9 @@ import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { LogLevel, SystemMetadataKey } from 'src/enum';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -48,7 +48,7 @@ interface MapDB extends DB {
 export class MapRepository {
   constructor(
     private configRepository: ConfigRepository,
-    @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
+    private metadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<MapDB>,
   ) {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';
@@ -7,6 +7,7 @@ import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AssetEntity,
+  AssetEntityPlaceholder,
   hasPeople,
   searchAssetBuilder,
   truncatedDate,
@@ -21,34 +22,139 @@ import {
   withTagId,
   withTags,
 } from 'src/entities/asset.entity';
-import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import {
-  AssetDeltaSyncOptions,
-  AssetExploreFieldOptions,
-  AssetFullSyncOptions,
-  AssetGetByChecksumOptions,
-  AssetStats,
-  AssetStatsOptions,
-  AssetUpdateDuplicateOptions,
-  DayOfYearAssets,
-  DuplicateGroup,
-  GetByIdsRelations,
-  IAssetRepository,
-  LivePhotoSearchOptions,
-  MonthDay,
-  TimeBucketItem,
-  TimeBucketOptions,
-  TimeBucketSize,
-  WithProperty,
-  WithoutProperty,
-} from 'src/interfaces/asset.interface';
-import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/interfaces/search.interface';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { MapMarker, MapMarkerSearchOptions } from 'src/repositories/map.repository';
+import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
+import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
+export type AssetStats = Record<AssetType, number>;
+
+export interface AssetStatsOptions {
+  isFavorite?: boolean;
+  isArchived?: boolean;
+  isTrashed?: boolean;
+}
+
+export interface LivePhotoSearchOptions {
+  ownerId: string;
+  libraryId?: string | null;
+  livePhotoCID: string;
+  otherAssetId: string;
+  type: AssetType;
+}
+
+export enum WithoutProperty {
+  THUMBNAIL = 'thumbnail',
+  ENCODED_VIDEO = 'encoded-video',
+  EXIF = 'exif',
+  SMART_SEARCH = 'smart-search',
+  DUPLICATE = 'duplicate',
+  FACES = 'faces',
+  SIDECAR = 'sidecar',
+}
+
+export enum WithProperty {
+  SIDECAR = 'sidecar',
+}
+
+export enum TimeBucketSize {
+  DAY = 'DAY',
+  MONTH = 'MONTH',
+}
+
+export interface AssetBuilderOptions {
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  isTrashed?: boolean;
+  isDuplicate?: boolean;
+  albumId?: string;
+  tagId?: string;
+  personId?: string;
+  userIds?: string[];
+  withStacked?: boolean;
+  exifInfo?: boolean;
+  status?: AssetStatus;
+  assetType?: AssetType;
+}
+
+export interface TimeBucketOptions extends AssetBuilderOptions {
+  size: TimeBucketSize;
+  order?: AssetOrder;
+}
+
+export interface TimeBucketItem {
+  timeBucket: string;
+  count: number;
+}
+
+export interface MonthDay {
+  day: number;
+  month: number;
+}
+
+export interface AssetExploreFieldOptions {
+  maxFields: number;
+  minAssetsPerField: number;
+}
+
+export interface AssetFullSyncOptions {
+  ownerId: string;
+  lastId?: string;
+  updatedUntil: Date;
+  limit: number;
+}
+
+export interface AssetDeltaSyncOptions {
+  userIds: string[];
+  updatedAfter: Date;
+  limit: number;
+}
+
+export interface AssetUpdateDuplicateOptions {
+  targetDuplicateId: string | null;
+  assetIds: string[];
+  duplicateIds: string[];
+}
+
+export interface UpsertFileOptions {
+  assetId: string;
+  type: AssetFileType;
+  path: string;
+}
+
+export interface AssetGetByChecksumOptions {
+  ownerId: string;
+  checksum: Buffer;
+  libraryId?: string;
+}
+
+export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
+
+export interface GetByIdsRelations {
+  exifInfo?: boolean;
+  faces?: { person?: boolean };
+  files?: boolean;
+  library?: boolean;
+  owner?: boolean;
+  smartSearch?: boolean;
+  stack?: { assets?: boolean };
+  tags?: boolean;
+}
+
+export interface DuplicateGroup {
+  duplicateId: string;
+  assets: AssetEntity[];
+}
+
+export interface DayOfYearAssets {
+  yearsAgo: number;
+  assets: AssetEntity[];
+}
+
 @Injectable()
-export class AssetRepository implements IAssetRepository {
+export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async upsertExif(exif: Insertable<Exif>): Promise<void> {
@@ -79,8 +185,16 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
-  create(asset: Insertable<Assets>): Promise<AssetEntity> {
-    return this.db.insertInto('assets').values(asset).returningAll().executeTakeFirst() as any as Promise<AssetEntity>;
+  create(asset: Insertable<Assets>): Promise<AssetEntityPlaceholder> {
+    return this.db
+      .insertInto('assets')
+      .values(asset)
+      .returningAll()
+      .executeTakeFirst() as any as Promise<AssetEntityPlaceholder>;
+  }
+
+  createAll(assets: Insertable<Assets>[]): Promise<AssetEntity[]> {
+    return this.db.insertInto('assets').values(assets).returningAll().execute() as any as Promise<AssetEntity[]>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
@@ -276,6 +390,17 @@ export class AssetRepository implements IAssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
+  async getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+    const builder = this.db
+      .selectFrom('assets')
+      .select('id')
+      .where('libraryId', '=', asUuid(libraryId))
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0);
+    const items = await builder.execute();
+    return paginationHelper(items as any as AssetEntity[], pagination.take);
+  }
+
   /**
    * Get assets by device's Id on the database
    * @param ownerId
@@ -291,6 +416,9 @@ export class AssetRepository implements IAssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -357,6 +485,10 @@ export class AssetRepository implements IAssetRepository {
       return;
     }
     await this.db.updateTable('assets').set(options).where('id', '=', anyUuid(ids)).execute();
+  }
+
+  async updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void> {
+    await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
   @GenerateSql({
@@ -458,7 +590,10 @@ export class AssetRepository implements IAssetRepository {
           .where('job_status.duplicatesDetectedAt', 'is', null)
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true),
+          .where('assets.isVisible', '=', true)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
+          .where('assets.localDateTime', 'is not', null),
       )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
@@ -524,7 +659,7 @@ export class AssetRepository implements IAssetRepository {
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
   }
 
-  getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
+  private getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
     return this.db
@@ -552,6 +687,9 @@ export class AssetRepository implements IAssetRepository {
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
@@ -584,6 +722,9 @@ export class AssetRepository implements IAssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.fileCreatedAt', 'is not', null)
+            .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -837,5 +978,75 @@ export class AssetRepository implements IAssetRepository {
           .doUpdateSet(() => mapUpsertColumns('asset_files', values[0], ASSET_FILE_CONFLICT_KEYS)),
       )
       .execute();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
+  })
+  async detectOfflineExternalAssets(
+    libraryId: string,
+    importPaths: string[],
+    exclusionPatterns: string[],
+  ): Promise<UpdateResult> {
+    const paths = importPaths.map((importPath) => `${importPath}%`);
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+
+    return this.db
+      .updateTable('assets')
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where('isOffline', '=', false)
+      .where('isExternal', '=', true)
+      .where('libraryId', '=', asUuid(libraryId))
+      .where((eb) =>
+        eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
+      )
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, paths: [DummyValue.STRING] }],
+  })
+  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
+    const result = await this.db
+      .selectFrom(
+        this.db
+          .selectFrom(
+            sql`unnest(array[${sql.join(
+              paths.map((path) => sql`${path}`),
+              sql`, `,
+            )}]::text[])`.as('unnested_paths'),
+          )
+          .select(sql`unnested_paths`.as('path'))
+          .as('unnested_paths'),
+      )
+      .select(['path'])
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            this.db
+              .selectFrom('assets')
+              .select('originalPath')
+              .whereRef('assets.originalPath', '=', sql.ref('unnested_paths.path'))
+              .where('libraryId', '=', asUuid(libraryId))
+              .where('isExternal', '=', true),
+          ),
+        ),
+      )
+      .execute();
+
+    return result.map((row) => row.path as string);
+  }
+
+  async getLibraryAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
+    const { count } = await this.db
+      .selectFrom('assets')
+      .select(sql`COUNT(*)`.as('count'))
+      .where('libraryId', '=', asUuid(options.libraryId!))
+      .executeTakeFirstOrThrow();
+
+    return count as number;
   }
 }

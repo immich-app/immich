@@ -10,10 +10,11 @@ import { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/o
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
+import picomatch from 'picomatch';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { ILoggingRepository } from 'src/types';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export class ImmichStartupError extends Error {}
 export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
@@ -96,7 +97,7 @@ export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metad
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export const handlePromiseError = <T>(promise: Promise<T>, logger: ILoggingRepository): void => {
+export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
@@ -265,4 +266,46 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }
+};
+
+const convertTokenToSqlPattern = (token: any): string => {
+  if (typeof token === 'string') {
+    return token;
+  }
+
+  switch (token.type) {
+    case 'slash': {
+      return '/';
+    }
+    case 'text': {
+      return token.value;
+    }
+    case 'globstar':
+    case 'star': {
+      return '%';
+    }
+    case 'underscore': {
+      return String.raw`\_`;
+    }
+    case 'qmark': {
+      return '_';
+    }
+    case 'dot': {
+      return '.';
+    }
+    default: {
+      return '';
+    }
+  }
+};
+
+export const globToSqlPattern = (glob: string) => {
+  const tokens = picomatch.parse(glob).tokens;
+
+  let result = '';
+  for (const token of tokens) {
+    result += convertTokenToSqlPattern(token);
+  }
+
+  return result;
 };

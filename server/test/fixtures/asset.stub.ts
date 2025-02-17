@@ -295,6 +295,7 @@ export const assetStub = {
     isFavorite: false,
     isArchived: false,
     duration: null,
+    libraryId: 'library-id',
     isVisible: true,
     isExternal: false,
     livePhotoVideo: null,

@@ -1,3 +1,12 @@
+#
+# WARNING: To install Immich, follow our guide: https://immich.app/docs/install/docker-compose
+#
+# Make sure to use the docker-compose.yml of the current release:
+#
+# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#
+# The compose file on main may not be compatible with the latest release.
+
 name: immich-prod
 
 services:
@@ -47,7 +56,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:905c4ee67b8e0aa955331960d2aa745781e6bd89afc44a8584bfd13bc890f0ae
+    image: redis:6.2-alpine@sha256:785233caf76f86920f8ebc468a4e5391bfc473be6b39ae061f784c06555953cc
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -103,7 +112,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:11.5.0-ubuntu@sha256:3c9e2b202eb933a22da5f2b5a22c98a665493f603b452263d9d6f242a87f60d7
+    image: grafana/grafana:11.5.1-ubuntu@sha256:9a4ab78cec1a2ec7d1ca5dfd5aacec6412706a1bc9e971fc7184e2f6696a63f5
     volumes:
       - grafana-data:/var/lib/grafana
 

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.125.7
+ * 1.126.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -2762,11 +2762,15 @@ export function deleteSession({ id }: {
         method: "DELETE"
     }));
 }
-export function getAllSharedLinks(opts?: Oazapfts.RequestOpts) {
+export function getAllSharedLinks({ albumId }: {
+    albumId?: string;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SharedLinkResponseDto[];
-    }>("/shared-links", {
+    }>(`/shared-links${QS.query(QS.explode({
+        albumId
+    }))}`, {
         ...opts
     }));
 }

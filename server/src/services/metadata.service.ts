@@ -7,20 +7,29 @@ import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import {
+  AssetType,
+  DatabaseLock,
+  ExifOrientation,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  QueueName,
+  SourceType,
+} from 'src/enum';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
@@ -162,10 +171,21 @@ export class MetadataService extends BaseService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
+    if (!asset.fileCreatedAt) {
+      asset.fileCreatedAt = stats.mtime;
+    }
+
+    if (!asset.fileModifiedAt) {
+      asset.fileModifiedAt = stats.mtime;
+    }
+
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 
     const { width, height } = this.getImageDimensions(exifTags);
+
+    const fileCreatedAtDate = dateTimeOriginal;
+    const fileModifiedAtDate = modifyDate;
 
     const exifData: Insertable<Exif> = {
       assetId: asset.id,
@@ -220,7 +240,8 @@ export class MetadataService extends BaseService {
       id: asset.id,
       duration: exifTags.Duration?.toString() ?? null,
       localDateTime,
-      fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      fileCreatedAt: fileCreatedAtDate,
+      fileModifiedAt: fileModifiedAtDate,
     });
 
     await this.assetRepository.upsertJobStatus({
@@ -584,16 +605,19 @@ export class MetadataService extends BaseService {
     if (timeZone) {
       this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
     } else {
-      this.logger.warn(`Asset ${asset.id} has no time zone information`);
+      this.logger.verbose(`Asset ${asset.id} has no time zone information`);
     }
+
+    const fileCreatedAt = asset.fileCreatedAt;
+    const fileModifiedAt = asset.fileModifiedAt;
 
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
+      const earliestDate = this.earliestDate(fileModifiedAt, fileCreatedAt);
       this.logger.debug(
-        `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
+        `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification: ${earliestDate.toISOString()}`,
       );
-      const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
     }
@@ -730,6 +754,8 @@ export class MetadataService extends BaseService {
 
     if (asset.isExternal) {
       if (sidecarPath !== asset.sidecarPath) {
+        this.logger.verbose(`External asset ${asset.id} has sidecar path ${sidecarPath}`);
+
         await this.assetRepository.update({ id: asset.id, sidecarPath });
       }
       return JobStatus.SUCCESS;
