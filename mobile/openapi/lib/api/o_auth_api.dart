@@ -22,7 +22,7 @@ class OAuthApi {
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
   Future<Response> finishOAuthWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/oauth/callback';
+    final apiPath = r'/oauth/callback';
 
     // ignore: prefer_final_locals
     Object? postBody = oAuthCallbackDto;
@@ -35,7 +35,7 @@ class OAuthApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class OAuthApi {
   /// * [OAuthCallbackDto] oAuthCallbackDto (required):
   Future<Response> linkOAuthAccountWithHttpInfo(OAuthCallbackDto oAuthCallbackDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/oauth/link';
+    final apiPath = r'/oauth/link';
 
     // ignore: prefer_final_locals
     Object? postBody = oAuthCallbackDto;
@@ -82,7 +82,7 @@ class OAuthApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -113,7 +113,7 @@ class OAuthApi {
   /// Performs an HTTP 'GET /oauth/mobile-redirect' operation and returns the [Response].
   Future<Response> redirectOAuthToMobileWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/oauth/mobile-redirect';
+    final apiPath = r'/oauth/mobile-redirect';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -126,7 +126,7 @@ class OAuthApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -149,7 +149,7 @@ class OAuthApi {
   /// * [OAuthConfigDto] oAuthConfigDto (required):
   Future<Response> startOAuthWithHttpInfo(OAuthConfigDto oAuthConfigDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/oauth/authorize';
+    final apiPath = r'/oauth/authorize';
 
     // ignore: prefer_final_locals
     Object? postBody = oAuthConfigDto;
@@ -162,7 +162,7 @@ class OAuthApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -193,7 +193,7 @@ class OAuthApi {
   /// Performs an HTTP 'POST /oauth/unlink' operation and returns the [Response].
   Future<Response> unlinkOAuthAccountWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/oauth/unlink';
+    final apiPath = r'/oauth/unlink';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -206,7 +206,7 @@ class OAuthApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

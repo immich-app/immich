@@ -19,7 +19,7 @@ class ServerApi {
   /// Performs an HTTP 'DELETE /server/license' operation and returns the [Response].
   Future<Response> deleteServerLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/license';
+    final apiPath = r'/server/license';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -52,7 +52,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/about' operation and returns the [Response].
   Future<Response> getAboutInfoWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/about';
+    final apiPath = r'/server/about';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -65,7 +65,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -93,7 +93,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/config' operation and returns the [Response].
   Future<Response> getServerConfigWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/config';
+    final apiPath = r'/server/config';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -106,7 +106,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -134,7 +134,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/features' operation and returns the [Response].
   Future<Response> getServerFeaturesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/features';
+    final apiPath = r'/server/features';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -147,7 +147,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -175,7 +175,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/license' operation and returns the [Response].
   Future<Response> getServerLicenseWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/license';
+    final apiPath = r'/server/license';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -188,7 +188,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -216,7 +216,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/statistics' operation and returns the [Response].
   Future<Response> getServerStatisticsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/statistics';
+    final apiPath = r'/server/statistics';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -229,7 +229,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -257,7 +257,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/version' operation and returns the [Response].
   Future<Response> getServerVersionWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/version';
+    final apiPath = r'/server/version';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -270,7 +270,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -298,7 +298,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/storage' operation and returns the [Response].
   Future<Response> getStorageWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/storage';
+    final apiPath = r'/server/storage';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -311,7 +311,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -339,7 +339,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/media-types' operation and returns the [Response].
   Future<Response> getSupportedMediaTypesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/media-types';
+    final apiPath = r'/server/media-types';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -352,7 +352,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -380,7 +380,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/theme' operation and returns the [Response].
   Future<Response> getThemeWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/theme';
+    final apiPath = r'/server/theme';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -393,7 +393,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -421,7 +421,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/version-history' operation and returns the [Response].
   Future<Response> getVersionHistoryWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/version-history';
+    final apiPath = r'/server/version-history';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -434,7 +434,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -465,7 +465,7 @@ class ServerApi {
   /// Performs an HTTP 'GET /server/ping' operation and returns the [Response].
   Future<Response> pingServerWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/server/ping';
+    final apiPath = r'/server/ping';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -478,7 +478,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -509,7 +509,7 @@ class ServerApi {
   /// * [LicenseKeyDto] licenseKeyDto (required):
   Future<Response> setServerLicenseWithHttpInfo(LicenseKeyDto licenseKeyDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/server/license';
+    final apiPath = r'/server/license';
 
     // ignore: prefer_final_locals
     Object? postBody = licenseKeyDto;
@@ -522,7 +522,7 @@ class ServerApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

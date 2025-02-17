@@ -46,7 +46,7 @@ class TimelineApi {
   /// * [bool] withStacked:
   Future<Response> getTimeBucketWithHttpInfo(TimeBucketSize size, String timeBucket, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/timeline/bucket';
+    final apiPath = r'/timeline/bucket';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -95,7 +95,7 @@ class TimelineApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -178,7 +178,7 @@ class TimelineApi {
   /// * [bool] withStacked:
   Future<Response> getTimeBucketsWithHttpInfo(TimeBucketSize size, { String? albumId, bool? isArchived, bool? isFavorite, bool? isTrashed, String? key, AssetOrder? order, String? personId, String? tagId, String? userId, bool? withPartners, bool? withStacked, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/timeline/buckets';
+    final apiPath = r'/timeline/buckets';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -226,7 +226,7 @@ class TimelineApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,

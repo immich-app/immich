@@ -22,7 +22,7 @@ class ActivitiesApi {
   /// * [ActivityCreateDto] activityCreateDto (required):
   Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activities';
+    final apiPath = r'/activities';
 
     // ignore: prefer_final_locals
     Object? postBody = activityCreateDto;
@@ -35,7 +35,7 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class ActivitiesApi {
   /// * [String] id (required):
   Future<Response> deleteActivityWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/activities/{id}'
+    final apiPath = r'/activities/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -83,7 +83,7 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -117,7 +117,7 @@ class ActivitiesApi {
   /// * [String] userId:
   Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/activities';
+    final apiPath = r'/activities';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -144,7 +144,7 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -191,7 +191,7 @@ class ActivitiesApi {
   /// * [String] assetId:
   Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/activities/statistics';
+    final apiPath = r'/activities/statistics';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -209,7 +209,7 @@ class ActivitiesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,

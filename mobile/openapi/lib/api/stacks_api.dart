@@ -22,7 +22,7 @@ class StacksApi {
   /// * [StackCreateDto] stackCreateDto (required):
   Future<Response> createStackWithHttpInfo(StackCreateDto stackCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/stacks';
+    final apiPath = r'/stacks';
 
     // ignore: prefer_final_locals
     Object? postBody = stackCreateDto;
@@ -35,7 +35,7 @@ class StacksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class StacksApi {
   /// * [String] id (required):
   Future<Response> deleteStackWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/stacks/{id}'
+    final apiPath = r'/stacks/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -83,7 +83,7 @@ class StacksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -109,7 +109,7 @@ class StacksApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> deleteStacksWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/stacks';
+    final apiPath = r'/stacks';
 
     // ignore: prefer_final_locals
     Object? postBody = bulkIdsDto;
@@ -122,7 +122,7 @@ class StacksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -148,7 +148,7 @@ class StacksApi {
   /// * [String] id (required):
   Future<Response> getStackWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/stacks/{id}'
+    final apiPath = r'/stacks/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -162,7 +162,7 @@ class StacksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -196,7 +196,7 @@ class StacksApi {
   /// * [String] primaryAssetId:
   Future<Response> searchStacksWithHttpInfo({ String? primaryAssetId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/stacks';
+    final apiPath = r'/stacks';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -213,7 +213,7 @@ class StacksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -252,7 +252,7 @@ class StacksApi {
   /// * [StackUpdateDto] stackUpdateDto (required):
   Future<Response> updateStackWithHttpInfo(String id, StackUpdateDto stackUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/stacks/{id}'
+    final apiPath = r'/stacks/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -266,7 +266,7 @@ class StacksApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

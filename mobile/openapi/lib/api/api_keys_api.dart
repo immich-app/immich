@@ -22,7 +22,7 @@ class APIKeysApi {
   /// * [APIKeyCreateDto] aPIKeyCreateDto (required):
   Future<Response> createApiKeyWithHttpInfo(APIKeyCreateDto aPIKeyCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-keys';
+    final apiPath = r'/api-keys';
 
     // ignore: prefer_final_locals
     Object? postBody = aPIKeyCreateDto;
@@ -35,7 +35,7 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class APIKeysApi {
   /// * [String] id (required):
   Future<Response> deleteApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-keys/{id}'
+    final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -83,7 +83,7 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -109,7 +109,7 @@ class APIKeysApi {
   /// * [String] id (required):
   Future<Response> getApiKeyWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-keys/{id}'
+    final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -123,7 +123,7 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -154,7 +154,7 @@ class APIKeysApi {
   /// Performs an HTTP 'GET /api-keys' operation and returns the [Response].
   Future<Response> getApiKeysWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/api-keys';
+    final apiPath = r'/api-keys';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -167,7 +167,7 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -203,7 +203,7 @@ class APIKeysApi {
   /// * [APIKeyUpdateDto] aPIKeyUpdateDto (required):
   Future<Response> updateApiKeyWithHttpInfo(String id, APIKeyUpdateDto aPIKeyUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/api-keys/{id}'
+    final apiPath = r'/api-keys/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -217,7 +217,7 @@ class APIKeysApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

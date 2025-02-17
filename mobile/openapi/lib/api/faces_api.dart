@@ -22,7 +22,7 @@ class FacesApi {
   /// * [String] id (required):
   Future<Response> getFacesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces';
+    final apiPath = r'/faces';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -37,7 +37,7 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -76,7 +76,7 @@ class FacesApi {
   /// * [FaceDto] faceDto (required):
   Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces/{id}'
+    final apiPath = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -90,7 +90,7 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

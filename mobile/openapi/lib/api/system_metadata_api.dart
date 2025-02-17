@@ -19,7 +19,7 @@ class SystemMetadataApi {
   /// Performs an HTTP 'GET /system-metadata/admin-onboarding' operation and returns the [Response].
   Future<Response> getAdminOnboardingWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/system-metadata/admin-onboarding';
+    final apiPath = r'/system-metadata/admin-onboarding';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class SystemMetadataApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -60,7 +60,7 @@ class SystemMetadataApi {
   /// Performs an HTTP 'GET /system-metadata/reverse-geocoding-state' operation and returns the [Response].
   Future<Response> getReverseGeocodingStateWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/system-metadata/reverse-geocoding-state';
+    final apiPath = r'/system-metadata/reverse-geocoding-state';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -73,7 +73,7 @@ class SystemMetadataApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -104,7 +104,7 @@ class SystemMetadataApi {
   /// * [AdminOnboardingUpdateDto] adminOnboardingUpdateDto (required):
   Future<Response> updateAdminOnboardingWithHttpInfo(AdminOnboardingUpdateDto adminOnboardingUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/system-metadata/admin-onboarding';
+    final apiPath = r'/system-metadata/admin-onboarding';
 
     // ignore: prefer_final_locals
     Object? postBody = adminOnboardingUpdateDto;
@@ -117,7 +117,7 @@ class SystemMetadataApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

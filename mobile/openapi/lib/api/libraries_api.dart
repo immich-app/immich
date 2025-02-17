@@ -22,7 +22,7 @@ class LibrariesApi {
   /// * [CreateLibraryDto] createLibraryDto (required):
   Future<Response> createLibraryWithHttpInfo(CreateLibraryDto createLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries';
+    final apiPath = r'/libraries';
 
     // ignore: prefer_final_locals
     Object? postBody = createLibraryDto;
@@ -35,7 +35,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class LibrariesApi {
   /// * [String] id (required):
   Future<Response> deleteLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries/{id}'
+    final apiPath = r'/libraries/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -83,7 +83,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -106,7 +106,7 @@ class LibrariesApi {
   /// Performs an HTTP 'GET /libraries' operation and returns the [Response].
   Future<Response> getAllLibrariesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries';
+    final apiPath = r'/libraries';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -119,7 +119,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -153,7 +153,7 @@ class LibrariesApi {
   /// * [String] id (required):
   Future<Response> getLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries/{id}'
+    final apiPath = r'/libraries/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -167,7 +167,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -201,7 +201,7 @@ class LibrariesApi {
   /// * [String] id (required):
   Future<Response> getLibraryStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries/{id}/statistics'
+    final apiPath = r'/libraries/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -215,7 +215,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -249,7 +249,7 @@ class LibrariesApi {
   /// * [String] id (required):
   Future<Response> scanLibraryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries/{id}/scan'
+    final apiPath = r'/libraries/{id}/scan'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -263,7 +263,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -291,7 +291,7 @@ class LibrariesApi {
   /// * [UpdateLibraryDto] updateLibraryDto (required):
   Future<Response> updateLibraryWithHttpInfo(String id, UpdateLibraryDto updateLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries/{id}'
+    final apiPath = r'/libraries/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -305,7 +305,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -343,7 +343,7 @@ class LibrariesApi {
   /// * [ValidateLibraryDto] validateLibraryDto (required):
   Future<Response> validateWithHttpInfo(String id, ValidateLibraryDto validateLibraryDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/libraries/{id}/validate'
+    final apiPath = r'/libraries/{id}/validate'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -357,7 +357,7 @@ class LibrariesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

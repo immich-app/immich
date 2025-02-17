@@ -26,7 +26,7 @@ class AuditApi {
   /// * [String] userId:
   Future<Response> getAuditDeletesWithHttpInfo(DateTime after, EntityType entityType, { String? userId, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/audit/deletes';
+    final apiPath = r'/audit/deletes';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -45,7 +45,7 @@ class AuditApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
