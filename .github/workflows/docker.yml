@@ -150,6 +150,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate cache key suffix
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          else
+            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -160,6 +168,10 @@ jobs:
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           labels: ${{ steps.metadata.outputs.labels }}
+          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-from: |
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
           outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=true
           build-args: |
             DEVICE=${{ matrix.device }}
@@ -292,6 +304,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate cache key suffix
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          else
+            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -302,6 +322,10 @@ jobs:
           # Skip pushing when PR from a fork
           push: ${{ !github.event.pull_request.head.repo.fork }}
           labels: ${{ steps.metadata.outputs.labels }}
+          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-from: |
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
           outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=true
           build-args: |
             DEVICE=cpu
