@@ -13,7 +13,7 @@
   interface Props {
     assetId: string;
     loopVideo: boolean;
-    checksum: string;
+    cacheKey: string | null;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -24,7 +24,7 @@
   let {
     assetId,
     loopVideo,
-    checksum,
+    cacheKey,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -39,7 +39,7 @@
 
   onMount(() => {
     if (videoPlayer) {
-      assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+      assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
       forceMuted = false;
       videoPlayer.load();
     }
@@ -106,7 +106,7 @@
     onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
     src={assetFileUrl}
   >
   </video>

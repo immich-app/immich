@@ -50,7 +50,7 @@
     img = new Image();
     await tick();
 
-    img.src = getAssetOriginalUrl({ id: asset.id, checksum: asset.checksum });
+    img.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
 
     img.addEventListener('load', () => onImageLoad(true));
     img.addEventListener('error', (error) => {
