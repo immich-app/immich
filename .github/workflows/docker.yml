@@ -36,10 +36,12 @@ jobs:
               - 'i18n/**'
             machine-learning:
               - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/docker.yml'
 
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
 
   retag_ml:
     name: Re-Tag ML
@@ -101,7 +103,6 @@ jobs:
       context: machine-learning
       file: machine-learning/Dockerfile
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
-      DOCKER_REPO: altran1502/immich-machine-learning
     strategy:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
@@ -142,14 +143,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.9.0
 
-      - name: Login to Docker Hub
-        # Only push to Docker Hub when making a release
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         # Skip when PR from a fork
@@ -159,6 +152,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate cache key suffix
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          else
+            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -166,10 +167,12 @@ jobs:
           context: ${{ env.context }}
           file: ${{ env.file }}
           platforms: ${{ matrix.platforms }}
-          # Skip pushing when PR from a fork
-          push: ${{ !github.event.pull_request.head.repo.fork }}
           labels: ${{ steps.metadata.outputs.labels }}
-          outputs: type=image,"name=${{ env.GHCR_REPO }},${{ env.DOCKER_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-from: |
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
+          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
           build-args: |
             DEVICE=${{ matrix.device }}
             BUILD_ID=${{ github.run_id }}
@@ -260,8 +263,7 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *) \
-            $(printf '${{ env.DOCKER_REPO }}@sha256:%s ' *)
+            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
 
   build_and_push_server:
     name: Build and Push Server
@@ -273,7 +275,6 @@ jobs:
       context: .
       file: server/Dockerfile
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
-      DOCKER_REPO: altran1502/immich-server
     strategy:
       fail-fast: false
       matrix:
@@ -294,13 +295,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         # Skip when PR from a fork
@@ -310,6 +304,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate cache key suffix
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          else
+            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -317,10 +319,12 @@ jobs:
           context: ${{ env.context }}
           file: ${{ env.file }}
           platforms: ${{ matrix.platform }}
-          # Skip pushing when PR from a fork
-          push: ${{ !github.event.pull_request.head.repo.fork }}
           labels: ${{ steps.metadata.outputs.labels }}
-          outputs: type=image,"name=${{ env.GHCR_REPO }},${{ env.DOCKER_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-from: |
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
+          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
           build-args: |
             DEVICE=cpu
             BUILD_ID=${{ github.run_id }}
@@ -401,8 +405,7 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *) \
-            $(printf '${{ env.DOCKER_REPO }}@sha256:%s ' *)
+            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
 
   success-check-server:
     name: Docker Build & Push Server Success

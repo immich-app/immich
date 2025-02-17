@@ -23,7 +23,6 @@ class ApiService implements Authentication {
   late MapApi mapApi;
   late PartnersApi partnersApi;
   late PeopleApi peopleApi;
-  late AuditApi auditApi;
   late SharedLinksApi sharedLinksApi;
   late SyncApi syncApi;
   late SystemConfigApi systemConfigApi;
@@ -56,7 +55,6 @@ class ApiService implements Authentication {
     mapApi = MapApi(_apiClient);
     partnersApi = PartnersApi(_apiClient);
     peopleApi = PeopleApi(_apiClient);
-    auditApi = AuditApi(_apiClient);
     sharedLinksApi = SharedLinksApi(_apiClient);
     syncApi = SyncApi(_apiClient);
     systemConfigApi = SystemConfigApi(_apiClient);

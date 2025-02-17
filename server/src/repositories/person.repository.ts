@@ -314,8 +314,7 @@ export class PersonRepository {
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
           .on('assets.isArchived', '=', false)
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.livePhotoVideoId', 'is', null),
+          .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
       .executeTakeFirst();

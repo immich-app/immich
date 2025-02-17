@@ -312,7 +312,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/directoryA`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
@@ -334,7 +334,7 @@ describe('/libraries', () => {
         exclusionPatterns: ['**/directoryA'],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -348,7 +348,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -367,7 +367,7 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
       utils.createImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -389,7 +389,7 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
       utils.createImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -441,7 +441,7 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
       utils.createImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -465,12 +465,12 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_001);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
@@ -501,12 +501,12 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
@@ -538,14 +538,14 @@ describe('/libraries', () => {
 
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
 
       utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
@@ -563,7 +563,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
@@ -574,7 +574,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/another-path/`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
@@ -594,7 +594,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
@@ -604,7 +604,7 @@ describe('/libraries', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/directoryB/**'] });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.isTrashed).toBe(true);
@@ -626,12 +626,12 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets: assetsBefore } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assetsBefore.count).toBeGreaterThan(1);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -648,7 +648,7 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -676,7 +676,7 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -705,7 +705,7 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -734,13 +734,13 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -768,12 +768,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -801,12 +801,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -835,13 +835,13 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -870,12 +870,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -904,12 +904,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await utils.scan(admin.accessToken, library.id, true);
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, {
           libraryId: library.id,
@@ -937,7 +937,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -945,7 +945,7 @@ describe('/libraries', () => {
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(offlineAsset.isTrashed).toBe(true);
@@ -959,7 +959,7 @@ describe('/libraries', () => {
 
       utils.renameImageFile(`${testAssetDir}/temp/offline.png`, `${testAssetDir}/temp/offline/offline.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const backOnlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
@@ -981,13 +981,13 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       {
         const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
@@ -1008,7 +1008,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/another-path`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const stillOfflineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
@@ -1032,7 +1032,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       {
         const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
@@ -1041,7 +1041,7 @@ describe('/libraries', () => {
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
       expect(assets.count).toBe(1);
@@ -1056,7 +1056,7 @@ describe('/libraries', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const stillOfflineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
@@ -1176,7 +1176,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await utils.scan(admin.accessToken, library.id, true);
+      await utils.scan(admin.accessToken, library.id);
 
       const { status, body } = await request(app)
         .delete(`/libraries/${library.id}`)

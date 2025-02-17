@@ -555,14 +555,12 @@ export const utils = {
     return key.secret;
   },
 
-  scan: async (accessToken: string, id: string, wait = false) => {
+  scan: async (accessToken: string, id: string) => {
     await scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
 
-    if (wait) {
-      await utils.waitForQueueFinish(accessToken, 'library');
-      await utils.waitForQueueFinish(accessToken, 'sidecar');
-      await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
-    }
+    await utils.waitForQueueFinish(accessToken, 'library');
+    await utils.waitForQueueFinish(accessToken, 'sidecar');
+    await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
   },
 };
 
