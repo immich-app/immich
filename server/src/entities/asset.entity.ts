@@ -394,7 +394,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
     .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
-    .$if(!!options.originalPath, (qb) => qb.where('assets.originalPath', '=', options.originalPath!))
+    .$if(!!options.originalPath, (qb) =>
+      qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+    )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
         sql`f_unaccent(assets."originalFileName")`,
