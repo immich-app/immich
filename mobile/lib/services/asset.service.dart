@@ -421,25 +421,26 @@ class AssetService {
   /// Delete assets from local file system and unreference from the database
   Future<void> deleteLocalAssets(Iterable<Asset> assets) async {
     // Delete files from local gallery
-    final candidates = assets.where((a) => a.isLocal);
+    final candidates = assets.where((asset) => asset.isLocal);
 
     final deletedIds = await _assetMediaRepository
-        .deleteAll(candidates.map((a) => a.localId!).toList());
+        .deleteAll(candidates.map((asset) => asset.localId!).toList());
 
     // Modify local database by removing the reference to the local assets
     if (deletedIds.isNotEmpty) {
       // Delete records from local database
       final isarIds = assets
-          .where((e) => e.storage == AssetState.local)
-          .map((e) => e.id)
+          .where((asset) => asset.storage == AssetState.local)
+          .map((asset) => asset.id)
           .toList();
       await _assetRepository.deleteByIds(isarIds);
 
       // Modify Merged asset to be remote only
-      final updatedAssets =
-          assets.where((e) => e.storage == AssetState.merged).map((e) {
-        e.localId = null;
-        return e;
+      final updatedAssets = assets
+          .where((asset) => asset.storage == AssetState.merged)
+          .map((asset) {
+        asset.localId = null;
+        return asset;
       }).toList();
 
       await _assetRepository.updateAll(updatedAssets);
@@ -465,13 +466,15 @@ class AssetService {
 
     /// Update asset info bassed on the deletion type.
     final payload = shouldDeletePermanently
-        ? assets.where((a) => a.storage == AssetState.merged).map((a) {
-            a.remoteId = null;
-            return a;
+        ? assets
+            .where((asset) => asset.storage == AssetState.merged)
+            .map((asset) {
+            asset.remoteId = null;
+            return asset;
           })
-        : assets.where((a) => a.isRemote).map((a) {
-            a.isTrashed = true;
-            return a;
+        : assets.where((asset) => asset.isRemote).map((asset) {
+            asset.isTrashed = true;
+            return asset;
           });
 
     await _assetRepository.transaction(() async {
@@ -479,8 +482,8 @@ class AssetService {
 
       if (shouldDeletePermanently) {
         final remoteAssetIds = assets
-            .where((a) => a.storage == AssetState.remote)
-            .map((a) => a.id)
+            .where((asset) => asset.storage == AssetState.remote)
+            .map((asset) => asset.id)
             .toList();
         await _assetRepository.deleteByIds(remoteAssetIds);
       }
@@ -493,8 +496,8 @@ class AssetService {
     Iterable<Asset> assets, {
     bool shouldDeletePermanently = false,
   }) async {
-    final hasLocal = assets.any((a) => a.isLocal);
-    final hasRemote = assets.any((a) => a.isRemote);
+    final hasLocal = assets.any((asset) => asset.isLocal);
+    final hasRemote = assets.any((asset) => asset.isRemote);
 
     if (hasLocal) {
       await deleteLocalAssets(assets);
@@ -506,5 +509,9 @@ class AssetService {
         shouldDeletePermanently: shouldDeletePermanently,
       );
     }
+  }
+
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
   }
 }

@@ -166,28 +166,38 @@ class AssetNotifier extends StateNotifier<bool> {
 
 final assetDetailProvider =
     StreamProvider.autoDispose.family<Asset, Asset>((ref, asset) async* {
-  yield await ref.watch(assetServiceProvider).loadExif(asset);
-  final db = ref.watch(dbProvider);
-  await for (final a in db.assets.watchObject(asset.id)) {
-    if (a != null) {
-      yield await ref.watch(assetServiceProvider).loadExif(a);
+  final assetService = ref.watch(assetServiceProvider);
+  yield await assetService.loadExif(asset);
+
+  await for (final asset in assetService.watchAsset(asset.id)) {
+    if (asset != null) {
+      yield await ref.watch(assetServiceProvider).loadExif(asset);
     }
   }
 });
 
 final assetWatcher =
     StreamProvider.autoDispose.family<Asset?, Asset>((ref, asset) {
-  final db = ref.watch(dbProvider);
-  return db.assets.watchObject(asset.id, fireImmediately: true);
+  final assetService = ref.watch(assetServiceProvider);
+  return assetService.watchAsset(asset.id, fireImmediately: true);
 });
 
 final assetsProvider = StreamProvider.family<RenderList, int?>(
   (ref, userId) {
     if (userId == null) return const Stream.empty();
     ref.watch(localeProvider);
-    final query = _commonFilterAndSort(
-      _assets(ref).where().ownerIdEqualToAnyChecksum(userId),
-    );
+
+    final query = ref
+        .watch(dbProvider)
+        .assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackPrimaryAssetIdIsNull()
+        .sortByFileCreatedAtDesc();
+
     return renderListGenerator(query, ref);
   },
   dependencies: [localeProvider],
@@ -197,11 +207,17 @@ final multiUserAssetsProvider = StreamProvider.family<RenderList, List<int>>(
   (ref, userIds) {
     if (userIds.isEmpty) return const Stream.empty();
     ref.watch(localeProvider);
-    final query = _commonFilterAndSort(
-      _assets(ref)
-          .where()
-          .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u)),
-    );
+    final query = ref
+        .watch(dbProvider)
+        .assets
+        .where()
+        .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u))
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackPrimaryAssetIdIsNull()
+        .sortByFileCreatedAtDesc();
+
     return renderListGenerator(query, ref);
   },
   dependencies: [localeProvider],
@@ -219,20 +235,6 @@ QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
       .remoteIdIsNotNull()
       .filter()
       .ownerIdEqualTo(userId)
-      .isTrashedEqualTo(false)
-      .stackPrimaryAssetIdIsNull()
-      .sortByFileCreatedAtDesc();
-}
-
-IsarCollection<Asset> _assets(StreamProviderRef<RenderList> ref) =>
-    ref.watch(dbProvider).assets;
-
-QueryBuilder<Asset, Asset, QAfterSortBy> _commonFilterAndSort(
-  QueryBuilder<Asset, Asset, QAfterWhereClause> query,
-) {
-  return query
-      .filter()
-      .isArchivedEqualTo(false)
       .isTrashedEqualTo(false)
       .stackPrimaryAssetIdIsNull()
       .sortByFileCreatedAtDesc();

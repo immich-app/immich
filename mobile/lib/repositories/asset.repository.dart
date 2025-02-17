@@ -218,6 +218,11 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
       await db.exifInfos.clear();
     });
   }
+
+  @override
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return db.assets.watchObject(id, fireImmediately: fireImmediately);
+  }
 }
 
 Future<List<Asset>> _getMatchesImpl(
