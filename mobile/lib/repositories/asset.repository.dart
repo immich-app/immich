@@ -210,6 +210,9 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .thenByFileCreatedAtDesc()
         .findAll();
   }
+
+  @override
+  Future<Asset?> getByLocalId(String id) => db.assets.getByLocalId(id);
 }
 
 Future<List<Asset>> _getMatchesImpl(

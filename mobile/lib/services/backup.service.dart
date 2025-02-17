@@ -269,7 +269,6 @@ class BackupService {
     final String deviceId = Store.get(StoreKey.deviceId);
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
     final List<String> duplicatedAssetIds = [];
-    final List<Asset> localAssets = await _assetRepository.getAllLocal();
     bool anyErrors = false;
 
     final hasPermission = await _checkPermissions();
@@ -281,6 +280,7 @@ class BackupService {
     if (isBackground) {
       candidates = _sortPhotosFirst(candidates);
     }
+
 
     for (final candidate in candidates) {
       final Asset asset = candidate.asset;
@@ -341,9 +341,9 @@ class BackupService {
             }
           }
 
-          final localAsset = localAssets.firstWhereOrNull(
-            (localAsset) => localAsset.localId == asset.localId,
-          );
+          final localAsset = asset.localId != null
+              ? await _assetRepository.getByLocalId(asset.localId!)
+              : null;
 
           String? base64Hash;
 
