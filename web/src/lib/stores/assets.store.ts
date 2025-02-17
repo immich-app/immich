@@ -466,7 +466,7 @@ export class AssetStore {
     const viewportWidth = this.viewport.width;
     if (!bucket.isBucketHeightActual) {
       const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
-      const rows = Math.ceil(unwrappedWidth / viewPortWidth);
+      const rows = Math.ceil(unwrappedWidth / viewportWidth);
       const height = 51 + rows * THUMBNAIL_HEIGHT;
       bucket.bucketHeight = height;
     }
@@ -475,12 +475,12 @@ export class AssetStore {
       spacing: 2,
       heightTolerance: 0.15,
       rowHeight: 235,
-      rowWidth: Math.floor(viewPortWidth),
+      rowWidth: Math.floor(viewportWidth),
     };
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
-        const rows = Math.ceil(unwrappedWidth / viewPortWidth);
+        const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = rows * THUMBNAIL_HEIGHT;
         assetGroup.height = height;
       }
