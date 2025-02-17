@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -25,7 +23,6 @@ final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(etagServiceProvider),
-    ref.watch(dbProvider),
     ref,
   );
 });
@@ -36,7 +33,6 @@ class AssetNotifier extends StateNotifier<bool> {
   final UserService _userService;
   final SyncService _syncService;
   final ETagService _etagService;
-  final Isar _db;
   final StateNotifierProviderRef _ref;
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
@@ -48,7 +44,6 @@ class AssetNotifier extends StateNotifier<bool> {
     this._userService,
     this._syncService,
     this._etagService,
-    this._db,
     this._ref,
   ) : super(false);
 
@@ -144,111 +139,18 @@ class AssetNotifier extends StateNotifier<bool> {
     _deleteInProgress = true;
     state = true;
     try {
-      final hasLocal = deleteAssets.any((a) => a.storage != AssetState.remote);
-      final localDeleted = await _deleteLocalAssets(deleteAssets);
-      final remoteDeleted = (hasLocal && localDeleted.isNotEmpty) || !hasLocal
-          ? await _deleteRemoteAssets(deleteAssets, force)
-          : [];
-      if (localDeleted.isNotEmpty || remoteDeleted.isNotEmpty) {
-        final dbIds = <int>[];
-        final dbUpdates = <Asset>[];
-
-        // Local assets are removed
-        if (localDeleted.isNotEmpty) {
-          // Permanently remove local only assets from isar
-          dbIds.addAll(
-            deleteAssets
-                .where((a) => a.storage == AssetState.local)
-                .map((e) => e.id),
-          );
-
-          if (remoteDeleted.any((e) => e.isLocal)) {
-            // Force delete: Add all local assets including merged assets
-            if (force) {
-              dbIds.addAll(remoteDeleted.map((e) => e.id));
-              // Soft delete: Remove local Id from asset and trash it
-            } else {
-              dbUpdates.addAll(
-                remoteDeleted.map((e) {
-                  e.localId = null;
-                  e.isTrashed = true;
-                  return e;
-                }),
-              );
-            }
-          }
-        }
-
-        // Handle remote deletion
-        if (remoteDeleted.isNotEmpty) {
-          if (force) {
-            // Remove remote only assets
-            dbIds.addAll(
-              deleteAssets
-                  .where((a) => a.storage == AssetState.remote)
-                  .map((e) => e.id),
-            );
-            // Local assets are not removed and there are merged assets
-            final hasLocal = remoteDeleted.any((e) => e.isLocal);
-            if (localDeleted.isEmpty && hasLocal) {
-              // Remove remote Id from local assets
-              dbUpdates.addAll(
-                remoteDeleted.map((e) {
-                  e.remoteId = null;
-                  // Remove from trashed if remote asset is removed
-                  e.isTrashed = false;
-                  return e;
-                }),
-              );
-            }
-          } else {
-            dbUpdates.addAll(
-              remoteDeleted.map((e) {
-                e.isTrashed = true;
-                return e;
-              }),
-            );
-          }
-        }
-
-        await _db.writeTxn(() async {
-          await _db.assets.putAll(dbUpdates);
-          await _db.exifInfos.deleteAll(dbIds);
-          await _db.assets.deleteAll(dbIds);
-        });
-        return true;
-      }
+      await _assetService.deleteAssets(
+        deleteAssets,
+        shouldDeletePermanently: force,
+      );
+      return true;
+    } catch (error) {
+      log.severe("Failed to delete assets", error);
+      return false;
     } finally {
       _deleteInProgress = false;
       state = false;
     }
-    return false;
-  }
-
-  Future<List<String>> _deleteLocalAssets(
-    Iterable<Asset> assetsToDelete,
-  ) async {
-    final List<String> local =
-        assetsToDelete.where((a) => a.isLocal).map((a) => a.localId!).toList();
-    // Delete asset from device
-    if (local.isNotEmpty) {
-      try {
-        return await _ref.read(assetMediaRepositoryProvider).deleteAll(local);
-      } catch (e, stack) {
-        log.severe("Failed to delete asset from device", e, stack);
-      }
-    }
-    return [];
-  }
-
-  Future<List<Asset>> _deleteRemoteAssets(
-    Iterable<Asset> assetsToDelete,
-    bool? force,
-  ) async {
-    final Iterable<Asset> remote = assetsToDelete.where((e) => e.isRemote);
-
-    final isSuccess = await _assetService.deleteAssets(remote, force: force);
-    return isSuccess ? remote.toList() : [];
   }
 
   Future<void> toggleFavorite(List<Asset> assets, [bool? status]) {

@@ -163,30 +163,6 @@ class AssetService {
     }
   }
 
-  Future<bool> deleteAssets(
-    Iterable<Asset> deleteAssets, {
-    bool? force = false,
-  }) async {
-    try {
-      final List<String> payload = [];
-
-      for (final asset in deleteAssets) {
-        payload.add(asset.remoteId!);
-      }
-
-      await _apiService.assetsApi.deleteAssets(
-        AssetBulkDeleteDto(
-          ids: payload,
-          force: force,
-        ),
-      );
-      return true;
-    } catch (error, stack) {
-      log.severe("Error while deleting assets", error, stack);
-    }
-    return false;
-  }
-
   /// Loads the exif information from the database. If there is none, loads
   /// the exif info from the server (remote assets only)
   Future<Asset> loadExif(Asset a) async {
@@ -442,12 +418,13 @@ class AssetService {
     return _assetRepository.dropTable();
   }
 
+  /// Delete assets from local file system and unreference from the database
   Future<void> deleteLocalAssets(Iterable<Asset> assets) async {
     // Delete files from local gallery
-    final List<String> ids =
-        assets.where((a) => a.isLocal).map((a) => a.localId!).toList();
+    final candidates = assets.where((a) => a.isLocal);
 
-    final deletedIds = await _assetMediaRepository.deleteAll(ids);
+    final deletedIds = await _assetMediaRepository
+        .deleteAll(candidates.map((a) => a.localId!).toList());
 
     // Modify local database by removing the reference to the local assets
     if (deletedIds.isNotEmpty) {
@@ -469,6 +446,7 @@ class AssetService {
     }
   }
 
+  /// Delete assets from the server and unreference from the database
   Future<void> deleteRemoteAssets(
     Iterable<Asset> assets, {
     bool shouldDeletePermanently = false,
@@ -478,11 +456,12 @@ class AssetService {
       return;
     }
 
-    final isSuccess =
-        await deleteAssets(candidates, force: shouldDeletePermanently);
-    if (!isSuccess) {
-      return;
-    }
+    await _apiService.assetsApi.deleteAssets(
+      AssetBulkDeleteDto(
+        ids: candidates.map((a) => a.remoteId!).toList(),
+        force: shouldDeletePermanently,
+      ),
+    );
 
     /// Update asset info bassed on the deletion type.
     final payload = shouldDeletePermanently
@@ -506,5 +485,26 @@ class AssetService {
         await _assetRepository.deleteByIds(remoteAssetIds);
       }
     });
+  }
+
+  /// Delete assets on both local file system and the server.
+  /// Unreference from the database.
+  Future<void> deleteAssets(
+    Iterable<Asset> assets, {
+    bool shouldDeletePermanently = false,
+  }) async {
+    final hasLocal = assets.any((a) => a.isLocal);
+    final hasRemote = assets.any((a) => a.isRemote);
+
+    if (hasLocal) {
+      await deleteLocalAssets(assets);
+    }
+
+    if (hasRemote) {
+      await deleteRemoteAssets(
+        assets,
+        shouldDeletePermanently: shouldDeletePermanently,
+      );
+    }
   }
 }
