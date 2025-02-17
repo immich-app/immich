@@ -266,8 +266,6 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
-        case 'AuditDeletesResponseDto':
-          return AuditDeletesResponseDto.fromJson(value);
         case 'AvatarResponse':
           return AvatarResponse.fromJson(value);
         case 'AvatarUpdate':
@@ -314,8 +312,6 @@ class ApiClient {
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':
           return EmailNotificationsUpdate.fromJson(value);
-        case 'EntityType':
-          return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'FaceDto':
