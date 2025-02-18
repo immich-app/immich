@@ -428,6 +428,12 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         run: docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") merged-manifest
 
+      - name: Save artifact
+        if: ${{ github.event.pull_request.head.repo.fork }}
+        uses: ishworkh/container-image-artifact-upload@v2.0.0
+        with:
+          image: merged-manifest
+
   success-check-server:
     name: Docker Build & Push Server Success
     needs: [merge_server, retag_server]
