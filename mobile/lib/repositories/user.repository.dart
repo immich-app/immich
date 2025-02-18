@@ -57,4 +57,9 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .or()
       .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
       .findAll();
+
+  @override
+  Future<User?> getByDbId(int id) async {
+    return await db.users.get(id);
+  }
 }
