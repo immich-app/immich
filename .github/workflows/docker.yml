@@ -289,7 +289,7 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
-            runner: ubuntu-latest
+            runner: mich
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
     steps:
