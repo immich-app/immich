@@ -216,6 +216,15 @@ export class SharedLinkRepository {
     await this.db.deleteFrom('shared_links').where('shared_links.id', '=', entity.id).execute();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async incrementViewCount(id: string) {
+    await this.db
+      .updateTable('shared_links')
+      .set('viewCount', sql<number>`"viewCount" + 1`)
+      .where('shared_links.id', '=', id)
+      .execute();
+  }
+
   private getSharedLinks(id: string) {
     return this.db
       .selectFrom('shared_links')

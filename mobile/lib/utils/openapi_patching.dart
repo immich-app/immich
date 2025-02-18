@@ -13,6 +13,13 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'sharedLinks', SharedLinksResponse().toJson());
       }
       break;
+
+    case 'SharedLinkResponseDto':
+      if (value is Map) {
+        addDefault(value, 'viewCount', 0);
+      }
+      break;
+
     case 'ServerConfigDto':
       if (value is Map) {
         addDefault(
@@ -26,11 +33,14 @@ dynamic upgradeDto(dynamic value, String targetType) {
           'https://tiles.immich.cloud/v1/style/dark.json',
         );
       }
+      break;
+
     case 'UserResponseDto':
       if (value is Map) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());
       }
       break;
+
     case 'UserAdminResponseDto':
       if (value is Map) {
         addDefault(value, 'profileChangedAt', DateTime.now().toIso8601String());

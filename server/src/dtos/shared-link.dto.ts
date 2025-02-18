@@ -94,6 +94,7 @@ export class SharedLinkResponseDto {
   type!: SharedLinkType;
   createdAt!: Date;
   expiresAt!: Date | null;
+  viewCount!: number;
   assets!: AssetResponseDto[];
   album?: AlbumResponseDto;
   allowUpload!: boolean;
@@ -102,7 +103,7 @@ export class SharedLinkResponseDto {
   showMetadata!: boolean;
 }
 
-export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
+const map = (sharedLink: SharedLinkEntity, { stripMetadata }: { stripMetadata: boolean }) => {
   const linkAssets = sharedLink.assets || [];
   const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
 
@@ -115,35 +116,16 @@ export function mapSharedLink(sharedLink: SharedLinkEntity): SharedLinkResponseD
     userId: sharedLink.userId,
     key: sharedLink.key.toString('base64url'),
     type: sharedLink.type,
+    viewCount: sharedLink.viewCount,
     createdAt: sharedLink.createdAt,
     expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset)),
-    album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
     allowUpload: sharedLink.allowUpload,
     allowDownload: sharedLink.allowDownload,
     showMetadata: sharedLink.showExif,
-  };
-}
-
-export function mapSharedLinkWithoutMetadata(sharedLink: SharedLinkEntity): SharedLinkResponseDto {
-  const linkAssets = sharedLink.assets || [];
-  const albumAssets = (sharedLink?.album?.assets || []).map((asset) => asset);
-
-  const assets = _.uniqBy([...linkAssets, ...albumAssets], (asset) => asset.id);
-
-  return {
-    id: sharedLink.id,
-    description: sharedLink.description,
-    password: sharedLink.password,
-    userId: sharedLink.userId,
-    key: sharedLink.key.toString('base64url'),
-    type: sharedLink.type,
-    createdAt: sharedLink.createdAt,
-    expiresAt: sharedLink.expiresAt,
-    assets: assets.map((asset) => mapAsset(asset, { stripMetadata: true })) as AssetResponseDto[],
+    assets: assets.map((asset) => mapAsset(asset, { stripMetadata })),
     album: sharedLink.album ? mapAlbumWithoutAssets(sharedLink.album) : undefined,
-    allowUpload: sharedLink.allowUpload,
-    allowDownload: sharedLink.allowDownload,
-    showMetadata: sharedLink.showExif,
   };
-}
+};
+
+export const mapSharedLink = (sharedLink: SharedLinkEntity) => map(sharedLink, { stripMetadata: false });
+export const mapSharedLinkWithoutMetadata = (sharedLink: SharedLinkEntity) => map(sharedLink, { stripMetadata: true });

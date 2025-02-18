@@ -111,7 +111,7 @@
       </h1>
 
       {#if album.assetCount > 0}
-        <AlbumSummary {album} />
+        <AlbumSummary {album} viewCount={sharedLink.viewCount} />
       {/if}
 
       <!-- ALBUM DESCRIPTION -->

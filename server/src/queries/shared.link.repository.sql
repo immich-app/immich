@@ -194,3 +194,12 @@ where
     "shared_links"."type" = $2
     or "albums"."id" is not null
   )
+
+-- SharedLinkRepository.incrementViewCount
+update "shared_links"
+set
+  "viewCount" = viewCount + 1
+where
+  "shared_links"."id" = $1
+returning
+  *

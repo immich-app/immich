@@ -27,6 +27,7 @@ class SharedLinkResponseDto {
     this.token,
     required this.type,
     required this.userId,
+    required this.viewCount,
   });
 
   ///
@@ -63,6 +64,8 @@ class SharedLinkResponseDto {
 
   String userId;
 
+  num viewCount;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
     other.album == album &&
@@ -78,7 +81,8 @@ class SharedLinkResponseDto {
     other.showMetadata == showMetadata &&
     other.token == token &&
     other.type == type &&
-    other.userId == userId;
+    other.userId == userId &&
+    other.viewCount == viewCount;
 
   @override
   int get hashCode =>
@@ -96,10 +100,11 @@ class SharedLinkResponseDto {
     (showMetadata.hashCode) +
     (token == null ? 0 : token!.hashCode) +
     (type.hashCode) +
-    (userId.hashCode);
+    (userId.hashCode) +
+    (viewCount.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, token=$token, type=$type, userId=$userId]';
+  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, token=$token, type=$type, userId=$userId, viewCount=$viewCount]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -137,6 +142,7 @@ class SharedLinkResponseDto {
     }
       json[r'type'] = this.type;
       json[r'userId'] = this.userId;
+      json[r'viewCount'] = this.viewCount;
     return json;
   }
 
@@ -163,6 +169,7 @@ class SharedLinkResponseDto {
         token: mapValueOfType<String>(json, r'token'),
         type: SharedLinkType.fromJson(json[r'type'])!,
         userId: mapValueOfType<String>(json, r'userId')!,
+        viewCount: num.parse('${json[r'viewCount']}'),
       );
     }
     return null;
@@ -222,6 +229,7 @@ class SharedLinkResponseDto {
     'showMetadata',
     'type',
     'userId',
+    'viewCount',
   };
 }
 

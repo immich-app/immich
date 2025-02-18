@@ -312,6 +312,7 @@ export interface SharedLinks {
   showExif: Generated<boolean>;
   type: string;
   userId: string;
+  viewCount: Generated<number>;
 }
 
 export interface SmartSearch {

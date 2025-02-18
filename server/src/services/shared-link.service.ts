@@ -35,6 +35,9 @@ export class SharedLinkService extends BaseService {
       response.token = this.validateAndRefreshToken(sharedLink, dto);
     }
 
+    await this.sharedLinkRepository.incrementViewCount(sharedLink.id);
+    sharedLink.viewCount++;
+
     return response;
   }
 
@@ -195,7 +198,7 @@ export class SharedLinkService extends BaseService {
     };
   }
 
-  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }) {
+  private mapToSharedLink(sharedLink: SharedLinkEntity, { withExif }: { withExif: boolean }): SharedLinkResponseDto {
     return withExif ? mapSharedLink(sharedLink) : mapSharedLinkWithoutMetadata(sharedLink);
   }
 

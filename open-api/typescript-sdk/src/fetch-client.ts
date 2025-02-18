@@ -1060,6 +1060,7 @@ export type SharedLinkResponseDto = {
     token?: string | null;
     "type": SharedLinkType;
     userId: string;
+    viewCount: number;
 };
 export type SharedLinkCreateDto = {
     albumId?: string;

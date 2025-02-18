@@ -11415,6 +11415,9 @@
           },
           "userId": {
             "type": "string"
+          },
+          "viewCount": {
+            "type": "number"
           }
         },
         "required": [
@@ -11429,7 +11432,8 @@
           "password",
           "showMetadata",
           "type",
-          "userId"
+          "userId",
+          "viewCount"
         ],
         "type": "object"
       },

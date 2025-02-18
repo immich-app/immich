@@ -204,6 +204,12 @@ describe('/shared-links', () => {
       );
     });
 
+    it('should increment the view count', async () => {
+      const request1 = await request(app).get('/shared-links/me').query({ key: linkWithAlbum.key });
+      const request2 = await request(app).get('/shared-links/me').query({ key: linkWithAlbum.key });
+      expect(request2.body.viewCount).toBe(request1.body.viewCount + 1);
+    });
+
     it('should return unauthorized for incorrect shared link', async () => {
       const { status, body } = await request(app)
         .get('/shared-links/me')

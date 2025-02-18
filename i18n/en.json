@@ -816,6 +816,7 @@
   "invite_people": "Invite People",
   "invite_to_album": "Invite to album",
   "items_count": "{count, plural, one {# item} other {# items}}",
+  "views_count": "{count, plural, one {# view} other {# views}}",
   "jobs": "Jobs",
   "keep": "Keep",
   "keep_all": "Keep All",
