@@ -27,6 +27,7 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
+import 'package:immich_mobile/utils/file_trash_manager.dart';
 import 'package:logging/logging.dart';
 import 'package:media_store_plus/media_store_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -223,7 +224,7 @@ class SyncService {
     return null;
   }
 
-  Future<void> _deleteMatchedAssets(Iterable<String> idsToDelete) async {
+  Future<void> _moveToTrashMatchedAssets(Iterable<String> idsToDelete) async {
     final List<Asset> assets =
         await _assetRepository.getAllByRemoteId(idsToDelete);
 
@@ -243,7 +244,11 @@ class SyncService {
       for (var asset in matchedAssets) {
         Uri? fileUri = await _getGalleryPhotoPath(asset.fileName);
         if (fileUri != null) {
-          await MediaStore().deleteFileUsingUri(uriString: fileUri.toString());
+          final String? filePath = await MediaStore()
+              .getFilePathFromUri(uriString: fileUri.toString());
+          if (filePath != null) {
+            FileTrashManager.moveToTrash(filePath);
+          }
         }
       }
     }
@@ -291,7 +296,7 @@ class SyncService {
       );
 
       if (Platform.isAndroid) {
-        _deleteMatchedAssets(idsToDelete);
+        _moveToTrashMatchedAssets(idsToDelete);
       }
 
       if (merged.isEmpty) return;
@@ -811,7 +816,7 @@ class SyncService {
     return (existing, toUpsert);
   }
 
-  Future<void> _deleteTrashedAssets(List<Asset> assetsList) async {
+  Future<void> _moveToTrashAssets(List<Asset> assetsList) async {
     for (var asset in assetsList) {
       if (asset.isTrashed) {
         // Call delete function for trashed asset
@@ -819,7 +824,11 @@ class SyncService {
           asset.fileName,
         ); // Assuming id represents file name
         if (fileUri != null) {
-          await MediaStore().deleteFileUsingUri(uriString: fileUri.toString());
+          final String? filePath = await MediaStore()
+              .getFilePathFromUri(uriString: fileUri.toString());
+          if (filePath != null) {
+            FileTrashManager.moveToTrash(filePath);
+          }
         }
       }
     }
@@ -830,7 +839,7 @@ class SyncService {
     if (assets.isEmpty) return;
 
     if (Platform.isAndroid) {
-      _deleteTrashedAssets(assets);
+      _moveToTrashAssets(assets);
     }
 
     final exifInfos = assets.map((e) => e.exifInfo).nonNulls.toList();
