@@ -422,7 +422,7 @@ jobs:
 
       - name: Create manifest
         working-directory: ${{ runner.temp }}/digests
-        run: docker buildx imagetools create -t merged-manifest $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+        run: docker manifest create merged-manifest $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
 
       - name: Push
         if: ${{ !github.event.pull_request.head.repo.fork }}
