@@ -414,8 +414,8 @@ class AssetService {
     return _assetRepository.getStackAssets(stackId);
   }
 
-  Future<void> dropTable() {
-    return _assetRepository.dropTable();
+  Future<void> clearTable() {
+    return _assetRepository.clearTable();
   }
 
   /// Delete assets from local file system and unreference from the database

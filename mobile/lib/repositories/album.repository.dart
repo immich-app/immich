@@ -156,8 +156,8 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
-  Future<void> dropTable() async {
-    await db.writeTxn(() async {
+  Future<void> clearTable() async {
+    await txn(() async {
       await db.albums.clear();
     });
   }

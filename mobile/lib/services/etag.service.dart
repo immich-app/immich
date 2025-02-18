@@ -10,7 +10,7 @@ class ETagService {
 
   ETagService(this._eTagRepository);
 
-  Future<void> dropTable() {
-    return _eTagRepository.dropTable();
+  Future<void> clearTable() {
+    return _eTagRepository.clearTable();
   }
 }

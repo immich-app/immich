@@ -60,7 +60,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getStackAssets(String stackId);
 
-  Future<void> dropTable();
+  Future<void> clearTable();
 
   Stream<Asset?> watchAsset(int id, {bool fireImmediately = false});
 }

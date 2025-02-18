@@ -104,7 +104,7 @@ class UserService {
     return _syncService.syncUsersFromServer(users);
   }
 
-  Future<void> dropTable() {
-    return _userRepository.dropTable();
+  Future<void> clearTable() {
+    return _userRepository.clearTable();
   }
 }

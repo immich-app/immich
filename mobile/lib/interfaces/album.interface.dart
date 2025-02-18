@@ -52,7 +52,7 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
 
   Stream<RenderList> getRenderListStream(Album album);
 
-  Future<void> dropTable();
+  Future<void> clearTable();
 }
 
 enum AlbumSort { remoteId, localId }

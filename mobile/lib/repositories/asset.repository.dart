@@ -212,10 +212,9 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<void> dropTable() async {
-    await db.writeTxn(() async {
+  Future<void> clearTable() async {
+    await txn(() async {
       await db.assets.clear();
-      await db.exifInfos.clear();
     });
   }
 

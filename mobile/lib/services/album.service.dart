@@ -492,7 +492,7 @@ class AlbumService {
     return null;
   }
 
-  Future<void> dropTable() async {
-    await _albumRepository.dropTable();
+  Future<void> clearTable() async {
+    await _albumRepository.clearTable();
   }
 }

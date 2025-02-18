@@ -12,5 +12,5 @@ abstract interface class IETagRepository implements IDatabaseRepository {
 
   Future<void> deleteByIds(List<String> ids);
 
-  Future<void> dropTable();
+  Future<void> clearTable();
 }

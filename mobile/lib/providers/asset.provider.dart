@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/etag.service.dart';
+import 'package:immich_mobile/services/exif.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/services/sync.service.dart';
@@ -23,6 +24,7 @@ final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
     ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(etagServiceProvider),
+    ref.watch(exifServiceProvider),
     ref,
   );
 });
@@ -33,6 +35,7 @@ class AssetNotifier extends StateNotifier<bool> {
   final UserService _userService;
   final SyncService _syncService;
   final ETagService _etagService;
+  final ExifService _exifService;
   final StateNotifierProviderRef _ref;
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
@@ -44,6 +47,7 @@ class AssetNotifier extends StateNotifier<bool> {
     this._userService,
     this._syncService,
     this._etagService,
+    this._exifService,
     this._ref,
   ) : super(false);
 
@@ -80,10 +84,11 @@ class AssetNotifier extends StateNotifier<bool> {
   Future<void> clearAllAssets() async {
     await Store.delete(StoreKey.assetETag);
     await Future.wait([
-      _assetService.dropTable(),
-      _albumService.dropTable(),
-      _userService.dropTable(),
-      _etagService.dropTable(),
+      _assetService.clearTable(),
+      _exifService.clearTable(),
+      _albumService.clearTable(),
+      _userService.clearTable(),
+      _etagService.clearTable(),
     ]);
   }
 
