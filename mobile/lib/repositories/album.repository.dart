@@ -156,6 +156,13 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.albums.clear();
+    });
+  }
+
+  @override
   Stream<List<Album>> watchRemoteAlbums() {
     return db.albums.where().remoteIdIsNotNull().watch();
   }
