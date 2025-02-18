@@ -6,6 +6,8 @@ import 'package:immich_mobile/interfaces/database.interface.dart';
 abstract interface class IAssetRepository implements IDatabaseRepository {
   Future<Asset?> getByRemoteId(String id);
 
+  Future<Asset?> getByLocalId(String id);
+
   Future<Asset?> getByOwnerIdChecksum(int ownerId, String checksum);
 
   Future<List<Asset>> getAllByRemoteId(

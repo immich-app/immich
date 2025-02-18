@@ -104,6 +104,9 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             case "backgroundAppRefreshEnabled":
                 handleBackgroundRefreshStatus(call: call, result: result)
                 break
+            case "digestFile":
+                handleDigestFile(call: call, result: result)
+                break
             case "digestFiles":
                 handleDigestFiles(call: call, result: result)
                 break
@@ -112,18 +115,29 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
                 break
         }
     }
-    
+
+    func handleDigestFile(call: FlutterMethodCall, result: @escaping FlutterResult) {
+        // Parse the arguments or else fail
+        guard let path = call.arguments as? String else {
+            print("Cannot parse args as string: \(String(describing: call.arguments))")
+            result(FlutterError(code: "Malformed",
+                                message: "Received args is not an String",
+                                details: nil))
+            return
+        }
+
+        // Compute hash in background thread
+        DispatchQueue.global(qos: .background).async {
+            var hash: FlutterStandardTypedData? = self.internalHandleDigestFile(path)
+            // Return result in main thread
+            DispatchQueue.main.async {
+                result(hash)
+            }
+        }
+    }
+
     // Calculates the SHA-1 hash of each file from the list of paths provided
     func handleDigestFiles(call: FlutterMethodCall, result: @escaping FlutterResult) {
-        
-        let bufsize = 2 * 1024 * 1024
-        // Private error to throw if file cannot be read
-        enum DigestError: String, LocalizedError {
-            case NoFileHandle = "Cannot Open File Handle"
-
-            public var errorDescription: String? { self.rawValue }
-        }
-        
         // Parse the arguments or else fail
         guard let args = call.arguments as? Array<String> else {
             print("Cannot parse args as array: \(String(describing: call.arguments))")
@@ -137,27 +151,39 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         DispatchQueue.global(qos: .background).async {
             var hashes: [FlutterStandardTypedData?] = Array(repeating: nil, count: args.count)
             for i in (0 ..< args.count) {
-                do {
-                    guard let file = FileHandle(forReadingAtPath: args[i]) else { throw DigestError.NoFileHandle }
-                    var hasher = Insecure.SHA1.init();
-                    while autoreleasepool(invoking: {
-                        let chunk = file.readData(ofLength: bufsize)
-                        guard !chunk.isEmpty else { return false } // EOF
-                        hasher.update(data: chunk)
-                        return true // continue
-                    }) { }
-                    let digest = hasher.finalize()
-                    hashes[i] = FlutterStandardTypedData(bytes: Data(Array(digest.makeIterator())))
-                } catch {
-                    print("Cannot calculate the digest of the file \(args[i]) due to \(error.localizedDescription)")
-                }
+               hashes[i] = self.internalHandleDigestFile(args[i])
             }
-            
+
             // Return result in main thread
             DispatchQueue.main.async {
                 result(Array(hashes))
             }
         }
+    }
+
+    func internalHandleDigestFile(_ path: String) -> FlutterStandardTypedData? {
+        // Private error to throw if file cannot be read
+        enum DigestError: String, LocalizedError {
+          case NoFileHandle = "Cannot Open File Handle"
+
+          public var errorDescription: String? { self.rawValue }
+        }
+        let bufsize = 2 * 1024 * 1024
+        do {
+            guard let file = FileHandle(forReadingAtPath: path) else { throw DigestError.NoFileHandle }
+            var hasher = Insecure.SHA1.init();
+            while autoreleasepool(invoking: {
+                let chunk = file.readData(ofLength: bufsize)
+                guard !chunk.isEmpty else { return false } // EOF
+                hasher.update(data: chunk)
+                return true // continue
+            }) { }
+            let digest = hasher.finalize()
+            return FlutterStandardTypedData(bytes: Data(Array(digest.makeIterator())))
+        } catch {
+            print("Cannot calculate the digest of the file \(path) due to \(error.localizedDescription)")
+        }
+        return nil
     }
     
     // Called by the flutter code when enabled so that we can turn on the backround services
