@@ -18,6 +18,8 @@ abstract interface class IUserRepository implements IDatabaseRepository {
   Future<void> deleteById(List<int> ids);
 
   Future<User> me();
+
+  Future<void> clearTable();
 }
 
 enum UserSort { id }
