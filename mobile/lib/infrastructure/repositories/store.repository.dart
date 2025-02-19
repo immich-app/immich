@@ -13,7 +13,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
 
   @override
   Future<bool> deleteAll() async {
-    return await nestTxn(() async {
+    return await transaction(() async {
       await _db.storeValues.clear();
       return true;
     });
@@ -29,12 +29,12 @@ class IsarStoreRepository extends IsarDatabaseRepository
 
   @override
   Future<void> delete<T>(StoreKey<T> key) async {
-    return await nestTxn(() async => await _db.storeValues.delete(key.id));
+    return await transaction(() async => await _db.storeValues.delete(key.id));
   }
 
   @override
   Future<bool> insert<T>(StoreKey<T> key, T value) async {
-    return await nestTxn(() async {
+    return await transaction(() async {
       await _db.storeValues.put(await _fromValue(key, value));
       return true;
     });
@@ -51,7 +51,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
 
   @override
   Future<bool> update<T>(StoreKey<T> key, T value) async {
-    return await nestTxn(() async {
+    return await transaction(() async {
       await _db.storeValues.put(await _fromValue(key, value));
       return true;
     });

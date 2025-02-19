@@ -4,14 +4,14 @@ import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 
 class StoreService {
-  final IStoreRepository _storeRepo;
+  final IStoreRepository _storeRepository;
 
   final Map<int, dynamic> _cache = {};
-  late final StreamSubscription<StoreUpdateEvent> _subscription;
+  late final StreamSubscription<StoreUpdateEvent> _storeUpdateSubscription;
 
   StoreService._({
-    required IStoreRepository storeRepo,
-  }) : _storeRepo = storeRepo;
+    required IStoreRepository storeRepository,
+  }) : _storeRepository = storeRepository;
 
   // TODO: Temporary typedef to make minimal changes. Remove this and make the presentation layer access store through a provider
   static StoreService? _instance;
@@ -25,39 +25,39 @@ class StoreService {
   // TODO: Replace the implementation with the one from create after removing the typedef
   /// Initializes the store with the given [storeRepository]
   static Future<StoreService> init({
-    required IStoreRepository storeRepo,
+    required IStoreRepository storeRepository,
   }) async {
-    _instance ??= await create(storeRepo: storeRepo);
+    _instance ??= await create(storeRepository: storeRepository);
     return _instance!;
   }
 
   /// Initializes the store with the given [storeRepository]
   static Future<StoreService> create({
-    required IStoreRepository storeRepo,
+    required IStoreRepository storeRepository,
   }) async {
-    final instance = StoreService._(storeRepo: storeRepo);
+    final instance = StoreService._(storeRepository: storeRepository);
     await instance._populateCache();
-    instance._subscription = instance._listenForChange();
+    instance._storeUpdateSubscription = instance._listenForChange();
     return instance;
   }
 
   /// Fills the cache with the values from the DB
   Future<void> _populateCache() async {
     for (StoreKey key in StoreKey.values) {
-      final storeValue = await _storeRepo.tryGet(key);
+      final storeValue = await _storeRepository.tryGet(key);
       _cache[key.id] = storeValue;
     }
   }
 
   /// Listens for changes in the DB and updates the cache
   StreamSubscription<StoreUpdateEvent> _listenForChange() =>
-      _storeRepo.watchAll().listen((event) {
+      _storeRepository.watchAll().listen((event) {
         _cache[event.key.id] = event.value;
       });
 
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
   void dispose() async {
-    await _subscription.cancel();
+    await _storeUpdateSubscription.cancel();
     _cache.clear();
   }
 
@@ -77,22 +77,22 @@ class StoreService {
   /// Asynchronously stores the value in the DB and synchronously in the cache
   Future<void> put<T>(StoreKey<T> key, T value) async {
     if (_cache[key.id] == value) return;
-    await _storeRepo.insert(key, value);
+    await _storeRepository.insert(key, value);
     _cache[key.id] = value;
   }
 
   /// Watches a specific key for changes
-  Stream<T?> watch<T>(StoreKey<T> key) => _storeRepo.watch(key);
+  Stream<T?> watch<T>(StoreKey<T> key) => _storeRepository.watch(key);
 
   /// Removes the value asynchronously from the DB and synchronously from the cache
   Future<void> delete<T>(StoreKey<T> key) async {
-    await _storeRepo.delete(key);
+    await _storeRepository.delete(key);
     _cache.remove(key.id);
   }
 
   /// Clears all values from this store (cache and DB)
   Future<void> clear() async {
-    await _storeRepo.deleteAll();
+    await _storeRepository.deleteAll();
     _cache.clear();
   }
 }

@@ -141,7 +141,7 @@ Future<Isar> loadDb() async {
     directory: dir.path,
     maxSizeMiB: 1024,
   );
-  await StoreService.init(storeRepo: IsarStoreRepository(db));
+  await StoreService.init(storeRepository: IsarStoreRepository(db));
   return db;
 }
 

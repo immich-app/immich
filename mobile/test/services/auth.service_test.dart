@@ -39,7 +39,7 @@ void main() {
   setUpAll(() async {
     db = await TestUtils.initIsar();
     db.writeTxnSync(() => db.clearSync());
-    await StoreService.init(storeRepo: IsarStoreRepository(db));
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
   });
 
   group('validateServerUrl', () {
@@ -47,7 +47,7 @@ void main() {
       WidgetsFlutterBinding.ensureInitialized();
       final db = await TestUtils.initIsar();
       db.writeTxnSync(() => db.clearSync());
-      await StoreService.init(storeRepo: IsarStoreRepository(db));
+      await StoreService.init(storeRepository: IsarStoreRepository(db));
     });
 
     test('Should resolve HTTP endpoint', () async {

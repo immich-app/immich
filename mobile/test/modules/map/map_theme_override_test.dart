@@ -30,7 +30,7 @@ void main() {
   setUp(() async {
     mapState = MapState(themeMode: ThemeMode.dark);
     mapStateNotifier = MockMapStateNotifier(mapState);
-    await StoreService.init(storeRepo: IsarStoreRepository(db));
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     overrides = [
       mapStateNotifierProvider.overrideWith(() => mapStateNotifier),
       localeProvider.overrideWithValue(const Locale("en")),

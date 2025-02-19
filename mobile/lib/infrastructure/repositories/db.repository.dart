@@ -14,9 +14,6 @@ class IsarDatabaseRepository implements IDatabaseRepository {
   // Isar do not support nested transactions. This is a workaround to prevent us from making nested transactions
   // Reuse the current transaction if it is already active, else start a new transaction
   @override
-  Future<T> nestTxn<T>(Future<T> Function() callback) =>
+  Future<T> transaction<T>(Future<T> Function() callback) =>
       Zone.current[_kzoneTxn] == null ? _db.writeTxn(callback) : callback();
-
-  @override
-  Future<T> txn<T>(Future<T> Function() callback) => _db.writeTxn(callback);
 }

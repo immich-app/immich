@@ -29,7 +29,7 @@ void main() {
     TestUtils.init();
     db = await TestUtils.initIsar();
     // For UserCircleAvatar
-    await StoreService.init(storeRepo: IsarStoreRepository(db));
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
     Store.put(StoreKey.accessToken, '');
