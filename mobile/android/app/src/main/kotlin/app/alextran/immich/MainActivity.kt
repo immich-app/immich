@@ -34,23 +34,35 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun moveToTrash(filePath: String): Boolean {
-        return try {
-            val file = File(filePath)
-            if (!file.exists()) return false
+    return try {
+        val file = File(filePath)
+        if (!file.exists()) return false
 
-            val uri = MediaStore.Files.getContentUri("external")
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.IS_TRASHED, 1)
+        val contentUri = MediaStore.Files.getContentUri("external")
+        val projection = arrayOf(MediaStore.MediaColumns._ID)
+        val selection = "${MediaStore.MediaColumns.DATA}=?"
+        val selectionArgs = arrayOf(filePath)
+
+        contentResolver.query(contentUri, projection, selection, selectionArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+                val fileUri = MediaStore.Files.getContentUri("external", id)
+
+                val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_TRASHED, 1) // Move to trash
+                }
+
+                val updated = contentResolver.update(fileUri, values, null, null)
+                return updated > 0
             }
-
-            val selection = "${MediaStore.MediaColumns.DATA}=?"
-            val selectionArgs = arrayOf(filePath)
-            val updated = contentResolver.update(uri, values, selection, selectionArgs)
-
-            updated > 0
-        } catch (e: Exception) {
-            Log.e("TrashError", "Error moving to trash.", e)
-            false
         }
+        false
+    } catch (e: Exception) {
+        Log.e("TrashError", "Error moving to trash.", e)
+        false
     }
 }
+}
+
+
+
