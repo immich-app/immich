@@ -36,6 +36,7 @@
   import { mdiTune } from '@mdi/js';
   import { generateId } from '$lib/utils/generate-id';
   import { SvelteSet } from 'svelte/reactivity';
+  import { preferences } from '$lib/stores/user.store';
 
   interface Props {
     searchQuery: MetadataSearchDto | SmartSearchDto;
@@ -175,7 +176,9 @@
       </div>
 
       <!-- RATING -->
-      <SearchRatingsSection bind:rating={filter.rating} />
+      {#if $preferences?.ratings.enabled}
+        <SearchRatingsSection bind:rating={filter.rating} />
+      {/if}
     </div>
   </form>
 
