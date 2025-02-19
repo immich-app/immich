@@ -387,6 +387,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('exif', 'assets.id', 'exif.assetId')
         .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
     )
+    .$if(options.rating !== undefined, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+    )
     .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
     .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
     .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
