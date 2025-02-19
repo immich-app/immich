@@ -114,7 +114,7 @@ class BaseSearchDto {
 
   @ValidateUUID({ each: true, optional: true })
   tagIds?: string[];
-  
+
   @Optional()
   @IsInt()
   @Max(5)

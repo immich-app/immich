@@ -173,7 +173,7 @@
         <!-- DISPLAY OPTIONS -->
         <SearchDisplaySection bind:filters={filter.display} />
       </div>
-      
+
       <!-- RATING -->
       <SearchRatingsSection bind:rating={filter.rating} />
     </div>
