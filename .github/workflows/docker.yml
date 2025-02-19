@@ -284,12 +284,13 @@ jobs:
       context: .
       file: server/Dockerfile
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
+      MICH_REPO: ${{ matrix.runner == 'mich' && 'registry.preview.svc.cluster.local/immich-app/immich-server' || 'registry.immich.cloud/immich-app/immich-server' }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: linux/amd64
-            runner: ubuntu-latest
+            runner: ${{ github.event.pull_request.head.repo.fork && 'mich' || 'ubuntu-latest' }}
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
     steps:
@@ -342,7 +343,7 @@ jobs:
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
-          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
+          outputs: type=image,"name=${{ github.event.pull_request.head.repo.fork && env.MICH_REPO || env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !(github.event.pull_request.head.repo.fork && matrix.runner != 'mich') }}
           build-args: |
             DEVICE=cpu
             BUILD_ID=${{ github.run_id }}
@@ -358,6 +359,7 @@ jobs:
 
       - name: Upload digest
         uses: actions/upload-artifact@v4
+        if: ${{ !(github.event.pull_request.head.repo.fork && matrix.runner != 'mich') }}
         with:
           name: server-digests-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
@@ -366,11 +368,12 @@ jobs:
 
   merge_server:
     name: Merge & Push Server
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'mich' || 'ubuntu-latest' }}
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' && !github.event.pull_request.head.repo.fork }}
     env:
       GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
       DOCKER_REPO: altran1502/immich-server
+      MICH_REPO: ${{ matrix.runner == 'mich' && 'registry.preview.svc.cluster.local/immich-app/immich-server' || 'registry.immich.cloud/immich-app/immich-server' }}
     needs:
       - build_and_push_server
     steps:
@@ -395,6 +398,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Login to Mich Registry
+        uses: docker/login-action@v3
+        if: ${{ matrix.runner != 'mich' }}
+        with:
+          registry: registry.immich.cloud
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -407,6 +418,7 @@ jobs:
             latest=false
           images: |
             name=${{ env.GHCR_REPO }}
+            name=${{ env.MICH_REPO }}
             name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
@@ -423,7 +435,7 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+            $(printf '${{ github.event.pull_request.head.repo.fork && env.MICH_REPO || env.GHCR_REPO }}@sha256:%s ' *)
 
   success-check-server:
     name: Docker Build & Push Server Success
