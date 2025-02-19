@@ -59,6 +59,11 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .findAll();
 
   @override
+  Future<User?> getByDbId(int id) async {
+    return await db.users.get(id);
+  }
+
+  @override
   Future<void> clearTable() async {
     await txn(() async {
       await db.users.clear();
