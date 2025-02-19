@@ -264,7 +264,7 @@
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if current && current.memory.assets.length > 0}
-    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark>
+    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark multiRow>
       {#snippet leading()}
         {#if current}
           <p class="text-lg">
@@ -320,9 +320,9 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="overflow-hidden pt-20">
+    <section class="overflow-hidden pt-32 md:pt-20">
       <div
-        class="ml-[-100%] box-border flex h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
+        class="ml-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
         <!-- PREVIOUS MEMORY -->
         <div class="h-1/2 w-[20vw] rounded-2xl {current.previousMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
