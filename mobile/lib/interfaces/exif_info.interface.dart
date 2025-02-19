@@ -9,4 +9,6 @@ abstract interface class IExifInfoRepository implements IDatabaseRepository {
   Future<List<ExifInfo>> updateAll(List<ExifInfo> exifInfos);
 
   Future<void> delete(int id);
+
+  Future<void> clearTable();
 }
