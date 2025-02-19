@@ -14,6 +14,7 @@
     date: SearchDateFilter;
     display: SearchDisplayFilters;
     mediaType: MediaType;
+    rating?: number;
   };
 </script>
 
@@ -26,6 +27,7 @@
   import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
+  import SearchRatingsSection from './search-ratings-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
   import SearchTextSection from './search-text-section.svelte';
@@ -81,6 +83,7 @@
         : searchQuery.type === AssetTypeEnum.Video
           ? MediaType.Video
           : MediaType.All,
+    rating: searchQuery.rating,
   });
 
   const resetForm = () => {
@@ -94,6 +97,7 @@
       date: {},
       display: {},
       mediaType: MediaType.All,
+      rating: undefined,
     };
   };
 
@@ -124,6 +128,7 @@
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
+      rating: filter.rating,
     };
 
     onSearch(payload);
@@ -168,6 +173,9 @@
         <!-- DISPLAY OPTIONS -->
         <SearchDisplaySection bind:filters={filter.display} />
       </div>
+      
+      <!-- RATING -->
+      <SearchRatingsSection bind:rating={filter.rating} />
     </div>
   </form>
 
