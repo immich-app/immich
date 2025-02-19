@@ -601,7 +601,7 @@ export class MetadataService extends BaseService {
     if (timeZone) {
       this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
     } else {
-      this.logger.warn(`Asset ${asset.id} has no time zone information`);
+      this.logger.debug(`Asset ${asset.id} has no time zone information`);
     }
 
     let dateTimeOriginal = dateTime?.toDate();
@@ -641,7 +641,7 @@ export class MetadataService extends BaseService {
     // TODO take ref into account
 
     if (latitude === 0 && longitude === 0) {
-      this.logger.warn('Latitude and longitude of 0, setting to null');
+      this.logger.debug('Latitude and longitude of 0, setting to null');
       latitude = null;
       longitude = null;
     }
