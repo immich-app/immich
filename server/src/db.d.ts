@@ -4,7 +4,7 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { Permission } from 'src/enum';
+import { Permission, SyncEntityType } from 'src/enum';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -294,6 +294,15 @@ export interface Sessions {
   userId: string;
 }
 
+export interface SessionSyncCheckpoints {
+  ack: string;
+  createdAt: Generated<Timestamp>;
+  sessionId: string;
+  type: SyncEntityType;
+  updatedAt: Generated<Timestamp>;
+}
+
+
 export interface SharedLinkAsset {
   assetsId: string;
   sharedLinksId: string;
@@ -384,6 +393,11 @@ export interface Users {
   updatedAt: Generated<Timestamp>;
 }
 
+export interface UsersAudit {
+  userId: string;
+  deletedAt: Generated<Timestamp>;
+}
+
 export interface VectorsPgVectorIndexStat {
   idx_growing: ArrayType<Int8> | null;
   idx_indexing: boolean | null;
@@ -429,6 +443,7 @@ export interface DB {
   partners: Partners;
   person: Person;
   sessions: Sessions;
+  session_sync_checkpoints: SessionSyncCheckpoints;
   shared_link__asset: SharedLinkAsset;
   shared_links: SharedLinks;
   smart_search: SmartSearch;
@@ -440,6 +455,7 @@ export interface DB {
   typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
   users: Users;
+  users_audit: UsersAudit;
   'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
   version_history: VersionHistory;
 }

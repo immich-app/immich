@@ -4,6 +4,7 @@ import {
   ImageFormat,
   JobName,
   QueueName,
+  SyncEntityType,
   TranscodeTarget,
   VideoCodec,
 } from 'src/enum';
@@ -409,3 +410,9 @@ export interface IBulkAsset {
   addAssetIds: (id: string, assetIds: string[]) => Promise<void>;
   removeAssetIds: (id: string, assetIds: string[]) => Promise<void>;
 }
+
+export type SyncAck = {
+  type: SyncEntityType;
+  ackEpoch: string;
+  ids: string[];
+};
