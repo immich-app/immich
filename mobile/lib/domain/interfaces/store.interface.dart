@@ -1,4 +1,4 @@
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 
 abstract interface class IStoreRepository {
   Future<bool> insert<T>(StoreKey<T> key, T value);

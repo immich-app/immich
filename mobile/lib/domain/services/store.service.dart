@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 
 class StoreService {
   final IStoreRepository _storeRepository;
