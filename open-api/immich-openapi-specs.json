@@ -9956,6 +9956,11 @@
           "previewPath": {
             "type": "string"
           },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
+          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -10612,6 +10617,11 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
           },
           "size": {
             "maximum": 1000,
@@ -11562,6 +11572,11 @@
           },
           "query": {
             "type": "string"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
           },
           "size": {
             "maximum": 1000,
