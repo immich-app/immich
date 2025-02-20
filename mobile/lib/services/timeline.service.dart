@@ -23,4 +23,10 @@ class TimelineService {
 
     yield* _timelineRepository.watchArchiveTimeline(user.isarId);
   }
+
+  Stream<RenderList> watchFavoriteTimeline() async* {
+    final user = await _userRepository.me();
+
+    yield* _timelineRepository.watchFavoriteTimeline(user.isarId);
+  }
 }

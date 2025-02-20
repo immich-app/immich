@@ -29,7 +29,7 @@ class FavoritesPage extends HookConsumerWidget {
     return Scaffold(
       appBar: ref.watch(multiselectProvider) ? null : buildAppBar(),
       body: MultiselectGrid(
-        renderListProvider: favoriteAssetsProvider,
+        renderListProvider: favoriteTimelineProvider,
         favoriteEnabled: true,
         editEnabled: true,
         unfavorite: true,
