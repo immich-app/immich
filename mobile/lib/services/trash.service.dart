@@ -39,8 +39,7 @@ class TrashService {
   }
 
   Future<void> emptyTrash() async {
-    final users = await _userRepository.getAll(self: true);
-    final user = users.first;
+    final user = await _userRepository.me();
 
     await _apiService.trashApi.emptyTrash();
 
@@ -71,8 +70,7 @@ class TrashService {
   }
 
   Future<void> restoreTrash() async {
-    final users = await _userRepository.getAll(self: true);
-    final user = users.first;
+    final user = await _userRepository.me();
 
     await _apiService.trashApi.restoreTrash();
 
