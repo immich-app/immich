@@ -23,14 +23,17 @@
     getAllLibraries,
     getLibraryStatistics,
     getUserAdmin,
+    JobCommand,
+    JobName,
     scanLibrary,
+    sendJobCommand,
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
     type UserResponseDto,
   } from '@immich/sdk';
   import { Button, Text } from '@immich/ui';
-  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
+  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiQueueFirstInLastOut, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';
@@ -152,9 +155,8 @@
 
   const handleScanAll = async () => {
     try {
-      for (const library of libraries) {
-        await scanLibrary({ id: library.id });
-      }
+      await sendJobCommand({ id: JobName.Library, jobCommandDto: { command: JobCommand.Start } });
+
       notificationController.show({
         message: $t('admin.refreshing_all_libraries'),
         type: NotificationType.Info,

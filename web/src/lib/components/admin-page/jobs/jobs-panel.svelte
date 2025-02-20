@@ -79,8 +79,7 @@
       icon: mdiLibraryShelves,
       title: $getJobName(JobName.Library),
       subtitle: $t('admin.library_tasks_description'),
-      allText: $t('all'),
-      missingText: $t('refresh'),
+      missingText: $t('start'),
     },
     [JobName.Sidecar]: {
       title: $getJobName(JobName.Sidecar),
