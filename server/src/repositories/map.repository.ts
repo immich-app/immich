@@ -89,7 +89,6 @@ export class MapRepository {
           .on('exif.longitude', 'is not', null),
       )
       .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
-      .leftJoin('albums_assets_assets', (join) => join.onRef('assets.id', '=', 'albums_assets_assets.assetsId'))
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
