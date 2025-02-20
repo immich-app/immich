@@ -40,4 +40,8 @@ class TimelineService {
 
     yield* _timelineRepository.watchTrashTimeline(user.isarId);
   }
+
+  Stream<RenderList> watchAllVideosTimeline() async* {
+    yield* _timelineRepository.watchAllVideosTimeline();
+  }
 }

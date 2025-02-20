@@ -63,6 +63,18 @@ class TimelineRepository extends DatabaseRepository
     yield* _watchRenderList(query, GroupAssetsBy.none);
   }
 
+  @override
+  Stream<RenderList> watchAllVideosTimeline() async* {
+    final query = db.assets
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .typeEqualTo(AssetType.video)
+        .sortByFileCreatedAtDesc();
+
+    yield* _watchRenderList(query, GroupAssetsBy.none);
+  }
+
   Stream<RenderList> _watchRenderList(
     QueryBuilder<Asset, Asset, QAfterSortBy> query,
     GroupAssetsBy groupAssetsBy,

@@ -6,9 +6,10 @@ import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart'
 final albumTimelineProvider =
     StreamProvider.autoDispose.family<RenderList, int>((ref, id) {
   final album = ref.watch(albumWatcher(id)).value;
+  final timelineService = ref.watch(timelineServiceProvider);
 
   if (album != null) {
-    return ref.watch(timelineServiceProvider).watchAlbumTimeline(album);
+    return timelineService.watchAlbumTimeline(album);
   }
 
   return const Stream.empty();
@@ -27,4 +28,9 @@ final favoriteTimelineProvider = StreamProvider<RenderList>((ref) {
 final trashTimelineProvider = StreamProvider<RenderList>((ref) {
   final timelineService = ref.watch(timelineServiceProvider);
   return timelineService.watchTrashTimeline();
+});
+
+final allVideosTimelineProvider = StreamProvider<RenderList>((ref) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.watchAllVideosTimeline();
 });
