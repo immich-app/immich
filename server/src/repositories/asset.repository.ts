@@ -147,6 +147,11 @@ export interface DuplicateGroup {
   assets: AssetEntity[];
 }
 
+export interface DuplicateGroupInfo {
+  duplicateId: string;
+  exampleAsset: AssetEntity;
+}
+
 export interface DayOfYearAssets {
   yearsAgo: number;
   assets: AssetEntity[];
@@ -834,6 +839,99 @@ export class AssetRepository {
         )
         .execute() as any as Promise<DuplicateGroup[]>
     );
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getDuplicatesInfo(userId: string): Promise<DuplicateGroupInfo[]> {
+    return this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('assets')
+          .leftJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom('exif')
+                .selectAll('assets')
+                .select((eb) => eb.table('exif').as('exifInfo'))
+                .whereRef('exif.assetId', '=', 'assets.id')
+                .as('asset'),
+            (join) => join.onTrue(),
+          )
+          .select('assets.duplicateId')
+          .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
+          .select((eb) => sql<any>`(${eb.fn('jsonb_agg', [eb.table('asset')])}->>0)::jsonb`.as('exampleAsset'))
+          .where('assets.ownerId', '=', asUuid(userId))
+          .where('assets.duplicateId', 'is not', null)
+          .where('assets.deletedAt', 'is', null)
+          .where('assets.isVisible', '=', true)
+          .groupBy('assets.duplicateId'),
+      )
+      .with('unique', (qb) =>
+        qb
+          .selectFrom('duplicates')
+          .select('duplicateId')
+          .where((eb) => eb(eb.fn('jsonb_array_length', ['assets']), '=', 1)),
+      )
+      .with('removed_unique', (qb) =>
+        qb
+          .updateTable('assets')
+          .set({ duplicateId: null })
+          .from('unique')
+          .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
+      )
+      .selectFrom('duplicates')
+      .select(['duplicateId', 'exampleAsset'])
+      .where(({ not, exists }) =>
+        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+      )
+      .execute() as any as Promise<DuplicateGroupInfo[]>;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getDuplicateById(userId: string, duplicateId: string): Promise<DuplicateGroup | undefined> {
+    return this.db
+      .with('duplicates', (qb) =>
+        qb
+          .selectFrom('assets')
+          .leftJoinLateral(
+            (qb) =>
+              qb
+                .selectFrom('exif')
+                .selectAll('assets')
+                .select((eb) => eb.table('exif').as('exifInfo'))
+                .whereRef('exif.assetId', '=', 'assets.id')
+                .as('asset'),
+            (join) => join.onTrue(),
+          )
+          .select('assets.duplicateId')
+          .select((eb) => eb.fn('jsonb_agg', [eb.table('asset')]).as('assets'))
+          .where('assets.ownerId', '=', asUuid(userId))
+          .where('assets.duplicateId', 'is not', null)
+          .where('assets.deletedAt', 'is', null)
+          .where('assets.isVisible', '=', true)
+          .groupBy('assets.duplicateId'),
+      )
+      .with('unique', (qb) =>
+        qb
+          .selectFrom('duplicates')
+          .select('duplicateId')
+          .where((eb) => eb(eb.fn('jsonb_array_length', ['assets']), '=', 1)),
+      )
+      .with('removed_unique', (qb) =>
+        qb
+          .updateTable('assets')
+          .set({ duplicateId: null })
+          .from('unique')
+          .whereRef('assets.duplicateId', '=', 'unique.duplicateId'),
+      )
+      .selectFrom('duplicates')
+      .selectAll()
+      .where('duplicates.duplicateId', '=', asUuid(duplicateId))
+      .where(({ not, exists }) =>
+        not(exists((eb) => eb.selectFrom('unique').whereRef('unique.duplicateId', '=', 'duplicates.duplicateId'))),
+      )
+      .limit(1)
+      .executeTakeFirst() as any as Promise<DuplicateGroup | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { minAssetsPerField: 5, maxFields: 12 }] })

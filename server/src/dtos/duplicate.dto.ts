@@ -7,6 +7,11 @@ export class DuplicateResponseDto {
   assets!: AssetResponseDto[];
 }
 
+export class DuplicateInfoResponseDto {
+  duplicateId!: string;
+  exampleAsset!: AssetResponseDto;
+}
+
 export class ResolveDuplicatesDto {
   @IsNotEmpty()
   @ValidateUUID({ each: true })
