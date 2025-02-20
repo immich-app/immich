@@ -9,7 +9,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import type { Viewport } from '$lib/stores/assets.store';
   import { foldersStore } from '$lib/stores/folders.svelte';
-  import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+  import { normalizeTreePath } from '$lib/utils/tree-utils';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -42,7 +42,7 @@
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
-  let tree = $derived(buildTree(foldersStore.uniquePaths));
+  let tree = $derived(data.tree);
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
   let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree).sort());
 

@@ -3,7 +3,7 @@ import { foldersStore } from '$lib/stores/folders.svelte';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfoFromParam } from '$lib/utils/navigation';
-import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
+import { normalizeTreePath } from '$lib/utils/tree-utils';
 import type { PageLoad } from './$types';
 
 export const load = (async ({ params, url }) => {
@@ -24,16 +24,19 @@ export const load = (async ({ params, url }) => {
     // We should bust the asset cache of the folder store, to make sure we don't show stale data
     foldersStore.bustAssetCache();
   }
-
-  let tree = buildTree(foldersStore.uniquePaths);
+  let tree = foldersStore.tree;
   const parts = normalizeTreePath(path || '').split('/');
+
   for (const part of parts) {
-    tree = tree?.[part];
+    if (part) {
+      tree = tree?.[part];
+    }
   }
 
   return {
     asset,
     path,
+    tree: foldersStore.tree,
     currentFolders: Object.keys(tree || {}).sort(),
     pathAssets,
     meta: {

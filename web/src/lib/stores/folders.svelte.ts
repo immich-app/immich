@@ -1,3 +1,4 @@
+import { buildTree, type RecursiveObject } from '$lib/utils/tree-utils';
 import {
   getAssetsByOriginalPath,
   getUniqueOriginalPaths,
@@ -15,6 +16,8 @@ class FoldersStore {
   private initialized = false;
   uniquePaths = $state<string[]>([]);
   assets = $state<AssetCache>({});
+  rootPath = '';
+  tree = $state<RecursiveObject>({});
 
   async fetchUniquePaths() {
     if (this.initialized) {
@@ -24,6 +27,24 @@ class FoldersStore {
 
     const uniquePaths = await getUniqueOriginalPaths();
     this.uniquePaths.push(...uniquePaths);
+
+    this.tree = buildTree(foldersStore.uniquePaths);
+
+    const getAssets = async () => {
+      await this.fetchAssetsByPath(this.rootPath);
+      return this.assets[this.rootPath] || null;
+    };
+
+    let currentFolders = Object.keys(this.tree || {}).sort();
+    let currentAssets = await getAssets();
+
+    while (currentFolders.length === 1 && currentAssets.length === 0) {
+      const folder = currentFolders[0];
+      this.rootPath += `/${folder}`;
+      this.tree = this.tree[folder];
+      currentFolders = Object.keys(this.tree || {}).sort();
+      currentAssets = await getAssets();
+    }
   }
 
   bustAssetCache() {
@@ -34,7 +55,7 @@ class FoldersStore {
     if (!path) {
       return;
     }
-    this.assets[path] = await getAssetsByOriginalPath({ path });
+    this.assets[path] = await getAssetsByOriginalPath({ path: this.getEffectivePath(path) });
   }
 
   async fetchAssetsByPath(path: string) {
@@ -42,7 +63,11 @@ class FoldersStore {
       return;
     }
 
-    this.assets[path] = await getAssetsByOriginalPath({ path });
+    this.assets[path] = await getAssetsByOriginalPath({ path: this.getEffectivePath(path) });
+  }
+
+  private getEffectivePath(path: string) {
+    return this.rootPath ? this.rootPath + '/' + path : path;
   }
 
   clearCache() {
