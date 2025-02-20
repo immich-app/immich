@@ -533,6 +533,9 @@ export type AssetFaceCreateDto = {
     x: number;
     y: number;
 };
+export type AssetFaceDeleteDto = {
+    force: boolean;
+};
 export type FaceDto = {
     id: string;
 };
@@ -2035,13 +2038,15 @@ export function createFace({ assetFaceCreateDto }: {
         body: assetFaceCreateDto
     })));
 }
-export function deleteFace({ id }: {
+export function deleteFace({ id, assetFaceDeleteDto }: {
     id: string;
+    assetFaceDeleteDto: AssetFaceDeleteDto;
 }, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchText(`/faces/${encodeURIComponent(id)}`, {
+    return oazapfts.ok(oazapfts.fetchText(`/faces/${encodeURIComponent(id)}`, oazapfts.json({
         ...opts,
-        method: "DELETE"
-    }));
+        method: "DELETE",
+        body: assetFaceDeleteDto
+    })));
 }
 export function reassignFacesById({ id, faceDto }: {
     id: string;

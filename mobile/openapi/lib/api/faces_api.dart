@@ -59,19 +59,21 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteFaceWithHttpInfo(String id,) async {
+  ///
+  /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
+  Future<Response> deleteFaceWithHttpInfo(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
     // ignore: prefer_const_declarations
     final path = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
-    Object? postBody;
+    Object? postBody = assetFaceDeleteDto;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
-    const contentTypes = <String>[];
+    const contentTypes = <String>['application/json'];
 
 
     return apiClient.invokeAPI(
@@ -88,8 +90,10 @@ class FacesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteFace(String id,) async {
-    final response = await deleteFaceWithHttpInfo(id,);
+  ///
+  /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
+  Future<void> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
+    final response = await deleteFaceWithHttpInfo(id, assetFaceDeleteDto,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

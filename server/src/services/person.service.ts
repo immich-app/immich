@@ -6,6 +6,7 @@ import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.respons
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFaceCreateDto,
+  AssetFaceDeleteDto,
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
   FaceDto,
@@ -738,8 +739,9 @@ export class PersonService extends BaseService {
     });
   }
 
-  async deleteFace(auth: AuthDto, id: string): Promise<void> {
+  async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FACE_DELETE, ids: [id] });
-    return this.personRepository.deleteAssetFace(id, true);
+
+    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
   }
 }

@@ -240,7 +240,7 @@
       const data = getFaceCroppedCoordinates();
       if (!data) {
         notificationController.show({
-          message: 'Error tagging face - cannot getting bounding box coordinates',
+          message: 'Error tagging face - cannot get bounding box coordinates',
         });
         return;
       }

@@ -277,6 +277,7 @@ Class | Method | HTTP request | Description
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
  - [AssetFaceCreateDto](doc//AssetFaceCreateDto.md)
+ - [AssetFaceDeleteDto](doc//AssetFaceDeleteDto.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)

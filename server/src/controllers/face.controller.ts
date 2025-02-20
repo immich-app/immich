@@ -1,7 +1,13 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFaceCreateDto, AssetFaceResponseDto, FaceDto, PersonResponseDto } from 'src/dtos/person.dto';
+import {
+  AssetFaceCreateDto,
+  AssetFaceDeleteDto,
+  AssetFaceResponseDto,
+  FaceDto,
+  PersonResponseDto,
+} from 'src/dtos/person.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { PersonService } from 'src/services/person.service';
@@ -36,7 +42,7 @@ export class FaceController {
 
   @Delete(':id')
   @Authenticated({ permission: Permission.FACE_DELETE })
-  deleteFace(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto) {
-    return this.service.deleteFace(auth, id);
+  deleteFace(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto, @Body() dto: AssetFaceDeleteDto) {
+    return this.service.deleteFace(auth, id, dto);
   }
 }

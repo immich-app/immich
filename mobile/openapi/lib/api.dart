@@ -88,6 +88,7 @@ part 'model/asset_bulk_upload_check_result.dart';
 part 'model/asset_delta_sync_dto.dart';
 part 'model/asset_delta_sync_response_dto.dart';
 part 'model/asset_face_create_dto.dart';
+part 'model/asset_face_delete_dto.dart';
 part 'model/asset_face_response_dto.dart';
 part 'model/asset_face_update_dto.dart';
 part 'model/asset_face_update_item.dart';

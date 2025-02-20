@@ -196,6 +196,11 @@ export class AssetFaceCreateDto extends AssetFaceUpdateItem {
   height!: number;
 }
 
+export class AssetFaceDeleteDto {
+  @IsNotEmpty()
+  force!: boolean;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;

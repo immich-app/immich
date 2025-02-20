@@ -471,10 +471,13 @@ export class PersonRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  async deleteAssetFace(id: string, softDelete: boolean): Promise<void> {
-    await (softDelete
-      ? this.db.updateTable('asset_faces').set({ deletedAt: new Date() }).where('asset_faces.id', '=', id).execute()
-      : this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', id).execute());
+  async deleteAssetFace(id: string): Promise<void> {
+    await this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', id).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async softDeleteAssetFaces(id: string): Promise<void> {
+    await this.db.updateTable('asset_faces').set({ deletedAt: new Date() }).where('asset_faces.id', '=', id).execute();
   }
 
   private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {

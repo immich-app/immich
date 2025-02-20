@@ -264,3 +264,10 @@ from
 delete from "asset_faces"
 where
   "asset_faces"."id" = $1
+
+-- PersonRepository.softDeleteAssetFaces
+update "asset_faces"
+set
+  "deletedAt" = $1
+where
+  "asset_faces"."id" = $2
