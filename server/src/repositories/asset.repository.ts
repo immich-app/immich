@@ -133,14 +133,13 @@ export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffli
 
 export interface GetByIdsRelations {
   exifInfo?: boolean;
-  faces?: { person?: boolean };
+  faces?: { person?: boolean; withDeleted?: boolean };
   files?: boolean;
   library?: boolean;
   owner?: boolean;
   smartSearch?: boolean;
   stack?: { assets?: boolean };
   tags?: boolean;
-  withDeletedFace?: boolean;
 }
 
 export interface DuplicateGroup {
@@ -257,7 +256,7 @@ export class AssetRepository {
   @ChunkedArray()
   async getByIds(
     ids: string[],
-    { exifInfo, faces, files, library, owner, smartSearch, stack, tags, withDeletedFace }: GetByIdsRelations = {},
+    { exifInfo, faces, files, library, owner, smartSearch, stack, tags }: GetByIdsRelations = {},
   ): Promise<AssetEntity[]> {
     const res = await this.db
       .selectFrom('assets')
@@ -265,7 +264,9 @@ export class AssetRepository {
       .where('assets.id', '=', anyUuid(ids))
       .$if(!!exifInfo, withExif)
       .$if(!!faces, (qb) =>
-        qb.select((eb) => (faces?.person ? withFacesAndPeople(eb, withDeletedFace) : withFaces(eb, withDeletedFace))),
+        qb.select((eb) =>
+          faces?.person ? withFacesAndPeople(eb, faces.withDeleted) : withFaces(eb, faces?.withDeleted),
+        ),
       )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!library, (qb) => qb.select(withLibrary))

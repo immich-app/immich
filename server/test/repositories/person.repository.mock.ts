@@ -36,5 +36,6 @@ export const newPersonRepositoryMock = (): Mocked<RepositoryInterface<PersonRepo
 
     createAssetFace: vitest.fn(),
     deleteAssetFace: vitest.fn(),
+    softDeleteAssetFaces: vitest.fn(),
   };
 };
