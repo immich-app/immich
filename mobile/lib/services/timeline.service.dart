@@ -17,7 +17,10 @@ class TimelineService {
   final ITimelineRepository _timelineRepository;
   final IUserRepository _userRepository;
 
-  TimelineService(this._timelineRepository, this._userRepository);
+  TimelineService(
+    this._timelineRepository,
+    this._userRepository,
+  );
 
   Stream<RenderList> watchArchiveTimeline() async* {
     final user = await _userRepository.me();

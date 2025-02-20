@@ -16,7 +16,7 @@ class TimelineRepository extends DatabaseRepository
   TimelineRepository(super.db);
 
   @override
-  Stream<RenderList> watchArchiveTimeline(int userId) async* {
+  Stream<RenderList> watchArchiveTimeline(int userId) {
     final query = db.assets
         .where()
         .ownerIdEqualToAnyChecksum(userId)
@@ -25,11 +25,11 @@ class TimelineRepository extends DatabaseRepository
         .isTrashedEqualTo(false)
         .sortByFileCreatedAtDesc();
 
-    yield* _watchRenderList(query, GroupAssetsBy.none);
+    return _watchRenderList(query, GroupAssetsBy.none);
   }
 
   @override
-  Stream<RenderList> watchFavoriteTimeline(int userId) async* {
+  Stream<RenderList> watchFavoriteTimeline(int userId) {
     final query = db.assets
         .where()
         .ownerIdEqualToAnyChecksum(userId)
@@ -38,33 +38,33 @@ class TimelineRepository extends DatabaseRepository
         .isTrashedEqualTo(false)
         .sortByFileCreatedAtDesc();
 
-    yield* _watchRenderList(query, GroupAssetsBy.none);
+    return _watchRenderList(query, GroupAssetsBy.none);
   }
 
   @override
-  Stream<RenderList> watchAlbumTimeline(Album album) async* {
+  Stream<RenderList> watchAlbumTimeline(Album album) {
     final query = album.assets.filter().isTrashedEqualTo(false);
     final withSortedOption = switch (album.sortOrder) {
       SortOrder.asc => query.sortByFileCreatedAt(),
       SortOrder.desc => query.sortByFileCreatedAtDesc(),
     };
 
-    yield* _watchRenderList(withSortedOption, GroupAssetsBy.none);
+    return _watchRenderList(withSortedOption, GroupAssetsBy.none);
   }
 
   @override
-  Stream<RenderList> watchTrashTimeline(int userId) async* {
+  Stream<RenderList> watchTrashTimeline(int userId) {
     final query = db.assets
         .filter()
         .ownerIdEqualTo(userId)
         .isTrashedEqualTo(true)
         .sortByFileCreatedAtDesc();
 
-    yield* _watchRenderList(query, GroupAssetsBy.none);
+    return _watchRenderList(query, GroupAssetsBy.none);
   }
 
   @override
-  Stream<RenderList> watchAllVideosTimeline() async* {
+  Stream<RenderList> watchAllVideosTimeline() {
     final query = db.assets
         .filter()
         .isArchivedEqualTo(false)
@@ -72,7 +72,7 @@ class TimelineRepository extends DatabaseRepository
         .typeEqualTo(AssetType.video)
         .sortByFileCreatedAtDesc();
 
-    yield* _watchRenderList(query, GroupAssetsBy.none);
+    return _watchRenderList(query, GroupAssetsBy.none);
   }
 
   Stream<RenderList> _watchRenderList(
