@@ -57,7 +57,7 @@ class TrashNotifier extends StateNotifier<bool> {
 
       final isRemoved = await _ref
           .read(assetProvider.notifier)
-          .deleteRemoteOnlyAssets(assetList, force: true);
+          .deleteRemoteAssets(assetList, shouldDeletePermanently: true);
 
       if (isRemoved) {
         final idsToRemove =

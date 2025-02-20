@@ -36,10 +36,12 @@ jobs:
               - 'i18n/**'
             machine-learning:
               - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/docker.yml'
 
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
 
   retag_ml:
     name: Re-Tag ML
@@ -143,7 +145,6 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
@@ -158,6 +159,16 @@ jobs:
             echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
           fi
 
+      - name: Generate cache target
+        id: cache-target
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            # Essentially just ignore the cache output (forks can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -165,14 +176,12 @@ jobs:
           context: ${{ env.context }}
           file: ${{ env.file }}
           platforms: ${{ matrix.platforms }}
-          # Skip pushing when PR from a fork
-          push: ${{ !github.event.pull_request.head.repo.fork }}
           labels: ${{ steps.metadata.outputs.labels }}
-          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
-          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
           build-args: |
             DEVICE=${{ matrix.device }}
             BUILD_ID=${{ github.run_id }}
@@ -297,7 +306,6 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
@@ -312,6 +320,16 @@ jobs:
             echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
           fi
 
+      - name: Generate cache target
+        id: cache-target
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            # Essentially just ignore the cache output (forks can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -319,14 +337,12 @@ jobs:
           context: ${{ env.context }}
           file: ${{ env.file }}
           platforms: ${{ matrix.platform }}
-          # Skip pushing when PR from a fork
-          push: ${{ !github.event.pull_request.head.repo.fork }}
           labels: ${{ steps.metadata.outputs.labels }}
-          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
-          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
           build-args: |
             DEVICE=cpu
             BUILD_ID=${{ github.run_id }}
