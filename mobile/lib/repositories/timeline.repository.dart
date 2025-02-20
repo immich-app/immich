@@ -52,6 +52,17 @@ class TimelineRepository extends DatabaseRepository
     yield* _watchRenderList(withSortedOption, GroupAssetsBy.none);
   }
 
+  @override
+  Stream<RenderList> watchTrashTimeline(int userId) async* {
+    final query = db.assets
+        .filter()
+        .ownerIdEqualTo(userId)
+        .isTrashedEqualTo(true)
+        .sortByFileCreatedAtDesc();
+
+    yield* _watchRenderList(query, GroupAssetsBy.none);
+  }
+
   Stream<RenderList> _watchRenderList(
     QueryBuilder<Asset, Asset, QAfterSortBy> query,
     GroupAssetsBy groupAssetsBy,

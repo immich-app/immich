@@ -2,8 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/archive.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 
 @RoutePage()
@@ -13,8 +13,8 @@ class ArchivePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AppBar buildAppBar() {
-      final archivedAssets = ref.watch(archiveTimelineProvider);
-      final count = archivedAssets.value?.totalAssets.toString() ?? "?";
+      final archiveRenderList = ref.watch(archiveTimelineProvider);
+      final count = archiveRenderList.value?.totalAssets.toString() ?? "?";
       return AppBar(
         leading: IconButton(
           onPressed: () => context.maybePop(),

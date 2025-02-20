@@ -13,3 +13,18 @@ final albumTimelineProvider =
 
   return const Stream.empty();
 });
+
+final archiveTimelineProvider = StreamProvider<RenderList>((ref) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.watchArchiveTimeline();
+});
+
+final favoriteTimelineProvider = StreamProvider<RenderList>((ref) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.watchFavoriteTimeline();
+});
+
+final trashTimelineProvider = StreamProvider<RenderList>((ref) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.watchTrashTimeline();
+});

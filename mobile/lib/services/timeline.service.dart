@@ -34,4 +34,10 @@ class TimelineService {
   Stream<RenderList> watchAlbumTimeline(Album album) async* {
     yield* _timelineRepository.watchAlbumTimeline(album);
   }
+
+  Stream<RenderList> watchTrashTimeline() async* {
+    final user = await _userRepository.me();
+
+    yield* _timelineRepository.watchTrashTimeline(user.isarId);
+  }
 }

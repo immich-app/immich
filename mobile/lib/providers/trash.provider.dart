@@ -1,8 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/services/trash.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:logging/logging.dart';
 
 class TrashNotifier extends StateNotifier<bool> {
@@ -48,13 +46,4 @@ final trashProvider = StateNotifierProvider<TrashNotifier, bool>((ref) {
   return TrashNotifier(
     ref.watch(trashServiceProvider),
   );
-});
-
-final trashedAssetsProvider = StreamProvider<RenderList>((ref) {
-  final user = ref.read(currentUserProvider);
-  if (user == null) {
-    return const Stream.empty();
-  }
-
-  return ref.watch(trashServiceProvider).getRenderListGenerator(user.isarId);
 });
