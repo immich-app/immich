@@ -75,6 +75,39 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, GroupAssetsBy.none);
   }
 
+  @override
+  Stream<RenderList> watchHomeTimeline(
+    int userId,
+    GroupAssetsBy groupAssetByOption,
+  ) {
+    final query = db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackPrimaryAssetIdIsNull()
+        .sortByFileCreatedAtDesc();
+
+    return _watchRenderList(query, groupAssetByOption);
+  }
+
+  @override
+  Stream<RenderList> watchMultiUsersTimeline(
+    List<int> userIds,
+    GroupAssetsBy groupAssetByOption,
+  ) {
+    final query = db.assets
+        .where()
+        .anyOf(userIds, (qb, userId) => qb.ownerIdEqualToAnyChecksum(userId))
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackPrimaryAssetIdIsNull()
+        .sortByFileCreatedAtDesc();
+    return _watchRenderList(query, groupAssetByOption);
+  }
+
   Stream<RenderList> _watchRenderList(
     QueryBuilder<Asset, Asset, QAfterSortBy> query,
     GroupAssetsBy groupAssetsBy,
