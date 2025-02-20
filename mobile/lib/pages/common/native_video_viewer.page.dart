@@ -180,6 +180,23 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
     });
 
+    bool updateAspectRatio() {
+      final videoController = controller.value;
+      if (videoController == null || !isCurrent || !context.mounted) {
+        return false;
+      }
+
+      final ratio = videoController.videoInfo?.aspectRatio;
+      final width = videoController.videoInfo?.width;
+      // If the width is 0, the aspect ratio is not available
+      if (ratio != null && ratio != 0 && width != null && width != 0) {
+        aspectRatio.value = ratio;
+        return true;
+      }
+
+      return false;
+    }
+
     void onPlaybackReady() async {
       final videoController = controller.value;
       if (videoController == null || !isCurrent || !context.mounted) {
@@ -191,6 +208,8 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       ref.read(videoPlaybackValueProvider.notifier).value = videoPlayback;
 
       try {
+        // According to the documentation, at this point, videoInfo is available.
+        updateAspectRatio();
         await videoController.play();
         await videoController.setVolume(0.9);
       } catch (error) {
@@ -372,22 +391,38 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       children: [
         // This remains under the video to avoid flickering
         // For motion videos, this is the image portion of the asset
-        Center(key: ValueKey(asset.id), child: image),
+        AnimatedOpacity(
+          opacity: isVisible.value ? 0.5 : 1.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: Center(key: ValueKey(asset.id), child: image),
+        ),
         if (aspectRatio.value != null)
           Visibility.maintain(
             key: ValueKey(asset),
             visible: isVisible.value,
             child: Center(
               key: ValueKey(asset),
-              child: AspectRatio(
-                key: ValueKey(asset),
-                aspectRatio: aspectRatio.value!,
-                child: isCurrent
-                    ? NativeVideoPlayerView(
-                        key: ValueKey(asset),
-                        onViewReady: initController,
-                      )
-                    : null,
+              child: TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 100),
+                curve: Curves.easeInOut,
+                // Used to create animation effect when component is created
+                tween: Tween<double>(
+                  begin: aspectRatio.value ?? 1.0,
+                  end: aspectRatio.value ?? 1.0,
+                ),
+                builder: (context, value, child) {
+                  return AspectRatio(
+                    key: ValueKey(asset),
+                    aspectRatio: value,
+                    child: isCurrent
+                        ? NativeVideoPlayerView(
+                            key: ValueKey(asset),
+                            onViewReady: initController,
+                          )
+                        : null,
+                  );
+                },
               ),
             ),
           ),
