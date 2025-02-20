@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/repositories/timeline.repository.dart';
@@ -28,5 +29,9 @@ class TimelineService {
     final user = await _userRepository.me();
 
     yield* _timelineRepository.watchFavoriteTimeline(user.isarId);
+  }
+
+  Stream<RenderList> watchAlbumTimeline(Album album) async* {
+    yield* _timelineRepository.watchAlbumTimeline(album);
   }
 }

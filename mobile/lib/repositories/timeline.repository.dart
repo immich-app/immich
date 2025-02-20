@@ -1,4 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -37,6 +39,17 @@ class TimelineRepository extends DatabaseRepository
         .sortByFileCreatedAtDesc();
 
     yield* _watchRenderList(query, GroupAssetsBy.none);
+  }
+
+  @override
+  Stream<RenderList> watchAlbumTimeline(Album album) async* {
+    final query = album.assets.filter().isTrashedEqualTo(false);
+    final withSortedOption = switch (album.sortOrder) {
+      SortOrder.asc => query.sortByFileCreatedAt(),
+      SortOrder.desc => query.sortByFileCreatedAtDesc(),
+    };
+
+    yield* _watchRenderList(withSortedOption, GroupAssetsBy.none);
   }
 
   Stream<RenderList> _watchRenderList(

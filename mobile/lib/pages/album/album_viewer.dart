@@ -14,6 +14,7 @@ import 'package:immich_mobile/pages/album/album_shared_user_icons.dart';
 import 'package:immich_mobile/pages/album/album_title.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -104,7 +105,7 @@ class AlbumViewer extends HookConsumerWidget {
       children: [
         MultiselectGrid(
           key: const ValueKey("albumViewerMultiselectGrid"),
-          renderListProvider: albumRenderlistProvider(album.id),
+          renderListProvider: albumTimelineProvider(album.id),
           topWidget: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
