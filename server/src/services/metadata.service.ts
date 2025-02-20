@@ -238,6 +238,7 @@ export class MetadataService extends BaseService {
       duration: exifTags.Duration?.toString() ?? null,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      fileModifiedAt: exifData.modifyDate ?? undefined,
     });
 
     await this.assetRepository.upsertJobStatus({
