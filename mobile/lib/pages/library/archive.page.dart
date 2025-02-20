@@ -13,7 +13,7 @@ class ArchivePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     AppBar buildAppBar() {
-      final archivedAssets = ref.watch(archiveProvider);
+      final archivedAssets = ref.watch(archiveTimelineProvider);
       final count = archivedAssets.value?.totalAssets.toString() ?? "?";
       return AppBar(
         leading: IconButton(
@@ -31,7 +31,7 @@ class ArchivePage extends HookConsumerWidget {
     return Scaffold(
       appBar: ref.watch(multiselectProvider) ? null : buildAppBar(),
       body: MultiselectGrid(
-        renderListProvider: archiveProvider,
+        renderListProvider: archiveTimelineProvider,
         unarchive: true,
         archiveEnabled: true,
         deleteEnabled: true,
