@@ -10,6 +10,24 @@ The Repair page can take a long time to load. To avoid server timeouts or errors
 Immich does not support being served on a sub-path such as `location /immich {`. It has to be served on the root path of a (sub)domain.
 :::
 
+Once your DNS is configured to handle immich as a root path — `immich.yourdomain.name` for instance, you can set up a reverse proxy.
+
+If you are starting from scratch by far the simplest way is to use [Caddy](https://caddyserver.com/), which handles all the complications behind the scenes, and automatically sets up HTTPS
+
+### Example Caddyfile
+```
+immich.yourdomain.name {
+  reverse_proxy localhost:2283
+  log {
+      output file /var/log/caddy/immich-access-log
+      format console
+  }
+}
+```
+and that's it.
+
+Many people prefer or already use  Nginx, Traefik or Apache. Examples for those follow
+
 ### Nginx example config
 
 Below is an example config for nginx. Make sure to set `public_url` to the front-facing URL of your instance, and `backend_url` to the path of the Immich server.
@@ -64,15 +82,6 @@ location = /.well-known/immich {
 
 By doing so, you'll maintain the functionality of Let's Encrypt while allowing mobile clients to access the necessary Immich path without obstruction.
 
-### Caddy example config
-
-As an alternative to nginx, you can also use [Caddy](https://caddyserver.com/) as a reverse proxy (with automatic HTTPS configuration). Below is an example config.
-
-```
-immich.example.org {
-    reverse_proxy http://<snip>:2283
-}
-```
 
 ### Apache example config
 
