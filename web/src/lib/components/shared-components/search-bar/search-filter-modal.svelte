@@ -171,7 +171,7 @@
       {#if $preferences?.ratings.enabled}
         <SearchRatingsSection bind:rating={filter.rating} />
       {/if}
-      
+
       <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
         <!-- MEDIA TYPE -->
         <SearchMediaSection bind:filteredMedia={filter.mediaType} />
