@@ -23,7 +23,6 @@ import {
   withTags,
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
-import { MapMarker, MapMarkerSearchOptions } from 'src/repositories/map.repository';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
