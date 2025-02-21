@@ -27,7 +27,6 @@ import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:logging/logging.dart';
 
 final albumServiceProvider = Provider(
@@ -467,10 +466,6 @@ class AlbumService {
 
   Stream<Album?> watchAlbum(int id) {
     return _albumRepository.watchAlbum(id);
-  }
-
-  Stream<RenderList> getRenderListGenerator(Album album) {
-    return _albumRepository.getRenderListStream(album);
   }
 
   Future<List<Album>> search(

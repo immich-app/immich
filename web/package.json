@@ -78,6 +78,7 @@
     "@photo-sphere-viewer/video-plugin": "^5.11.5",
     "@zoom-image/svelte": "^0.3.0",
     "dom-to-image": "^2.6.0",
+    "fabric": "^6.5.4",
     "handlebars": "^4.7.8",
     "intl-messageformat": "^10.7.11",
     "lodash-es": "^4.17.21",

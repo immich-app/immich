@@ -44,6 +44,8 @@
     { title: $t('admin.person_cleanup_job'), value: ManualJobName.PersonCleanup },
     { title: $t('admin.tag_cleanup_job'), value: ManualJobName.TagCleanup },
     { title: $t('admin.user_cleanup_job'), value: ManualJobName.UserCleanup },
+    { title: $t('admin.memory_cleanup_job'), value: ManualJobName.MemoryCleanup },
+    { title: $t('admin.memory_generate_job'), value: ManualJobName.MemoryCreate },
   ].map(({ value, title }) => ({ id: value, label: title, value }));
 
   const handleCancel = () => (isOpen = false);

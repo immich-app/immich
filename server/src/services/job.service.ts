@@ -31,6 +31,14 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.USER_DELETE_CHECK };
     }
 
+    case ManualJobName.MEMORY_CLEANUP: {
+      return { name: JobName.MEMORIES_CLEANUP };
+    }
+
+    case ManualJobName.MEMORY_CREATE: {
+      return { name: JobName.MEMORIES_CREATE };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }
@@ -207,6 +215,8 @@ export class JobService extends BaseService {
       { name: JobName.ASSET_DELETION_CHECK },
       { name: JobName.USER_DELETE_CHECK },
       { name: JobName.PERSON_CLEANUP },
+      { name: JobName.MEMORIES_CLEANUP },
+      { name: JobName.MEMORIES_CREATE },
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       { name: JobName.USER_SYNC_USAGE },

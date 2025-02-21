@@ -4,7 +4,6 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
@@ -13,8 +12,6 @@ import 'package:immich_mobile/services/etag.service.dart';
 import 'package:immich_mobile/services/exif.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
-import 'package:immich_mobile/utils/renderlist_generator.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
 
@@ -187,47 +184,6 @@ final assetWatcher =
   final assetService = ref.watch(assetServiceProvider);
   return assetService.watchAsset(asset.id, fireImmediately: true);
 });
-
-final assetsProvider = StreamProvider.family<RenderList, int?>(
-  (ref, userId) {
-    if (userId == null) return const Stream.empty();
-    ref.watch(localeProvider);
-
-    final query = ref
-        .watch(dbProvider)
-        .assets
-        .where()
-        .ownerIdEqualToAnyChecksum(userId)
-        .filter()
-        .isArchivedEqualTo(false)
-        .isTrashedEqualTo(false)
-        .stackPrimaryAssetIdIsNull()
-        .sortByFileCreatedAtDesc();
-
-    return renderListGenerator(query, ref);
-  },
-  dependencies: [localeProvider],
-);
-
-final multiUserAssetsProvider = StreamProvider.family<RenderList, List<int>>(
-  (ref, userIds) {
-    if (userIds.isEmpty) return const Stream.empty();
-    ref.watch(localeProvider);
-    final query = ref
-        .watch(dbProvider)
-        .assets
-        .where()
-        .anyOf(userIds, (q, u) => q.ownerIdEqualToAnyChecksum(u))
-        .filter()
-        .isArchivedEqualTo(false)
-        .isTrashedEqualTo(false)
-        .stackPrimaryAssetIdIsNull()
-        .sortByFileCreatedAtDesc();
-
-    return renderListGenerator(query, ref);
-  },
-  dependencies: [localeProvider],
-);
 
 QueryBuilder<Asset, Asset, QAfterSortBy>? getRemoteAssetQuery(WidgetRef ref) {
   final userId = ref.watch(currentUserProvider)?.isarId;

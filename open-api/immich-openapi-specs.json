@@ -2428,9 +2428,85 @@
         "tags": [
           "Faces"
         ]
+      },
+      "post": {
+        "operationId": "createFace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
       }
     },
     "/faces/{id}": {
+      "delete": {
+        "operationId": "deleteFace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
+      },
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [
@@ -3070,7 +3146,41 @@
     "/memories": {
       "get": {
         "operationId": "searchMemories",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "for",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSaved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemoryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -8172,6 +8282,58 @@
         ],
         "type": "object"
       },
+      "AssetFaceCreateDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          },
+          "x": {
+            "type": "integer"
+          },
+          "y": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assetId",
+          "height",
+          "imageHeight",
+          "imageWidth",
+          "personId",
+          "width",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
+      "AssetFaceDeleteDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "force"
+        ],
+        "type": "object"
+      },
       "AssetFaceResponseDto": {
         "properties": {
           "boundingBoxX1": {
@@ -9754,7 +9916,9 @@
         "enum": [
           "person-cleanup",
           "tag-cleanup",
-          "user-cleanup"
+          "user-cleanup",
+          "memory-cleanup",
+          "memory-create"
         ],
         "type": "string"
       },
@@ -9911,6 +10075,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "hideAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -9925,6 +10093,10 @@
             "type": "string"
           },
           "seenAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "showAt": {
             "format": "date-time",
             "type": "string"
           },

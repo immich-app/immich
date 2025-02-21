@@ -11,7 +11,6 @@ import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
 final assetRepositoryProvider =
@@ -233,20 +232,6 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .ownerIdEqualTo(userId)
         .isTrashedEqualTo(true)
         .findAll();
-  }
-
-  @override
-  Stream<RenderList> getTrashRenderListStream(int userId) async* {
-    final query = db.assets
-        .filter()
-        .ownerIdEqualTo(userId)
-        .isTrashedEqualTo(true)
-        .sortByFileCreatedAtDesc();
-
-    yield await RenderList.fromQuery(query, GroupAssetsBy.none);
-    await for (final _ in query.watchLazy()) {
-      yield await RenderList.fromQuery(query, GroupAssetsBy.none);
-    }
   }
 }
 

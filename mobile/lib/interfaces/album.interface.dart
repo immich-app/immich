@@ -3,7 +3,6 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 
 abstract interface class IAlbumRepository implements IDatabaseRepository {
   Future<Album> create(Album album);
@@ -49,8 +48,6 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
   Stream<List<Album>> watchLocalAlbums();
 
   Stream<Album?> watchAlbum(int id);
-
-  Stream<RenderList> getRenderListStream(Album album);
 
   Future<void> clearTable();
 }

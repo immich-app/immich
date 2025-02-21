@@ -523,6 +523,19 @@ export type AssetFaceResponseDto = {
     person: (PersonResponseDto) | null;
     sourceType?: SourceType;
 };
+export type AssetFaceCreateDto = {
+    assetId: string;
+    height: number;
+    imageHeight: number;
+    imageWidth: number;
+    personId: string;
+    width: number;
+    x: number;
+    y: number;
+};
+export type AssetFaceDeleteDto = {
+    force: boolean;
+};
 export type FaceDto = {
     id: string;
 };
@@ -627,11 +640,13 @@ export type MemoryResponseDto = {
     createdAt: string;
     data: OnThisDayDto;
     deletedAt?: string;
+    hideAt?: string;
     id: string;
     isSaved: boolean;
     memoryAt: string;
     ownerId: string;
     seenAt?: string;
+    showAt?: string;
     "type": MemoryType;
     updatedAt: string;
 };
@@ -2029,6 +2044,25 @@ export function getFaces({ id }: {
         ...opts
     }));
 }
+export function createFace({ assetFaceCreateDto }: {
+    assetFaceCreateDto: AssetFaceCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/faces", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetFaceCreateDto
+    })));
+}
+export function deleteFace({ id, assetFaceDeleteDto }: {
+    id: string;
+    assetFaceDeleteDto: AssetFaceDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/faces/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: assetFaceDeleteDto
+    })));
+}
 export function reassignFacesById({ id, faceDto }: {
     id: string;
     faceDto: FaceDto;
@@ -2190,11 +2224,21 @@ export function reverseGeocode({ lat, lon }: {
         ...opts
     }));
 }
-export function searchMemories(opts?: Oazapfts.RequestOpts) {
+export function searchMemories({ $for, isSaved, isTrashed, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MemoryResponseDto[];
-    }>("/memories", {
+    }>(`/memories${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        "type": $type
+    }))}`, {
         ...opts
     }));
 }
@@ -3533,7 +3577,9 @@ export enum AssetMediaSize {
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",
     TagCleanup = "tag-cleanup",
-    UserCleanup = "user-cleanup"
+    UserCleanup = "user-cleanup",
+    MemoryCleanup = "memory-cleanup",
+    MemoryCreate = "memory-create"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

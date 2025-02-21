@@ -88,6 +88,7 @@ export interface AssetFaces {
   boundingBoxX2: Generated<number>;
   boundingBoxY1: Generated<number>;
   boundingBoxY2: Generated<number>;
+  deletedAt: Timestamp | null;
   id: Generated<string>;
   imageHeight: Generated<number>;
   imageWidth: Generated<number>;
@@ -226,11 +227,13 @@ export interface Memories {
   createdAt: Generated<Timestamp>;
   data: Json;
   deletedAt: Timestamp | null;
+  hideAt: Timestamp | null;
   id: Generated<string>;
   isSaved: Generated<boolean>;
   memoryAt: Timestamp;
   ownerId: string;
   seenAt: Timestamp | null;
+  showAt: Timestamp | null;
   type: string;
   updatedAt: Generated<Timestamp>;
 }
@@ -332,6 +335,11 @@ export interface SocketIoAttachments {
   created_at: Generated<Timestamp | null>;
   id: Generated<Int8>;
   payload: Buffer | null;
+}
+
+export interface SystemConfig {
+  key: string;
+  value: string | null;
 }
 
 export interface SystemMetadata {
@@ -448,6 +456,7 @@ export interface DB {
   shared_links: SharedLinks;
   smart_search: SmartSearch;
   socket_io_attachments: SocketIoAttachments;
+  system_config: SystemConfig;
   system_metadata: SystemMetadata;
   tag_asset: TagAsset;
   tags: Tags;

@@ -230,6 +230,10 @@ class ApiClient {
           return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':
           return AssetDeltaSyncResponseDto.fromJson(value);
+        case 'AssetFaceCreateDto':
+          return AssetFaceCreateDto.fromJson(value);
+        case 'AssetFaceDeleteDto':
+          return AssetFaceDeleteDto.fromJson(value);
         case 'AssetFaceResponseDto':
           return AssetFaceResponseDto.fromJson(value);
         case 'AssetFaceUpdateDto':

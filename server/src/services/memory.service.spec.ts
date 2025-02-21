@@ -21,7 +21,7 @@ describe(MemoryService.name, () => {
   describe('search', () => {
     it('should search memories', async () => {
       mocks.memory.search.mockResolvedValue([memoryStub.memory1, memoryStub.empty]);
-      await expect(sut.search(authStub.admin)).resolves.toEqual(
+      await expect(sut.search(authStub.admin, {})).resolves.toEqual(
         expect.arrayContaining([
           expect.objectContaining({ id: 'memory1', assets: expect.any(Array) }),
           expect.objectContaining({ id: 'memoryEmpty', assets: [] }),
@@ -30,7 +30,7 @@ describe(MemoryService.name, () => {
     });
 
     it('should map ', async () => {
-      await expect(sut.search(authStub.admin)).resolves.toEqual([]);
+      await expect(sut.search(authStub.admin, {})).resolves.toEqual([]);
     });
   });
 

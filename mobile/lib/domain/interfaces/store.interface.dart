@@ -1,6 +1,7 @@
+import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 
-abstract interface class IStoreRepository {
+abstract interface class IStoreRepository implements IDatabaseRepository {
   Future<bool> insert<T>(StoreKey<T> key, T value);
 
   Future<T?> tryGet<T>(StoreKey<T> key);
