@@ -109,7 +109,6 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**updateAssets**](doc//AssetsApi.md#updateassets) | **PUT** /assets | 
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | 
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | 
-*AuditApi* | [**getAuditDeletes**](doc//AuditApi.md#getauditdeletes) | **GET** /audit/deletes | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | 
 *AuthenticationApi* | [**login**](doc//AuthenticationApi.md#login) | **POST** /auth/login | 
 *AuthenticationApi* | [**logout**](doc//AuthenticationApi.md#logout) | **POST** /auth/logout | 
@@ -293,7 +292,6 @@ Class | Method | HTTP request | Description
  - [AssetStatsResponseDto](doc//AssetStatsResponseDto.md)
  - [AssetTypeEnum](doc//AssetTypeEnum.md)
  - [AudioCodec](doc//AudioCodec.md)
- - [AuditDeletesResponseDto](doc//AuditDeletesResponseDto.md)
  - [AvatarResponse](doc//AvatarResponse.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
@@ -317,7 +315,6 @@ Class | Method | HTTP request | Description
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
- - [EntityType](doc//EntityType.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)

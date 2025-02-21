@@ -2,6 +2,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
+import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 
 abstract interface class IAssetRepository implements IDatabaseRepository {
   Future<Asset?> getByRemoteId(String id);
@@ -41,7 +42,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state});
 
-  Future<void> deleteById(List<int> ids);
+  Future<void> deleteByIds(List<int> ids);
 
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
@@ -59,6 +60,14 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
   Future<List<String>> getAllDuplicatedAssetIds();
 
   Future<List<Asset>> getStackAssets(String stackId);
+
+  Future<void> clearTable();
+
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false});
+
+  Future<List<Asset>> getTrashAssets(int userId);
+
+  Stream<RenderList> getTrashRenderListStream(int userId);
 }
 
 enum AssetSort { checksum, ownerIdChecksum }

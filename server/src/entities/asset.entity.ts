@@ -387,6 +387,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('exif', 'assets.id', 'exif.assetId')
         .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
     )
+    .$if(options.rating !== undefined, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+    )
     .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
     .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
     .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
@@ -394,7 +399,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
     .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
-    .$if(!!options.originalPath, (qb) => qb.where('assets.originalPath', '=', options.originalPath!))
+    .$if(!!options.originalPath, (qb) =>
+      qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+    )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
         sql`f_unaccent(assets."originalFileName")`,

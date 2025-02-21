@@ -109,6 +109,7 @@ export interface SearchExifOptions {
   model?: string | null;
   state?: string | null;
   description?: string | null;
+  rating?: number | null;
 }
 
 export interface SearchEmbeddingOptions {

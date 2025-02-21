@@ -2079,65 +2079,6 @@
         ]
       }
     },
-    "/audit/deletes": {
-      "get": {
-        "operationId": "getAuditDeletes",
-        "parameters": [
-          {
-            "name": "after",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "entityType",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/EntityType"
-            }
-          },
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuditDeletesResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "signUpAdmin",
@@ -8643,24 +8584,6 @@
         ],
         "type": "string"
       },
-      "AuditDeletesResponseDto": {
-        "properties": {
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "needsFullSync": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "ids",
-          "needsFullSync"
-        ],
-        "type": "object"
-      },
       "AvatarResponse": {
         "properties": {
           "color": {
@@ -9074,13 +8997,6 @@
           }
         },
         "type": "object"
-      },
-      "EntityType": {
-        "enum": [
-          "ASSET",
-          "ALBUM"
-        ],
-        "type": "string"
       },
       "ExifResponseDto": {
         "properties": {
@@ -10040,6 +9956,11 @@
           "previewPath": {
             "type": "string"
           },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
+          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -10696,6 +10617,11 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
           },
           "size": {
             "maximum": 1000,
@@ -11646,6 +11572,11 @@
           },
           "query": {
             "type": "string"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
           },
           "size": {
             "maximum": 1000,

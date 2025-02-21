@@ -449,10 +449,6 @@ export type AssetMediaReplaceDto = {
     fileCreatedAt: string;
     fileModifiedAt: string;
 };
-export type AuditDeletesResponseDto = {
-    ids: string[];
-    needsFullSync: boolean;
-};
 export type SignUpDto = {
     email: string;
     name: string;
@@ -815,6 +811,7 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
+    rating?: number;
     size?: number;
     state?: string | null;
     tagIds?: string[];
@@ -882,6 +879,7 @@ export type RandomSearchDto = {
     make?: string;
     model?: string | null;
     personIds?: string[];
+    rating?: number;
     size?: number;
     state?: string | null;
     tagIds?: string[];
@@ -918,6 +916,7 @@ export type SmartSearchDto = {
     page?: number;
     personIds?: string[];
     query: string;
+    rating?: number;
     size?: number;
     state?: string | null;
     tagIds?: string[];
@@ -1909,22 +1908,6 @@ export function playAssetVideo({ id, key }: {
         data: Blob;
     }>(`/assets/${encodeURIComponent(id)}/video/playback${QS.query(QS.explode({
         key
-    }))}`, {
-        ...opts
-    }));
-}
-export function getAuditDeletes({ after, entityType, userId }: {
-    after: string;
-    entityType: EntityType;
-    userId?: string;
-}, opts?: Oazapfts.RequestOpts) {
-    return oazapfts.ok(oazapfts.fetchJson<{
-        status: 200;
-        data: AuditDeletesResponseDto;
-    }>(`/audit/deletes${QS.query(QS.explode({
-        after,
-        entityType,
-        userId
     }))}`, {
         ...opts
     }));
@@ -3498,10 +3481,6 @@ export enum AssetJobName {
 export enum AssetMediaSize {
     Preview = "preview",
     Thumbnail = "thumbnail"
-}
-export enum EntityType {
-    Asset = "ASSET",
-    Album = "ALBUM"
 }
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",
