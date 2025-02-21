@@ -5,6 +5,7 @@ import { Mocked } from 'vitest';
 export const newOAuthRepositoryMock = (): Mocked<RepositoryInterface<OAuthRepository>> => {
   return {
     init: vitest.fn(),
+    deleteOldState: vitest.fn(),
     authorize: vitest.fn(),
     getLogoutEndpoint: vitest.fn(),
     getProfile: vitest.fn(),

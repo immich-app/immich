@@ -1,5 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Kysely } from 'kysely';
+import { DateTime } from 'luxon';
+import { InjectKysely } from 'nestjs-kysely';
 import { custom, generators, Issuer, UserinfoResponse } from 'openid-client';
+import { DB } from 'src/db';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export type OAuthConfig = {
@@ -16,7 +20,10 @@ export type OAuthProfile = UserinfoResponse;
 
 @Injectable()
 export class OAuthRepository {
-  constructor(private logger: LoggingRepository) {
+  constructor(
+    @InjectKysely() private db: Kysely<DB>,
+    private logger: LoggingRepository,
+  ) {
     this.logger.setContext(OAuthRepository.name);
   }
 
@@ -26,11 +33,17 @@ export class OAuthRepository {
 
   async authorize(config: OAuthConfig, redirectUrl: string) {
     const client = await this.getClient(config);
-    return client.authorizationUrl({
-      redirect_uri: redirectUrl,
+    const state = generators.state();
+
+    await this.db.insertInto('oauth_state').values({ state }).execute();
+
+    const url = client.authorizationUrl({
       scope: config.scope,
-      state: generators.state(),
+      state,
+      redirect_uri: redirectUrl,
     });
+
+    return url;
   }
 
   async getLogoutEndpoint(config: OAuthConfig) {
@@ -41,8 +54,22 @@ export class OAuthRepository {
   async getProfile(config: OAuthConfig, url: string, redirectUrl: string): Promise<OAuthProfile> {
     const client = await this.getClient(config);
     const params = client.callbackParams(url);
+
+    const item = params.state
+      ? await this.db
+          .deleteFrom('oauth_state')
+          .where('state', '=', params.state)
+          .where('createdAt', '>=', DateTime.now().minus({ minutes: 5 }).toJSDate())
+          .returning(['id', 'state'])
+          .executeTakeFirst()
+      : undefined;
+
+    if (!item) {
+      throw new UnauthorizedException('Invalid or expired state parameter');
+    }
+
     try {
-      const tokens = await client.callback(redirectUrl, params, { state: params.state });
+      const tokens = await client.callback(redirectUrl, params, { state: item.state });
       const profile = await client.userinfo<OAuthProfile>(tokens.access_token || '');
       if (!profile.sub) {
         throw new Error('Unexpected profile response, no `sub`');
@@ -61,6 +88,13 @@ export class OAuthRepository {
 
       throw error;
     }
+  }
+
+  async deleteOldState() {
+    await this.db
+      .deleteFrom('oauth_state')
+      .where('createdAt', '<', DateTime.now().minus({ minutes: 30 }).toJSDate())
+      .execute();
   }
 
   private async getClient({

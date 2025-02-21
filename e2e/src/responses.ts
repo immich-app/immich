@@ -43,6 +43,12 @@ export const errorDto = {
     message: 'Invalid password',
     correlationId: expect.any(String),
   },
+  invalidStateParam: {
+    error: 'Unauthorized',
+    statusCode: 401,
+    message: 'Invalid or expired state parameter',
+    correlationId: expect.any(String),
+  },
   badRequest: (message: any = null) => ({
     error: 'Bad Request',
     statusCode: 400,

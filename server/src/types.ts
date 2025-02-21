@@ -332,6 +332,7 @@ export type JobItem =
   // Cleanup
   | { name: JobName.CLEAN_OLD_AUDIT_LOGS; data?: IBaseJob }
   | { name: JobName.CLEAN_OLD_SESSION_TOKENS; data?: IBaseJob }
+  | { name: JobName.CLEAN_OLD_OAUTH_STATE; data?: IBaseJob }
 
   // Tags
   | { name: JobName.TAG_CLEANUP; data?: IBaseJob }

@@ -45,6 +45,7 @@ describe(JobService.name, () => {
         { name: JobName.USER_SYNC_USAGE },
         { name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false, nightly: true } },
         { name: JobName.CLEAN_OLD_SESSION_TOKENS },
+        { name: JobName.CLEAN_OLD_OAUTH_STATE },
       ]);
     });
   });

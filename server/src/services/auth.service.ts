@@ -4,7 +4,7 @@ import cookieParser from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
-import { OnEvent } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import {
   AuthDto,
   ChangePasswordDto,
@@ -18,7 +18,7 @@ import {
 } from 'src/dtos/auth.dto';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, Permission } from 'src/enum';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { OAuthProfile } from 'src/repositories/oauth.repository';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
@@ -172,6 +172,12 @@ export class AuthService extends BaseService {
 
   getMobileRedirect(url: string) {
     return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
+  }
+
+  @OnJob({ name: JobName.CLEAN_OLD_OAUTH_STATE, queue: QueueName.BACKGROUND_TASK })
+  async handleCleanupOldState(): Promise<JobStatus> {
+    await this.oauthRepository.deleteOldState();
+    return JobStatus.SUCCESS;
   }
 
   async authorize(dto: OAuthConfigDto): Promise<OAuthAuthorizeResponseDto> {

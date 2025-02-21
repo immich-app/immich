@@ -19,10 +19,12 @@ const authServer = {
 
 const mobileOverrideRedirectUri = 'https://photos.immich.app/oauth/mobile-redirect';
 
-const redirect = async (url: string, cookies?: string[]) => {
-  const { headers } = await request(url)
-    .get('/')
+const redirect = async (value: string, cookies?: string[]) => {
+  const { origin, pathname, search } = new URL(value);
+  const { headers } = await request(origin)
+    .get(pathname + search)
     .set('Cookie', cookies || []);
+
   return { cookies: (headers['set-cookie'] as unknown as string[]) || [], location: headers.location };
 };
 
@@ -31,16 +33,16 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
 
   // login
   const response1 = await redirect(url.replace(authServer.internal, authServer.external));
-  const response2 = await request(authServer.external + response1.location)
-    .post('/')
+  const response2 = await request(authServer.external)
+    .post(response1.location)
     .set('Cookie', response1.cookies)
     .type('form')
     .send({ prompt: 'login', login: sub, password: 'password' });
 
   // approve
   const response3 = await redirect(response2.header.location, response1.cookies);
-  const response4 = await request(authServer.external + response3.location)
-    .post('/')
+  const response4 = await request(authServer.external)
+    .post(response3.location)
     .type('form')
     .set('Cookie', response3.cookies)
     .send({ prompt: 'consent' });
@@ -254,6 +256,18 @@ describe(`/oauth`, () => {
           userId,
           userEmail: 'oauth-user3@immich.app',
         });
+      });
+
+      it('should reject invalid state', async () => {
+        const url = await loginWithOAuth('oauth-bad-state');
+        const state = new URL(url).searchParams.get('state');
+        if (!state) {
+          throw new Error('test failed');
+        }
+        const newUrl = url.replace(state, 'bad-state-value');
+        const { status, body } = await request(app).post('/oauth/callback').send({ url: newUrl });
+        expect(body).toMatchObject(errorDto.invalidStateParam);
+        expect(status).toBe(401);
       });
     });
   });

@@ -262,6 +262,12 @@ export interface NaturalearthCountries {
   type: string;
 }
 
+export interface OAuthState {
+  createdAt: Generated<Timestamp>;
+  id: Generated<string>;
+  state: string;
+}
+
 export interface Partners {
   createdAt: Generated<Timestamp>;
   inTimeline: Generated<boolean>;
@@ -301,7 +307,6 @@ export interface SessionSyncCheckpoints {
   type: SyncEntityType;
   updatedAt: Generated<Timestamp>;
 }
-
 
 export interface SharedLinkAsset {
   assetsId: string;
@@ -394,6 +399,7 @@ export interface Users {
 }
 
 export interface UsersAudit {
+  id: Generated<number>;
   userId: string;
   deletedAt: Generated<Timestamp>;
 }
@@ -440,6 +446,7 @@ export interface DB {
   migrations: Migrations;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
+  oauth_state: OAuthState;
   partners: Partners;
   person: Person;
   sessions: Sessions;
