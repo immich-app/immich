@@ -429,10 +429,6 @@ export const utils = {
     return searchAssets({ metadataSearchDto: dto }, { headers: asBearerAuth(accessToken) });
   },
 
-  searchSmart: async (accessToken: string, dto: SmartSearchDto) => {
-    return searchSmart({ smartSearchDto: dto }, { headers: asBearerAuth(accessToken) });
-  },
-
   archiveAssets: (accessToken: string, ids: string[]) =>
     updateAssets({ assetBulkUpdateDto: { ids, isArchived: true } }, { headers: asBearerAuth(accessToken) }),
 
