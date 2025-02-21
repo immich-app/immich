@@ -14,7 +14,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
-import { AssetType } from 'src/enum';
+import { AssetType, ExifOrientation } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
@@ -54,6 +54,12 @@ export class UpdateAssetBase {
   @Max(5)
   @Min(-1)
   rating?: number;
+
+  @Optional()
+  @Min(1)
+  @Max(8)
+  @ApiProperty({ type: 'integer' })
+  orientation?: ExifOrientation;
 }
 
 export class AssetBulkUpdateDto extends UpdateAssetBase {

@@ -13,6 +13,7 @@ type ActionMap = {
   [AssetAction.ADD_TO_ALBUM]: { asset: AssetResponseDto; album: AlbumResponseDto };
   [AssetAction.UNSTACK]: { assets: AssetResponseDto[] };
   [AssetAction.KEEP_THIS_DELETE_OTHERS]: { asset: AssetResponseDto };
+  [AssetAction.ROTATE]: { asset: AssetResponseDto; counterclockwise: boolean };
 };
 
 export type Action = {

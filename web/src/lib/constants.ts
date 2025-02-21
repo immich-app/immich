@@ -10,6 +10,19 @@ export enum AssetAction {
   ADD_TO_ALBUM = 'add-to-album',
   UNSTACK = 'unstack',
   KEEP_THIS_DELETE_OTHERS = 'keep-this-delete-others',
+  ROTATE = 'rotate',
+}
+
+// copied from the server because numeric enums lose their names
+export enum ExifOrientation {
+  Horizontal = 1,
+  MirrorHorizontal = 2,
+  Rotate180 = 3,
+  MirrorVertical = 4,
+  MirrorHorizontalRotate270CW = 5,
+  Rotate90CW = 6,
+  MirrorHorizontalRotate90CW = 7,
+  Rotate270CW = 8,
 }
 
 export enum AppRoute {

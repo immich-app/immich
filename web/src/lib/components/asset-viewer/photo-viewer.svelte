@@ -144,7 +144,7 @@
       loader?.removeEventListener('error', onerror);
     };
   });
-  let isWebCompatible = $derived(isWebCompatibleImage(asset));
+  let isWebCompatible = $derived(isWebCompatibleImage(asset) && !asset?.exifInfo?.orientation);
   let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
   // when true, will force loading of the original image
 

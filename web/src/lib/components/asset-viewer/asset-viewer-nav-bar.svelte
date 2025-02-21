@@ -7,14 +7,15 @@
   import DeleteAction from '$lib/components/asset-viewer/actions/delete-action.svelte';
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
+  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
+  import RotateAction from '$lib/components/asset-viewer/actions/rotate-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
   import ShareAction from '$lib/components/asset-viewer/actions/share-action.svelte';
   import ShowDetailAction from '$lib/components/asset-viewer/actions/show-detail-action.svelte';
   import UnstackAction from '$lib/components/asset-viewer/actions/unstack-action.svelte';
-  import KeepThisDeleteOthersAction from '$lib/components/asset-viewer/actions/keep-this-delete-others.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -22,6 +23,7 @@
   import { user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
+  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import {
     AssetJobName,
@@ -45,9 +47,8 @@
     mdiPresentationPlay,
     mdiUpload,
   } from '@mdi/js';
-  import { canCopyImageToClipboard } from '$lib/utils/asset-utils';
-  import { t } from 'svelte-i18n';
   import type { Snippet } from 'svelte';
+  import { t } from 'svelte-i18n';
 
   interface Props {
     asset: AssetResponseDto;
@@ -87,6 +88,9 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let canRotate = $derived(
+    asset.type === AssetTypeEnum.Image && !asset.livePhotoVideoId && asset.exifInfo?.orientation !== undefined,
+  );
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -180,6 +184,11 @@
             <SetProfilePictureAction {asset} />
           {/if}
           <ArchiveAction {asset} {onAction} />
+
+          {#if canRotate}
+            <RotateAction {asset} {onAction} counterclockwise menuItem />
+            <RotateAction {asset} {onAction} menuItem />
+          {/if}
           <MenuOption
             icon={mdiUpload}
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}

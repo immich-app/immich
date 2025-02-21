@@ -391,6 +391,7 @@ export type AssetBulkUpdateDto = {
     isFavorite?: boolean;
     latitude?: number;
     longitude?: number;
+    orientation?: Orientation;
     rating?: number;
 };
 export type AssetBulkUploadCheckItem = {
@@ -439,6 +440,7 @@ export type UpdateAssetDto = {
     latitude?: number;
     livePhotoVideoId?: string | null;
     longitude?: number;
+    orientation?: Orientation;
     rating?: number;
 };
 export type AssetMediaReplaceDto = {
@@ -3511,6 +3513,16 @@ export enum AssetMediaStatus {
     Created = "created",
     Replaced = "replaced",
     Duplicate = "duplicate"
+}
+export enum Orientation {
+    $1 = 1,
+    $2 = 2,
+    $3 = 3,
+    $4 = 4,
+    $5 = 5,
+    $6 = 6,
+    $7 = 7,
+    $8 = 8
 }
 export enum Action {
     Accept = "accept",
