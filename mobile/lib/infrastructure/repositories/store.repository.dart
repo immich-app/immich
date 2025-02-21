@@ -21,7 +21,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
 
   @override
   Stream<StoreUpdateEvent> watchAll() {
-    return _db.storeValues.where().watch().asyncExpand(
+    return _db.storeValues.where().watch(fireImmediately: true).asyncExpand(
           (entities) =>
               Stream.fromFutures(entities.map((e) async => _toUpdateEvent(e))),
         );
@@ -86,17 +86,11 @@ class IsarStoreRepository extends IsarDatabaseRepository
     final (int? intValue, String? strValue) = switch (key.type) {
       const (int) => (value as int, null),
       const (String) => (null, value as String),
-      const (bool) => (
-          (value as bool) ? 1 : 0,
-          null,
-        ),
-      const (DateTime) => (
-          (value as DateTime).millisecondsSinceEpoch,
-          null,
-        ),
+      const (bool) => ((value as bool) ? 1 : 0, null),
+      const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (User) => (
           (await UserRepository(_db).update(value as User)).isarId,
-          null
+          null,
         ),
       _ => throw UnsupportedError(
           "Unsupported primitive type: ${key.type} for key: ${key.name}",

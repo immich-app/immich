@@ -21,10 +21,11 @@ import 'mock_http_override.dart';
 
 // Listener Mock to test when a provider notifies its listeners
 class ListenerMock<T> extends Mock {
+  // ignore: avoid-declaring-call-method
   void call(T? previous, T next);
 }
 
-final class TestUtils {
+abstract final class TestUtils {
   const TestUtils._();
 
   /// Downloads Isar binaries (if required) and initializes a new Isar db
@@ -50,13 +51,14 @@ final class TestUtils {
         AndroidDeviceAssetSchema,
         IOSDeviceAssetSchema,
       ],
-      maxSizeMiB: 1024,
       directory: "test/",
+      maxSizeMiB: 1024,
+      inspector: false,
     );
 
     // Clear and close db on test end
     addTearDown(() async {
-      await db.writeTxn(() => db.clear());
+      await db.writeTxn(() async => await db.clear());
       await db.close();
     });
     return db;

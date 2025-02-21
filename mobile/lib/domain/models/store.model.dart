@@ -77,4 +77,23 @@ class StoreUpdateEvent<T> {
   final T? value;
 
   const StoreUpdateEvent(this.key, this.value);
+
+  @override
+  String toString() {
+    return '''
+StoreUpdateEvent: {
+  key: $key,
+  value: ${value ?? '<NA>'},
+}''';
+  }
+
+  @override
+  bool operator ==(covariant StoreUpdateEvent<T> other) {
+    if (identical(this, other)) return true;
+
+    return other.key == key && other.value == value;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ value.hashCode;
 }
