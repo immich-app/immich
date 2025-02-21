@@ -639,26 +639,6 @@ export class AssetRepository {
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
   }
 
-  private getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-
-    return this.db
-      .selectFrom('assets')
-      .leftJoin('exif', 'assets.id', 'exif.assetId')
-      .select(['id', 'latitude as lat', 'longitude as lon', 'city', 'state', 'country'])
-      .where('ownerId', '=', anyUuid(ownerIds))
-      .where('latitude', 'is not', null)
-      .where('longitude', 'is not', null)
-      .where('isVisible', '=', true)
-      .where('deletedAt', 'is', null)
-      .$if(!!isArchived, (qb) => qb.where('isArchived', '=', isArchived!))
-      .$if(!!isFavorite, (qb) => qb.where('isFavorite', '=', isFavorite!))
-      .$if(!!fileCreatedAfter, (qb) => qb.where('fileCreatedAt', '>=', fileCreatedAfter!))
-      .$if(!!fileCreatedBefore, (qb) => qb.where('fileCreatedAt', '<=', fileCreatedBefore!))
-      .orderBy('fileCreatedAt', 'desc')
-      .execute() as Promise<MapMarker[]>;
-  }
-
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
