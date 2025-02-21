@@ -1,6 +1,6 @@
 import { JobCommand, JobName, LoginResponseDto, updateConfig } from '@immich/sdk';
 import { cpSync, rmSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, utils } from 'src/utils';

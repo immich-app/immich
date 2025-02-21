@@ -28,4 +28,9 @@ class ExifInfoRepository extends DatabaseRepository
     await txn(() => db.exifInfos.putAll(exifInfos));
     return exifInfos;
   }
+
+  @override
+  Future<void> clearTable() {
+    return txn(() => db.exifInfos.clear());
+  }
 }

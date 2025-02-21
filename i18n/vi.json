@@ -1081,6 +1081,8 @@
   "search": "Tìm kiếm",
   "search_albums": "Tìm kiếm album",
   "search_by_context": "Tìm kiếm theo ngữ cảnh",
+  "search_by_description": "Tìm kiếm theo nội dung",
+  "search_by_description_example": "Dạo chơi Sa Pa",
   "search_by_filename": "Tìm kiếm theo tên hoặc phần mở rộng tập tin",
   "search_by_filename_example": "Ví dụ: IMG_1234.JPG hoặc PNG",
   "search_camera_make": "Tìm kiếm thương hiệu máy ảnh...",

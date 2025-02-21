@@ -13,9 +13,16 @@ import { Notice } from 'postgres';
 import { citiesFile, excludePaths, IWorker } from 'src/constants';
 import { Telemetry } from 'src/decorators';
 import { EnvDto } from 'src/dtos/env.dto';
-import { ImmichEnvironment, ImmichHeader, ImmichTelemetry, ImmichWorker, LogLevel } from 'src/enum';
-import { DatabaseConnectionParams, DatabaseExtension, VectorExtension } from 'src/interfaces/database.interface';
-import { QueueName } from 'src/interfaces/job.interface';
+import {
+  DatabaseExtension,
+  ImmichEnvironment,
+  ImmichHeader,
+  ImmichTelemetry,
+  ImmichWorker,
+  LogLevel,
+  QueueName,
+} from 'src/enum';
+import { DatabaseConnectionParams, VectorExtension } from 'src/types';
 import { setDifference } from 'src/utils/set';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
 
@@ -227,6 +234,7 @@ const getEnv = (): EnvData => {
   }
 
   const driverOptions = {
+    ...parsedOptions,
     onnotice: (notice: Notice) => {
       if (notice['severity'] !== 'NOTICE') {
         console.warn('Postgres notice:', notice);
@@ -247,7 +255,9 @@ const getEnv = (): EnvData => {
         serialize: (value: number) => value.toString(),
       },
     },
-    ...parsedOptions,
+    connection: {
+      TimeZone: 'UTC',
+    },
   };
 
   return {

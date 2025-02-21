@@ -3,17 +3,17 @@ import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
 import 'package:immich_mobile/entities/logger_message.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -21,10 +21,11 @@ import 'mock_http_override.dart';
 
 // Listener Mock to test when a provider notifies its listeners
 class ListenerMock<T> extends Mock {
+  // ignore: avoid-declaring-call-method
   void call(T? previous, T next);
 }
 
-final class TestUtils {
+abstract final class TestUtils {
   const TestUtils._();
 
   /// Downloads Isar binaries (if required) and initializes a new Isar db
@@ -50,13 +51,14 @@ final class TestUtils {
         AndroidDeviceAssetSchema,
         IOSDeviceAssetSchema,
       ],
-      maxSizeMiB: 1024,
       directory: "test/",
+      maxSizeMiB: 1024,
+      inspector: false,
     );
 
     // Clear and close db on test end
     addTearDown(() async {
-      await db.writeTxn(() => db.clear());
+      await db.writeTxn(() async => await db.clear());
       await db.close();
     });
     return db;

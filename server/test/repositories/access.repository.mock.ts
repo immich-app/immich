@@ -1,7 +1,12 @@
-import { IAccessRepository } from 'src/types';
+import { AccessRepository } from 'src/repositories/access.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export type IAccessRepositoryMock = { [K in keyof IAccessRepository]: Mocked<IAccessRepository[K]> };
+type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInterface<AccessRepository[K]> };
+
+export type IAccessRepositoryMock = {
+  [K in keyof IAccessRepository]: Mocked<IAccessRepository[K]>;
+};
 
 export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
   return {

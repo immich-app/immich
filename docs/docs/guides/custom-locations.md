@@ -6,7 +6,7 @@ This guide explains how to store generated and raw files with docker's volume mo
 It is important to remember to update the backup settings after following the guide to back up the new backup paths if using automatic backup tools, especially `profile/`.
 :::
 
-In our `.env` file, we will define variables that will help us in the future when we want to move to a more advanced server
+In our `.env` file, we will define the paths we want to use. Note that you don't have to define all of these: UPLOAD_LOCATION will be the base folder that files are stored in by default, with the other paths acting as overrides.
 
 ```diff title=".env"
 # You can find documentation for all the supported environment variables [here](/docs/install/environment-variables)
@@ -21,7 +21,7 @@ In our `.env` file, we will define variables that will help us in the future whe
 ...
 ```
 
-After defining the locations of these files, we will edit the `docker-compose.yml` file accordingly and add the new variables to the `immich-server` container.
+After defining the locations of these files, we will edit the `docker-compose.yml` file accordingly and add the new variables to the `immich-server` container. These paths are where the mount attaches inside of the container, so don't change those.
 
 ```diff title="docker-compose.yml"
 services:
@@ -35,7 +35,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
 ```
 
-Restart Immich to register the changes.
+After making this change, you have to move the files over to the new folders to make sure Immich can find everything it needs. If you haven't uploaded anything important yet, you can also reset Immich entirely by deleting the database folder.
+Then restart Immich to register the changes:
 
 ```
 docker compose up -d

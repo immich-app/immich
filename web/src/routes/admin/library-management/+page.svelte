@@ -35,6 +35,7 @@
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';
   import type { PageData } from './$types';
+  import LibraryImportPathForm from '$lib/components/forms/library-import-path-form.svelte';
 
   interface Props {
     data: PageData;
@@ -57,6 +58,8 @@
   let updateLibraryIndex: number | null;
   let dropdownOpen: boolean[] = [];
   let toCreateLibrary = $state(false);
+  let toAddImportPath = $state(false);
+  let importPathToAdd: string | null = $state(null);
 
   onMount(async () => {
     await readLibraryList();
@@ -67,6 +70,7 @@
     editScanSettings = undefined;
     renameLibrary = undefined;
     updateLibraryIndex = null;
+    toAddImportPath = false;
 
     for (let index = 0; index < dropdownOpen.length; index++) {
       dropdownOpen[index] = false;
@@ -93,8 +97,9 @@
   }
 
   const handleCreate = async (ownerId: string) => {
+    let createdLibrary: LibraryResponseDto | undefined;
     try {
-      const createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
+      createdLibrary = await createLibrary({ createLibraryDto: { ownerId } });
       notificationController.show({
         message: $t('admin.library_created', { values: { library: createdLibrary.name } }),
         type: NotificationType.Info,
@@ -104,6 +109,29 @@
     } finally {
       toCreateLibrary = false;
       await readLibraryList();
+    }
+
+    if (createdLibrary) {
+      // Open the import paths form for the newly created library
+      updateLibraryIndex = libraries.findIndex((library) => library.id === createdLibrary.id);
+      toAddImportPath = true;
+    }
+  };
+
+  const handleAddImportPath = () => {
+    if (!updateLibraryIndex || !importPathToAdd) {
+      return;
+    }
+
+    try {
+      onEditImportPathClicked(updateLibraryIndex);
+
+      libraries[updateLibraryIndex].importPaths.push(importPathToAdd);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_add_import_path'));
+    } finally {
+      importPathToAdd = null;
+      toAddImportPath = false;
     }
   };
 
@@ -214,6 +242,21 @@
 
 {#if toCreateLibrary}
   <LibraryUserPickerForm onSubmit={handleCreate} onCancel={() => (toCreateLibrary = false)} />
+{/if}
+
+{#if toAddImportPath}
+  <LibraryImportPathForm
+    title={$t('add_import_path')}
+    submitText={$t('add')}
+    bind:importPath={importPathToAdd}
+    onSubmit={handleAddImportPath}
+    onCancel={() => {
+      toAddImportPath = false;
+      if (updateLibraryIndex) {
+        onEditImportPathClicked(updateLibraryIndex);
+      }
+    }}
+  />
 {/if}
 
 <UserPageLayout title={data.meta.title} admin>

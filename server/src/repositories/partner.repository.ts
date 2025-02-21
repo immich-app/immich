@@ -5,7 +5,16 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DB, Partners, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { PartnerEntity } from 'src/entities/partner.entity';
-import { IPartnerRepository, PartnerIds } from 'src/interfaces/partner.interface';
+
+export interface PartnerIds {
+  sharedById: string;
+  sharedWithId: string;
+}
+
+export enum PartnerDirection {
+  SharedBy = 'shared-by',
+  SharedWith = 'shared-with',
+}
 
 const columns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
 
@@ -28,7 +37,7 @@ const withSharedWith = (eb: ExpressionBuilder<DB, 'partners'>) => {
 };
 
 @Injectable()
-export class PartnerRepository implements IPartnerRepository {
+export class PartnerRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })

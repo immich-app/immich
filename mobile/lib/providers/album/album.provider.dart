@@ -5,46 +5,42 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/utils/renderlist_generator.dart';
-import 'package:isar/isar.dart';
 
 final isRefreshingRemoteAlbumProvider = StateProvider<bool>((ref) => false);
 
 class AlbumNotifier extends StateNotifier<List<Album>> {
-  AlbumNotifier(this._albumService, this.db, this.ref) : super([]) {
-    final query = db.albums.filter().remoteIdIsNotNull();
-    query.findAll().then((value) {
+  AlbumNotifier(this.albumService, this.ref) : super([]) {
+    albumService.getAllRemoteAlbums().then((value) {
       if (mounted) {
         state = value;
       }
     });
-    _streamSub = query.watch().listen((data) => state = data);
+
+    _streamSub =
+        albumService.watchRemoteAlbums().listen((data) => state = data);
   }
 
-  final AlbumService _albumService;
-  final Isar db;
+  final AlbumService albumService;
   final Ref ref;
   late final StreamSubscription<List<Album>> _streamSub;
 
   Future<void> refreshRemoteAlbums() async {
     ref.read(isRefreshingRemoteAlbumProvider.notifier).state = true;
-    await _albumService.refreshRemoteAlbums();
+    await albumService.refreshRemoteAlbums();
     ref.read(isRefreshingRemoteAlbumProvider.notifier).state = false;
   }
 
-  Future<void> refreshDeviceAlbums() => _albumService.refreshDeviceAlbums();
+  Future<void> refreshDeviceAlbums() => albumService.refreshDeviceAlbums();
 
-  Future<bool> deleteAlbum(Album album) => _albumService.deleteAlbum(album);
+  Future<bool> deleteAlbum(Album album) => albumService.deleteAlbum(album);
 
   Future<Album?> createAlbum(
     String albumTitle,
     Set<Asset> assets,
   ) =>
-      _albumService.createAlbum(albumTitle, assets, []);
+      albumService.createAlbum(albumTitle, assets, []);
 
   Future<Album?> getAlbumByName(
     String albumName, {
@@ -52,7 +48,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     bool? shared,
     bool? owner,
   }) =>
-      _albumService.getAlbumByName(
+      albumService.getAlbumByName(
         albumName,
         remote: remote,
         shared: shared,
@@ -74,7 +70,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   Future<bool> leaveAlbum(Album album) async {
-    var res = await _albumService.leaveAlbum(album);
+    var res = await albumService.leaveAlbum(album);
 
     if (res) {
       await deleteAlbum(album);
@@ -85,15 +81,15 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   void searchAlbums(String searchTerm, QuickFilterMode filterMode) async {
-    state = await _albumService.search(searchTerm, filterMode);
+    state = await albumService.search(searchTerm, filterMode);
   }
 
   Future<void> addUsers(Album album, List<String> userIds) async {
-    await _albumService.addUsers(album, userIds);
+    await albumService.addUsers(album, userIds);
   }
 
   Future<bool> removeUser(Album album, User user) async {
-    final isRemoved = await _albumService.removeUser(album, user);
+    final isRemoved = await albumService.removeUser(album, user);
 
     if (isRemoved && album.sharedUsers.isEmpty) {
       state = state.where((element) => element.id != album.id).toList();
@@ -103,25 +99,25 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
   }
 
   Future<void> addAssets(Album album, Iterable<Asset> assets) async {
-    await _albumService.addAssets(album, assets);
+    await albumService.addAssets(album, assets);
   }
 
   Future<bool> removeAsset(Album album, Iterable<Asset> assets) async {
-    return await _albumService.removeAsset(album, assets);
+    return await albumService.removeAsset(album, assets);
   }
 
   Future<bool> setActivitystatus(
     Album album,
     bool enabled,
   ) {
-    return _albumService.setActivityStatus(album, enabled);
+    return albumService.setActivityStatus(album, enabled);
   }
 
   Future<Album?> toggleSortOrder(Album album) {
     final order =
         album.sortOrder == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
 
-    return _albumService.updateSortOrder(album, order);
+    return albumService.updateSortOrder(album, order);
   }
 
   @override
@@ -135,57 +131,38 @@ final albumProvider =
     StateNotifierProvider.autoDispose<AlbumNotifier, List<Album>>((ref) {
   return AlbumNotifier(
     ref.watch(albumServiceProvider),
-    ref.watch(dbProvider),
     ref,
   );
 });
 
 final albumWatcher =
-    StreamProvider.autoDispose.family<Album, int>((ref, albumId) async* {
-  final db = ref.watch(dbProvider);
-  final a = await db.albums.get(albumId);
-  if (a != null) yield a;
-  await for (final a in db.albums.watchObject(albumId, fireImmediately: true)) {
-    if (a != null) yield a;
-  }
-});
+    StreamProvider.autoDispose.family<Album, int>((ref, id) async* {
+  final albumService = ref.watch(albumServiceProvider);
 
-final albumRenderlistProvider =
-    StreamProvider.autoDispose.family<RenderList, int>((ref, albumId) {
-  final album = ref.watch(albumWatcher(albumId)).value;
-
+  final album = await albumService.getAlbumById(id);
   if (album != null) {
-    final query = album.assets.filter().isTrashedEqualTo(false);
-    if (album.sortOrder == SortOrder.asc) {
-      return renderListGeneratorWithGroupBy(
-        query.sortByFileCreatedAt(),
-        GroupAssetsBy.none,
-      );
-    } else if (album.sortOrder == SortOrder.desc) {
-      return renderListGeneratorWithGroupBy(
-        query.sortByFileCreatedAtDesc(),
-        GroupAssetsBy.none,
-      );
+    yield album;
+  }
+
+  await for (final album in albumService.watchAlbum(id)) {
+    if (album != null) {
+      yield album;
     }
   }
-
-  return const Stream.empty();
 });
 
 class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
-  LocalAlbumsNotifier(this.db) : super([]) {
-    final query = db.albums.where().remoteIdIsNull();
-
-    query.findAll().then((value) {
+  LocalAlbumsNotifier(this.albumService) : super([]) {
+    albumService.getAllLocalAlbums().then((value) {
       if (mounted) {
         state = value;
       }
     });
 
-    _streamSub = query.watch().listen((data) => state = data);
+    _streamSub = albumService.watchLocalAlbums().listen((data) => state = data);
   }
 
-  final Isar db;
+  final AlbumService albumService;
   late final StreamSubscription<List<Album>> _streamSub;
 
   @override
@@ -197,5 +174,5 @@ class LocalAlbumsNotifier extends StateNotifier<List<Album>> {
 
 final localAlbumsProvider =
     StateNotifierProvider.autoDispose<LocalAlbumsNotifier, List<Album>>((ref) {
-  return LocalAlbumsNotifier(ref.watch(dbProvider));
+  return LocalAlbumsNotifier(ref.watch(albumServiceProvider));
 });

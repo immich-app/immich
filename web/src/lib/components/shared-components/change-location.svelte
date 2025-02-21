@@ -109,10 +109,7 @@
     <div class="flex flex-col w-full h-full gap-2">
       <div class="relative w-64 sm:w-96">
         {#if suggestionContainer}
-          <div
-            use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
-            use:listNavigation={suggestionContainer}
-          >
+          <div use:listNavigation={suggestionContainer}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
               <SearchBar
                 placeholder={$t('search_places')}
@@ -126,7 +123,12 @@
           </div>
         {/if}
 
-        <div class="absolute z-[99] w-full" id="suggestion" bind:this={suggestionContainer}>
+        <div
+          class="absolute z-[99] w-full"
+          id="suggestion"
+          bind:this={suggestionContainer}
+          use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
+        >
           {#if !hideSuggestion}
             {#each suggestedPlaces as place, index}
               <button

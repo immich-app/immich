@@ -13,25 +13,45 @@
   import DeleteAssets from '$lib/components/photos-page/actions/delete-assets.svelte';
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, QueryParameter } from '$lib/constants';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type Viewport } from '$lib/stores/assets.store';
-  import { memoryStore } from '$lib/stores/memory.store';
+  import { loadMemories, memoryStore } from '$lib/stores/memory.store';
   import { locale } from '$lib/stores/preferences.store';
+  import { preferences } from '$lib/stores/user.store';
   import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, getMemoryLane, type AssetResponseDto, type MemoryLaneResponseDto } from '@immich/sdk';
   import {
+    AssetMediaSize,
+    deleteMemory,
+    removeMemoryAssets,
+    updateMemory,
+    type AssetResponseDto,
+    type MemoryResponseDto,
+  } from '@immich/sdk';
+  import { IconButton } from '@immich/ui';
+  import {
+    mdiCardsOutline,
     mdiChevronDown,
     mdiChevronLeft,
     mdiChevronRight,
     mdiChevronUp,
     mdiDotsVertical,
+    mdiHeart,
+    mdiHeartOutline,
+    mdiImageMinusOutline,
     mdiImageSearch,
     mdiPause,
     mdiPlay,
@@ -45,9 +65,6 @@
   import { tweened } from 'svelte/motion';
   import { derived as storeDerived } from 'svelte/store';
   import { fade } from 'svelte/transition';
-  import { preferences } from '$lib/stores/user.store';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   type MemoryIndex = {
     memoryIndex: number;
@@ -55,20 +72,20 @@
   };
 
   type MemoryAsset = MemoryIndex & {
-    memory: MemoryLaneResponseDto;
+    memory: MemoryResponseDto;
     asset: AssetResponseDto;
-    previousMemory?: MemoryLaneResponseDto;
+    previousMemory?: MemoryResponseDto;
     previous?: MemoryAsset;
     next?: MemoryAsset;
-    nextMemory?: MemoryLaneResponseDto;
+    nextMemory?: MemoryResponseDto;
   };
 
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
   let galleryInView = $state(false);
   let paused = $state(false);
-  let current: MemoryAsset | undefined = $state(undefined);
-  // let memories: MemoryAsset[] = [];
+  let current = $state<MemoryAsset | undefined>(undefined);
+  let isSaved = $derived(current?.memory.isSaved);
   let resetPromise = $state(Promise.resolve());
 
   const { isViewing } = assetViewingStore;
@@ -168,6 +185,7 @@
     }
     current.memory.assets = current.memory.assets;
   };
+
   const handleRemove = (ids: string[]) => {
     if (!current) {
       return;
@@ -186,13 +204,65 @@
     current = loadFromParams($memories, $page);
   };
 
+  const handleDeleteMemoryAsset = async (current?: MemoryAsset) => {
+    if (!current) {
+      return;
+    }
+
+    if (current.memory.assets.length === 1) {
+      return handleDeleteMemory(current);
+    }
+
+    if (current.previous) {
+      current.previous.next = current.next;
+    }
+    if (current.next) {
+      current.next.previous = current.previous;
+    }
+
+    current.memory.assets = current.memory.assets.filter((asset) => asset.id !== current.asset.id);
+
+    $memoryStore = $memoryStore;
+
+    await removeMemoryAssets({ id: current.memory.id, bulkIdsDto: { ids: [current.asset.id] } });
+  };
+
+  const handleDeleteMemory = async (current?: MemoryAsset) => {
+    if (!current) {
+      return;
+    }
+
+    await deleteMemory({ id: current.memory.id });
+
+    notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
+
+    await loadMemories();
+    init();
+  };
+
+  const handleSaveMemory = async (current?: MemoryAsset) => {
+    if (!current) {
+      return;
+    }
+
+    current.memory.isSaved = !current.memory.isSaved;
+
+    await updateMemory({
+      id: current.memory.id,
+      memoryUpdateDto: {
+        isSaved: current.memory.isSaved,
+      },
+    });
+
+    notificationController.show({
+      message: current.memory.isSaved ? $t('added_to_favorites') : $t('removed_from_favorites'),
+      type: NotificationType.Info,
+    });
+  };
+
   onMount(async () => {
     if (!$memoryStore) {
-      const localTime = new Date();
-      $memoryStore = await getMemoryLane({
-        month: localTime.getMonth() + 1,
-        day: localTime.getDate(),
-      });
+      await loadMemories();
     }
 
     init();
@@ -264,11 +334,11 @@
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
   {#if current && current.memory.assets.length > 0}
-    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark>
+    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark multiRow>
       {#snippet leading()}
         {#if current}
           <p class="text-lg">
-            {$memoryLaneTitle(current.memory.yearsAgo)}
+            {$memoryLaneTitle(current.memory)}
           </p>
         {/if}
       {/snippet}
@@ -320,9 +390,9 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="overflow-hidden pt-20">
+    <section class="overflow-hidden pt-32 md:pt-20">
       <div
-        class="ml-[-100%] box-border flex h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
+        class="ml-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
         <!-- PREVIOUS MEMORY -->
         <div class="h-1/2 w-[20vw] rounded-2xl {current.previousMemory ? 'opacity-25 hover:opacity-70' : 'opacity-0'}">
@@ -352,7 +422,7 @@
             {#if current.previousMemory}
               <div class="absolute bottom-4 right-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('previous').toUpperCase()}</p>
-                <p class="text-xl">{$memoryLaneTitle(current.previousMemory.yearsAgo)}</p>
+                <p class="text-xl">{$memoryLaneTitle(current.previousMemory)}</p>
               </div>
             {/if}
           </button>
@@ -374,17 +444,63 @@
             {/key}
 
             <div
-              class="absolute bottom-6 right-6 transition-all"
+              class="absolute bottom-0 right-0 p-2 transition-all flex h-full justify-between flex-col items-end gap-2"
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
-              <CircleIconButton
-                href="{AppRoute.PHOTOS}?at={current.asset.id}"
-                icon={mdiImageSearch}
-                title={$t('view_in_timeline')}
-                color="light"
-                onclick={() => {}}
-              />
+              <div class="flex">
+                <IconButton
+                  icon={isSaved ? mdiHeart : mdiHeartOutline}
+                  shape="round"
+                  variant="ghost"
+                  size="giant"
+                  color="secondary"
+                  aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
+                  onclick={() => handleSaveMemory(current)}
+                  class="text-white dark:text-white"
+                />
+                <!-- <IconButton
+                  icon={mdiShareVariantOutline}
+                  shape="round"
+                  variant="ghost"
+                  size="giant"
+                  color="secondary"
+                  aria-label={$t('share')}
+                /> -->
+                <ButtonContextMenu
+                  icon={mdiDotsVertical}
+                  title={$t('menu')}
+                  onclick={() => handleAction('pause')}
+                  direction="left"
+                  align="bottom-right"
+                  class="text-white dark:text-white"
+                >
+                  <MenuOption
+                    onClick={() => handleDeleteMemory(current)}
+                    text={'Remove memory'}
+                    icon={mdiCardsOutline}
+                  />
+                  <MenuOption
+                    onClick={() => handleDeleteMemoryAsset(current)}
+                    text={'Remove photo from this memory'}
+                    icon={mdiImageMinusOutline}
+                  />
+                  <!-- shortcut={{ key: 'l', shift: shared }} -->
+                </ButtonContextMenu>
+              </div>
+
+              <div>
+                <IconButton
+                  href="{AppRoute.PHOTOS}?at={current.asset.id}"
+                  icon={mdiImageSearch}
+                  aria-label={$t('view_in_timeline')}
+                  color="secondary"
+                  variant="ghost"
+                  shape="round"
+                  size="giant"
+                  class="text-white dark:text-white"
+                />
+              </div>
             </div>
             <!-- CONTROL BUTTONS -->
             {#if current.previous}
@@ -449,7 +565,7 @@
             {#if current.nextMemory}
               <div class="absolute bottom-4 left-4 text-left text-white">
                 <p class="text-xs font-semibold text-gray-200">{$t('up_next').toUpperCase()}</p>
-                <p class="text-xl">{$memoryLaneTitle(current.nextMemory.yearsAgo)}</p>
+                <p class="text-xl">{$memoryLaneTitle(current.nextMemory)}</p>
               </div>
             {/if}
           </button>

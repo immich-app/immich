@@ -1,5 +1,19 @@
-import { ILoggingRepository } from 'src/types';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { Mocked, vitest } from 'vitest';
+
+export type ILoggingRepository = Pick<
+  LoggingRepository,
+  | 'verbose'
+  | 'log'
+  | 'debug'
+  | 'warn'
+  | 'error'
+  | 'fatal'
+  | 'isLevelEnabled'
+  | 'setLogLevel'
+  | 'setContext'
+  | 'setAppName'
+>;
 
 export const newLoggingRepositoryMock = (): Mocked<ILoggingRepository> => {
   return {

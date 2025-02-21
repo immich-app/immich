@@ -12,7 +12,6 @@ import {
   Permission,
   PersonCreateDto,
   SharedLinkCreateDto,
-  SmartSearchDto,
   UpdateLibraryDto,
   UserAdminCreateDto,
   UserPreferencesUpdateDto,
@@ -32,8 +31,8 @@ import {
   getConfig,
   getConfigDefaults,
   login,
+  scanLibrary,
   searchAssets,
-  searchSmart,
   sendJobCommand,
   setBaseUrl,
   signUpAdmin,
@@ -558,6 +557,14 @@ export const utils = {
     const key = await utils.createApiKey(accessToken, [Permission.All]);
     await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
+  },
+
+  scan: async (accessToken: string, id: string) => {
+    await scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
+
+    await utils.waitForQueueFinish(accessToken, 'library');
+    await utils.waitForQueueFinish(accessToken, 'sidecar');
+    await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
   },
 };
 
