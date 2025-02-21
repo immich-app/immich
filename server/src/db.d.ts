@@ -227,11 +227,13 @@ export interface Memories {
   createdAt: Generated<Timestamp>;
   data: Json;
   deletedAt: Timestamp | null;
+  hideAt: Timestamp | null;
   id: Generated<string>;
   isSaved: Generated<boolean>;
   memoryAt: Timestamp;
   ownerId: string;
   seenAt: Timestamp | null;
+  showAt: Timestamp | null;
   type: string;
   updatedAt: Generated<Timestamp>;
 }

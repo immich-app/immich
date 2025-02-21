@@ -12,5 +12,6 @@ export const newMemoryRepositoryMock = (): Mocked<RepositoryInterface<MemoryRepo
     getAssetIds: vitest.fn().mockResolvedValue(new Set()),
     addAssetIds: vitest.fn(),
     removeAssetIds: vitest.fn(),
+    cleanup: vitest.fn(),
   };
 };

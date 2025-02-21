@@ -187,6 +187,7 @@ export enum StorageFolder {
 export enum SystemMetadataKey {
   REVERSE_GEOCODING_STATE = 'reverse-geocoding-state',
   FACIAL_RECOGNITION_STATE = 'facial-recognition-state',
+  MEMORIES_STATE = 'memories-state',
   ADMIN_ONBOARDING = 'admin-onboarding',
   SYSTEM_CONFIG = 'system-config',
   SYSTEM_FLAGS = 'system-flags',
@@ -233,6 +234,8 @@ export enum ManualJobName {
   PERSON_CLEANUP = 'person-cleanup',
   TAG_CLEANUP = 'tag-cleanup',
   USER_CLEANUP = 'user-cleanup',
+  MEMORY_CLEANUP = 'memory-cleanup',
+  MEMORY_CREATE = 'memory-create',
 }
 
 export enum AssetPathType {
@@ -476,6 +479,10 @@ export enum JobName {
   DELETE_FILES = 'delete-files',
   CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
   CLEAN_OLD_SESSION_TOKENS = 'clean-old-session-tokens',
+
+  // memories
+  MEMORIES_CLEANUP = 'memories-cleanup',
+  MEMORIES_CREATE = 'memories-create',
 
   // smart search
   QUEUE_SMART_SEARCH = 'queue-smart-search',

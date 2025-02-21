@@ -640,11 +640,13 @@ export type MemoryResponseDto = {
     createdAt: string;
     data: OnThisDayDto;
     deletedAt?: string;
+    hideAt?: string;
     id: string;
     isSaved: boolean;
     memoryAt: string;
     ownerId: string;
     seenAt?: string;
+    showAt?: string;
     "type": MemoryType;
     updatedAt: string;
 };
@@ -2222,11 +2224,21 @@ export function reverseGeocode({ lat, lon }: {
         ...opts
     }));
 }
-export function searchMemories(opts?: Oazapfts.RequestOpts) {
+export function searchMemories({ $for, isSaved, isTrashed, $type }: {
+    $for?: string;
+    isSaved?: boolean;
+    isTrashed?: boolean;
+    $type?: MemoryType;
+}, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: MemoryResponseDto[];
-    }>("/memories", {
+    }>(`/memories${QS.query(QS.explode({
+        "for": $for,
+        isSaved,
+        isTrashed,
+        "type": $type
+    }))}`, {
         ...opts
     }));
 }
@@ -3565,7 +3577,9 @@ export enum AssetMediaSize {
 export enum ManualJobName {
     PersonCleanup = "person-cleanup",
     TagCleanup = "tag-cleanup",
-    UserCleanup = "user-cleanup"
+    UserCleanup = "user-cleanup",
+    MemoryCleanup = "memory-cleanup",
+    MemoryCreate = "memory-create"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",

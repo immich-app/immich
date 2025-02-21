@@ -26,12 +26,16 @@ class ManualJobName {
   static const personCleanup = ManualJobName._(r'person-cleanup');
   static const tagCleanup = ManualJobName._(r'tag-cleanup');
   static const userCleanup = ManualJobName._(r'user-cleanup');
+  static const memoryCleanup = ManualJobName._(r'memory-cleanup');
+  static const memoryCreate = ManualJobName._(r'memory-create');
 
   /// List of all possible values in this [enum][ManualJobName].
   static const values = <ManualJobName>[
     personCleanup,
     tagCleanup,
     userCleanup,
+    memoryCleanup,
+    memoryCreate,
   ];
 
   static ManualJobName? fromJson(dynamic value) => ManualJobNameTypeTransformer().decode(value);
@@ -73,6 +77,8 @@ class ManualJobNameTypeTransformer {
         case r'person-cleanup': return ManualJobName.personCleanup;
         case r'tag-cleanup': return ManualJobName.tagCleanup;
         case r'user-cleanup': return ManualJobName.userCleanup;
+        case r'memory-cleanup': return ManualJobName.memoryCleanup;
+        case r'memory-create': return ManualJobName.memoryCreate;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
