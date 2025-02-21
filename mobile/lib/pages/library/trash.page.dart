@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/providers/trash.provider.dart';
@@ -22,7 +23,7 @@ class TrashPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final trashedAssets = ref.watch(trashedAssetsProvider);
+    final trashRenderList = ref.watch(trashTimelineProvider);
     final trashDays =
         ref.watch(serverInfoProvider.select((v) => v.serverConfig.trashDays));
     final selectionEnabledHook = useState(false);
@@ -234,11 +235,11 @@ class TrashPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: trashedAssets.maybeWhen(
+      appBar: trashRenderList.maybeWhen(
         orElse: () => buildAppBar("?"),
         data: (data) => buildAppBar(data.totalAssets.toString()),
       ),
-      body: trashedAssets.widgetWhen(
+      body: trashRenderList.widgetWhen(
         onData: (data) => data.isEmpty
             ? Center(
                 child: Text('trash_page_no_assets'.tr()),
