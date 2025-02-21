@@ -132,7 +132,7 @@ export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffli
 
 export interface GetByIdsRelations {
   exifInfo?: boolean;
-  faces?: { person?: boolean };
+  faces?: { person?: boolean; withDeleted?: boolean };
   files?: boolean;
   library?: boolean;
   owner?: boolean;
@@ -262,7 +262,11 @@ export class AssetRepository {
       .selectAll('assets')
       .where('assets.id', '=', anyUuid(ids))
       .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces))
+      .$if(!!faces, (qb) =>
+        qb.select((eb) =>
+          faces?.person ? withFacesAndPeople(eb, faces.withDeleted) : withFaces(eb, faces?.withDeleted),
+        ),
+      )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))

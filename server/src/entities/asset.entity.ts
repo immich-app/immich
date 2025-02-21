@@ -202,10 +202,14 @@ export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
     .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
-export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
-  return jsonArrayFrom(eb.selectFrom('asset_faces').selectAll().whereRef('asset_faces.assetId', '=', 'assets.id')).as(
-    'faces',
-  );
+export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_faces')
+      .selectAll()
+      .whereRef('asset_faces.assetId', '=', 'assets.id')
+      .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
+  ).as('faces');
 }
 
 export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileType) {
@@ -218,11 +222,12 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   ).as('files');
 }
 
-export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
+export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
   return eb
     .selectFrom('asset_faces')
     .leftJoin('person', 'person.id', 'asset_faces.personId')
     .whereRef('asset_faces.assetId', '=', 'assets.id')
+    .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null))
     .select((eb) =>
       eb
         .fn('jsonb_agg', [

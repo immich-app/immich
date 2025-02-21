@@ -118,6 +118,8 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
+*FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | 
+*FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
 *FileReportsApi* | [**fixAuditFiles**](doc//FileReportsApi.md#fixauditfiles) | **POST** /reports/fix | 
@@ -278,6 +280,8 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
+ - [AssetFaceCreateDto](doc//AssetFaceCreateDto.md)
+ - [AssetFaceDeleteDto](doc//AssetFaceDeleteDto.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)

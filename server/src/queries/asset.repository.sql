@@ -96,6 +96,7 @@ select
       left join "person" on "person"."id" = "asset_faces"."personId"
     where
       "asset_faces"."assetId" = "assets"."id"
+      and "asset_faces"."deletedAt" is null
   ) as "faces",
   (
     select

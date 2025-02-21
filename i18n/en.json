@@ -1,5 +1,9 @@
 {
+  "delete_face": "Delete face",
+  "tag_people": "Tag People",
+  "error_delete_face": "Error deleting face from asset",
   "search_by_description_example": "Hiking day in Sapa",
+  "confirm_delete_face": "Are you sure you want to delete {name} face from the asset?",
   "search_by_description": "Search by description",
   "about": "About",
   "account": "Account",

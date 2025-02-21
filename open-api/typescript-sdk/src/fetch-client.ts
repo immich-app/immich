@@ -523,6 +523,19 @@ export type AssetFaceResponseDto = {
     person: (PersonResponseDto) | null;
     sourceType?: SourceType;
 };
+export type AssetFaceCreateDto = {
+    assetId: string;
+    height: number;
+    imageHeight: number;
+    imageWidth: number;
+    personId: string;
+    width: number;
+    x: number;
+    y: number;
+};
+export type AssetFaceDeleteDto = {
+    force: boolean;
+};
 export type FaceDto = {
     id: string;
 };
@@ -2028,6 +2041,25 @@ export function getFaces({ id }: {
     }))}`, {
         ...opts
     }));
+}
+export function createFace({ assetFaceCreateDto }: {
+    assetFaceCreateDto: AssetFaceCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/faces", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetFaceCreateDto
+    })));
+}
+export function deleteFace({ id, assetFaceDeleteDto }: {
+    id: string;
+    assetFaceDeleteDto: AssetFaceDeleteDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/faces/${encodeURIComponent(id)}`, oazapfts.json({
+        ...opts,
+        method: "DELETE",
+        body: assetFaceDeleteDto
+    })));
 }
 export function reassignFacesById({ id, faceDto }: {
     id: string;
