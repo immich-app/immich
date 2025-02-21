@@ -33,7 +33,7 @@
     type UserResponseDto,
   } from '@immich/sdk';
   import { Button, Text } from '@immich/ui';
-  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiQueueFirstInLastOut, mdiSync } from '@mdi/js';
+  import { mdiDatabase, mdiDotsVertical, mdiPlusBoxOutline, mdiSync } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade, slide } from 'svelte/transition';

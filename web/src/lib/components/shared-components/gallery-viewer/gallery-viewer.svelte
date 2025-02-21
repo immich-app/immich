@@ -8,13 +8,11 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, getAssetRatio } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect, getJustifiedLayoutFromAssets } from '$lib/utils/asset-utils';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
-  import { calculateWidth } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
-  import justifiedLayout from 'justified-layout';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import ShowShortcuts from '../show-shortcuts.svelte';
@@ -310,23 +308,12 @@
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
   let geometry = $derived(
-    (() => {
-      const justifiedLayoutResult = justifiedLayout(
-        assets.map((asset) => getAssetRatio(asset)),
-        {
-          boxSpacing: 2,
-          containerWidth: Math.floor(viewport.width),
-          containerPadding: 0,
-          targetRowHeightTolerance: 0.15,
-          targetRowHeight: 235,
-        },
-      );
-
-      return {
-        ...justifiedLayoutResult,
-        containerWidth: calculateWidth(justifiedLayoutResult.boxes),
-      };
-    })(),
+    getJustifiedLayoutFromAssets(assets, {
+      spacing: 2,
+      rowWidth: Math.floor(viewport.width),
+      heightTolerance: 0.15,
+      rowHeight: 235,
+    }),
   );
 
   $effect(() => {
@@ -364,11 +351,15 @@
 
 {#if assets.length > 0}
   <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
-    {#each assets as asset, i (i)}
+    {#each assets as asset, i}
+      {@const top = geometry.getTop(i)}
+      {@const left = geometry.getLeft(i)}
+      {@const width = geometry.getWidth(i)}
+      {@const height = geometry.getHeight(i)}
+
       <div
         class="absolute"
-        style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
-          .top}px; left: {geometry.boxes[i].left}px"
+        style="width: {width}px; height: {height}px; top: {top}px; left: {left}px"
         title={showAssetName ? asset.originalFileName : ''}
       >
         <Thumbnail
@@ -387,8 +378,8 @@
           {asset}
           selected={assetInteraction.selectedAssets.has(asset)}
           selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-          thumbnailWidth={geometry.boxes[i].width}
-          thumbnailHeight={geometry.boxes[i].height}
+          thumbnailWidth={width}
+          thumbnailHeight={height}
         />
         {#if showAssetName}
           <div
