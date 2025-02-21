@@ -49,7 +49,8 @@ class GalleryAppBar extends ConsumerWidget {
     }
 
     handleRestore(Asset asset) async {
-      final result = await ref.read(trashProvider.notifier).restoreAsset(asset);
+      final result =
+          await ref.read(trashProvider.notifier).restoreAssets([asset]);
 
       if (result && context.mounted) {
         ImmichToast.show(
