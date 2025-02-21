@@ -1111,6 +1111,7 @@
   "say_something": "Say something",
   "scan_all_libraries": "Scan All Libraries",
   "scan_library": "Scan",
+  "rescan": "Rescan",
   "scan_settings": "Scan Settings",
   "scanning_for_album": "Scanning for album...",
   "search": "Search",
