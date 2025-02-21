@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { Permission } from 'src/enum';
 
 export type AuthUser = {
@@ -29,6 +30,8 @@ export type AuthSession = {
 };
 
 export const columns = {
+  ackEpoch: (columnName: 'createdAt' | 'updatedAt' | 'deletedAt') =>
+    sql.raw<string>(`extract(epoch from "${columnName}")::text`).as('ackEpoch'),
   authUser: [
     'users.id',
     'users.name',

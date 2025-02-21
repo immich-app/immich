@@ -537,3 +537,12 @@ export enum DatabaseLock {
   GetSystemConfig = 69,
   BackupDatabase = 42,
 }
+
+export enum SyncRequestType {
+  UsersV1 = 'UsersV1',
+}
+
+export enum SyncEntityType {
+  UserV1 = 'UserV1',
+  UserDeleteV1 = 'UserDeleteV1',
+}

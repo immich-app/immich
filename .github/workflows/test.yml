@@ -504,6 +504,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          cat ./src/migrations/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

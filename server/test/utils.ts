@@ -34,6 +34,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -75,6 +76,7 @@ import { newSessionRepositoryMock } from 'test/repositories/session.repository.m
 import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
 import { newStackRepositoryMock } from 'test/repositories/stack.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
+import { newSyncRepositoryMock } from 'test/repositories/sync.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
 import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
@@ -178,6 +180,7 @@ export const newTestService = <T extends BaseService>(
   const sharedLinkMock = newSharedLinkRepositoryMock();
   const stackMock = newStackRepositoryMock();
   const storageMock = newStorageRepositoryMock();
+  const syncMock = newSyncRepositoryMock();
   const systemMock = newSystemMetadataRepositoryMock();
   const tagMock = newTagRepositoryMock();
   const telemetryMock = newTelemetryRepositoryMock();
@@ -219,6 +222,7 @@ export const newTestService = <T extends BaseService>(
     sharedLinkMock as RepositoryInterface<SharedLinkRepository> as SharedLinkRepository,
     stackMock as RepositoryInterface<StackRepository> as StackRepository,
     storageMock as RepositoryInterface<StorageRepository> as StorageRepository,
+    syncMock as RepositoryInterface<SyncRepository> as SyncRepository,
     systemMock as RepositoryInterface<SystemMetadataRepository> as SystemMetadataRepository,
     tagMock as RepositoryInterface<TagRepository> as TagRepository,
     telemetryMock as unknown as TelemetryRepository,
