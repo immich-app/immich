@@ -811,6 +811,7 @@ export type MetadataSearchDto = {
     page?: number;
     personIds?: string[];
     previewPath?: string;
+    rating?: number;
     size?: number;
     state?: string | null;
     tagIds?: string[];
@@ -878,6 +879,7 @@ export type RandomSearchDto = {
     make?: string;
     model?: string | null;
     personIds?: string[];
+    rating?: number;
     size?: number;
     state?: string | null;
     tagIds?: string[];
@@ -914,6 +916,7 @@ export type SmartSearchDto = {
     page?: number;
     personIds?: string[];
     query: string;
+    rating?: number;
     size?: number;
     state?: string | null;
     tagIds?: string[];
