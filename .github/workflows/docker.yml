@@ -250,6 +250,8 @@ jobs:
       - name: Generate docker image tags
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
         with:
           flavor: |
             # Disable latest tag
@@ -401,6 +403,8 @@ jobs:
       - name: Generate docker image tags
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
         with:
           flavor: |
             # Disable latest tag
