@@ -485,8 +485,7 @@ export class AssetStore {
       rowHeight: 235,
       rowWidth: Math.floor(viewportWidth),
     };
-    // TODO: move this import and make this method sync after https://github.com/sveltejs/kit/issues/7805 is fixed
-    // const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
+
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
