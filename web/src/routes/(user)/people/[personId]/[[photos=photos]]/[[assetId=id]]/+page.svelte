@@ -33,7 +33,7 @@
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -156,7 +156,7 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -358,7 +358,7 @@
   };
 
   const handleDeleteAssets = async (assetIds: string[]) => {
-    $assetStore.removeAssets(assetIds);
+    assetStore.removeAssets(assetIds);
     await updateAssetCount();
   };
 
@@ -433,7 +433,7 @@
         <ArchiveAction
           menuItem
           unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => $assetStore.removeAssets(assetIds)}
+          onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
         />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />

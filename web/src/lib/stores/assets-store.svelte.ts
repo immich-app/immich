@@ -31,30 +31,30 @@ interface AssetLookup {
 
 export class AssetBucket {
   store!: AssetStore;
-  bucketDate!: string;
+  bucketDate: string | undefined =  $state();
   /**
    * The DOM height of the bucket in pixel
    * This value is first estimated by the number of asset and later is corrected as the user scroll
    */
-  bucketHeight: number = 0;
-  isBucketHeightActual: boolean = false;
+  bucketHeight: number =  $state(0);
+  isBucketHeightActual: boolean = $state(false);
   bucketDateFormattted!: string;
-  bucketCount: number = 0;
-  assets: AssetResponseDto[] = [];
-  dateGroups: DateGroup[] = [];
-  cancelToken: AbortController | undefined;
+  bucketCount: number = $state(0);
+  assets: AssetResponseDto[] = $state([]);
+  dateGroups: DateGroup[] = $state([]);
+  cancelToken: AbortController | undefined = $state();
   /**
    * Prevent this asset's load from being canceled; i.e. to force load of offscreen asset.
    */
-  isPreventCancel: boolean = false;
+  isPreventCancel: boolean = $state(false);
   /**
    * A promise that resolves once the bucket is loaded, and rejects if bucket is canceled.
    */
   complete!: Promise<void>;
-  loading: boolean = false;
-  isLoaded: boolean = false;
-  intersecting: boolean = false;
-  measured: boolean = false;
+  loading: boolean = $state(false);
+  isLoaded: boolean = $state(false);
+  intersecting: boolean = $state(false);
+  measured: boolean = $state(false);
   measuredPromise!: Promise<void>;
 
   constructor(props: Partial<AssetBucket> & { store: AssetStore; bucketDate: string }) {
@@ -195,6 +195,9 @@ type DateGroupHeightEvent = {
   height: number;
 };
 
+export const AssetData = {
+
+} 
 export class AssetStore {
   private assetToBucket: Record<string, AssetLookup> = {};
   private pendingChanges: PendingChange[] = [];
@@ -206,26 +209,28 @@ export class AssetStore {
   };
   private initializedSignal!: () => void;
   private store$ = writable(this);
+  
   /** The svelte key for this view model object */
   viewId = generateId();
 
-  lastScrollTime: number = 0;
-  subscribe = this.store$.subscribe;
+  lastScrollTime: numbe
+  r = $state(0);
+  // subscribe = this.store$.subscribe;
   /**
    * A promise that resolves once the store is initialized.
    */
-  complete!: Promise<void>;
+  private complete!: Promise<void>;
   taskManager = new AssetGridTaskManager(this);
-  initialized = false;
-  timelineHeight = 0;
-  buckets: AssetBucket[] = [];
-  assets: AssetResponseDto[] = [];
+  initialized = $state(false);
+  timelineHeight = $state(0);
+  buckets: AssetBucket[] = $state([]);
+  assets: AssetResponseDto[] = $state([]);
   albumAssets: Set<string> = new Set();
-  pendingScrollBucket: AssetBucket | undefined;
-  pendingScrollAssetId: string | undefined;
-  maxBucketAssets = 0;
+  pendingScrollBucket: AssetBucket | undefined = $state();
+  pendingScrollAssetId: string | undefined = $state();
+  maxBucketAssets = $state(0);
 
-  listeners: BucketListener[] = [];
+  private listeners: BucketListener[] = [];
 
   constructor(
     options: AssetStoreOptions,
@@ -259,6 +264,7 @@ export class AssetStore {
   }
 
   connect() {
+    debugger;
     this.unsubscribers.push(
       websocketEvents.on('on_upload_success', (_) => {
         // TODO!: Temporarily disable to avoid flashing effect of the timeline
@@ -372,6 +378,7 @@ export class AssetStore {
   }
 
   async initialiazeTimeBuckets() {
+    debugger;
     this.timelineHeight = 0;
     this.buckets = [];
     this.assets = [];
@@ -385,6 +392,7 @@ export class AssetStore {
     this.buckets = timebuckets.map(
       (bucket) => new AssetBucket({ store: this, bucketDate: bucket.timeBucket, bucketCount: bucket.count }),
     );
+    debugger
     this.initializedSignal();
     this.initialized = true;
   }
@@ -419,6 +427,7 @@ export class AssetStore {
   }
 
   async updateViewport(viewport: Viewport, force?: boolean) {
+    debugger;
     if (viewport.height === 0 && viewport.width === 0) {
       return;
     }
@@ -434,6 +443,7 @@ export class AssetStore {
   }
 
   private async initialLayout(changedWidth: boolean) {
+    
     for (const bucket of this.buckets) {
       await this.updateGeometry(bucket, changedWidth);
     }
@@ -562,8 +572,8 @@ export class AssetStore {
       if ((error as any).name === 'AbortError') {
         return;
       }
-      const $t = get(t);
-      handleError(error, $t('errors.failed_to_load_assets'));
+      const _$t = get(t);
+      handleError(error, _$t('errors.failed_to_load_assets'));
       bucket.errored();
     } finally {
       bucket.cancelToken = undefined;

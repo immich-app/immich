@@ -4,7 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, AssetStore, type BucketListener, type ViewportXY } from '$lib/stores/assets.store';
+  import { AssetBucket, AssetStore, type BucketListener, type ViewportXY } from '$lib/stores/assets-store.svelte';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -116,6 +116,7 @@
   } = TUNABLES;
 
   const completeNav = () => {
+    debugger;
     navigating = false;
     if (internalScroll) {
       internalScroll = false;
@@ -123,7 +124,7 @@
     }
 
     if ($gridScrollTarget?.at) {
-      void $assetStore.scheduleScrollToAssetId($gridScrollTarget, () => {
+      void assetStore.scheduleScrollToAssetId($gridScrollTarget, () => {
         element?.scrollTo({ top: 0 });
         showSkeleton = false;
       });
@@ -159,7 +160,7 @@
 
         if (assetGridUpdate) {
           setTimeout(() => {
-            void $assetStore.updateViewport(safeViewport, true);
+            void assetStore.updateViewport(safeViewport, true);
             const asset = $page.url.searchParams.get('at');
             if (asset) {
               $gridScrollTarget = { at: asset };
@@ -210,8 +211,8 @@
       _updateLastIntersectedBucketDate();
     }
     if (lastIntersectedBucketDate) {
-      const currentIndex = $assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
-      const deltaIndex = $assetStore.buckets.indexOf(adjustedBucket);
+      const currentIndex = assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
+      const deltaIndex = assetStore.buckets.indexOf(adjustedBucket);
 
       if (deltaIndex < currentIndex) {
         element?.scrollBy(0, delta);
@@ -236,16 +237,14 @@
       safeViewport.y = rect.y;
     }
 
-    void $assetStore
-      .init({ bucketListener })
-      .then(() => ($assetStore.connect(), $assetStore.updateViewport(safeViewport)));
+    assetStore.init({ bucketListener }).then(() => (assetStore.connect(), assetStore.updateViewport(safeViewport)));
     if (!enableRouting) {
       showSkeleton = false;
     }
     const dispose = hmrSupport();
     return () => {
-      $assetStore.disconnect();
-      $assetStore.destroy();
+      assetStore.disconnect();
+      assetStore.destroy();
       dispose();
     };
   });
@@ -262,8 +261,8 @@
   }
 
   const getMaxScrollPercent = () =>
-    ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - safeViewport.height) /
-    ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight);
+    (assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - safeViewport.height) /
+    (assetStore.timelineHeight + bottomSectionHeight + topSectionHeight);
 
   const getMaxScroll = () => {
     if (!element || !timelineElement) {
@@ -291,7 +290,7 @@
     scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
-    if (!bucketDate || $assetStore.timelineHeight < safeViewport.height * 2) {
+    if (!bucketDate || assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
 
       const maxScroll = getMaxScroll();
@@ -317,7 +316,7 @@
     _scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
-    if (!bucketDate || $assetStore.timelineHeight < safeViewport.height * 2) {
+    if (!bucketDate || assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       return;
     }
@@ -353,7 +352,7 @@
       return;
     }
 
-    if ($assetStore.timelineHeight < safeViewport.height * 2) {
+    if (assetStore.timelineHeight < safeViewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
       scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
@@ -423,19 +422,15 @@
       preMeasure.push(bucket);
     }
     showSkeleton = false;
-    $assetStore.clearPendingScroll();
+    assetStore.clearPendingScroll();
     // set intersecting true manually here, to reduce flicker that happens when
     // clearing pending scroll, but the intersection observer hadn't yet had time to run
-    $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
+    assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
   };
 
   const trashOrDelete = async (force: boolean = false) => {
     isShowDeleteConfirmation = false;
-    await deleteAssets(
-      !(isTrashEnabled && !force),
-      (assetIds) => $assetStore.removeAssets(assetIds),
-      idsSelectedAssets,
-    );
+    await deleteAssets(!(isTrashEnabled && !force), (assetIds) => assetStore.removeAssets(assetIds), idsSelectedAssets);
     assetInteraction.clearMultiselect();
   };
 
@@ -460,7 +455,7 @@
   const onStackAssets = async () => {
     const ids = await stackAssets(assetInteraction.selectedAssetsArray);
     if (ids) {
-      $assetStore.removeAssets(ids);
+      assetStore.removeAssets(ids);
       onEscape();
     }
   };
@@ -468,7 +463,7 @@
   const toggleArchive = async () => {
     const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
     if (ids) {
-      $assetStore.removeAssets(ids);
+      assetStore.removeAssets(ids);
       deselectAllAssets();
     }
   };
@@ -480,33 +475,34 @@
   };
 
   const handleSelectAsset = (asset: AssetResponseDto) => {
-    if (!$assetStore.albumAssets.has(asset.id)) {
+    if (!assetStore.albumAssets.has(asset.id)) {
       assetInteraction.selectAsset(asset);
     }
   };
 
   function handleIntersect(bucket: AssetBucket) {
+    debugger;
     updateLastIntersectedBucketDate();
     const task = () => {
-      $assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
-      void $assetStore.loadBucket(bucket.bucketDate);
+      assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
+      void assetStore.loadBucket(bucket.bucketDate);
     };
-    $assetStore.taskManager.intersectedBucket(componentId, bucket, task);
+    assetStore.taskManager.intersectedBucket(componentId, bucket, task);
   }
 
   function handleSeparate(bucket: AssetBucket) {
     const task = () => {
-      $assetStore.updateBucket(bucket.bucketDate, { intersecting: false });
+      assetStore.updateBucket(bucket.bucketDate, { intersecting: false });
       bucket.cancel();
     };
-    $assetStore.taskManager.separatedBucket(componentId, bucket, task);
+    assetStore.taskManager.separatedBucket(componentId, bucket, task);
   }
 
   const handlePrevious = async () => {
-    const previousAsset = await $assetStore.getPreviousAsset($viewingAsset);
+    const previousAsset = await assetStore.getPreviousAsset($viewingAsset);
 
     if (previousAsset) {
-      const preloadAsset = await $assetStore.getPreviousAsset(previousAsset);
+      const preloadAsset = await assetStore.getPreviousAsset(previousAsset);
       assetViewingStore.setAsset(previousAsset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: previousAsset.id });
     }
@@ -515,10 +511,10 @@
   };
 
   const handleNext = async () => {
-    const nextAsset = await $assetStore.getNextAsset($viewingAsset);
+    const nextAsset = await assetStore.getNextAsset($viewingAsset);
 
     if (nextAsset) {
-      const preloadAsset = await $assetStore.getNextAsset(nextAsset);
+      const preloadAsset = await assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: nextAsset.id });
     }
@@ -527,10 +523,10 @@
   };
 
   const handleRandom = async () => {
-    const randomAsset = await $assetStore.getRandomAsset();
+    const randomAsset = await assetStore.getRandomAsset();
 
     if (randomAsset) {
-      const preloadAsset = await $assetStore.getNextAsset(randomAsset);
+      const preloadAsset = await assetStore.getNextAsset(randomAsset);
       assetViewingStore.setAsset(randomAsset, preloadAsset ? [preloadAsset] : []);
       await navigate({ targetRoute: 'current', assetId: randomAsset.id });
     }
@@ -661,8 +657,8 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucketIndex = $assetStore.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucketIndex = $assetStore.getBucketIndexByAssetId(asset.id);
+      let startBucketIndex = assetStore.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
+      let endBucketIndex = assetStore.getBucketIndexByAssetId(asset.id);
 
       if (startBucketIndex === null || endBucketIndex === null) {
         return;
@@ -674,8 +670,8 @@
 
       // Select/deselect assets in all intermediate buckets
       for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
-        const bucket = $assetStore.buckets[bucketIndex];
-        await $assetStore.loadBucket(bucket.bucketDate);
+        const bucket = assetStore.buckets[bucketIndex];
+        await assetStore.loadBucket(bucket.bucketDate);
         for (const asset of bucket.assets) {
           if (deselect) {
             assetInteraction.removeAssetFromMultiselectGroup(asset);
@@ -687,7 +683,7 @@
 
       // Update date group selection
       for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
-        const bucket = $assetStore.buckets[bucketIndex];
+        const bucket = assetStore.buckets[bucketIndex];
 
         // Split bucket into date groups and check each group
         const assetsGroupByDate = splitBucketIntoDateGroups(bucket, $locale);
@@ -715,14 +711,14 @@
       return;
     }
 
-    let start = $assetStore.assets.findIndex((a) => a.id === startAsset.id);
-    let end = $assetStore.assets.findIndex((a) => a.id === endAsset.id);
+    let start = assetStore.assets.findIndex((a) => a.id === startAsset.id);
+    let end = assetStore.assets.findIndex((a) => a.id === endAsset.id);
 
     if (start > end) {
       [start, end] = [end, start];
     }
 
-    assetInteraction.setAssetSelectionCandidates($assetStore.assets.slice(start, end + 1));
+    assetInteraction.setAssetSelectionCandidates(assetStore.assets.slice(start, end + 1));
   };
 
   const onSelectStart = (e: Event) => {
@@ -734,7 +730,7 @@
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let isEmpty = $derived($assetStore.initialized && $assetStore.buckets.length === 0);
+  let isEmpty = $derived(assetStore.initialized && assetStore.buckets.length === 0);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
   $effect(() => {
@@ -744,7 +740,7 @@
   });
 
   let largeBucketMode = false;
-  let updateViewport = debounce(() => $assetStore.updateViewport(safeViewport), 8);
+  let updateViewport = debounce(() => assetStore.updateViewport(safeViewport), 8);
   let shortcutList = $derived(
     (() => {
       if ($isSearchEnabled || $showAssetViewer) {
@@ -755,7 +751,7 @@
         { shortcut: { key: 'Escape' }, onShortcut: onEscape },
         { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
-        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteraction) },
+        { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
       ];
@@ -806,7 +802,7 @@
 {#if showShortcuts}
   <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
-{#if $assetStore.buckets.length > 0}
+{#if assetStore.buckets.length > 0}
   <Scrubber
     invisible={showSkeleton}
     {assetStore}
@@ -834,7 +830,7 @@
       // This is because the thumbnail components are destroyed and re-mounted, possibly because of the intersection observer.
       // For larger buckets, this can lead to freezing and a poor user experience.
       // As a mitigation, we aggressively debounce the viewport update to reduce the number of these events.
-      updateViewport = debounce(() => $assetStore.updateViewport(safeViewport), LARGE_BUCKET_DEBOUNCE_MS, {
+      updateViewport = debounce(() => assetStore.updateViewport(safeViewport), LARGE_BUCKET_DEBOUNCE_MS, {
         leading: false,
         trailing: true,
       });
@@ -860,11 +856,12 @@
     bind:this={timelineElement}
     id="virtual-timeline"
     class:invisible={showSkeleton}
-    style:height={$assetStore.timelineHeight + 'px'}
+    style:height={assetStore.timelineHeight + 'px'}
   >
-    {#each $assetStore.buckets as bucket (bucket.viewId)}
+    {#each assetStore.buckets as bucket (bucket.viewId)}
       {@const isPremeasure = preMeasure.includes(bucket)}
-      {@const display = bucket.intersecting || bucket === $assetStore.pendingScrollBucket || isPremeasure}
+      {@const display = bucket.intersecting || bucket === assetStore.pendingScrollBucket || isPremeasure}
+      {@debug}
       <div
         class="bucket"
         use:intersectionObserver={{
@@ -944,6 +941,5 @@
 
   .bucket {
     contain: layout size;
-    transition: height 0.2s ease-out;
   }
 </style>

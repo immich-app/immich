@@ -5,7 +5,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
-  import { isSelectingAllAssets } from '$lib/stores/assets.store';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
