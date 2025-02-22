@@ -12,7 +12,6 @@ import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
-import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
@@ -588,13 +587,3 @@ export const copyImageToClipboard = async (source: HTMLImageElement | string) =>
   const blob = source instanceof HTMLImageElement ? await imgToBlob(source) : await urlToBlob(source);
   await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 };
-
-export function getJustifiedLayoutFromAssets(assets: AssetResponseDto[], options: LayoutOptions) {
-  const aspectRatios = new Float32Array(assets.length);
-  // eslint-disable-next-line unicorn/no-for-loop
-  for (let i = 0; i < assets.length; i++) {
-    const { width, height } = getAssetRatio(assets[i]);
-    aspectRatios[i] = width / height;
-  }
-  return new JustifiedLayout(aspectRatios, options);
-}

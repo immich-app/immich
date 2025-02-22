@@ -97,7 +97,7 @@
   {#each dateGroups as dateGroup, groupIndex (dateGroup.date)}
     {@const display =
       dateGroup.intersecting || !!dateGroup.assets.some((asset) => asset.id === $assetStore.pendingScrollAssetId)}
-    {@const geometry = dateGroup.geometry}
+    {@const geometry = dateGroup.geometry!}
 
     <div
       id="date-group"

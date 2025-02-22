@@ -8,7 +8,7 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, getJustifiedLayoutFromAssets } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
@@ -20,6 +20,7 @@
   import { handlePromiseError } from '$lib/utils';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -307,14 +308,15 @@
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
-  let geometry = $derived(
-    getJustifiedLayoutFromAssets(assets, {
+  let geometry = $derived.by(async () => {
+    const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
+    return getJustifiedLayoutFromAssets(assets, {
       spacing: 2,
-      rowWidth: Math.floor(viewport.width),
       heightTolerance: 0.15,
       rowHeight: 235,
-    }),
-  );
+      rowWidth: Math.floor(viewport.width),
+    });
+  });
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
@@ -350,47 +352,49 @@
 {/if}
 
 {#if assets.length > 0}
-  <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
-    {#each assets as asset, i}
-      {@const top = geometry.getTop(i)}
-      {@const left = geometry.getLeft(i)}
-      {@const width = geometry.getWidth(i)}
-      {@const height = geometry.getHeight(i)}
+  {#await geometry then geometry}
+    <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
+      {#each assets as asset, i}
+        {@const top = geometry.getTop(i)}
+        {@const left = geometry.getLeft(i)}
+        {@const width = geometry.getWidth(i)}
+        {@const height = geometry.getHeight(i)}
 
-      <div
-        class="absolute"
-        style="width: {width}px; height: {height}px; top: {top}px; left: {left}px"
-        title={showAssetName ? asset.originalFileName : ''}
-      >
-        <Thumbnail
-          readonly={disableAssetSelect}
-          onClick={(asset) => {
-            if (assetInteraction.selectionActive) {
-              handleSelectAssets(asset);
-              return;
-            }
-            void viewAssetHandler(asset);
-          }}
-          onSelect={(asset) => handleSelectAssets(asset)}
-          onMouseEvent={() => assetMouseEventHandler(asset)}
-          onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
-          {showArchiveIcon}
-          {asset}
-          selected={assetInteraction.selectedAssets.has(asset)}
-          selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-          thumbnailWidth={width}
-          thumbnailHeight={height}
-        />
-        {#if showAssetName}
-          <div
-            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
-          >
-            {asset.originalFileName}
-          </div>
-        {/if}
-      </div>
-    {/each}
-  </div>
+        <div
+          class="absolute"
+          style="width: {width}px; height: {height}px; top: {top}px; left: {left}px"
+          title={showAssetName ? asset.originalFileName : ''}
+        >
+          <Thumbnail
+            readonly={disableAssetSelect}
+            onClick={(asset) => {
+              if (assetInteraction.selectionActive) {
+                handleSelectAssets(asset);
+                return;
+              }
+              void viewAssetHandler(asset);
+            }}
+            onSelect={(asset) => handleSelectAssets(asset)}
+            onMouseEvent={() => assetMouseEventHandler(asset)}
+            onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
+            {showArchiveIcon}
+            {asset}
+            selected={assetInteraction.selectedAssets.has(asset)}
+            selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
+            thumbnailWidth={width}
+            thumbnailHeight={height}
+          />
+          {#if showAssetName}
+            <div
+              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+            >
+              {asset.originalFileName}
+            </div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/await}
 {/if}
 
 <!-- Overlay Asset Viewer -->

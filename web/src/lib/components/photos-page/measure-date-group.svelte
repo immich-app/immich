@@ -72,7 +72,7 @@
       <div use:resizeObserver={({ height }) => $assetStore.updateBucketDateGroup(bucket, dateGroup, { height })}>
         <div
           class="flex z-[100] sticky top-[-1px] pt-7 pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-          style:width={dateGroup.geometry.containerWidth + 'px'}
+          style:width={dateGroup.geometry!.containerWidth + 'px'}
         >
           <span class="w-full truncate first-letter:capitalize">
             {dateGroup.groupTitle}
@@ -81,8 +81,8 @@
 
         <div
           class="relative overflow-clip"
-          style:height={dateGroup.geometry.containerHeight + 'px'}
-          style:width={dateGroup.geometry.containerWidth + 'px'}
+          style:height={dateGroup.geometry!.containerHeight + 'px'}
+          style:width={dateGroup.geometry!.containerWidth + 'px'}
           style:visibility={'hidden'}
         ></div>
       </div>
