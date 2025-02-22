@@ -20,7 +20,6 @@
   import { handlePromiseError } from '$lib/utils';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 
   interface Props {
     assets: AssetResponseDto[];
