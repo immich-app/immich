@@ -237,8 +237,8 @@ export class MetadataService extends BaseService {
       id: asset.id,
       duration: exifTags.Duration?.toString() ?? null,
       localDateTime,
-      fileCreatedAt: dateTimeOriginal,
-      fileModifiedAt: modifyDate,
+      fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      fileModifiedAt: asset.fileModifiedAt,
     });
 
     await this.assetRepository.upsertJobStatus({
@@ -425,7 +425,7 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    this.logger.debug(`Starting motion photo video extraction (${asset.id})`);
+    this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
 
     try {
       const stat = await this.storageRepository.stat(asset.originalPath);
@@ -457,9 +457,9 @@ export class MetadataService extends BaseService {
       });
       if (motionAsset) {
         this.logger.debug(
-          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
+          `Motion photo video with checksum ${checksum.toString(
             'base64',
-          )} already exists in the repository`,
+          )} already exists in the repository for asset ${asset.id}: ${asset.originalPath}`,
         );
 
         // Hide the motion photo video asset if it's not already hidden to prepare for linking
@@ -516,9 +516,12 @@ export class MetadataService extends BaseService {
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
 
-      this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
+      this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
     } catch (error: Error | any) {
-      this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
+      this.logger.error(
+        `Failed to extract motion video for ${asset.id}: ${asset.originalPath}: ${error}`,
+        error?.stack,
+      );
     }
   }
 
@@ -571,11 +574,13 @@ export class MetadataService extends BaseService {
 
     const facesToRemove = asset.faces.filter((face) => face.sourceType === SourceType.EXIF).map((face) => face.id);
     if (facesToRemove.length > 0) {
-      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}`);
+      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}: ${asset.originalPath}`);
     }
 
     if (facesToAdd.length > 0) {
-      this.logger.debug(`Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}`);
+      this.logger.debug(
+        `Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}: ${asset.originalPath}`,
+      );
     }
 
     if (facesToRemove.length > 0 || facesToAdd.length > 0) {
@@ -589,7 +594,7 @@ export class MetadataService extends BaseService {
 
   private getDates(asset: AssetEntity, exifTags: ImmichTags) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
-    this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
+    this.logger.verbose(`Date and time is ${dateTime} for asset ${asset.id}: ${asset.originalPath}`);
 
     // timezone
     let timeZone = exifTags.tz ?? null;
@@ -600,9 +605,11 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
-      this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
+      this.logger.verbose(
+        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+      );
     } else {
-      this.logger.warn(`Asset ${asset.id} has no time zone information`);
+      this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
     let dateTimeOriginal = dateTime?.toDate();
@@ -617,7 +624,9 @@ export class MetadataService extends BaseService {
       localDateTime = earliestDate;
     }
 
-    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    this.logger.verbose(
+      `Found local date time ${localDateTime.toISOString()} for asset ${asset.id}: ${asset.originalPath}`,
+    );
 
     let modifyDate = asset.fileModifiedAt;
     try {
@@ -643,7 +652,7 @@ export class MetadataService extends BaseService {
     // TODO take ref into account
 
     if (latitude === 0 && longitude === 0) {
-      this.logger.warn('Latitude and longitude of 0, setting to null');
+      this.logger.debug('Latitude and longitude of 0, setting to null');
       latitude = null;
       longitude = null;
     }
@@ -755,6 +764,7 @@ export class MetadataService extends BaseService {
     }
 
     if (sidecarPath) {
+      this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
       await this.assetRepository.update({ id: asset.id, sidecarPath });
       return JobStatus.SUCCESS;
     }
@@ -763,9 +773,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    this.logger.debug(
-      `Sidecar file was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
-    );
+    this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
     await this.assetRepository.update({ id: asset.id, sidecarPath: null });
 
     return JobStatus.SUCCESS;

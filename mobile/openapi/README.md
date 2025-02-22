@@ -118,6 +118,8 @@ Class | Method | HTTP request | Description
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | 
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | 
 *DuplicatesApi* | [**getAssetDuplicates**](doc//DuplicatesApi.md#getassetduplicates) | **GET** /duplicates | 
+*FacesApi* | [**createFace**](doc//FacesApi.md#createface) | **POST** /faces | 
+*FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | 
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | 
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | 
 *FileReportsApi* | [**fixAuditFiles**](doc//FileReportsApi.md#fixauditfiles) | **POST** /reports/fix | 
@@ -201,8 +203,12 @@ Class | Method | HTTP request | Description
 *StacksApi* | [**getStack**](doc//StacksApi.md#getstack) | **GET** /stacks/{id} | 
 *StacksApi* | [**searchStacks**](doc//StacksApi.md#searchstacks) | **GET** /stacks | 
 *StacksApi* | [**updateStack**](doc//StacksApi.md#updatestack) | **PUT** /stacks/{id} | 
+*SyncApi* | [**deleteSyncAck**](doc//SyncApi.md#deletesyncack) | **DELETE** /sync/ack | 
 *SyncApi* | [**getDeltaSync**](doc//SyncApi.md#getdeltasync) | **POST** /sync/delta-sync | 
 *SyncApi* | [**getFullSyncForUser**](doc//SyncApi.md#getfullsyncforuser) | **POST** /sync/full-sync | 
+*SyncApi* | [**getSyncAck**](doc//SyncApi.md#getsyncack) | **GET** /sync/ack | 
+*SyncApi* | [**getSyncStream**](doc//SyncApi.md#getsyncstream) | **POST** /sync/stream | 
+*SyncApi* | [**sendSyncAck**](doc//SyncApi.md#sendsyncack) | **POST** /sync/ack | 
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | 
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | 
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | 
@@ -274,6 +280,8 @@ Class | Method | HTTP request | Description
  - [AssetBulkUploadCheckResult](doc//AssetBulkUploadCheckResult.md)
  - [AssetDeltaSyncDto](doc//AssetDeltaSyncDto.md)
  - [AssetDeltaSyncResponseDto](doc//AssetDeltaSyncResponseDto.md)
+ - [AssetFaceCreateDto](doc//AssetFaceCreateDto.md)
+ - [AssetFaceDeleteDto](doc//AssetFaceDeleteDto.md)
  - [AssetFaceResponseDto](doc//AssetFaceResponseDto.md)
  - [AssetFaceUpdateDto](doc//AssetFaceUpdateDto.md)
  - [AssetFaceUpdateItem](doc//AssetFaceUpdateItem.md)
@@ -413,6 +421,14 @@ Class | Method | HTTP request | Description
  - [StackCreateDto](doc//StackCreateDto.md)
  - [StackResponseDto](doc//StackResponseDto.md)
  - [StackUpdateDto](doc//StackUpdateDto.md)
+ - [SyncAckDeleteDto](doc//SyncAckDeleteDto.md)
+ - [SyncAckDto](doc//SyncAckDto.md)
+ - [SyncAckSetDto](doc//SyncAckSetDto.md)
+ - [SyncEntityType](doc//SyncEntityType.md)
+ - [SyncRequestType](doc//SyncRequestType.md)
+ - [SyncStreamDto](doc//SyncStreamDto.md)
+ - [SyncUserDeleteV1](doc//SyncUserDeleteV1.md)
+ - [SyncUserV1](doc//SyncUserV1.md)
  - [SystemConfigBackupsDto](doc//SystemConfigBackupsDto.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)

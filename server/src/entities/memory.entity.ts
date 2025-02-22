@@ -53,6 +53,12 @@ export class MemoryEntity<T extends MemoryType = MemoryType> {
   @Column({ type: 'timestamptz' })
   memoryAt!: Date;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  showAt?: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  hideAt?: Date;
+
   /** when the user last viewed the memory */
   @Column({ type: 'timestamptz', nullable: true })
   seenAt?: Date;

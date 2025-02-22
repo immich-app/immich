@@ -145,7 +145,6 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
@@ -160,6 +159,16 @@ jobs:
             echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
           fi
 
+      - name: Generate cache target
+        id: cache-target
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            # Essentially just ignore the cache output (forks can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -168,7 +177,7 @@ jobs:
           file: ${{ env.file }}
           platforms: ${{ matrix.platforms }}
           labels: ${{ steps.metadata.outputs.labels }}
-          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
@@ -241,6 +250,8 @@ jobs:
       - name: Generate docker image tags
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
         with:
           flavor: |
             # Disable latest tag
@@ -297,7 +308,6 @@ jobs:
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
@@ -312,6 +322,16 @@ jobs:
             echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
           fi
 
+      - name: Generate cache target
+        id: cache-target
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            # Essentially just ignore the cache output (forks can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6.13.0
@@ -320,7 +340,7 @@ jobs:
           file: ${{ env.file }}
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.metadata.outputs.labels }}
-          cache-to: type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
           cache-from: |
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
             type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
@@ -383,6 +403,8 @@ jobs:
       - name: Generate docker image tags
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
         with:
           flavor: |
             # Disable latest tag

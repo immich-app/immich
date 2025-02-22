@@ -1,8 +1,8 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { MemoryCreateDto, MemoryResponseDto, MemoryUpdateDto } from 'src/dtos/memory.dto';
+import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto } from 'src/dtos/memory.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { MemoryService } from 'src/services/memory.service';
@@ -15,8 +15,8 @@ export class MemoryController {
 
   @Get()
   @Authenticated({ permission: Permission.MEMORY_READ })
-  searchMemories(@Auth() auth: AuthDto): Promise<MemoryResponseDto[]> {
-    return this.service.search(auth);
+  searchMemories(@Auth() auth: AuthDto, @Query() dto: MemorySearchDto): Promise<MemoryResponseDto[]> {
+    return this.service.search(auth, dto);
   }
 
   @Post()

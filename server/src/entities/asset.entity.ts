@@ -202,10 +202,14 @@ export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
     .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
-export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
-  return jsonArrayFrom(eb.selectFrom('asset_faces').selectAll().whereRef('asset_faces.assetId', '=', 'assets.id')).as(
-    'faces',
-  );
+export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_faces')
+      .selectAll()
+      .whereRef('asset_faces.assetId', '=', 'assets.id')
+      .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
+  ).as('faces');
 }
 
 export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileType) {
@@ -218,11 +222,12 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   ).as('files');
 }
 
-export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
+export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
   return eb
     .selectFrom('asset_faces')
     .leftJoin('person', 'person.id', 'asset_faces.personId')
     .whereRef('asset_faces.assetId', '=', 'assets.id')
+    .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null))
     .select((eb) =>
       eb
         .fn('jsonb_agg', [
@@ -387,6 +392,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('exif', 'assets.id', 'exif.assetId')
         .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
     )
+    .$if(options.rating !== undefined, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+    )
     .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
     .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
     .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
@@ -394,7 +404,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
     .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
-    .$if(!!options.originalPath, (qb) => qb.where('assets.originalPath', '=', options.originalPath!))
+    .$if(!!options.originalPath, (qb) =>
+      qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+    )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
         sql`f_unaccent(assets."originalFileName")`,

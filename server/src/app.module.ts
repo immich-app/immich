@@ -29,7 +29,7 @@ import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
 import { DatabaseService } from 'src/services/database.service';
 
-const common = [...repositories, ...services];
+const common = [...repositories, ...services, GlobalExceptionFilter];
 
 const middleware = [
   FileUploadInterceptor,

@@ -57,7 +57,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<void> deleteById(List<int> ids) => txn(() async {
+  Future<void> deleteByIds(List<int> ids) => txn(() async {
         await db.assets.deleteAll(ids);
         await db.exifInfos.deleteAll(ids);
       });
@@ -208,6 +208,29 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         // orders primary asset first as its ID is null
         .sortByStackPrimaryAssetId()
         .thenByFileCreatedAtDesc()
+        .findAll();
+  }
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.assets.clear();
+    });
+  }
+
+  @override
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return db.assets.watchObject(id, fireImmediately: fireImmediately);
+  }
+
+  @override
+  Future<List<Asset>> getTrashAssets(int userId) {
+    return db.assets
+        .where()
+        .remoteIdIsNotNull()
+        .filter()
+        .ownerIdEqualTo(userId)
+        .isTrashedEqualTo(true)
         .findAll();
   }
 }

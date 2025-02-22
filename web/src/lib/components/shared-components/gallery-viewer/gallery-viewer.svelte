@@ -8,13 +8,11 @@
   import type { Viewport } from '$lib/stores/assets.store';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, getAssetRatio } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
-  import { calculateWidth } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
-  import justifiedLayout from 'justified-layout';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import ShowShortcuts from '../show-shortcuts.svelte';
@@ -309,25 +307,15 @@
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
-  let geometry = $derived(
-    (() => {
-      const justifiedLayoutResult = justifiedLayout(
-        assets.map((asset) => getAssetRatio(asset)),
-        {
-          boxSpacing: 2,
-          containerWidth: Math.floor(viewport.width),
-          containerPadding: 0,
-          targetRowHeightTolerance: 0.15,
-          targetRowHeight: 235,
-        },
-      );
-
-      return {
-        ...justifiedLayoutResult,
-        containerWidth: calculateWidth(justifiedLayoutResult.boxes),
-      };
-    })(),
-  );
+  let geometry = $derived.by(async () => {
+    const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
+    return getJustifiedLayoutFromAssets(assets, {
+      spacing: 2,
+      heightTolerance: 0.15,
+      rowHeight: 235,
+      rowWidth: Math.floor(viewport.width),
+    });
+  });
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
@@ -363,43 +351,49 @@
 {/if}
 
 {#if assets.length > 0}
-  <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
-    {#each assets as asset, i (i)}
-      <div
-        class="absolute"
-        style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
-          .top}px; left: {geometry.boxes[i].left}px"
-        title={showAssetName ? asset.originalFileName : ''}
-      >
-        <Thumbnail
-          readonly={disableAssetSelect}
-          onClick={(asset) => {
-            if (assetInteraction.selectionActive) {
-              handleSelectAssets(asset);
-              return;
-            }
-            void viewAssetHandler(asset);
-          }}
-          onSelect={(asset) => handleSelectAssets(asset)}
-          onMouseEvent={() => assetMouseEventHandler(asset)}
-          onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
-          {showArchiveIcon}
-          {asset}
-          selected={assetInteraction.selectedAssets.has(asset)}
-          selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-          thumbnailWidth={geometry.boxes[i].width}
-          thumbnailHeight={geometry.boxes[i].height}
-        />
-        {#if showAssetName}
-          <div
-            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
-          >
-            {asset.originalFileName}
-          </div>
-        {/if}
-      </div>
-    {/each}
-  </div>
+  {#await geometry then geometry}
+    <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
+      {#each assets as asset, i}
+        {@const top = geometry.getTop(i)}
+        {@const left = geometry.getLeft(i)}
+        {@const width = geometry.getWidth(i)}
+        {@const height = geometry.getHeight(i)}
+
+        <div
+          class="absolute"
+          style="width: {width}px; height: {height}px; top: {top}px; left: {left}px"
+          title={showAssetName ? asset.originalFileName : ''}
+        >
+          <Thumbnail
+            readonly={disableAssetSelect}
+            onClick={(asset) => {
+              if (assetInteraction.selectionActive) {
+                handleSelectAssets(asset);
+                return;
+              }
+              void viewAssetHandler(asset);
+            }}
+            onSelect={(asset) => handleSelectAssets(asset)}
+            onMouseEvent={() => assetMouseEventHandler(asset)}
+            onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
+            {showArchiveIcon}
+            {asset}
+            selected={assetInteraction.selectedAssets.has(asset)}
+            selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
+            thumbnailWidth={width}
+            thumbnailHeight={height}
+          />
+          {#if showAssetName}
+            <div
+              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+            >
+              {asset.originalFileName}
+            </div>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/await}
 {/if}
 
 <!-- Overlay Asset Viewer -->

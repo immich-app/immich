@@ -38,7 +38,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
+    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM, SMALL_GROUP_THRESHOLD },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -97,6 +97,7 @@
   {#each dateGroups as dateGroup, groupIndex (dateGroup.date)}
     {@const display =
       dateGroup.intersecting || !!dateGroup.assets.some((asset) => asset.id === $assetStore.pendingScrollAssetId)}
+    {@const geometry = dateGroup.geometry!}
 
     <div
       id="date-group"
@@ -118,7 +119,7 @@
       data-display={display}
       data-date-group={dateGroup.date}
       style:height={dateGroup.height + 'px'}
-      style:width={dateGroup.geometry.containerWidth + 'px'}
+      style:width={geometry.containerWidth + 'px'}
       style:overflow={'clip'}
     >
       {#if !display}
@@ -149,7 +150,7 @@
           <!-- Date group title -->
           <div
             class="flex z-[100] sticky top-[-1px] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-            style:width={dateGroup.geometry.containerWidth + 'px'}
+            style:width={geometry.containerWidth + 'px'}
           >
             {#if !singleSelect && ((hoveredDateGroup == dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
               <div
@@ -174,11 +175,17 @@
           <!-- Image grid -->
           <div
             class="relative overflow-clip"
-            style:height={dateGroup.geometry.containerHeight + 'px'}
-            style:width={dateGroup.geometry.containerWidth + 'px'}
+            style:height={geometry.containerHeight + 'px'}
+            style:width={geometry.containerWidth + 'px'}
           >
-            {#each dateGroup.assets as asset, index (asset.id)}
-              {@const box = dateGroup.geometry.boxes[index]}
+            {#each dateGroup.assets as asset, i (asset.id)}
+              {@const isSmallGroup = dateGroup.assets.length <= SMALL_GROUP_THRESHOLD}
+              <!-- getting these together here in this order is very cache-efficient -->
+              {@const top = geometry.getTop(i)}
+              {@const left = geometry.getLeft(i)}
+              {@const width = geometry.getWidth(i)}
+              {@const height = geometry.getHeight(i)}
+
               <!-- update ASSET_GRID_PADDING-->
               <div
                 use:intersectionObserver={{
@@ -190,10 +197,10 @@
                 }}
                 data-asset-id={asset.id}
                 class="absolute"
-                style:width={box.width + 'px'}
-                style:height={box.height + 'px'}
-                style:top={box.top + 'px'}
-                style:left={box.left + 'px'}
+                style:top={top + 'px'}
+                style:left={left + 'px'}
+                style:width={width + 'px'}
+                style:height={height + 'px'}
               >
                 <Thumbnail
                   {dateGroup}
@@ -215,8 +222,9 @@
                   selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}
-                  thumbnailWidth={box.width}
-                  thumbnailHeight={box.height}
+                  thumbnailWidth={width}
+                  thumbnailHeight={height}
+                  eagerThumbhash={isSmallGroup}
                 />
               </div>
             {/each}

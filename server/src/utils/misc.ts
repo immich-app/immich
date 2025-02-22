@@ -13,6 +13,7 @@ import path from 'node:path';
 import picomatch from 'picomatch';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { extraSyncModels } from 'src/dtos/sync.dto';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -246,6 +247,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    extraModels: extraSyncModels,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);

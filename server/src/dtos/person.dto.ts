@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -162,6 +162,43 @@ export class AssetFaceUpdateItem {
 
   @ValidateUUID()
   assetId!: string;
+}
+
+export class AssetFaceCreateDto extends AssetFaceUpdateItem {
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageWidth!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageHeight!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  x!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  y!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  width!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  height!: number;
+}
+
+export class AssetFaceDeleteDto {
+  @IsNotEmpty()
+  force!: boolean;
 }
 
 export class PersonStatisticsResponseDto {

@@ -23,7 +23,6 @@ import {
   withTags,
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
-import { MapMarker, MapMarkerSearchOptions } from 'src/repositories/map.repository';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
@@ -134,7 +133,7 @@ export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffli
 
 export interface GetByIdsRelations {
   exifInfo?: boolean;
-  faces?: { person?: boolean };
+  faces?: { person?: boolean; withDeleted?: boolean };
   files?: boolean;
   library?: boolean;
   owner?: boolean;
@@ -268,7 +267,11 @@ export class AssetRepository {
       .selectAll('assets')
       .where('assets.id', '=', anyUuid(ids))
       .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces))
+      .$if(!!faces, (qb) =>
+        qb.select((eb) =>
+          faces?.person ? withFacesAndPeople(eb, faces.withDeleted) : withFaces(eb, faces?.withDeleted),
+        ),
+      )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
@@ -657,26 +660,6 @@ export class AssetRepository {
       .orderBy('updatedAt', 'desc')
       .limit(1)
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
-  }
-
-  private getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-
-    return this.db
-      .selectFrom('assets')
-      .leftJoin('exif', 'assets.id', 'exif.assetId')
-      .select(['id', 'latitude as lat', 'longitude as lon', 'city', 'state', 'country'])
-      .where('ownerId', '=', anyUuid(ownerIds))
-      .where('latitude', 'is not', null)
-      .where('longitude', 'is not', null)
-      .where('isVisible', '=', true)
-      .where('deletedAt', 'is', null)
-      .$if(!!isArchived, (qb) => qb.where('isArchived', '=', isArchived!))
-      .$if(!!isFavorite, (qb) => qb.where('isFavorite', '=', isFavorite!))
-      .$if(!!fileCreatedAfter, (qb) => qb.where('fileCreatedAt', '>=', fileCreatedAfter!))
-      .$if(!!fileCreatedBefore, (qb) => qb.where('fileCreatedAt', '<=', fileCreatedBefore!))
-      .orderBy('fileCreatedAt', 'desc')
-      .execute() as Promise<MapMarker[]>;
   }
 
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {

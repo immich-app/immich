@@ -326,6 +326,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
@@ -336,7 +338,6 @@ describe(LibraryService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
         isOffline: true,
         deletedAt: expect.anything(),
-        status: 'trashed',
       });
     });
 
@@ -346,6 +347,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/data/user2'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
@@ -356,7 +359,6 @@ describe(LibraryService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
         isOffline: true,
         deletedAt: expect.anything(),
-        status: AssetStatus.TRASHED,
       });
     });
 
@@ -366,6 +368,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/data/user2'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -382,6 +386,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/original/'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -392,18 +398,7 @@ describe(LibraryService.name, () => {
       expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
         isOffline: false,
         deletedAt: null,
-        status: AssetStatus.ACTIVE,
       });
-
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        {
-          name: JobName.SIDECAR_DISCOVERY,
-          data: {
-            id: assetStub.external.id,
-            source: 'upload',
-          },
-        },
-      ]);
     });
 
     it('should do nothing with offline asset if covered by exclusion pattern', async () => {
@@ -412,6 +407,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/original/'],
         exclusionPatterns: ['**/path.jpg'],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -430,6 +427,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/import/'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -448,6 +447,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
@@ -464,6 +465,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -485,6 +488,8 @@ describe(LibraryService.name, () => {
         libraryId: libraryStub.externalLibrary1.id,
         importPaths: ['/'],
         exclusionPatterns: [],
+        totalAssets: 1,
+        progressCounter: 0,
       };
 
       if (assetStub.external.fileModifiedAt == null) {

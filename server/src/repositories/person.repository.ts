@@ -130,6 +130,7 @@ export class PersonRepository {
       .$if(!!options.personId, (qb) => qb.where('asset_faces.personId', '=', options.personId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_faces.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_faces.assetId', '=', options.assetId!))
+      .where('asset_faces.deletedAt', 'is', null)
       .stream() as AsyncIterableIterator<AssetFaceEntity>;
   }
 
@@ -161,6 +162,7 @@ export class PersonRepository {
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
+      .where('asset_faces.deletedAt', 'is', null)
       .orderBy('person.isHidden', 'asc')
       .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
@@ -212,6 +214,7 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .leftJoin('asset_faces', 'asset_faces.personId', 'person.id')
+      .where('asset_faces.deletedAt', 'is', null)
       .having((eb) => eb.fn.count('asset_faces.assetId'), '=', 0)
       .groupBy('person.id')
       .execute() as Promise<PersonEntity[]>;
@@ -224,6 +227,7 @@ export class PersonRepository {
       .selectAll('asset_faces')
       .select(withPerson)
       .where('asset_faces.assetId', '=', assetId)
+      .where('asset_faces.deletedAt', 'is', null)
       .orderBy('asset_faces.boundingBoxX1', 'asc')
       .execute() as Promise<AssetFaceEntity[]>;
   }
@@ -236,6 +240,7 @@ export class PersonRepository {
       .selectAll('asset_faces')
       .select(withPerson)
       .where('asset_faces.id', '=', id)
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirstOrThrow() as Promise<AssetFaceEntity>;
   }
 
@@ -253,6 +258,7 @@ export class PersonRepository {
       .select(withAsset)
       .$if(!!relations?.faceSearch, (qb) => qb.select(withFaceSearch))
       .where('asset_faces.id', '=', id)
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<AssetFaceEntity | undefined>;
   }
 
@@ -317,6 +323,7 @@ export class PersonRepository {
           .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirst();
 
     return {
@@ -330,6 +337,7 @@ export class PersonRepository {
       .selectFrom('person')
       .innerJoin('asset_faces', 'asset_faces.personId', 'person.id')
       .where('person.ownerId', '=', userId)
+      .where('asset_faces.deletedAt', 'is', null)
       .innerJoin('assets', (join) =>
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
@@ -434,6 +442,7 @@ export class PersonRepository {
       .select(withPerson)
       .where('asset_faces.assetId', 'in', assetIds)
       .where('asset_faces.personId', 'in', personIds)
+      .where('asset_faces.deletedAt', 'is', null)
       .execute() as Promise<AssetFaceEntity[]>;
   }
 
@@ -443,6 +452,7 @@ export class PersonRepository {
       .selectFrom('asset_faces')
       .selectAll('asset_faces')
       .where('asset_faces.personId', '=', personId)
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<AssetFaceEntity | undefined>;
   }
 
@@ -454,6 +464,20 @@ export class PersonRepository {
       .executeTakeFirst()) as { latestDate: string } | undefined;
 
     return result?.latestDate;
+  }
+
+  async createAssetFace(face: Insertable<AssetFaces>): Promise<void> {
+    await this.db.insertInto('asset_faces').values(face).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async deleteAssetFace(id: string): Promise<void> {
+    await this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', id).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async softDeleteAssetFaces(id: string): Promise<void> {
+    await this.db.updateTable('asset_faces').set({ deletedAt: new Date() }).where('asset_faces.id', '=', id).execute();
   }
 
   private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {
