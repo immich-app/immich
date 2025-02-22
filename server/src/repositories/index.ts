@@ -1,42 +1,3 @@
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IActivityRepository } from 'src/interfaces/activity.interface';
-import { IAlbumUserRepository } from 'src/interfaces/album-user.interface';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IAuditRepository } from 'src/interfaces/audit.interface';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ICronRepository } from 'src/interfaces/cron.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMapRepository } from 'src/interfaces/map.interface';
-import { IMediaRepository } from 'src/interfaces/media.interface';
-import { IMemoryRepository } from 'src/interfaces/memory.interface';
-import { IMetadataRepository } from 'src/interfaces/metadata.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { INotificationRepository } from 'src/interfaces/notification.interface';
-import { IOAuthRepository } from 'src/interfaces/oauth.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IProcessRepository } from 'src/interfaces/process.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
-import { IServerInfoRepository } from 'src/interfaces/server-info.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { IStackRepository } from 'src/interfaces/stack.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { ITagRepository } from 'src/interfaces/tag.interface';
-import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
-import { ITrashRepository } from 'src/interfaces/trash.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
-import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
-import { IViewRepository } from 'src/interfaces/view.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -51,7 +12,7 @@ import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
-import { LoggerRepository } from 'src/repositories/logger.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
@@ -69,6 +30,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -78,43 +40,44 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 
 export const repositories = [
-  { provide: IAccessRepository, useClass: AccessRepository },
-  { provide: IActivityRepository, useClass: ActivityRepository },
-  { provide: IAlbumRepository, useClass: AlbumRepository },
-  { provide: IAlbumUserRepository, useClass: AlbumUserRepository },
-  { provide: IAssetRepository, useClass: AssetRepository },
-  { provide: IAuditRepository, useClass: AuditRepository },
-  { provide: IConfigRepository, useClass: ConfigRepository },
-  { provide: ICronRepository, useClass: CronRepository },
-  { provide: ICryptoRepository, useClass: CryptoRepository },
-  { provide: IDatabaseRepository, useClass: DatabaseRepository },
-  { provide: IEventRepository, useClass: EventRepository },
-  { provide: IJobRepository, useClass: JobRepository },
-  { provide: IKeyRepository, useClass: ApiKeyRepository },
-  { provide: ILibraryRepository, useClass: LibraryRepository },
-  { provide: ILoggerRepository, useClass: LoggerRepository },
-  { provide: IMachineLearningRepository, useClass: MachineLearningRepository },
-  { provide: IMapRepository, useClass: MapRepository },
-  { provide: IMediaRepository, useClass: MediaRepository },
-  { provide: IMemoryRepository, useClass: MemoryRepository },
-  { provide: IMetadataRepository, useClass: MetadataRepository },
-  { provide: IMoveRepository, useClass: MoveRepository },
-  { provide: INotificationRepository, useClass: NotificationRepository },
-  { provide: IOAuthRepository, useClass: OAuthRepository },
-  { provide: IPartnerRepository, useClass: PartnerRepository },
-  { provide: IPersonRepository, useClass: PersonRepository },
-  { provide: IProcessRepository, useClass: ProcessRepository },
-  { provide: ISearchRepository, useClass: SearchRepository },
-  { provide: IServerInfoRepository, useClass: ServerInfoRepository },
-  { provide: ISessionRepository, useClass: SessionRepository },
-  { provide: ISharedLinkRepository, useClass: SharedLinkRepository },
-  { provide: IStackRepository, useClass: StackRepository },
-  { provide: IStorageRepository, useClass: StorageRepository },
-  { provide: ISystemMetadataRepository, useClass: SystemMetadataRepository },
-  { provide: ITagRepository, useClass: TagRepository },
-  { provide: ITelemetryRepository, useClass: TelemetryRepository },
-  { provide: ITrashRepository, useClass: TrashRepository },
-  { provide: IUserRepository, useClass: UserRepository },
-  { provide: IVersionHistoryRepository, useClass: VersionHistoryRepository },
-  { provide: IViewRepository, useClass: ViewRepository },
+  AccessRepository,
+  ActivityRepository,
+  AlbumRepository,
+  AlbumUserRepository,
+  AuditRepository,
+  ApiKeyRepository,
+  AssetRepository,
+  ConfigRepository,
+  CronRepository,
+  CryptoRepository,
+  DatabaseRepository,
+  EventRepository,
+  JobRepository,
+  LibraryRepository,
+  LoggingRepository,
+  MachineLearningRepository,
+  MapRepository,
+  MediaRepository,
+  MemoryRepository,
+  MetadataRepository,
+  MoveRepository,
+  NotificationRepository,
+  OAuthRepository,
+  PartnerRepository,
+  PersonRepository,
+  ProcessRepository,
+  SearchRepository,
+  SessionRepository,
+  ServerInfoRepository,
+  SharedLinkRepository,
+  StackRepository,
+  StorageRepository,
+  SyncRepository,
+  SystemMetadataRepository,
+  TagRepository,
+  TelemetryRepository,
+  TrashRepository,
+  UserRepository,
+  ViewRepository,
+  VersionHistoryRepository,
 ];

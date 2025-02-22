@@ -5,20 +5,13 @@ import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
-import { IAccessRepository } from 'src/interfaces/access.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
-import { ImmichFile } from 'src/middleware/file-upload.interceptor';
-import { UploadFile } from 'src/services/asset-media.service';
+import { AccessRepository } from 'src/repositories/access.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
+import { EventRepository } from 'src/repositories/event.repository';
+import { PartnerRepository } from 'src/repositories/partner.repository';
+import { IBulkAsset, ImmichFile, UploadFile } from 'src/types';
 import { checkAccess } from 'src/utils/access';
-
-export interface IBulkAsset {
-  getAssetIds: (id: string, assetIds: string[]) => Promise<Set<string>>;
-  addAssetIds: (id: string, assetIds: string[]) => Promise<void>;
-  removeAssetIds: (id: string, assetIds: string[]) => Promise<void>;
-}
 
 const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType) => {
   return (files || []).find((file) => file.type === type);
@@ -31,7 +24,7 @@ export const getAssetFiles = (files?: AssetFileEntity[]) => ({
 
 export const addAssets = async (
   auth: AuthDto,
-  repositories: { access: IAccessRepository; bulk: IBulkAsset },
+  repositories: { access: AccessRepository; bulk: IBulkAsset },
   dto: { parentId: string; assetIds: string[] },
 ) => {
   const { access, bulk } = repositories;
@@ -71,7 +64,7 @@ export const addAssets = async (
 
 export const removeAssets = async (
   auth: AuthDto,
-  repositories: { access: IAccessRepository; bulk: IBulkAsset },
+  repositories: { access: AccessRepository; bulk: IBulkAsset },
   dto: { parentId: string; assetIds: string[]; canAlwaysRemove: Permission },
 ) => {
   const { access, bulk } = repositories;
@@ -111,7 +104,7 @@ export const removeAssets = async (
 
 export type PartnerIdOptions = {
   userId: string;
-  repository: IPartnerRepository;
+  repository: PartnerRepository;
   /** only include partners with `inTimeline: true` */
   timelineEnabled?: boolean;
 };
@@ -139,7 +132,7 @@ export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: P
   return [...partnerIds];
 };
 
-export type AssetHookRepositories = { asset: IAssetRepository; event: IEventRepository };
+export type AssetHookRepositories = { asset: AssetRepository; event: EventRepository };
 
 export const onBeforeLink = async (
   { asset: assetRepository, event: eventRepository }: AssetHookRepositories,

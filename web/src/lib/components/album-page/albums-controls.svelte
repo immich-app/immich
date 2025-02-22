@@ -1,15 +1,29 @@
 <script lang="ts">
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Dropdown from '$lib/components/elements/dropdown.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import GroupTab from '$lib/components/elements/group-tab.svelte';
+  import SearchBar from '$lib/components/elements/search-bar.svelte';
   import {
     AlbumFilter,
-    AlbumSortBy,
     AlbumGroupBy,
+    AlbumSortBy,
     AlbumViewMode,
     albumViewSettings,
     SortOrder,
   } from '$lib/stores/preferences.store';
+  import {
+    type AlbumGroupOptionMetadata,
+    type AlbumSortOptionMetadata,
+    collapseAllAlbumGroups,
+    createAlbumAndRedirect,
+    expandAllAlbumGroups,
+    findFilterOption,
+    findGroupOptionMetadata,
+    findSortOptionMetadata,
+    getSelectedAlbumGroupOption,
+    groupOptionsMetadata,
+    sortOptionsMetadata,
+  } from '$lib/utils/album-utils';
+  import { Button, IconButton, Text } from '@immich/ui';
   import {
     mdiArrowDownThin,
     mdiArrowUpThin,
@@ -22,21 +36,8 @@
     mdiUnfoldMoreHorizontal,
     mdiViewGridOutline,
   } from '@mdi/js';
-  import {
-    type AlbumGroupOptionMetadata,
-    type AlbumSortOptionMetadata,
-    findGroupOptionMetadata,
-    findFilterOption,
-    findSortOptionMetadata,
-    getSelectedAlbumGroupOption,
-    groupOptionsMetadata,
-    sortOptionsMetadata,
-  } from '$lib/utils/album-utils';
-  import SearchBar from '$lib/components/elements/search-bar.svelte';
-  import GroupTab from '$lib/components/elements/group-tab.svelte';
-  import { createAlbumAndRedirect, collapseAllAlbumGroups, expandAllAlbumGroups } from '$lib/utils/album-utils';
-  import { fly } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
 
   interface Props {
     albumGroups: string[];
@@ -127,12 +128,15 @@
 </div>
 
 <!-- Create Album -->
-<LinkButton onclick={() => createAlbumAndRedirect()}>
-  <div class="flex place-items-center gap-2 text-sm">
-    <Icon path={mdiPlusBoxOutline} size="18" />
-    <p class="hidden md:block">{$t('create_album')}</p>
-  </div>
-</LinkButton>
+<Button
+  leadingIcon={mdiPlusBoxOutline}
+  onclick={() => createAlbumAndRedirect()}
+  size="small"
+  variant="ghost"
+  color="secondary"
+>
+  <p class="hidden md:block">{$t('create_album')}</p>
+</Button>
 
 <!-- Sort Albums -->
 <Dropdown
@@ -164,34 +168,52 @@
     <!-- Expand Album Groups -->
     <div class="hidden xl:flex gap-0">
       <div class="block">
-        <LinkButton title={$t('expand_all')} onclick={() => expandAllAlbumGroups()}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUnfoldMoreHorizontal} size="18" />
-          </div>
-        </LinkButton>
+        <IconButton
+          title={$t('expand_all')}
+          onclick={() => expandAllAlbumGroups()}
+          variant="ghost"
+          color="secondary"
+          shape="round"
+          icon={mdiUnfoldMoreHorizontal}
+          aria-label={$t('expand_all')}
+        />
       </div>
 
       <!-- Collapse Album Groups -->
       <div class="block">
-        <LinkButton title={$t('collapse_all')} onclick={() => collapseAllAlbumGroups(albumGroups)}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiUnfoldLessHorizontal} size="18" />
-          </div>
-        </LinkButton>
+        <IconButton
+          title={$t('collapse_all')}
+          onclick={() => collapseAllAlbumGroups(albumGroups)}
+          variant="ghost"
+          color="secondary"
+          shape="round"
+          icon={mdiUnfoldLessHorizontal}
+          aria-label={$t('collapse_all')}
+        />
       </div>
     </div>
   </span>
 {/if}
 
 <!-- Cover/List Display Toggle -->
-<LinkButton onclick={() => handleChangeListMode()}>
-  <div class="flex place-items-center gap-2 text-sm">
-    {#if $albumViewSettings.view === AlbumViewMode.List}
-      <Icon path={mdiViewGridOutline} size="18" />
-      <p class="hidden md:block">{$t('covers')}</p>
-    {:else}
-      <Icon path={mdiFormatListBulletedSquare} size="18" />
-      <p class="hidden md:block">{$t('list')}</p>
-    {/if}
-  </div>
-</LinkButton>
+{#if $albumViewSettings.view === AlbumViewMode.List}
+  <Button
+    leadingIcon={mdiViewGridOutline}
+    onclick={() => handleChangeListMode()}
+    size="small"
+    variant="ghost"
+    color="secondary"
+  >
+    <Text class="hidden md:block">{$t('covers')}</Text>
+  </Button>
+{:else}
+  <Button
+    leadingIcon={mdiFormatListBulletedSquare}
+    onclick={() => handleChangeListMode()}
+    size="small"
+    variant="ghost"
+    color="secondary"
+  >
+    <Text class="hidden md:block">{$t('list')}</Text>
+  </Button>
+{/if}

@@ -44,12 +44,12 @@ export default function VersionSwitcher(): JSX.Element {
   return (
     versions.length > 0 && (
       <DropdownNavbarItem
-        className="navbar__item"
+        className="version-switcher-34ab39"
         label={label}
         mobile={windowSize === 'mobile'}
         items={versions.map(({ label, url }) => ({
           label,
-          to: url,
+          to: url + location.pathname + location.hash,
           target: '_self',
         }))}
       />

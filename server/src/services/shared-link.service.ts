@@ -9,8 +9,8 @@ import {
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
+  SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -18,8 +18,10 @@ import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
-  async getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
+  async getAll(auth: AuthDto, { albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
+    return this.sharedLinkRepository
+      .getAll({ userId: auth.user.id, albumId })
+      .then((links) => links.map((link) => mapSharedLink(link)));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {
@@ -67,7 +69,7 @@ export class SharedLinkService extends BaseService {
       userId: auth.user.id,
       type: dto.type,
       albumId: dto.albumId || null,
-      assets: (dto.assetIds || []).map((id) => ({ id }) as AssetEntity),
+      assetIds: dto.assetIds,
       description: dto.description || null,
       password: dto.password,
       expiresAt: dto.expiresAt || null,
@@ -138,10 +140,12 @@ export class SharedLinkService extends BaseService {
       }
 
       results.push({ assetId, success: true });
-      sharedLink.assets.push({ id: assetId } as AssetEntity);
     }
 
-    await this.sharedLinkRepository.update(sharedLink);
+    await this.sharedLinkRepository.update({
+      ...sharedLink,
+      assetIds: results.filter(({ success }) => success).map(({ assetId }) => assetId),
+    });
 
     return results;
   }

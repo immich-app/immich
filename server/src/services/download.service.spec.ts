@@ -1,16 +1,12 @@
 import { BadRequestException } from '@nestjs/common';
 import { DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
 import { DownloadService } from 'src/services/download.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newTestService } from 'test/utils';
+import { newTestService, ServiceMocks } from 'test/utils';
 import { Readable } from 'typeorm/platform/PlatformTools.js';
-import { Mocked, vitest } from 'vitest';
+import { vitest } from 'vitest';
 
 const downloadResponse: DownloadResponseDto = {
   totalSize: 105_000,
@@ -24,17 +20,14 @@ const downloadResponse: DownloadResponseDto = {
 
 describe(DownloadService.name, () => {
   let sut: DownloadService;
-  let accessMock: IAccessRepositoryMock;
-  let assetMock: Mocked<IAssetRepository>;
-  let loggerMock: Mocked<ILoggerRepository>;
-  let storageMock: Mocked<IStorageRepository>;
+  let mocks: ServiceMocks;
 
   it('should work', () => {
     expect(sut).toBeDefined();
   });
 
   beforeEach(() => {
-    ({ sut, accessMock, assetMock, loggerMock, storageMock } = newTestService(DownloadService));
+    ({ sut, mocks } = newTestService(DownloadService));
   });
 
   describe('downloadArchive', () => {
@@ -45,9 +38,9 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([{ ...assetStub.noResizePath, id: 'asset-1' }]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.noResizePath, id: 'asset-1' }]);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
         stream: archiveMock.stream,
@@ -64,19 +57,19 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      storageMock.realpath.mockRejectedValue(new Error('Could not read file'));
-      assetMock.getByIds.mockResolvedValue([
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.storage.realpath.mockRejectedValue(new Error('Could not read file'));
+      mocks.asset.getByIds.mockResolvedValue([
         { ...assetStub.noResizePath, id: 'asset-1' },
         { ...assetStub.noWebpPath, id: 'asset-2' },
       ]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
         stream: archiveMock.stream,
       });
 
-      expect(loggerMock.warn).toHaveBeenCalledTimes(2);
+      expect(mocks.logger.warn).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenCalledTimes(2);
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(1, 'upload/library/IMG_123.jpg', 'IMG_123.jpg');
       expect(archiveMock.addFile).toHaveBeenNthCalledWith(2, 'upload/library/IMG_456.jpg', 'IMG_456.jpg');
@@ -89,12 +82,12 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.asset.getByIds.mockResolvedValue([
         { ...assetStub.noResizePath, id: 'asset-1' },
         { ...assetStub.noWebpPath, id: 'asset-2' },
       ]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
         stream: archiveMock.stream,
@@ -112,12 +105,12 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.asset.getByIds.mockResolvedValue([
         { ...assetStub.noResizePath, id: 'asset-1' },
         { ...assetStub.noResizePath, id: 'asset-2' },
       ]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
         stream: archiveMock.stream,
@@ -135,12 +128,12 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.asset.getByIds.mockResolvedValue([
         { ...assetStub.noResizePath, id: 'asset-2' },
         { ...assetStub.noResizePath, id: 'asset-1' },
       ]);
-      storageMock.createZipStream.mockReturnValue(archiveMock);
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1', 'asset-2'] })).resolves.toEqual({
         stream: archiveMock.stream,
@@ -158,12 +151,12 @@ describe(DownloadService.name, () => {
         stream: new Readable(),
       };
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      assetMock.getByIds.mockResolvedValue([
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.asset.getByIds.mockResolvedValue([
         { ...assetStub.noResizePath, id: 'asset-1', originalPath: '/path/to/symlink.jpg' },
       ]);
-      storageMock.realpath.mockResolvedValue('/path/to/realpath.jpg');
-      storageMock.createZipStream.mockReturnValue(archiveMock);
+      mocks.storage.realpath.mockResolvedValue('/path/to/realpath.jpg');
+      mocks.storage.createZipStream.mockReturnValue(archiveMock);
 
       await expect(sut.downloadArchive(authStub.admin, { assetIds: ['asset-1'] })).resolves.toEqual({
         stream: archiveMock.stream,
@@ -179,30 +172,30 @@ describe(DownloadService.name, () => {
     });
 
     it('should return a list of archives (assetIds)', async () => {
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
-      assetMock.getByIds.mockResolvedValue([assetStub.image, assetStub.video]);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1', 'asset-2']));
+      mocks.asset.getByIds.mockResolvedValue([assetStub.image, assetStub.video]);
 
       const assetIds = ['asset-1', 'asset-2'];
       await expect(sut.getDownloadInfo(authStub.admin, { assetIds })).resolves.toEqual(downloadResponse);
 
-      expect(assetMock.getByIds).toHaveBeenCalledWith(['asset-1', 'asset-2'], { exifInfo: true });
+      expect(mocks.asset.getByIds).toHaveBeenCalledWith(['asset-1', 'asset-2'], { exifInfo: true });
     });
 
     it('should return a list of archives (albumId)', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
-      assetMock.getByAlbumId.mockResolvedValue({
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
+      mocks.asset.getByAlbumId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
       });
 
       await expect(sut.getDownloadInfo(authStub.admin, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
 
-      expect(accessMock.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-1']));
-      expect(assetMock.getByAlbumId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, 'album-1');
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-1']));
+      expect(mocks.asset.getByAlbumId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, 'album-1');
     });
 
     it('should return a list of archives (userId)', async () => {
-      assetMock.getByUserId.mockResolvedValue({
+      mocks.asset.getByUserId.mockResolvedValue({
         items: [assetStub.image, assetStub.video],
         hasNextPage: false,
       });
@@ -211,13 +204,13 @@ describe(DownloadService.name, () => {
         downloadResponse,
       );
 
-      expect(assetMock.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.user.id, {
+      expect(mocks.asset.getByUserId).toHaveBeenCalledWith({ take: 2500, skip: 0 }, authStub.admin.user.id, {
         isVisible: true,
       });
     });
 
     it('should split archives by size', async () => {
-      assetMock.getByUserId.mockResolvedValue({
+      mocks.asset.getByUserId.mockResolvedValue({
         items: [
           { ...assetStub.image, id: 'asset-1' },
           { ...assetStub.video, id: 'asset-2' },
@@ -245,8 +238,8 @@ describe(DownloadService.name, () => {
       const assetIds = [assetStub.livePhotoStillAsset.id];
       const assets = [assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset];
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
-      assetMock.getByIds.mockImplementation(
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
+      mocks.asset.getByIds.mockImplementation(
         (ids) =>
           Promise.resolve(
             ids.map((id) => assets.find((asset) => asset.id === id)).filter((asset) => !!asset),
@@ -271,8 +264,8 @@ describe(DownloadService.name, () => {
         { ...assetStub.livePhotoMotionAsset, originalPath: 'upload/encoded-video/uuid-MP.mp4' },
       ];
 
-      accessMock.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
-      assetMock.getByIds.mockImplementation(
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
+      mocks.asset.getByIds.mockImplementation(
         (ids) =>
           Promise.resolve(
             ids.map((id) => assets.find((asset) => asset.id === id)).filter((asset) => !!asset),

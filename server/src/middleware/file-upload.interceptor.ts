@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
@@ -8,15 +8,11 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Observable } from 'rxjs';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { RouteKey } from 'src/enum';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
 import { AuthRequest } from 'src/middleware/auth.guard';
-import { AssetMediaService, UploadFile } from 'src/services/asset-media.service';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { AssetMediaService } from 'src/services/asset-media.service';
+import { ImmichFile, UploadFile, UploadFiles } from 'src/types';
 import { asRequest, mapToUploadFile } from 'src/utils/asset.util';
-
-export interface UploadFiles {
-  assetData: ImmichFile[];
-  sidecarData: ImmichFile[];
-}
 
 export function getFile(files: UploadFiles, property: 'assetData' | 'sidecarData') {
   const file = files[property]?.[0];
@@ -28,12 +24,6 @@ export function getFiles(files: UploadFiles) {
     file: getFile(files, 'assetData') as UploadFile,
     sidecarFile: getFile(files, 'sidecarData'),
   };
-}
-
-export interface ImmichFile extends Express.Multer.File {
-  /** sha1 hash of file */
-  uuid: string;
-  checksum: Buffer;
 }
 
 type DiskStorageCallback = (error: Error | null, result: string) => void;
@@ -64,7 +54,7 @@ export class FileUploadInterceptor implements NestInterceptor {
   constructor(
     private reflect: Reflector,
     private assetService: AssetMediaService,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(FileUploadInterceptor.name);
 

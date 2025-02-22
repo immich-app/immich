@@ -1,7 +1,8 @@
-import { IOAuthRepository } from 'src/interfaces/oauth.interface';
+import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked } from 'vitest';
 
-export const newOAuthRepositoryMock = (): Mocked<IOAuthRepository> => {
+export const newOAuthRepositoryMock = (): Mocked<RepositoryInterface<OAuthRepository>> => {
   return {
     init: vitest.fn(),
     authorize: vitest.fn(),

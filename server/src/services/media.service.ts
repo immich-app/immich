@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { dirname } from 'node:path';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -10,7 +11,10 @@ import {
   AssetType,
   AudioCodec,
   Colorspace,
+  JobName,
+  JobStatus,
   LogLevel,
+  QueueName,
   StorageFolder,
   TranscodeHWAccel,
   TranscodePolicy,
@@ -18,17 +22,9 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
-import {
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
-import { AudioStreamInfo, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/interfaces/media.interface';
+import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
+import { AudioStreamInfo, JobItem, JobOf, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -72,23 +68,20 @@ export class MediaService extends BaseService {
     }
 
     const jobs: JobItem[] = [];
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.personRepository.getAll(pagination, { where: force ? undefined : { thumbnailPath: '' } }),
-    );
 
-    for await (const people of personPagination) {
-      for (const person of people) {
-        if (!person.faceAssetId) {
-          const face = await this.personRepository.getRandomFace(person.id);
-          if (!face) {
-            continue;
-          }
+    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+    for await (const person of people) {
+      if (!person.faceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.id);
+        if (!face) {
+          continue;
         }
 
-        jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
+        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
       }
+
+      jobs.push({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id: person.id } });
     }
 
     await this.jobRepository.queueAll(jobs);
@@ -114,15 +107,18 @@ export class MediaService extends BaseService {
       );
     }
 
-    const personPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.personRepository.getAll(pagination),
-    );
+    let jobs: { name: JobName.MIGRATE_PERSON; data: { id: string } }[] = [];
 
-    for await (const people of personPagination) {
-      await this.jobRepository.queueAll(
-        people.map((person) => ({ name: JobName.MIGRATE_PERSON, data: { id: person.id } })),
-      );
+    for await (const person of this.personRepository.getAll()) {
+      jobs.push({ name: JobName.MIGRATE_PERSON, data: { id: person.id } });
+
+      if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
+        await this.jobRepository.queueAll(jobs);
+        jobs = [];
+      }
     }
+
+    await this.jobRepository.queueAll(jobs);
 
     return JobStatus.SUCCESS;
   }
@@ -194,7 +190,7 @@ export class MediaService extends BaseService {
       await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
     }
 
-    if (asset.thumbhash != generated.thumbhash) {
+    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
       await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
     }
 

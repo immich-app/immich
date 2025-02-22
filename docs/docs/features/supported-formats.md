@@ -8,22 +8,23 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 
 ## Image formats
 
-| Format    | Extension(s)                  |     Supported?     | Notes           |
-| :-------- | :---------------------------- | :----------------: | :-------------- |
-| `AVIF`    | `.avif`                       | :white_check_mark: |                 |
-| `BMP`     | `.bmp`                        | :white_check_mark: |                 |
-| `GIF`     | `.gif`                        | :white_check_mark: |                 |
-| `HEIC`    | `.heic`                       | :white_check_mark: |                 |
-| `HEIF`    | `.heif`                       | :white_check_mark: |                 |
-| `JPEG`    | `.webp` `.jpg` `.jpe` `.insp` | :white_check_mark: |                 |
-| `JPEG XL` | `.jxl`                        | :white_check_mark: |                 |
-| `PNG`     | `.webp`                       | :white_check_mark: |                 |
-| `PSD`     | `.psd`                        | :white_check_mark: | Adobe Photoshop |
-| `RAW`     | `.raw`                        | :white_check_mark: |                 |
-| `RW2`     | `.rw2`                        | :white_check_mark: |                 |
-| `SVG`     | `.svg`                        | :white_check_mark: |                 |
-| `TIFF`    | `.tif` `.tiff`                | :white_check_mark: |                 |
-| `WEBP`    | `.webp`                       | :white_check_mark: |                 |
+| Format      | Extension(s)                  |     Supported?     | Notes           |
+| :---------- | :---------------------------- | :----------------: | :-------------- |
+| `AVIF`      | `.avif`                       | :white_check_mark: |                 |
+| `BMP`       | `.bmp`                        | :white_check_mark: |                 |
+| `GIF`       | `.gif`                        | :white_check_mark: |                 |
+| `HEIC`      | `.heic`                       | :white_check_mark: |                 |
+| `HEIF`      | `.heif`                       | :white_check_mark: |                 |
+| `JPEG 2000` | `.jp2`                        | :white_check_mark: |                 |
+| `JPEG`      | `.webp` `.jpg` `.jpe` `.insp` | :white_check_mark: |                 |
+| `JPEG XL`   | `.jxl`                        | :white_check_mark: |                 |
+| `PNG`       | `.webp`                       | :white_check_mark: |                 |
+| `PSD`       | `.psd`                        | :white_check_mark: | Adobe Photoshop |
+| `RAW`       | `.raw`                        | :white_check_mark: |                 |
+| `RW2`       | `.rw2`                        | :white_check_mark: |                 |
+| `SVG`       | `.svg`                        | :white_check_mark: |                 |
+| `TIFF`      | `.tif` `.tiff`                | :white_check_mark: |                 |
+| `WEBP`      | `.webp`                       | :white_check_mark: |                 |
 
 ## Video formats
 
@@ -34,7 +35,7 @@ For the full list, refer to the [Immich source code](https://github.com/immich-a
 | `FLV`       | `.flv`                | :white_check_mark: |       |
 | `M4V`       | `.m4v`                | :white_check_mark: |       |
 | `MATROSKA`  | `.mkv`                | :white_check_mark: |       |
-| `MP2T`      | `.mts` `.m2ts`        | :white_check_mark: |       |
+| `MP2T`      | `.mts` `.m2ts` `.m2t` | :white_check_mark: |       |
 | `MP4`       | `.mp4` `.insv`        | :white_check_mark: |       |
 | `MPEG`      | `.mpg` `.mpe` `.mpeg` | :white_check_mark: |       |
 | `QUICKTIME` | `.mov`                | :white_check_mark: |       |

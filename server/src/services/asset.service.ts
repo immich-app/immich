@@ -1,6 +1,7 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import {
   AssetResponseDto,
@@ -20,20 +21,13 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, Permission } from 'src/enum';
-import {
-  ISidecarWriteJob,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
+@Injectable()
 export class AssetService extends BaseService {
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const partnerIds = await getMyPartnerIds({
@@ -74,29 +68,13 @@ export class AssetService extends BaseService {
   async get(auth: AuthDto, id: string): Promise<AssetResponseDto | SanitizedAssetResponseDto> {
     await this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [id] });
 
-    const asset = await this.assetRepository.getById(
-      id,
-      {
-        exifInfo: true,
-        sharedLinks: true,
-        tags: true,
-        owner: true,
-        faces: {
-          person: true,
-        },
-        stack: {
-          assets: {
-            exifInfo: true,
-          },
-        },
-        files: true,
-      },
-      {
-        faces: {
-          boundingBoxX1: 'ASC',
-        },
-      },
-    );
+    const asset = await this.assetRepository.getById(id, {
+      exifInfo: true,
+      owner: true,
+      faces: { person: true },
+      stack: { assets: true },
+      tags: true,
+    });
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -137,21 +115,11 @@ export class AssetService extends BaseService {
 
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
-    await this.assetRepository.update({ id, ...rest });
+    const asset = await this.assetRepository.update({ id, ...rest });
 
     if (previousMotion) {
       await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
     }
-
-    const asset = await this.assetRepository.getById(id, {
-      exifInfo: true,
-      owner: true,
-      tags: true,
-      faces: {
-        person: true,
-      },
-      files: true,
-    });
 
     if (!asset) {
       throw new BadRequestException('Asset not found');
@@ -168,7 +136,14 @@ export class AssetService extends BaseService {
       await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
     }
 
-    await this.assetRepository.updateAll(ids, options);
+    if (
+      options.isArchived != undefined ||
+      options.isFavorite != undefined ||
+      options.duplicateId != undefined ||
+      options.rating != undefined
+    ) {
+      await this.assetRepository.updateAll(ids, options);
+    }
   }
 
   @OnJob({ name: JobName.ASSET_DELETION_CHECK, queue: QueueName.BACKGROUND_TASK })
@@ -188,7 +163,7 @@ export class AssetService extends BaseService {
           name: JobName.ASSET_DELETION,
           data: {
             id: asset.id,
-            deleteOnDisk: true,
+            deleteOnDisk: !asset.isOffline,
           },
         })),
       );
@@ -202,9 +177,7 @@ export class AssetService extends BaseService {
     const { id, deleteOnDisk } = job;
 
     const asset = await this.assetRepository.getById(id, {
-      faces: {
-        person: true,
-      },
+      faces: { person: true },
       library: true,
       stack: { assets: true },
       exifInfo: true,
@@ -220,7 +193,7 @@ export class AssetService extends BaseService {
       const stackAssetIds = asset.stack.assets.map((a) => a.id);
       if (stackAssetIds.length > 2) {
         const newPrimaryAssetId = stackAssetIds.find((a) => a !== id)!;
-        await this.stackRepository.update({
+        await this.stackRepository.update(asset.stack.id, {
           id: asset.stack.id,
           primaryAssetId: newPrimaryAssetId,
         });
@@ -249,6 +222,7 @@ export class AssetService extends BaseService {
 
     const { thumbnailFile, previewFile } = getAssetFiles(asset.files);
     const files = [thumbnailFile?.path, previewFile?.path, asset.encodedVideoPath];
+
     if (deleteOnDisk) {
       files.push(asset.sidecarPath, asset.originalPath);
     }

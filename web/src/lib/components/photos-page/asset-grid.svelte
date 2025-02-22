@@ -20,7 +20,7 @@
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
-  import { throttle } from 'lodash-es';
+  import { debounce, throttle } from 'lodash-es';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
@@ -81,8 +81,9 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
 
-  const viewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
-  const safeViewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
+  // this does *not* need to be reactive and making it reactive causes expensive repeated updates
+  // svelte-ignore non_reactive_update
+  let safeViewport: ViewportXY = { width: 0, height: 0, x: 0, y: 0 };
 
   const componentId = generateId();
   let element: HTMLElement | undefined = $state();
@@ -103,7 +104,7 @@
   let leadout = $state(false);
 
   const {
-    ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW },
+    ASSET_GRID: { NAVIGATE_ON_ASSET_IN_VIEW, LARGE_BUCKET_THRESHOLD, LARGE_BUCKET_DEBOUNCE_MS },
     BUCKET: {
       INTERSECTION_ROOT_TOP: BUCKET_INTERSECTION_ROOT_TOP,
       INTERSECTION_ROOT_BOTTOM: BUCKET_INTERSECTION_ROOT_BOTTOM,
@@ -113,14 +114,6 @@
       INTERSECTION_ROOT_BOTTOM: THUMBNAIL_INTERSECTION_ROOT_BOTTOM,
     },
   } = TUNABLES;
-
-  const isViewportOrigin = () => {
-    return viewport.height === 0 && viewport.width === 0;
-  };
-
-  const isEqual = (a: ViewportXY, b: ViewportXY) => {
-    return a.height == b.height && a.width == b.width && a.x === b.x && a.y === b.y;
-  };
 
   const completeNav = () => {
     navigating = false;
@@ -235,6 +228,14 @@
   };
 
   onMount(() => {
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      safeViewport.height = rect.height;
+      safeViewport.width = rect.width;
+      safeViewport.x = rect.x;
+      safeViewport.y = rect.y;
+    }
+
     void $assetStore
       .init({ bucketListener })
       .then(() => ($assetStore.connect(), $assetStore.updateViewport(safeViewport)));
@@ -259,8 +260,6 @@
     }
     return offset;
   }
-  const _updateViewport = () => void $assetStore.updateViewport(safeViewport);
-  const updateViewport = throttle(_updateViewport, 16);
 
   const getMaxScrollPercent = () =>
     ($assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - safeViewport.height) /
@@ -527,6 +526,18 @@
     return !!nextAsset;
   };
 
+  const handleRandom = async () => {
+    const randomAsset = await $assetStore.getRandomAsset();
+
+    if (randomAsset) {
+      const preloadAsset = await $assetStore.getNextAsset(randomAsset);
+      assetViewingStore.setAsset(randomAsset, preloadAsset ? [preloadAsset] : []);
+      await navigate({ targetRoute: 'current', assetId: randomAsset.id });
+    }
+
+    return randomAsset;
+  };
+
   const handleClose = async ({ asset }: { asset: AssetResponseDto }) => {
     assetViewingStore.showAssetViewer(false);
     showSkeleton = true;
@@ -732,23 +743,8 @@
     }
   });
 
-  $effect(() => {
-    if (element && isViewportOrigin()) {
-      const rect = element.getBoundingClientRect();
-      viewport.height = rect.height;
-      viewport.width = rect.width;
-      viewport.x = rect.x;
-      viewport.y = rect.y;
-    }
-    if (!isViewportOrigin() && !isEqual(viewport, safeViewport)) {
-      safeViewport.height = viewport.height;
-      safeViewport.width = viewport.width;
-      safeViewport.x = viewport.x;
-      safeViewport.y = viewport.y;
-      updateViewport();
-    }
-  });
-
+  let largeBucketMode = false;
+  let updateViewport = debounce(() => $assetStore.updateViewport(safeViewport), 8);
   let shortcutList = $derived(
     (() => {
       if ($isSearchEnabled || $showAssetViewer) {
@@ -831,7 +827,21 @@
   id="asset-grid"
   class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
   tabindex="-1"
-  use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
+  use:resizeObserver={({ width, height }) => {
+    if (!largeBucketMode && assetStore.maxBucketAssets >= LARGE_BUCKET_THRESHOLD) {
+      largeBucketMode = true;
+      // Each viewport update causes each asset to re-decode both the thumbhash and the thumbnail.
+      // This is because the thumbnail components are destroyed and re-mounted, possibly because of the intersection observer.
+      // For larger buckets, this can lead to freezing and a poor user experience.
+      // As a mitigation, we aggressively debounce the viewport update to reduce the number of these events.
+      updateViewport = debounce(() => $assetStore.updateViewport(safeViewport), LARGE_BUCKET_DEBOUNCE_MS, {
+        leading: false,
+        trailing: true,
+      });
+    }
+    safeViewport = { width, height, x: safeViewport.x, y: safeViewport.y };
+    void updateViewport();
+  }}
   bind:this={element}
   onscroll={() => ((assetStore.lastScrollTime = Date.now()), handleTimelineScroll())}
 >
@@ -911,7 +921,6 @@
     {#await import('../asset-viewer/asset-viewer.svelte') then { default: AssetViewer }}
       <AssetViewer
         {withStacked}
-        {assetStore}
         asset={$viewingAsset}
         preloadAssets={$preloadAssets}
         {isShared}
@@ -920,6 +929,7 @@
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}
+        onRandom={handleRandom}
         onClose={handleClose}
       />
     {/await}

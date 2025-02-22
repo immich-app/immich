@@ -72,7 +72,7 @@ alt="Select Plugins > Compose.Manager > Add New Stack > Label it Immich"
         </ul>
     </details>
 
-5.  Click "**Save Changes**", you will be promoted to edit stack UI labels, just leave this blank and click "**Ok**"
+5.  Click "**Save Changes**", you will be prompted to edit stack UI labels, just leave this blank and click "**Ok**"
 6.  Select the cog ⚙️ next to Immich, click "**Edit Stack**", then click "**Env File**"
 7.  Paste the entire contents of the [Immich example.env](https://github.com/immich-app/immich/releases/latest/download/example.env) file into the Unraid editor, then **before saving** edit the following:
 
@@ -111,7 +111,7 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
 
 <details >
     <summary>Using the FolderView plugin for organizing your Docker containers? Click me! Otherwise you're complete!</summary>
-    <p>If you are using the FolderView plugin go the Docker tab and select "<b>New Folder</b>".<br />Label it <i>"Immich"</i> and use this URL as the logo: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.webp<br/>Then simply select all the Immich related containers before clicking "<b>Submit</b>"</p>
+    <p>If you are using the FolderView plugin go the Docker tab and select "<b>New Folder</b>".<br />Label it <i>"Immich"</i> and use this URL as the logo: https://raw.githubusercontent.com/immich-app/immich/main/design/immich-logo.png<br/>Then simply select all the Immich related containers before clicking "<b>Submit</b>"</p>
     <img
         src={require('./img/unraid07.webp').default}
         width="80%"

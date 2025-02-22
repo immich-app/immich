@@ -10,6 +10,7 @@ from unittest import mock
 import cv2
 import numpy as np
 import onnxruntime as ort
+import orjson
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
@@ -346,11 +347,11 @@ class TestCLIP:
         mocked.run.return_value = [[self.embedding]]
 
         clip_encoder = OpenClipVisualEncoder("ViT-B-32__openai", cache_dir="test_cache")
-        embedding = clip_encoder.predict(pil_image)
-
-        assert isinstance(embedding, np.ndarray)
-        assert embedding.shape[0] == clip_model_cfg["embed_dim"]
-        assert embedding.dtype == np.float32
+        embedding_str = clip_encoder.predict(pil_image)
+        assert isinstance(embedding_str, str)
+        embedding = orjson.loads(embedding_str)
+        assert isinstance(embedding, list)
+        assert len(embedding) == clip_model_cfg["embed_dim"]
         mocked.run.assert_called_once()
 
     def test_basic_text(
@@ -368,11 +369,11 @@ class TestCLIP:
         mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True)
 
         clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
-        embedding = clip_encoder.predict("test search query")
-
-        assert isinstance(embedding, np.ndarray)
-        assert embedding.shape[0] == clip_model_cfg["embed_dim"]
-        assert embedding.dtype == np.float32
+        embedding_str = clip_encoder.predict("test search query")
+        assert isinstance(embedding_str, str)
+        embedding = orjson.loads(embedding_str)
+        assert isinstance(embedding, list)
+        assert len(embedding) == clip_model_cfg["embed_dim"]
         mocked.run.assert_called_once()
 
     def test_openclip_tokenizer(
@@ -508,8 +509,11 @@ class TestFaceRecognition:
             assert isinstance(face.get("boundingBox"), dict)
             assert set(face["boundingBox"]) == {"x1", "y1", "x2", "y2"}
             assert all(isinstance(val, np.float32) for val in face["boundingBox"].values())
-            assert isinstance(face.get("embedding"), np.ndarray)
-            assert face["embedding"].shape[0] == 512
+            embedding_str = face.get("embedding")
+            assert isinstance(embedding_str, str)
+            embedding = orjson.loads(embedding_str)
+            assert isinstance(embedding, list)
+            assert len(embedding) == 512
             assert isinstance(face.get("score", None), np.float32)
 
         rec_model.get_feat.assert_called_once()
@@ -700,11 +704,13 @@ class TestCache:
             await model_cache.get("test_model_name", ModelType.TEXTUAL, ModelTask.SEARCH)
 
     async def test_preloads_clip_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = "ViT-B-32__openai"
 
         settings = Settings()
         assert settings.preload is not None
-        assert settings.preload.clip == "ViT-B-32__openai"
+        assert settings.preload.clip.textual == "ViT-B-32__openai"
+        assert settings.preload.clip.visual == "ViT-B-32__openai"
 
         model_cache = ModelCache()
         monkeypatch.setattr("app.main.model_cache", model_cache)
@@ -721,11 +727,13 @@ class TestCache:
     async def test_preloads_facial_recognition_models(
         self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock
     ) -> None:
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = "buffalo_s"
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = "buffalo_s"
 
         settings = Settings()
         assert settings.preload is not None
-        assert settings.preload.facial_recognition == "buffalo_s"
+        assert settings.preload.facial_recognition.detection == "buffalo_s"
+        assert settings.preload.facial_recognition.recognition == "buffalo_s"
 
         model_cache = ModelCache()
         monkeypatch.setattr("app.main.model_cache", model_cache)
@@ -740,13 +748,17 @@ class TestCache:
         )
 
     async def test_preloads_all_models(self, monkeypatch: MonkeyPatch, mock_get_model: mock.Mock) -> None:
-        os.environ["MACHINE_LEARNING_PRELOAD__CLIP"] = "ViT-B-32__openai"
-        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION"] = "buffalo_s"
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL"] = "ViT-B-32__openai"
+        os.environ["MACHINE_LEARNING_PRELOAD__CLIP__VISUAL"] = "ViT-B-32__openai"
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION"] = "buffalo_s"
+        os.environ["MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION"] = "buffalo_s"
 
         settings = Settings()
         assert settings.preload is not None
-        assert settings.preload.clip == "ViT-B-32__openai"
-        assert settings.preload.facial_recognition == "buffalo_s"
+        assert settings.preload.clip.visual == "ViT-B-32__openai"
+        assert settings.preload.clip.textual == "ViT-B-32__openai"
+        assert settings.preload.facial_recognition.recognition == "buffalo_s"
+        assert settings.preload.facial_recognition.detection == "buffalo_s"
 
         model_cache = ModelCache()
         monkeypatch.setattr("app.main.model_cache", model_cache)
@@ -872,8 +884,10 @@ class TestPredictionEndpoints:
         actual = response.json()
         assert response.status_code == 200
         assert isinstance(actual, dict)
-        assert isinstance(actual.get("clip", None), list)
-        assert np.allclose(expected, actual["clip"])
+        embedding = actual.get("clip", None)
+        assert isinstance(embedding, str)
+        parsed_embedding = orjson.loads(embedding)
+        assert np.allclose(expected, parsed_embedding)
 
     def test_clip_text_endpoint(self, responses: dict[str, Any], deployed_app: TestClient) -> None:
         expected = responses["clip"]["text"]
@@ -893,8 +907,10 @@ class TestPredictionEndpoints:
         actual = response.json()
         assert response.status_code == 200
         assert isinstance(actual, dict)
-        assert isinstance(actual.get("clip", None), list)
-        assert np.allclose(expected, actual["clip"])
+        embedding = actual.get("clip", None)
+        assert isinstance(embedding, str)
+        parsed_embedding = orjson.loads(embedding)
+        assert np.allclose(expected, parsed_embedding)
 
     def test_face_endpoint(self, pil_image: Image.Image, responses: dict[str, Any], deployed_app: TestClient) -> None:
         byte_image = BytesIO()
@@ -925,5 +941,8 @@ class TestPredictionEndpoints:
 
         for expected_face, actual_face in zip(responses["facial-recognition"], actual["facial-recognition"]):
             assert expected_face["boundingBox"] == actual_face["boundingBox"]
-            assert np.allclose(expected_face["embedding"], actual_face["embedding"])
+            embedding = actual_face.get("embedding", None)
+            assert isinstance(embedding, str)
+            parsed_embedding = orjson.loads(embedding)
+            assert np.allclose(expected_face["embedding"], parsed_embedding)
             assert np.allclose(expected_face["score"], actual_face["score"])

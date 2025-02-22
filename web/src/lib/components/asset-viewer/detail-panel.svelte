@@ -25,7 +25,6 @@
     type ExifResponseDto,
   } from '@immich/sdk';
   import {
-    mdiAccountOff,
     mdiCalendar,
     mdiCameraIris,
     mdiClose,
@@ -34,6 +33,7 @@
     mdiImageOutline,
     mdiInformationOutline,
     mdiPencil,
+    mdiPlus,
   } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -45,6 +45,8 @@
   import UserAvatar from '../shared-components/user-avatar.svelte';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import { getMetadataSearchQuery } from '$lib/utils/metadata-search';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -132,6 +134,14 @@
     showEditFaces = false;
   };
 
+  const getAssetFolderHref = (asset: AssetResponseDto) => {
+    const folderUrl = new URL(AppRoute.FOLDERS, globalThis.location.href);
+    // Remove the last part of the path to get the parent path
+    const assetParentPath = asset.originalPath.split('/').slice(0, -1).join('/');
+    folderUrl.searchParams.set(QueryParameter.PATH, assetParentPath);
+    return folderUrl.href;
+  };
+
   const toggleAssetPath = () => (showAssetPath = !showAssetPath);
 
   let isShowChangeDate = $state(false);
@@ -177,20 +187,11 @@
   <DetailPanelDescription {asset} {isOwner} />
   <DetailPanelRating {asset} {isOwner} />
 
-  {#if (!isSharedLink() && unassignedFaces.length > 0) || people.length > 0}
+  {#if !isSharedLink() && isOwner}
     <section class="px-4 pt-4 text-sm">
       <div class="flex h-10 w-full items-center justify-between">
         <h2>{$t('people').toUpperCase()}</h2>
         <div class="flex gap-2 items-center">
-          {#if unassignedFaces.length > 0}
-            <Icon
-              ariaLabel={$t('asset_has_unassigned_faces')}
-              title={$t('asset_has_unassigned_faces')}
-              color="currentColor"
-              path={mdiAccountOff}
-              size="24"
-            />
-          {/if}
           {#if people.some((person) => person.isHidden)}
             <CircleIconButton
               title={$t('show_hidden_people')}
@@ -201,13 +202,24 @@
             />
           {/if}
           <CircleIconButton
-            title={$t('edit_people')}
-            icon={mdiPencil}
+            title={$t('tag_people')}
+            icon={mdiPlus}
             padding="1"
             size="20"
             buttonSize="32"
-            onclick={() => (showEditFaces = true)}
+            onclick={() => (isFaceEditMode.value = !isFaceEditMode.value)}
           />
+
+          {#if people.length > 0 || unassignedFaces.length > 0}
+            <CircleIconButton
+              title={$t('edit_people')}
+              icon={mdiPencil}
+              padding="1"
+              size="20"
+              buttonSize="32"
+              onclick={() => (showEditFaces = true)}
+            />
+          {/if}
         </div>
       </div>
 
@@ -356,7 +368,7 @@
       <div><Icon path={mdiImageOutline} size="24" /></div>
 
       <div>
-        <p class="break-all flex place-items-center gap-2">
+        <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
           {asset.originalFileName}
           {#if isOwner}
             <CircleIconButton
@@ -369,8 +381,13 @@
           {/if}
         </p>
         {#if showAssetPath}
-          <p class="text-xs opacity-50 break-all pb-2" transition:slide={{ duration: 250 }}>
-            {asset.originalPath}
+          <p
+            class="text-xs opacity-50 break-all pb-2 hover:dark:text-immich-dark-primary hover:text-immich-primary"
+            transition:slide={{ duration: 250 }}
+          >
+            <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
+              {asset.originalPath}
+            </a>
           </p>
         {/if}
         {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
@@ -397,7 +414,36 @@
         <div><Icon path={mdiCameraIris} size="24" /></div>
 
         <div>
-          <p>{asset.exifInfo.make || ''} {asset.exifInfo.model || ''}</p>
+          {#if asset.exifInfo?.make || asset.exifInfo?.model}
+            <p>
+              <a
+                href="{AppRoute.SEARCH}?{getMetadataSearchQuery({
+                  ...(asset.exifInfo?.make ? { make: asset.exifInfo.make } : {}),
+                  ...(asset.exifInfo?.model ? { model: asset.exifInfo.model } : {}),
+                })}"
+                title="{$t('search_for')} {asset.exifInfo.make || ''} {asset.exifInfo.model || ''}"
+                class="hover:dark:text-immich-dark-primary hover:text-immich-primary"
+              >
+                {asset.exifInfo.make || ''}
+                {asset.exifInfo.model || ''}
+              </a>
+            </p>
+          {/if}
+
+          {#if asset.exifInfo?.lensModel}
+            <div class="flex gap-2 text-sm">
+              <p>
+                <a
+                  href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ lensModel: asset.exifInfo.lensModel })}"
+                  title="{$t('search_for')} {asset.exifInfo.lensModel}"
+                  class="hover:dark:text-immich-dark-primary hover:text-immich-primary line-clamp-1"
+                >
+                  {asset.exifInfo.lensModel}
+                </a>
+              </p>
+            </div>
+          {/if}
+
           <div class="flex gap-2 text-sm">
             {#if asset.exifInfo?.fNumber}
               <p>ƒ/{asset.exifInfo.fNumber.toLocaleString($locale)}</p>

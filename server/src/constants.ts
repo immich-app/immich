@@ -1,16 +1,30 @@
 import { Duration } from 'luxon';
 import { readFileSync } from 'node:fs';
 import { SemVer } from 'semver';
-import { ExifOrientation } from 'src/enum';
+import { DatabaseExtension, ExifOrientation } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
+export const ASSET_FILE_CONFLICT_KEYS = ['assetId', 'type'] as const;
+export const EXIF_CONFLICT_KEYS = ['assetId'] as const;
+export const JOB_STATUS_CONFLICT_KEYS = ['assetId'] as const;
+
 export const NEXT_RELEASE = 'NEXT_RELEASE';
 export const LIFECYCLE_EXTENSION = 'x-immich-lifecycle';
 export const DEPRECATED_IN_PREFIX = 'This property was deprecated in ';
 export const ADDED_IN_PREFIX = 'This property was added in ';
+
+export const JOBS_ASSET_PAGINATION_SIZE = 1000;
+export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
+
+export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
+  cube: 'cube',
+  earthdistance: 'earthdistance',
+  vector: 'pgvector',
+  vectors: 'pgvecto.rs',
+} as const;
 
 export const SALT_ROUNDS = 10;
 

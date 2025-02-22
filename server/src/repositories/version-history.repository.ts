@@ -1,23 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { VersionHistoryEntity } from 'src/entities/version-history.entity';
-import { IVersionHistoryRepository } from 'src/interfaces/version-history.interface';
-import { Repository } from 'typeorm';
+import { Insertable, Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB, VersionHistory } from 'src/db';
+import { GenerateSql } from 'src/decorators';
 
 @Injectable()
-export class VersionHistoryRepository implements IVersionHistoryRepository {
-  constructor(@InjectRepository(VersionHistoryEntity) private repository: Repository<VersionHistoryEntity>) {}
+export class VersionHistoryRepository {
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async getAll(): Promise<VersionHistoryEntity[]> {
-    return this.repository.find({ order: { createdAt: 'DESC' } });
+  @GenerateSql()
+  getAll() {
+    return this.db.selectFrom('version_history').selectAll().orderBy('createdAt', 'desc').execute();
   }
 
-  async getLatest(): Promise<VersionHistoryEntity | null> {
-    const results = await this.repository.find({ order: { createdAt: 'DESC' }, take: 1 });
-    return results[0] || null;
+  @GenerateSql()
+  getLatest() {
+    return this.db.selectFrom('version_history').selectAll().orderBy('createdAt', 'desc').executeTakeFirst();
   }
 
-  create(version: Omit<VersionHistoryEntity, 'id' | 'createdAt'>): Promise<VersionHistoryEntity> {
-    return this.repository.save(version);
+  @GenerateSql({ params: [{ version: 'v1.123.0' }] })
+  create(version: Insertable<VersionHistory>) {
+    return this.db.insertInto('version_history').values(version).returningAll().executeTakeFirstOrThrow();
   }
 }

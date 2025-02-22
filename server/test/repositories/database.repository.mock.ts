@@ -1,8 +1,11 @@
-import { IDatabaseRepository } from 'src/interfaces/database.interface';
+import { DatabaseRepository } from 'src/repositories/database.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newDatabaseRepositoryMock = (): Mocked<IDatabaseRepository> => {
+export const newDatabaseRepositoryMock = (): Mocked<RepositoryInterface<DatabaseRepository>> => {
   return {
+    init: vitest.fn(),
+    shutdown: vitest.fn(),
     reconnect: vitest.fn(),
     getExtensionVersion: vitest.fn(),
     getExtensionVersionRange: vitest.fn(),

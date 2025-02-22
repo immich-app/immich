@@ -12,7 +12,7 @@
 
 {#if items.length > 0}
   <div
-    class="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 rounded-2xl border border-gray-100 dark:border-gray-900 max-h-[500px] overflow-auto immich-scrollbar"
+    class="w-full grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 2xl:grid-cols-8 gap-2 bg-gray-50 dark:bg-immich-dark-gray/50 rounded-2xl border border-gray-100 dark:border-gray-900"
   >
     {#each items as item}
       <button
@@ -22,7 +22,9 @@
         type="button"
       >
         <Icon path={icon} class="text-immich-primary dark:text-immich-dark-primary" size={64} />
-        <p class="text-sm dark:text-gray-200 text-nowrap text-ellipsis overflow-clip w-full">{item}</p>
+        <p class="text-sm dark:text-gray-200 text-nowrap text-ellipsis overflow-clip w-full whitespace-pre-wrap">
+          {item}
+        </p>
       </button>
     {/each}
   </div>

@@ -50,7 +50,7 @@
     img = new Image();
     await tick();
 
-    img.src = getAssetOriginalUrl({ id: asset.id, checksum: asset.checksum });
+    img.src = getAssetOriginalUrl({ id: asset.id, cacheKey: asset.thumbhash });
 
     img.addEventListener('load', () => onImageLoad(true));
     img.addEventListener('error', (error) => {
@@ -145,9 +145,9 @@
     bottom: 0;
     --color: white;
     --shadow: #00000057;
-    background-image: linear-gradient(var(--color) 1px, transparent 0),
-      linear-gradient(90deg, var(--color) 1px, transparent 0), linear-gradient(var(--shadow) 3px, transparent 0),
-      linear-gradient(90deg, var(--shadow) 3px, transparent 0);
+    background-image:
+      linear-gradient(var(--color) 1px, transparent 0), linear-gradient(90deg, var(--color) 1px, transparent 0),
+      linear-gradient(var(--shadow) 3px, transparent 0), linear-gradient(90deg, var(--shadow) 3px, transparent 0);
     background-size: calc(100% / 3) calc(100% / 3);
     opacity: 0;
     transition: opacity 0.1s ease;

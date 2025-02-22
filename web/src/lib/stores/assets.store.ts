@@ -1,12 +1,10 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
-import { getAssetRatio } from '$lib/utils/asset-utils';
 import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
-import { calculateWidth, fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
+import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import createJustifiedLayout from 'justified-layout';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
@@ -15,13 +13,6 @@ import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
-
-const LAYOUT_OPTIONS = {
-  boxSpacing: 2,
-  containerPadding: 0,
-  targetRowHeightTolerance: 0.15,
-  targetRowHeight: 235,
-};
 
 export interface Viewport {
   width: number;
@@ -156,7 +147,7 @@ interface UpdateStackAssets {
   values: string[];
 }
 
-export const photoViewer = writable<HTMLImageElement | null>(null);
+export const photoViewerImgElement = writable<HTMLImageElement | null>(null);
 
 type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
 
@@ -232,6 +223,7 @@ export class AssetStore {
   albumAssets: Set<string> = new Set();
   pendingScrollBucket: AssetBucket | undefined;
   pendingScrollAssetId: string | undefined;
+  maxBucketAssets = 0;
 
   listeners: BucketListener[] = [];
 
@@ -443,7 +435,7 @@ export class AssetStore {
 
   private async initialLayout(changedWidth: boolean) {
     for (const bucket of this.buckets) {
-      this.updateGeometry(bucket, changedWidth);
+      await this.updateGeometry(bucket, changedWidth);
     }
     this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
@@ -461,7 +453,7 @@ export class AssetStore {
     this.emit(false);
   }
 
-  private updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
+  private async updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
       bucket.measured = false;
@@ -469,32 +461,32 @@ export class AssetStore {
         assetGroup.heightActual = false;
       }
     }
+
+    const viewportWidth = this.viewport.width;
     if (!bucket.isBucketHeightActual) {
       const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
-      const rows = Math.ceil(unwrappedWidth / this.viewport.width);
+      const rows = Math.ceil(unwrappedWidth / viewportWidth);
       const height = 51 + rows * THUMBNAIL_HEIGHT;
       bucket.bucketHeight = height;
     }
 
+    const layoutOptions = {
+      spacing: 2,
+      heightTolerance: 0.15,
+      rowHeight: 235,
+      rowWidth: Math.floor(viewportWidth),
+    };
+    // TODO: move this import and make this method sync after https://github.com/sveltejs/kit/issues/7805 is fixed
+    const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
-        const rows = Math.ceil(unwrappedWidth / this.viewport.width);
+        const rows = Math.ceil(unwrappedWidth / viewportWidth);
         const height = rows * THUMBNAIL_HEIGHT;
         assetGroup.height = height;
       }
 
-      const layoutResult = createJustifiedLayout(
-        assetGroup.assets.map((g) => getAssetRatio(g)),
-        {
-          ...LAYOUT_OPTIONS,
-          containerWidth: Math.floor(this.viewport.width),
-        },
-      );
-      assetGroup.geometry = {
-        ...layoutResult,
-        containerWidth: calculateWidth(layoutResult.boxes),
-      };
+      assetGroup.geometry = getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
     }
   }
 
@@ -560,7 +552,8 @@ export class AssetStore {
 
       bucket.assets = assets;
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-      this.updateGeometry(bucket, true);
+      this.maxBucketAssets = Math.max(this.maxBucketAssets, assets.length);
+      await this.updateGeometry(bucket, true);
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
       bucket.loaded();
       this.notifyListeners({ type: 'loaded', bucket });
@@ -687,7 +680,7 @@ export class AssetStore {
         return bDate.diff(aDate).milliseconds;
       });
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-      this.updateGeometry(bucket, true);
+      void this.updateGeometry(bucket, true);
     }
 
     this.emit(true);
@@ -829,7 +822,7 @@ export class AssetStore {
       }
       if (changed) {
         bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-        this.updateGeometry(bucket, true);
+        void this.updateGeometry(bucket, true);
       }
     }
 

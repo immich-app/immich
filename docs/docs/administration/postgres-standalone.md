@@ -42,6 +42,10 @@ Typically Immich expects superuser permission in the database, which you can gra
 This method is recommended for **advanced users only** and often requires manual intervention when updating Immich.
 :::
 
+:::danger
+Currently, automated backups require superuser permission due to the usage of `pg_dumpall`.
+:::
+
 Immich can run without superuser permissions by following the below instructions at the `psql` prompt to prepare the database.
 
 ```sql title="Set up Postgres for Immich"
@@ -66,4 +70,4 @@ When installing a new version of pgvecto.rs, you will need to manually update th
 
 If you get the error `driverError: error: permission denied for view pg_vector_index_stat`, you can fix this by connecting to the Immich database and running `GRANT SELECT ON TABLE pg_vector_index_stat TO <immichdbusername>;`.
 
-[vectors-install]: https://docs.pgvecto.rs/getting-started/installation.html
+[vectors-install]: https://docs.vectorchord.ai/getting-started/installation.html

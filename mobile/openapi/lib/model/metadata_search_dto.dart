@@ -18,6 +18,7 @@ class MetadataSearchDto {
     this.country,
     this.createdAfter,
     this.createdBefore,
+    this.description,
     this.deviceAssetId,
     this.deviceId,
     this.encodedVideoPath,
@@ -33,14 +34,16 @@ class MetadataSearchDto {
     this.libraryId,
     this.make,
     this.model,
-    this.order,
+    this.order = AssetOrder.desc,
     this.originalFileName,
     this.originalPath,
     this.page,
     this.personIds = const [],
     this.previewPath,
+    this.rating,
     this.size,
     this.state,
+    this.tagIds = const [],
     this.takenAfter,
     this.takenBefore,
     this.thumbnailPath,
@@ -83,6 +86,14 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   DateTime? createdBefore;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -186,13 +197,7 @@ class MetadataSearchDto {
 
   String? model;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  AssetOrder? order;
+  AssetOrder order;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -229,6 +234,16 @@ class MetadataSearchDto {
   ///
   String? previewPath;
 
+  /// Minimum value: -1
+  /// Maximum value: 5
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  num? rating;
+
   /// Minimum value: 1
   /// Maximum value: 1000
   ///
@@ -240,6 +255,8 @@ class MetadataSearchDto {
   num? size;
 
   String? state;
+
+  List<String> tagIds;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -346,6 +363,7 @@ class MetadataSearchDto {
     other.country == country &&
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
+    other.description == description &&
     other.deviceAssetId == deviceAssetId &&
     other.deviceId == deviceId &&
     other.encodedVideoPath == encodedVideoPath &&
@@ -367,8 +385,10 @@ class MetadataSearchDto {
     other.page == page &&
     _deepEquality.equals(other.personIds, personIds) &&
     other.previewPath == previewPath &&
+    other.rating == rating &&
     other.size == size &&
     other.state == state &&
+    _deepEquality.equals(other.tagIds, tagIds) &&
     other.takenAfter == takenAfter &&
     other.takenBefore == takenBefore &&
     other.thumbnailPath == thumbnailPath &&
@@ -391,6 +411,7 @@ class MetadataSearchDto {
     (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (deviceAssetId == null ? 0 : deviceAssetId!.hashCode) +
     (deviceId == null ? 0 : deviceId!.hashCode) +
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
@@ -406,14 +427,16 @@ class MetadataSearchDto {
     (libraryId == null ? 0 : libraryId!.hashCode) +
     (make == null ? 0 : make!.hashCode) +
     (model == null ? 0 : model!.hashCode) +
-    (order == null ? 0 : order!.hashCode) +
+    (order.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
     (previewPath == null ? 0 : previewPath!.hashCode) +
+    (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
     (state == null ? 0 : state!.hashCode) +
+    (tagIds.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
     (takenBefore == null ? 0 : takenBefore!.hashCode) +
     (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
@@ -429,7 +452,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, size=$size, state=$state, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, deviceAssetId=$deviceAssetId, deviceId=$deviceId, encodedVideoPath=$encodedVideoPath, id=$id, isArchived=$isArchived, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, isVisible=$isVisible, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, withArchived=$withArchived, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -457,6 +480,11 @@ class MetadataSearchDto {
       json[r'createdBefore'] = this.createdBefore!.toUtc().toIso8601String();
     } else {
     //  json[r'createdBefore'] = null;
+    }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
     }
     if (this.deviceAssetId != null) {
       json[r'deviceAssetId'] = this.deviceAssetId;
@@ -533,11 +561,7 @@ class MetadataSearchDto {
     } else {
     //  json[r'model'] = null;
     }
-    if (this.order != null) {
       json[r'order'] = this.order;
-    } else {
-    //  json[r'order'] = null;
-    }
     if (this.originalFileName != null) {
       json[r'originalFileName'] = this.originalFileName;
     } else {
@@ -559,6 +583,11 @@ class MetadataSearchDto {
     } else {
     //  json[r'previewPath'] = null;
     }
+    if (this.rating != null) {
+      json[r'rating'] = this.rating;
+    } else {
+    //  json[r'rating'] = null;
+    }
     if (this.size != null) {
       json[r'size'] = this.size;
     } else {
@@ -569,6 +598,7 @@ class MetadataSearchDto {
     } else {
     //  json[r'state'] = null;
     }
+      json[r'tagIds'] = this.tagIds;
     if (this.takenAfter != null) {
       json[r'takenAfter'] = this.takenAfter!.toUtc().toIso8601String();
     } else {
@@ -647,6 +677,7 @@ class MetadataSearchDto {
         country: mapValueOfType<String>(json, r'country'),
         createdAfter: mapDateTime(json, r'createdAfter', r''),
         createdBefore: mapDateTime(json, r'createdBefore', r''),
+        description: mapValueOfType<String>(json, r'description'),
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId'),
         deviceId: mapValueOfType<String>(json, r'deviceId'),
         encodedVideoPath: mapValueOfType<String>(json, r'encodedVideoPath'),
@@ -662,7 +693,7 @@ class MetadataSearchDto {
         libraryId: mapValueOfType<String>(json, r'libraryId'),
         make: mapValueOfType<String>(json, r'make'),
         model: mapValueOfType<String>(json, r'model'),
-        order: AssetOrder.fromJson(json[r'order']),
+        order: AssetOrder.fromJson(json[r'order']) ?? AssetOrder.desc,
         originalFileName: mapValueOfType<String>(json, r'originalFileName'),
         originalPath: mapValueOfType<String>(json, r'originalPath'),
         page: num.parse('${json[r'page']}'),
@@ -670,8 +701,12 @@ class MetadataSearchDto {
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         previewPath: mapValueOfType<String>(json, r'previewPath'),
+        rating: num.parse('${json[r'rating']}'),
         size: num.parse('${json[r'size']}'),
         state: mapValueOfType<String>(json, r'state'),
+        tagIds: json[r'tagIds'] is Iterable
+            ? (json[r'tagIds'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
         takenAfter: mapDateTime(json, r'takenAfter', r''),
         takenBefore: mapDateTime(json, r'takenBefore', r''),
         thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),

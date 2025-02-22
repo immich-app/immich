@@ -1,7 +1,8 @@
-import { ISessionRepository } from 'src/interfaces/session.interface';
+import { SessionRepository } from 'src/repositories/session.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newSessionRepositoryMock = (): Mocked<ISessionRepository> => {
+export const newSessionRepositoryMock = (): Mocked<RepositoryInterface<SessionRepository>> => {
   return {
     search: vitest.fn(),
     create: vitest.fn() as any,

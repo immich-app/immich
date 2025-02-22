@@ -67,9 +67,9 @@ class SearchService {
             model: filter.camera.model,
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
-            isArchived: filter.display.isArchive,
-            isFavorite: filter.display.isFavorite,
-            isNotInAlbum: filter.display.isNotInAlbum,
+            isArchived: filter.display.isArchive ? true : null,
+            isFavorite: filter.display.isFavorite ? true : null,
+            isNotInAlbum: filter.display.isNotInAlbum ? true : null,
             personIds: filter.people.map((e) => e.id).toList(),
             type: type,
             page: page,
@@ -84,15 +84,19 @@ class SearchService {
                     ? filter.filename
                     : null,
             country: filter.location.country,
+            description:
+                filter.description != null && filter.description!.isNotEmpty
+                    ? filter.description
+                    : null,
             state: filter.location.state,
             city: filter.location.city,
             make: filter.camera.make,
             model: filter.camera.model,
             takenAfter: filter.date.takenAfter,
             takenBefore: filter.date.takenBefore,
-            isArchived: filter.display.isArchive,
-            isFavorite: filter.display.isFavorite,
-            isNotInAlbum: filter.display.isNotInAlbum,
+            isArchived: filter.display.isArchive ? true : null,
+            isFavorite: filter.display.isFavorite ? true : null,
+            isNotInAlbum: filter.display.isNotInAlbum ? true : null,
             personIds: filter.people.map((e) => e.id).toList(),
             type: type,
             page: page,
@@ -101,7 +105,7 @@ class SearchService {
         );
       }
 
-      if (response == null) {
+      if (response == null || response.assets.items.isEmpty) {
         return null;
       }
 

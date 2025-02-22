@@ -4,7 +4,8 @@
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import DuplicateAsset from '$lib/components/utilities-page/duplicates/duplicate-asset.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { handlePromiseError, suggestDuplicateByFileSize } from '$lib/utils';
+  import { handlePromiseError } from '$lib/utils';
+  import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { shortcuts } from '$lib/actions/shortcut';
   import { type AssetResponseDto } from '@immich/sdk';
@@ -27,7 +28,7 @@
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
   onMount(() => {
-    const suggestedAsset = suggestDuplicateByFileSize(assets);
+    const suggestedAsset = suggestDuplicate(assets);
 
     if (!suggestedAsset) {
       selectedAssetIds = new SvelteSet(assets[0].id);
@@ -40,6 +41,34 @@
   onDestroy(() => {
     assetViewingStore.showAssetViewer(false);
   });
+
+  const onNext = () => {
+    const index = getAssetIndex($viewingAsset.id) + 1;
+    if (index >= assets.length) {
+      return Promise.resolve(false);
+    }
+    setAsset(assets[index]);
+    return Promise.resolve(true);
+  };
+
+  const onPrevious = () => {
+    const index = getAssetIndex($viewingAsset.id) - 1;
+    if (index < 0) {
+      return Promise.resolve(false);
+    }
+    setAsset(assets[index]);
+    return Promise.resolve(true);
+  };
+
+  const onRandom = () => {
+    if (assets.length <= 0) {
+      return Promise.resolve(null);
+    }
+    const index = Math.floor(Math.random() * assets.length);
+    const asset = assets[index];
+    setAsset(asset);
+    return Promise.resolve(asset);
+  };
 
   const onSelectAsset = (asset: AssetResponseDto) => {
     if (selectedAssetIds.has(asset.id)) {
@@ -152,14 +181,9 @@
       <AssetViewer
         asset={$viewingAsset}
         showNavigation={assets.length > 1}
-        onNext={() => {
-          const index = getAssetIndex($viewingAsset.id) + 1;
-          setAsset(assets[index % assets.length]);
-        }}
-        onPrevious={() => {
-          const index = getAssetIndex($viewingAsset.id) - 1 + assets.length;
-          setAsset(assets[index % assets.length]);
-        }}
+        {onNext}
+        {onPrevious}
+        {onRandom}
         onClose={() => {
           assetViewingStore.showAssetViewer(false);
           handlePromiseError(navigate({ targetRoute: 'current', assetId: null }));

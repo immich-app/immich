@@ -2,25 +2,24 @@
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
+  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
+  import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
+  import { AppRoute } from '$lib/constants';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { user } from '$lib/stores/user.store';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { handleLogout } from '$lib/utils/auth';
   import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
+  import { Button, IconButton } from '@immich/ui';
   import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { AppRoute } from '$lib/constants';
-  import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
-  import { onMount } from 'svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -87,22 +86,27 @@
             onEscape: () => (shouldShowHelpPanel = false),
           }}
         >
-          <CircleIconButton
-            id="support-feedback-button"
+          <IconButton
+            shape="round"
+            color="secondary"
+            variant="ghost"
+            size="giant"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
-            padding="1"
+            aria-label={$t('support_and_feedback')}
           />
         </div>
 
         {#if !page.url.pathname.includes('/admin') && showUploadButton}
-          <LinkButton onclick={onUploadClick} class="hidden lg:block">
-            <div class="flex gap-2">
-              <Icon path={mdiTrayArrowUp} size="1.5em" />
-              <span>{$t('upload')}</span>
-            </div>
-          </LinkButton>
+          <Button
+            leadingIcon={mdiTrayArrowUp}
+            onclick={onUploadClick}
+            class="hidden lg:flex"
+            variant="ghost"
+            color="secondary"
+            >{$t('upload')}
+          </Button>
           <CircleIconButton
             onclick={onUploadClick}
             title={$t('upload')}

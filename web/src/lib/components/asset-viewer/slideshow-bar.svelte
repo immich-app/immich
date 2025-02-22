@@ -7,6 +7,7 @@
   import { SlideshowNavigation, slideshowStore } from '$lib/stores/slideshow.store';
   import { mdiChevronLeft, mdiChevronRight, mdiClose, mdiCog, mdiFullscreen, mdiPause, mdiPlay } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
+  import { swipe } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
@@ -107,6 +108,8 @@
     { shortcut: { key: 'ArrowRight' }, onShortcut: onNext },
   ]}
 />
+
+<svelte:body use:swipe={() => ({ touchAction: 'pan-x' })} onswipedown={showControlBar} />
 
 {#if showControls}
   <div

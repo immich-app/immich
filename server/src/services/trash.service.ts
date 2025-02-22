@@ -1,12 +1,13 @@
+import { Injectable } from '@nestjs/common';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TrashResponseDto } from 'src/dtos/trash.dto';
-import { Permission } from 'src/enum';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { usePagination } from 'src/utils/pagination';
 
+@Injectable()
 export class TrashService extends BaseService {
   async restoreAssets(auth: AuthDto, dto: BulkIdsDto): Promise<TrashResponseDto> {
     const { ids } = dto;
@@ -18,7 +19,7 @@ export class TrashService extends BaseService {
     await this.trashRepository.restoreAll(ids);
     await this.eventRepository.emit('assets.restore', { assetIds: ids, userId: auth.user.id });
 
-    this.logger.log(`Restored ${ids.length} assets from trash`);
+    this.logger.log(`Restored ${ids.length} asset(s) from trash`);
 
     return { count: ids.length };
   }
@@ -26,7 +27,7 @@ export class TrashService extends BaseService {
   async restore(auth: AuthDto): Promise<TrashResponseDto> {
     const count = await this.trashRepository.restore(auth.user.id);
     if (count > 0) {
-      this.logger.log(`Restored ${count} assets from trash`);
+      this.logger.log(`Restored ${count} asset(s) from trash`);
     }
     return { count };
   }
@@ -46,27 +47,39 @@ export class TrashService extends BaseService {
 
   @OnJob({ name: JobName.QUEUE_TRASH_EMPTY, queue: QueueName.BACKGROUND_TASK })
   async handleQueueEmptyTrash() {
-    let count = 0;
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.trashRepository.getDeletedIds(pagination),
-    );
+    const assets = this.trashRepository.getDeletedIds();
 
-    for await (const assetIds of assetPagination) {
-      this.logger.debug(`Queueing ${assetIds.length} assets for deletion from the trash`);
-      count += assetIds.length;
-      await this.jobRepository.queueAll(
-        assetIds.map((assetId) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: assetId,
-            deleteOnDisk: true,
-          },
-        })),
-      );
+    let count = 0;
+    const batch: string[] = [];
+    for await (const { id } of assets) {
+      batch.push(id);
+
+      if (batch.length === JOBS_ASSET_PAGINATION_SIZE) {
+        await this.handleBatch(batch);
+        count += batch.length;
+        batch.length = 0;
+      }
     }
 
-    this.logger.log(`Queued ${count} assets for deletion from the trash`);
+    await this.handleBatch(batch);
+    count += batch.length;
+    batch.length = 0;
+
+    this.logger.log(`Queued ${count} asset(s) for deletion from the trash`);
 
     return JobStatus.SUCCESS;
+  }
+
+  private async handleBatch(ids: string[]) {
+    this.logger.debug(`Queueing ${ids.length} asset(s) for deletion from the trash`);
+    await this.jobRepository.queueAll(
+      ids.map((assetId) => ({
+        name: JobName.ASSET_DELETION,
+        data: {
+          id: assetId,
+          deleteOnDisk: true,
+        },
+      })),
+    );
   }
 }

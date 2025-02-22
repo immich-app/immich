@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart' as db_store;
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
 class ExternalNetworkPreference extends HookConsumerWidget {
@@ -30,8 +31,8 @@ class ExternalNetworkPreference extends HookConsumerWidget {
 
       final jsonString = jsonEncode(endpointList);
 
-      db_store.Store.put(
-        db_store.StoreKey.externalEndpointList,
+      Store.put(
+        StoreKey.externalEndpointList,
         jsonString,
       );
     }
@@ -81,8 +82,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
 
     useEffect(
       () {
-        final jsonString =
-            db_store.Store.tryGet(db_store.StoreKey.externalEndpointList);
+        final jsonString = Store.tryGet(StoreKey.externalEndpointList);
 
         if (jsonString == null) {
           return null;

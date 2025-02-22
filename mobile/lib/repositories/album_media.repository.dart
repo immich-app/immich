@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -15,6 +16,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
     final List<AssetPathEntity> assetPathEntities =
         await PhotoManager.getAssetPathList(
       hasAll: true,
+      filterOption: FilterOptionGroup(containsPathModified: true),
     );
     return assetPathEntities.map(_toAlbum).sortedBy((a) {
       return a.isAll ? "" : a.name.toLowerCase();

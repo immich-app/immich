@@ -6,6 +6,7 @@ import {
   AssetJobName,
   AssetMediaSize,
   JobName,
+  MemoryType,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -16,13 +17,12 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
-  type AssetResponseDto,
+  type MemoryResponseDto,
   type PersonResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
-import { sortBy } from 'lodash-es';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 
@@ -182,28 +182,30 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
-export const getAssetOriginalUrl = (options: string | { id: string; checksum?: string }) => {
+type AssetUrlOptions = { id: string; cacheKey?: string | null };
+
+export const getAssetOriginalUrl = (options: string | AssetUrlOptions) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, checksum } = options;
-  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: checksum });
+  const { id, cacheKey } = options;
+  return createUrl(getAssetOriginalPath(id), { key: getKey(), c: cacheKey });
 };
 
-export const getAssetThumbnailUrl = (options: string | { id: string; size?: AssetMediaSize; checksum?: string }) => {
+export const getAssetThumbnailUrl = (options: string | (AssetUrlOptions & { size?: AssetMediaSize })) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, size, checksum } = options;
-  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: checksum });
+  const { id, size, cacheKey } = options;
+  return createUrl(getAssetThumbnailPath(id), { size, key: getKey(), c: cacheKey });
 };
 
-export const getAssetPlaybackUrl = (options: string | { id: string; checksum?: string }) => {
+export const getAssetPlaybackUrl = (options: string | AssetUrlOptions) => {
   if (typeof options === 'string') {
     options = { id: options };
   }
-  const { id, checksum } = options;
-  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: checksum });
+  const { id, cacheKey } = options;
+  return createUrl(getAssetPlaybackPath(id), { key: getKey(), c: cacheKey });
 };
 
 export const getProfileImageUrl = (user: UserResponseDto) =>
@@ -320,7 +322,14 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 };
 
 export const memoryLaneTitle = derived(t, ($t) => {
-  return (yearsAgo: number) => $t('years_ago', { values: { years: yearsAgo } });
+  return (memory: MemoryResponseDto) => {
+    const now = new Date();
+    if (memory.type === MemoryType.OnThisDay) {
+      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
+    }
+
+    return $t('unknown');
+  };
 });
 
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {
@@ -330,10 +339,6 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
   } catch (error) {
     return [error, undefined];
   }
-};
-
-export const suggestDuplicateByFileSize = (assets: AssetResponseDto[]): AssetResponseDto | undefined => {
-  return sortBy(assets, (asset) => asset.exifInfo?.fileSizeInByte).pop();
 };
 
 // eslint-disable-next-line unicorn/prefer-code-point

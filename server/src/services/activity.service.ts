@@ -5,15 +5,15 @@ import {
   ActivityResponseDto,
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
+  mapActivity,
   MaybeDuplicate,
   ReactionLevel,
   ReactionType,
-  mapActivity,
 } from 'src/dtos/activity.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { ActivityEntity } from 'src/entities/activity.entity';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { ActivityItem } from 'src/types';
 
 @Injectable()
 export class ActivityService extends BaseService {
@@ -31,7 +31,7 @@ export class ActivityService extends BaseService {
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.ALBUM_READ, ids: [dto.albumId] });
-    return { comments: await this.activityRepository.getStatistics(dto.assetId, dto.albumId) };
+    return { comments: await this.activityRepository.getStatistics({ albumId: dto.albumId, assetId: dto.assetId }) };
   }
 
   async create(auth: AuthDto, dto: ActivityCreateDto): Promise<MaybeDuplicate<ActivityResponseDto>> {
@@ -43,7 +43,7 @@ export class ActivityService extends BaseService {
       albumId: dto.albumId,
     };
 
-    let activity: ActivityEntity | null = null;
+    let activity: ActivityItem | undefined;
     let duplicate = false;
 
     if (dto.type === ReactionType.LIKE) {

@@ -1,7 +1,7 @@
-import { LoginResponseDto, PersonResponseDto } from '@immich/sdk';
+import { getPerson, LoginResponseDto, PersonResponseDto } from '@immich/sdk';
 import { uuidDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
-import { app, utils } from 'src/utils';
+import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -195,12 +195,29 @@ describe('/people', () => {
         .send({
           name: 'New Person',
           birthDate: '1990-01-01',
+          color: '#333',
         });
       expect(status).toBe(201);
       expect(body).toMatchObject({
         id: expect.any(String),
         name: 'New Person',
-        birthDate: '1990-01-01',
+        birthDate: '1990-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should create a favorite person', async () => {
+      const { status, body } = await request(app)
+        .post(`/people`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({
+          name: 'New Favorite Person',
+          isFavorite: true,
+        });
+      expect(status).toBe(201);
+      expect(body).toMatchObject({
+        id: expect.any(String),
+        name: 'New Favorite Person',
+        isFavorite: true,
       });
     });
   });
@@ -216,6 +233,7 @@ describe('/people', () => {
       { key: 'name', type: 'string' },
       { key: 'featureFaceAssetId', type: 'string' },
       { key: 'isHidden', type: 'boolean value' },
+      { key: 'isFavorite', type: 'boolean value' },
     ]) {
       it(`should not allow null ${key}`, async () => {
         const { status, body } = await request(app)
@@ -244,7 +262,7 @@ describe('/people', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ birthDate: '1990-01-01' });
       expect(status).toBe(200);
-      expect(body).toMatchObject({ birthDate: '1990-01-01' });
+      expect(body).toMatchObject({ birthDate: '1990-01-01T00:00:00.000Z' });
     });
 
     it('should clear a date of birth', async () => {
@@ -254,6 +272,42 @@ describe('/people', () => {
         .send({ birthDate: null });
       expect(status).toBe(200);
       expect(body).toMatchObject({ birthDate: null });
+    });
+
+    it('should set a color', async () => {
+      const { status, body } = await request(app)
+        .put(`/people/${visiblePerson.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ color: '#555' });
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ color: '#555' });
+    });
+
+    it('should clear a color', async () => {
+      const { status, body } = await request(app)
+        .put(`/people/${visiblePerson.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ color: null });
+      expect(status).toBe(200);
+      expect(body.color).toBeUndefined();
+    });
+
+    it('should mark a person as favorite', async () => {
+      const person = await utils.createPerson(admin.accessToken, {
+        name: 'visible_person',
+      });
+
+      expect(person.isFavorite).toBe(false);
+
+      const { status, body } = await request(app)
+        .put(`/people/${person.id}`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ isFavorite: true });
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ isFavorite: true });
+
+      const person2 = await getPerson({ id: person.id }, { headers: asBearerAuth(admin.accessToken) });
+      expect(person2).toMatchObject({ id: person.id, isFavorite: true });
     });
   });
 

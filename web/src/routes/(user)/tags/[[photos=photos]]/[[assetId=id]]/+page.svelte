@@ -1,11 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/user-page-layout.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     notificationController,
@@ -13,19 +12,18 @@
   } from '$lib/components/shared-components/notification/notification';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
   import SideBarSection from '$lib/components/shared-components/side-bar/side-bar-section.svelte';
+  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { AssetStore } from '$lib/stores/assets.store';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
+  import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import Breadcrumbs from '$lib/components/shared-components/tree/breadcrumbs.svelte';
-  import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     data: PageData;
@@ -149,7 +147,7 @@
   };
 </script>
 
-<UserPageLayout title={data.meta.title} scrollbar={false}>
+<UserPageLayout title={data.meta.title}>
   {#snippet sidebar()}
     <SideBarSection>
       <SkipLink target={`#${headerId}`} text={$t('skip_to_tags')} />
@@ -169,34 +167,25 @@
   {/snippet}
 
   {#snippet buttons()}
-    <section>
-      <LinkButton onclick={handleCreate}>
-        <div class="flex place-items-center gap-2 text-sm">
-          <Icon path={mdiPlus} size="18" />
-          <p class="hidden md:block">{$t('create_tag')}</p>
-        </div>
-      </LinkButton>
+    <HStack>
+      <Button leadingIcon={mdiPlus} onclick={handleCreate} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('create_tag')}</Text>
+      </Button>
 
       {#if pathSegments.length > 0 && tag}
-        <LinkButton onclick={handleEdit}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiPencil} size="18" />
-            <p class="hidden md:block">{$t('edit_tag')}</p>
-          </div>
-        </LinkButton>
-        <LinkButton onclick={handleDelete}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiTrashCanOutline} size="18" />
-            <p class="hidden md:block">{$t('delete_tag')}</p>
-          </div>
-        </LinkButton>
+        <Button leadingIcon={mdiPencil} onclick={handleEdit} size="small" variant="ghost" color="secondary">
+          <Text class="hidden md:block">{$t('edit_tag')}</Text>
+        </Button>
+        <Button leadingIcon={mdiTrashCanOutline} onclick={handleDelete} size="small" variant="ghost" color="secondary">
+          <Text class="hidden md:block">{$t('delete_tag')}</Text>
+        </Button>
       {/if}
-    </section>
+    </HStack>
   {/snippet}
 
   <Breadcrumbs {pathSegments} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
-  <section class="mt-2 h-full">
+  <section class="mt-2 h-[calc(100%-theme(spacing.20))] overflow-auto immich-scrollbar">
     {#if tag}
       <AssetGrid enableRouting={true} {assetStore} {assetInteraction} removeAction={AssetAction.UNARCHIVE}>
         {#snippet empty()}
@@ -230,8 +219,8 @@
     </form>
 
     {#snippet stickyBottom()}
-      <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullwidth form="create-tag-form">{$t('create')}</Button>
+      <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button type="submit" fullWidth shape="round" form="create-tag-form">{$t('create')}</Button>
     {/snippet}
   </FullScreenModal>
 {/if}
@@ -249,8 +238,8 @@
     </form>
 
     {#snippet stickyBottom()}
-      <Button color="gray" fullwidth onclick={() => handleCancel()}>{$t('cancel')}</Button>
-      <Button type="submit" fullwidth form="edit-tag-form">{$t('save')}</Button>
+      <Button color="secondary" fullWidth shape="round" onclick={() => handleCancel()}>{$t('cancel')}</Button>
+      <Button type="submit" fullWidth shape="round" form="edit-tag-form">{$t('save')}</Button>
     {/snippet}
   </FullScreenModal>
 {/if}

@@ -1,52 +1,53 @@
-import { InjectRepository } from '@nestjs/typeorm';
-import { AssetEntity } from 'src/entities/asset.entity';
+import { Kysely } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
+import { DB } from 'src/db';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetStatus } from 'src/enum';
-import { ITrashRepository } from 'src/interfaces/trash.interface';
-import { Paginated, paginatedBuilder, PaginationOptions } from 'src/utils/pagination';
-import { In, Repository } from 'typeorm';
 
-export class TrashRepository implements ITrashRepository {
-  constructor(@InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>) {}
+export class TrashRepository {
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  async getDeletedIds(pagination: PaginationOptions): Paginated<string> {
-    const { hasNextPage, items } = await paginatedBuilder(
-      this.assetRepository
-        .createQueryBuilder('asset')
-        .select('asset.id')
-        .where({ status: AssetStatus.DELETED })
-        .withDeleted(),
-      pagination,
-    );
-
-    return {
-      hasNextPage,
-      items: items.map((asset) => asset.id),
-    };
+  getDeletedIds(): AsyncIterableIterator<{ id: string }> {
+    return this.db.selectFrom('assets').select(['id']).where('status', '=', AssetStatus.DELETED).stream();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async restore(userId: string): Promise<number> {
-    const result = await this.assetRepository.update(
-      { ownerId: userId, status: AssetStatus.TRASHED },
-      { status: AssetStatus.ACTIVE, deletedAt: null },
-    );
+    const { numUpdatedRows } = await this.db
+      .updateTable('assets')
+      .where('ownerId', '=', userId)
+      .where('status', '=', AssetStatus.TRASHED)
+      .set({ status: AssetStatus.ACTIVE, deletedAt: null })
+      .executeTakeFirst();
 
-    return result.affected || 0;
+    return Number(numUpdatedRows);
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
   async empty(userId: string): Promise<number> {
-    const result = await this.assetRepository.update(
-      { ownerId: userId, status: AssetStatus.TRASHED },
-      { status: AssetStatus.DELETED },
-    );
+    const { numUpdatedRows } = await this.db
+      .updateTable('assets')
+      .where('ownerId', '=', userId)
+      .where('status', '=', AssetStatus.TRASHED)
+      .set({ status: AssetStatus.DELETED })
+      .executeTakeFirst();
 
-    return result.affected || 0;
+    return Number(numUpdatedRows);
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
   async restoreAll(ids: string[]): Promise<number> {
-    const result = await this.assetRepository.update(
-      { id: In(ids), status: AssetStatus.TRASHED },
-      { status: AssetStatus.ACTIVE, deletedAt: null },
-    );
-    return result.affected ?? 0;
+    if (ids.length === 0) {
+      return 0;
+    }
+
+    const { numUpdatedRows } = await this.db
+      .updateTable('assets')
+      .where('status', '=', AssetStatus.TRASHED)
+      .where('id', 'in', ids)
+      .set({ status: AssetStatus.ACTIVE, deletedAt: null })
+      .executeTakeFirst();
+
+    return Number(numUpdatedRows);
   }
 }

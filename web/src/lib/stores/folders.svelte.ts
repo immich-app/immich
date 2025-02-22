@@ -24,7 +24,17 @@ class FoldersStore {
 
     const uniquePaths = await getUniqueOriginalPaths();
     this.uniquePaths.push(...uniquePaths);
-    this.uniquePaths.sort();
+  }
+
+  bustAssetCache() {
+    this.assets = {};
+  }
+
+  async refreshAssetsByPath(path: string | null) {
+    if (!path) {
+      return;
+    }
+    this.assets[path] = await getAssetsByOriginalPath({ path });
   }
 
   async fetchAssetsByPath(path: string) {

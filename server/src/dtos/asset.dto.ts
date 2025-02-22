@@ -15,7 +15,7 @@ import {
 } from 'class-validator';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AssetType } from 'src/enum';
-import { AssetStats } from 'src/interfaces/asset.interface';
+import { AssetStats } from 'src/repositories/asset.repository';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 export class DeviceIdDto {
@@ -52,7 +52,7 @@ export class UpdateAssetBase {
   @Optional()
   @IsInt()
   @Max(5)
-  @Min(0)
+  @Min(-1)
   rating?: number;
 }
 

@@ -3,10 +3,8 @@ import { default as path } from 'node:path';
 import semver from 'semver';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { ImmichWorker, StorageFolder } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { handlePromiseError } from 'src/utils/misc';
 
@@ -71,10 +69,8 @@ export class BackupService extends BaseService {
   @OnJob({ name: JobName.BACKUP_DATABASE, queue: QueueName.BACKUP_DATABASE })
   async handleBackupDatabase(): Promise<JobStatus> {
     this.logger.debug(`Database Backup Started`);
-
-    const {
-      database: { config },
-    } = this.configRepository.getEnv();
+    const { database } = this.configRepository.getEnv();
+    const config = database.config.typeorm;
 
     const isUrlConnection = config.connectionType === 'url';
 

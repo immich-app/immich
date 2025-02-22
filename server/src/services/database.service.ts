@@ -1,16 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import semver from 'semver';
+import { EXTENSION_NAMES } from 'src/constants';
 import { OnEvent } from 'src/decorators';
-import {
-  DatabaseExtension,
-  DatabaseLock,
-  EXTENSION_NAMES,
-  VectorExtension,
-  VectorIndex,
-} from 'src/interfaces/database.interface';
-import { BootstrapEventPriority } from 'src/interfaces/event.interface';
+import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { VectorExtension } from 'src/types';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -113,6 +108,7 @@ export class DatabaseService extends BaseService {
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
+      this.databaseRepository.init();
     });
   }
 

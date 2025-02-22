@@ -4,7 +4,7 @@ import { PartnerResponseDto, PartnerSearchDto, UpdatePartnerDto } from 'src/dtos
 import { mapUser } from 'src/dtos/user.dto';
 import { PartnerEntity } from 'src/entities/partner.entity';
 import { Permission } from 'src/enum';
-import { PartnerDirection, PartnerIds } from 'src/interfaces/partner.interface';
+import { PartnerDirection, PartnerIds } from 'src/repositories/partner.repository';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()
@@ -43,7 +43,7 @@ export class PartnerService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.PARTNER_UPDATE, ids: [sharedById] });
     const partnerId: PartnerIds = { sharedById, sharedWithId: auth.user.id };
 
-    const entity = await this.partnerRepository.update({ ...partnerId, inTimeline: dto.inTimeline });
+    const entity = await this.partnerRepository.update(partnerId, { inTimeline: dto.inTimeline });
     return this.mapPartner(entity, PartnerDirection.SharedWith);
   }
 
