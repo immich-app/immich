@@ -3,6 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
+const PING_TIMEOUT = 2_000;
+const AVAILABILITY_CACHE_TIME = 30_000;
+
 export interface BoundingBox {
   x1: number;
   y1: number;
@@ -55,16 +58,64 @@ export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | Fa
 
 @Injectable()
 export class MachineLearningRepository {
+  // Note that deleted URL's are not removed from this map (ie: they're leaked)
+  // Cleaning them up is low priority since there should be very few over a
+  // typical server uptime cycle
+  private urlAvailability: {
+    [url: string]: {
+      active: boolean;
+      lastChecked: number;
+    } | undefined;
+  };
+
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MachineLearningRepository.name);
+    this.urlAvailability = {};
+  }
+
+  private setUrlAvailability(url: string, active: boolean) {
+    this.urlAvailability[url] = {
+      active,
+      lastChecked: new Date().getTime(),
+    }
+  }
+
+  private async checkAvailability(url: string) {
+    let active = false;
+    try {
+      const response = await fetch(new URL('/ping', url), { signal: AbortSignal.timeout(PING_TIMEOUT) });
+      active = response.ok;
+    } catch { }
+    this.setUrlAvailability(url, active);
+    return active;
   }
 
   private async predict<T>(urls: string[], payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
     const formData = await this.getFormData(payload, config);
+    let iterations = urls.length;
     for (const url of urls) {
+      // Skip availability logic for the last (or only) URL
+      if (--iterations > 0) {
+        const availability = this.urlAvailability[url];
+        if (availability === undefined) {
+          // If this is a new endpoint, then check inline and skip if it fails
+          if (!await this.checkAvailability(url)) {
+            continue;
+          }
+        } else if (availability.active === false && (new Date().getTime()) - availability.lastChecked < AVAILABILITY_CACHE_TIME) {
+          // If this is an old inactive endpoint that hasn't been checked in a
+          // while then check but don't wait for the result, just skip it
+          // This avoids delays on every search whilst allowing higher priority
+          // ML servers to recover over time.
+          this.checkAvailability(url).catch();
+          continue;
+        }
+      }
+
       try {
         const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
         if (response.ok) {
+          this.setUrlAvailability(url, true);
           return response.json();
         }
 
@@ -76,6 +127,7 @@ export class MachineLearningRepository {
           `Machine learning request to "${url}" failed: ${error instanceof Error ? error.message : error}`,
         );
       }
+      this.setUrlAvailability(url, false);
     }
 
     throw new Error(`Machine learning request '${JSON.stringify(config)}' failed for all URLs`);
