@@ -232,7 +232,6 @@ export class AssetStore {
   albumAssets: Set<string> = new Set();
   pendingScrollBucket: AssetBucket | undefined;
   pendingScrollAssetId: string | undefined;
-  maxBucketAssets = 0;
 
   listeners: BucketListener[] = [];
 
@@ -561,7 +560,6 @@ export class AssetStore {
 
       bucket.assets = assets;
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-      this.maxBucketAssets = Math.max(this.maxBucketAssets, assets.length);
       this.updateGeometry(bucket, true);
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
       bucket.loaded();
