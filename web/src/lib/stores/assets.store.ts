@@ -4,7 +4,6 @@ import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
-import type { JustifiedLayout, LayoutOptions } from '@immich/justified-layout-wasm';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -227,7 +226,6 @@ export class AssetStore {
   maxBucketAssets = 0;
 
   listeners: BucketListener[] = [];
-  getJustifiedLayoutFromAssets: ((assets: AssetResponseDto[], options: LayoutOptions) => JustifiedLayout) | undefined;
 
   constructor(
     options: AssetStoreOptions,
@@ -389,13 +387,6 @@ export class AssetStore {
     );
     this.initializedSignal();
     this.initialized = true;
-
-    // TODO: move to top level import after https://github.com/sveltejs/kit/issues/7805 is fixed
-    import('$lib/utils/layout-utils')
-      .then(({ getJustifiedLayoutFromAssets }) => {
-        this.getJustifiedLayoutFromAssets = getJustifiedLayoutFromAssets;
-      })
-      .catch(() => void 0);
   }
 
   async updateOptions(options: AssetStoreOptions) {
@@ -444,7 +435,7 @@ export class AssetStore {
 
   private async initialLayout(changedWidth: boolean) {
     for (const bucket of this.buckets) {
-      this.updateGeometry(bucket, changedWidth);
+      await this.updateGeometry(bucket, changedWidth);
     }
     this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
@@ -462,7 +453,7 @@ export class AssetStore {
     this.emit(false);
   }
 
-  private updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
+  private async updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
       bucket.measured = false;
@@ -485,7 +476,8 @@ export class AssetStore {
       rowHeight: 235,
       rowWidth: Math.floor(viewportWidth),
     };
-
+    // TODO: move this import and make this method sync after https://github.com/sveltejs/kit/issues/7805 is fixed
+    const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
@@ -494,9 +486,7 @@ export class AssetStore {
         assetGroup.height = height;
       }
 
-      if (this.getJustifiedLayoutFromAssets) {
-        assetGroup.geometry = this.getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
-      }
+      assetGroup.geometry = getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
     }
   }
 
@@ -563,7 +553,7 @@ export class AssetStore {
       bucket.assets = assets;
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
       this.maxBucketAssets = Math.max(this.maxBucketAssets, assets.length);
-      this.updateGeometry(bucket, true);
+      await this.updateGeometry(bucket, true);
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
       bucket.loaded();
       this.notifyListeners({ type: 'loaded', bucket });
@@ -690,7 +680,7 @@ export class AssetStore {
         return bDate.diff(aDate).milliseconds;
       });
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-      this.updateGeometry(bucket, true);
+      void this.updateGeometry(bucket, true);
     }
 
     this.emit(true);
