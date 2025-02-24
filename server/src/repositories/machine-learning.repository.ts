@@ -4,7 +4,7 @@ import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 const PING_TIMEOUT = 2_000;
-const AVAILABILITY_CACHE_TIME = 30_000;
+const AVAILABILITY_BACKOFF_TIME = 30_000;
 
 export interface BoundingBox {
   x1: number;
@@ -74,6 +74,10 @@ export class MachineLearningRepository {
   }
 
   private setUrlAvailability(url: string, active: boolean) {
+    const current = this.urlAvailability[url];
+    if (current?.active !== active) {
+      this.logger.log(`Setting ${url} ML server to ${active ? "active" : "inactive"}.`);
+    }
     this.urlAvailability[url] = {
       active,
       lastChecked: new Date().getTime(),
@@ -102,7 +106,7 @@ export class MachineLearningRepository {
           if (!await this.checkAvailability(url)) {
             continue;
           }
-        } else if (availability.active === false && (new Date().getTime()) - availability.lastChecked < AVAILABILITY_CACHE_TIME) {
+        } else if (availability.active === false && (new Date().getTime()) - availability.lastChecked < AVAILABILITY_BACKOFF_TIME) {
           // If this is an old inactive endpoint that hasn't been checked in a
           // while then check but don't wait for the result, just skip it
           // This avoids delays on every search whilst allowing higher priority
