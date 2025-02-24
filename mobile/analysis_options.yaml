@@ -79,7 +79,7 @@ custom_lint:
         - lib/widgets/asset_grid/asset_grid_data_structure.dart
         - test/**.dart
         # refactor the remaining providers
-        - lib/providers/{authentication,db,partner,user}.provider.dart
+        - lib/providers/{db,partner,user}.provider.dart
         - lib/providers/backup/backup.provider.dart
 
     - import_rule_openapi:
