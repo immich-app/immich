@@ -7474,7 +7474,7 @@
   "tags": [],
   "servers": [
     {
-      "url": "/api"
+      "url": "api"
     }
   ],
   "components": {

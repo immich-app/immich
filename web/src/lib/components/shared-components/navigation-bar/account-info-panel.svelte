@@ -90,7 +90,7 @@
           size="sm"
           shadow={false}
           border
-          aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
+          aria-current={page.url.hash.includes('/admin') ? 'page' : undefined}
         >
           <div class="flex place-content-center place-items-center text-center gap-2 px-2">
             <Icon path={mdiWrench} size="18" ariaHidden />

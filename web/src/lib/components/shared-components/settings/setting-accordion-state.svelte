@@ -11,7 +11,8 @@
   import { page } from '$app/state';
   import { goto } from '$app/navigation';
   import type { Snippet } from 'svelte';
-  import { handlePromiseError } from '$lib/utils';
+  import { handlePromiseError,addSearchParams } from '$lib/utils';
+  import { type ServerAboutResponseDto, type ServerVersionHistoryResponseDto } from '@immich/sdk';
 
   const getParamValues = (param: string) => {
     return new Set((page.url.searchParams.get(param) || '').split(' ').filter((x) => x !== ''));
@@ -35,7 +36,7 @@
       searchParams.delete(queryParam);
     }
 
-    handlePromiseError(goto(`?${searchParams.toString()}`, { replaceState: true, noScroll: true, keepFocus: true }));
+    handlePromiseError(addSearchParams(searchParams.toString()));
   });
 </script>
 

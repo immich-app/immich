@@ -77,7 +77,7 @@
 
   let selectedTab = $derived(getActiveTab(page.url));
   const handleSelectTab = async (value: string) => {
-    await goto(`${AppRoute.SHARED_LINKS}?filter=${value}`);
+    await goto(`?filter=${value}${AppRoute.SHARED_LINKS}`);
   };
 
   let filteredSharedLinks = $derived(

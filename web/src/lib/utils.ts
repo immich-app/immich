@@ -23,6 +23,7 @@ import {
 import { mdiCogRefreshOutline, mdiDatabaseRefreshOutline, mdiHeadSyncOutline, mdiImageRefreshOutline } from '@mdi/js';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
+import { redirect as svelteRedirect } from '@sveltejs/kit';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -180,6 +181,17 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
   return getBaseUrl() + url.pathname + url.search + url.hash;
 };
 
+
+export function redirect(status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number), location: string ) {
+  return svelteRedirect(status,`${window.location.pathname.endsWith('/') ? window.location.pathname.slice(0, -1) : window.location.pathname}/${location}`);
+}
+
+export async function addSearchParams(searchParams: string): Promise<void> {
+  return new Promise<void>((resolve) => {
+    window.history.replaceState(null, '', `${window.location.pathname}?${searchParams}${window.location.hash}`);
+  });
+}
+
 export const getAssetOriginalUrl = (options: string | { id: string; checksum?: string }) => {
   if (typeof options === 'string') {
     options = { id: options };
@@ -259,7 +271,7 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return new URL(`share/${key}`, externalDomain || globalThis.location.origin).href;
+  return new URL(`${window.location.pathname.endsWith('/') ? window.location.pathname.slice(0, -1) : window.location.pathname}/#/share/${key}`, externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {

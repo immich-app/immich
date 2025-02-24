@@ -41,7 +41,7 @@
     closeDropdown();
     showFilter = false;
     $isSearchEnabled = false;
-    await goto(`${AppRoute.SEARCH}?${params}`);
+    await goto(`?${params}${AppRoute.SEARCH}`);
     onSearch?.();
   };
 

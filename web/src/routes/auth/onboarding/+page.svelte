@@ -42,14 +42,14 @@
       await goto(AppRoute.PHOTOS);
     } else {
       index++;
-      await goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
+      await goto(`?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}${AppRoute.AUTH_ONBOARDING}`);
     }
   };
 
   const handlePrevious = async () => {
     if (index >= 1) {
       index--;
-      await goto(`${AppRoute.AUTH_ONBOARDING}?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}`);
+      await goto(`?${QueryParameter.ONBOARDING_STEP}=${onboardingSteps[index].name}${AppRoute.AUTH_ONBOARDING}`);
     }
   };
 

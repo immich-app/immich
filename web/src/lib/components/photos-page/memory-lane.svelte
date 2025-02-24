@@ -75,7 +75,7 @@
         {#if memory.assets.length > 0}
           <a
             class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
-            href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
+            href="?{QueryParameter.ID}={memory.assets[0].id}{AppRoute.MEMORY}"
           >
             <img
               class="h-full w-full rounded-xl object-cover"

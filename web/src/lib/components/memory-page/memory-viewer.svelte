@@ -48,6 +48,7 @@
   import { preferences } from '$lib/stores/user.store';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { addSearchParams } from '$lib/utils';
 
   type MemoryIndex = {
     memoryIndex: number;
@@ -111,7 +112,7 @@
     handlePromiseError(handleAction($isViewing ? 'pause' : 'reset'));
     return memories.find((memory) => memory.asset.id === assetId) ?? memories[0];
   };
-  const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
+  const asHref = (asset: AssetResponseDto) => `${QueryParameter.ID}=${asset.id}`;
   const handleNavigate = async (asset?: AssetResponseDto) => {
     if ($isViewing) {
       return asset;
@@ -122,7 +123,7 @@
       return;
     }
 
-    await goto(asHref(asset));
+    await addSearchParams(asHref(asset));
   };
   const handleNextAsset = () => handleNavigate(current?.next?.asset);
   const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
@@ -282,7 +283,7 @@
         />
 
         {#each current.memory.assets as asset, index}
-          <a class="relative w-full py-2" href={asHref(asset)}>
+          <a class="relative w-full py-2" href="?{asHref(asset)}{window.location.hash}">
             <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
             {#await resetPromise}
               <span class="absolute left-0 h-[2px] bg-white" style:width={`${index < current.assetIndex ? 100 : 0}%`}
@@ -379,7 +380,7 @@
               class:opacity-100={!galleryInView}
             >
               <CircleIconButton
-                href="{AppRoute.PHOTOS}?at={current.asset.id}"
+                href="?at={current.asset.id}{AppRoute.PHOTOS}"
                 icon={mdiImageSearch}
                 title={$t('view_in_timeline')}
                 color="light"

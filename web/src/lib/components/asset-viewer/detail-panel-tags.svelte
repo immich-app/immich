@@ -51,7 +51,7 @@
         <div class="flex group transition-all">
           <a
             class="inline-block h-min whitespace-nowrap pl-3 pr-1 group-hover:pl-3 py-1 text-center align-baseline leading-none text-gray-100 dark:text-immich-dark-gray bg-immich-primary dark:bg-immich-dark-primary rounded-tl-full rounded-bl-full hover:bg-immich-primary/80 dark:hover:bg-immich-dark-primary/80 transition-all"
-            href={encodeURI(`${AppRoute.TAGS}/?path=${tag.value}`)}
+            href={encodeURI(`?path=${tag.value}${AppRoute.TAGS}`)}
           >
             <p class="text-sm">
               {tag.value}

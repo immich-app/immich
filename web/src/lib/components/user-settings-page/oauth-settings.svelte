@@ -10,6 +10,7 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import { t } from 'svelte-i18n';
+  import { addSearchParams } from '$lib/utils';
 
   interface Props {
     user: UserAdminResponseDto;
@@ -33,7 +34,7 @@
       } catch (error) {
         handleError(error, $t('errors.unable_to_link_oauth_account'));
       } finally {
-        await goto('?open=oauth');
+        await addSearchParams('open=oauth');
       }
     }
 

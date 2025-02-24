@@ -81,7 +81,7 @@
 <div class="hidden md:block license-status pl-4 text-sm">
   {#if $isPurchased && $preferences.purchase.showSupportBadge}
     <button
-      onclick={() => goto(`${AppRoute.USER_SETTINGS}?isOpen=user-purchase-settings`)}
+      onclick={() => goto(`?isOpen=user-purchase-settings${AppRoute.USER_SETTINGS}`)}
       class="w-full"
       type="button"
     >

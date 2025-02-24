@@ -91,7 +91,7 @@
           {#each places.slice(0, itemCount) as item (item.data.id)}
             <a
               class="relative"
-              href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city: item.value })}"
+              href="?{getMetadataSearchQuery({ city: item.value })}{AppRoute.SEARCH}"
               draggable="false"
             >
               <div class="flex justify-center overflow-hidden rounded-xl brightness-75 filter">

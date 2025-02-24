@@ -97,7 +97,7 @@
           />
         </div>
 
-        {#if !page.url.pathname.includes('/admin') && showUploadButton}
+        {#if !page.url.hash.includes('/admin') && showUploadButton}
           <Button
             leadingIcon={mdiTrayArrowUp}
             onclick={onUploadClick}

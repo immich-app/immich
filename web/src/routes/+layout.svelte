@@ -102,7 +102,7 @@
 
 <svelte:head>
   <title>{page.data.meta?.title || 'Web'} - Immich</title>
-  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+  <link rel="manifest" href="manifest.json" crossorigin="use-credentials" />
   <meta name="theme-color" content="currentColor" />
   <AppleHeader />
 

@@ -30,8 +30,8 @@ function currentUrlWithoutAsset() {
   // This contains special casing for the /photos/:assetId route, which hangs directly
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)
-    ? AppRoute.PHOTOS + $page.url.search
-    : $page.url.pathname.replace(/(\/photos.*)$/, '') + $page.url.search;
+    ? $page.url.search + AppRoute.PHOTOS
+    : $page.url.search + $page.url.hash.replace(/(\/photos.*)$/, '') ;
 }
 
 export function currentUrlReplaceAssetId(assetId: string) {
@@ -44,7 +44,7 @@ export function currentUrlReplaceAssetId(assetId: string) {
   // off / instead of a subpath, unlike every other asset-containing route.
   return isPhotosRoute($page.route.id)
     ? `${AppRoute.PHOTOS}/${assetId}${searchparams}`
-    : `${$page.url.pathname.replace(/(\/photos.*)$/, '')}/photos/${assetId}${searchparams}`;
+    : `${$page.url.hash.replace(/(\/photos.*)$/, '')}/photos/${assetId}${searchparams}`;
 }
 
 function replaceScrollTarget(url: string, searchParams?: AssetGridRouteSearchParams | null) {
@@ -54,14 +54,14 @@ function replaceScrollTarget(url: string, searchParams?: AssetGridRouteSearchPar
   const { at: assetId } = searchParams || { at: null };
 
   if (!assetId) {
-    return parsed.pathname;
+    return parsed.hash;
   }
 
   const params = new URLSearchParams($page.url.search);
   if (assetId) {
     params.set('at', assetId);
   }
-  return parsed.pathname + '?' + params.toString();
+  return  '?' + params.toString() + parsed.hash;
 }
 
 function currentUrl() {

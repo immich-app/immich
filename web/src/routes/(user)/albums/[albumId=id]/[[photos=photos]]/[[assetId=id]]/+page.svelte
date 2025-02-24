@@ -111,7 +111,7 @@
   const timelineInteraction = new AssetInteraction();
 
   afterNavigate(({ from }) => {
-    let url: string | undefined = from?.url?.pathname;
+    let url: string | undefined = from?.url?.hash;
 
     const route = from?.route?.id;
     if (isSearchRoute(route)) {

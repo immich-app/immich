@@ -76,7 +76,7 @@
       </Button>
       <Button
         leadingIcon={mdiCog}
-        href="{AppRoute.ADMIN_SETTINGS}?isOpen=job"
+        href="?isOpen=job{AppRoute.ADMIN_SETTINGS}"
         size="small"
         variant="ghost"
         color="secondary"

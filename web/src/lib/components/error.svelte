@@ -24,7 +24,7 @@
 <div class="h-screen w-screen">
   <section class="bg-immich-bg dark:bg-immich-dark-bg">
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
-      <a class="flex place-items-center gap-2 hover:cursor-pointer" href="/photos">
+      <a class="flex place-items-center gap-2 hover:cursor-pointer" href="#/photos">
         <ImmichLogo width="55%" />
       </a>
     </div>
