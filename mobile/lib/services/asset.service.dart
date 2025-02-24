@@ -514,4 +514,14 @@ class AssetService {
   Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
     return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
   }
+
+  Future<List<Asset>> getRecentlyAddedAssets() async {
+    final me = await _userRepository.me();
+    return _assetRepository.getRecentlyAddedAssets(me.isarId);
+  }
+
+  Future<List<Asset>> getMotionAssets() async {
+    final me = await _userRepository.me();
+    return _assetRepository.getMotionAssets(me.isarId);
+  }
 }

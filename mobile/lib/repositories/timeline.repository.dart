@@ -117,4 +117,12 @@ class TimelineRepository extends DatabaseRepository
       yield await RenderList.fromQuery(query, groupAssetsBy);
     }
   }
+
+  @override
+  Future<RenderList> getTimelineFromAssets(
+    List<Asset> assets,
+    GroupAssetsBy getGroupByOption,
+  ) {
+    return RenderList.fromAssets(assets, getGroupByOption);
+  }
 }

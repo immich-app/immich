@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -61,6 +62,23 @@ class TimelineService {
 
   Stream<RenderList> watchAllVideosTimeline() {
     return _timelineRepository.watchAllVideosTimeline();
+  }
+
+  Future<RenderList> getTimelineFromAssets(
+    List<Asset> assets,
+    GroupAssetsBy? groupBy,
+  ) {
+    GroupAssetsBy groupOption = GroupAssetsBy.none;
+    if (groupBy != null) {
+      groupOption = groupBy;
+    } else {
+      groupOption = _getGroupByOption();
+    }
+
+    return _timelineRepository.getTimelineFromAssets(
+      assets,
+      groupOption,
+    );
   }
 
   GroupAssetsBy _getGroupByOption() {
