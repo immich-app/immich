@@ -189,7 +189,7 @@ export class UserRepository {
     await this.db.deleteFrom('user_metadata').where('userId', '=', id).where('key', '=', key).execute();
   }
 
-  delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
+  delete(user: { id: string }, hard?: boolean): Promise<UserEntity> {
     return hard
       ? (this.db.deleteFrom('users').where('id', '=', user.id).execute() as unknown as Promise<UserEntity>)
       : (this.db
