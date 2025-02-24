@@ -53,3 +53,8 @@ final allVideosTimelineProvider = StreamProvider<RenderList>((ref) {
   final timelineService = ref.watch(timelineServiceProvider);
   return timelineService.watchAllVideosTimeline();
 });
+
+final assetSelectionTimelineProvider = StreamProvider<RenderList>((ref) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.watchAssetSelectionTimeline();
+});

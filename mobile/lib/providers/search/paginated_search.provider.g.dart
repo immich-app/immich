@@ -7,7 +7,7 @@ part of 'paginated_search.provider.dart';
 // **************************************************************************
 
 String _$paginatedSearchRenderListHash() =>
-    r'2727e96c751a9e029bb66f74e50613f3622c4b20';
+    r'9efb98fd73d4e57e1ccd97a902cd459e3f18f749';
 
 /// See also [paginatedSearchRenderList].
 @ProviderFor(paginatedSearchRenderList)

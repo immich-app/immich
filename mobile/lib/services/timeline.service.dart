@@ -81,6 +81,12 @@ class TimelineService {
     );
   }
 
+  Stream<RenderList> watchAssetSelectionTimeline() async* {
+    final user = await _userRepository.me();
+
+    yield* _timelineRepository.watchAssetSelectionTimeline(user.isarId);
+  }
+
   GroupAssetsBy _getGroupByOption() {
     return GroupAssetsBy
         .values[_appSettingsService.getSetting(AppSettingsEnum.groupAssetsBy)];

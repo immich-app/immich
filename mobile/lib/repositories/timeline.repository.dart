@@ -108,6 +108,28 @@ class TimelineRepository extends DatabaseRepository
     return _watchRenderList(query, groupAssetByOption);
   }
 
+  @override
+  Future<RenderList> getTimelineFromAssets(
+    List<Asset> assets,
+    GroupAssetsBy getGroupByOption,
+  ) {
+    return RenderList.fromAssets(assets, getGroupByOption);
+  }
+
+  @override
+  Stream<RenderList> watchAssetSelectionTimeline(int userId) {
+    final query = db.assets
+        .where()
+        .remoteIdIsNotNull()
+        .filter()
+        .ownerIdEqualTo(userId)
+        .isTrashedEqualTo(false)
+        .stackPrimaryAssetIdIsNull()
+        .sortByFileCreatedAtDesc();
+
+    return _watchRenderList(query, GroupAssetsBy.none);
+  }
+
   Stream<RenderList> _watchRenderList(
     QueryBuilder<Asset, Asset, QAfterSortBy> query,
     GroupAssetsBy groupAssetsBy,
@@ -116,13 +138,5 @@ class TimelineRepository extends DatabaseRepository
     await for (final _ in query.watchLazy()) {
       yield await RenderList.fromQuery(query, groupAssetsBy);
     }
-  }
-
-  @override
-  Future<RenderList> getTimelineFromAssets(
-    List<Asset> assets,
-    GroupAssetsBy getGroupByOption,
-  ) {
-    return RenderList.fromAssets(assets, getGroupByOption);
   }
 }
