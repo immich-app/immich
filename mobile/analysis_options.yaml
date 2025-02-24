@@ -65,7 +65,7 @@ custom_lint:
       allowed:
         # required / wanted
         - lib/entities/*.entity.dart
-        - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline}.repository.dart
+        - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline,partner}.repository.dart
         - lib/infrastructure/entities/*.entity.dart
         - lib/infrastructure/repositories/{store,db}.repository.dart
         - lib/providers/infrastructure/db.provider.dart
