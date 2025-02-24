@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-const PING_TIMEOUT = 2_000;
+const PING_TIMEOUT = 2000;
 const AVAILABILITY_BACKOFF_TIME = 30_000;
 
 export interface BoundingBox {
@@ -62,10 +62,12 @@ export class MachineLearningRepository {
   // Cleaning them up is low priority since there should be very few over a
   // typical server uptime cycle
   private urlAvailability: {
-    [url: string]: {
-      active: boolean;
-      lastChecked: number;
-    } | undefined;
+    [url: string]:
+      | {
+          active: boolean;
+          lastChecked: number;
+        }
+      | undefined;
   };
 
   constructor(private logger: LoggingRepository) {
@@ -76,12 +78,12 @@ export class MachineLearningRepository {
   private setUrlAvailability(url: string, active: boolean) {
     const current = this.urlAvailability[url];
     if (current?.active !== active) {
-      this.logger.log(`Setting ${url} ML server to ${active ? "active" : "inactive"}.`);
+      this.logger.log(`Setting ${url} ML server to ${active ? 'active' : 'inactive'}.`);
     }
     this.urlAvailability[url] = {
       active,
-      lastChecked: new Date().getTime(),
-    }
+      lastChecked: Date.now(),
+    };
   }
 
   private async checkAvailability(url: string) {
@@ -89,7 +91,7 @@ export class MachineLearningRepository {
     try {
       const response = await fetch(new URL('/ping', url), { signal: AbortSignal.timeout(PING_TIMEOUT) });
       active = response.ok;
-    } catch { }
+    } catch {}
     this.setUrlAvailability(url, active);
     return active;
   }
@@ -103,15 +105,15 @@ export class MachineLearningRepository {
         const availability = this.urlAvailability[url];
         if (availability === undefined) {
           // If this is a new endpoint, then check inline and skip if it fails
-          if (!await this.checkAvailability(url)) {
+          if (!(await this.checkAvailability(url))) {
             continue;
           }
-        } else if (availability.active === false && (new Date().getTime()) - availability.lastChecked < AVAILABILITY_BACKOFF_TIME) {
+        } else if (availability.active === false && Date.now() - availability.lastChecked < AVAILABILITY_BACKOFF_TIME) {
           // If this is an old inactive endpoint that hasn't been checked in a
           // while then check but don't wait for the result, just skip it
           // This avoids delays on every search whilst allowing higher priority
           // ML servers to recover over time.
-          this.checkAvailability(url).catch();
+          void this.checkAvailability(url);
           continue;
         }
       }
