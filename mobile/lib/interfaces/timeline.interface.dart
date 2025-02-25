@@ -1,4 +1,5 @@
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 
 abstract class ITimelineRepository {
@@ -16,4 +17,11 @@ abstract class ITimelineRepository {
     List<int> userIds,
     GroupAssetsBy groupAssetsBy,
   );
+
+  Future<RenderList> getTimelineFromAssets(
+    List<Asset> assets,
+    GroupAssetsBy getGroupByOption,
+  );
+
+  Stream<RenderList> watchAssetSelectionTimeline(int userId);
 }
