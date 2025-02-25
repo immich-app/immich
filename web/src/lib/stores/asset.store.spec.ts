@@ -2,7 +2,7 @@ import { sdkMock } from '$lib/__mocks__/sdk.mock';
 import { AbortError } from '$lib/utils';
 import { TimeBucketSize, type AssetResponseDto } from '@immich/sdk';
 import { assetFactory } from '@test-data/factories/asset-factory';
-import { AssetStore } from './assets.store';
+import { AssetStore } from './assets-store.svelte';
 
 describe('AssetStore', () => {
   beforeEach(() => {

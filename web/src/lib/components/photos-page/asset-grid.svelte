@@ -17,11 +17,12 @@
     splitBucketIntoDateGroups,
     type ScrubberListener,
     type ScrollTargetListener,
+    findTotalOffset,
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
   import { debounce, throttle } from 'lodash-es';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { onDestroy, onMount, tick, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -37,6 +38,7 @@
   import { generateId } from '$lib/utils/generate-id';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { bucketObserver } from '$lib/actions/bucket-observer';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -116,7 +118,6 @@
   } = TUNABLES;
 
   const completeNav = () => {
-    debugger;
     navigating = false;
     if (internalScroll) {
       internalScroll = false;
@@ -188,28 +189,7 @@
     return () => void 0;
   };
 
-  const _updateLastIntersectedBucketDate = () => {
-    let elem = document.elementFromPoint(safeViewport.x + 1, safeViewport.y + 1);
-
-    while (elem != null) {
-      if (elem.id === 'bucket') {
-        break;
-      }
-      elem = elem.parentElement;
-    }
-    if (elem) {
-      lastIntersectedBucketDate = (elem as HTMLElement).dataset.bucketDate;
-    }
-  };
-  const updateLastIntersectedBucketDate = throttle(_updateLastIntersectedBucketDate, 16, {
-    leading: false,
-    trailing: true,
-  });
-
-  const scrollTolastIntersectedBucket = (adjustedBucket: AssetBucket, delta: number) => {
-    if (!lastIntersectedBucketDate) {
-      _updateLastIntersectedBucketDate();
-    }
+  const scrollTolastIntersectedBucket = async (adjustedBucket: AssetBucket, delta: number) => {
     if (lastIntersectedBucketDate) {
       const currentIndex = assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
       const deltaIndex = assetStore.buckets.indexOf(adjustedBucket);
@@ -229,13 +209,7 @@
   };
 
   onMount(() => {
-    if (element) {
-      const rect = element.getBoundingClientRect();
-      safeViewport.height = rect.height;
-      safeViewport.width = rect.width;
-      safeViewport.x = rect.x;
-      safeViewport.y = rect.y;
-    }
+    updateSafeViewport();
 
     assetStore.init({ bucketListener }).then(() => (assetStore.connect(), assetStore.updateViewport(safeViewport)));
     if (!enableRouting) {
@@ -249,6 +223,15 @@
     };
   });
 
+  function updateSafeViewport() {
+    if (element) {
+      const rect = element.getBoundingClientRect();
+      safeViewport.height = rect.height;
+      safeViewport.width = rect.width;
+      safeViewport.x = rect.x;
+      safeViewport.y = rect.y;
+    }
+  }
   function getOffset(bucketDate: string) {
     let offset = 0;
     for (let a = 0; a < assetStore.buckets.length; a++) {
@@ -326,10 +309,7 @@
     }
     if (bucket && !bucket.measured) {
       preMeasure.push(bucket);
-      if (!bucket.loaded) {
-        await assetStore.loadBucket(bucket.bucketDate);
-      }
-      // Wait here, and collect the deltas that are above offset, which affect offset position
+      await assetStore.loadBucket(bucketDate, { preventCancel: true, pending: true });
       await bucket.measuredPromise;
       scrollToBucketAndOffset(bucket, bucketScrollPercent);
     }
@@ -416,7 +396,7 @@
     ? throttle(_onAssetInGrid, 16, { leading: false, trailing: true })
     : () => void 0;
 
-  const onScrollTarget: ScrollTargetListener = ({ bucket, offset }) => {
+  const onScrollTarget: ScrollTargetListener = async ({ bucket, offset }) => {
     element?.scrollTo({ top: offset });
     if (!bucket.measured) {
       preMeasure.push(bucket);
@@ -481,8 +461,7 @@
   };
 
   function handleIntersect(bucket: AssetBucket) {
-    debugger;
-    updateLastIntersectedBucketDate();
+    // updateLastIntersectedBucketDate();
     const task = () => {
       assetStore.updateBucket(bucket.bucketDate, { intersecting: true });
       void assetStore.loadBucket(bucket.bucketDate);
@@ -835,7 +814,10 @@
         trailing: true,
       });
     }
+
     safeViewport = { width, height, x: safeViewport.x, y: safeViewport.y };
+    updateSafeViewport();
+
     void updateViewport();
   }}
   bind:this={element}
@@ -861,17 +843,29 @@
     {#each assetStore.buckets as bucket (bucket.viewId)}
       {@const isPremeasure = preMeasure.includes(bucket)}
       {@const display = bucket.intersecting || bucket === assetStore.pendingScrollBucket || isPremeasure}
-      {@debug}
+
       <div
         class="bucket"
-        use:intersectionObserver={{
-          key: bucket.viewId,
-          onIntersect: () => handleIntersect(bucket),
-          onSeparate: () => handleSeparate(bucket),
-          top: BUCKET_INTERSECTION_ROOT_TOP,
-          bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
-          root: element,
-        }}
+        style:overflow={bucket.measured ? 'visible' : 'clip'}
+        use:bucketObserver
+        use:intersectionObserver={[
+          {
+            key: bucket.viewId,
+            onIntersect: () => handleIntersect(bucket),
+            onSeparate: () => handleSeparate(bucket),
+            top: BUCKET_INTERSECTION_ROOT_TOP,
+            bottom: BUCKET_INTERSECTION_ROOT_BOTTOM,
+            root: element,
+          },
+          {
+            key: bucket.viewId + '.bucketintersection',
+            onIntersect: () => (lastIntersectedBucketDate = bucket.bucketDate),
+            top: '0px',
+            bottom: '-' + (safeViewport.height - 1) + 'px',
+            left: '0px',
+            right: '0px',
+          },
+        ]}
         data-bucket-display={bucket.intersecting}
         data-bucket-date={bucket.bucketDate}
         style:height={bucket.bucketHeight + 'px'}

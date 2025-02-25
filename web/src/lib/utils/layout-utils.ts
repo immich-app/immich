@@ -3,6 +3,8 @@ import { getAssetRatio } from '$lib/utils/asset-utils';
 import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
 
+export type GetJustifiedLayout = typeof getJustifiedLayoutFromAssets;
+
 export function getJustifiedLayoutFromAssets(assets: AssetResponseDto[], options: LayoutOptions) {
   const aspectRatios = new Float32Array(assets.length);
   // eslint-disable-next-line unicorn/no-for-loop

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets.store';
+  import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets-store.svelte';
   import { DateTime } from 'luxon';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';

@@ -4,7 +4,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
