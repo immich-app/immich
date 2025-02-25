@@ -38,8 +38,7 @@ class MemoryService {
       for (final memory in data) {
         final dbAssets = await _assetRepository
             .getAllByRemoteId(memory.assets.map((e) => e.id));
-        final memoryYear = memory.data.year;
-        final yearsAgo = now.year - memoryYear;
+        final yearsAgo = now.year - memory.data.year;
         if (dbAssets.isNotEmpty) {
           final String title = yearsAgo <= 1
               ? 'memories_year_ago'.tr()
