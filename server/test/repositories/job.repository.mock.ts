@@ -1,7 +1,8 @@
-import { IJobRepository } from 'src/interfaces/job.interface';
+import { JobRepository } from 'src/repositories/job.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newJobRepositoryMock = (): Mocked<IJobRepository> => {
+export const newJobRepositoryMock = (): Mocked<RepositoryInterface<JobRepository>> => {
   return {
     setup: vitest.fn(),
     startWorkers: vitest.fn(),

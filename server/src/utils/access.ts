@@ -1,6 +1,6 @@
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { AuthSharedLink } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { AlbumUserRole, Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { setDifference, setIsEqual, setIsSuperset, setUnion } from 'src/utils/set';
@@ -24,7 +24,7 @@ export type AccessRequest = {
   ids: Set<string> | string[];
 };
 
-type SharedLinkAccessRequest = { sharedLink: SharedLinkEntity; permission: Permission; ids: Set<string> };
+type SharedLinkAccessRequest = { sharedLink: AuthSharedLink; permission: Permission; ids: Set<string> };
 type OtherAccessRequest = { auth: AuthDto; permission: Permission; ids: Set<string> };
 
 export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
@@ -215,6 +215,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
 
     case Permission.AUTH_DEVICE_DELETE: {
       return await access.authDevice.checkOwnerAccess(auth.user.id, ids);
+    }
+
+    case Permission.FACE_DELETE: {
+      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.TAG_ASSET:

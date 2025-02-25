@@ -94,6 +94,7 @@
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            aria-label={$t('support_and_feedback')}
           />
         </div>
 

@@ -1,6 +1,7 @@
 import { WatchOptions } from 'chokidar';
 import { StorageCore } from 'src/cores/storage.core';
-import { IStorageRepository, WatchEvents } from 'src/interfaces/storage.interface';
+import { StorageRepository, WatchEvents } from 'src/repositories/storage.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 interface MockWatcherOptions {
@@ -39,7 +40,7 @@ export const makeMockWatcher =
     return () => Promise.resolve();
   };
 
-export const newStorageRepositoryMock = (reset = true): Mocked<IStorageRepository> => {
+export const newStorageRepositoryMock = (reset = true): Mocked<RepositoryInterface<StorageRepository>> => {
   if (reset) {
     StorageCore.reset();
   }

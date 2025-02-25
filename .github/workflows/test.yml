@@ -43,10 +43,12 @@ jobs:
               - 'mobile/**'
             machine-learning:
               - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/test.yml'
 
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
 
   server-unit-tests:
     name: Test & Lint Server
@@ -502,6 +504,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          cat ./src/migrations/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

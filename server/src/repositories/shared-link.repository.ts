@@ -3,14 +3,19 @@ import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { DB, SharedLinks } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SharedLinkType } from 'src/enum';
-import { ISharedLinkRepository, SharedLinkSearchOptions } from 'src/interfaces/shared-link.interface';
+
+export type SharedLinkSearchOptions = {
+  userId: string;
+  albumId?: string;
+};
 
 @Injectable()
-export class SharedLinkRepository implements ISharedLinkRepository {
+export class SharedLinkRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
@@ -92,7 +97,7 @@ export class SharedLinkRepository implements ISharedLinkRepository {
       .executeTakeFirst() as Promise<SharedLinkEntity | undefined>;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
+  @GenerateSql({ params: [{ userId: DummyValue.UUID, albumId: DummyValue.UUID }] })
   getAll({ userId, albumId }: SharedLinkSearchOptions): Promise<SharedLinkEntity[]> {
     return this.db
       .selectFrom('shared_links')
@@ -156,39 +161,20 @@ export class SharedLinkRepository implements ISharedLinkRepository {
   }
 
   @GenerateSql({ params: [DummyValue.BUFFER] })
-  async getByKey(key: Buffer): Promise<SharedLinkEntity | undefined> {
+  async getByKey(key: Buffer) {
     return this.db
       .selectFrom('shared_links')
-      .selectAll('shared_links')
       .where('shared_links.key', '=', key)
       .leftJoin('albums', 'albums.id', 'shared_links.albumId')
       .where('albums.deletedAt', 'is', null)
-      .select((eb) =>
+      .select((eb) => [
+        ...columns.authSharedLink,
         jsonObjectFrom(
-          eb
-            .selectFrom('users')
-            .select([
-              'users.id',
-              'users.email',
-              'users.createdAt',
-              'users.profileImagePath',
-              'users.isAdmin',
-              'users.shouldChangePassword',
-              'users.deletedAt',
-              'users.oauthId',
-              'users.updatedAt',
-              'users.storageLabel',
-              'users.name',
-              'users.quotaSizeInBytes',
-              'users.quotaUsageInBytes',
-              'users.status',
-              'users.profileChangedAt',
-            ])
-            .whereRef('users.id', '=', 'shared_links.userId'),
+          eb.selectFrom('users').select(columns.authUser).whereRef('users.id', '=', 'shared_links.userId'),
         ).as('user'),
-      )
+      ])
       .where((eb) => eb.or([eb('shared_links.type', '=', SharedLinkType.INDIVIDUAL), eb('albums.id', 'is not', null)]))
-      .executeTakeFirst() as Promise<SharedLinkEntity | undefined>;
+      .executeTakeFirst();
   }
 
   async create(entity: Insertable<SharedLinks> & { assetIds?: string[] }): Promise<SharedLinkEntity> {

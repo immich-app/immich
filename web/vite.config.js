@@ -4,6 +4,7 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
+import wasm from 'vite-plugin-wasm';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -14,6 +15,9 @@ const upstream = {
 };
 
 export default defineConfig({
+  build: {
+    target: 'es2022',
+  },
   resolve: {
     alias: {
       'xmlhttprequest-ssl': './node_modules/engine.io-client/lib/xmlhttprequest.js',
@@ -29,6 +33,7 @@ export default defineConfig({
       '/.well-known/immich': upstream,
       '/custom.css': upstream,
     },
+    allowedHosts: true,
   },
   plugins: [
     sveltekit(),
@@ -40,6 +45,7 @@ export default defineConfig({
       : undefined,
     enhancedImages(),
     svelteTesting(),
+    wasm(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
@@ -51,6 +57,10 @@ export default defineConfig({
     setupFiles: ['./src/test-data/setup.ts'],
     sequence: {
       hooks: 'list',
+    },
+    deps: {
+      // workaround for https://github.com/vitest-dev/vitest/issues/2150
+      inline: ['@immich/justified-layout-wasm'],
     },
   },
 });

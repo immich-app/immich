@@ -1,28 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { resolve } from 'node:path';
-import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
+import { AUDIT_LOG_MAX_DURATION, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
-import {
-  AuditDeletesDto,
-  AuditDeletesResponseDto,
-  FileChecksumDto,
-  FileChecksumResponseDto,
-  FileReportItemDto,
-  PathEntityType,
-} from 'src/dtos/audit.dto';
-import { AuthDto } from 'src/dtos/auth.dto';
+import { FileChecksumDto, FileChecksumResponseDto, FileReportItemDto, PathEntityType } from 'src/dtos/audit.dto';
 import {
   AssetFileType,
   AssetPathType,
-  DatabaseAction,
-  Permission,
+  JobName,
+  JobStatus,
   PersonPathType,
+  QueueName,
   StorageFolder,
   UserPathType,
 } from 'src/enum';
-import { JobName, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
 import { BaseService } from 'src/services/base.service';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
@@ -33,24 +25,6 @@ export class AuditService extends BaseService {
   async handleCleanup(): Promise<JobStatus> {
     await this.auditRepository.removeBefore(DateTime.now().minus(AUDIT_LOG_MAX_DURATION).toJSDate());
     return JobStatus.SUCCESS;
-  }
-
-  async getDeletes(auth: AuthDto, dto: AuditDeletesDto): Promise<AuditDeletesResponseDto> {
-    const userId = dto.userId || auth.user.id;
-    await this.requireAccess({ auth, permission: Permission.TIMELINE_READ, ids: [userId] });
-
-    const audits = await this.auditRepository.getAfter(dto.after, {
-      userIds: [userId],
-      entityType: dto.entityType,
-      action: DatabaseAction.DELETE,
-    });
-
-    const duration = DateTime.now().diff(DateTime.fromJSDate(dto.after));
-
-    return {
-      needsFullSync: duration > AUDIT_LOG_MAX_DURATION,
-      ids: audits,
-    };
   }
 
   async getChecksums(dto: FileChecksumDto) {

@@ -3,23 +3,19 @@
  * Please do not edit it manually.
  */
 
-import type { ColumnType } from "kysely";
+import type { ColumnType } from 'kysely';
+import { Permission, SyncEntityType } from 'src/enum';
 
-export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[]
-  ? U[]
-  : ArrayTypeImpl<T>;
+export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
-export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S[], I[], U[]>
-  : T[];
+export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S[], I[], U[]> : T[];
 
-export type AssetsStatusEnum = "active" | "deleted" | "trashed";
+export type AssetsStatusEnum = 'active' | 'deleted' | 'trashed';
 
-export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
-  ? ColumnType<S, I | undefined, U>
-  : ColumnType<T, T | undefined, T>;
+export type Generated<T> =
+  T extends ColumnType<infer S, infer I, infer U> ? ColumnType<S, I | undefined, U> : ColumnType<T, T | undefined, T>;
 
-export type Int8 = ColumnType<string, bigint | number | string, bigint | number | string>;
+export type Int8 = ColumnType<number>;
 
 export type Json = JsonValue;
 
@@ -33,7 +29,7 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
-export type Sourcetype = "exif" | "machine-learning";
+export type Sourcetype = 'exif' | 'machine-learning';
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
@@ -81,7 +77,7 @@ export interface ApiKeys {
   id: Generated<string>;
   key: string;
   name: string;
-  permissions: string[];
+  permissions: Permission[];
   updatedAt: Generated<Timestamp>;
   userId: string;
 }
@@ -92,6 +88,7 @@ export interface AssetFaces {
   boundingBoxX2: Generated<number>;
   boundingBoxY1: Generated<number>;
   boundingBoxY2: Generated<number>;
+  deletedAt: Timestamp | null;
   id: Generated<string>;
   imageHeight: Generated<number>;
   imageWidth: Generated<number>;
@@ -126,8 +123,8 @@ export interface Assets {
   duplicateId: string | null;
   duration: string | null;
   encodedVideoPath: Generated<string | null>;
-  fileCreatedAt: Timestamp;
-  fileModifiedAt: Timestamp;
+  fileCreatedAt: Timestamp | null;
+  fileModifiedAt: Timestamp | null;
   id: Generated<string>;
   isArchived: Generated<boolean>;
   isExternal: Generated<boolean>;
@@ -136,7 +133,7 @@ export interface Assets {
   isVisible: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
-  localDateTime: Timestamp;
+  localDateTime: Timestamp | null;
   originalFileName: string;
   originalPath: string;
   ownerId: string;
@@ -230,11 +227,13 @@ export interface Memories {
   createdAt: Generated<Timestamp>;
   data: Json;
   deletedAt: Timestamp | null;
+  hideAt: Timestamp | null;
   id: Generated<string>;
   isSaved: Generated<boolean>;
   memoryAt: Timestamp;
   ownerId: string;
   seenAt: Timestamp | null;
+  showAt: Timestamp | null;
   type: string;
   updatedAt: Generated<Timestamp>;
 }
@@ -298,6 +297,15 @@ export interface Sessions {
   userId: string;
 }
 
+export interface SessionSyncCheckpoints {
+  ack: string;
+  createdAt: Generated<Timestamp>;
+  sessionId: string;
+  type: SyncEntityType;
+  updatedAt: Generated<Timestamp>;
+}
+
+
 export interface SharedLinkAsset {
   assetsId: string;
   sharedLinksId: string;
@@ -327,6 +335,11 @@ export interface SocketIoAttachments {
   created_at: Generated<Timestamp | null>;
   id: Generated<Int8>;
   payload: Buffer | null;
+}
+
+export interface SystemConfig {
+  key: string;
+  value: string | null;
 }
 
 export interface SystemMetadata {
@@ -388,6 +401,11 @@ export interface Users {
   updatedAt: Generated<Timestamp>;
 }
 
+export interface UsersAudit {
+  userId: string;
+  deletedAt: Generated<Timestamp>;
+}
+
 export interface VectorsPgVectorIndexStat {
   idx_growing: ArrayType<Int8> | null;
   idx_indexing: boolean | null;
@@ -433,10 +451,12 @@ export interface DB {
   partners: Partners;
   person: Person;
   sessions: Sessions;
+  session_sync_checkpoints: SessionSyncCheckpoints;
   shared_link__asset: SharedLinkAsset;
   shared_links: SharedLinks;
   smart_search: SmartSearch;
   socket_io_attachments: SocketIoAttachments;
+  system_config: SystemConfig;
   system_metadata: SystemMetadata;
   tag_asset: TagAsset;
   tags: Tags;
@@ -444,6 +464,7 @@ export interface DB {
   typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
   users: Users;
-  "vectors.pg_vector_index_stat": VectorsPgVectorIndexStat;
+  users_audit: UsersAudit;
+  'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
   version_history: VersionHistory;
 }

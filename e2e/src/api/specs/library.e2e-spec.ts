@@ -1,4 +1,4 @@
-import { LibraryResponseDto, LoginResponseDto, getAllLibraries, scanLibrary } from '@immich/sdk';
+import { LibraryResponseDto, LoginResponseDto, getAllLibraries } from '@immich/sdk';
 import { cpSync, existsSync, rmSync, unlinkSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { userDto, uuidDto } from 'src/fixtures';
@@ -7,8 +7,6 @@ import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'sr
 import request from 'supertest';
 import { utimes } from 'utimes';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-
-const scan = async (accessToken: string, id: string) => scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
 
 describe('/libraries', () => {
   let admin: LoginResponseDto;
@@ -298,6 +296,8 @@ describe('/libraries', () => {
       expect(status).toBe(204);
 
       await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
+      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
@@ -312,15 +312,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/directoryA`],
       });
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
-      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         originalPath: `${testAssetDirInternal}/temp/directoryA/assetA.png`,
@@ -340,13 +332,7 @@ describe('/libraries', () => {
         exclusionPatterns: ['**/directoryA'],
       });
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -360,13 +346,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/directoryA`, `${testAssetDirInternal}/temp/directoryB`],
       });
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -385,13 +365,7 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/folder, a/assetA.png`);
       utils.createImageFile(`${testAssetDir}/temp/folder, b/assetB.png`);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -413,13 +387,7 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/folder{ a/assetA.png`);
       utils.createImageFile(`${testAssetDir}/temp/folder} b/assetB.png`);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -471,13 +439,7 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/folder${char}1/asset1.png`);
       utils.createImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -501,23 +463,12 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      await utils.scan(admin.accessToken, library.id);
 
       cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_001);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
@@ -548,21 +499,12 @@ describe('/libraries', () => {
       utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
       await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
-      await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-      await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
@@ -592,21 +534,14 @@ describe('/libraries', () => {
 
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
 
       utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
@@ -624,8 +559,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
@@ -636,13 +570,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/another-path/`],
       });
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
@@ -662,8 +590,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, {
         libraryId: library.id,
@@ -673,8 +600,7 @@ describe('/libraries', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/directoryB/**'] });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(trashedAsset.isTrashed).toBe(true);
@@ -696,19 +622,12 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets: assetsBefore } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assetsBefore.count).toBeGreaterThan(1);
 
-      const { status } = await request(app)
-        .post(`/libraries/${library.id}/scan`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send();
-      expect(status).toBe(204);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -725,11 +644,7 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
 
-        await scan(admin.accessToken, library.id);
-
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -752,10 +667,7 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -779,10 +691,7 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -806,19 +715,13 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -841,18 +744,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -875,18 +772,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -910,19 +801,13 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -946,18 +831,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -981,18 +860,12 @@ describe('/libraries', () => {
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
         await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
-        await scan(admin.accessToken, library.id);
-        await utils.waitForQueueFinish(admin.accessToken, 'library');
-        await utils.waitForQueueFinish(admin.accessToken, 'sidecar');
-        await utils.waitForQueueFinish(admin.accessToken, 'metadataExtraction');
+        await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
@@ -1015,22 +888,13 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
-      {
-        const { status } = await request(app)
-          .post(`/libraries/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
-        expect(status).toBe(204);
-      }
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
       expect(offlineAsset.isTrashed).toBe(true);
@@ -1044,15 +908,7 @@ describe('/libraries', () => {
 
       utils.renameImageFile(`${testAssetDir}/temp/offline.png`, `${testAssetDir}/temp/offline/offline.png`);
 
-      {
-        const { status } = await request(app)
-          .post(`/libraries/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
-        expect(status).toBe(204);
-      }
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const backOnlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
@@ -1074,22 +930,13 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
-      {
-        const { status } = await request(app)
-          .post(`/libraries/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
-        expect(status).toBe(204);
-      }
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       {
         const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
@@ -1110,15 +957,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/another-path`],
       });
 
-      {
-        const { status } = await request(app)
-          .post(`/libraries/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
-        expect(status).toBe(204);
-      }
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const stillOfflineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
@@ -1142,22 +981,13 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp/offline`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
-      {
-        const { status } = await request(app)
-          .post(`/libraries/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
-        expect(status).toBe(204);
-      }
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       {
         const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
@@ -1174,15 +1004,7 @@ describe('/libraries', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
 
-      {
-        const { status } = await request(app)
-          .post(`/libraries/${library.id}/scan`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send();
-        expect(status).toBe(204);
-      }
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const stillOfflineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
@@ -1302,8 +1124,7 @@ describe('/libraries', () => {
         importPaths: [`${testAssetDirInternal}/temp`],
       });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { status, body } = await request(app)
         .delete(`/libraries/${library.id}`)
