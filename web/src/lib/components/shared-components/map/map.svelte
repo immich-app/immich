@@ -62,14 +62,23 @@
     popup,
   }: Props = $props();
 
-  let position = window.location.search.slice(1).split('&')
+  let position = globalThis.location.search.slice(1).split('&')
       .map(part => part.split('='))
       .find(part => part[0] === "position");
   if(position && position[1]) {
     let parts = (position ? position[1] || '' : '').split('/');
     if (parts.length >= 3) {
-      zoom = parts[0];
-      center = [parts[2], parts[1]];
+      let zoomValue = Number(parts[0]);
+      let lat = Number(parts[2]);
+      let lng = Number(parts[1]);
+
+      if (!isNaN(zoomValue)) {
+        zoom = zoomValue;
+      }
+      if (!isNaN(lat) && !isNaN(lng)) {
+        center = [lat, lng];
+      }
+
     }
   }
 

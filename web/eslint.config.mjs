@@ -33,6 +33,7 @@ export default [
       'eslint.config.mjs',
       'postcss.config.cjs',
       'tailwind.config.js',
+      'replace-assets.js',
       'coverage',
     ],
   },

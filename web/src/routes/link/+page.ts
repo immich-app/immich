@@ -42,7 +42,7 @@ export const load = (({ url }) => {
           redirectUrl.searchParams.append('activationKey', activationKey);
         }
 
-        return redirect(302, redirectUrl);
+        return redirect(302, `?${redirectUrl.searchParams.toString()}${redirectUrl.hash}`);
       }
 
       break;

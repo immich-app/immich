@@ -183,12 +183,13 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
 
 
 export function redirect(status: 300 | 301 | 302 | 303 | 304 | 305 | 306 | 307 | 308 | ({} & number), location: string ) {
-  return svelteRedirect(status,`${window.location.pathname.endsWith('/') ? window.location.pathname.slice(0, -1) : window.location.pathname}/${location}`);
+  return svelteRedirect(status,`${globalThis.location.pathname.endsWith('/') ? globalThis.location.pathname.slice(0, -1) : globalThis.location.pathname}/${location}`);
 }
 
 export async function addSearchParams(searchParams: string): Promise<void> {
   return new Promise<void>((resolve) => {
-    window.history.replaceState(null, '', `${window.location.pathname}?${searchParams}${window.location.hash}`);
+    globalThis.history.replaceState(null, '', `${globalThis.location.pathname}?${searchParams}${globalThis.location.hash}`);
+    resolve();
   });
 }
 
@@ -271,7 +272,7 @@ export const copyToClipboard = async (secret: string) => {
 };
 
 export const makeSharedLinkUrl = (externalDomain: string, key: string) => {
-  return new URL(`${window.location.pathname.endsWith('/') ? window.location.pathname.slice(0, -1) : window.location.pathname}/#/share/${key}`, externalDomain || globalThis.location.origin).href;
+  return new URL(`${globalThis.location.pathname.endsWith('/') ? globalThis.location.pathname.slice(0, -1) : globalThis.location.pathname}/#/share/${key}`, externalDomain || globalThis.location.origin).href;
 };
 
 export const oauth = {

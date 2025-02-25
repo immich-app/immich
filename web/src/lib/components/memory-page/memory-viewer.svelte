@@ -283,7 +283,7 @@
         />
 
         {#each current.memory.assets as asset, index}
-          <a class="relative w-full py-2" href="?{asHref(asset)}{window.location.hash}">
+          <a class="relative w-full py-2" href="?{asHref(asset)}{globalThis.location.hash}">
             <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
             {#await resetPromise}
               <span class="absolute left-0 h-[2px] bg-white" style:width={`${index < current.assetIndex ? 100 : 0}%`}
