@@ -5,7 +5,10 @@ abstract class ITimelineRepository {
   Stream<RenderList> watchArchiveTimeline(int userId);
   Stream<RenderList> watchFavoriteTimeline(int userId);
   Stream<RenderList> watchTrashTimeline(int userId);
-  Stream<RenderList> watchAlbumTimeline(Album album);
+  Stream<RenderList> watchAlbumTimeline(
+    Album album,
+    GroupAssetsBy groupAssetsBy,
+  );
   Stream<RenderList> watchAllVideosTimeline();
 
   Stream<RenderList> watchHomeTimeline(int userId, GroupAssetsBy groupAssetsBy);

@@ -50,7 +50,10 @@ class TimelineService {
   }
 
   Stream<RenderList> watchAlbumTimeline(Album album) async* {
-    yield* _timelineRepository.watchAlbumTimeline(album);
+    yield* _timelineRepository.watchAlbumTimeline(
+      album,
+      _getGroupByOption(),
+    );
   }
 
   Stream<RenderList> watchTrashTimeline() async* {
