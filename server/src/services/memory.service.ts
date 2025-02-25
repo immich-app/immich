@@ -32,6 +32,9 @@ export class MemoryService extends BaseService {
     const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
     let lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state?.lastOnThisDayDate) : start;
 
+    console.log('start', start);
+    console.log('lastOnThisDayDate', lastOnThisDayDate);
+    console.log('state', state);
     // generate a memory +/- X days from today
     for (let i = 0; i <= DAYS * 2 + 1; i++) {
       const target = start.plus({ days: i });
