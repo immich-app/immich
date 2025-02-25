@@ -56,7 +56,7 @@ const guides: CommunityGuidesProps[] = [
   {
     title: 'Immich remote access with NordVPN Meshnet',
     description: 'Access Immich with an end-to-end encrypted connection.',
-    url: 'https://meshnet.nordvpn.com/how-to/remote-files-media-access/immich-remote-access.',
+    url: 'https://meshnet.nordvpn.com/how-to/remote-files-media-access/immich-remote-access',
   },
 ];
 
