@@ -65,7 +65,7 @@ custom_lint:
       allowed:
         # required / wanted
         - lib/entities/*.entity.dart
-        - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline}.repository.dart
+        - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline,partner}.repository.dart
         - lib/infrastructure/entities/*.entity.dart
         - lib/infrastructure/repositories/{store,db}.repository.dart
         - lib/providers/infrastructure/db.provider.dart
@@ -79,7 +79,7 @@ custom_lint:
         - lib/widgets/asset_grid/asset_grid_data_structure.dart
         - test/**.dart
         # refactor the remaining providers
-        - lib/providers/{db,partner,user}.provider.dart
+        - lib/providers/{db,user}.provider.dart
         - lib/providers/backup/backup.provider.dart
 
     - import_rule_openapi:
