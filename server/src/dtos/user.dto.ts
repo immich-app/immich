@@ -157,6 +157,6 @@ export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
-    license: license ?? null,
+    license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
   };
 }
