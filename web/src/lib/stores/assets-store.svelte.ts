@@ -4,7 +4,6 @@ import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
-import type { JustifiedLayout, LayoutOptions } from '@immich/justified-layout-wasm';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
