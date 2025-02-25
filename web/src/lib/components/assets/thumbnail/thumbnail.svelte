@@ -343,7 +343,7 @@
               enablePlayback={mouseOver && $playVideoThumbnailOnHover}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
-              playbackOnIconHover
+              playbackOnIconHover={!$playVideoThumbnailOnHover}
             />
           </div>
         {/if}
