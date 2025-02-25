@@ -8,25 +8,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_notifier.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
+import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_drag_region.dart';
+import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_image.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:immich_mobile/widgets/asset_grid/control_bottom_app_bar.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
-import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
-import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import 'asset_grid_data_structure.dart';
@@ -58,6 +58,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
   final bool shrinkWrap;
   final bool showDragScroll;
   final bool showStack;
+  final void Function(Set<Asset> selectedAssets)? onPopInvoked;
 
   const ImmichAssetGridView({
     super.key,
@@ -78,6 +79,7 @@ class ImmichAssetGridView extends ConsumerStatefulWidget {
     this.shrinkWrap = false,
     this.showDragScroll = true,
     this.showStack = false,
+    this.onPopInvoked,
   });
 
   @override
@@ -542,7 +544,8 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
-      onPopInvokedWithResult: (didPop, _) => !didPop ? _deselectAll() : null,
+      onPopInvokedWithResult: (didPop, _) =>
+          !didPop ? widget.onPopInvoked?.call(_selectedAssets) : null,
       child: Stack(
         children: [
           AssetDragRegion(
