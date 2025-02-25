@@ -17,4 +17,3 @@ export const load = (async () => {
     },
   };
 }) satisfies PageLoad;
- 

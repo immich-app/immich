@@ -7,7 +7,7 @@
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
-  import { onDestroy, tick } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
@@ -54,12 +54,7 @@
     void navigate({ targetRoute: 'current', assetId: asset.id });
   };
 
-  function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  const onRetrieveElement = async (dateGroup: DateGroup, asset: AssetResponseDto, element: HTMLElement) => {
-    // await sleep(15000);
+  const onRetrieveElement = (dateGroup: DateGroup, asset: AssetResponseDto, element: HTMLElement) => {
     if (assetGridElement && onScrollTarget) {
       const offset = findTotalOffset(element, assetGridElement) - TITLE_HEIGHT;
       onScrollTarget({ bucket, dateGroup, asset, offset });

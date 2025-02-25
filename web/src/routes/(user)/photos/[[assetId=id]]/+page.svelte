@@ -88,7 +88,7 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       {#if assetInteraction.selectedAssets.size > 1 || isAssetStackSelected}

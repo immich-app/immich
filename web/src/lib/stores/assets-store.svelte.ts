@@ -8,10 +8,10 @@ import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type Asset
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
+import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
-import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
@@ -33,17 +33,17 @@ interface AssetLookup {
 
 export class AssetBucket {
   store!: AssetStore;
-  bucketDate: string  =  $state('');
+  bucketDate: string = $state('');
   /**
    * The DOM height of the bucket in pixel
    * This value is first estimated by the number of asset and later is corrected as the user scroll
-   * Do not derive this height, it is important for it to be updated at specific times, so that 
-   * calculateing a delta between estimated and actual (when measured) is correct. 
+   * Do not derive this height, it is important for it to be updated at specific times, so that
+   * calculateing a delta between estimated and actual (when measured) is correct.
    */
-  bucketHeight: number = $state(0); 
+  bucketHeight: number = $state(0);
   isBucketHeightActual: boolean = $state(false);
   bucketDateFormattted!: string;
-  bucketCount: number = $derived.by( ()=> this.isLoaded ?  this.assets.length : this.initialCount );
+  bucketCount: number = $derived.by(() => (this.isLoaded ? this.assets.length : this.initialCount));
   initialCount: number = 0;
   assets: AssetResponseDto[] = $state([]);
   dateGroups: DateGroup[] = $state([]);
@@ -61,7 +61,7 @@ export class AssetBucket {
   intersecting: boolean = $state(false);
   measured: boolean = $state(false);
   measuredPromise!: Promise<void>;
-  
+
   constructor(props: Partial<AssetBucket> & { store: AssetStore; bucketDate: string }) {
     Object.assign(this, props);
     this.init();
@@ -200,10 +200,8 @@ type DateGroupHeightEvent = {
   height: number;
 };
 
-
 export class AssetStore {
-  private assetToBucket: Record<string, AssetLookup> = $derived.by( ()=> {
-
+  private assetToBucket: Record<string, AssetLookup> = $derived.by(() => {
     const result: Record<string, AssetLookup> = {};
     for (let index = 0; index < this.buckets.length; index++) {
       const bucket = this.buckets[index];
@@ -223,7 +221,7 @@ export class AssetStore {
   });
   private initializedSignal!: () => void;
   private store$ = writable(this);
-  
+
   /** The svelte key for this view model object */
   viewId = generateId();
 
@@ -238,30 +236,26 @@ export class AssetStore {
   initialized = $state(false);
   timelineHeight = $state(0);
   buckets: AssetBucket[] = $state([]);
-  assets: AssetResponseDto[] = $derived.by( ()=> {
- 
-  
-    return this.buckets.flatMap(({ assets }) => assets)
-  }
-  );
+  assets: AssetResponseDto[] = $derived.by(() => {
+    return this.buckets.flatMap(({ assets }) => assets);
+  });
   albumAssets: Set<string> = new SvelteSet();
   pendingScrollBucket: AssetBucket | undefined = $state();
   pendingScrollAssetId: string | undefined = $state();
   maxBucketAssets = $state(0);
 
   private listeners: BucketListener[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private getJustifiedLayoutFromAssets: any;
 
   constructor(
     options: AssetStoreOptions,
     private albumId?: string,
   ) {
-
     this.setOptions(options);
     this.createInitializationSignal();
     this.store$.set(this);
   }
-
 
   private setOptions(options: AssetStoreOptions) {
     this.options = { ...options, size: TimeBucketSize.Month };
@@ -286,7 +280,6 @@ export class AssetStore {
   }
 
   connect() {
-
     this.unsubscribers.push(
       websocketEvents.on('on_upload_success', (_) => {
         // TODO!: Temporarily disable to avoid flashing effect of the timeline
@@ -390,22 +383,22 @@ export class AssetStore {
     }
   }
   async init({ bucketListener }: { bucketListener?: BucketListener } = {}) {
-   
     if (this.initialized) {
       throw 'Can only init once';
     }
-    
+
     if (bucketListener) {
       this.addListener(bucketListener);
     }
-     // TODO: move this import and make this method sync after https://github.com/sveltejs/kit/issues/7805 is fixed
-    this.getJustifiedLayoutFromAssets = (await import('$lib/utils/layout-utils')).getJustifiedLayoutFromAssets;
+    // TODO: move this import and make this method sync after https://github.com/sveltejs/kit/issues/7805 is fixed
+    const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
+    this.getJustifiedLayoutFromAssets = getJustifiedLayoutFromAssets;
     await this.initialiazeTimeBuckets();
   }
 
   async initialiazeTimeBuckets() {
-    this.timelineHeight = 0
-    this.buckets = []
+    this.timelineHeight = 0;
+    this.buckets = [];
     this.albumAssets.clear();
 
     const timebuckets = await getTimeBuckets({
@@ -413,12 +406,11 @@ export class AssetStore {
       key: getKey(),
     });
     this.buckets = timebuckets.map(
-      (bucket) => new AssetBucket({ store: this, bucketDate: bucket.timeBucket, initialCount: bucket.count}),
+      (bucket) => new AssetBucket({ store: this, bucketDate: bucket.timeBucket, initialCount: bucket.count }),
     );
 
     this.initializedSignal();
     this.initialized = true;
-
   }
 
   async updateOptions(options: AssetStoreOptions) {
@@ -451,7 +443,6 @@ export class AssetStore {
   }
 
   async updateViewport(viewport: Viewport, force?: boolean) {
-
     if (viewport.height === 0 && viewport.width === 0) {
       return;
     }
@@ -467,7 +458,6 @@ export class AssetStore {
   }
 
   private async initialLayout(changedWidth: boolean) {
-    
     for (const bucket of this.buckets) {
       this.updateGeometry(bucket, changedWidth);
     }
@@ -484,10 +474,9 @@ export class AssetStore {
     }
     await Promise.all(loaders);
     this.notifyListeners({ type: 'viewport' });
-
   }
 
-  private  updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
+  private updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
       bucket.measured = false;
@@ -500,9 +489,9 @@ export class AssetStore {
     if (!bucket.isBucketHeightActual) {
       const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
       const rows = Math.ceil(unwrappedWidth / viewportWidth);
-      const height = 51 + Math.max(1,rows) * THUMBNAIL_HEIGHT;
-     
-      this.setBucketHeight(bucket, height, false)
+      const height = 51 + Math.max(1, rows) * THUMBNAIL_HEIGHT;
+
+      this.setBucketHeight(bucket, height, false);
     }
 
     const layoutOptions = {
@@ -511,7 +500,6 @@ export class AssetStore {
       rowHeight: 235,
       rowWidth: Math.floor(viewportWidth),
     };
-   
 
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
@@ -525,9 +513,7 @@ export class AssetStore {
     }
   }
 
-
   async loadBucket(bucketDate: string, options: { preventCancel?: boolean; pending?: boolean } = {}): Promise<void> {
-  
     const bucket = this.getBucketByDate(bucketDate);
     if (!bucket) {
       return;
@@ -553,7 +539,6 @@ export class AssetStore {
     bucket.isPreventCancel = !!options.preventCancel;
     const cancelToken = (bucket.cancelToken = new AbortController());
     try {
-      
       const assets = await getTimeBucket(
         {
           ...this.options,
@@ -594,7 +579,6 @@ export class AssetStore {
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
       bucket.loaded();
       this.notifyListeners({ type: 'loaded', bucket });
-     
     } catch (error) {
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       if ((error as any).name === 'AbortError') {
@@ -608,7 +592,7 @@ export class AssetStore {
     }
   }
 
-  setBucketHeight(bucket: AssetBucket, newHeight:number, isActualHeight:boolean ) {
+  setBucketHeight(bucket: AssetBucket, newHeight: number, isActualHeight: boolean) {
     const delta = newHeight - bucket.bucketHeight;
     bucket.isBucketHeightActual = isActualHeight;
     bucket.bucketHeight = newHeight;
@@ -621,7 +605,7 @@ export class AssetStore {
     if (!bucket) {
       return {};
     }
-    let delta = 0;
+    const delta = 0;
     if ('height' in properties) {
       this.setBucketHeight(bucket, properties.height!, true);
     }
@@ -831,7 +815,6 @@ export class AssetStore {
 
     this.removeAssets(assetsToRecalculate.map((asset) => asset.id));
     this.addAssetsToBuckets(assetsToRecalculate);
-    this.emit(assetsToRecalculate.length > 0);
   }
 
   removeAssets(ids: string[]) {
@@ -858,8 +841,6 @@ export class AssetStore {
         this.updateGeometry(bucket, true);
       }
     }
-
-    this.emit(true);
   }
 
   async getPreviousAsset(asset: AssetResponseDto): Promise<AssetResponseDto | null> {
@@ -902,31 +883,6 @@ export class AssetStore {
     const nextBucket = this.buckets[bucketIndex + 1];
     await this.loadBucket(nextBucket.bucketDate);
     return nextBucket.assets[0] || null;
-  }
-
-  triggerUpdate() {
-    // this.emit(false);
-  }
-
-  private emit(recalculate: boolean) {
-    
-  //   if (recalculate) {
-  //     this.assets = this.buckets.flatMap(({ assets }) => assets);
-
-  //     const assetToBucket: Record<string, AssetLookup> = {};
-  //     for (let index = 0; index < this.buckets.length; index++) {
-  //       const bucket = this.buckets[index];
-  //       if (bucket.assets.length > 0) {
-  //         bucket.bucketCount = bucket.assets.length;
-  //       }
-  //       for (let index_ = 0; index_ < bucket.assets.length; index_++) {
-  //         const asset = bucket.assets[index_];
-  //         assetToBucket[asset.id] = { bucket, bucketIndex: index, assetIndex: index_ };
-  //       }
-  //     }
-  //     this.assetToBucket = assetToBucket;
-  //   }
-  //   this.store$.set(this);
   }
 
   private isExcluded(asset: AssetResponseDto) {

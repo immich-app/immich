@@ -17,12 +17,11 @@
     splitBucketIntoDateGroups,
     type ScrubberListener,
     type ScrollTargetListener,
-    findTotalOffset,
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
   import { debounce, throttle } from 'lodash-es';
-  import { onDestroy, onMount, tick, type Snippet } from 'svelte';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
@@ -38,7 +37,6 @@
   import { generateId } from '$lib/utils/generate-id';
   import { isTimelineScrolling } from '$lib/stores/timeline.store';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { bucketObserver } from '$lib/actions/bucket-observer';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -189,7 +187,7 @@
     return () => void 0;
   };
 
-  const scrollTolastIntersectedBucket = async (adjustedBucket: AssetBucket, delta: number) => {
+  const scrollTolastIntersectedBucket = (adjustedBucket: AssetBucket, delta: number) => {
     if (lastIntersectedBucketDate) {
       const currentIndex = assetStore.buckets.findIndex((b) => b.bucketDate === lastIntersectedBucketDate);
       const deltaIndex = assetStore.buckets.indexOf(adjustedBucket);
@@ -211,7 +209,9 @@
   onMount(() => {
     updateSafeViewport();
 
-    assetStore.init({ bucketListener }).then(() => (assetStore.connect(), assetStore.updateViewport(safeViewport)));
+    void assetStore
+      .init({ bucketListener })
+      .then(() => (assetStore.connect(), assetStore.updateViewport(safeViewport)));
     if (!enableRouting) {
       showSkeleton = false;
     }
@@ -396,7 +396,7 @@
     ? throttle(_onAssetInGrid, 16, { leading: false, trailing: true })
     : () => void 0;
 
-  const onScrollTarget: ScrollTargetListener = async ({ bucket, offset }) => {
+  const onScrollTarget: ScrollTargetListener = ({ bucket, offset }) => {
     element?.scrollTo({ top: offset });
     if (!bucket.measured) {
       preMeasure.push(bucket);
@@ -847,7 +847,6 @@
       <div
         class="bucket"
         style:overflow={bucket.measured ? 'visible' : 'clip'}
-        use:bucketObserver
         use:intersectionObserver={[
           {
             key: bucket.viewId,

@@ -77,12 +77,8 @@
 
   $effect(() => {
     // Check to trigger rebuild the timeline when navigating between people from the info panel
-    const change = assetStoreOptions.personId !== data.person.id;
     assetStoreOptions.personId = data.person.id;
     handlePromiseError(assetStore.updateOptions(assetStoreOptions));
-    if (change) {
-      assetStore.triggerUpdate();
-    }
   });
 
   const assetInteraction = new AssetInteraction();
@@ -420,7 +416,7 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => void 0} />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption

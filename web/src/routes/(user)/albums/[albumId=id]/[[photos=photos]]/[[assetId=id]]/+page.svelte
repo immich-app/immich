@@ -462,11 +462,7 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction
-              menuItem
-              unarchive={assetInteraction.isAllArchived}
-              onArchive={() => assetStore.triggerUpdate()}
-            />
+            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {/if}
 
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
