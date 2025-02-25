@@ -4,7 +4,7 @@
     "checkJs": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "module": "es2022",
+    "module": "es2020",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "skipLibCheck": true,
