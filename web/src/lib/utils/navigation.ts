@@ -112,7 +112,7 @@ async function navigateAssetRoute(route: AssetRoute, options?: NavOptions) {
   const next = assetId ? currentUrlReplaceAssetId(assetId) : currentUrlWithoutAsset();
   const current = currentUrl();
   if (next !== current || options?.forceNavigate) {
-    await navigateWithTransition(next, options);
+    await goto(next, options);
   }
 }
 
@@ -122,7 +122,7 @@ async function navigateAssetGridRoute(route: AssetGridRoute, options?: NavOption
   const next = replaceScrollTarget(assetUrl, assetGridScrollTarget);
   const current = currentUrl();
   if (next !== current || options?.forceNavigate) {
-    await navigateWithTransition(next, options);
+    await goto(next, options);
   }
 }
 
@@ -134,16 +134,6 @@ export function navigate(change: ImmichRoute, options?: NavOptions): Promise<voi
   }
   // future navigation requests here
   throw `Invalid navigation: ${JSON.stringify(change)}`;
-}
-
-async function navigateWithTransition(url: string, options?: NavOptions) {
-  if (document.startViewTransition) {
-    document.startViewTransition(async () => {
-      await goto(url, options);
-    });
-  } else {
-    await goto(url, options);
-  }
 }
 
 export const clearQueryParam = async (queryParam: string, url: URL) => {
