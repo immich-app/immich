@@ -4,13 +4,13 @@
 
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { Theme } from '$lib/constants';
+  import { AppRoute, AssetGridOptionsValues, QueryParameter, Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { mdiArrowDown, mdiArrowUp, mdiCog, mdiMap, mdiMapMarker, mdiOpenInNew } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
@@ -30,6 +30,11 @@
     ScaleControl,
     type Map,
   } from 'svelte-maplibre';
+  import { onMount } from 'svelte';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
+  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
     mapMarkers: MapMarkerResponseDto[];
@@ -40,6 +45,10 @@
     simplified?: boolean;
     clickable?: boolean;
     useLocationPin?: boolean;
+    // if you want to have the assetGrid with the map
+    showAssetGrid: boolean;
+    // to open the assetGrid on pageLoad
+    isAssetGridOpenedOnInit: boolean;
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
@@ -55,6 +64,8 @@
     simplified = false,
     clickable = false,
     useLocationPin = false,
+    showAssetGrid = false,
+    isAssetGridOpenedOnInit = false,
     onOpenInMapView = undefined,
     onSelect = () => {},
     onClickPoint = () => {},
@@ -67,6 +78,119 @@
   const theme = $derived($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT);
   const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
   const style = $derived(fetch(styleUrl).then((response) => response.json()));
+
+  onMount(() => {
+    if (isAssetGridOpenedOnInit) {
+      handleOpenAssetGird();
+    }
+  });
+
+  let x1: number | undefined = undefined;
+  let x2: number | undefined = undefined;
+  let y1: number | undefined = undefined;
+  let y2: number | undefined = undefined;
+
+  let currentAssets: MapMarkerResponseDto[] = [];
+  // let previousUrl: string | undefined = $state(undefined);
+  let isAssetGridOpened: boolean = $state(false);
+  let numberOfAssets: number | undefined = $state(undefined);
+  let timelineStore: AssetStore | undefined = $state(undefined);
+
+  const timelineInteraction = new AssetInteraction();
+
+  let previousUrl = undefined;
+  // $derived(() => {
+  //   let url = `${AppRoute.PHOTOS}?x1=${x1}&x2=${x2}&y1=${y1}&y2=${y2}&previousRoute=${encodeURIComponent(`${AppRoute.MAP}?isTimelineOpened=${isAssetGridOpened}${location.hash}`)}`;
+  //   let options: string[] = [];
+  //   if ($mapSettings.withPartners) {
+  //     options.push(AssetGridOptionsValues.withPartners);
+  //   }
+  //   if ($mapSettings.onlyFavorites) {
+  //     options.push(AssetGridOptionsValues.onlyFavorites);
+  //   }
+  //   if (options.length > 0) {
+  //     url += `&assetGridOptions=${options.join(',')}`;
+  //   }
+  //   // previousUrl = url;
+  //   return url;
+  // });
+
+  const isAssetinBounds = (mapMarker: MapMarkerResponseDto, x1: number, x2: number, y1: number, y2: number) => {
+    // if x1 is before the international date line, and x2 after it, you want to check if the asset is after x1 OR after x2
+    const isLonWithinBounds =
+      x1 > x2 ? mapMarker.lon >= x1 || mapMarker.lon <= x2 : mapMarker.lon >= x1 && mapMarker.lon <= x2;
+    const isLatWithinBounds = mapMarker.lat >= y2 && mapMarker.lat <= y1;
+    return isLonWithinBounds && isLatWithinBounds;
+  };
+
+  const changeBounds = () => {
+    if (!showAssetGrid) {
+      return;
+    }
+
+    if (map) {
+      const bounds = map.getBounds();
+
+      let lng_e: number, lng_w: number, lat_e: number, lat_w: number;
+
+      /*
+       /*
+       /* longitude and latitude can be >180 and <180 with maplibre
+       /* that part fixes it to always have longitude coordinates -180 < x1, x2 < 180
+       /*
+       */
+      if (Math.abs(bounds._ne.lng) + Math.abs(bounds._sw.lng) > 360) {
+        lng_e = -180;
+        lng_w = 180;
+      } else if (Math.abs(bounds._sw.lng) > 180) {
+        lng_e = bounds._sw.lng + 360;
+        lng_w = bounds._ne.lng;
+      } else if (Math.abs(bounds._ne.lng) > 180) {
+        lng_e = bounds._sw.lng;
+        lng_w = bounds._ne.lng - 360;
+      } else {
+        lng_e = bounds._sw.lng;
+        lng_w = bounds._ne.lng;
+      }
+
+      lat_e = bounds._ne.lat;
+      lat_w = bounds._sw.lat;
+
+      // TODO: get the number of assets from the server?
+      let assetsInBounds = mapMarkers.filter((mapMarker) => isAssetinBounds(mapMarker, lng_e, lng_w, lat_e, lat_w));
+      numberOfAssets = assetsInBounds.length;
+
+      [x1, x2, y1, y2] = [lng_e, lng_w, lat_e, lat_w];
+
+      // refresh only if the assets displayed on screen has changed to avoid refresh the AssetGrid when nothing has changed on screen
+      if (currentAssets.length === 0 || assetsInBounds.toString() !== currentAssets.toString()) {
+        newGrid();
+        currentAssets = assetsInBounds;
+      }
+    }
+  };
+
+  const newGrid = () => {
+    // TODO: missing includeArchived and withSharedAlbums
+    const isFavorite = $mapSettings.onlyFavorites ? true : undefined;
+    timelineStore = new AssetStore({
+      isArchived: false,
+      withPartners: $mapSettings.withPartners,
+      isFavorite,
+      x1,
+      x2,
+      y1,
+      y2,
+    });
+  };
+
+  const handleOpenAssetGird = () => {
+    isAssetGridOpened = !isAssetGridOpened;
+    if (isAssetGridOpened) {
+      changeBounds();
+      newGrid();
+    }
+  };
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (map) {
@@ -153,6 +277,7 @@
     on:load={(event) => event.detail.setMaxZoom(18)}
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
+    on:moveend={changeBounds}
   >
     {#snippet children({ map }: { map: maplibregl.Map })}
       <NavigationControl position="top-left" showCompass={!simplified} />
@@ -239,6 +364,52 @@
           {/snippet}
         </MarkerLayer>
       </GeoJSON>
+
+      {#if showAssetGrid && !$mapSettings.withSharedAlbums && !$mapSettings.includeArchived}
+        <div
+          class="absolute transition ease-in-out inset-x-0 bottom-0 px-2 rounded-t-lg rounded-x-lg z-50 {isAssetGridOpened
+            ? 'h-[50%] bg-immich-bg dark:bg-immich-dark-bg border-t-2 border-x-2 dark:border-immich-dark-gray'
+            : ''}"
+        >
+          <div class="grid grid-cols-3 gap-4 py-2 w-full content-start dark:text-immich-dark-primary">
+            <div>
+              {#if isAssetGridOpened}
+                <div
+                  title={$t('number_of_assets')}
+                  class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray text-center h-8 w-8 p-2 rounded-full"
+                >
+                  {numberOfAssets}
+                </div>
+              {/if}
+            </div>
+            <div class=" text-white text-center">
+              <Button class="h-14 w-14 p-2" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
+                <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
+              </Button>
+            </div>
+            <div class="text-right">
+              {#if isAssetGridOpened && numberOfAssets && previousUrl}
+                <a href={previousUrl}>
+                  <Button class="h-8 w-8 p-2 " rounded="full" size="tiny" onclick={handleOpenAssetGird}>
+                    <Icon path={mdiOpenInNew} size="12" />
+                  </Button>
+                </a>
+              {/if}
+            </div>
+          </div>
+          {#if isAssetGridOpened && timelineStore}
+            {#key timelineStore}
+              <AssetGrid
+                enableRouting={false}
+                isSelectionMode={false}
+                assetStore={timelineStore}
+                assetInteraction={timelineInteraction}
+              />
+              <!-- assetInteractionStore={timelineInteractionStore} -->
+            {/key}
+          {/if}
+        </div>
+      {/if}
     {/snippet}
   </MapLibre>
   <style>
