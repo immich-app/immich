@@ -72,10 +72,10 @@
       let lat = Number(parts[2]);
       let lng = Number(parts[1]);
 
-      if (!isNaN(zoomValue)) {
+      if (!Number.isNaN(zoomValue)) {
         zoom = zoomValue;
       }
-      if (!isNaN(lat) && !isNaN(lng)) {
+      if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
         center = [lat, lng];
       }
 

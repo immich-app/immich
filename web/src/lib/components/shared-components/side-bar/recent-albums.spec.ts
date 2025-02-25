@@ -21,8 +21,8 @@ describe('RecentAlbums component', () => {
 
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(3);
-    expect(links[0]).toHaveAttribute('href', `/albums/${albums[2].id}`);
-    expect(links[1]).toHaveAttribute('href', `/albums/${albums[1].id}`);
-    expect(links[2]).toHaveAttribute('href', `/albums/${albums[3].id}`);
+    expect(links[0]).toHaveAttribute('href', `#/albums/${albums[2].id}`);
+    expect(links[1]).toHaveAttribute('href', `#/albums/${albums[1].id}`);
+    expect(links[2]).toHaveAttribute('href', `#/albums/${albums[3].id}`);
   });
 });
