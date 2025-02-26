@@ -49,11 +49,7 @@ websocket
   .on('connect', () => websocketStore.connected.set(true))
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => websocketStore.serverVersion.set(serverVersion))
-  .on('on_new_release', (releaseVersion) => {
-    if (!sessionStorage.getItem('modalAknowledged')) {
-      websocketStore.release.set(releaseVersion);
-    }
-  })
+  .on('on_new_release', (releaseVersion) => websocketStore.release.set(releaseVersion))
   .on('on_session_delete', () => handleLogout(AppRoute.AUTH_LOGIN))
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
