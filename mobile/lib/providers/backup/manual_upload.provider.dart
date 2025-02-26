@@ -37,7 +37,7 @@ final manualUploadProvider =
     ref.watch(localNotificationService),
     ref.watch(backupProvider.notifier),
     ref.watch(backupServiceProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(backupAlbumRepositoryProvider),
     ref,
   );
 });
@@ -47,7 +47,7 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   final LocalNotificationService _localNotificationService;
   final BackupNotifier _backupProvider;
   final BackupService _backupService;
-  final BackupRepository _backupRepository;
+  final BackupAlbumRepository _backupRepository;
   final Ref ref;
 
   ManualUploadNotifier(
