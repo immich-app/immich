@@ -14,7 +14,7 @@
 
   const onAcknowledge = () => {
     localStorage.setItem('appVersion', releaseVersion);
-    sessionStorage.setItem('modalAknowledged', 'true');
+    sessionStorage.setItem('modalAcknowledged', 'true');
     showModal = false;
   };
 
@@ -32,7 +32,7 @@
   let releaseVersion = $derived($release && semverToName($release.releaseVersion));
   let serverVersion = $derived($release && semverToName($release.serverVersion));
   $effect(() => {
-    if ($release?.isAvailable && !sessionStorage.getItem('modalAknowledged')) {
+    if ($release?.isAvailable && !sessionStorage.getItem('modalAcknowledged')) {
       handleRelease();
     }
   });
