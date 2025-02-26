@@ -1,6 +1,11 @@
+import { Kysely, sql } from 'kysely';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
+import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
+import postgres, { Notice } from 'postgres';
+import { DB } from 'src/db';
 import { ImmichWorker } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -90,6 +95,8 @@ import { Mocked, vitest } from 'vitest';
 type Overrides = {
   worker?: ImmichWorker;
   metadataRepository?: MetadataRepository;
+  syncRepository?: SyncRepository;
+  userRepository?: UserRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -144,7 +151,7 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides?: Overrides,
 ) => {
-  const { metadataRepository } = overrides || {};
+  const { metadataRepository, userRepository, syncRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggingRepositoryMock();
@@ -180,12 +187,12 @@ export const newTestService = <T extends BaseService>(
   const sharedLinkMock = newSharedLinkRepositoryMock();
   const stackMock = newStackRepositoryMock();
   const storageMock = newStorageRepositoryMock();
-  const syncMock = newSyncRepositoryMock();
+  const syncMock = (syncRepository || newSyncRepositoryMock()) as Mocked<RepositoryInterface<SyncRepository>>;
   const systemMock = newSystemMetadataRepositoryMock();
   const tagMock = newTagRepositoryMock();
   const telemetryMock = newTelemetryRepositoryMock();
   const trashMock = newTrashRepositoryMock();
-  const userMock = newUserRepositoryMock();
+  const userMock = (userRepository || newUserRepositoryMock()) as Mocked<RepositoryInterface<UserRepository>>;
   const versionHistoryMock = newVersionHistoryRepositoryMock();
   const viewMock = newViewRepositoryMock();
 
@@ -298,6 +305,57 @@ function* newPngFactory() {
 }
 
 const pngFactory = newPngFactory();
+
+export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
+  const parsed = parse(process.env.IMMICH_TEST_POSTGRES_URL!);
+
+  const parsedOptions = {
+    ...parsed,
+    ssl: false,
+    host: parsed.host ?? undefined,
+    port: parsed.port ? Number(parsed.port) : undefined,
+    database: parsed.database ?? undefined,
+  };
+
+  const driverOptions = {
+    ...parsedOptions,
+    onnotice: (notice: Notice) => {
+      if (notice['severity'] !== 'NOTICE') {
+        console.warn('Postgres notice:', notice);
+      }
+    },
+    max: 10,
+    types: {
+      date: {
+        to: 1184,
+        from: [1082, 1114, 1184],
+        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
+        parse: (x: string) => new Date(x),
+      },
+      bigint: {
+        to: 20,
+        from: [20],
+        parse: (value: string) => Number.parseInt(value),
+        serialize: (value: number) => value.toString(),
+      },
+    },
+    connection: {
+      TimeZone: 'UTC',
+    },
+  };
+
+  const kysely = new Kysely<DB>({
+    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, max: 1, database: 'postgres' }) }),
+  });
+  const randomSuffix = Math.random().toString(36).slice(2, 7);
+  const dbName = `immich_${suffix ?? randomSuffix}`;
+
+  await sql.raw(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`).execute(kysely);
+
+  return new Kysely<DB>({
+    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, database: dbName }) }),
+  });
+};
 
 export const newRandomImage = () => {
   const { value } = pngFactory.next();
