@@ -22,6 +22,8 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
@@ -48,6 +50,8 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
@@ -82,6 +86,8 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
@@ -112,6 +118,8 @@ select
         where
           "memories_assets_assets"."memoriesId" = "memories"."id"
           and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from

@@ -36,6 +36,7 @@ export class MemoryRepository implements IBulkAsset {
             .selectAll('assets')
             .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
             .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+            .orderBy('assets.fileCreatedAt', 'asc')
             .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )
@@ -137,6 +138,7 @@ export class MemoryRepository implements IBulkAsset {
             .selectAll('assets')
             .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
             .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+            .orderBy('assets.fileCreatedAt', 'asc')
             .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )

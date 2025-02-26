@@ -42,14 +42,17 @@ class TimelineRepository extends DatabaseRepository
   }
 
   @override
-  Stream<RenderList> watchAlbumTimeline(Album album) {
+  Stream<RenderList> watchAlbumTimeline(
+    Album album,
+    GroupAssetsBy groupAssetByOption,
+  ) {
     final query = album.assets.filter().isTrashedEqualTo(false);
     final withSortedOption = switch (album.sortOrder) {
       SortOrder.asc => query.sortByFileCreatedAt(),
       SortOrder.desc => query.sortByFileCreatedAtDesc(),
     };
 
-    return _watchRenderList(withSortedOption, GroupAssetsBy.none);
+    return _watchRenderList(withSortedOption, groupAssetByOption);
   }
 
   @override
@@ -106,6 +109,28 @@ class TimelineRepository extends DatabaseRepository
         .stackPrimaryAssetIdIsNull()
         .sortByFileCreatedAtDesc();
     return _watchRenderList(query, groupAssetByOption);
+  }
+
+  @override
+  Future<RenderList> getTimelineFromAssets(
+    List<Asset> assets,
+    GroupAssetsBy getGroupByOption,
+  ) {
+    return RenderList.fromAssets(assets, getGroupByOption);
+  }
+
+  @override
+  Stream<RenderList> watchAssetSelectionTimeline(int userId) {
+    final query = db.assets
+        .where()
+        .remoteIdIsNotNull()
+        .filter()
+        .ownerIdEqualTo(userId)
+        .isTrashedEqualTo(false)
+        .stackPrimaryAssetIdIsNull()
+        .sortByFileCreatedAtDesc();
+
+    return _watchRenderList(query, GroupAssetsBy.none);
   }
 
   Stream<RenderList> _watchRenderList(

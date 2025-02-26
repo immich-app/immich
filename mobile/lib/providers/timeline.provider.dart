@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
@@ -52,4 +53,18 @@ final trashTimelineProvider = StreamProvider<RenderList>((ref) {
 final allVideosTimelineProvider = StreamProvider<RenderList>((ref) {
   final timelineService = ref.watch(timelineServiceProvider);
   return timelineService.watchAllVideosTimeline();
+});
+
+final assetSelectionTimelineProvider = StreamProvider<RenderList>((ref) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.watchAssetSelectionTimeline();
+});
+
+final assetsTimelineProvider =
+    FutureProvider.family<RenderList, List<Asset>>((ref, assets) {
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.getTimelineFromAssets(
+    assets,
+    null,
+  );
 });

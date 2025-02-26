@@ -168,8 +168,3 @@ input:focus-visible {
     scrollbar-gutter: stable both-edges;
   }
 }
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 250ms;
-}
