@@ -88,6 +88,16 @@ class AssetRepository with LogMixin implements IAssetRepository {
   Future<void> deleteIds(Iterable<int> ids) async {
     await _db.asset.deleteWhere((row) => row.id.isIn(ids));
   }
+
+  @override
+  Future<bool> upsert(Asset asset) async {
+    final row = _toEntity(asset);
+    await _db.asset.insertOne(
+      row,
+      onConflict: DoUpdate((_) => row, target: [_db.asset.hash]),
+    );
+    return true;
+  }
 }
 
 AssetCompanion _toEntity(Asset asset) {
@@ -98,8 +108,8 @@ AssetCompanion _toEntity(Asset asset) {
     height: Value(asset.height),
     width: Value(asset.width),
     type: asset.type,
-    createdTime: asset.createdTime,
-    modifiedTime: Value(asset.modifiedTime),
+    createdTime: asset.createdTime.toUtc(),
+    modifiedTime: Value(asset.modifiedTime.toUtc()),
     duration: Value(asset.duration),
     localId: Value(asset.localId),
     remoteId: Value(asset.remoteId),

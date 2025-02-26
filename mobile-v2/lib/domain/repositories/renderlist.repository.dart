@@ -57,4 +57,44 @@ class RenderListRepository with LogMixin implements IRenderListRepository {
           return RenderList(elements: elements, modifiedTime: modified);
         });
   }
+
+  @override
+  Future<RenderList> getAll() async {
+    final assetCountExp = _db.asset.id.count();
+    final createdTimeExp = _db.asset.createdTime;
+    final modifiedTimeExp = _db.asset.modifiedTime.max();
+    final monthYearExp = createdTimeExp.strftime('%m-%Y');
+
+    final query = _db.asset.selectOnly()
+      ..addColumns([assetCountExp, createdTimeExp, modifiedTimeExp])
+      ..groupBy([monthYearExp])
+      ..orderBy([OrderingTerm.desc(createdTimeExp)]);
+
+    int lastAssetOffset = 0;
+    DateTime recentModifiedTime = DateTime(1);
+
+    final elements = await query.expand((row) {
+      final createdTime = row.read<DateTime>(createdTimeExp)!;
+      final assetCount = row.read(assetCountExp)!;
+      final modifiedTime = row.read(modifiedTimeExp)!;
+      final assetOffset = lastAssetOffset;
+      lastAssetOffset += assetCount;
+
+      // Get the recent modifed time. This is used to prevent unnecessary grid updates
+      if (modifiedTime.isAfter(recentModifiedTime)) {
+        recentModifiedTime = modifiedTime;
+      }
+
+      return [
+        RenderListMonthHeaderElement(date: createdTime),
+        RenderListAssetElement(
+          date: createdTime,
+          assetCount: assetCount,
+          assetOffset: assetOffset,
+        ),
+      ];
+    }).get();
+
+    return RenderList(elements: elements, modifiedTime: recentModifiedTime);
+  }
 }

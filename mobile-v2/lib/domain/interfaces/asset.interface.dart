@@ -4,6 +4,9 @@ import 'package:immich_mobile/domain/models/asset.model.dart';
 
 abstract interface class IAssetRepository {
   /// Batch upsert asset
+  Future<bool> upsert(Asset assets);
+
+  /// Batch upsert asset
   Future<bool> upsertAll(Iterable<Asset> assets);
 
   /// Removes assets with the [localIds]
