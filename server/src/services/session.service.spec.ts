@@ -33,6 +33,7 @@ describe('SessionService', () => {
           id: '123',
           token: '420',
           userId: '42',
+          updateId: 'uuid-v7',
         },
       ]);
 

@@ -11,6 +11,7 @@ export const sessionStub = {
     updatedAt: new Date(),
     deviceType: '',
     deviceOS: '',
+    updateId: 'uuid-v7',
   }),
   inactive: Object.freeze<SessionEntity>({
     id: 'not_active',
@@ -21,5 +22,6 @@ export const sessionStub = {
     updatedAt: new Date('2021-01-01'),
     deviceType: 'Mobile',
     deviceOS: 'Android',
+    updateId: 'uuid-v7',
   }),
 };
