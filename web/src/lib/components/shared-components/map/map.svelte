@@ -4,13 +4,13 @@
 
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AppRoute, AssetGridOptionsValues, QueryParameter, Theme } from '$lib/constants';
+  import { Theme } from '$lib/constants';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { type MapMarkerResponseDto } from '@immich/sdk';
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
-  import { mdiArrowDown, mdiArrowUp, mdiCog, mdiMap, mdiMapMarker, mdiOpenInNew } from '@mdi/js';
+  import { mdiArrowDown, mdiArrowUp, mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import type { GeoJSONSource, LngLatLike } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
@@ -266,10 +266,11 @@
 </script>
 
 {#await style then style}
+  <!-- <div class="isolate h-full w-full"> -->
   <MapLibre
     {hash}
     {style}
-    class="h-full"
+    class={`relative w-full overflow-hidden transition ease-in-out ${isAssetGridOpened ? 'h-1/2' : 'h-full'}`}
     {center}
     {zoom}
     attributionControl={false}
@@ -365,57 +366,109 @@
         </MarkerLayer>
       </GeoJSON>
 
-      {#if showAssetGrid && !$mapSettings.withSharedAlbums && !$mapSettings.includeArchived}
-        <div
-          class="absolute transition ease-in-out inset-x-0 bottom-0 px-2 rounded-t-lg rounded-x-lg z-50 {isAssetGridOpened
-            ? 'h-[50%] bg-immich-bg dark:bg-immich-dark-bg border-t-2 border-x-2 dark:border-immich-dark-gray'
-            : ''}"
-        >
-          <div class="grid grid-cols-3 gap-4 py-2 w-full content-start dark:text-immich-dark-primary">
-            <div>
-              {#if isAssetGridOpened}
-                <div
-                  title={$t('number_of_assets')}
-                  class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray text-center h-8 w-8 p-2 rounded-full"
-                >
-                  {numberOfAssets}
-                </div>
-              {/if}
-            </div>
-            <div class=" text-white text-center">
-              <Button class="h-14 w-14 p-2" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
-                <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
-              </Button>
-            </div>
-            <div class="text-right">
-              {#if isAssetGridOpened && numberOfAssets && previousUrl}
-                <a href={previousUrl}>
-                  <Button class="h-8 w-8 p-2 " rounded="full" size="tiny" onclick={handleOpenAssetGird}>
-                    <Icon path={mdiOpenInNew} size="12" />
-                  </Button>
-                </a>
-              {/if}
-            </div>
+      <!-- <div
+      class="absolute z-50 grid grid-cols-3 gap-4 py-2 w-full content-start dark:text-immich-dark-primary"
+      style={`top: ${isAssetGridOpened ? 'calc(100% - 4.5rem)' : 'calc(100% - 4.5rem)'}`}
+    >
+      <div>
+        {#if isAssetGridOpened}
+          <div
+            title={$t('number_of_assets')}
+            class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray text-center h-8 w-8 p-2 rounded-full"
+          >
+            {numberOfAssets}
           </div>
-          {#if isAssetGridOpened && timelineStore}
-            {#key timelineStore}
-              <AssetGrid
-                enableRouting={false}
-                isSelectionMode={false}
-                assetStore={timelineStore}
-                assetInteraction={timelineInteraction}
-              />
-              <!-- assetInteractionStore={timelineInteractionStore} -->
-            {/key}
-          {/if}
+        {/if}
+      </div>
+      <div class=" text-white text-center">
+        <Button class="h-14 w-14 p-2" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
+          <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
+        </Button>
+      </div>
+      <div class="text-right">
+        {#if isAssetGridOpened && numberOfAssets && previousUrl}
+          <a href={previousUrl}>
+            <Button class="h-8 w-8 p-2 " rounded="full" size="tiny" onclick={handleOpenAssetGird}>
+              <Icon path={mdiOpenInNew} size="12" />
+            </Button>
+          </a>
+        {/if}
+      </div>
+    </div> -->
+
+      <!-- <div
+        class="absolute z-50 flex justify-around py-2 w-full content-start dark:text-immich-dark-primary"
+        style={`top: ${isAssetGridOpened ? 'calc(100% - 4.5rem)' : 'calc(100% - 4.5rem)'}`}
+      >
+        <div>
+          <div
+            id="number-of-assets"
+            title={$t('number_of_assets')}
+            class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray text-center h-8 w-8 p-2 rounded-full"
+          >
+            {numberOfAssets}
+          </div>
+          <Button
+            id="toggle-handler"
+            class="h-14 w-14 p-2 !ml-0"
+            rounded="full"
+            size="tiny"
+            onclick={handleOpenAssetGird}
+          >
+            <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
+          </Button>
         </div>
-      {/if}
+      </div> -->
+      <div
+        class="absolute left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-4"
+        style={`top: ${isAssetGridOpened ? 'calc(100% - 4rem)' : 'calc(100% - 4rem)'}`}
+      >
+        <!-- Number of assets counter -->
+        <!-- {#if isAssetGridOpened} -->
+        <div
+          id="number-of-assets"
+          title={$t('number_of_assets')}
+          class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex justify-center items-center font-mono font-bold w-[40px] h-[40px] rounded-full"
+        >
+          {numberOfAssets}
+        </div>
+        <!-- {/if} -->
+
+        <!-- Toggle button -->
+        <Button class="h-14 w-14 p-2 !ml-0" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
+          <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
+        </Button>
+      </div>
     {/snippet}
   </MapLibre>
+
+  {#if showAssetGrid && !$mapSettings.withSharedAlbums && !$mapSettings.includeArchived}
+    <div
+      class="relative w-full overflow-hidden transition ease-in-out bottom-0 px-2 z-50 {isAssetGridOpened
+        ? 'h-1/2 bg-immich-bg dark:bg-immich-dark-bg'
+        : ''}"
+    >
+      <div class="absolute h-full w-full">
+        {#if isAssetGridOpened && timelineStore}
+          {#key timelineStore}
+            <AssetGrid
+              enableRouting={false}
+              isSelectionMode={false}
+              assetStore={timelineStore}
+              assetInteraction={timelineInteraction}
+            />
+            <!-- assetInteractionStore={timelineInteractionStore} -->
+          {/key}
+        {/if}
+      </div>
+    </div>
+  {/if}
+
   <style>
     .location-pin {
       transform: translate(0, -50%);
       filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
     }
   </style>
+  <!-- </div> -->
 {/await}
