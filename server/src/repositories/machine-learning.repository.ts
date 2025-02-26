@@ -98,10 +98,11 @@ export class MachineLearningRepository {
 
   private async predict<T>(urls: string[], payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
     const formData = await this.getFormData(payload, config);
-    let iterations = urls.length;
+    let urlCounter = 0;
     for (const url of urls) {
-      // Skip availability logic for the last (or only) URL
-      if (--iterations > 0) {
+      urlCounter++;
+      // Only use availability logic if this is not the last (or only) url
+      if (urlCounter < urls.length) {
         const availability = this.urlAvailability[url];
         if (availability === undefined) {
           // If this is a new endpoint, then check inline and skip if it fails
