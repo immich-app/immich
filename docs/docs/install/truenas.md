@@ -198,7 +198,7 @@ The **CPU** value was specified in a different format with a default of `4000m` 
 The **Memory** value was specified in a different format with a default of `8Gi` which is 8 GiB of RAM. The value was specified in bytes or a number with a measurement suffix. Examples: `129M`, `123Mi`, `1000000000`
 :::
 
-Enable **GPU Configuration** options if you have a GPU that you will use for [Hardware Transcoding](/docs/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md). More info: [GPU Passtrough Docs for TrueNAS Apps](https://www.truenas.com/docs/truenasapps/#gpu-passthrough)
+Enable **GPU Configuration** options if you have a GPU that you will use for [Hardware Transcoding](/docs/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md). More info: [GPU Passthrough Docs for TrueNAS Apps](https://www.truenas.com/docs/truenasapps/#gpu-passthrough)
 
 ### Install
 
