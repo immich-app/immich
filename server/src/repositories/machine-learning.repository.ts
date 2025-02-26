@@ -101,8 +101,9 @@ export class MachineLearningRepository {
     let urlCounter = 0;
     for (const url of urls) {
       urlCounter++;
+      const isLast = urlCounter >= urls.length;
       // Only use availability logic if this is not the last (or only) url
-      if (urlCounter < urls.length) {
+      if (!isLast) {
         const availability = this.urlAvailability[url];
         if (availability === undefined) {
           // If this is a new endpoint, then check inline and skip if it fails
@@ -110,7 +111,7 @@ export class MachineLearningRepository {
             continue;
           }
         } else if (
-          availability.active === false &&
+          !availability.active &&
           Date.now() - availability.lastChecked < MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
         ) {
           // If this is an old inactive endpoint that hasn't been checked in a
