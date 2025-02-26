@@ -107,4 +107,14 @@ class UserService {
   Future<void> clearTable() {
     return _userRepository.clearTable();
   }
+
+  Future<List<int>> getTimelineUserIds() async {
+    final me = await _userRepository.me();
+    return _userRepository.getTimelineUserIds(me.isarId);
+  }
+
+  Stream<List<int>> watchTimelineUserIds() async* {
+    final me = await _userRepository.me();
+    yield* _userRepository.watchTimelineUsers(me.isarId);
+  }
 }

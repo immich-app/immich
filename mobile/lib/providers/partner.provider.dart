@@ -8,6 +8,7 @@ import 'package:immich_mobile/entities/user.entity.dart';
 
 class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
   final PartnerService _partnerService;
+  late final StreamSubscription<List<User>> streamSub;
 
   PartnerSharedWithNotifier(this._partnerService) : super([]) {
     Function eq = const ListEquality<User>().equals;
@@ -16,7 +17,7 @@ class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
         state = partners;
       }
     }).then((_) {
-      _partnerService.watchSharedWith().listen((partners) {
+      streamSub = _partnerService.watchSharedWith().listen((partners) {
         if (!eq(state, partners)) {
           state = partners;
         }
@@ -26,6 +27,14 @@ class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
 
   Future<bool> updatePartner(User partner, {required bool inTimeline}) {
     return _partnerService.updatePartner(partner, inTimeline: inTimeline);
+  }
+
+  @override
+  void dispose() {
+    if (mounted) {
+      streamSub.cancel();
+    }
+    super.dispose();
   }
 }
 
@@ -38,6 +47,7 @@ final partnerSharedWithProvider =
 
 class PartnerSharedByNotifier extends StateNotifier<List<User>> {
   final PartnerService _partnerService;
+  late final StreamSubscription<List<User>> streamSub;
 
   PartnerSharedByNotifier(this._partnerService) : super([]) {
     Function eq = const ListEquality<User>().equals;
@@ -54,11 +64,11 @@ class PartnerSharedByNotifier extends StateNotifier<List<User>> {
     });
   }
 
-  late final StreamSubscription<List<User>> streamSub;
-
   @override
   void dispose() {
-    streamSub.cancel();
+    if (mounted) {
+      streamSub.cancel();
+    }
     super.dispose();
   }
 }
