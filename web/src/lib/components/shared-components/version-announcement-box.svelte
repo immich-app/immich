@@ -32,7 +32,7 @@
   let releaseVersion = $derived($release && semverToName($release.releaseVersion));
   let serverVersion = $derived($release && semverToName($release.serverVersion));
   $effect(() => {
-    if (($release?.isAvailable) && (!sessionStorage.getItem('modalAknowledged'))) {
+    if ($release?.isAvailable && !sessionStorage.getItem('modalAknowledged')) {
       handleRelease();
     }
   });
