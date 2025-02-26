@@ -10,41 +10,29 @@ where
 
 -- SessionRepository.getByToken
 select
-  "sessions".*,
-  to_json("user") as "user"
-from
-  "sessions"
-  inner join lateral (
+  "sessions"."id",
+  "sessions"."updatedAt",
+  (
     select
-      "id",
-      "email",
-      "createdAt",
-      "profileImagePath",
-      "isAdmin",
-      "shouldChangePassword",
-      "deletedAt",
-      "oauthId",
-      "updatedAt",
-      "storageLabel",
-      "name",
-      "quotaSizeInBytes",
-      "quotaUsageInBytes",
-      "status",
-      "profileChangedAt",
+      to_json(obj)
+    from
       (
         select
-          array_agg("user_metadata") as "metadata"
+          "users"."id",
+          "users"."name",
+          "users"."email",
+          "users"."isAdmin",
+          "users"."quotaUsageInBytes",
+          "users"."quotaSizeInBytes"
         from
-          "user_metadata"
+          "users"
         where
-          "users"."id" = "user_metadata"."userId"
-      ) as "metadata"
-    from
-      "users"
-    where
-      "users"."id" = "sessions"."userId"
-      and "users"."deletedAt" is null
-  ) as "user" on true
+          "users"."id" = "sessions"."userId"
+          and "users"."deletedAt" is null
+      ) as obj
+  ) as "user"
+from
+  "sessions"
 where
   "sessions"."token" = $1
 

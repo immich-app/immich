@@ -13,6 +13,7 @@
     backIcon?: string;
     tailwindClasses?: string;
     forceDark?: boolean;
+    multiRow?: boolean;
     onClose?: () => void;
     leading?: Snippet;
     children?: Snippet;
@@ -24,6 +25,7 @@
     backIcon = mdiClose,
     tailwindClasses = '',
     forceDark = false,
+    multiRow = false,
     onClose = () => {},
     leading,
     children,
@@ -67,7 +69,7 @@
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
   <div
     id="asset-selection-app-bar"
-    class={`grid grid-cols-[10%_80%_10%] justify-between sm:grid-cols-[25%_50%_25%] lg:grid-cols-[25%_50%_25%]  ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
+    class={`grid ${multiRow ? 'grid-cols-[100%] md:grid-cols-[25%_50%_25%]' : 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]'} justify-between lg:grid-cols-[25%_50%_25%] ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
       forceDark && 'bg-immich-dark-gray text-white'
     }`}
   >

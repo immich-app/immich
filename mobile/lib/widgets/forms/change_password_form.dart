@@ -85,7 +85,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                             ref.read(backupProvider.notifier).cancelBackup();
                             await ref
                                 .read(assetProvider.notifier)
-                                .clearAllAsset();
+                                .clearAllAssets();
                             ref.read(websocketProvider.notifier).disconnect();
 
                             AutoRouter.of(context).back();

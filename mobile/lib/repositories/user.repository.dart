@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
@@ -25,13 +26,10 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
     final int userId = Store.get(StoreKey.currentUser).isarId;
     final QueryBuilder<User, User, QAfterWhereClause> afterWhere =
         self ? baseQuery.noOp() : baseQuery.isarIdNotEqualTo(userId);
-    final QueryBuilder<User, User, QAfterSortBy> query;
-    switch (sortBy) {
-      case null:
-        query = afterWhere.noOp();
-      case UserSort.id:
-        query = afterWhere.sortById();
-    }
+    final QueryBuilder<User, User, QAfterSortBy> query = switch (sortBy) {
+      null => afterWhere.noOp(),
+      UserSort.id => afterWhere.sortById(),
+    };
     return query.findAll();
   }
 
@@ -60,4 +58,16 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .or()
       .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
       .findAll();
+
+  @override
+  Future<User?> getByDbId(int id) async {
+    return await db.users.get(id);
+  }
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.users.clear();
+    });
+  }
 }

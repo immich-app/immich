@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { ImmichWorker } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { getCLIPModelInfo, isSmartSearchEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';

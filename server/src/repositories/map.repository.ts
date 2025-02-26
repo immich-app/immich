@@ -1,43 +1,56 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
+import { Expression, Kysely, sql, SqlBool } from 'kysely';
+import { InjectKysely } from 'nestjs-kysely';
 import { randomUUID } from 'node:crypto';
 import { createReadStream, existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { GeodataPlacesEntity, GeodataPlacesTempEntity } from 'src/entities/geodata-places.entity';
-import {
-  NaturalEarthCountriesEntity,
-  NaturalEarthCountriesTempEntity,
-} from 'src/entities/natural-earth-countries.entity';
+import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
+import { DummyValue, GenerateSql } from 'src/decorators';
+import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
 import { LogLevel, SystemMetadataKey } from 'src/enum';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import {
-  GeoPoint,
-  IMapRepository,
-  MapMarker,
-  MapMarkerSearchOptions,
-  ReverseGeocodeResult,
-} from 'src/interfaces/map.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { OptionalBetween } from 'src/utils/database';
-import { DataSource, In, IsNull, Not, Repository } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity.js';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+
+export interface MapMarkerSearchOptions {
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  fileCreatedBefore?: Date;
+  fileCreatedAfter?: Date;
+}
+
+export interface GeoPoint {
+  latitude: number;
+  longitude: number;
+}
+
+export interface ReverseGeocodeResult {
+  country: string | null;
+  state: string | null;
+  city: string | null;
+}
+
+export interface MapMarker extends ReverseGeocodeResult {
+  id: string;
+  lat: number;
+  lon: number;
+}
+
+interface MapDB extends DB {
+  geodata_places_tmp: GeodataPlaces;
+  naturalearth_countries_tmp: NaturalearthCountries;
+}
 
 @Injectable()
-export class MapRepository implements IMapRepository {
+export class MapRepository {
   constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(GeodataPlacesEntity) private geodataPlacesRepository: Repository<GeodataPlacesEntity>,
-    @InjectRepository(NaturalEarthCountriesEntity)
-    private naturalEarthCountriesRepository: Repository<NaturalEarthCountriesEntity>,
-    @InjectDataSource() private dataSource: DataSource,
-    @Inject(IConfigRepository) private configRepository: IConfigRepository,
-    @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private configRepository: ConfigRepository,
+    private metadataRepository: SystemMetadataRepository,
+    private logger: LoggingRepository,
+    @InjectKysely() private db: Kysely<MapDB>,
   ) {
     this.logger.setContext(MapRepository.name);
   }
@@ -63,69 +76,65 @@ export class MapRepository implements IMapRepository {
     this.logger.log('Geodata import completed');
   }
 
-  async getMapMarkers(
-    ownerIds: string[],
-    albumIds: string[],
-    options: MapMarkerSearchOptions = {},
-  ): Promise<MapMarker[]> {
+  @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
+  getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}) {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
-    const where = {
-      isVisible: true,
-      isArchived,
-      exifInfo: {
-        latitude: Not(IsNull()),
-        longitude: Not(IsNull()),
-      },
-      isFavorite,
-      fileCreatedAt: OptionalBetween(fileCreatedAfter, fileCreatedBefore),
-    };
+    return this.db
+      .selectFrom('assets')
+      .innerJoin('exif', (builder) =>
+        builder
+          .onRef('assets.id', '=', 'exif.assetId')
+          .on('exif.latitude', 'is not', null)
+          .on('exif.longitude', 'is not', null),
+      )
+      .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
+      .where('isVisible', '=', true)
+      .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
+      .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
+      .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
+      .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
+      .where('deletedAt', 'is', null)
+      .where((eb) => {
+        const expression: Expression<SqlBool>[] = [];
 
-    const assets = await this.assetRepository.find({
-      select: {
-        id: true,
-        exifInfo: {
-          city: true,
-          state: true,
-          country: true,
-          latitude: true,
-          longitude: true,
-        },
-      },
-      where: [
-        { ...where, ownerId: In([...ownerIds]) },
-        { ...where, albums: { id: In([...albumIds]) } },
-      ],
-      relations: {
-        exifInfo: true,
-      },
-      order: {
-        fileCreatedAt: 'DESC',
-      },
-    });
+        if (ownerIds.length > 0) {
+          expression.push(eb('ownerId', 'in', ownerIds));
+        }
 
-    return assets.map((asset) => ({
-      id: asset.id,
-      lat: asset.exifInfo!.latitude!,
-      lon: asset.exifInfo!.longitude!,
-      city: asset.exifInfo!.city,
-      state: asset.exifInfo!.state,
-      country: asset.exifInfo!.country,
-    }));
+        if (albumIds.length > 0) {
+          expression.push(
+            eb.exists((eb) =>
+              eb
+                .selectFrom('albums_assets_assets')
+                .whereRef('assets.id', '=', 'albums_assets_assets.assetsId')
+                .where('albums_assets_assets.albumsId', 'in', albumIds),
+            ),
+          );
+        }
+
+        return eb.or(expression);
+      })
+      .orderBy('fileCreatedAt', 'desc')
+      .execute() as Promise<MapMarker[]>;
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
     this.logger.debug(`Request: ${point.latitude},${point.longitude}`);
 
-    const response = await this.geodataPlacesRepository
-      .createQueryBuilder('geoplaces')
+    const response = await this.db
+      .selectFrom('geodata_places')
+      .selectAll()
       .where(
-        'earth_box(ll_to_earth_public(:latitude, :longitude), 25000) @> ll_to_earth_public(latitude, longitude)',
-        point,
+        sql`earth_box(ll_to_earth_public(${point.latitude}, ${point.longitude}), 25000)`,
+        '@>',
+        sql`ll_to_earth_public(latitude, longitude)`,
       )
-      .orderBy('earth_distance(ll_to_earth_public(:latitude, :longitude), ll_to_earth_public(latitude, longitude))')
+      .orderBy(
+        sql`(earth_distance(ll_to_earth_public(${point.latitude}, ${point.longitude}), ll_to_earth_public(latitude, longitude)))`,
+      )
       .limit(1)
-      .getOne();
+      .executeTakeFirst();
 
     if (response) {
       if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
@@ -143,11 +152,12 @@ export class MapRepository implements IMapRepository {
       `Response from database for reverse geocoding latitude: ${point.latitude}, longitude: ${point.longitude} was null`,
     );
 
-    const ne_response = await this.naturalEarthCountriesRepository
-      .createQueryBuilder('naturalearth_countries')
-      .where('coordinates @> point (:longitude, :latitude)', point)
+    const ne_response = await this.db
+      .selectFrom('naturalearth_countries')
+      .selectAll()
+      .where('coordinates', '@>', sql<string>`point(${point.longitude}, ${point.latitude})`)
       .limit(1)
-      .getOne();
+      .executeTakeFirst();
 
     if (!ne_response) {
       this.logger.warn(
@@ -176,10 +186,11 @@ export class MapRepository implements IMapRepository {
       return;
     }
 
-    await this.dataSource.query('DROP TABLE IF EXISTS naturalearth_countries_tmp');
-    await this.dataSource.query(
-      'CREATE TABLE naturalearth_countries_tmp (LIKE naturalearth_countries INCLUDING ALL EXCLUDING INDEXES)',
+    await this.db.schema.dropTable('naturalearth_countries_tmp').ifExists().execute();
+    await sql`CREATE TABLE naturalearth_countries_tmp (LIKE naturalearth_countries INCLUDING ALL EXCLUDING INDEXES)`.execute(
+      this.db,
     );
+
     const entities: Omit<NaturalEarthCountriesTempEntity, 'id'>[] = [];
     for (const feature of geoJSONData.features) {
       for (const entry of feature.geometry.coordinates) {
@@ -196,14 +207,14 @@ export class MapRepository implements IMapRepository {
         }
       }
     }
-    await this.dataSource.manager.insert(NaturalEarthCountriesTempEntity, entities);
+    await this.db.insertInto('naturalearth_countries_tmp').values(entities).execute();
 
-    await this.dataSource.query(`ALTER TABLE naturalearth_countries_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`);
+    await sql`ALTER TABLE naturalearth_countries_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db);
 
-    await this.dataSource.transaction(async (manager) => {
-      await manager.query('ALTER TABLE naturalearth_countries RENAME TO naturalearth_countries_old');
-      await manager.query('ALTER TABLE naturalearth_countries_tmp RENAME TO naturalearth_countries');
-      await manager.query('DROP TABLE naturalearth_countries_old');
+    await this.db.transaction().execute(async (manager) => {
+      await manager.schema.alterTable('naturalearth_countries').renameTo('naturalearth_countries_old').execute();
+      await manager.schema.alterTable('naturalearth_countries_tmp').renameTo('naturalearth_countries').execute();
+      await manager.schema.dropTable('naturalearth_countries_old').execute();
     });
   }
 
@@ -214,17 +225,15 @@ export class MapRepository implements IMapRepository {
       this.loadAdmin(resourcePaths.geodata.admin2),
     ]);
 
-    await this.dataSource.query('DROP TABLE IF EXISTS geodata_places_tmp');
-    await this.dataSource.query(
-      'CREATE TABLE geodata_places_tmp (LIKE geodata_places INCLUDING ALL EXCLUDING INDEXES)',
-    );
+    await this.db.schema.dropTable('geodata_places_tmp').ifExists().execute();
+    await sql`CREATE TABLE geodata_places_tmp (LIKE geodata_places INCLUDING ALL EXCLUDING INDEXES)`.execute(this.db);
     await this.loadCities500(admin1, admin2);
     await this.createGeodataIndices();
 
-    await this.dataSource.transaction(async (manager) => {
-      await manager.query('ALTER TABLE geodata_places RENAME TO geodata_places_old');
-      await manager.query('ALTER TABLE geodata_places_tmp RENAME TO geodata_places');
-      await manager.query('DROP TABLE geodata_places_old');
+    await this.db.transaction().execute(async (manager) => {
+      await manager.schema.alterTable('geodata_places').renameTo('geodata_places_old').execute();
+      await manager.schema.alterTable('geodata_places_tmp').renameTo('geodata_places').execute();
+      await manager.schema.dropTable('geodata_places_old').execute();
     });
   }
 
@@ -236,7 +245,7 @@ export class MapRepository implements IMapRepository {
     }
 
     const input = createReadStream(cities500, { highWaterMark: 512 * 1024 * 1024 });
-    let bufferGeodata: QueryDeepPartialEntity<GeodataPlacesTempEntity>[] = [];
+    let bufferGeodata = [];
     const lineReader = readLine.createInterface({ input });
     let count = 0;
 
@@ -257,19 +266,23 @@ export class MapRepository implements IMapRepository {
         admin1Code: lineSplit[10],
         admin2Code: lineSplit[11],
         modificationDate: lineSplit[18],
-        admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`),
-        admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`),
+        admin1Name: admin1Map.get(`${lineSplit[8]}.${lineSplit[10]}`) ?? null,
+        admin2Name: admin2Map.get(`${lineSplit[8]}.${lineSplit[10]}.${lineSplit[11]}`) ?? null,
       };
       bufferGeodata.push(geoData);
       if (bufferGeodata.length >= 5000) {
         const curLength = bufferGeodata.length;
         futures.push(
-          this.dataSource.manager.insert(GeodataPlacesTempEntity, bufferGeodata).then(() => {
-            count += curLength;
-            if (count % 10_000 === 0) {
-              this.logger.log(`${count} geodata records imported`);
-            }
-          }),
+          this.db
+            .insertInto('geodata_places_tmp')
+            .values(bufferGeodata)
+            .execute()
+            .then(() => {
+              count += curLength;
+              if (count % 10_000 === 0) {
+                this.logger.log(`${count} geodata records imported`);
+              }
+            }),
         );
         bufferGeodata = [];
         // leave spare connection for other queries
@@ -280,7 +293,7 @@ export class MapRepository implements IMapRepository {
       }
     }
 
-    await this.dataSource.manager.insert(GeodataPlacesTempEntity, bufferGeodata);
+    await this.db.insertInto('geodata_places_tmp').values(bufferGeodata).execute();
   }
 
   private async loadAdmin(filePath: string) {
@@ -303,24 +316,28 @@ export class MapRepository implements IMapRepository {
 
   private createGeodataIndices() {
     return Promise.all([
-      this.dataSource.query(`ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`),
-      this.dataSource.query(`
-        CREATE INDEX IDX_geodata_gist_earthcoord_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gist (ll_to_earth_public(latitude, longitude))
-          WITH (fillfactor = 100)`),
-      this.dataSource.query(`
-        CREATE INDEX idx_geodata_places_name_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gin (f_unaccent(name) gin_trgm_ops)`),
-      this.dataSource.query(`
-        CREATE INDEX idx_geodata_places_admin1_name_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gin (f_unaccent("admin1Name") gin_trgm_ops)`),
-      this.dataSource.query(`
-        CREATE INDEX idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}
-          ON geodata_places_tmp
-          USING gin (f_unaccent("admin2Name") gin_trgm_ops)`),
+      sql`ALTER TABLE geodata_places_tmp ADD PRIMARY KEY (id) WITH (FILLFACTOR = 100)`.execute(this.db),
+      sql`
+        CREATE INDEX IDX_geodata_gist_earthcoord_${sql.raw(randomUUID().replaceAll('-', '_'))}
+                ON geodata_places_tmp
+                USING gist (ll_to_earth_public(latitude, longitude))
+                WITH (fillfactor = 100)
+      `.execute(this.db),
+      this.db.schema
+        .createIndex(`idx_geodata_places_country_code_${randomUUID().replaceAll('-', '_')}`)
+        .on('geodata_places_tmp')
+        .using('gin (f_unaccent(name) gin_trgm_ops)')
+        .execute(),
+      this.db.schema
+        .createIndex(`idx_geodata_places_country_code_${randomUUID().replaceAll('-', '_')}`)
+        .on('geodata_places_tmp')
+        .using('gin (f_unaccent("admin1Name") gin_trgm_ops)')
+        .execute(),
+      this.db.schema
+        .createIndex(`idx_geodata_places_admin2_name_${randomUUID().replaceAll('-', '_')}`)
+        .on('geodata_places_tmp')
+        .using('gin (f_unaccent("admin2Name") gin_trgm_ops)')
+        .execute(),
     ]);
   }
 }

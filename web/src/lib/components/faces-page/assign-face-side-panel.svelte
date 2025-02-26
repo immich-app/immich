@@ -6,7 +6,7 @@
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { photoViewer } from '$lib/stores/assets.store';
+  import { photoViewerImgElement } from '$lib/stores/assets.store';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
@@ -62,7 +62,7 @@
   const handleCreatePerson = async () => {
     const timeout = setTimeout(() => (isShowLoadingNewPerson = true), timeBeforeShowLoadingSpinner);
 
-    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, $photoViewer);
+    const newFeaturePhoto = await zoomImageToBase64(editedFace, assetId, assetType, $photoViewerImgElement);
 
     onCreatePerson(newFeaturePhoto);
 

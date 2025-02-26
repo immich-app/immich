@@ -25,13 +25,14 @@ import {
   Colorspace,
   ImageFormat,
   LogLevel,
+  QueueName,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
+import { ConcurrentQueueName } from 'src/types';
 import { IsCronExpression, ValidateBoolean } from 'src/validation';
 
 const isLibraryScanEnabled = (config: SystemConfigLibraryScanDto) => config.enabled;

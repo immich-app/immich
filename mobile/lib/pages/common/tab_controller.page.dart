@@ -20,6 +20,8 @@ class TabControllerPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isRefreshingAssets = ref.watch(assetProvider);
     final isRefreshingRemoteAlbums = ref.watch(isRefreshingRemoteAlbumProvider);
+    final isScreenLandscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
 
     Widget buildIcon({required Widget icon, required bool isProcessing}) {
       if (!isProcessing) return icon;
@@ -45,7 +47,7 @@ class TabControllerPage extends HookConsumerWidget {
       );
     }
 
-    onNavigationSelected(TabsRouter router, int index) {
+    void onNavigationSelected(TabsRouter router, int index) {
       // On Photos page menu tapped
       if (router.activeIndex == 0 && index == 0) {
         scrollToTopNotifierProvider.scrollToTop();
@@ -61,62 +63,82 @@ class TabControllerPage extends HookConsumerWidget {
       ref.read(tabProvider.notifier).state = TabEnum.values[index];
     }
 
-    bottomNavigationBar(TabsRouter tabsRouter) {
+    final navigationDestinations = [
+      NavigationDestination(
+        label: 'tab_controller_nav_photos'.tr(),
+        icon: const Icon(
+          Icons.photo_library_outlined,
+        ),
+        selectedIcon: buildIcon(
+          isProcessing: isRefreshingAssets,
+          icon: Icon(
+            Icons.photo_library,
+            color: context.primaryColor,
+          ),
+        ),
+      ),
+      NavigationDestination(
+        label: 'tab_controller_nav_search'.tr(),
+        icon: const Icon(
+          Icons.search_rounded,
+        ),
+        selectedIcon: Icon(
+          Icons.search,
+          color: context.primaryColor,
+        ),
+      ),
+      NavigationDestination(
+        label: 'albums'.tr(),
+        icon: const Icon(
+          Icons.photo_album_outlined,
+        ),
+        selectedIcon: buildIcon(
+          isProcessing: isRefreshingRemoteAlbums,
+          icon: Icon(
+            Icons.photo_album_rounded,
+            color: context.primaryColor,
+          ),
+        ),
+      ),
+      NavigationDestination(
+        label: 'library'.tr(),
+        icon: const Icon(
+          Icons.space_dashboard_outlined,
+        ),
+        selectedIcon: buildIcon(
+          isProcessing: isRefreshingAssets,
+          icon: Icon(
+            Icons.space_dashboard_rounded,
+            color: context.primaryColor,
+          ),
+        ),
+      ),
+    ];
+
+    Widget bottomNavigationBar(TabsRouter tabsRouter) {
       return NavigationBar(
         selectedIndex: tabsRouter.activeIndex,
         onDestinationSelected: (index) =>
             onNavigationSelected(tabsRouter, index),
-        destinations: [
-          NavigationDestination(
-            label: 'tab_controller_nav_photos'.tr(),
-            icon: const Icon(
-              Icons.photo_library_outlined,
-            ),
-            selectedIcon: buildIcon(
-              isProcessing: isRefreshingAssets,
-              icon: Icon(
-                Icons.photo_library,
-                color: context.primaryColor,
+        destinations: navigationDestinations,
+      );
+    }
+
+    Widget navigationRail(TabsRouter tabsRouter) {
+      return NavigationRail(
+        destinations: navigationDestinations
+            .map(
+              (e) => NavigationRailDestination(
+                icon: e.icon,
+                label: Text(e.label),
               ),
-            ),
-          ),
-          NavigationDestination(
-            label: 'tab_controller_nav_search'.tr(),
-            icon: const Icon(
-              Icons.search_rounded,
-            ),
-            selectedIcon: Icon(
-              Icons.search,
-              color: context.primaryColor,
-            ),
-          ),
-          NavigationDestination(
-            label: 'albums'.tr(),
-            icon: const Icon(
-              Icons.photo_album_outlined,
-            ),
-            selectedIcon: buildIcon(
-              isProcessing: isRefreshingRemoteAlbums,
-              icon: Icon(
-                Icons.photo_album_rounded,
-                color: context.primaryColor,
-              ),
-            ),
-          ),
-          NavigationDestination(
-            label: 'library'.tr(),
-            icon: const Icon(
-              Icons.space_dashboard_outlined,
-            ),
-            selectedIcon: buildIcon(
-              isProcessing: isRefreshingAssets,
-              icon: Icon(
-                Icons.space_dashboard_rounded,
-                color: context.primaryColor,
-              ),
-            ),
-          ),
-        ],
+            )
+            .toList(),
+        onDestinationSelected: (index) =>
+            onNavigationSelected(tabsRouter, index),
+        selectedIndex: tabsRouter.activeIndex,
+        labelType: NavigationRailLabelType.all,
+        groupAlignment: 0.0,
       );
     }
 
@@ -135,17 +157,27 @@ class TabControllerPage extends HookConsumerWidget {
       ),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
+        final heroedChild = HeroControllerScope(
+          controller: HeroController(),
+          child: child,
+        );
         return PopScope(
           canPop: tabsRouter.activeIndex == 0,
           onPopInvokedWithResult: (didPop, _) =>
               !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
-            body: HeroControllerScope(
-              controller: HeroController(),
-              child: child,
-            ),
-            bottomNavigationBar:
-                multiselectEnabled ? null : bottomNavigationBar(tabsRouter),
+            body: isScreenLandscape
+                ? Row(
+                    children: [
+                      navigationRail(tabsRouter),
+                      const VerticalDivider(),
+                      Expanded(child: heroedChild),
+                    ],
+                  )
+                : heroedChild,
+            bottomNavigationBar: multiselectEnabled || isScreenLandscape
+                ? null
+                : bottomNavigationBar(tabsRouter),
           ),
         );
       },

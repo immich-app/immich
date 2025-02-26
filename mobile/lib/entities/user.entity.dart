@@ -149,56 +149,33 @@ enum AvatarColorEnum {
 }
 
 extension AvatarColorEnumHelper on UserAvatarColor {
-  AvatarColorEnum toAvatarColor() {
-    switch (this) {
-      case UserAvatarColor.primary:
-        return AvatarColorEnum.primary;
-      case UserAvatarColor.pink:
-        return AvatarColorEnum.pink;
-      case UserAvatarColor.red:
-        return AvatarColorEnum.red;
-      case UserAvatarColor.yellow:
-        return AvatarColorEnum.yellow;
-      case UserAvatarColor.blue:
-        return AvatarColorEnum.blue;
-      case UserAvatarColor.green:
-        return AvatarColorEnum.green;
-      case UserAvatarColor.purple:
-        return AvatarColorEnum.purple;
-      case UserAvatarColor.orange:
-        return AvatarColorEnum.orange;
-      case UserAvatarColor.gray:
-        return AvatarColorEnum.gray;
-      case UserAvatarColor.amber:
-        return AvatarColorEnum.amber;
-    }
-    return AvatarColorEnum.primary;
-  }
+  AvatarColorEnum toAvatarColor() => switch (this) {
+        UserAvatarColor.primary => AvatarColorEnum.primary,
+        UserAvatarColor.pink => AvatarColorEnum.pink,
+        UserAvatarColor.red => AvatarColorEnum.red,
+        UserAvatarColor.yellow => AvatarColorEnum.yellow,
+        UserAvatarColor.blue => AvatarColorEnum.blue,
+        UserAvatarColor.green => AvatarColorEnum.green,
+        UserAvatarColor.purple => AvatarColorEnum.purple,
+        UserAvatarColor.orange => AvatarColorEnum.orange,
+        UserAvatarColor.gray => AvatarColorEnum.gray,
+        UserAvatarColor.amber => AvatarColorEnum.amber,
+        _ => AvatarColorEnum.primary,
+      };
 }
 
 extension AvatarColorToColorHelper on AvatarColorEnum {
-  Color toColor([bool isDarkTheme = false]) {
-    switch (this) {
-      case AvatarColorEnum.primary:
-        return isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF);
-      case AvatarColorEnum.pink:
-        return const Color.fromARGB(255, 244, 114, 182);
-      case AvatarColorEnum.red:
-        return const Color.fromARGB(255, 239, 68, 68);
-      case AvatarColorEnum.yellow:
-        return const Color.fromARGB(255, 234, 179, 8);
-      case AvatarColorEnum.blue:
-        return const Color.fromARGB(255, 59, 130, 246);
-      case AvatarColorEnum.green:
-        return const Color.fromARGB(255, 22, 163, 74);
-      case AvatarColorEnum.purple:
-        return const Color.fromARGB(255, 147, 51, 234);
-      case AvatarColorEnum.orange:
-        return const Color.fromARGB(255, 234, 88, 12);
-      case AvatarColorEnum.gray:
-        return const Color.fromARGB(255, 75, 85, 99);
-      case AvatarColorEnum.amber:
-        return const Color.fromARGB(255, 217, 119, 6);
-    }
-  }
+  Color toColor([bool isDarkTheme = false]) => switch (this) {
+        AvatarColorEnum.primary =>
+          isDarkTheme ? const Color(0xFFABCBFA) : const Color(0xFF4250AF),
+        AvatarColorEnum.pink => const Color.fromARGB(255, 244, 114, 182),
+        AvatarColorEnum.red => const Color.fromARGB(255, 239, 68, 68),
+        AvatarColorEnum.yellow => const Color.fromARGB(255, 234, 179, 8),
+        AvatarColorEnum.blue => const Color.fromARGB(255, 59, 130, 246),
+        AvatarColorEnum.green => const Color.fromARGB(255, 22, 163, 74),
+        AvatarColorEnum.purple => const Color.fromARGB(255, 147, 51, 234),
+        AvatarColorEnum.orange => const Color.fromARGB(255, 234, 88, 12),
+        AvatarColorEnum.gray => const Color.fromARGB(255, 75, 85, 99),
+        AvatarColorEnum.amber => const Color.fromARGB(255, 217, 119, 6),
+      };
 }

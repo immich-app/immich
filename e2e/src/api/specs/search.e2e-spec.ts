@@ -1,10 +1,10 @@
-import { AssetMediaResponseDto, LoginResponseDto, deleteAssets, updateAsset } from '@immich/sdk';
+import { AssetMediaResponseDto, AssetResponseDto, deleteAssets, LoginResponseDto, updateAsset } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { Socket } from 'socket.io-client';
 import { errorDto } from 'src/responses';
-import { app, asBearerAuth, testAssetDir, utils } from 'src/utils';
+import { app, asBearerAuth, TEN_TIMES, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const today = DateTime.now();
@@ -459,6 +459,55 @@ describe('/search', () => {
       const { status, body } = await request(app).post('/search/smart');
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
+    });
+  });
+
+  describe('POST /search/random', () => {
+    beforeAll(async () => {
+      await Promise.all([
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+        utils.createAsset(admin.accessToken),
+      ]);
+
+      await utils.waitForQueueFinish(admin.accessToken, 'thumbnailGeneration');
+    });
+
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).post('/search/random').send({ size: 1 });
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it.each(TEN_TIMES)('should return 1 random assets', async () => {
+      const { status, body } = await request(app)
+        .post('/search/random')
+        .send({ size: 1 })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(1);
+      expect(assets[0].ownerId).toBe(admin.userId);
+    });
+
+    it.each(TEN_TIMES)('should return 2 random assets', async () => {
+      const { status, body } = await request(app)
+        .post('/search/random')
+        .send({ size: 2 })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+
+      const assets: AssetResponseDto[] = body;
+      expect(assets.length).toBe(2);
+      expect(assets[0].ownerId).toBe(admin.userId);
+      expect(assets[1].ownerId).toBe(admin.userId);
     });
   });
 

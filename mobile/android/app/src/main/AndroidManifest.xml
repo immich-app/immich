@@ -43,7 +43,7 @@
       android:name="com.google.firebase.messaging.default_notification_icon"
       android:resource="@drawable/notification_icon" />
 
-    <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop"
+    <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTask"
       android:theme="@style/LaunchTheme"
       android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
       android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
@@ -59,6 +59,34 @@
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+
+
+      <!--TODO:
+      Add this filter if you want to handle shared images-->
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND_MULTIPLE" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="image/*" />
+      </intent-filter>
+
+      <!--TODO:
+      Add this filter if you want to handle shared videos-->
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="video/*" />
+      </intent-filter>
+      <intent-filter android:label="Upload to Immich">
+        <action android:name="android.intent.action.SEND_MULTIPLE" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="video/*" />
       </intent-filter>
 
     </activity>

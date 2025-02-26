@@ -12,6 +12,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsHexColor,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -96,6 +97,15 @@ export function Optional({ nullable, emptyToNull, ...validationOptions }: Option
 
   return applyDecorators(...decorators);
 }
+
+export const ValidateHexColor = () => {
+  const decorators = [
+    IsHexColor(),
+    Transform(({ value }) => (typeof value === 'string' && value[0] !== '#' ? `#${value}` : value)),
+  ];
+
+  return applyDecorators(...decorators);
+};
 
 type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
 export const ValidateUUID = (options?: UUIDOptions) => {

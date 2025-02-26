@@ -109,7 +109,7 @@
   ]}
 />
 
-<svelte:body use:swipe on:swipedown={showControlBar} />
+<svelte:body use:swipe={() => ({ touchAction: 'pan-x' })} onswipedown={showControlBar} />
 
 {#if showControls}
   <div

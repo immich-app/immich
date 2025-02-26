@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { APIKeyEntity } from 'src/entities/api-key.entity';
+import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { ApiKeyItem } from 'src/types';
 import { isGranted } from 'src/utils/access';
 
 @Injectable()
@@ -57,13 +58,13 @@ export class APIKeyService extends BaseService {
     return keys.map((key) => this.map(key));
   }
 
-  private map(entity: APIKeyEntity): APIKeyResponseDto {
+  private map(entity: ApiKeyItem): APIKeyResponseDto {
     return {
       id: entity.id,
       name: entity.name,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
-      permissions: entity.permissions,
+      permissions: entity.permissions as Permission[],
     };
   }
 }

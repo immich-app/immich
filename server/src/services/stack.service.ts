@@ -39,7 +39,7 @@ export class StackService extends BaseService {
       throw new BadRequestException('Primary asset must be in the stack');
     }
 
-    const updatedStack = await this.stackRepository.update({ id, primaryAssetId: dto.primaryAssetId });
+    const updatedStack = await this.stackRepository.update(id, { id, primaryAssetId: dto.primaryAssetId });
 
     await this.eventRepository.emit('stack.update', { stackId: id, userId: auth.user.id });
 

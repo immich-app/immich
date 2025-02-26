@@ -3,18 +3,19 @@ import { snakeCase } from 'lodash';
 import { OnEvent } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AllJobStatusResponseDto, JobCommandDto, JobCreateDto, JobStatusDto } from 'src/dtos/job.dto';
-import { AssetType, ImmichWorker, ManualJobName } from 'src/enum';
-import { ArgOf, ArgsOf } from 'src/interfaces/event.interface';
 import {
-  ConcurrentQueueName,
+  AssetType,
+  ImmichWorker,
   JobCommand,
-  JobItem,
   JobName,
   JobStatus,
+  ManualJobName,
   QueueCleanType,
   QueueName,
-} from 'src/interfaces/job.interface';
+} from 'src/enum';
+import { ArgOf, ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { ConcurrentQueueName, JobItem } from 'src/types';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
@@ -28,6 +29,14 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
 
     case ManualJobName.USER_CLEANUP: {
       return { name: JobName.USER_DELETE_CHECK };
+    }
+
+    case ManualJobName.MEMORY_CLEANUP: {
+      return { name: JobName.MEMORIES_CLEANUP };
+    }
+
+    case ManualJobName.MEMORY_CREATE: {
+      return { name: JobName.MEMORIES_CREATE };
     }
 
     default: {
@@ -51,7 +60,7 @@ export class JobService extends BaseService {
     }
   }
 
-  @OnEvent({ name: 'config.update', server: true })
+  @OnEvent({ name: 'config.update', server: true, workers: [ImmichWorker.MICROSERVICES] })
   onConfigUpdate({ newConfig: config }: ArgOf<'config.update'>) {
     this.onConfigInit({ newConfig: config });
   }
@@ -206,6 +215,8 @@ export class JobService extends BaseService {
       { name: JobName.ASSET_DELETION_CHECK },
       { name: JobName.USER_DELETE_CHECK },
       { name: JobName.PERSON_CLEANUP },
+      { name: JobName.MEMORIES_CLEANUP },
+      { name: JobName.MEMORIES_CREATE },
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       { name: JobName.USER_SYNC_USAGE },

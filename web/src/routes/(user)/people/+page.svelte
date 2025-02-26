@@ -3,8 +3,6 @@
   import { page } from '$app/stores';
   import { focusTrap } from '$lib/actions/focus-trap';
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import ManagePeopleVisibility from '$lib/components/faces-page/manage-people-visibility.svelte';
   import MergeSuggestionModal from '$lib/components/faces-page/merge-suggestion-modal.svelte';
@@ -32,6 +30,7 @@
     updatePerson,
     type PersonResponseDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiAccountOff, mdiEyeOutline } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -223,6 +222,25 @@
     }
   };
 
+  const handleToggleFavorite = async (detail: PersonResponseDto) => {
+    try {
+      const updatedPerson = await updatePerson({
+        id: detail.id,
+        personUpdateDto: { isFavorite: !detail.isFavorite },
+      });
+
+      const index = people.findIndex((person) => person.id === detail.id);
+      people[index] = updatedPerson;
+
+      notificationController.show({
+        message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: detail.isFavorite } }));
+    }
+  };
+
   const handleMergePeople = async (detail: PersonResponseDto) => {
     await goto(
       `${AppRoute.PEOPLE}/${detail.id}?${QueryParameter.ACTION}=${ActionQueryParameterValue.MERGE}&${QueryParameter.PREVIOUS_ROUTE}=${AppRoute.PEOPLE}`,
@@ -393,12 +411,13 @@
             />
           </div>
         </div>
-        <LinkButton onclick={() => (selectHidden = !selectHidden)}>
-          <div class="flex flex-wrap place-items-center justify-center gap-x-1 text-sm">
-            <Icon path={mdiEyeOutline} size="18" />
-            <p class="ml-2">{$t('show_and_hide_people')}</p>
-          </div>
-        </LinkButton>
+        <Button
+          leadingIcon={mdiEyeOutline}
+          onclick={() => (selectHidden = !selectHidden)}
+          size="small"
+          variant="ghost"
+          color="secondary">{$t('show_and_hide_people')}</Button
+        >
       </div>
     {/if}
   {/snippet}
@@ -413,6 +432,7 @@
           onSetBirthDate={() => handleSetBirthDate(person)}
           onMergePeople={() => handleMergePeople(person)}
           onHidePerson={() => handleHidePerson(person)}
+          onToggleFavorite={() => handleToggleFavorite(person)}
         />
       {/snippet}
     </PeopleInfiniteScroll>
@@ -445,13 +465,13 @@
 
       {#snippet stickyBottom()}
         <Button
-          color="gray"
-          fullwidth
+          color="secondary"
+          fullWidth
           onclick={() => {
             showChangeNameModal = false;
           }}>{$t('cancel')}</Button
         >
-        <Button type="submit" fullwidth form="change-name-form">{$t('ok')}</Button>
+        <Button type="submit" fullWidth form="change-name-form">{$t('ok')}</Button>
       {/snippet}
     </FullScreenModal>
   {/if}

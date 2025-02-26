@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
   import EditNameInput from '$lib/components/faces-page/edit-name-input.svelte';
@@ -17,8 +19,10 @@
   import DownloadAction from '$lib/components/photos-page/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/photos-page/actions/favorite-action.svelte';
   import SelectAllAssets from '$lib/components/photos-page/actions/select-all-assets.svelte';
+  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import AssetGrid from '$lib/components/photos-page/asset-grid.svelte';
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
+  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
@@ -27,11 +31,12 @@
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
+  import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
-  import { clickOutside } from '$lib/actions/click-outside';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
   import {
@@ -50,16 +55,13 @@
     mdiDotsVertical,
     mdiEyeOffOutline,
     mdiEyeOutline,
+    mdiHeartMinusOutline,
+    mdiHeartOutline,
     mdiPlus,
   } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
-  import type { PageData } from './$types';
-  import { listNavigation } from '$lib/actions/list-navigation';
   import { t } from 'svelte-i18n';
-  import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
-  import { preferences } from '$lib/stores/user.store';
-  import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
-  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import type { PageData } from './$types';
 
   interface Props {
     data: PageData;
@@ -92,6 +94,7 @@
   let personMerge1: PersonResponseDto | undefined = $state();
   let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
+  let isSuggestionSelectedByUser = $state(false);
 
   let personName = '';
   let suggestedPeople: PersonResponseDto[] = $state([]);
@@ -180,6 +183,25 @@
     }
   };
 
+  const handleToggleFavorite = async () => {
+    try {
+      const updatedPerson = await updatePerson({
+        id: person.id,
+        personUpdateDto: { isFavorite: !person.isFavorite },
+      });
+
+      // Invalidate to reload the page data and have the favorite status updated
+      await invalidateAll();
+
+      notificationController.show({
+        message: updatedPerson.isFavorite ? $t('added_to_favorites') : $t('removed_from_favorites'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_add_remove_favorites', { values: { favorite: person.isFavorite } }));
+    }
+  };
+
   const handleMerge = async (person: PersonResponseDto) => {
     await updateAssetCount();
     await handleGoBack();
@@ -233,15 +255,22 @@
     personName = person.name;
     personMerge1 = person;
     personMerge2 = person2;
+    isSuggestionSelectedByUser = true;
     viewMode = PersonPageViewMode.SUGGEST_MERGE;
   };
 
   const changeName = async () => {
     viewMode = PersonPageViewMode.VIEW_ASSETS;
     person.name = personName;
-    try {
-      isEditingName = false;
+    isEditingName = false;
 
+    if (isSuggestionSelectedByUser) {
+      // User canceled the merge
+      isSuggestionSelectedByUser = false;
+      return;
+    }
+
+    try {
       person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
 
       notificationController.show({
@@ -328,6 +357,11 @@
     }
   };
 
+  const handleDeleteAssets = async (assetIds: string[]) => {
+    $assetStore.removeAssets(assetIds);
+    await updateAssetCount();
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -404,7 +438,7 @@
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
-        <DeleteAssets menuItem onAssetDelete={(assetIds) => $assetStore.removeAssets(assetIds)} />
+        <DeleteAssets menuItem onAssetDelete={(assetIds) => handleDeleteAssets(assetIds)} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   {:else}
@@ -431,6 +465,11 @@
               text={$t('merge_people')}
               icon={mdiAccountMultipleCheckOutline}
               onClick={() => (viewMode = PersonPageViewMode.MERGE_PEOPLE)}
+            />
+            <MenuOption
+              icon={person.isFavorite ? mdiHeartMinusOutline : mdiHeartOutline}
+              text={person.isFavorite ? $t('unfavorite') : $t('to_favorite')}
+              onClick={handleToggleFavorite}
             />
           </ButtonContextMenu>
         {/snippet}

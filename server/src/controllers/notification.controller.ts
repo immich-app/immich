@@ -3,8 +3,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TemplateDto, TemplateResponseDto, TestEmailResponseDto } from 'src/dtos/notification.dto';
 import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
-import { EmailTemplate } from 'src/interfaces/notification.interface';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
+import { EmailTemplate } from 'src/repositories/notification.repository';
 import { NotificationService } from 'src/services/notification.service';
 
 @ApiTags('Notifications')

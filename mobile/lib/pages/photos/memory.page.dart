@@ -5,6 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_image.dart';
 import 'package:immich_mobile/widgets/memories/memory_bottom_info.dart';
@@ -13,6 +15,8 @@ import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
 @RoutePage()
+
+/// Expects [currentAssetProvider] to be set before navigating to this page
 class MemoryPage extends HookConsumerWidget {
   final List<Memory> memories;
   final int memoryIndex;
@@ -32,6 +36,7 @@ class MemoryPage extends HookConsumerWidget {
       "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}",
     );
     const bgColor = Colors.black;
+    final currentAsset = useState<Asset?>(null);
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers =
@@ -135,6 +140,14 @@ class MemoryPage extends HookConsumerWidget {
       ref.read(hapticFeedbackProvider.notifier).selectionClick();
       currentAssetPage.value = otherIndex;
       updateProgressText();
+
+      final asset = currentMemory.value.assets[otherIndex];
+      currentAsset.value = asset;
+      ref.read(currentAssetProvider.notifier).set(asset);
+      if (asset.isVideo || asset.isMotionPhoto) {
+        ref.read(videoPlaybackValueProvider.notifier).reset();
+      }
+
       // Wait for page change animation to finish
       await Future.delayed(const Duration(milliseconds: 400));
       // And then precache the next asset
@@ -274,6 +287,16 @@ class MemoryPage extends HookConsumerWidget {
                             ),
                           ),
                         ),
+                        if (currentAsset.value != null &&
+                            currentAsset.value!.isVideo)
+                          Positioned(
+                            bottom: 24,
+                            right: 32,
+                            child: Icon(
+                              Icons.videocam_outlined,
+                              color: Colors.grey[200],
+                            ),
+                          ),
                       ],
                     ),
                   ),

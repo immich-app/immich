@@ -1,8 +1,6 @@
-import { PostgresJSDialect } from 'kysely-postgres-js';
-import postgres from 'postgres';
-import { ImmichEnvironment, ImmichWorker } from 'src/enum';
-import { EnvData, IConfigRepository } from 'src/interfaces/config.interface';
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { DatabaseExtension, ImmichEnvironment, ImmichWorker } from 'src/enum';
+import { ConfigRepository, EnvData } from 'src/repositories/config.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 const envData: EnvData = {
@@ -23,12 +21,7 @@ const envData: EnvData = {
 
   database: {
     config: {
-      kysely: {
-        dialect: new PostgresJSDialect({
-          postgres: postgres({ database: 'immich', host: 'database', port: 5432 }),
-        }),
-        log: ['error'],
-      },
+      kysely: { database: 'immich', host: 'database', port: 5432 },
       typeorm: {
         connectionType: 'parts',
         database: 'immich',
@@ -103,7 +96,7 @@ const envData: EnvData = {
 };
 
 export const mockEnvData = (config: Partial<EnvData>) => ({ ...envData, ...config });
-export const newConfigRepositoryMock = (): Mocked<IConfigRepository> => {
+export const newConfigRepositoryMock = (): Mocked<RepositoryInterface<ConfigRepository>> => {
   return {
     getEnv: vitest.fn().mockReturnValue(mockEnvData({})),
     getWorker: vitest.fn().mockReturnValue(ImmichWorker.API),

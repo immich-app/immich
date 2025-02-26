@@ -29,6 +29,7 @@
     type SmartSearchDto,
     type MetadataSearchDto,
     type AlbumResponseDto,
+    getTagById,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import type { Viewport } from '$lib/stores/assets.store';
@@ -192,8 +193,11 @@
       state: $t('state'),
       make: $t('camera_brand'),
       model: $t('camera_model'),
+      lensModel: $t('lens_model'),
       personIds: $t('people'),
+      tagIds: $t('tags'),
       originalFileName: $t('file_name'),
+      description: $t('description'),
     };
     return keyMap[key] || key;
   }
@@ -212,6 +216,18 @@
     );
 
     return personNames.join(', ');
+  }
+
+  async function getTagNames(tagIds: string[]) {
+    const tagNames = await Promise.all(
+      tagIds.map(async (tagId) => {
+        const tag = await getTagById({ id: tagId });
+
+        return tag.value;
+      }),
+    );
+
+    return tagNames.join(', ');
   }
 
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
@@ -297,6 +313,10 @@
             {:else if key === 'personIds' && Array.isArray(value)}
               {#await getPersonName(value) then personName}
                 {personName}
+              {/await}
+            {:else if key === 'tagIds' && Array.isArray(value)}
+              {#await getTagNames(value) then tagNames}
+                {tagNames}
               {/await}
             {:else if value === null || value === ''}
               {$t('unknown')}

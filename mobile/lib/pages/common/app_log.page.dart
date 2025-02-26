@@ -36,32 +36,19 @@ class AppLogPage extends HookConsumerWidget {
       );
     }
 
-    Widget buildLeadingIcon(LogLevel level) {
-      switch (level) {
-        case LogLevel.INFO:
-          return colorStatusIndicator(context.primaryColor);
-        case LogLevel.SEVERE:
-          return colorStatusIndicator(Colors.redAccent);
+    Widget buildLeadingIcon(LogLevel level) => switch (level) {
+          LogLevel.INFO => colorStatusIndicator(context.primaryColor),
+          LogLevel.SEVERE => colorStatusIndicator(Colors.redAccent),
+          LogLevel.WARNING => colorStatusIndicator(Colors.orangeAccent),
+          _ => colorStatusIndicator(Colors.grey),
+        };
 
-        case LogLevel.WARNING:
-          return colorStatusIndicator(Colors.orangeAccent);
-        default:
-          return colorStatusIndicator(Colors.grey);
-      }
-    }
-
-    getTileColor(LogLevel level) {
-      switch (level) {
-        case LogLevel.INFO:
-          return Colors.transparent;
-        case LogLevel.SEVERE:
-          return Colors.redAccent.withOpacity(0.25);
-        case LogLevel.WARNING:
-          return Colors.orangeAccent.withOpacity(0.25);
-        default:
-          return context.primaryColor.withOpacity(0.1);
-      }
-    }
+    Color getTileColor(LogLevel level) => switch (level) {
+          LogLevel.INFO => Colors.transparent,
+          LogLevel.SEVERE => Colors.redAccent.withOpacity(0.25),
+          LogLevel.WARNING => Colors.orangeAccent.withOpacity(0.25),
+          _ => context.primaryColor.withOpacity(0.1),
+        };
 
     return Scaffold(
       appBar: AppBar(

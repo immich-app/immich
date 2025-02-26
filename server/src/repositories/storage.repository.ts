@@ -1,25 +1,43 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import archiver from 'archiver';
 import chokidar, { WatchOptions } from 'chokidar';
 import { escapePath, glob, globStream } from 'fast-glob';
 import { constants, createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { Writable } from 'node:stream';
+import { Readable, Writable } from 'node:stream';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import {
-  DiskUsage,
-  IStorageRepository,
-  ImmichReadStream,
-  ImmichZipStream,
-  WatchEvents,
-} from 'src/interfaces/storage.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
 
+export interface WatchEvents {
+  onReady(): void;
+  onAdd(path: string): void;
+  onChange(path: string): void;
+  onUnlink(path: string): void;
+  onError(error: Error): void;
+}
+
+export interface ImmichReadStream {
+  stream: Readable;
+  type?: string;
+  length?: number;
+}
+
+export interface ImmichZipStream extends ImmichReadStream {
+  addFile: (inputPath: string, filename: string) => void;
+  finalize: () => Promise<void>;
+}
+
+export interface DiskUsage {
+  available: number;
+  free: number;
+  total: number;
+}
+
 @Injectable()
-export class StorageRepository implements IStorageRepository {
-  constructor(@Inject(ILoggerRepository) private logger: ILoggerRepository) {
+export class StorageRepository {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(StorageRepository.name);
   }
 

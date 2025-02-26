@@ -1,21 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
 import { ReactionType } from 'src/dtos/activity.dto';
-import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { ActivityService } from 'src/services/activity.service';
 import { activityStub } from 'test/fixtures/activity.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(ActivityService.name, () => {
   let sut: ActivityService;
-
-  let accessMock: IAccessRepositoryMock;
-  let activityMock: Mocked<IActivityRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, accessMock, activityMock } = newTestService(ActivityService));
+    ({ sut, mocks } = newTestService(ActivityService));
   });
 
   it('should work', () => {
@@ -24,12 +19,12 @@ describe(ActivityService.name, () => {
 
   describe('getAll', () => {
     it('should get all', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.search.mockResolvedValue([]);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.search.mockResolvedValue([]);
 
       await expect(sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id' })).resolves.toEqual([]);
 
-      expect(activityMock.search).toHaveBeenCalledWith({
+      expect(mocks.activity.search).toHaveBeenCalledWith({
         assetId: 'asset-id',
         albumId: 'album-id',
         isLiked: undefined,
@@ -37,14 +32,14 @@ describe(ActivityService.name, () => {
     });
 
     it('should filter by type=like', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.search.mockResolvedValue([]);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.search.mockResolvedValue([]);
 
       await expect(
         sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id', type: ReactionType.LIKE }),
       ).resolves.toEqual([]);
 
-      expect(activityMock.search).toHaveBeenCalledWith({
+      expect(mocks.activity.search).toHaveBeenCalledWith({
         assetId: 'asset-id',
         albumId: 'album-id',
         isLiked: true,
@@ -52,14 +47,14 @@ describe(ActivityService.name, () => {
     });
 
     it('should filter by type=comment', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.search.mockResolvedValue([]);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.search.mockResolvedValue([]);
 
       await expect(
         sut.getAll(authStub.admin, { assetId: 'asset-id', albumId: 'album-id', type: ReactionType.COMMENT }),
       ).resolves.toEqual([]);
 
-      expect(activityMock.search).toHaveBeenCalledWith({
+      expect(mocks.activity.search).toHaveBeenCalledWith({
         assetId: 'asset-id',
         albumId: 'album-id',
         isLiked: false,
@@ -69,8 +64,8 @@ describe(ActivityService.name, () => {
 
   describe('getStatistics', () => {
     it('should get the comment count', async () => {
-      activityMock.getStatistics.mockResolvedValue(1);
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set([activityStub.oneComment.albumId]));
+      mocks.activity.getStatistics.mockResolvedValue(1);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([activityStub.oneComment.albumId]));
       await expect(
         sut.getStatistics(authStub.admin, {
           assetId: 'asset-id',
@@ -93,8 +88,8 @@ describe(ActivityService.name, () => {
     });
 
     it('should create a comment', async () => {
-      accessMock.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.create.mockResolvedValue(activityStub.oneComment);
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.create.mockResolvedValue(activityStub.oneComment);
 
       await sut.create(authStub.admin, {
         albumId: 'album-id',
@@ -103,7 +98,7 @@ describe(ActivityService.name, () => {
         comment: 'comment',
       });
 
-      expect(activityMock.create).toHaveBeenCalledWith({
+      expect(mocks.activity.create).toHaveBeenCalledWith({
         userId: 'admin_id',
         albumId: 'album-id',
         assetId: 'asset-id',
@@ -113,8 +108,8 @@ describe(ActivityService.name, () => {
     });
 
     it('should fail because activity is disabled for the album', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.create.mockResolvedValue(activityStub.oneComment);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.create.mockResolvedValue(activityStub.oneComment);
 
       await expect(
         sut.create(authStub.admin, {
@@ -127,9 +122,9 @@ describe(ActivityService.name, () => {
     });
 
     it('should create a like', async () => {
-      accessMock.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.create.mockResolvedValue(activityStub.liked);
-      activityMock.search.mockResolvedValue([]);
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.create.mockResolvedValue(activityStub.liked);
+      mocks.activity.search.mockResolvedValue([]);
 
       await sut.create(authStub.admin, {
         albumId: 'album-id',
@@ -137,7 +132,7 @@ describe(ActivityService.name, () => {
         type: ReactionType.LIKE,
       });
 
-      expect(activityMock.create).toHaveBeenCalledWith({
+      expect(mocks.activity.create).toHaveBeenCalledWith({
         userId: 'admin_id',
         albumId: 'album-id',
         assetId: 'asset-id',
@@ -146,9 +141,9 @@ describe(ActivityService.name, () => {
     });
 
     it('should skip if like exists', async () => {
-      accessMock.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
-      accessMock.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
-      activityMock.search.mockResolvedValue([activityStub.liked]);
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.access.activity.checkCreateAccess.mockResolvedValue(new Set(['album-id']));
+      mocks.activity.search.mockResolvedValue([activityStub.liked]);
 
       await sut.create(authStub.admin, {
         albumId: 'album-id',
@@ -156,26 +151,26 @@ describe(ActivityService.name, () => {
         type: ReactionType.LIKE,
       });
 
-      expect(activityMock.create).not.toHaveBeenCalled();
+      expect(mocks.activity.create).not.toHaveBeenCalled();
     });
   });
 
   describe('delete', () => {
     it('should require access', async () => {
       await expect(sut.delete(authStub.admin, activityStub.oneComment.id)).rejects.toBeInstanceOf(BadRequestException);
-      expect(activityMock.delete).not.toHaveBeenCalled();
+      expect(mocks.activity.delete).not.toHaveBeenCalled();
     });
 
     it('should let the activity owner delete a comment', async () => {
-      accessMock.activity.checkOwnerAccess.mockResolvedValue(new Set(['activity-id']));
+      mocks.access.activity.checkOwnerAccess.mockResolvedValue(new Set(['activity-id']));
       await sut.delete(authStub.admin, 'activity-id');
-      expect(activityMock.delete).toHaveBeenCalledWith('activity-id');
+      expect(mocks.activity.delete).toHaveBeenCalledWith('activity-id');
     });
 
     it('should let the album owner delete a comment', async () => {
-      accessMock.activity.checkAlbumOwnerAccess.mockResolvedValue(new Set(['activity-id']));
+      mocks.access.activity.checkAlbumOwnerAccess.mockResolvedValue(new Set(['activity-id']));
       await sut.delete(authStub.admin, 'activity-id');
-      expect(activityMock.delete).toHaveBeenCalledWith('activity-id');
+      expect(mocks.activity.delete).toHaveBeenCalledWith('activity-id');
     });
   });
 });

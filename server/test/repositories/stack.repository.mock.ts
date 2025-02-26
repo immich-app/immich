@@ -1,7 +1,8 @@
-import { IStackRepository } from 'src/interfaces/stack.interface';
+import { StackRepository } from 'src/repositories/stack.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newStackRepositoryMock = (): Mocked<IStackRepository> => {
+export const newStackRepositoryMock = (): Mocked<RepositoryInterface<StackRepository>> => {
   return {
     search: vitest.fn(),
     create: vitest.fn(),

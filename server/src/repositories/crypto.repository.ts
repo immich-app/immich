@@ -2,11 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { compareSync, hash } from 'bcrypt';
 import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
 
 @Injectable()
-export class CryptoRepository implements ICryptoRepository {
-  randomUUID() {
+export class CryptoRepository {
+  randomUUID(): string {
     return randomUUID();
   }
 

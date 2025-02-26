@@ -9,7 +9,7 @@ import {
   VideoFormat,
   VideoInterfaces,
   VideoStreamInfo,
-} from 'src/interfaces/media.interface';
+} from 'src/types';
 
 export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];

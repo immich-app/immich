@@ -6,7 +6,7 @@
   import { oauth } from '$lib/utils';
   import { getServerErrorMessage, handleError } from '$lib/utils/handle-error';
   import { login } from '@immich/sdk';
-  import { Alert, Button, Field, Input, PasswordInput } from '@immich/ui';
+  import { Alert, Button, Field, Input, PasswordInput, Stack } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -101,43 +101,43 @@
 
 {#if $featureFlags.loaded}
   <AuthPageLayout title={data.meta.title}>
-    {#if $serverConfig.loginPageMessage}
-      <Alert color="primary">
-        <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-        {@html $serverConfig.loginPageMessage}
-      </Alert>
-    {/if}
-
-    {#if !oauthLoading && $featureFlags.passwordLogin}
-      <form {onsubmit} class="mt-5 flex flex-col gap-5 text-dark mx-4">
-        {#if errorMessage}
-          <Alert color="danger" title={errorMessage} closable />
-        {/if}
-
-        <Field label={$t('email')}>
-          <Input name="email" type="email" autocomplete="email" bind:value={email} />
-        </Field>
-
-        <Field label={$t('password')}>
-          <PasswordInput bind:value={password} autocomplete="current-password" />
-        </Field>
-
-        <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
-      </form>
-    {/if}
-
-    {#if $featureFlags.oauth}
-      {#if $featureFlags.passwordLogin}
-        <div class="inline-flex w-full items-center justify-center mt-4">
-          <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
-          <span
-            class="absolute left-1/2 -translate-x-1/2 bg-white px-3 font-medium text-gray-900 dark:bg-immich-dark-gray dark:text-white"
-          >
-            {$t('or').toUpperCase()}
-          </span>
-        </div>
+    <Stack gap={4}>
+      {#if $serverConfig.loginPageMessage}
+        <Alert color="primary" class="mb-6">
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+          {@html $serverConfig.loginPageMessage}
+        </Alert>
       {/if}
-      <div class="my-5 flex flex-col gap-5 mx-4">
+
+      {#if !oauthLoading && $featureFlags.passwordLogin}
+        <form {onsubmit} class="flex flex-col gap-4">
+          {#if errorMessage}
+            <Alert color="danger" title={errorMessage} closable />
+          {/if}
+
+          <Field label={$t('email')}>
+            <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
+          </Field>
+
+          <Field label={$t('password')}>
+            <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
+          </Field>
+
+          <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>
+        </form>
+      {/if}
+
+      {#if $featureFlags.oauth}
+        {#if $featureFlags.passwordLogin}
+          <div class="inline-flex w-full items-center justify-center my-4">
+            <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
+            <span
+              class="absolute left-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white"
+            >
+              {$t('or').toUpperCase()}
+            </span>
+          </div>
+        {/if}
         {#if oauthError}
           <Alert color="danger" title={oauthError} closable />
         {/if}
@@ -152,11 +152,11 @@
         >
           {$serverConfig.oauthButtonText}
         </Button>
-      </div>
-    {/if}
+      {/if}
 
-    {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
-      <Alert color="warning" title={$t('login_has_been_disabled')} />
-    {/if}
+      {#if !$featureFlags.passwordLogin && !$featureFlags.oauth}
+        <Alert color="warning" title={$t('login_has_been_disabled')} />
+      {/if}
+    </Stack>
   </AuthPageLayout>
 {/if}

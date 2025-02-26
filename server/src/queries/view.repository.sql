@@ -10,11 +10,14 @@ where
   and "isVisible" = $3
   and "isArchived" = $4
   and "deletedAt" is null
+  and "fileCreatedAt" is not null
+  and "fileModifiedAt" is not null
+  and "localDateTime" is not null
 
 -- ViewRepository.getAssetsByOriginalPath
 select
   "assets".*,
-  to_jsonb("exif") as "exifInfo"
+  to_json("exif") as "exifInfo"
 from
   "assets"
   left join "exif" on "assets"."id" = "exif"."assetId"
@@ -23,6 +26,9 @@ where
   and "isVisible" = $2
   and "isArchived" = $3
   and "deletedAt" is null
+  and "fileCreatedAt" is not null
+  and "fileModifiedAt" is not null
+  and "localDateTime" is not null
   and "originalPath" like $4
   and "originalPath" not like $5
 order by

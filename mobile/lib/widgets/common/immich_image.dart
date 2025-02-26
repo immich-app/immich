@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/image/immich_local_image_provider.dart';
 import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:octo_image/octo_image.dart';
 
 class ImmichImage extends StatelessWidget {

@@ -21,6 +21,7 @@
     mdiToolboxOutline,
     mdiFolderOutline,
     mdiTagMultipleOutline,
+    mdiLink,
   } from '@mdi/js';
   import SideBarSection from './side-bar-section.svelte';
   import SideBarLink from './side-bar-link.svelte';
@@ -70,6 +71,10 @@
         bind:isSelected={isPeopleSelected}
         icon={isPeopleSelected ? mdiAccount : mdiAccountOutline}
       />
+    {/if}
+
+    {#if $preferences.sharedLinks.enabled && $preferences.sharedLinks.sidebarWeb}
+      <SideBarLink title={$t('shared_links')} routeId="/(user)/shared-links" icon={mdiLink} />
     {/if}
 
     <SideBarLink

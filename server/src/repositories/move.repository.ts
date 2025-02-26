@@ -5,10 +5,11 @@ import { DB, MoveHistory } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MoveEntity } from 'src/entities/move.entity';
 import { PathType } from 'src/enum';
-import { IMoveRepository } from 'src/interfaces/move.interface';
+
+export type MoveCreate = Pick<MoveEntity, 'oldPath' | 'newPath' | 'entityId' | 'pathType'> & Partial<MoveEntity>;
 
 @Injectable()
-export class MoveRepository implements IMoveRepository {
+export class MoveRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   create(entity: Insertable<MoveHistory>): Promise<MoveEntity> {

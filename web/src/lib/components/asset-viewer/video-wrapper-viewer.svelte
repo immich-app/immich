@@ -6,7 +6,7 @@
   interface Props {
     assetId: string;
     projectionType: string | null | undefined;
-    checksum: string;
+    cacheKey: string | null;
     loopVideo: boolean;
     onClose?: () => void;
     onPreviousAsset?: () => void;
@@ -18,7 +18,7 @@
   let {
     assetId,
     projectionType,
-    checksum,
+    cacheKey,
     loopVideo,
     onPreviousAsset,
     onClose,
@@ -33,7 +33,7 @@
 {:else}
   <VideoNativeViewer
     {loopVideo}
-    {checksum}
+    {cacheKey}
     {assetId}
     {onPreviousAsset}
     {onNextAsset}

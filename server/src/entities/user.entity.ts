@@ -10,12 +10,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
+@Index('IDX_users_updated_at_asc_id_asc', ['updatedAt', 'id'])
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

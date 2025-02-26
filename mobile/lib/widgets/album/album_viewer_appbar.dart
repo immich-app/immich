@@ -206,7 +206,7 @@ class AlbumViewerAppbar extends HookConsumerWidget
         ),
         ListTile(
           leading: const Icon(Icons.settings_rounded),
-          onTap: () => context.navigateTo(AlbumOptionsRoute()),
+          onTap: () => context.navigateTo(const AlbumOptionsRoute()),
           title: const Text(
             "translated_text_options",
             style: TextStyle(fontWeight: FontWeight.w500),

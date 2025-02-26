@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ManualJobName } from 'src/enum';
-import { JobCommand, QueueName } from 'src/interfaces/job.interface';
+import { JobCommand, ManualJobName, QueueName } from 'src/enum';
 import { ValidateBoolean } from 'src/validation';
 
 export class JobIdParamDto {

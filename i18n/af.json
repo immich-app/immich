@@ -20,7 +20,7 @@
   "add_partner": "Voeg vennoot by",
   "add_path": "Voeg pad by",
   "add_photos": "Voeg foto's by",
-  "add_to": "Voeg na...",
+  "add_to": "Voeg by…",
   "add_to_album": "Voeg na album",
   "add_to_shared_album": "Voeg na gedeelde album",
   "add_url": "Voeg URL by",
@@ -57,6 +57,23 @@
     "exclusion_pattern_description": "Met uitsluitingspatrone kan jy lêers en vouers ignoreer wanneer jy jou biblioteek skandeer. Dit is nuttig as jy vouers het wat lêers bevat wat jy nie wil invoer nie, soos RAW-lêers.",
     "external_library_created_at": "Eksterne biblioteek (geskep op {date})",
     "external_library_management": "Eksterne Biblioteek-opsies",
-    "face_detection": "Gesigsopsporing"
-  }
+    "face_detection": "Gesigsopsporing",
+    "failed_job_command": "Opdrag {command} het misluk vir werk: {job}",
+    "force_delete_user_warning": "WAARSKUWING: Dit sal onmiddellik die gebruiker en alle bates verwyder. Dit kan nie ontdoen word nie en die lêers kan nie herstel word nie.",
+    "forcing_refresh_library_files": "Forseer herlaai van alle biblioteeklêers",
+    "image_format": "Formaat",
+    "image_format_description": "WebP produseer kleiner lêers as JPEG, maar is stadiger om te enkodeer.",
+    "image_prefer_embedded_preview": "Verkies ingebedde voorskou",
+    "image_prefer_wide_gamut": "Verkies wye spektrum",
+    "image_preview_description": "Mediumgrootte prent met gestroopte metadata, wat gebruik word wanneer 'n enkele bate bekyk word en vir masjienleer",
+    "image_preview_quality_description": "Voorskou kwaliteit van 1-100. Hoër is beter, maar produseer groter lêers en kan app-reaksie verminder. Die stel van 'n lae waarde kan masjienleerkwaliteit beïnvloed.",
+    "image_preview_title": "Voorskou Instellings",
+    "image_quality": "Kwaliteit",
+    "image_resolution": "Resolusie",
+    "image_resolution_description": "Hoër resolusies kan meer detail bewaar, maar neem langer om te enkodeer, het groter lêergroottes en kan app-reaksie verminder.",
+    "image_settings": "Prent Instellings",
+    "image_settings_description": "Bestuur die kwaliteit en resolusie van gegenereerde beelde"
+  },
+  "search_by_description": "Soek by beskrywing",
+  "search_by_description_example": "Stapdag in Sapa"
 }

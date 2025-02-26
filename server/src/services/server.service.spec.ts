@@ -1,20 +1,13 @@
 import { SystemMetadataKey } from 'src/enum';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { ServerService } from 'src/services/server.service';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(ServerService.name, () => {
   let sut: ServerService;
-
-  let storageMock: Mocked<IStorageRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let userMock: Mocked<IUserRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, storageMock, systemMock, userMock } = newTestService(ServerService));
+    ({ sut, mocks } = newTestService(ServerService));
   });
 
   it('should work', () => {
@@ -23,7 +16,7 @@ describe(ServerService.name, () => {
 
   describe('getStorage', () => {
     it('should return the disk space as B', async () => {
-      storageMock.checkDiskUsage.mockResolvedValue({ free: 200, available: 300, total: 500 });
+      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 200, available: 300, total: 500 });
 
       await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '300 B',
@@ -35,11 +28,11 @@ describe(ServerService.name, () => {
         diskUseRaw: 300,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as KiB', async () => {
-      storageMock.checkDiskUsage.mockResolvedValue({ free: 200_000, available: 300_000, total: 500_000 });
+      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 200_000, available: 300_000, total: 500_000 });
 
       await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '293.0 KiB',
@@ -51,11 +44,11 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as MiB', async () => {
-      storageMock.checkDiskUsage.mockResolvedValue({ free: 200_000_000, available: 300_000_000, total: 500_000_000 });
+      mocks.storage.checkDiskUsage.mockResolvedValue({ free: 200_000_000, available: 300_000_000, total: 500_000_000 });
 
       await expect(sut.getStorage()).resolves.toEqual({
         diskAvailable: '286.1 MiB',
@@ -67,11 +60,11 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as GiB', async () => {
-      storageMock.checkDiskUsage.mockResolvedValue({
+      mocks.storage.checkDiskUsage.mockResolvedValue({
         free: 200_000_000_000,
         available: 300_000_000_000,
         total: 500_000_000_000,
@@ -87,11 +80,11 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000_000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as TiB', async () => {
-      storageMock.checkDiskUsage.mockResolvedValue({
+      mocks.storage.checkDiskUsage.mockResolvedValue({
         free: 200_000_000_000_000,
         available: 300_000_000_000_000,
         total: 500_000_000_000_000,
@@ -107,11 +100,11 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000_000_000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
 
     it('should return the disk space as PiB', async () => {
-      storageMock.checkDiskUsage.mockResolvedValue({
+      mocks.storage.checkDiskUsage.mockResolvedValue({
         free: 200_000_000_000_000_000,
         available: 300_000_000_000_000_000,
         total: 500_000_000_000_000_000,
@@ -127,7 +120,7 @@ describe(ServerService.name, () => {
         diskUseRaw: 300_000_000_000_000_000,
       });
 
-      expect(storageMock.checkDiskUsage).toHaveBeenCalledWith('upload/library');
+      expect(mocks.storage.checkDiskUsage).toHaveBeenCalledWith('upload/library');
     });
   });
 
@@ -155,7 +148,7 @@ describe(ServerService.name, () => {
         trash: true,
         email: false,
       });
-      expect(systemMock.get).toHaveBeenCalled();
+      expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });
   });
 
@@ -173,13 +166,13 @@ describe(ServerService.name, () => {
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
       });
-      expect(systemMock.get).toHaveBeenCalled();
+      expect(mocks.systemMetadata.get).toHaveBeenCalled();
     });
   });
 
   describe('getStats', () => {
     it('should total up usage by user', async () => {
-      userMock.getUserStats.mockResolvedValue([
+      mocks.user.getUserStats.mockResolvedValue([
         {
           userId: 'user1',
           userName: '1 User',
@@ -252,36 +245,36 @@ describe(ServerService.name, () => {
         ],
       });
 
-      expect(userMock.getUserStats).toHaveBeenCalled();
+      expect(mocks.user.getUserStats).toHaveBeenCalled();
     });
   });
 
   describe('setLicense', () => {
     it('should save license if valid', async () => {
-      systemMock.set.mockResolvedValue();
+      mocks.systemMetadata.set.mockResolvedValue();
 
       const license = { licenseKey: 'IMSV-license-key', activationKey: 'activation-key' };
       await sut.setLicense(license);
 
-      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.LICENSE, expect.any(Object));
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.LICENSE, expect.any(Object));
     });
 
     it('should not save license if invalid', async () => {
-      userMock.upsertMetadata.mockResolvedValue();
+      mocks.user.upsertMetadata.mockResolvedValue();
 
       const license = { licenseKey: 'license-key', activationKey: 'activation-key' };
       const call = sut.setLicense(license);
       await expect(call).rejects.toThrowError('Invalid license key');
-      expect(userMock.upsertMetadata).not.toHaveBeenCalled();
+      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
     });
   });
 
   describe('deleteLicense', () => {
     it('should delete license', async () => {
-      userMock.upsertMetadata.mockResolvedValue();
+      mocks.user.upsertMetadata.mockResolvedValue();
 
       await sut.deleteLicense();
-      expect(userMock.upsertMetadata).not.toHaveBeenCalled();
+      expect(mocks.user.upsertMetadata).not.toHaveBeenCalled();
     });
   });
 });

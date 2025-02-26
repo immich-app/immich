@@ -43,6 +43,7 @@ const image: Record<string, string[]> = {
   '.heif': ['image/heif'],
   '.hif': ['image/hif'],
   '.insp': ['image/jpeg'],
+  '.jp2': ['image/jp2'],
   '.jpe': ['image/jpeg'],
   '.jpeg': ['image/jpeg'],
   '.jpg': ['image/jpeg'],

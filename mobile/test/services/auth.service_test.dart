@@ -1,10 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
+
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 import '../test_utils.dart';
@@ -15,6 +18,7 @@ void main() {
   late MockAuthRepository authRepository;
   late MockApiService apiService;
   late MockNetworkService networkService;
+  late Isar db;
 
   setUp(() async {
     authApiRepository = MockAuthApiRepository();
@@ -32,12 +36,18 @@ void main() {
     registerFallbackValue(Uri());
   });
 
+  setUpAll(() async {
+    db = await TestUtils.initIsar();
+    db.writeTxnSync(() => db.clearSync());
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
+  });
+
   group('validateServerUrl', () {
     setUpAll(() async {
       WidgetsFlutterBinding.ensureInitialized();
       final db = await TestUtils.initIsar();
       db.writeTxnSync(() => db.clearSync());
-      Store.init(db);
+      await StoreService.init(storeRepository: IsarStoreRepository(db));
     });
 
     test('Should resolve HTTP endpoint', () async {

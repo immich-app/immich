@@ -50,7 +50,7 @@ export const ImmichLayout = ({ children, preview }: ImmichLayoutProps) => (
             <Section className="flex justify-center mb-12">
               <Img
                 src="https://immich.app/img/immich-logo-inline-light.png"
-                className="h-12 antialiased rounded-none"
+                className="h-12 antialiased rounded-none w-full"
                 alt="Immich"
               />
             </Section>

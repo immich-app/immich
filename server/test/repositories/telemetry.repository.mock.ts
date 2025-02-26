@@ -1,4 +1,5 @@
-import { ITelemetryRepository } from 'src/interfaces/telemetry.interface';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
 const newMetricGroupMock = () => {
@@ -10,7 +11,13 @@ const newMetricGroupMock = () => {
   };
 };
 
-export const newTelemetryRepositoryMock = (): Mocked<ITelemetryRepository> => {
+type ITelemetryRepository = RepositoryInterface<TelemetryRepository>;
+
+export type ITelemetryRepositoryMock = {
+  [K in keyof ITelemetryRepository]: Mocked<RepositoryInterface<ITelemetryRepository[K]>>;
+};
+
+export const newTelemetryRepositoryMock = (): ITelemetryRepositoryMock => {
   return {
     setup: vitest.fn(),
     api: newMetricGroupMock(),

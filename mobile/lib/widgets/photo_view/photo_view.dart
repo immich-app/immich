@@ -590,21 +590,15 @@ class _PhotoViewState extends State<PhotoView>
 }
 
 /// The default [ScaleStateCycle]
-PhotoViewScaleState defaultScaleStateCycle(PhotoViewScaleState actual) {
-  switch (actual) {
-    case PhotoViewScaleState.initial:
-      return PhotoViewScaleState.covering;
-    case PhotoViewScaleState.covering:
-      return PhotoViewScaleState.originalSize;
-    case PhotoViewScaleState.originalSize:
-      return PhotoViewScaleState.initial;
-    case PhotoViewScaleState.zoomedIn:
-    case PhotoViewScaleState.zoomedOut:
-      return PhotoViewScaleState.initial;
-    default:
-      return PhotoViewScaleState.initial;
-  }
-}
+PhotoViewScaleState defaultScaleStateCycle(PhotoViewScaleState actual) =>
+    switch (actual) {
+      PhotoViewScaleState.initial => PhotoViewScaleState.covering,
+      PhotoViewScaleState.covering => PhotoViewScaleState.originalSize,
+      PhotoViewScaleState.originalSize => PhotoViewScaleState.initial,
+      PhotoViewScaleState.zoomedIn ||
+      PhotoViewScaleState.zoomedOut =>
+        PhotoViewScaleState.initial,
+    };
 
 /// A type definition for a [Function] that receives the actual [PhotoViewScaleState] and returns the next one
 /// It is used internally to walk in the "doubletap gesture cycle".

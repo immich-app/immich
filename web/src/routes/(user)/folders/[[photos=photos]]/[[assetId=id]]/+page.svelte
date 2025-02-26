@@ -44,7 +44,7 @@
   let pathSegments = $derived(data.path ? data.path.split('/') : []);
   let tree = $derived(buildTree(foldersStore.uniquePaths));
   let currentPath = $derived($page.url.searchParams.get(QueryParameter.PATH) || '');
-  let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree));
+  let currentTreeItems = $derived(currentPath ? data.currentFolders : Object.keys(tree).sort());
 
   const assetInteraction = new AssetInteraction();
 

@@ -4,18 +4,21 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/pages/common/activities.page.dart';
-import 'package:immich_mobile/widgets/activities/activity_text_field.dart';
-import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
-import 'package:immich_mobile/providers/album/current_album.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/models/activities/activity.model.dart';
+import 'package:immich_mobile/pages/common/activities.page.dart';
+import 'package:immich_mobile/providers/activity.provider.dart';
+import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/activities/activity_text_field.dart';
+import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -25,8 +28,8 @@ import '../../fixtures/asset.stub.dart';
 import '../../fixtures/user.stub.dart';
 import '../../test_utils.dart';
 import '../../widget_tester_extensions.dart';
-import '../asset_viewer/asset_viewer_mocks.dart';
 import '../album/album_mocks.dart';
+import '../asset_viewer/asset_viewer_mocks.dart';
 import '../shared/shared_mocks.dart';
 import 'activity_mocks.dart';
 
@@ -71,7 +74,7 @@ void main() {
   setUpAll(() async {
     TestUtils.init();
     db = await TestUtils.initIsar();
-    Store.init(db);
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     Store.put(StoreKey.currentUser, UserStub.admin);
     Store.put(StoreKey.serverEndpoint, '');
     Store.put(StoreKey.accessToken, '');

@@ -1,3 +1,12 @@
+#
+# WARNING: To install Immich, follow our guide: https://immich.app/docs/install/docker-compose
+#
+# Make sure to use the docker-compose.yml of the current release:
+#
+# https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+#
+# The compose file on main may not be compatible with the latest release.
+
 name: immich-prod
 
 services:
@@ -47,7 +56,7 @@ services:
 
   redis:
     container_name: immich_redis
-    image: redis:6.2-alpine@sha256:905c4ee67b8e0aa955331960d2aa745781e6bd89afc44a8584bfd13bc890f0ae
+    image: redis:6.2-alpine@sha256:148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
@@ -91,7 +100,7 @@ services:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:6559acbd5d770b15bb3c954629ce190ac3cbbdb2b7f1c30f0385c4e05104e218
+    image: prom/prometheus@sha256:5888c188cf09e3f7eebc97369c3b2ce713e844cdbd88ccf36f5047c958aea120
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -103,7 +112,7 @@ services:
     command: ['./run.sh', '-disable-reporting']
     ports:
       - 3000:3000
-    image: grafana/grafana:11.4.0-ubuntu@sha256:afccec22ba0e4815cca1d2bf3836e414322390dc78d77f1851976ffa8d61051c
+    image: grafana/grafana:11.5.1-ubuntu@sha256:9a4ab78cec1a2ec7d1ca5dfd5aacec6412706a1bc9e971fc7184e2f6696a63f5
     volumes:
       - grafana-data:/var/lib/grafana
 

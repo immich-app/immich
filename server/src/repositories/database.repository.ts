@@ -1,37 +1,29 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import AsyncLock from 'async-lock';
 import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import semver from 'semver';
-import { POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
+import { EXTENSION_NAMES, POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
 import { DB } from 'src/db';
-import { IConfigRepository } from 'src/interfaces/config.interface';
-import {
-  DatabaseExtension,
-  DatabaseLock,
-  EXTENSION_NAMES,
-  ExtensionVersion,
-  IDatabaseRepository,
-  VectorExtension,
-  VectorIndex,
-  VectorUpdateResult,
-} from 'src/interfaces/database.interface';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { UPSERT_COLUMNS } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 import { DataSource, EntityManager, EntityMetadata, QueryRunner } from 'typeorm';
 
 @Injectable()
-export class DatabaseRepository implements IDatabaseRepository {
+export class DatabaseRepository {
   private vectorExtension: VectorExtension;
   private readonly asyncLock = new AsyncLock();
 
   constructor(
     @InjectKysely() private db: Kysely<DB>,
     @InjectDataSource() private dataSource: DataSource,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
-    @Inject(IConfigRepository) configRepository: IConfigRepository,
+    private logger: LoggingRepository,
+    configRepository: ConfigRepository,
   ) {
     this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(DatabaseRepository.name);

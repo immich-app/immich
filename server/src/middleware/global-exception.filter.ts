@@ -1,13 +1,13 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, Inject } from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 import { Response } from 'express';
 import { ClsService } from 'nestjs-cls';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { logGlobalError } from 'src/utils/logger';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter<Error> {
   constructor(
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
     private cls: ClsService,
   ) {
     this.logger.setContext(GlobalExceptionFilter.name);
@@ -19,6 +19,13 @@ export class GlobalExceptionFilter implements ExceptionFilter<Error> {
     const { status, body } = this.fromError(error);
     if (!response.headersSent) {
       response.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
+    }
+  }
+
+  handleError(res: Response, error: Error) {
+    const { status, body } = this.fromError(error);
+    if (!res.headersSent) {
+      res.status(status).json({ ...body, statusCode: status, correlationId: this.cls.getId() });
     }
   }
 

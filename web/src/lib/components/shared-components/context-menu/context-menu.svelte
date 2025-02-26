@@ -65,9 +65,9 @@
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
     bind:this={menuElement}
-    class:max-h-[100vh]={isVisible}
-    class:max-h-0={!isVisible}
-    class="flex flex-col transition-all duration-[250ms] ease-in-out outline-none"
+    class="{isVisible
+      ? 'max-h-screen max-h-svh'
+      : 'max-h-0'} flex flex-col transition-all duration-[250ms] ease-in-out outline-none overflow-auto"
     role="menu"
     tabindex="-1"
   >

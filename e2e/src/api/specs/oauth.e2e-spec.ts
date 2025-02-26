@@ -13,8 +13,8 @@ import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
 
 const authServer = {
-  internal: 'http://auth-server:3000',
-  external: 'http://127.0.0.1:3000',
+  internal: 'http://auth-server:2286',
+  external: 'http://127.0.0.1:2286',
 };
 
 const mobileOverrideRedirectUri = 'https://photos.immich.app/oauth/mobile-redirect';

@@ -64,7 +64,7 @@
     transparent: 'bg-transparent hover:bg-[#d3d3d3] dark:text-immich-dark-fg',
     opaque: 'bg-transparent hover:bg-immich-bg/30 text-white hover:dark:text-white',
     light: 'bg-white hover:bg-[#d3d3d3]',
-    red: 'text-red-400 hover:bg-[#d3d3d3]',
+    red: 'text-red-400 bg-red-100 hover:bg-[#d3d3d3]',
     dark: 'bg-[#202123] hover:bg-[#d3d3d3]',
     alert: 'text-[#ff0000] hover:text-white',
     gray: 'bg-[#d3d3d3] hover:bg-[#e2e7e9] text-immich-dark-gray hover:text-black',
@@ -85,7 +85,6 @@
   let paddingClass = $derived(paddingClasses[padding]);
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
 <svelte:element
   this={href ? 'a' : 'button'}
   type={href ? undefined : type}

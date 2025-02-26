@@ -14,7 +14,7 @@ import {
   UsageByUserDto,
 } from 'src/dtos/server.dto';
 import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { UserStatsQueryResponse } from 'src/interfaces/user.interface';
+import { UserStatsQueryResponse } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
 import { asHumanReadable } from 'src/utils/bytes';
 import { mimeTypes } from 'src/utils/mime-types';

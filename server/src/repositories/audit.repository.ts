@@ -4,10 +4,15 @@ import { InjectKysely } from 'nestjs-kysely';
 import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DatabaseAction, EntityType } from 'src/enum';
-import { AuditSearch, IAuditRepository } from 'src/interfaces/audit.interface';
+
+export interface AuditSearch {
+  action?: DatabaseAction;
+  entityType?: EntityType;
+  userIds: string[];
+}
 
 @Injectable()
-export class AuditRepository implements IAuditRepository {
+export class AuditRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({

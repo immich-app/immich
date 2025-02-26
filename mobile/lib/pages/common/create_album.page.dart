@@ -8,7 +8,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/albums/asset_selection_page_result.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
 import 'package:immich_mobile/widgets/album/album_title_text_field.dart';
@@ -54,7 +53,6 @@ class CreateAlbumPage extends HookConsumerWidget {
         AlbumAssetSelectionRoute(
           existingAssets: selectedAssets.value,
           canDeselect: true,
-          query: getRemoteAssetQuery(ref),
         ),
       );
       if (selectedAsset == null) {

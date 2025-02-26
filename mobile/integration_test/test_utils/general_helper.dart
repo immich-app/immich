@@ -4,12 +4,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/main.dart' as app;
 import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:isar/isar.dart';
 // ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
-import 'package:immich_mobile/main.dart' as app;
 
 import 'login_helper.dart';
 
@@ -44,7 +45,10 @@ class ImmichTestHelper {
     // Load main Widget
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [dbProvider.overrideWithValue(db)],
+        overrides: [
+          dbProvider.overrideWithValue(db),
+          isarProvider.overrideWithValue(db),
+        ],
         child: const app.MainWidget(),
       ),
     );

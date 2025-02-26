@@ -3,14 +3,6 @@ import { AuthDto, SignUpDto } from 'src/dtos/auth.dto';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
-import { IKeyRepository } from 'src/interfaces/api-key.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IOAuthRepository } from 'src/interfaces/oauth.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { AuthService } from 'src/services/auth.service';
 import { keyStub } from 'test/fixtures/api-key.stub';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -18,8 +10,7 @@ import { sessionStub } from 'test/fixtures/session.stub';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 const oauthResponse = {
   accessToken: 'cmFuZG9tLWJ5dGVz',
@@ -59,23 +50,14 @@ const oauthUserWithDefaultQuota = {
 
 describe('AuthService', () => {
   let sut: AuthService;
-
-  let cryptoMock: Mocked<ICryptoRepository>;
-  let eventMock: Mocked<IEventRepository>;
-  let keyMock: Mocked<IKeyRepository>;
-  let oauthMock: Mocked<IOAuthRepository>;
-  let sessionMock: Mocked<ISessionRepository>;
-  let sharedLinkMock: Mocked<ISharedLinkRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let userMock: Mocked<IUserRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, cryptoMock, eventMock, keyMock, oauthMock, sessionMock, sharedLinkMock, systemMock, userMock } =
-      newTestService(AuthService));
+    ({ sut, mocks } = newTestService(AuthService));
 
-    oauthMock.authorize.mockResolvedValue('access-token');
-    oauthMock.getProfile.mockResolvedValue({ sub, email });
-    oauthMock.getLogoutEndpoint.mockResolvedValue('http://end-session-endpoint');
+    mocks.oauth.authorize.mockResolvedValue('access-token');
+    mocks.oauth.getProfile.mockResolvedValue({ sub, email });
+    mocks.oauth.getLogoutEndpoint.mockResolvedValue('http://end-session-endpoint');
   });
 
   it('should be defined', () => {
@@ -85,31 +67,31 @@ describe('AuthService', () => {
   describe('onBootstrap', () => {
     it('should init the repo', () => {
       sut.onBootstrap();
-      expect(oauthMock.init).toHaveBeenCalled();
+      expect(mocks.oauth.init).toHaveBeenCalled();
     });
   });
 
   describe('login', () => {
     it('should throw an error if password login is disabled', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.disabled);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.disabled);
       await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
     });
 
     it('should check the user exists', async () => {
-      userMock.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
       await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should check the user has a password', async () => {
-      userMock.getByEmail.mockResolvedValue({} as UserEntity);
+      mocks.user.getByEmail.mockResolvedValue({} as UserEntity);
       await expect(sut.login(fixtures.login, loginDetails)).rejects.toBeInstanceOf(UnauthorizedException);
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should successfully log the user in', async () => {
-      userMock.getByEmail.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
+      mocks.user.getByEmail.mockResolvedValue(userStub.user1);
+      mocks.session.create.mockResolvedValue(sessionStub.valid);
       await expect(sut.login(fixtures.login, loginDetails)).resolves.toEqual({
         accessToken: 'cmFuZG9tLWJ5dGVz',
         userId: 'user-id',
@@ -119,7 +101,7 @@ describe('AuthService', () => {
         isAdmin: false,
         shouldChangePassword: false,
       });
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -128,23 +110,23 @@ describe('AuthService', () => {
       const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      userMock.getByEmail.mockResolvedValue({
+      mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: 'hash-password',
       } as UserEntity);
-      userMock.update.mockResolvedValue(userStub.user1);
+      mocks.user.update.mockResolvedValue(userStub.user1);
 
       await sut.changePassword(auth, dto);
 
-      expect(userMock.getByEmail).toHaveBeenCalledWith(auth.user.email, true);
-      expect(cryptoMock.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith(auth.user.email, true);
+      expect(mocks.crypto.compareBcrypt).toHaveBeenCalledWith('old-password', 'hash-password');
     });
 
     it('should throw when auth user email is not found', async () => {
       const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      userMock.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
 
       await expect(sut.changePassword(auth, dto)).rejects.toBeInstanceOf(UnauthorizedException);
     });
@@ -153,9 +135,9 @@ describe('AuthService', () => {
       const auth = { user: { email: 'test@imimch.com' } as UserEntity };
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      cryptoMock.compareBcrypt.mockReturnValue(false);
+      mocks.crypto.compareBcrypt.mockReturnValue(false);
 
-      userMock.getByEmail.mockResolvedValue({
+      mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: 'hash-password',
       } as UserEntity);
@@ -167,7 +149,7 @@ describe('AuthService', () => {
       const auth = { user: { email: 'test@imimch.com' } } as AuthDto;
       const dto = { password: 'old-password', newPassword: 'new-password' };
 
-      userMock.getByEmail.mockResolvedValue({
+      mocks.user.getByEmail.mockResolvedValue({
         email: 'test@immich.com',
         password: '',
       } as UserEntity);
@@ -178,7 +160,7 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should return the end session endpoint', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       const auth = { user: { id: '123' } } as AuthDto;
       await expect(sut.logout(auth, AuthType.OAUTH)).resolves.toEqual({
         successful: true,
@@ -203,8 +185,8 @@ describe('AuthService', () => {
         redirectUri: '/auth/login?autoLaunch=0',
       });
 
-      expect(sessionMock.delete).toHaveBeenCalledWith('token123');
-      expect(eventMock.emit).toHaveBeenCalledWith('session.delete', { sessionId: 'token123' });
+      expect(mocks.session.delete).toHaveBeenCalledWith('token123');
+      expect(mocks.event.emit).toHaveBeenCalledWith('session.delete', { sessionId: 'token123' });
     });
 
     it('should return the default redirect if auth type is OAUTH but oauth is not enabled', async () => {
@@ -221,14 +203,14 @@ describe('AuthService', () => {
     const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
-      userMock.getAdmin.mockResolvedValue({} as UserEntity);
+      mocks.user.getAdmin.mockResolvedValue({} as UserEntity);
       await expect(sut.adminSignUp(dto)).rejects.toBeInstanceOf(BadRequestException);
-      expect(userMock.getAdmin).toHaveBeenCalled();
+      expect(mocks.user.getAdmin).toHaveBeenCalled();
     });
 
     it('should sign up the admin', async () => {
-      userMock.getAdmin.mockResolvedValue(void 0);
-      userMock.create.mockResolvedValue({
+      mocks.user.getAdmin.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue({
         ...dto,
         id: 'admin',
         createdAt: new Date('2021-01-01'),
@@ -241,8 +223,8 @@ describe('AuthService', () => {
         email: 'test@immich.com',
         name: 'immich admin',
       });
-      expect(userMock.getAdmin).toHaveBeenCalled();
-      expect(userMock.create).toHaveBeenCalled();
+      expect(mocks.user.getAdmin).toHaveBeenCalled();
+      expect(mocks.user.create).toHaveBeenCalled();
     });
   });
 
@@ -258,8 +240,8 @@ describe('AuthService', () => {
     });
 
     it('should validate using authorization header', async () => {
-      userMock.get.mockResolvedValue(userStub.user1);
-      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      mocks.user.get.mockResolvedValue(userStub.user1);
+      mocks.session.getByToken.mockResolvedValue(sessionStub.valid as any);
       await expect(
         sut.authenticate({
           headers: { authorization: 'Bearer auth_token' },
@@ -275,7 +257,6 @@ describe('AuthService', () => {
 
   describe('validate - shared key', () => {
     it('should not accept a non-existent key', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(null);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -286,7 +267,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept an expired key', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -297,7 +278,7 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key on a non-shared route', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -308,8 +289,8 @@ describe('AuthService', () => {
     });
 
     it('should not accept a key without a user', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.expired);
-      userMock.get.mockResolvedValue(void 0);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.expired);
+      mocks.user.get.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': 'key' },
@@ -320,8 +301,8 @@ describe('AuthService', () => {
     });
 
     it('should accept a base64url key', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-      userMock.get.mockResolvedValue(userStub.admin);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.user.get.mockResolvedValue(userStub.admin);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': sharedLinkStub.valid.key.toString('base64url') },
@@ -332,12 +313,12 @@ describe('AuthService', () => {
         user: userStub.admin,
         sharedLink: sharedLinkStub.valid,
       });
-      expect(sharedLinkMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
     });
 
     it('should accept a hex key', async () => {
-      sharedLinkMock.getByKey.mockResolvedValue(sharedLinkStub.valid);
-      userMock.get.mockResolvedValue(userStub.admin);
+      mocks.sharedLink.getByKey.mockResolvedValue(sharedLinkStub.valid);
+      mocks.user.get.mockResolvedValue(userStub.admin);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-share-key': sharedLinkStub.valid.key.toString('hex') },
@@ -348,13 +329,13 @@ describe('AuthService', () => {
         user: userStub.admin,
         sharedLink: sharedLinkStub.valid,
       });
-      expect(sharedLinkMock.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
+      expect(mocks.sharedLink.getByKey).toHaveBeenCalledWith(sharedLinkStub.valid.key);
     });
   });
 
   describe('validate - user token', () => {
     it('should throw if no token is found', async () => {
-      sessionMock.getByToken.mockResolvedValue(void 0);
+      mocks.session.getByToken.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-immich-user-token': 'auth_token' },
@@ -365,7 +346,7 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      mocks.session.getByToken.mockResolvedValue(sessionStub.valid as any);
       await expect(
         sut.authenticate({
           headers: { cookie: 'immich_access_token=auth_token' },
@@ -379,7 +360,7 @@ describe('AuthService', () => {
     });
 
     it('should throw if admin route and not an admin', async () => {
-      sessionMock.getByToken.mockResolvedValue(sessionStub.valid);
+      mocks.session.getByToken.mockResolvedValue(sessionStub.valid as any);
       await expect(
         sut.authenticate({
           headers: { cookie: 'immich_access_token=auth_token' },
@@ -390,8 +371,8 @@ describe('AuthService', () => {
     });
 
     it('should update when access time exceeds an hour', async () => {
-      sessionMock.getByToken.mockResolvedValue(sessionStub.inactive);
-      sessionMock.update.mockResolvedValue(sessionStub.valid);
+      mocks.session.getByToken.mockResolvedValue(sessionStub.inactive as any);
+      mocks.session.update.mockResolvedValue(sessionStub.valid);
       await expect(
         sut.authenticate({
           headers: { cookie: 'immich_access_token=auth_token' },
@@ -399,13 +380,13 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toBeDefined();
-      expect(sessionMock.update.mock.calls[0][1]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
+      expect(mocks.session.update.mock.calls[0][1]).toMatchObject({ id: 'not_active', updatedAt: expect.any(Date) });
     });
   });
 
   describe('validate - api key', () => {
     it('should throw an error if no api key is found', async () => {
-      keyMock.getKey.mockResolvedValue(void 0);
+      mocks.apiKey.getKey.mockResolvedValue(void 0);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -413,11 +394,11 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).rejects.toBeInstanceOf(UnauthorizedException);
-      expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+      expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
 
     it('should throw an error if api key has insufficient permissions', async () => {
-      keyMock.getKey.mockResolvedValue(keyStub.authKey);
+      mocks.apiKey.getKey.mockResolvedValue(keyStub.authKey);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -428,7 +409,7 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      keyMock.getKey.mockResolvedValue(keyStub.authKey);
+      mocks.apiKey.getKey.mockResolvedValue(keyStub.authKey);
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -436,7 +417,7 @@ describe('AuthService', () => {
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
       ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.authKey });
-      expect(keyMock.getKey).toHaveBeenCalledWith('auth_token (hashed)');
+      expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });
 
@@ -454,14 +435,14 @@ describe('AuthService', () => {
 
   describe('authorize', () => {
     it('should fail if oauth is disabled', async () => {
-      systemMock.get.mockResolvedValue({ oauth: { enabled: false } });
+      mocks.systemMetadata.get.mockResolvedValue({ oauth: { enabled: false } });
       await expect(sut.authorize({ redirectUri: 'https://demo.immich.app' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });
 
     it('should authorize the user', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
       await sut.authorize({ redirectUri: 'https://demo.immich.app' });
     });
   });
@@ -472,71 +453,71 @@ describe('AuthService', () => {
     });
 
     it('should not allow auto registering', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      userMock.getByEmail.mockResolvedValue(void 0);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
         BadRequestException,
       );
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
     });
 
     it('should link an existing user', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      userMock.getByEmail.mockResolvedValue(userStub.user1);
-      userMock.update.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.user.getByEmail.mockResolvedValue(userStub.user1);
+      mocks.user.update.mockResolvedValue(userStub.user1);
+      mocks.session.create.mockResolvedValue(sessionStub.valid);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(1);
-      expect(userMock.update).toHaveBeenCalledWith(userStub.user1.id, { oauthId: sub });
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
+      expect(mocks.user.update).toHaveBeenCalledWith(userStub.user1.id, { oauthId: sub });
     });
 
     it('should not link to a user with a different oauth sub', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
-      userMock.getByEmail.mockResolvedValueOnce({ ...userStub.user1, oauthId: 'existing-sub' });
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.user.getByEmail.mockResolvedValueOnce({ ...userStub.user1, oauthId: 'existing-sub' });
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toThrow(
         BadRequestException,
       );
 
-      expect(userMock.update).not.toHaveBeenCalled();
-      expect(userMock.create).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.user.create).not.toHaveBeenCalled();
     });
 
     it('should allow auto registering by default', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
+      mocks.session.create.mockResolvedValue(sessionStub.valid);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
-      expect(userMock.create).toHaveBeenCalledTimes(1);
+      expect(mocks.user.getByEmail).toHaveBeenCalledTimes(2); // second call is for domain check before create
+      expect(mocks.user.create).toHaveBeenCalledTimes(1);
     });
 
     it('should throw an error if user should be auto registered but the email claim does not exist', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
-      sessionMock.create.mockResolvedValue(sessionStub.valid);
-      oauthMock.getProfile.mockResolvedValue({ sub, email: undefined });
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
+      mocks.session.create.mockResolvedValue(sessionStub.valid);
+      mocks.oauth.getProfile.mockResolvedValue({ sub, email: undefined });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
-      expect(userMock.getByEmail).not.toHaveBeenCalled();
-      expect(userMock.create).not.toHaveBeenCalled();
+      expect(mocks.user.getByEmail).not.toHaveBeenCalled();
+      expect(mocks.user.create).not.toHaveBeenCalled();
     });
 
     for (const url of [
@@ -548,68 +529,68 @@ describe('AuthService', () => {
       'app.immich:///oauth-callback?code=abc123',
     ]) {
       it(`should use the mobile redirect override for a url of ${url}`, async () => {
-        systemMock.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
-        userMock.getByOAuthId.mockResolvedValue(userStub.user1);
-        sessionMock.create.mockResolvedValue(sessionStub.valid);
+        mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
+        mocks.user.getByOAuthId.mockResolvedValue(userStub.user1);
+        mocks.session.create.mockResolvedValue(sessionStub.valid);
 
         await sut.callback({ url }, loginDetails);
-        expect(oauthMock.getProfile).toHaveBeenCalledWith(expect.objectContaining({}), url, 'http://mobile-redirect');
+        expect(mocks.oauth.getProfile).toHaveBeenCalledWith(expect.objectContaining({}), url, 'http://mobile-redirect');
       });
     }
 
     it('should use the default quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
+      expect(mocks.user.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
     });
 
     it('should ignore an invalid storage quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
-      oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 'abc' });
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
+      mocks.oauth.getProfile.mockResolvedValue({ sub, email, immich_quota: 'abc' });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
+      expect(mocks.user.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
     });
 
     it('should ignore a negative quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
-      oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: -5 });
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
+      mocks.oauth.getProfile.mockResolvedValue({ sub, email, immich_quota: -5 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
+      expect(mocks.user.create).toHaveBeenCalledWith({ ...oauthUserWithDefaultQuota, quotaSizeInBytes: 1_073_741_824 });
     });
 
     it('should not set quota for 0 quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
-      oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 0 });
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
+      mocks.oauth.getProfile.mockResolvedValue({ sub, email, immich_quota: 0 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith({
+      expect(mocks.user.create).toHaveBeenCalledWith({
         email,
         name: ' ',
         oauthId: sub,
@@ -619,17 +600,17 @@ describe('AuthService', () => {
     });
 
     it('should use a valid storage quota', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      userMock.getByEmail.mockResolvedValue(void 0);
-      userMock.getAdmin.mockResolvedValue(userStub.user1);
-      userMock.create.mockResolvedValue(userStub.user1);
-      oauthMock.getProfile.mockResolvedValue({ sub, email, immich_quota: 5 });
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getAdmin.mockResolvedValue(userStub.user1);
+      mocks.user.create.mockResolvedValue(userStub.user1);
+      mocks.oauth.getProfile.mockResolvedValue({ sub, email, immich_quota: 5 });
 
       await expect(sut.callback({ url: 'http://immich/auth/login?code=abc123' }, loginDetails)).resolves.toEqual(
         oauthResponse,
       );
 
-      expect(userMock.create).toHaveBeenCalledWith({
+      expect(mocks.user.create).toHaveBeenCalledWith({
         email,
         name: ' ',
         oauthId: sub,
@@ -641,34 +622,34 @@ describe('AuthService', () => {
 
   describe('link', () => {
     it('should link an account', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.update.mockResolvedValue(userStub.user1);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.user.update.mockResolvedValue(userStub.user1);
 
       await sut.link(authStub.user1, { url: 'http://immich/user-settings?code=abc123' });
 
-      expect(userMock.update).toHaveBeenCalledWith(authStub.user1.user.id, { oauthId: sub });
+      expect(mocks.user.update).toHaveBeenCalledWith(authStub.user1.user.id, { oauthId: sub });
     });
 
     it('should not link an already linked oauth.sub', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
 
       await expect(sut.link(authStub.user1, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
   });
 
   describe('unlink', () => {
     it('should unlink an account', async () => {
-      systemMock.get.mockResolvedValue(systemConfigStub.enabled);
-      userMock.update.mockResolvedValue(userStub.user1);
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.user.update.mockResolvedValue(userStub.user1);
 
       await sut.unlink(authStub.user1);
 
-      expect(userMock.update).toHaveBeenCalledWith(authStub.user1.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(authStub.user1.user.id, { oauthId: '' });
     });
   });
 });

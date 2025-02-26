@@ -26,4 +26,11 @@ class ETagRepository extends DatabaseRepository implements IETagRepository {
 
   @override
   Future<ETag?> getById(String id) => db.eTags.getById(id);
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.eTags.clear();
+    });
+  }
 }

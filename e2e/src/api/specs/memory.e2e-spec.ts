@@ -93,8 +93,6 @@ describe('/memories', () => {
         data: { year: 2021 },
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        deletedAt: null,
-        seenAt: null,
         isSaved: false,
         memoryAt: expect.any(String),
         ownerId: user.userId,

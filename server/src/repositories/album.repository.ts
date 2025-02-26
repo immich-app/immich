@@ -1,72 +1,127 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
+import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
+import { InjectKysely } from 'nestjs-kysely';
+import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
+import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
-import {
-  DataSource,
-  EntityManager,
-  FindOptionsOrder,
-  FindOptionsRelations,
-  In,
-  IsNull,
-  Not,
-  Repository,
-} from 'typeorm';
 
-const withoutDeletedUsers = <T extends AlbumEntity | null>(album: T) => {
-  if (album) {
-    album.albumUsers = album.albumUsers.filter((albumUser) => albumUser.user && !albumUser.user.deletedAt);
-  }
-  return album;
+export interface AlbumAssetCount {
+  albumId: string;
+  assetCount: number;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface AlbumInfoOptions {
+  withAssets: boolean;
+}
+
+const userColumns = [
+  'id',
+  'email',
+  'createdAt',
+  'profileImagePath',
+  'isAdmin',
+  'shouldChangePassword',
+  'deletedAt',
+  'oauthId',
+  'updatedAt',
+  'storageLabel',
+  'name',
+  'quotaSizeInBytes',
+  'quotaUsageInBytes',
+  'status',
+  'profileChangedAt',
+] as const;
+
+const withOwner = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return jsonObjectFrom(eb.selectFrom('users').select(userColumns).whereRef('users.id', '=', 'albums.ownerId')).as(
+    'owner',
+  );
+};
+
+const withAlbumUsers = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('albums_shared_users_users as album_users')
+      .selectAll('album_users')
+      .select((eb) =>
+        jsonObjectFrom(eb.selectFrom('users').select(userColumns).whereRef('users.id', '=', 'album_users.usersId')).as(
+          'user',
+        ),
+      )
+      .whereRef('album_users.albumsId', '=', 'albums.id'),
+  ).as('albumUsers');
+};
+
+const withSharedLink = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return jsonArrayFrom(eb.selectFrom('shared_links').selectAll().whereRef('shared_links.albumId', '=', 'albums.id')).as(
+    'sharedLinks',
+  );
+};
+
+const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
+  return eb
+    .selectFrom((eb) =>
+      eb
+        .selectFrom('assets')
+        .selectAll('assets')
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .select((eb) => eb.table('exif').as('exifInfo'))
+        .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
+        .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
+        .where('assets.deletedAt', 'is', null)
+        .orderBy('assets.fileCreatedAt', 'desc')
+        .as('asset'),
+    )
+    .select((eb) => eb.fn.jsonAgg('asset').as('assets'))
+    .as('assets');
 };
 
 @Injectable()
-export class AlbumRepository implements IAlbumRepository {
-  constructor(
-    @InjectRepository(AssetEntity) private assetRepository: Repository<AssetEntity>,
-    @InjectRepository(AlbumEntity) private repository: Repository<AlbumEntity>,
-    @InjectDataSource() private dataSource: DataSource,
-  ) {}
+export class AlbumRepository {
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
-  @GenerateSql({ params: [DummyValue.UUID, {}] })
-  async getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | null> {
-    const relations: FindOptionsRelations<AlbumEntity> = {
-      owner: true,
-      albumUsers: { user: true },
-      assets: false,
-      sharedLinks: true,
-    };
-
-    const order: FindOptionsOrder<AlbumEntity> = {};
-
-    if (options.withAssets) {
-      relations.assets = {
-        exifInfo: true,
-      };
-
-      order.assets = {
-        fileCreatedAt: 'DESC',
-      };
-    }
-
-    const album = await this.repository.findOne({ where: { id }, relations, order });
-    return withoutDeletedUsers(album);
+  @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }] })
+  async getById(id: string, options: AlbumInfoOptions): Promise<AlbumEntity | undefined> {
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .where('albums.id', '=', id)
+      .where('albums.deletedAt', 'is', null)
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .select(withSharedLink)
+      .$if(options.withAssets, (eb) => eb.select(withAssets))
+      .executeTakeFirst() as Promise<AlbumEntity | undefined>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
   async getByAssetId(ownerId: string, assetId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      where: [
-        { ownerId, assets: { id: assetId } },
-        { albumUsers: { userId: ownerId }, assets: { id: assetId } },
-      ],
-      relations: { owner: true, albumUsers: { user: true } },
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .where((eb) =>
+        eb.or([
+          eb('albums.ownerId', '=', ownerId),
+          eb.exists(
+            eb
+              .selectFrom('albums_shared_users_users as album_users')
+              .whereRef('album_users.albumsId', '=', 'albums.id')
+              .where('album_users.usersId', '=', ownerId),
+          ),
+        ]),
+      )
+      .where('album_assets.assetsId', '=', assetId)
+      .where('albums.deletedAt', 'is', null)
+      .orderBy('albums.createdAt', 'desc')
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .orderBy('albums.createdAt', 'desc')
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -77,36 +132,32 @@ export class AlbumRepository implements IAlbumRepository {
       return [];
     }
 
-    // Only possible with query builder because of GROUP BY.
-    const albumMetadatas = await this.repository
-      .createQueryBuilder('album')
-      .select('album.id')
-      .addSelect('MIN(assets.fileCreatedAt)', 'start_date')
-      .addSelect('MAX(assets.fileCreatedAt)', 'end_date')
-      .addSelect('COUNT(assets.id)', 'asset_count')
-      .leftJoin('albums_assets_assets', 'album_assets', 'album_assets.albumsId = album.id')
-      .leftJoin('assets', 'assets', 'assets.id = album_assets.assetsId')
-      .where('album.id IN (:...ids)', { ids })
-      .groupBy('album.id')
-      .getRawMany();
-
-    return albumMetadatas.map<AlbumAssetCount>((metadatas) => ({
-      albumId: metadatas['album_id'],
-      assetCount: Number(metadatas['asset_count']),
-      startDate: metadatas['end_date'] ? new Date(metadatas['start_date']) : undefined,
-      endDate: metadatas['end_date'] ? new Date(metadatas['end_date']) : undefined,
-    }));
+    return this.db
+      .selectFrom('albums')
+      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
+      .select('albums.id as albumId')
+      .select((eb) => eb.fn.min('assets.localDateTime').as('startDate'))
+      .select((eb) => eb.fn.max('assets.localDateTime').as('endDate'))
+      .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
+      .where('albums.id', 'in', ids)
+      .where('assets.deletedAt', 'is', null)
+      .groupBy('albums.id')
+      .execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async getOwned(ownerId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
-      where: { ownerId },
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .select(withOwner)
+      .select(withAlbumUsers)
+      .select(withSharedLink)
+      .where('albums.ownerId', '=', ownerId)
+      .where('albums.deletedAt', 'is', null)
+      .orderBy('albums.createdAt', 'desc')
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   /**
@@ -114,17 +165,31 @@ export class AlbumRepository implements IAlbumRepository {
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   async getShared(ownerId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      relations: { albumUsers: { user: true }, sharedLinks: true, owner: true },
-      where: [
-        { albumUsers: { userId: ownerId } },
-        { sharedLinks: { userId: ownerId } },
-        { ownerId, albumUsers: { user: Not(IsNull()) } },
-      ],
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .where((eb) =>
+        eb.or([
+          eb.exists(
+            eb
+              .selectFrom('albums_shared_users_users as album_users')
+              .whereRef('album_users.albumsId', '=', 'albums.id')
+              .where((eb) => eb.or([eb('albums.ownerId', '=', ownerId), eb('album_users.usersId', '=', ownerId)])),
+          ),
+          eb.exists(
+            eb
+              .selectFrom('shared_links')
+              .whereRef('shared_links.albumId', '=', 'albums.id')
+              .where('shared_links.userId', '=', ownerId),
+          ),
+        ]),
+      )
+      .where('albums.deletedAt', 'is', null)
+      .select(withAlbumUsers)
+      .select(withOwner)
+      .select(withSharedLink)
+      .orderBy('albums.createdAt', 'desc')
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   /**
@@ -132,35 +197,42 @@ export class AlbumRepository implements IAlbumRepository {
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   async getNotShared(ownerId: string): Promise<AlbumEntity[]> {
-    const albums = await this.repository.find({
-      relations: { albumUsers: true, sharedLinks: true, owner: true },
-      where: { ownerId, albumUsers: { user: IsNull() }, sharedLinks: { id: IsNull() } },
-      order: { createdAt: 'DESC' },
-    });
-
-    return albums.map((album) => withoutDeletedUsers(album));
+    return this.db
+      .selectFrom('albums')
+      .selectAll('albums')
+      .where('albums.ownerId', '=', ownerId)
+      .where('albums.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('albums_shared_users_users as album_users')
+              .whereRef('album_users.albumsId', '=', 'albums.id'),
+          ),
+        ),
+      )
+      .where((eb) =>
+        eb.not(eb.exists(eb.selectFrom('shared_links').whereRef('shared_links.albumId', '=', 'albums.id'))),
+      )
+      .select(withOwner)
+      .orderBy('albums.createdAt', 'desc')
+      .execute() as unknown as Promise<AlbumEntity[]>;
   }
 
   async restoreAll(userId: string): Promise<void> {
-    await this.repository.restore({ ownerId: userId });
+    await this.db.updateTable('albums').set({ deletedAt: null }).where('ownerId', '=', userId).execute();
   }
 
   async softDeleteAll(userId: string): Promise<void> {
-    await this.repository.softDelete({ ownerId: userId });
+    await this.db.updateTable('albums').set({ deletedAt: new Date() }).where('ownerId', '=', userId).execute();
   }
 
   async deleteAll(userId: string): Promise<void> {
-    await this.repository.delete({ ownerId: userId });
+    await this.db.deleteFrom('albums').where('ownerId', '=', userId).execute();
   }
 
   async removeAsset(assetId: string): Promise<void> {
-    // Using dataSource, because there is no direct access to albums_assets_assets.
-    await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from('albums_assets_assets')
-      .where('"albums_assets_assets"."assetsId" = :assetId', { assetId })
-      .execute();
+    await this.db.deleteFrom('albums_assets_assets').where('albums_assets_assets.assetsId', '=', assetId).execute();
   }
 
   @Chunked({ paramIndex: 1 })
@@ -169,14 +241,10 @@ export class AlbumRepository implements IAlbumRepository {
       return;
     }
 
-    await this.dataSource
-      .createQueryBuilder()
-      .delete()
-      .from('albums_assets_assets')
-      .where({
-        albumsId: albumId,
-        assetsId: In(assetIds),
-      })
+    await this.db
+      .deleteFrom('albums_assets_assets')
+      .where('albums_assets_assets.albumsId', '=', albumId)
+      .where('albums_assets_assets.assetsId', 'in', assetIds)
       .execute();
   }
 
@@ -194,71 +262,77 @@ export class AlbumRepository implements IAlbumRepository {
       return new Set();
     }
 
-    const results = await this.dataSource
-      .createQueryBuilder()
-      .select('albums_assets.assetsId', 'assetId')
-      .from('albums_assets_assets', 'albums_assets')
-      .where('"albums_assets"."albumsId" = :albumId', { albumId })
-      .andWhere('"albums_assets"."assetsId" IN (:...assetIds)', { assetIds })
-      .getRawMany<{ assetId: string }>();
-
-    return new Set(results.map(({ assetId }) => assetId));
+    return this.db
+      .selectFrom('albums_assets_assets')
+      .selectAll()
+      .where('albums_assets_assets.albumsId', '=', albumId)
+      .where('albums_assets_assets.assetsId', 'in', assetIds)
+      .execute()
+      .then((results) => new Set(results.map(({ assetsId }) => assetsId)));
   }
 
   async addAssetIds(albumId: string, assetIds: string[]): Promise<void> {
-    await this.addAssets(this.dataSource.manager, albumId, assetIds);
+    await this.addAssets(this.db, albumId, assetIds);
   }
 
-  create(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
-    return this.dataSource.transaction<AlbumEntity>(async (manager) => {
-      const { id } = await manager.save(AlbumEntity, { ...album, assets: [] });
-      const assetIds = (album.assets || []).map((asset) => asset.id);
-      await this.addAssets(manager, id, assetIds);
-      return manager.findOneOrFail(AlbumEntity, {
-        where: { id },
-        relations: {
-          owner: true,
-          albumUsers: { user: true },
-          sharedLinks: true,
-          assets: true,
-        },
-      });
+  create(album: Insertable<Albums>, assetIds: string[], albumUsers: AlbumUserCreateDto[]): Promise<AlbumEntity> {
+    return this.db.transaction().execute(async (tx) => {
+      const newAlbum = await tx.insertInto('albums').values(album).returning('albums.id').executeTakeFirst();
+
+      if (!newAlbum) {
+        throw new Error('Failed to create album');
+      }
+
+      if (assetIds.length > 0) {
+        await this.addAssets(tx, newAlbum.id, assetIds);
+      }
+
+      if (albumUsers.length > 0) {
+        await tx
+          .insertInto('albums_shared_users_users')
+          .values(
+            albumUsers.map((albumUser) => ({ albumsId: newAlbum.id, usersId: albumUser.userId, role: albumUser.role })),
+          )
+          .execute();
+      }
+
+      return tx
+        .selectFrom('albums')
+        .selectAll()
+        .where('id', '=', newAlbum.id)
+        .select(withOwner)
+        .select(withAssets)
+        .select(withAlbumUsers)
+        .executeTakeFirst() as unknown as Promise<AlbumEntity>;
     });
   }
 
-  update(album: Partial<AlbumEntity>): Promise<AlbumEntity> {
-    return this.save(album);
+  update(id: string, album: Updateable<Albums>): Promise<AlbumEntity> {
+    return this.db
+      .updateTable('albums')
+      .set(album)
+      .where('id', '=', id)
+      .returningAll('albums')
+      .returning(withOwner)
+      .returning(withSharedLink)
+      .returning(withAlbumUsers)
+      .executeTakeFirst() as unknown as Promise<AlbumEntity>;
   }
 
   async delete(id: string): Promise<void> {
-    await this.repository.delete({ id });
+    await this.db.deleteFrom('albums').where('id', '=', id).execute();
   }
 
   @Chunked({ paramIndex: 2, chunkSize: 30_000 })
-  private async addAssets(manager: EntityManager, albumId: string, assetIds: string[]): Promise<void> {
+  private async addAssets(db: Kysely<DB>, albumId: string, assetIds: string[]): Promise<void> {
     if (assetIds.length === 0) {
       return;
     }
 
-    await manager
-      .createQueryBuilder()
-      .insert()
-      .into('albums_assets_assets', ['albumsId', 'assetsId'])
+    await db
+      .insertInto('albums_assets_assets')
       .values(assetIds.map((assetId) => ({ albumsId: albumId, assetsId: assetId })))
       .execute();
-  }
-
-  private async save(album: Partial<AlbumEntity>) {
-    const { id } = await this.repository.save(album);
-    return this.repository.findOneOrFail({
-      where: { id },
-      relations: {
-        owner: true,
-        albumUsers: { user: true },
-        sharedLinks: true,
-        assets: true,
-      },
-    });
   }
 
   /**
@@ -272,28 +346,43 @@ export class AlbumRepository implements IAlbumRepository {
   async updateThumbnails(): Promise<number | undefined> {
     // Subquery for getting a new thumbnail.
 
-    const builder = this.dataSource
-      .createQueryBuilder('albums_assets_assets', 'album_assets')
-      .innerJoin('assets', 'assets', '"album_assets"."assetsId" = "assets"."id"')
-      .where('"album_assets"."albumsId" = "albums"."id"');
+    const result = await this.db
+      .updateTable('albums')
+      .set((eb) => ({
+        albumThumbnailAssetId: this.updateThumbnailBuilder(eb)
+          .select('album_assets.assetsId')
+          .orderBy('assets.fileCreatedAt', 'desc')
+          .limit(1),
+      }))
+      .where((eb) =>
+        eb.or([
+          eb.and([
+            eb('albumThumbnailAssetId', 'is', null),
+            eb.exists(this.updateThumbnailBuilder(eb).select(sql`1`.as('1'))), // Has assets
+          ]),
+          eb.and([
+            eb('albumThumbnailAssetId', 'is not', null),
+            eb.not(
+              eb.exists(
+                this.updateThumbnailBuilder(eb)
+                  .select(sql`1`.as('1'))
+                  .whereRef('albums.albumThumbnailAssetId', '=', 'album_assets.assetsId'), // Has invalid assets
+              ),
+            ),
+          ]),
+        ]),
+      )
+      .execute();
 
-    const newThumbnail = builder
-      .clone()
-      .select('"album_assets"."assetsId"')
-      .orderBy('"assets"."fileCreatedAt"', 'DESC')
-      .limit(1);
-    const hasAssets = builder.clone().select('1');
-    const hasInvalidAsset = hasAssets.clone().andWhere('"albums"."albumThumbnailAssetId" = "album_assets"."assetsId"');
+    return Number(result[0].numUpdatedRows);
+  }
 
-    const updateAlbums = this.repository
-      .createQueryBuilder('albums')
-      .update(AlbumEntity)
-      .set({ albumThumbnailAssetId: () => `(${newThumbnail.getQuery()})` })
-      .where(`"albums"."albumThumbnailAssetId" IS NULL AND EXISTS (${hasAssets.getQuery()})`)
-      .orWhere(`"albums"."albumThumbnailAssetId" IS NOT NULL AND NOT EXISTS (${hasInvalidAsset.getQuery()})`);
-
-    const result = await updateAlbums.execute();
-
-    return result.affected;
+  private updateThumbnailBuilder(eb: ExpressionBuilder<DB, 'albums'>) {
+    return eb
+      .selectFrom('albums_assets_assets as album_assets')
+      .innerJoin('assets', (join) =>
+        join.onRef('album_assets.assetsId', '=', 'assets.id').on('assets.deletedAt', 'is', null),
+      )
+      .whereRef('album_assets.albumsId', '=', 'albums.id');
   }
 }

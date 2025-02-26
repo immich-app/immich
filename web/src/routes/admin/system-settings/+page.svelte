@@ -17,8 +17,7 @@
   import ThemeSettings from '$lib/components/admin-page/settings/theme/theme-settings.svelte';
   import TrashSettings from '$lib/components/admin-page/settings/trash-settings/trash-settings.svelte';
   import UserSettings from '$lib/components/admin-page/settings/user-settings/user-settings.svelte';
-  import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import { Button, Text, HStack, Alert } from '@immich/ui';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import SettingAccordionState from '$lib/components/shared-components/settings/setting-accordion-state.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
@@ -29,7 +28,6 @@
   import { downloadBlob } from '$lib/utils/asset-utils';
   import {
     mdiAccountOutline,
-    mdiAlert,
     mdiBackupRestore,
     mdiBellOutline,
     mdiBookshelf,
@@ -243,69 +241,64 @@
 
 <input bind:this={inputElement} type="file" accept=".json" style="display: none" onchange={uploadConfig} />
 
-<div class="h-svh flex flex-col overflow-hidden">
-  {#if $featureFlags.configFile}
-    <div class="flex flex-row items-center gap-2 bg-gray-100 p-3 dark:bg-gray-800">
-      <Icon path={mdiAlert} class="text-yellow-400" size={18} />
-      <h2 class="text-md text-immich-primary dark:text-immich-dark-primary">
-        {$t('admin.config_set_by_file')}
-      </h2>
-    </div>
-  {/if}
-
-  <UserPageLayout title={data.meta.title} admin>
-    {#snippet buttons()}
-      <div class="flex justify-end gap-2">
-        <div class="hidden lg:block">
-          <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
-        </div>
-        <LinkButton onclick={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiContentCopy} size="18" />
-            {$t('copy_to_clipboard')}
-          </div>
-        </LinkButton>
-        <LinkButton onclick={() => downloadConfig()}>
-          <div class="flex place-items-center gap-2 text-sm">
-            <Icon path={mdiDownload} size="18" />
-            {$t('export_as_json')}
-          </div>
-        </LinkButton>
-        {#if !$featureFlags.configFile}
-          <LinkButton onclick={() => inputElement?.click()}>
-            <div class="flex place-items-center gap-2 text-sm">
-              <Icon path={mdiUpload} size="18" />
-              {$t('import_from_json')}
-            </div>
-          </LinkButton>
-        {/if}
+<UserPageLayout title={data.meta.title} admin>
+  {#snippet buttons()}
+    <HStack gap={1}>
+      <div class="hidden lg:block">
+        <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
       </div>
-    {/snippet}
+      <Button
+        leadingIcon={mdiContentCopy}
+        onclick={() => copyToClipboard(JSON.stringify(config, jsonReplacer, 2))}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('copy_to_clipboard')}</Text>
+      </Button>
+      <Button leadingIcon={mdiDownload} onclick={() => downloadConfig()} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('export_as_json')}</Text>
+      </Button>
+      {#if !$featureFlags.configFile}
+        <Button
+          leadingIcon={mdiUpload}
+          onclick={() => inputElement?.click()}
+          size="small"
+          variant="ghost"
+          color="secondary"
+        >
+          <Text class="hidden md:block">{$t('import_from_json')}</Text>
+        </Button>
+      {/if}
+    </HStack>
+  {/snippet}
 
-    <AdminSettings bind:config bind:this={adminSettingElement}>
-      {#snippet children({ savedConfig, defaultConfig })}
-        <section id="setting-content" class="flex place-content-center sm:mx-4">
-          <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
-            <div class="block lg:hidden">
-              <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
-            </div>
-            <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
-              {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
-                <SettingAccordion {title} {subtitle} {key} {icon}>
-                  <Component
-                    onSave={(config) => adminSettingElement?.handleSave(config)}
-                    onReset={(options) => adminSettingElement?.handleReset(options)}
-                    disabled={$featureFlags.configFile}
-                    bind:config
-                    {defaultConfig}
-                    {savedConfig}
-                  />
-                </SettingAccordion>
-              {/each}
-            </SettingAccordionState>
-          </section>
+  <AdminSettings bind:config bind:this={adminSettingElement}>
+    {#snippet children({ savedConfig, defaultConfig })}
+      <section id="setting-content" class="flex place-content-center sm:mx-4">
+        <section class="w-full pb-28 sm:w-5/6 md:w-[896px]">
+          {#if $featureFlags.configFile}
+            <Alert color="warning" class="text-dark my-4" title={$t('admin.config_set_by_file')} />
+          {/if}
+          <div class="block lg:hidden">
+            <SearchBar placeholder={$t('search_settings')} bind:name={searchQuery} showLoadingSpinner={false} />
+          </div>
+          <SettingAccordionState queryParam={QueryParameter.IS_OPEN}>
+            {#each filteredSettings as { component: Component, title, subtitle, key, icon } (key)}
+              <SettingAccordion {title} {subtitle} {key} {icon}>
+                <Component
+                  onSave={(config) => adminSettingElement?.handleSave(config)}
+                  onReset={(options) => adminSettingElement?.handleReset(options)}
+                  disabled={$featureFlags.configFile}
+                  bind:config
+                  {defaultConfig}
+                  {savedConfig}
+                />
+              </SettingAccordion>
+            {/each}
+          </SettingAccordionState>
         </section>
-      {/snippet}
-    </AdminSettings>
-  </UserPageLayout>
-</div>
+      </section>
+    {/snippet}
+  </AdminSettings>
+</UserPageLayout>

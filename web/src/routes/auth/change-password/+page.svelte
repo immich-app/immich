@@ -34,31 +34,25 @@
 </script>
 
 <AuthPageLayout title={data.meta.title}>
-  <div class="m-4">
-    <Alert color="primary" size="small">
+  <form onsubmit={onSubmit} method="post" class="flex flex-col gap-4">
+    <Alert color="primary" size="small" class="mb-2">
       <Stack gap={4}>
         <Text>{$t('hi_user', { values: { name: $user.name, email: $user.email } })}</Text>
         <Text>{$t('change_password_description')}</Text>
       </Stack>
     </Alert>
-  </div>
 
-  <form onsubmit={onSubmit} method="post" class="mx-4 mt-6">
-    <Stack gap={4} class="mt-4">
-      <Field label={$t('new_password')} required>
-        <PasswordInput bind:value={password} autocomplete="new-password" />
-      </Field>
+    <Field label={$t('new_password')} required>
+      <PasswordInput bind:value={password} autocomplete="new-password" />
+    </Field>
 
-      <Field label={$t('confirm_password')} required>
-        <PasswordInput bind:value={passwordConfirm} autocomplete="new-password" />
-        {#if errorMessage}
-          <HelperText color="danger">{errorMessage}</HelperText>
-        {/if}
-      </Field>
+    <Field label={$t('confirm_password')} required>
+      <PasswordInput bind:value={passwordConfirm} autocomplete="new-password" />
+      <HelperText color="danger">{errorMessage}</HelperText>
+    </Field>
 
-      <div class="my-5 flex w-full">
-        <Button type="submit" size="large" shape="round" fullWidth disabled={!valid}>{$t('to_change_password')}</Button>
-      </div>
-    </Stack>
+    <Button class="mt-2" type="submit" size="large" shape="round" fullWidth disabled={!valid}
+      >{$t('to_change_password')}</Button
+    >
   </form>
 </AuthPageLayout>

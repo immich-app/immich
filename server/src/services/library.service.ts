@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
@@ -16,11 +17,10 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType, ImmichWorker } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -223,7 +223,7 @@ export class LibraryService extends BaseService {
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*'],
+      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*', '**/#recycle/**', '**/#snapshot/**'],
     });
     return mapLibrary(library);
   }
@@ -311,7 +311,7 @@ export class LibraryService extends BaseService {
       }
     }
 
-    const library = await this.libraryRepository.update({ id, ...dto });
+    const library = await this.libraryRepository.update(id, dto);
     return mapLibrary(library);
   }
 
@@ -503,7 +503,7 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-    const isAssetModified = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    const isAssetModified = !asset.fileModifiedAt || mtime.toISOString() !== asset.fileModifiedAt.toISOString();
 
     if (asset.isOffline || isAssetModified) {
       this.logger.debug(`Asset was offline or modified, updating asset record ${asset.originalPath}`);
@@ -511,7 +511,6 @@ export class LibraryService extends BaseService {
       await this.assetRepository.updateAll([asset.id], {
         isOffline: false,
         deletedAt: null,
-        fileCreatedAt: mtime,
         fileModifiedAt: mtime,
         originalFileName: parse(asset.originalPath).base,
       });
@@ -571,7 +570,7 @@ export class LibraryService extends BaseService {
       this.logger.debug(`No non-excluded assets found in any import path for library ${library.id}`);
     }
 
-    await this.libraryRepository.update({ id: job.id, refreshedAt: new Date() });
+    await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }

@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { ExpressionBuilder, Insertable, Kysely } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { Activity, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { ActivityEntity } from 'src/entities/activity.entity';
-import { IActivityRepository } from 'src/interfaces/activity.interface';
 import { asUuid } from 'src/utils/database';
 
 export interface ActivitySearch {
@@ -19,18 +18,18 @@ const withUser = (eb: ExpressionBuilder<DB, 'activity'>) => {
   return jsonObjectFrom(
     eb
       .selectFrom('users')
-      .selectAll()
+      .select(columns.userDto)
       .whereRef('users.id', '=', 'activity.userId')
       .where('users.deletedAt', 'is', null),
   ).as('user');
 };
 
 @Injectable()
-export class ActivityRepository implements IActivityRepository {
+export class ActivityRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
-  search(options: ActivitySearch): Promise<ActivityEntity[]> {
+  search(options: ActivitySearch) {
     const { userId, assetId, albumId, isLiked } = options;
 
     return this.db
@@ -44,14 +43,14 @@ export class ActivityRepository implements IActivityRepository {
       .$if(!!albumId, (qb) => qb.where('activity.albumId', '=', albumId!))
       .$if(isLiked !== undefined, (qb) => qb.where('activity.isLiked', '=', isLiked!))
       .orderBy('activity.createdAt', 'asc')
-      .execute() as unknown as Promise<ActivityEntity[]>;
+      .execute();
   }
 
   async create(activity: Insertable<Activity>) {
     return this.save(activity);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string) {
     await this.db.deleteFrom('activity').where('id', '=', asUuid(id)).execute();
   }
 
@@ -66,6 +65,9 @@ export class ActivityRepository implements IActivityRepository {
       .where('activity.albumId', '=', albumId)
       .where('activity.isLiked', '=', false)
       .where('assets.deletedAt', 'is', null)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .executeTakeFirstOrThrow();
 
     return count as number;
@@ -79,6 +81,6 @@ export class ActivityRepository implements IActivityRepository {
       .selectAll('activity')
       .select(withUser)
       .where('activity.id', '=', asUuid(id))
-      .executeTakeFirstOrThrow() as unknown as Promise<ActivityEntity>;
+      .executeTakeFirstOrThrow();
   }
 }

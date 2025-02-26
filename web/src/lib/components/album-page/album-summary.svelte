@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { dateFormats } from '$lib/constants';
-  import { locale } from '$lib/stores/preferences.store';
+  import { getAlbumDateRange } from '$lib/utils/date-time';
   import type { AlbumResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
@@ -9,28 +8,10 @@
   }
 
   let { album }: Props = $props();
-
-  const formatDate = (date?: string) => {
-    return date ? new Date(date).toLocaleDateString($locale, dateFormats.album) : undefined;
-  };
-
-  const getDateRange = (start?: string, end?: string) => {
-    if (start && end && start !== end) {
-      return `${start} - ${end}`;
-    }
-
-    if (start) {
-      return start;
-    }
-
-    return '';
-  };
-  let startDate = $derived(formatDate(album.startDate));
-  let endDate = $derived(formatDate(album.endDate));
 </script>
 
 <span class="my-2 flex gap-2 text-sm font-medium text-gray-500" data-testid="album-details">
-  <span>{getDateRange(startDate, endDate)}</span>
+  <span>{getAlbumDateRange(album)}</span>
   <span>•</span>
   <span>{$t('items_count', { values: { count: album.assetCount } })}</span>
 </span>

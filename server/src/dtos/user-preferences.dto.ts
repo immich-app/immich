@@ -38,6 +38,14 @@ class PeopleUpdate {
   sidebarWeb?: boolean;
 }
 
+class SharedLinksUpdate {
+  @ValidateBoolean({ optional: true })
+  enabled?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  sidebarWeb?: boolean;
+}
+
 class TagsUpdate {
   @ValidateBoolean({ optional: true })
   enabled?: boolean;
@@ -100,6 +108,11 @@ export class UserPreferencesUpdateDto {
 
   @Optional()
   @ValidateNested()
+  @Type(() => SharedLinksUpdate)
+  sharedLinks?: SharedLinksUpdate;
+
+  @Optional()
+  @ValidateNested()
   @Type(() => TagsUpdate)
   tags?: TagsUpdate;
 
@@ -152,6 +165,11 @@ class TagsResponse {
   sidebarWeb: boolean = true;
 }
 
+class SharedLinksResponse {
+  enabled: boolean = true;
+  sidebarWeb: boolean = false;
+}
+
 class EmailNotificationsResponse {
   enabled!: boolean;
   albumInvite!: boolean;
@@ -175,6 +193,7 @@ export class UserPreferencesResponseDto implements UserPreferences {
   memories!: MemoriesResponse;
   people!: PeopleResponse;
   ratings!: RatingsResponse;
+  sharedLinks!: SharedLinksResponse;
   tags!: TagsResponse;
   avatar!: AvatarResponse;
   emailNotifications!: EmailNotificationsResponse;

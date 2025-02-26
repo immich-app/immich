@@ -136,23 +136,16 @@ class PermissionOnboardingPage extends HookConsumerWidget {
       );
     }
 
-    final Widget child;
-    switch (permission) {
-      case PermissionStatus.limited:
-        child = buildPermissionLimited();
-        break;
-      case PermissionStatus.denied:
-        child = buildRequestPermission();
-        break;
-      case PermissionStatus.granted:
-      case PermissionStatus.provisional:
-        child = buildPermissionGranted();
-        break;
-      case PermissionStatus.restricted:
-      case PermissionStatus.permanentlyDenied:
-        child = buildPermissionDenied();
-        break;
-    }
+    final Widget child = switch (permission) {
+      PermissionStatus.limited => buildPermissionLimited(),
+      PermissionStatus.denied => buildRequestPermission(),
+      PermissionStatus.granted ||
+      PermissionStatus.provisional =>
+        buildPermissionGranted(),
+      PermissionStatus.restricted ||
+      PermissionStatus.permanentlyDenied =>
+        buildPermissionDenied()
+    };
 
     return Scaffold(
       body: SafeArea(

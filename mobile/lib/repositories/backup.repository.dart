@@ -14,13 +14,11 @@ class BackupRepository extends DatabaseRepository implements IBackupRepository {
   @override
   Future<List<BackupAlbum>> getAll({BackupAlbumSort? sort}) {
     final baseQuery = db.backupAlbums.where();
-    final QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> query;
-    switch (sort) {
-      case null:
-        query = baseQuery.noOp();
-      case BackupAlbumSort.id:
-        query = baseQuery.sortById();
-    }
+    final QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> query =
+        switch (sort) {
+      null => baseQuery.noOp(),
+      BackupAlbumSort.id => baseQuery.sortById(),
+    };
     return query.findAll();
   }
 

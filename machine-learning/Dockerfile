@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:f997d3f71b7dcff3f937703c02861437f2b41a94e1ddbd1b5fa357ee99f5cce4 AS builder-cpu
+FROM python:3.11-bookworm@sha256:14b4620f59a90f163dfa6bd252b68743f9a41d494a9fde935f9d7669d98094bb AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -34,7 +34,7 @@ RUN python3 -m venv /opt/venv
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
 
-FROM python:3.11-slim-bookworm@sha256:6ed5bff4d7d377e2a27d9285553b8c21cfccc4f00881de1b24c9bc8d90016e82 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:42420f737ba91d509fc60d5ed65ed0492678a90c561e1fa08786ae8ba8b52eda AS prod-cpu
 
 FROM prod-cpu AS prod-openvino
 
@@ -106,6 +106,22 @@ COPY --from=builder /opt/venv /opt/venv
 COPY ann/ann.py /usr/src/ann/ann.py
 COPY start.sh log_conf.json gunicorn_conf.py ./
 COPY app .
+
+ARG BUILD_ID
+ARG BUILD_IMAGE
+ARG BUILD_SOURCE_REF
+ARG BUILD_SOURCE_COMMIT
+
+ENV IMMICH_BUILD=${BUILD_ID}
+ENV IMMICH_BUILD_URL=https://github.com/immich-app/immich/actions/runs/${BUILD_ID}
+ENV IMMICH_BUILD_IMAGE=${BUILD_IMAGE}
+ENV IMMICH_BUILD_IMAGE_URL=https://github.com/immich-app/immich/pkgs/container/immich-machine-learning
+ENV IMMICH_REPOSITORY=immich-app/immich
+ENV IMMICH_REPOSITORY_URL=https://github.com/immich-app/immich
+ENV IMMICH_SOURCE_REF=${BUILD_SOURCE_REF}
+ENV IMMICH_SOURCE_COMMIT=${BUILD_SOURCE_COMMIT}
+ENV IMMICH_SOURCE_URL=https://github.com/immich-app/immich/commit/${BUILD_SOURCE_COMMIT}
+
 ENTRYPOINT ["tini", "--"]
 CMD ["./start.sh"]
 

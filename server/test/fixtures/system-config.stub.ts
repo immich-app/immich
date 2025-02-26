@@ -1,5 +1,5 @@
 import { SystemConfig } from 'src/config';
-import { DeepPartial } from 'typeorm';
+import { DeepPartial } from 'src/types';
 
 export const systemConfigStub = {
   enabled: {

@@ -15,9 +15,8 @@ import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
-import { AlbumAssetCount, AlbumInfoOptions } from 'src/interfaces/album.interface';
+import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
@@ -56,13 +55,7 @@ export class AlbumService extends BaseService {
     const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
     const albumMetadata: Record<string, AlbumAssetCount> = {};
     for (const metadata of results) {
-      const { albumId, assetCount, startDate, endDate } = metadata;
-      albumMetadata[albumId] = {
-        albumId,
-        assetCount,
-        startDate,
-        endDate,
-      };
+      albumMetadata[metadata.albumId] = metadata;
     }
 
     return Promise.all(
@@ -71,9 +64,9 @@ export class AlbumService extends BaseService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          startDate: albumMetadata[album.id].startDate,
-          endDate: albumMetadata[album.id].endDate,
-          assetCount: albumMetadata[album.id].assetCount,
+          startDate: albumMetadata[album.id]?.startDate ?? undefined,
+          endDate: albumMetadata[album.id]?.endDate ?? undefined,
+          assetCount: albumMetadata[album.id]?.assetCount ?? 0,
           lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
       }),
@@ -90,9 +83,9 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album, withAssets, auth),
-      startDate: albumMetadataForIds.startDate,
-      endDate: albumMetadataForIds.endDate,
-      assetCount: albumMetadataForIds.assetCount,
+      startDate: albumMetadataForIds?.startDate ?? undefined,
+      endDate: albumMetadataForIds?.endDate ?? undefined,
+      assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
     };
   }
@@ -112,16 +105,18 @@ export class AlbumService extends BaseService {
       permission: Permission.ASSET_SHARE,
       ids: dto.assetIds || [],
     });
-    const assets = [...allowedAssetIdsSet].map((id) => ({ id }) as AssetEntity);
+    const assetIds = [...allowedAssetIdsSet].map((id) => id);
 
-    const album = await this.albumRepository.create({
-      ownerId: auth.user.id,
-      albumName: dto.albumName,
-      description: dto.description,
-      albumUsers: albumUsers.map((albumUser) => albumUser as AlbumUserEntity) ?? [],
-      assets,
-      albumThumbnailAssetId: assets[0]?.id || null,
-    });
+    const album = await this.albumRepository.create(
+      {
+        ownerId: auth.user.id,
+        albumName: dto.albumName,
+        description: dto.description,
+        albumThumbnailAssetId: assetIds[0] || null,
+      },
+      assetIds,
+      albumUsers,
+    );
 
     for (const { userId } of albumUsers) {
       await this.eventRepository.emit('album.invite', { id: album.id, userId });
@@ -141,7 +136,7 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Invalid album thumbnail');
       }
     }
-    const updatedAlbum = await this.albumRepository.update({
+    const updatedAlbum = await this.albumRepository.update(album.id, {
       id: album.id,
       albumName: dto.albumName,
       description: dto.description,
@@ -170,7 +165,7 @@ export class AlbumService extends BaseService {
 
     const { id: firstNewAssetId } = results.find(({ success }) => success) || {};
     if (firstNewAssetId) {
-      await this.albumRepository.update({
+      await this.albumRepository.update(id, {
         id,
         updatedAt: new Date(),
         albumThumbnailAssetId: album.albumThumbnailAssetId ?? firstNewAssetId,
@@ -199,11 +194,8 @@ export class AlbumService extends BaseService {
     );
 
     const removedIds = results.filter(({ success }) => success).map(({ id }) => id);
-    if (removedIds.length > 0) {
-      await this.albumRepository.update({ id, updatedAt: new Date() });
-      if (album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
-        await this.albumRepository.updateThumbnails();
-      }
+    if (removedIds.length > 0 && album.albumThumbnailAssetId && removedIds.includes(album.albumThumbnailAssetId)) {
+      await this.albumRepository.updateThumbnails();
     }
 
     return results;

@@ -32,7 +32,7 @@ class AlbumSharedUserIcons extends HookConsumerWidget {
     }
 
     return GestureDetector(
-      onTap: () => context.pushRoute(AlbumOptionsRoute()),
+      onTap: () => context.pushRoute(const AlbumOptionsRoute()),
       child: SizedBox(
         height: 50,
         child: ListView.builder(

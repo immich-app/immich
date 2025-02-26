@@ -30,7 +30,7 @@ export enum AppRoute {
   EXPLORE = '/explore',
   SHARE = '/share',
   SHARING = '/sharing',
-  SHARED_LINKS = '/sharing/sharedlinks',
+  SHARED_LINKS = '/shared-links',
   SEARCH = '/search',
   MAP = '/map',
   USER_SETTINGS = '/user-settings',

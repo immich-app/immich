@@ -6,24 +6,28 @@
 
   export type SearchFilter = {
     query: string;
-    queryType: 'smart' | 'metadata';
+    queryType: 'smart' | 'metadata' | 'description';
     personIds: SvelteSet<string>;
+    tagIds: SvelteSet<string>;
     location: SearchLocationFilter;
     camera: SearchCameraFilter;
     date: SearchDateFilter;
     display: SearchDisplayFilters;
     mediaType: MediaType;
+    rating?: number;
   };
 </script>
 
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
+  import { Button } from '@immich/ui';
   import { AssetTypeEnum, type SmartSearchDto, type MetadataSearchDto } from '@immich/sdk';
   import SearchPeopleSection from './search-people-section.svelte';
+  import SearchTagsSection from './search-tags-section.svelte';
   import SearchLocationSection from './search-location-section.svelte';
   import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
+  import SearchRatingsSection from './search-ratings-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
   import SearchTextSection from './search-text-section.svelte';
@@ -32,6 +36,7 @@
   import { mdiTune } from '@mdi/js';
   import { generateId } from '$lib/utils/generate-id';
   import { SvelteSet } from 'svelte/reactivity';
+  import { preferences } from '$lib/stores/user.store';
 
   interface Props {
     searchQuery: MetadataSearchDto | SmartSearchDto;
@@ -54,6 +59,7 @@
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: 'query' in searchQuery ? 'smart' : 'metadata',
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
+    tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
       country: withNullAsUndefined(searchQuery.country),
       state: withNullAsUndefined(searchQuery.state),
@@ -78,6 +84,7 @@
         : searchQuery.type === AssetTypeEnum.Video
           ? MediaType.Video
           : MediaType.All,
+    rating: searchQuery.rating,
   });
 
   const resetForm = () => {
@@ -85,11 +92,13 @@
       query: '',
       queryType: 'smart',
       personIds: new SvelteSet(),
+      tagIds: new SvelteSet(),
       location: {},
       camera: {},
       date: {},
       display: {},
       mediaType: MediaType.All,
+      rating: undefined,
     };
   };
 
@@ -106,6 +115,7 @@
     let payload: SmartSearchDto | MetadataSearchDto = {
       query: filter.queryType === 'smart' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
+      description: filter.queryType === 'description' ? query : undefined,
       country: filter.location.country,
       state: filter.location.state,
       city: filter.location.city,
@@ -117,7 +127,9 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
+      rating: filter.rating,
     };
 
     onSearch(payload);
@@ -143,6 +155,9 @@
       <!-- TEXT -->
       <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />
 
+      <!-- TAGS -->
+      <SearchTagsSection bind:selectedTags={filter.tagIds} />
+
       <!-- LOCATION -->
       <SearchLocationSection bind:filters={filter.location} />
 
@@ -151,6 +166,11 @@
 
       <!-- DATE RANGE -->
       <SearchDateSection bind:filters={filter.date} />
+
+      <!-- RATING -->
+      {#if $preferences?.ratings.enabled}
+        <SearchRatingsSection bind:rating={filter.rating} />
+      {/if}
 
       <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
         <!-- MEDIA TYPE -->
@@ -163,7 +183,7 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button type="reset" color="gray" fullwidth form={formId}>{$t('clear_all')}</Button>
-    <Button type="submit" fullwidth form={formId}>{$t('search')}</Button>
+    <Button shape="round" size="large" type="reset" color="secondary" fullWidth form={formId}>{$t('clear_all')}</Button>
+    <Button shape="round" size="large" type="submit" fullWidth form={formId}>{$t('search')}</Button>
   {/snippet}
 </FullScreenModal>

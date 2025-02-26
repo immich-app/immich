@@ -58,7 +58,7 @@ If your photos are on a network drive, automatic file watching likely won't work
 
 #### Troubleshooting
 
-If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In sysctl, this key is called `fs.inotify.max_user_watched` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Immich has to watch all files in your import paths including any ignored files.
+If you encounter an `ENOSPC` error, you need to increase your file watcher limit. In sysctl, this key is called `fs.inotify.max_user_watches` and has a default value of 8192. Increase this number to a suitable value greater than the number of files you will be watching. Note that Immich has to watch all files in your import paths including any ignored files.
 
 ```
 ERROR [LibraryService] Library watcher for library c69faf55-f96d-4aa0-b83b-2d80cbc27d98 encountered error: Error: ENOSPC: System limit for number of file watchers reached, watch '/media/photo.jpg'
@@ -111,11 +111,10 @@ These actions must be performed by the Immich administrator.
 - Click on Administration -> Libraries
 - Click on Create External Library
 - Select which user owns the library, this can not be changed later
+- Enter `/mnt/media/christmas-trip` then click Add
+- Click on Save
 - Click the drop-down menu on the newly created library
 - Click on Rename Library and rename it to "Christmas Trip"
-- Click Edit Import Paths
-- Click on Add Path
-- Enter `/mnt/media/christmas-trip` then click Add
 
 NOTE: We have to use the `/mnt/media/christmas-trip` path and not the `/mnt/nas/christmas-trip` path since all paths have to be what the Docker containers see.
 

@@ -15,7 +15,7 @@
 
     /* dark */
     --immich-dark-primary: 172 203 250;
-    --immich-dark-bg: 0 0 0;
+    --immich-dark-bg: 10 10 10;
     --immich-dark-fg: 229 231 235;
     --immich-dark-gray: 33 33 33;
     --immich-dark-error: 211 47 47;
@@ -26,7 +26,7 @@
   :root {
     /* light */
     --immich-ui-primary: 66 80 175;
-    --immich-ui-dark: 0 0 0;
+    --immich-ui-dark: 58 58 58;
     --immich-ui-light: 255 255 255;
     --immich-ui-success: 34 197 94;
     --immich-ui-danger: 180 0 0;

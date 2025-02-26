@@ -238,7 +238,7 @@
   "login_form_back_button_text": "Back",
   "login_form_button_text": "Entra",
   "login_form_email_hint": "elteu@correu.cat",
-  "login_form_endpoint_hint": "http://ip-del-servidor:port/api",
+  "login_form_endpoint_hint": "http://ip-del-servidor:port",
   "login_form_endpoint_url": "URL del servidor",
   "login_form_err_http": "Especifica http:// o https://",
   "login_form_err_invalid_email": "Adreça de correu electrònic no vàlida",

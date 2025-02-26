@@ -1,18 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { TagEntity } from 'src/entities/tag.entity';
-import { ILoggerRepository } from 'src/interfaces/logger.interface';
-import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
-import { DataSource, In, Repository, TreeRepository } from 'typeorm';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { DataSource, In, Repository } from 'typeorm';
+
+export type AssetTagItem = { assetId: string; tagId: string };
 
 @Injectable()
-export class TagRepository implements ITagRepository {
+export class TagRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(TagEntity) private repository: Repository<TagEntity>,
-    @InjectRepository(TagEntity) private tree: TreeRepository<TagEntity>,
-    @Inject(ILoggerRepository) private logger: ILoggerRepository,
+    private logger: LoggingRepository,
   ) {
     this.logger.setContext(TagRepository.name);
   }

@@ -27,6 +27,10 @@ SELECT * FROM "assets" WHERE "originalPath" = 'upload/library/admin/2023/2023-09
 SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 ```
 
+```sql title="Find by ID"
+SELECT * FROM "assets" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
+```
+
 :::note
 You can calculate the checksum for a particular file by using the command `sha1sum <filename>`.
 :::

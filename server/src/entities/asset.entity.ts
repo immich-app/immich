@@ -1,6 +1,6 @@
-import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, Selectable, SelectQueryBuilder, sql } from 'kysely';
+import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { Assets, DB } from 'src/db';
+import { DB } from 'src/db';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
@@ -13,8 +13,8 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import { TimeBucketSize } from 'src/interfaces/asset.interface';
-import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
+import { TimeBucketSize } from 'src/repositories/asset.repository';
+import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import {
   Column,
@@ -100,13 +100,13 @@ export class AssetEntity {
   deletedAt!: Date | null;
 
   @Index('idx_asset_file_created_at')
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileCreatedAt!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   localDateTime!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
@@ -180,28 +180,36 @@ export class AssetEntity {
   duplicateId!: string | null;
 }
 
+export type AssetEntityPlaceholder = AssetEntity & {
+  fileCreatedAt: Date | null;
+  fileModifiedAt: Date | null;
+  localDateTime: Date | null;
+};
+
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
-  return qb
-    .leftJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo'));
+  return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .innerJoin('exif', 'assets.id', 'exif.assetId')
-    .select((eb) => eb.fn('to_jsonb', [eb.table('exif')]).as('exifInfo'));
+    .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
 }
 
 export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb
     .leftJoin('smart_search', 'assets.id', 'smart_search.assetId')
-    .select(sql<number[]>`smart_search.embedding`.as('embedding'));
+    .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
-export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
-  return jsonArrayFrom(eb.selectFrom('asset_faces').selectAll().whereRef('asset_faces.assetId', '=', 'assets.id')).as(
-    'faces',
-  );
+export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_faces')
+      .selectAll()
+      .whereRef('asset_faces.assetId', '=', 'assets.id')
+      .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
+  ).as('faces');
 }
 
 export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileType) {
@@ -214,11 +222,12 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   ).as('files');
 }
 
-export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
+export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
   return eb
     .selectFrom('asset_faces')
     .leftJoin('person', 'person.id', 'asset_faces.personId')
     .whereRef('asset_faces.assetId', '=', 'assets.id')
+    .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null))
     .select((eb) =>
       eb
         .fn('jsonb_agg', [
@@ -240,22 +249,33 @@ export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
     .as('faces');
 }
 
-/** Adds a `has_people` CTE that can be inner joined on to filter out assets */
-export function hasPeopleCte(db: Kysely<DB>, personIds: string[]) {
-  return db.with('has_people', (qb) =>
-    qb
-      .selectFrom('asset_faces')
-      .select('assetId')
-      .where('personId', '=', anyUuid(personIds!))
-      .groupBy('assetId')
-      .having((eb) => eb.fn.count('personId'), '>=', personIds.length),
+export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('asset_faces')
+        .select('assetId')
+        .where('personId', '=', anyUuid(personIds!))
+        .groupBy('assetId')
+        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        .as('has_people'),
+    (join) => join.onRef('has_people.assetId', '=', 'assets.id'),
   );
 }
 
-export function hasPeople(db: Kysely<DB>, personIds?: string[]) {
-  return personIds && personIds.length > 0
-    ? hasPeopleCte(db, personIds).selectFrom('assets').innerJoin('has_people', 'has_people.assetId', 'assets.id')
-    : db.selectFrom('assets');
+export function hasTags<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagIds: string[]) {
+  return qb.innerJoin(
+    (eb) =>
+      eb
+        .selectFrom('tag_asset')
+        .select('assetsId')
+        .innerJoin('tags_closure', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .where('tags_closure.id_ancestor', '=', anyUuid(tagIds))
+        .groupBy('assetsId')
+        .having((eb) => eb.fn.count('tags_closure.id_ancestor').distinct(), '>=', tagIds.length)
+        .as('has_tags'),
+    (join) => join.onRef('has_tags.assetsId', '=', 'assets.id'),
+  );
 }
 
 export function withOwner(eb: ExpressionBuilder<DB, 'assets'>) {
@@ -266,48 +286,6 @@ export function withLibrary(eb: ExpressionBuilder<DB, 'assets'>) {
   return jsonObjectFrom(eb.selectFrom('libraries').selectAll().whereRef('libraries.id', '=', 'assets.libraryId')).as(
     'library',
   );
-}
-
-export function withStackedAssets<O>(qb: SelectQueryBuilder<DB, 'assets' | 'asset_stack', O>) {
-  return qb
-    .innerJoinLateral(
-      (eb: ExpressionBuilder<DB, 'assets' | 'asset_stack'>) =>
-        eb
-          .selectFrom('assets as stacked')
-          .select((eb) => eb.fn<Selectable<Assets>[]>('array_agg', [eb.table('stacked')]).as('assets'))
-          .whereRef('asset_stack.id', '=', 'stacked.stackId')
-          .whereRef('asset_stack.primaryAssetId', '!=', 'stacked.id')
-          .as('s'),
-      (join) =>
-        join.on((eb) =>
-          eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
-        ),
-    )
-    .select('s.assets');
-}
-
-export function withStack<O>(
-  qb: SelectQueryBuilder<DB, 'assets', O>,
-  { assets, count }: { assets: boolean; count: boolean },
-) {
-  return qb
-    .leftJoinLateral(
-      (eb) =>
-        eb
-          .selectFrom('asset_stack')
-          .selectAll('asset_stack')
-          .whereRef('assets.stackId', '=', 'asset_stack.id')
-          .$if(assets, withStackedAssets)
-          .$if(count, (qb) =>
-            // There is no `selectNoFrom` method for expression builders
-            qb.select(
-              sql`(select count(*) as "assetCount" where "asset_stack"."id" = "assets"."stackId")`.as('assetCount'),
-            ),
-          )
-          .as('stacked_assets'),
-      (join) => join.onTrue(),
-    )
-    .select((eb) => eb.fn('to_jsonb', [eb.table('stacked_assets')]).as('stack'));
 }
 
 export function withAlbums<O>(qb: SelectQueryBuilder<DB, 'assets', O>, { albumId }: { albumId?: string }) {
@@ -352,14 +330,30 @@ export function truncatedDate<O>(size: TimeBucketSize) {
   return sql<O>`date_trunc(${size}, "localDateTime" at time zone 'UTC') at time zone 'UTC'`;
 }
 
+export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: string) {
+  return qb.where((eb) =>
+    eb.exists(
+      eb
+        .selectFrom('tags_closure')
+        .innerJoin('tag_asset', 'tag_asset.tagsId', 'tags_closure.id_descendant')
+        .whereRef('tag_asset.assetsId', '=', 'assets.id')
+        .where('tags_closure.id_ancestor', '=', tagId),
+    ),
+  );
+}
+
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
-  return hasPeople(kysely.withPlugin(joinDeduplicationPlugin), options.personIds)
+  return kysely
+    .withPlugin(joinDeduplicationPlugin)
+    .selectFrom('assets')
     .selectAll('assets')
+    .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
+    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
     .$if(!!options.createdBefore, (qb) => qb.where('assets.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('assets.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('assets.updatedAt', '<=', options.updatedBefore!))
@@ -398,6 +392,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('exif', 'assets.id', 'exif.assetId')
         .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
     )
+    .$if(options.rating !== undefined, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+    )
     .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
     .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
     .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
@@ -405,13 +404,20 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
     .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
-    .$if(!!options.originalPath, (qb) => qb.where('assets.originalPath', '=', options.originalPath!))
+    .$if(!!options.originalPath, (qb) =>
+      qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+    )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
         sql`f_unaccent(assets."originalFileName")`,
         'ilike',
         sql`'%' || f_unaccent(${options.originalFileName}) || '%'`,
       ),
+    )
+    .$if(!!options.description, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where(sql`f_unaccent(exif.description)`, 'ilike', sql`'%' || f_unaccent(${options.description}) || '%'`),
     )
     .$if(!!options.type, (qb) => qb.where('assets.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
@@ -431,5 +437,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
+    .where('assets.fileCreatedAt', 'is not', null)
+    .where('assets.fileModifiedAt', 'is not', null)
+    .where('assets.localDateTime', 'is not', null);
 }

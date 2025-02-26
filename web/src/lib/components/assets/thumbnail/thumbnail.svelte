@@ -327,7 +327,7 @@
         {/if}
 
         <ImageThumbnail
-          url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, checksum: asset.checksum })}
+          url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
           altText={$getAltText(asset)}
           widthStyle="{width}px"
           heightStyle="{height}px"
@@ -339,11 +339,11 @@
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
               {assetStore}
-              url={getAssetPlaybackUrl({ id: asset.id, checksum: asset.checksum })}
+              url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
               enablePlayback={mouseOver && $playVideoThumbnailOnHover}
               curve={selected}
               durationInSeconds={timeToSeconds(asset.duration)}
-              playbackOnIconHover
+              playbackOnIconHover={!$playVideoThumbnailOnHover}
             />
           </div>
         {/if}
@@ -352,7 +352,7 @@
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
               {assetStore}
-              url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, checksum: asset.checksum })}
+              url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
               pauseIcon={mdiMotionPauseOutline}
               playIcon={mdiMotionPlayOutline}
               showTime={false}

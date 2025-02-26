@@ -11,6 +11,6 @@ export class SmartSearchEntity {
   assetId!: string;
 
   @Index('clip_index', { synchronize: false })
-  @Column({ type: 'float4', array: true, transformer: { from: JSON.parse, to: (v) => v } })
-  embedding!: number[];
+  @Column({ type: 'float4', array: true })
+  embedding!: string;
 }

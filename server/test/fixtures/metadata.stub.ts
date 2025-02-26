@@ -1,4 +1,4 @@
-import { ImmichTags } from 'src/interfaces/metadata.interface';
+import { ImmichTags } from 'src/repositories/metadata.repository';
 import { personStub } from 'test/fixtures/person.stub';
 
 export const metadataStub = {

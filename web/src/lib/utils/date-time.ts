@@ -1,3 +1,4 @@
+import { dateFormats } from '$lib/constants';
 import { locale } from '$lib/stores/preferences.store';
 import { DateTime, Duration } from 'luxon';
 import { get } from 'svelte/store';
@@ -51,3 +52,36 @@ export const getShortDateRange = (startDate: string | Date, endDate: string | Da
     return `${startDateLocalized} - ${endDateLocalized}`;
   }
 };
+
+const formatDate = (date?: string) => {
+  if (!date) {
+    return;
+  }
+
+  // without timezone
+  const localDate = date.replace(/Z$/, '').replace(/\+.+$/, '');
+  return localDate ? new Date(localDate).toLocaleDateString(get(locale), dateFormats.album) : undefined;
+};
+
+export const getAlbumDateRange = (album: { startDate?: string; endDate?: string }) => {
+  const start = formatDate(album.startDate);
+  const end = formatDate(album.endDate);
+
+  if (start && end && start !== end) {
+    return `${start} - ${end}`;
+  }
+
+  if (start) {
+    return start;
+  }
+
+  return '';
+};
+
+/**
+ * Use this to convert from "5pm EST" to "5pm UTC"
+ *
+ * Useful with some APIs where you want to query by "today", but the values in the database are stored as UTC
+ */
+export const asLocalTimeISO = (date: DateTime<true>) =>
+  (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();
