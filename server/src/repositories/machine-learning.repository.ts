@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { readFile } from 'node:fs/promises';
+import { MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME, MACHINE_LEARNING_PING_TIMEOUT } from 'src/constants';
 import { CLIPConfig } from 'src/dtos/model-config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-
-const PING_TIMEOUT = 2000;
-const AVAILABILITY_BACKOFF_TIME = 30_000;
 
 export interface BoundingBox {
   x1: number;
@@ -89,7 +87,9 @@ export class MachineLearningRepository {
   private async checkAvailability(url: string) {
     let active = false;
     try {
-      const response = await fetch(new URL('/ping', url), { signal: AbortSignal.timeout(PING_TIMEOUT) });
+      const response = await fetch(new URL('/ping', url), {
+        signal: AbortSignal.timeout(MACHINE_LEARNING_PING_TIMEOUT),
+      });
       active = response.ok;
     } catch {}
     this.setUrlAvailability(url, active);
@@ -108,7 +108,10 @@ export class MachineLearningRepository {
           if (!(await this.checkAvailability(url))) {
             continue;
           }
-        } else if (availability.active === false && Date.now() - availability.lastChecked < AVAILABILITY_BACKOFF_TIME) {
+        } else if (
+          availability.active === false &&
+          Date.now() - availability.lastChecked < MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
+        ) {
           // If this is an old inactive endpoint that hasn't been checked in a
           // while then check but don't wait for the result, just skip it
           // This avoids delays on every search whilst allowing higher priority

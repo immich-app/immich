@@ -98,6 +98,14 @@ The default Immich log level is `Log` (commonly known as `Info`). The Immich adm
 Through this setting, you can manage all the settings related to machine learning in Immich, from the setting of remote machine learning to the model and its parameters
 You can choose to disable a certain type of machine learning, for example smart search or facial recognition.
 
+### URL
+
+The built in (`http://immich-machine-learning:3003`) machine learning server will be configured by default, but you can change this or add additional servers.
+
+Hosting the `immich-machine-learning` container on a machine with a more powerful GPU can be helpful to for processing a large number of photos (such as during batch import) or for faster search.
+
+If more than one URL is provided, each server will be attempted one-at-a-time until one responds successfully, in order from first to last. Servers that don't respond will be temporarily ignored until they come back online.
+
 ### Smart Search
 
 The [smart search](/docs/features/searching) settings allow you to change the [CLIP model](https://openai.com/research/clip). Larger models will typically provide [more accurate search results](https://github.com/immich-app/immich/discussions/11862) but consume more processing power and RAM. When [changing the CLIP model](/docs/FAQ#can-i-use-a-custom-clip-model) it is mandatory to re-run the Smart Search job on all images to fully apply the change.
