@@ -8301,6 +8301,14 @@
             "format": "uuid",
             "type": "string"
           },
+          "sourceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceType"
+              }
+            ],
+            "default": "manual"
+          },
           "width": {
             "type": "integer"
           },
@@ -8317,6 +8325,7 @@
           "imageHeight",
           "imageWidth",
           "personId",
+          "sourceType",
           "width",
           "x",
           "y"
@@ -11952,7 +11961,8 @@
       "SourceType": {
         "enum": [
           "machine-learning",
-          "exif"
+          "exif",
+          "manual"
         ],
         "type": "string"
       },

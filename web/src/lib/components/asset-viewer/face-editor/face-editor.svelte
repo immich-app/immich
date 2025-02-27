@@ -4,7 +4,7 @@
   import { notificationController } from '$lib/components/shared-components/notification/notification';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getAllPeople, createFace, type PersonResponseDto } from '@immich/sdk';
+  import { getAllPeople, createFace, type PersonResponseDto, SourceType } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
@@ -288,6 +288,7 @@
         assetFaceCreateDto: {
           assetId,
           personId: person.id,
+          sourceType: SourceType.Manual,
           ...data,
         },
       });
