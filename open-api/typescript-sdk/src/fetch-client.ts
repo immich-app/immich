@@ -3190,7 +3190,7 @@ export function tagAssets({ id, bulkIdsDto }: {
         body: bulkIdsDto
     })));
 }
-export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, tagId, timeBucket, userId, withPartners, withStacked }: {
+export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, tagId, timeBucket, userId, withPartners, withStacked, x1, x2, y1, y2 }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
@@ -3204,6 +3204,10 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
     userId?: string;
     withPartners?: boolean;
     withStacked?: boolean;
+    x1?: number;
+    x2?: number;
+    y1?: number;
+    y2?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3221,12 +3225,16 @@ export function getTimeBucket({ albumId, isArchived, isFavorite, isTrashed, key,
         timeBucket,
         userId,
         withPartners,
-        withStacked
+        withStacked,
+        x1,
+        x2,
+        y1,
+        y2
     }))}`, {
         ...opts
     }));
 }
-export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, tagId, userId, withPartners, withStacked }: {
+export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key, order, personId, size, tagId, userId, withPartners, withStacked, x1, x2, y1, y2 }: {
     albumId?: string;
     isArchived?: boolean;
     isFavorite?: boolean;
@@ -3239,6 +3247,10 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
     userId?: string;
     withPartners?: boolean;
     withStacked?: boolean;
+    x1?: number;
+    x2?: number;
+    y1?: number;
+    y2?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3255,7 +3267,11 @@ export function getTimeBuckets({ albumId, isArchived, isFavorite, isTrashed, key
         tagId,
         userId,
         withPartners,
-        withStacked
+        withStacked,
+        x1,
+        x2,
+        y1,
+        y2
     }))}`, {
         ...opts
     }));

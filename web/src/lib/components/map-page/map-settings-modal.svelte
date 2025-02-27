@@ -110,6 +110,7 @@
           />
           <div class="text-xs">
             <Button
+              class="whitespace-normal"
               color="primary"
               size="small"
               variant="ghost"
