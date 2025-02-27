@@ -65,7 +65,7 @@ custom_lint:
       allowed:
         # required / wanted
         - lib/entities/*.entity.dart
-        - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline}.repository.dart
+        - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline,partner}.repository.dart
         - lib/infrastructure/entities/*.entity.dart
         - lib/infrastructure/repositories/{store,db}.repository.dart
         - lib/providers/infrastructure/db.provider.dart
@@ -75,18 +75,18 @@ custom_lint:
         - lib/pages/album/album_asset_selection.page.dart
         - lib/routing/router.dart
         - lib/services/immich_logger.service.dart # not really a service... more a util
-        - lib/utils/{db,migration,renderlist_generator}.dart
+        - lib/utils/{db,migration}.dart
         - lib/widgets/asset_grid/asset_grid_data_structure.dart
         - test/**.dart
         # refactor the remaining providers
-        - lib/providers/{asset,authentication,db,partner,user}.provider.dart
-        - lib/providers/{asset_viewer/render_list,backup/backup,search/all_motion_photos,search/recently_added_asset}.provider.dart
+        - lib/providers/db.provider.dart
+        - lib/providers/backup/backup.provider.dart
 
     - import_rule_openapi:
       message: openapi must only be used through ApiRepositories
       restrict: package:openapi
       allowed:
-        # requried / wanted
+        # required / wanted
         - lib/repositories/*_api.repository.dart
         # acceptable exceptions for the time being
         - lib/entities/{album,asset,exif_info,user}.entity.dart # to convert DTOs to entities

@@ -233,6 +233,25 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .isTrashedEqualTo(true)
         .findAll();
   }
+
+  @override
+  Future<List<Asset>> getRecentlyAddedAssets(int userId) {
+    return db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .sortByFileCreatedAtDesc()
+        .findAll();
+  }
+
+  @override
+  Future<List<Asset>> getMotionAssets(int userId) {
+    return db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .filter()
+        .livePhotoVideoIdIsNotNull()
+        .findAll();
+  }
 }
 
 Future<List<Asset>> _getMatchesImpl(

@@ -4,7 +4,7 @@ import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { UserEntity } from 'src/entities/user.entity';
-import { AssetStatus, AssetType, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetType, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -496,14 +496,18 @@ describe(LibraryService.name, () => {
         throw new Error('fileModifiedAt is null');
       }
 
+      const mtime = new Date(assetStub.external.fileModifiedAt.getDate() + 1);
+
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
       mocks.storage.stat.mockResolvedValue({
-        mtime: new Date(assetStub.external.fileModifiedAt.getDate() + 1),
+        mtime,
       } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.updateAll).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
+        fileModifiedAt: mtime,
+      });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {

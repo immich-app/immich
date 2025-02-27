@@ -234,7 +234,7 @@
     </div>
 
     {#if isFaceEditMode.value}
-      <FaceEditor imgElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
+      <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
     {/if}
   {/if}
 </div>

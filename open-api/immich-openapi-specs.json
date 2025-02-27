@@ -7655,7 +7655,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.126.1",
+    "version": "1.127.0",
     "contact": {}
   },
   "tags": [],
@@ -8301,6 +8301,14 @@
             "format": "uuid",
             "type": "string"
           },
+          "sourceType": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SourceType"
+              }
+            ],
+            "default": "manual"
+          },
           "width": {
             "type": "integer"
           },
@@ -8317,6 +8325,7 @@
           "imageHeight",
           "imageWidth",
           "personId",
+          "sourceType",
           "width",
           "x",
           "y"
@@ -11952,7 +11961,8 @@
       "SourceType": {
         "enum": [
           "machine-learning",
-          "exif"
+          "exif",
+          "manual"
         ],
         "type": "string"
       },

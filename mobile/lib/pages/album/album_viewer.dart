@@ -21,7 +21,6 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/widgets/album/album_viewer_appbar.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -63,7 +62,6 @@ class AlbumViewer extends HookConsumerWidget {
         AlbumAssetSelectionRoute(
           existingAssets: album.assets,
           canDeselect: false,
-          query: getRemoteAssetQuery(ref),
         ),
       );
 

@@ -10,6 +10,7 @@
   import { t } from 'svelte-i18n';
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import type { SvelteSet } from 'svelte/reactivity';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
@@ -52,13 +53,17 @@
   };
 </script>
 
-{#await peoplePromise then people}
+{#await peoplePromise}
+  <div id="spinner" class="flex h-60 items-center justify-center -mb-4">
+    <LoadingSpinner size="24" />
+  </div>
+{:then people}
   {#if people && people.length > 0}
     {@const peopleList = showAllPeople
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="-mb-4">
+    <div id="people-selection" class="h-60 -mb-4">
       <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />

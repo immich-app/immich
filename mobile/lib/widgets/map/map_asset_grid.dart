@@ -6,7 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/immich_asset_grid.dart';
 import 'package:immich_mobile/models/map/map_event.model.dart';
@@ -126,7 +126,9 @@ class MapAssetGrid extends HookConsumerWidget {
               // Place it just below the drag handle
               heightFactor: 0.80,
               child: assetsInBounds.value.isNotEmpty
-                  ? ref.watch(renderListProvider(assetsInBounds.value)).when(
+                  ? ref
+                      .watch(assetsTimelineProvider(assetsInBounds.value))
+                      .when(
                         data: (renderList) {
                           // Cache render list here to use it back during visibleItemsListener
                           cachedRenderList.value = renderList;

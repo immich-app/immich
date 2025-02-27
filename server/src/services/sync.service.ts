@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
@@ -43,8 +43,6 @@ export class SyncService extends BaseService {
   }
 
   async setAcks(auth: AuthDto, dto: SyncAckSetDto) {
-    // TODO ack validation
-
     const sessionId = auth.session?.id;
     if (!sessionId) {
       return throwSessionRequired();
@@ -53,6 +51,10 @@ export class SyncService extends BaseService {
     const checkpoints: Insertable<SessionSyncCheckpoints>[] = [];
     for (const ack of dto.acks) {
       const { type } = fromAck(ack);
+      // TODO proper ack validation via class validator
+      if (!Object.values(SyncEntityType).includes(type)) {
+        throw new BadRequestException(`Invalid ack type: ${type}`);
+      }
       checkpoints.push({ sessionId, type, ack });
     }
 

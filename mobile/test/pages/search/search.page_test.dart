@@ -11,8 +11,6 @@ import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
@@ -38,8 +36,6 @@ void main() {
     registerFallbackValue(MockSmartSearchDto());
     registerFallbackValue(MockMetadataSearchDto());
     overrides = [
-      paginatedSearchRenderListProvider
-          .overrideWithValue(AsyncValue.data(RenderList.empty())),
       dbProvider.overrideWithValue(db),
       isarProvider.overrideWithValue(db),
       apiServiceProvider.overrideWithValue(mockApiService),

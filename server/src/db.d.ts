@@ -29,7 +29,7 @@ export type JsonPrimitive = boolean | number | string | null;
 
 export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
-export type Sourcetype = 'exif' | 'machine-learning';
+export type Sourcetype = 'exif' | 'machine-learning' | 'manual';
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
