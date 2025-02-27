@@ -5,7 +5,7 @@
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getAllPeople, createFace, type PersonResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
+  import { Button, Input } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
   import { onMount } from 'svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -24,6 +24,16 @@
   let canvas: Canvas | undefined = $state();
   let faceRect: Rect | undefined = $state();
   let faceSelectorEl: HTMLDivElement | undefined = $state();
+  let page = $state(1);
+  let candidates = $state<PersonResponseDto[]>([]);
+
+  let searchTerm = $state('');
+
+  let filteredCandidates = $derived(
+    searchTerm
+      ? candidates.filter((person) => person.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      : candidates,
+  );
 
   const configureControlStyle = () => {
     InteractiveFabricObject.ownDefaults = {
@@ -133,11 +143,8 @@
     isFaceEditMode.value = false;
   };
 
-  let page = $state(1);
-  let candidates = $state<PersonResponseDto[]>([]);
-
   const getPeople = async () => {
-    const { hasNextPage, people, total } = await getAllPeople({ page, size: 250, withHidden: false });
+    const { hasNextPage, people, total } = await getAllPeople({ page, size: 1000, withHidden: false });
 
     if (candidates.length === total) {
       return;
@@ -307,33 +314,43 @@
   <div
     id="face-selector"
     bind:this={faceSelectorEl}
-    class="absolute top-[calc(50%-250px)] left-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200"
+    class="absolute top-[calc(50%-250px)] left-[calc(50%-125px)] max-w-[250px] w-[250px] bg-white dark:bg-immich-dark-gray dark:text-immich-dark-fg backdrop-blur-sm px-2 py-4 rounded-xl border border-gray-200 dark:border-gray-800"
   >
     <p class="text-center text-sm">Select a person to tag</p>
 
-    <div class="max-h-[250px] overflow-y-auto mt-2">
-      <div class="mt-2 rounded-lg">
-        {#each candidates as person}
-          <button
-            onclick={() => tagFace(person)}
-            type="button"
-            class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
-          >
-            <ImageThumbnail
-              curve
-              shadow
-              url={getPeopleThumbnailUrl(person)}
-              altText={person.name}
-              title={person.name}
-              widthStyle="30px"
-              heightStyle="30px"
-            />
-            <p class="text-sm">
-              {person.name}
-            </p>
-          </button>
-        {/each}
-      </div>
+    <div class="my-3 relative">
+      <Input placeholder="Search person..." bind:value={searchTerm} size="tiny" />
+    </div>
+
+    <div class="h-[250px] overflow-y-auto mt-2">
+      {#if filteredCandidates.length > 0}
+        <div class="mt-2 rounded-lg">
+          {#each filteredCandidates as person}
+            <button
+              onclick={() => tagFace(person)}
+              type="button"
+              class="w-full flex place-items-center gap-2 rounded-lg pl-1 pr-4 py-2 hover:bg-immich-primary/25"
+            >
+              <ImageThumbnail
+                curve
+                shadow
+                url={getPeopleThumbnailUrl(person)}
+                altText={person.name}
+                title={person.name}
+                widthStyle="30px"
+                heightStyle="30px"
+              />
+              <p class="text-sm">
+                {person.name}
+              </p>
+            </button>
+          {/each}
+        </div>
+      {:else}
+        <div class="flex items-center justify-center py-4">
+          <p class="text-sm text-gray-500">No matching people found</p>
+        </div>
+      {/if}
     </div>
 
     <Button size="small" fullWidth onclick={cancel} color="danger" class="mt-2">Cancel</Button>
