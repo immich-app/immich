@@ -76,7 +76,7 @@ export class MachineLearningRepository {
   private setUrlAvailability(url: string, active: boolean) {
     const current = this.urlAvailability[url];
     if (current?.active !== active) {
-      this.logger.log(`Setting ${url} ML server to ${active ? 'active' : 'inactive'}.`);
+      this.logger.verbose(`Setting ${url} ML server to ${active ? 'active' : 'inactive'}.`);
     }
     this.urlAvailability[url] = {
       active,
@@ -96,31 +96,38 @@ export class MachineLearningRepository {
     return active;
   }
 
+  private async shouldSkipUrl(url: string, isLast: boolean) {
+    // The last (or only) URL should never be skipped, so don't bother checking if last
+    if (!isLast) {
+      const availability = this.urlAvailability[url];
+      if (availability === undefined) {
+        // If this is a new endpoint, then check inline and skip if it fails
+        if (!(await this.checkAvailability(url))) {
+          return true;
+        }
+      } else if (
+        !availability.active &&
+        Date.now() - availability.lastChecked < MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
+      ) {
+        // If this is an old inactive endpoint that hasn't been checked in a
+        // while then check but don't wait for the result, just skip it
+        // This avoids delays on every search whilst allowing higher priority
+        // ML servers to recover over time.
+        void this.checkAvailability(url);
+        return true;
+      }
+    }
+    return false;
+  }
+
   private async predict<T>(urls: string[], payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
     const formData = await this.getFormData(payload, config);
     let urlCounter = 0;
     for (const url of urls) {
       urlCounter++;
       const isLast = urlCounter >= urls.length;
-      // Only use availability logic if this is not the last (or only) url
-      if (!isLast) {
-        const availability = this.urlAvailability[url];
-        if (availability === undefined) {
-          // If this is a new endpoint, then check inline and skip if it fails
-          if (!(await this.checkAvailability(url))) {
-            continue;
-          }
-        } else if (
-          !availability.active &&
-          Date.now() - availability.lastChecked < MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME
-        ) {
-          // If this is an old inactive endpoint that hasn't been checked in a
-          // while then check but don't wait for the result, just skip it
-          // This avoids delays on every search whilst allowing higher priority
-          // ML servers to recover over time.
-          void this.checkAvailability(url);
-          continue;
-        }
+      if (await this.shouldSkipUrl(url, isLast)) {
+        continue;
       }
 
       try {
