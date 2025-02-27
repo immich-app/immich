@@ -233,7 +233,7 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } },
-        jobs: [],
+        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {
         item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },

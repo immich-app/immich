@@ -264,10 +264,7 @@ export class MetadataService extends BaseService {
       await this.applyTaggedFaces(asset, exifTags);
     }
 
-    await Promise.all([
-      this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() }),
-      this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data }),
-    ]);
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }
