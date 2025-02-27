@@ -11,7 +11,6 @@
   import SingleGridRow from '$lib/components/shared-components/single-grid-row.svelte';
   import type { SvelteSet } from 'svelte/reactivity';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import Error from '$lib/components/error.svelte';
 
   interface Props {
     selectedPeople: SvelteSet<string>;
