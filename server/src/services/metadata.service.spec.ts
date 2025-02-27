@@ -845,7 +845,7 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: dateForTest,
-        fileModifiedAt: dateForTest,
+        fileModifiedAt: assetStub.image.fileModifiedAt,
         localDateTime: dateForTest,
       });
     });
