@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -194,10 +194,6 @@ export class AssetFaceCreateDto extends AssetFaceUpdateItem {
   @IsNotEmpty()
   @IsNumber()
   height!: number;
-
-  @ApiProperty({ type: 'string', enum: SourceType, enumName: 'SourceType' })
-  @IsEnum(SourceType)
-  sourceType: SourceType = SourceType.MANUAL;
 }
 
 export class AssetFaceDeleteDto {
