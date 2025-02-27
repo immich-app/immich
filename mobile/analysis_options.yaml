@@ -81,7 +81,6 @@ custom_lint:
         - test/**.dart
         # refactor the remaining providers
         - lib/providers/db.provider.dart
-        - lib/providers/backup/backup.provider.dart
 
     - import_rule_openapi:
       message: openapi must only be used through ApiRepositories
