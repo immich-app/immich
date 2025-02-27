@@ -20,7 +20,6 @@ import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/routing/tab_navigation_observer.dart';
 import 'package:immich_mobile/services/background.service.dart';
-import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
@@ -66,9 +65,6 @@ Future<void> initApp() async {
   }
 
   await DynamicTheme.fetchSystemPalette();
-
-  // Initialize Immich Logger Service
-  ImmichLogger();
 
   final log = Logger("ImmichErrorLogger");
 
