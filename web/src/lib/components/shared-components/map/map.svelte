@@ -98,22 +98,7 @@
 
   const timelineInteraction = new AssetInteraction();
 
-  let previousUrl = undefined;
-  // $derived(() => {
-  //   let url = `${AppRoute.PHOTOS}?x1=${x1}&x2=${x2}&y1=${y1}&y2=${y2}&previousRoute=${encodeURIComponent(`${AppRoute.MAP}?isTimelineOpened=${isAssetGridOpened}${location.hash}`)}`;
-  //   let options: string[] = [];
-  //   if ($mapSettings.withPartners) {
-  //     options.push(AssetGridOptionsValues.withPartners);
-  //   }
-  //   if ($mapSettings.onlyFavorites) {
-  //     options.push(AssetGridOptionsValues.onlyFavorites);
-  //   }
-  //   if (options.length > 0) {
-  //     url += `&assetGridOptions=${options.join(',')}`;
-  //   }
-  //   // previousUrl = url;
-  //   return url;
-  // });
+  let mapContainer: HTMLElement | undefined = $state(undefined);
 
   const isAssetinBounds = (mapMarker: MapMarkerResponseDto, x1: number, x2: number, y1: number, y2: number) => {
     // if x1 is before the international date line, and x2 after it, you want to check if the asset is after x1 OR after x2
@@ -266,209 +251,156 @@
 </script>
 
 {#await style then style}
-  <!-- <div class="isolate h-full w-full"> -->
-  <MapLibre
-    {hash}
-    {style}
-    class={`relative w-full overflow-hidden transition ease-in-out ${isAssetGridOpened ? 'h-1/2' : 'h-full'}`}
-    {center}
-    {zoom}
-    attributionControl={false}
-    diffStyleUpdates={true}
-    on:load={(event) => event.detail.setMaxZoom(18)}
-    on:load={(event) => event.detail.on('click', handleMapClick)}
-    bind:map
-    on:moveend={changeBounds}
-  >
-    {#snippet children({ map }: { map: maplibregl.Map })}
-      <NavigationControl position="top-left" showCompass={!simplified} />
+  <div bind:this={mapContainer} class="h-full w-full" id="map-container">
+    <MapLibre
+      {hash}
+      {style}
+      class={`relative w-full overflow-hidden transition ease-in-out ${isAssetGridOpened ? 'h-1/2' : 'h-full'}`}
+      {center}
+      {zoom}
+      attributionControl={false}
+      diffStyleUpdates={true}
+      on:load={(event) => event.detail.setMaxZoom(18)}
+      on:load={(event) => event.detail.on('click', handleMapClick)}
+      bind:map
+      on:moveend={changeBounds}
+    >
+      {#snippet children({ map }: { map: maplibregl.Map })}
+        <NavigationControl position="top-left" showCompass={!simplified} />
 
-      {#if !simplified}
-        <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
-        <ScaleControl />
-        <AttributionControl compact={false} />
-      {/if}
+        {#if !simplified}
+          <GeolocateControl position="top-left" />
+          <FullscreenControl position="top-left" container={mapContainer} />
+          <ScaleControl />
+          <AttributionControl compact={false} />
+        {/if}
 
-      {#if showSettingsModal !== undefined}
-        <Control>
-          <ControlGroup>
-            <ControlButton on:click={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton
-            >
-          </ControlGroup>
-        </Control>
-      {/if}
+        {#if showSettingsModal !== undefined}
+          <Control>
+            <ControlGroup>
+              <ControlButton on:click={() => (showSettingsModal = true)}
+                ><Icon path={mdiCog} size="100%" /></ControlButton
+              >
+            </ControlGroup>
+          </Control>
+        {/if}
 
-      {#if onOpenInMapView}
-        <Control position="top-right">
-          <ControlGroup>
-            <ControlButton on:click={() => onOpenInMapView()}>
-              <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
-            </ControlButton>
-          </ControlGroup>
-        </Control>
-      {/if}
+        {#if onOpenInMapView}
+          <Control position="top-right">
+            <ControlGroup>
+              <ControlButton on:click={() => onOpenInMapView()}>
+                <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
+              </ControlButton>
+            </ControlGroup>
+          </Control>
+        {/if}
 
-      <GeoJSON
-        data={{
-          type: 'FeatureCollection',
-          features: mapMarkers.map((marker) => asFeature(marker)),
-        }}
-        id="geojson"
-        cluster={{ radius: 500, maxZoom: 24 }}
-      >
-        <MarkerLayer
-          applyToClusters
-          asButton
-          on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
-        >
-          {#snippet children({ feature }: { feature: maplibregl.Feature })}
-            <div
-              class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
-            >
-              {feature.properties?.point_count}
-            </div>
-          {/snippet}
-        </MarkerLayer>
-        <MarkerLayer
-          applyToClusters={false}
-          asButton
-          on:click={(event) => {
-            if (!popup) {
-              handleAssetClick(event.detail.feature.properties?.id, map);
-            }
+        <GeoJSON
+          data={{
+            type: 'FeatureCollection',
+            features: mapMarkers.map((marker) => asFeature(marker)),
           }}
+          id="geojson"
+          cluster={{ radius: 500, maxZoom: 24 }}
         >
-          {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
-            {#if useLocationPin}
-              <Icon
-                path={mdiMapMarker}
-                size="50px"
-                class="location-pin dark:text-immich-dark-primary text-immich-primary"
-              />
-            {:else}
-              <img
-                src={getAssetThumbnailUrl(feature.properties?.id)}
-                class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
-                alt={feature.properties?.city && feature.properties.country
-                  ? $t('map_marker_for_images', {
-                      values: { city: feature.properties.city, country: feature.properties.country },
-                    })
-                  : $t('map_marker_with_image')}
-              />
-            {/if}
-            {#if popup}
-              <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-                {@render popup?.({ marker: asMarker(feature) })}
-              </Popup>
-            {/if}
-          {/snippet}
-        </MarkerLayer>
-      </GeoJSON>
-
-      <!-- <div
-      class="absolute z-50 grid grid-cols-3 gap-4 py-2 w-full content-start dark:text-immich-dark-primary"
-      style={`top: ${isAssetGridOpened ? 'calc(100% - 4.5rem)' : 'calc(100% - 4.5rem)'}`}
-    >
-      <div>
-        {#if isAssetGridOpened}
-          <div
-            title={$t('number_of_assets')}
-            class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray text-center h-8 w-8 p-2 rounded-full"
+          <MarkerLayer
+            applyToClusters
+            asButton
+            on:click={(event) =>
+              handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
           >
-            {numberOfAssets}
-          </div>
-        {/if}
-      </div>
-      <div class=" text-white text-center">
-        <Button class="h-14 w-14 p-2" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
-          <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
-        </Button>
-      </div>
-      <div class="text-right">
-        {#if isAssetGridOpened && numberOfAssets && previousUrl}
-          <a href={previousUrl}>
-            <Button class="h-8 w-8 p-2 " rounded="full" size="tiny" onclick={handleOpenAssetGird}>
-              <Icon path={mdiOpenInNew} size="12" />
+            {#snippet children({ feature }: { feature: maplibregl.Feature })}
+              <div
+                class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
+              >
+                {feature.properties?.point_count}
+              </div>
+            {/snippet}
+          </MarkerLayer>
+          <MarkerLayer
+            applyToClusters={false}
+            asButton
+            on:click={(event) => {
+              if (!popup) {
+                handleAssetClick(event.detail.feature.properties?.id, map);
+              }
+            }}
+          >
+            {#snippet children({ feature }: { feature: Feature<Geometry, GeoJsonProperties> })}
+              {#if useLocationPin}
+                <Icon
+                  path={mdiMapMarker}
+                  size="50px"
+                  class="location-pin dark:text-immich-dark-primary text-immich-primary"
+                />
+              {:else}
+                <img
+                  src={getAssetThumbnailUrl(feature.properties?.id)}
+                  class="rounded-full w-[60px] h-[60px] border-2 border-immich-primary shadow-lg hover:border-immich-dark-primary transition-all duration-200 hover:scale-150 object-cover bg-immich-primary"
+                  alt={feature.properties?.city && feature.properties.country
+                    ? $t('map_marker_for_images', {
+                        values: { city: feature.properties.city, country: feature.properties.country },
+                      })
+                    : $t('map_marker_with_image')}
+                />
+              {/if}
+              {#if popup}
+                <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
+                  {@render popup?.({ marker: asMarker(feature) })}
+                </Popup>
+              {/if}
+            {/snippet}
+          </MarkerLayer>
+        </GeoJSON>
+
+        {#if showAssetGrid}
+          <div
+            class="absolute left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-4"
+            style={`top: ${isAssetGridOpened ? 'calc(100% - 4rem)' : 'calc(100% - 4rem)'}`}
+          >
+            <div
+              id="number-of-assets"
+              title={$t('number_of_assets')}
+              class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex justify-center items-center font-mono font-bold w-[40px] h-[40px] rounded-full"
+            >
+              {numberOfAssets}
+            </div>
+
+            <!-- Toggle button -->
+            <Button class="h-14 w-14 p-2 !ml-0" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
+              <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
             </Button>
-          </a>
-        {/if}
-      </div>
-    </div> -->
-
-      <!-- <div
-        class="absolute z-50 flex justify-around py-2 w-full content-start dark:text-immich-dark-primary"
-        style={`top: ${isAssetGridOpened ? 'calc(100% - 4.5rem)' : 'calc(100% - 4.5rem)'}`}
-      >
-        <div>
-          <div
-            id="number-of-assets"
-            title={$t('number_of_assets')}
-            class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray text-center h-8 w-8 p-2 rounded-full"
-          >
-            {numberOfAssets}
           </div>
-          <Button
-            id="toggle-handler"
-            class="h-14 w-14 p-2 !ml-0"
-            rounded="full"
-            size="tiny"
-            onclick={handleOpenAssetGird}
-          >
-            <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
-          </Button>
-        </div>
-      </div> -->
-      <div
-        class="absolute left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-4"
-        style={`top: ${isAssetGridOpened ? 'calc(100% - 4rem)' : 'calc(100% - 4rem)'}`}
-      >
-        <!-- Number of assets counter -->
-        <!-- {#if isAssetGridOpened} -->
-        <div
-          id="number-of-assets"
-          title={$t('number_of_assets')}
-          class="bg-immich-primary dark:bg-immich-dark-primary text-white dark:text-immich-dark-gray flex justify-center items-center font-mono font-bold w-[40px] h-[40px] rounded-full"
-        >
-          {numberOfAssets}
-        </div>
-        <!-- {/if} -->
-
-        <!-- Toggle button -->
-        <Button class="h-14 w-14 p-2 !ml-0" rounded="full" size="tiny" onclick={handleOpenAssetGird}>
-          <Icon path={isAssetGridOpened ? mdiArrowDown : mdiArrowUp} size="36" />
-        </Button>
-      </div>
-    {/snippet}
-  </MapLibre>
-
-  {#if showAssetGrid && !$mapSettings.withSharedAlbums && !$mapSettings.includeArchived}
-    <div
-      class="relative w-full overflow-hidden transition ease-in-out bottom-0 px-2 z-50 {isAssetGridOpened
-        ? 'h-1/2 bg-immich-bg dark:bg-immich-dark-bg'
-        : ''}"
-    >
-      <div class="absolute h-full w-full">
-        {#if isAssetGridOpened && timelineStore}
-          {#key timelineStore}
-            <AssetGrid
-              enableRouting={false}
-              isSelectionMode={false}
-              assetStore={timelineStore}
-              assetInteraction={timelineInteraction}
-            />
-            <!-- assetInteractionStore={timelineInteractionStore} -->
-          {/key}
         {/if}
-      </div>
-    </div>
-  {/if}
+      {/snippet}
+    </MapLibre>
 
-  <style>
-    .location-pin {
-      transform: translate(0, -50%);
-      filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
-    }
-  </style>
-  <!-- </div> -->
+    {#if showAssetGrid && !$mapSettings.withSharedAlbums && !$mapSettings.includeArchived}
+      <div
+        class="relative w-full overflow-hidden transition ease-in-out bottom-0 px-2 z-50 {isAssetGridOpened
+          ? 'h-1/2 bg-immich-bg dark:bg-immich-dark-bg'
+          : ''}"
+      >
+        <div class="absolute h-full w-full">
+          {#if isAssetGridOpened && timelineStore}
+            {#key timelineStore}
+              <AssetGrid
+                enableRouting={false}
+                isSelectionMode={false}
+                assetStore={timelineStore}
+                assetInteraction={timelineInteraction}
+              />
+            {/key}
+          {/if}
+        </div>
+      </div>
+    {/if}
+
+    <style>
+      .location-pin {
+        transform: translate(0, -50%);
+        filter: drop-shadow(0 3px 3px rgb(0 0 0 / 0.3));
+      }
+    </style>
+  </div>
 {/await}

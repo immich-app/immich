@@ -177,6 +177,8 @@
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
+            showAssetGrid={false}
+            isAssetGridOpenedOnInit={false}
           />
         {/await}
       </div>
