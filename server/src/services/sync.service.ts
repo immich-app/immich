@@ -87,13 +87,13 @@ export class SyncService extends BaseService {
       switch (type) {
         case SyncRequestType.UsersV1: {
           const deletes = this.syncRepository.getUserDeletes(checkpointMap[SyncEntityType.UserDeleteV1]);
-          for await (const { ackEpoch, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.UserDeleteV1, ackEpoch, ids: [data.userId], data }));
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.UserDeleteV1, updateId: id, data }));
           }
 
           const upserts = this.syncRepository.getUserUpserts(checkpointMap[SyncEntityType.UserV1]);
-          for await (const { ackEpoch, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.UserV1, ackEpoch, ids: [data.id], data }));
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.UserV1, updateId, data }));
           }
 
           break;
