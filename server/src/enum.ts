@@ -480,6 +480,7 @@ export enum JobName {
   DELETE_FILES = 'delete-files',
   CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
   CLEAN_OLD_SESSION_TOKENS = 'clean-old-session-tokens',
+  CLEAN_OLD_OAUTH_STATE = 'clean-old-oauth-state',
 
   // memories
   MEMORIES_CLEANUP = 'memories-cleanup',
