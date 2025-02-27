@@ -20,6 +20,7 @@ import {
   ImmichWorker,
   JobName,
   JobStatus,
+  LogLevel,
   QueueName,
   SourceType,
 } from 'src/enum';
@@ -184,20 +185,9 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const [stats, exifTags] = await Promise.all([
-      this.storageRepository.stat(asset.originalPath),
-      this.getExifTags(asset),
-    ]);
+    const exifTags = await this.getExifTags(asset);
 
     this.logger.verbose('Exif Tags', exifTags);
-
-    if (!asset.fileCreatedAt) {
-      asset.fileCreatedAt = stats.mtime;
-    }
-
-    if (!asset.fileModifiedAt) {
-      asset.fileModifiedAt = stats.mtime;
-    }
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { width, height } = this.getImageDimensions(exifTags);
@@ -228,7 +218,7 @@ export class MetadataService extends BaseService {
       city: geo.city,
 
       // image/file
-      fileSizeInByte: stats.size,
+      fileSizeInByte: Number.parseInt(exifTags.FileSize!),
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
@@ -272,7 +262,7 @@ export class MetadataService extends BaseService {
     }
 
     if (asset.type === AssetType.IMAGE) {
-      promises.push(this.applyMotionPhotos(asset, exifTags));
+      promises.push(this.applyMotionPhotos(asset, exifTags, exifData.fileSizeInByte!));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
@@ -443,7 +433,7 @@ export class MetadataService extends BaseService {
     await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds: results.map((tag) => tag.id) });
   }
 
-  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {
+  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags, fileSize: number) {
     if (asset.type !== AssetType.IMAGE) {
       return;
     }
@@ -481,8 +471,7 @@ export class MetadataService extends BaseService {
     this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
 
     try {
-      const stat = await this.storageRepository.stat(asset.originalPath);
-      const position = stat.size - length - padding;
+      const position = fileSize - length - padding;
       let video: Buffer;
       // Samsung MotionPhoto video extraction
       //     HEIC-encoded
@@ -501,7 +490,7 @@ export class MetadataService extends BaseService {
           length,
         });
       }
-      const checksum = this.cryptoRepository.hashSha1(video);
+      const checksum = await this.cryptoRepository.hashFile(video);
 
       let motionAsset = await this.assetRepository.getByChecksum({
         ownerId: asset.ownerId,
@@ -509,11 +498,12 @@ export class MetadataService extends BaseService {
         checksum,
       });
       if (motionAsset) {
-        this.logger.debug(
-          `Motion photo video with checksum ${checksum.toString(
-            'base64',
-          )} already exists in the repository for asset ${asset.id}: ${asset.originalPath}`,
-        );
+        if (this.logger.isLevelEnabled(LogLevel.DEBUG)) {
+          const base64Checksum = checksum.toString('base64');
+          this.logger.debug(
+            `Motion photo video with checksum ${base64Checksum} already exists in the repository for asset ${asset.id}: ${asset.originalPath}`,
+          );
+        }
 
         // Hide the motion photo video asset if it's not already hidden to prepare for linking
         if (motionAsset.isVisible) {
@@ -621,7 +611,9 @@ export class MetadataService extends BaseService {
     }
 
     if (missing.length > 0) {
-      this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
+      if (this.logger.isLevelEnabled(LogLevel.DEBUG)) {
+        this.logger.debug(`Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
+      }
       const newPersonIds = await this.personRepository.createAll(missing);
       const jobs = newPersonIds.map((id) => ({ name: JobName.GENERATE_PERSON_THUMBNAIL, data: { id } }) as const);
       await this.jobRepository.queueAll(jobs);
@@ -667,13 +659,16 @@ export class MetadataService extends BaseService {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
+    const fileCreatedAt = this.toDate(exifTags.FileCreateDate!);
+    const modifyDate = this.toDate(exifTags.FileModifyDate!);
+
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
       this.logger.debug(
-        `No exif date time found, falling back on earliest of file creation and modification for assset ${asset.id}: ${asset.originalPath}`,
+        `No exif date time found, falling back on earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
       );
-      const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
+      const earliestDate = this.earliestDate(fileCreatedAt, modifyDate);
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
     }
@@ -682,17 +677,16 @@ export class MetadataService extends BaseService {
       `Found local date time ${localDateTime.toISOString()} for asset ${asset.id}: ${asset.originalPath}`,
     );
 
-    let modifyDate = asset.fileModifiedAt;
-    try {
-      modifyDate = (exifTags.ModifyDate as ExifDateTime)?.toDate() ?? modifyDate;
-    } catch {}
-
     return {
       dateTimeOriginal,
       timeZone,
       localDateTime,
       modifyDate,
     };
+  }
+
+  private toDate(date: string | ExifDateTime): Date {
+    return typeof date === 'string' ? new Date(date) : date!.toDate();
   }
 
   private earliestDate(a: Date, b: Date) {

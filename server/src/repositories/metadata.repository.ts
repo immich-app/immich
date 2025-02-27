@@ -77,7 +77,8 @@ export class MetadataRepository {
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     // Enable exiftool LFS to parse metadata for files larger than 2GB.
-    readArgs: ['-api', 'largefilesupport=1'],
+    // Ensure byte representation is used for file size (as opposed to human-readable format).
+    readArgs: ['-api', 'largefilesupport=1', '-filesize#'],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
   });
 
