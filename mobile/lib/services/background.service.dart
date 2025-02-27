@@ -32,7 +32,7 @@ import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
@@ -359,7 +359,7 @@ class BackgroundService {
       ],
     );
 
-    HttpOverrides.global = HttpSSLCertOverride();
+    HttpSSLOptions.apply();
     ref
         .read(apiServiceProvider)
         .setAccessToken(Store.get(StoreKey.accessToken));

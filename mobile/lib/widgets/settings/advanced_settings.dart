@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -8,7 +6,7 @@ import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custome_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/local_storage_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
@@ -64,7 +62,7 @@ class AdvancedSettings extends HookConsumerWidget {
         valueNotifier: allowSelfSignedSSLCert,
         title: "advanced_settings_self_signed_ssl_title".tr(),
         subtitle: "advanced_settings_self_signed_ssl_subtitle".tr(),
-        onChanged: (_) => HttpOverrides.global = HttpSSLCertOverride(),
+        onChanged: (_) => HttpSSLOptions.apply(),
       ),
       const CustomeProxyHeaderSettings(),
       SslClientCertSettings(isLoggedIn: ref.read(currentUserProvider) != null),
