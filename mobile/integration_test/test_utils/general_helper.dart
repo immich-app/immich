@@ -7,8 +7,8 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/main.dart' as app;
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:isar/isar.dart';
 // ignore: depend_on_referenced_packages
 import 'package:meta/meta.dart';
 
@@ -39,7 +39,8 @@ class ImmichTestHelper {
   static Future<void> loadApp(WidgetTester tester) async {
     await EasyLocalization.ensureInitialized();
     // Clear all data from Isar (reuse existing instance if available)
-    final db = Isar.getInstance() ?? await app.loadDb();
+    final db = await Bootstrap.initIsar();
+    await Bootstrap.initDomain(db);
     await Store.clear();
     await db.writeTxn(() => db.clear());
     // Load main Widget

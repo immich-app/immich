@@ -76,6 +76,7 @@ custom_lint:
         - lib/routing/router.dart
         - lib/services/immich_logger.service.dart # not really a service... more a util
         - lib/utils/{db,migration}.dart
+        - lib/utils/bootstrap.dart
         - lib/widgets/asset_grid/asset_grid_data_structure.dart
         - test/**.dart
         # refactor the remaining providers
