@@ -63,7 +63,7 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { ILoggingRepository, newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
@@ -120,7 +120,7 @@ export type ServiceMocks = {
   event: Mocked<RepositoryInterface<EventRepository>>;
   job: Mocked<RepositoryInterface<JobRepository>>;
   library: Mocked<RepositoryInterface<LibraryRepository>>;
-  logger: Mocked<ILoggingRepository>;
+  logger: Mocked<RepositoryInterface<LoggingRepository>>;
   machineLearning: Mocked<RepositoryInterface<MachineLearningRepository>>;
   map: Mocked<RepositoryInterface<MapRepository>>;
   media: Mocked<RepositoryInterface<MediaRepository>>;
@@ -197,7 +197,7 @@ export const newTestService = <T extends BaseService>(
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    loggerMock as ILoggingRepository as LoggingRepository,
+    loggerMock as RepositoryInterface<LoggingRepository> as LoggingRepository,
     accessMock as IAccessRepository as AccessRepository,
     activityMock as RepositoryInterface<ActivityRepository> as ActivityRepository,
     auditMock as RepositoryInterface<AuditRepository> as AuditRepository,

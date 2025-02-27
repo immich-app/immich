@@ -173,6 +173,16 @@ describe(SearchService.name, () => {
       expect(mocks.logger.error).toHaveBeenCalledWith(`Asset ${assetStub.image.id} not found`);
     });
 
+    it('should skip if asset is part of stack', async () => {
+      const id = assetStub.primaryImage.id;
+      mocks.asset.getById.mockResolvedValue(assetStub.primaryImage);
+
+      const result = await sut.handleSearchDuplicates({ id });
+
+      expect(result).toBe(JobStatus.SKIPPED);
+      expect(mocks.logger.debug).toHaveBeenCalledWith(`Asset ${id} is part of a stack, skipping`);
+    });
+
     it('should skip if asset is not visible', async () => {
       const id = assetStub.livePhotoMotionAsset.id;
       mocks.asset.getById.mockResolvedValue(assetStub.livePhotoMotionAsset);

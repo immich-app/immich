@@ -386,7 +386,7 @@ class AllVideosRoute extends PageRouteInfo<void> {
 class AppLogDetailRoute extends PageRouteInfo<AppLogDetailRouteArgs> {
   AppLogDetailRoute({
     Key? key,
-    required LoggerMessage logMessage,
+    required LogMessage logMessage,
     List<PageRouteInfo>? children,
   }) : super(
           AppLogDetailRoute.name,
@@ -419,7 +419,7 @@ class AppLogDetailRouteArgs {
 
   final Key? key;
 
-  final LoggerMessage logMessage;
+  final LogMessage logMessage;
 
   @override
   String toString() {

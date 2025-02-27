@@ -18,7 +18,6 @@ class AssetFaceCreateDto {
     required this.imageHeight,
     required this.imageWidth,
     required this.personId,
-    this.sourceType = SourceType.manual,
     required this.width,
     required this.x,
     required this.y,
@@ -34,8 +33,6 @@ class AssetFaceCreateDto {
 
   String personId;
 
-  SourceType sourceType;
-
   int width;
 
   int x;
@@ -49,7 +46,6 @@ class AssetFaceCreateDto {
     other.imageHeight == imageHeight &&
     other.imageWidth == imageWidth &&
     other.personId == personId &&
-    other.sourceType == sourceType &&
     other.width == width &&
     other.x == x &&
     other.y == y;
@@ -62,13 +58,12 @@ class AssetFaceCreateDto {
     (imageHeight.hashCode) +
     (imageWidth.hashCode) +
     (personId.hashCode) +
-    (sourceType.hashCode) +
     (width.hashCode) +
     (x.hashCode) +
     (y.hashCode);
 
   @override
-  String toString() => 'AssetFaceCreateDto[assetId=$assetId, height=$height, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, sourceType=$sourceType, width=$width, x=$x, y=$y]';
+  String toString() => 'AssetFaceCreateDto[assetId=$assetId, height=$height, imageHeight=$imageHeight, imageWidth=$imageWidth, personId=$personId, width=$width, x=$x, y=$y]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -77,7 +72,6 @@ class AssetFaceCreateDto {
       json[r'imageHeight'] = this.imageHeight;
       json[r'imageWidth'] = this.imageWidth;
       json[r'personId'] = this.personId;
-      json[r'sourceType'] = this.sourceType;
       json[r'width'] = this.width;
       json[r'x'] = this.x;
       json[r'y'] = this.y;
@@ -98,7 +92,6 @@ class AssetFaceCreateDto {
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,
         personId: mapValueOfType<String>(json, r'personId')!,
-        sourceType: SourceType.fromJson(json[r'sourceType'])!,
         width: mapValueOfType<int>(json, r'width')!,
         x: mapValueOfType<int>(json, r'x')!,
         y: mapValueOfType<int>(json, r'y')!,
@@ -154,7 +147,6 @@ class AssetFaceCreateDto {
     'imageHeight',
     'imageWidth',
     'personId',
-    'sourceType',
     'width',
     'x',
     'y',

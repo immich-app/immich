@@ -58,6 +58,10 @@ export class UserEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @Index('IDX_users_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
+
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];
 
