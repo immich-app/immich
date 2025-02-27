@@ -539,7 +539,7 @@ describe(MetadataService.name, () => {
         faces: { person: false },
       });
       expect(mocks.storage.createOrOverwriteFile).not.toHaveBeenCalled();
-      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith(
         expect.objectContaining({ assetType: AssetType.VIDEO, isVisible: false }),
@@ -750,7 +750,7 @@ describe(MetadataService.name, () => {
       expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledTimes(0);
       // The still asset gets saved by handleMetadataExtraction, but not the video
       expect(mocks.asset.update).toHaveBeenCalledTimes(1);
-      expect(mocks.job.queue).toHaveBeenCalledTimes(0);
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
     });
 
     it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {

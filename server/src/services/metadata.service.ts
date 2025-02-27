@@ -173,9 +173,9 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
+  async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
+    const [asset] = await this.assetRepository.getByIds([data.id], { faces: { person: false } });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -260,14 +260,14 @@ export class MetadataService extends BaseService {
       await this.linkLivePhotos(asset, exifData);
     }
 
-    await this.assetRepository.upsertJobStatus({
-      assetId: asset.id,
-      metadataExtractedAt: new Date(),
-    });
-
     if (isFaceImportEnabled(metadata)) {
       await this.applyTaggedFaces(asset, exifTags);
     }
+
+    await Promise.all([
+      this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() }),
+      this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data }),
+    ]);
 
     return JobStatus.SUCCESS;
   }
