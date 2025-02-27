@@ -227,7 +227,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: sidecarDate,
-        fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
         localDateTime: sidecarDate,
       });
     });
@@ -247,7 +246,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: fileModifiedAt,
-        fileModifiedAt,
         localDateTime: fileModifiedAt,
       });
     });
@@ -265,7 +263,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt,
-        fileModifiedAt,
         localDateTime: fileCreatedAt,
       });
     });
@@ -300,7 +297,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: assetStub.image.fileCreatedAt,
-        fileModifiedAt: assetStub.image.fileModifiedAt,
         localDateTime: assetStub.image.fileCreatedAt,
       });
     });
@@ -323,7 +319,6 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
-        fileModifiedAt: assetStub.withLocation.createdAt,
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
     });
@@ -845,7 +840,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: dateForTest,
-        fileModifiedAt: assetStub.image.fileModifiedAt,
         localDateTime: dateForTest,
       });
     });
