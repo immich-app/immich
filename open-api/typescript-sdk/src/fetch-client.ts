@@ -529,6 +529,7 @@ export type AssetFaceCreateDto = {
     imageHeight: number;
     imageWidth: number;
     personId: string;
+    sourceType: SourceType;
     width: number;
     x: number;
     y: number;
@@ -3453,7 +3454,8 @@ export enum AlbumUserRole {
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
-    Exif = "exif"
+    Exif = "exif",
+    Manual = "manual"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",
