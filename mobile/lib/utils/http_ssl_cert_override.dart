@@ -10,7 +10,7 @@ class HttpSSLCertOverride extends HttpOverrides {
   final SSLClientCertStoreVal? _clientCert;
   late final SecurityContext? _ctxWithCert;
 
-  HttpSSLCertOverride() : _clientCert = SSLClientCertStoreVal.load() {
+  HttpSSLCertOverride(this._clientCert) {
     if (_clientCert != null) {
       _ctxWithCert = SecurityContext(withTrustedRoots: true);
       if (_ctxWithCert != null) {
