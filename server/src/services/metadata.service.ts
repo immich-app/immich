@@ -121,13 +121,17 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (!asset.exifInfo.livePhotoCID) {
+    return this.linkLivePhotos(asset, asset.exifInfo);
+  }
+
+  private async linkLivePhotos(asset: AssetEntity, exifInfo: Insertable<Exif>): Promise<JobStatus> {
+    if (!exifInfo.livePhotoCID) {
       return JobStatus.SKIPPED;
     }
 
     const otherType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
     const match = await this.assetRepository.findLivePhotoMatch({
-      livePhotoCID: asset.exifInfo.livePhotoCID,
+      livePhotoCID: exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
       libraryId: asset.libraryId,
       otherAssetId: asset.id,
@@ -139,10 +143,11 @@ export class MetadataService extends BaseService {
     }
 
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
-
-    await this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
-    await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
-    await this.albumRepository.removeAsset(motionAsset.id);
+    await Promise.all([
+      this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id }),
+      this.assetRepository.update({ id: motionAsset.id, isVisible: false }),
+      this.albumRepository.removeAsset(motionAsset.id),
+    ]);
 
     await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
 
@@ -250,6 +255,10 @@ export class MetadataService extends BaseService {
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
       fileModifiedAt: stats.mtime,
     });
+
+    if (exifData.livePhotoCID) {
+      await this.linkLivePhotos(asset, exifData);
+    }
 
     await this.assetRepository.upsertJobStatus({
       assetId: asset.id,
