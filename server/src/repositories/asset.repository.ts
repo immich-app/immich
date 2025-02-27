@@ -794,6 +794,7 @@ export class AssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .where('assets.deletedAt', 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.stackId', 'is', null)
             .groupBy('assets.duplicateId'),
         )
         .with('unique', (qb) =>

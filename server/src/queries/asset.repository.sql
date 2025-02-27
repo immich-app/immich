@@ -333,6 +333,7 @@ with
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
+      and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
   ),
