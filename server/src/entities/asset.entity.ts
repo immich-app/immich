@@ -260,6 +260,7 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
         .selectFrom('asset_faces')
         .select('assetId')
         .where('personId', '=', anyUuid(personIds!))
+        .where('deletedAt', 'is', null)
         .groupBy('assetId')
         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
         .as('has_people'),
