@@ -2,6 +2,7 @@ import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
+import { defaults } from 'src/config';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
@@ -51,6 +52,27 @@ describe(MetadataService.name, () => {
       expect(mocks.job.pause).toHaveBeenCalledTimes(1);
       expect(mocks.map.init).toHaveBeenCalledTimes(1);
       expect(mocks.job.resume).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('onConfigInit', () => {
+    it('should update metadata processing concurrency', () => {
+      sut.onConfigInit({ newConfig: defaults });
+
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledWith(defaults.job.metadataExtraction.concurrency);
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should update metadata processing concurrency', () => {
+      const newConfig = structuredClone(defaults);
+      newConfig.job.metadataExtraction.concurrency = 10;
+
+      sut.onConfigUpdate({ oldConfig: defaults, newConfig });
+
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledWith(newConfig.job.metadataExtraction.concurrency);
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledTimes(1);
     });
   });
 
