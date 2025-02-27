@@ -203,7 +203,7 @@
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
             <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-              >UPLOAD_LOCATION/{$user.storageLabel || $user.id}</span
+              >UPLOAD_LOCATION/library/{$user.storageLabel || $user.id}</span
             >/{parsedTemplate()}.jpg
           </p>
 
