@@ -184,6 +184,7 @@ export const assetStub = {
       exifImageHeight: 1000,
       exifImageWidth: 1000,
     } as ExifEntity,
+    stackId: 'stack-1',
     stack: stackStub('stack-1', [
       { id: 'primary-asset-id' } as AssetEntity,
       { id: 'stack-child-asset-1' } as AssetEntity,
