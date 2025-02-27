@@ -56,7 +56,7 @@
 
 {#await peoplePromise}
   <div id="spinner" class="flex h-60 items-center justify-center -mb-4">
-    <LoadingSpinner size="100" />
+    <LoadingSpinner size="24" />
   </div>
 {:then people}
   {#if people && people.length > 0}
