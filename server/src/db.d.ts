@@ -415,6 +415,7 @@ export interface Users {
 }
 
 export interface UsersAudit {
+  id: Generated<string>;
   userId: string;
   deletedAt: Generated<Timestamp>;
 }

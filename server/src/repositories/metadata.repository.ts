@@ -85,6 +85,10 @@ export class MetadataRepository {
     this.logger.setContext(MetadataRepository.name);
   }
 
+  setMaxConcurrency(concurrency: number) {
+    this.exiftool.batchCluster.setMaxProcs(concurrency);
+  }
+
   async teardown() {
     await this.exiftool.end();
   }

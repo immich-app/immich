@@ -529,7 +529,6 @@ export type AssetFaceCreateDto = {
     imageHeight: number;
     imageWidth: number;
     personId: string;
-    sourceType: SourceType;
     width: number;
     x: number;
     y: number;
