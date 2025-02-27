@@ -37,6 +37,15 @@ export type MemoryItem =
 
 export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
 
+export type TagItem = {
+  id: string;
+  value: string;
+  createdAt: Date;
+  updatedAt: Date;
+  color: string | null;
+  parentId: string | null;
+};
+
 export interface CropOptions {
   top: number;
   left: number;
