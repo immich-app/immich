@@ -1,12 +1,10 @@
-import { LoginResponseDto, getAssetInfo, getAssetStatistics, scanLibrary } from '@immich/sdk';
+import { LoginResponseDto, getAssetInfo, getAssetStatistics } from '@immich/sdk';
 import { existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-
-const scan = async (accessToken: string, id: string) => scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
 
 describe('/trash', () => {
   let admin: LoginResponseDto;
@@ -81,8 +79,7 @@ describe('/trash', () => {
 
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.items.length).toBe(1);
@@ -90,8 +87,7 @@ describe('/trash', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const assetBefore = await utils.getAssetInfo(admin.accessToken, asset.id);
       expect(assetBefore).toMatchObject({ isTrashed: true, isOffline: true });
@@ -116,8 +112,7 @@ describe('/trash', () => {
 
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.items.length).toBe(1);
@@ -125,8 +120,7 @@ describe('/trash', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const assetBefore = await utils.getAssetInfo(admin.accessToken, asset.id);
       expect(assetBefore).toMatchObject({ isTrashed: true, isOffline: true });
@@ -180,8 +174,7 @@ describe('/trash', () => {
 
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await scan(admin.accessToken, library.id);
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
       expect(assets.count).toBe(1);
@@ -189,9 +182,7 @@ describe('/trash', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
 
-      await scan(admin.accessToken, library.id);
-
-      await utils.waitForQueueFinish(admin.accessToken, 'library');
+      await utils.scan(admin.accessToken, library.id);
 
       const before = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toStrictEqual(expect.objectContaining({ id: assetId, isOffline: true }));
@@ -201,6 +192,8 @@ describe('/trash', () => {
 
       const after = await getAssetInfo({ id: assetId }, { headers: asBearerAuth(admin.accessToken) });
       expect(after).toStrictEqual(expect.objectContaining({ id: assetId, isOffline: true }));
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
     });
   });
 
@@ -238,7 +231,7 @@ describe('/trash', () => {
 
       utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
 
-      await scan(admin.accessToken, library.id);
+      await utils.scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
@@ -247,7 +240,7 @@ describe('/trash', () => {
 
       await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: ['**/offline/**'] });
 
-      await scan(admin.accessToken, library.id);
+      await utils.scan(admin.accessToken, library.id);
       await utils.waitForQueueFinish(admin.accessToken, 'library');
 
       const before = await utils.getAssetInfo(admin.accessToken, assetId);
@@ -261,6 +254,8 @@ describe('/trash', () => {
 
       const after = await utils.getAssetInfo(admin.accessToken, assetId);
       expect(after.isTrashed).toBe(true);
+
+      utils.removeImageFile(`${testAssetDir}/temp/offline/offline.png`);
     });
   });
 });
