@@ -24,6 +24,8 @@ select
         where
           "assets"."deletedAt" is null
           and "assets"."stackId" = "asset_stack"."id"
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
@@ -69,6 +71,8 @@ select
         where
           "assets"."deletedAt" is null
           and "assets"."stackId" = "asset_stack"."id"
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from
@@ -114,6 +118,8 @@ select
         where
           "assets"."deletedAt" is null
           and "assets"."stackId" = "asset_stack"."id"
+        order by
+          "assets"."fileCreatedAt" asc
       ) as agg
   ) as "assets"
 from

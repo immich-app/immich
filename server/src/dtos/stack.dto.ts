@@ -27,9 +27,8 @@ export class StackResponseDto {
 }
 
 export const mapStack = (stack: StackEntity, { auth }: { auth?: AuthDto }) => {
-  const sorted = stack.assets.sort((a, b) => new Date(a.fileCreatedAt).getTime() - new Date(b.fileCreatedAt).getTime());
-  const primary = sorted.filter((asset) => asset.id === stack.primaryAssetId);
-  const others = sorted.filter((asset) => asset.id !== stack.primaryAssetId);
+  const primary = stack.assets.filter((asset) => asset.id === stack.primaryAssetId);
+  const others = stack.assets.filter((asset) => asset.id !== stack.primaryAssetId);
 
   return {
     id: stack.id,
