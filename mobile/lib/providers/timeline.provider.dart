@@ -5,8 +5,12 @@ import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 
-final singleUserTimelineProvider = StreamProvider.family<RenderList, int>(
+final singleUserTimelineProvider = StreamProvider.family<RenderList, int?>(
   (ref, userId) {
+    if (userId == null) {
+      return const Stream.empty();
+    }
+
     ref.watch(localeProvider);
     final timelineService = ref.watch(timelineServiceProvider);
     return timelineService.watchHomeTimeline(userId);

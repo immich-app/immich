@@ -9,7 +9,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
-import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
@@ -24,6 +23,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
+import 'package:immich_mobile/services/backup_album.service.dart';
 import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
@@ -37,7 +37,7 @@ final manualUploadProvider =
     ref.watch(localNotificationService),
     ref.watch(backupProvider.notifier),
     ref.watch(backupServiceProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(backupAlbumServiceProvider),
     ref,
   );
 });
@@ -47,14 +47,14 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
   final LocalNotificationService _localNotificationService;
   final BackupNotifier _backupProvider;
   final BackupService _backupService;
-  final BackupRepository _backupRepository;
+  final BackupAlbumService _backupAlbumService;
   final Ref ref;
 
   ManualUploadNotifier(
     this._localNotificationService,
     this._backupProvider,
     this._backupService,
-    this._backupRepository,
+    this._backupAlbumService,
     this.ref,
   ) : super(
           ManualUploadState(
@@ -210,9 +210,9 @@ class ManualUploadNotifier extends StateNotifier<ManualUploadState> {
         }
 
         final selectedBackupAlbums =
-            await _backupRepository.getAllBySelection(BackupSelection.select);
-        final excludedBackupAlbums =
-            await _backupRepository.getAllBySelection(BackupSelection.exclude);
+            await _backupAlbumService.getAllBySelection(BackupSelection.select);
+        final excludedBackupAlbums = await _backupAlbumService
+            .getAllBySelection(BackupSelection.exclude);
 
         // Get candidates from selected albums and excluded albums
         Set<BackupCandidate> candidates =

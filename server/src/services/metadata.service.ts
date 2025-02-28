@@ -89,6 +89,16 @@ export class MetadataService extends BaseService {
     await this.metadataRepository.teardown();
   }
 
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+  }
+
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+  }
+
   private async init() {
     this.logger.log('Initializing metadata service');
 
@@ -238,7 +248,7 @@ export class MetadataService extends BaseService {
       duration: exifTags.Duration?.toString() ?? null,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
-      fileModifiedAt: exifData.modifyDate ?? undefined,
+      fileModifiedAt: stats.mtime,
     });
 
     await this.assetRepository.upsertJobStatus({

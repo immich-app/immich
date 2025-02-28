@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
@@ -43,8 +43,6 @@ export class SyncService extends BaseService {
   }
 
   async setAcks(auth: AuthDto, dto: SyncAckSetDto) {
-    // TODO ack validation
-
     const sessionId = auth.session?.id;
     if (!sessionId) {
       return throwSessionRequired();
@@ -53,6 +51,10 @@ export class SyncService extends BaseService {
     const checkpoints: Insertable<SessionSyncCheckpoints>[] = [];
     for (const ack of dto.acks) {
       const { type } = fromAck(ack);
+      // TODO proper ack validation via class validator
+      if (!Object.values(SyncEntityType).includes(type)) {
+        throw new BadRequestException(`Invalid ack type: ${type}`);
+      }
       checkpoints.push({ sessionId, type, ack });
     }
 
@@ -85,13 +87,13 @@ export class SyncService extends BaseService {
       switch (type) {
         case SyncRequestType.UsersV1: {
           const deletes = this.syncRepository.getUserDeletes(checkpointMap[SyncEntityType.UserDeleteV1]);
-          for await (const { ackEpoch, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.UserDeleteV1, ackEpoch, ids: [data.userId], data }));
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.UserDeleteV1, updateId: id, data }));
           }
 
           const upserts = this.syncRepository.getUserUpserts(checkpointMap[SyncEntityType.UserV1]);
-          for await (const { ackEpoch, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.UserV1, ackEpoch, ids: [data.id], data }));
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.UserV1, updateId, data }));
           }
 
           break;

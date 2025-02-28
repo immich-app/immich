@@ -10,7 +10,7 @@ import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
-import { LogLevel, SystemMetadataKey } from 'src/enum';
+import { SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -137,9 +137,7 @@ export class MapRepository {
       .executeTakeFirst();
 
     if (response) {
-      if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
-        this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
-      }
+      this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
       const country = getName(countryCode, 'en') ?? null;
@@ -167,9 +165,8 @@ export class MapRepository {
       return { country: null, state: null, city: null };
     }
 
-    if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
-      this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
-    }
+    this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
+
     const { admin_a3 } = ne_response;
     const country = getName(admin_a3, 'en') ?? null;
     const state = null;

@@ -96,6 +96,10 @@ export class AssetEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @Index('IDX_assets_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
+
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt!: Date | null;
 
@@ -256,6 +260,7 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
         .selectFrom('asset_faces')
         .select('assetId')
         .where('personId', '=', anyUuid(personIds!))
+        .where('deletedAt', 'is', null)
         .groupBy('assetId')
         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
         .as('has_people'),

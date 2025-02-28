@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -29,6 +30,10 @@ export class TagEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Index('IDX_tags_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
 
   @Column({ type: 'varchar', nullable: true, default: null })
   color!: string | null;

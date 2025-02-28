@@ -14,8 +14,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
-import 'package:immich_mobile/main.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -48,6 +47,7 @@ import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
+import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:network_info_plus/network_info_plus.dart';
@@ -369,7 +369,8 @@ class BackgroundService {
   }
 
   Future<bool> _onAssetsChanged() async {
-    final db = await loadDb();
+    final db = await Bootstrap.initIsar();
+    await Bootstrap.initDomain(db);
 
     HttpOverrides.global = HttpSSLCertOverride();
     ApiService apiService = ApiService();
@@ -377,7 +378,7 @@ class BackgroundService {
     AppSettingsService settingsService = AppSettingsService();
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
-    BackupRepository backupRepository = BackupRepository(db);
+    BackupAlbumRepository backupRepository = BackupAlbumRepository(db);
     ExifInfoRepository exifInfoRepository = ExifInfoRepository(db);
     ETagRepository eTagRepository = ETagRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();

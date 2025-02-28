@@ -37,7 +37,7 @@ You can alternatively download these two files from your browser and move them t
 </CodeBlock>
 
 - Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets. It should be a new directory on the server with enough free space.
-- Consider changing `DB_PASSWORD` to a custom value. Postgres is not publically exposed, so this password is only used for local authentication.
+- Consider changing `DB_PASSWORD` to a custom value. Postgres is not publicly exposed, so this password is only used for local authentication.
   To avoid issues with Docker parsing this value, it is best to use only the characters `A-Za-z0-9`. `pwgen` is a handy utility for this.
 - Set your timezone by uncommenting the `TZ=` line.
 - Populate custom database information if necessary.
