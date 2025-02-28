@@ -272,6 +272,13 @@ export interface NaturalearthCountries {
   type: string;
 }
 
+export interface PartnersAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  sharedById: string;
+  sharedWithId: string;
+}
+
 export interface Partners {
   createdAt: Generated<Timestamp>;
   inTimeline: Generated<boolean>;
@@ -315,7 +322,6 @@ export interface SessionSyncCheckpoints {
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
-
 
 export interface SharedLinkAsset {
   assetsId: string;
@@ -462,6 +468,7 @@ export interface DB {
   migrations: Migrations;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
+  partners_audit: PartnersAudit;
   partners: Partners;
   person: Person;
   sessions: Sessions;

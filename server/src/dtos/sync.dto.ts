@@ -45,15 +45,30 @@ export class SyncUserDeleteV1 {
   userId!: string;
 }
 
+export class SyncPartnerV1 {
+  sharedById!: string;
+  sharedWithId!: string;
+  inTimeline!: boolean;
+}
+
+export class SyncPartnerDeleteV1 {
+  sharedById!: string;
+  sharedWithId!: string;
+}
+
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
+  [SyncEntityType.PartnerV1]: SyncPartnerV1;
+  [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
 };
 
 const responseDtos = [
   //
   SyncUserV1,
   SyncUserDeleteV1,
+  SyncPartnerV1,
+  SyncPartnerDeleteV1,
 ];
 
 export const extraSyncModels = responseDtos;
