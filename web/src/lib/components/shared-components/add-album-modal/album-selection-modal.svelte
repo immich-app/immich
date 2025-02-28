@@ -34,7 +34,7 @@
     loading = false;
   });
 
-  const rowConverter = new AlbumModalRowConverter($t, shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
+  const rowConverter = new AlbumModalRowConverter(shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
   const albumModalRows = $derived(rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex));
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 

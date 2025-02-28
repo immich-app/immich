@@ -1,7 +1,8 @@
 import { sortAlbums } from '$lib/utils/album-utils';
 import { normalizeSearchString } from '$lib/utils/string-utils';
 import type { AlbumResponseDto } from '@immich/sdk';
-import { type MessageFormatter } from 'svelte-i18n';
+import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 
 export const SCROLL_PROPERTIES: ScrollIntoViewOptions = { block: 'center', behavior: 'smooth' };
 
@@ -22,14 +23,14 @@ export type AlbumModalRow = {
 export const isSelectableRowType = (type: AlbumModalRowType) =>
   type === AlbumModalRowType.NEW_ALBUM || type === AlbumModalRowType.ALBUM_ITEM;
 
+const $t = get(t);
+
 export class AlbumModalRowConverter {
   private readonly shared: boolean;
   private readonly sortBy: string;
   private readonly orderBy: string;
-  private readonly $t: MessageFormatter;
 
-  constructor($t: MessageFormatter, shared: boolean, sortBy: string, orderBy: string) {
-    this.$t = $t;
+  constructor(shared: boolean, sortBy: string, orderBy: string) {
     this.shared = shared;
     this.sortBy = sortBy;
     this.orderBy = orderBy;
@@ -57,7 +58,7 @@ export class AlbumModalRowConverter {
 
     if (filteredAlbums.length > 0) {
       if (recentAlbumsToShow.length > 0) {
-        rows.push({ type: AlbumModalRowType.SECTION, text: this.$t('recent').toUpperCase() });
+        rows.push({ type: AlbumModalRowType.SECTION, text: $t('recent').toUpperCase() });
         const selectedOffsetDueToNewAlbumRow = 1;
         for (const [i, album] of recentAlbums.entries()) {
           rows.push({
@@ -71,7 +72,7 @@ export class AlbumModalRowConverter {
       if (!this.shared) {
         rows.push({
           type: AlbumModalRowType.SECTION,
-          text: (search.length === 0 ? this.$t('all_albums') : this.$t('albums')).toUpperCase(),
+          text: (search.length === 0 ? $t('all_albums') : $t('albums')).toUpperCase(),
         });
       }
 
@@ -84,9 +85,9 @@ export class AlbumModalRowConverter {
         });
       }
     } else if (albums.length > 0) {
-      rows.push({ type: AlbumModalRowType.MESSAGE, text: this.$t('no_albums_with_name_yet') });
+      rows.push({ type: AlbumModalRowType.MESSAGE, text: $t('no_albums_with_name_yet') });
     } else {
-      rows.push({ type: AlbumModalRowType.MESSAGE, text: this.$t('no_albums_yet') });
+      rows.push({ type: AlbumModalRowType.MESSAGE, text: $t('no_albums_yet') });
     }
     return rows;
   }
