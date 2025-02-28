@@ -6,7 +6,7 @@ version: 1.127.0+185
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.24.5
+  flutter: 3.29.0
 
 isar_version: &isar_version 3.1.8 # define the version to be used
 
@@ -17,7 +17,7 @@ dependencies:
   path_provider_ios:
   photo_manager: ^3.6.1
   photo_manager_image_provider: ^2.2.0
-  flutter_hooks: ^0.20.4
+  flutter_hooks: ^0.21.0
   hooks_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
   cached_network_image: ^3.3.1
