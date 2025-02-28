@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
+  import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
   import { mdiPlus } from '@mdi/js';
   import { onMount } from 'svelte';
   import AlbumListItem from '../asset-viewer/album-list-item.svelte';
@@ -15,6 +15,7 @@
   let recentAlbums: AlbumResponseDto[] = $state([]);
   let loading = $state(true);
   let search = $state('');
+  let selectedAlbumRow: number = $state(-1);
 
   interface Props {
     onNewAlbum: (search: string) => void;
@@ -31,7 +32,7 @@
     loading = false;
   });
 
-  let filteredAlbums = $derived(
+  const filteredAlbums = $derived(
     sortAlbums(
       search.length > 0 && albums.length > 0
         ? albums.filter((album) => {
@@ -41,16 +42,38 @@
       { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
     ),
   );
+  const recentAlbumsToShow = $derived(!shared && search.length === 0 ? recentAlbums : []);
+  const allRows = $derived(recentAlbumsToShow.concat(filteredAlbums));
 
-  const getTitle = () => {
-    if (shared) {
-      return $t('add_to_shared_album');
+  const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (selectedAlbumRow > 0) {
+        selectedAlbumRow--;
+      } else {
+        selectedAlbumRow = allRows.length - 1;
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (selectedAlbumRow < allRows.length - 1) {
+        selectedAlbumRow++;
+      } else {
+        selectedAlbumRow = 0;
+      }
+    } else if (e.key === 'Enter' && selectedAlbumRow >= 0) {
+      e.preventDefault();
+      const selectedAlbum = allRows[selectedAlbumRow];
+      if (selectedAlbum) {
+        onAlbumClick(selectedAlbum);
+        selectedAlbumRow = -1;
+      }
+    } else {
+      selectedAlbumRow = -1;
     }
-    return $t('add_to_album');
   };
 </script>
 
-<FullScreenModal title={getTitle()} {onClose}>
+<FullScreenModal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
       {#each { length: 3 } as _}
@@ -69,6 +92,7 @@
       <input
         class="border-b-4 border-immich-bg bg-immich-bg px-6 py-2 text-2xl focus:border-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:focus:border-immich-dark-primary"
         placeholder={$t('search')}
+        onkeydown={handleKeydown}
         bind:value={search}
         use:initInput
       />
@@ -87,10 +111,10 @@
           </p>
         </button>
         {#if filteredAlbums.length > 0}
-          {#if !shared && search.length === 0}
+          {#if recentAlbumsToShow.length > 0}
             <p class="px-5 py-3 text-xs">{$t('recent').toUpperCase()}</p>
-            {#each recentAlbums as album (album.id)}
-              <AlbumListItem {album} onAlbumClick={() => onAlbumClick(album)} />
+            {#each recentAlbumsToShow as album, rowId (album.id)}
+              <AlbumListItem {album} selected={selectedAlbumRow === rowId} onAlbumClick={() => onAlbumClick(album)} />
             {/each}
           {/if}
 
@@ -99,8 +123,13 @@
               {(search.length === 0 ? $t('all_albums') : $t('albums')).toUpperCase()}
             </p>
           {/if}
-          {#each filteredAlbums as album (album.id)}
-            <AlbumListItem {album} searchQuery={search} onAlbumClick={() => onAlbumClick(album)} />
+          {#each filteredAlbums as album, rowId (album.id)}
+            <AlbumListItem
+              {album}
+              selected={selectedAlbumRow === rowId + recentAlbumsToShow.length}
+              searchQuery={search}
+              onAlbumClick={() => onAlbumClick(album)}
+            />
           {/each}
         {:else if albums.length > 0}
           <p class="px-5 py-1 text-sm">{$t('no_albums_with_name_yet')}</p>

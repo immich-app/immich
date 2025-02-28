@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcut } from '$lib/actions/shortcut';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
@@ -33,6 +34,10 @@
     onAction({ type: AssetAction.ADD_TO_ALBUM, asset, album });
   };
 </script>
+
+<svelte:window
+  use:shortcut={{ shortcut: { key: 'l' }, onShortcut: () => (shared ? null : (showSelectionModal = true)) }}
+/>
 
 <MenuOption
   icon={shared ? mdiShareVariantOutline : mdiImageAlbum}
