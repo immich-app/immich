@@ -3,14 +3,12 @@
   import { onMount } from 'svelte';
   import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
   import NewAlbumListItem from './new-album-list-item.svelte';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { initInput } from '$lib/actions/focus';
   import { t } from 'svelte-i18n';
-  import { sortAlbums } from '$lib/utils/album-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
   import {
-    type AlbumModalRow,
+    AlbumModalRowConverter,
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/add-album-modal/album-modal';
@@ -36,56 +34,8 @@
     loading = false;
   });
 
-  const albumModalRows = $derived.by(() => {
-    // only show recent albums if no search was entered, or we're in the normal albums (non-shared) modal.
-    const recentAlbumsToShow = !shared && search.length === 0 ? recentAlbums : [];
-    const rows: AlbumModalRow[] = [];
-    rows.push({ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 });
-
-    const filteredAlbums = sortAlbums(
-      search.length > 0 && albums.length > 0
-        ? albums.filter((album) => {
-          return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
-        })
-        : albums,
-      { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
-    );
-
-    if (filteredAlbums.length > 0) {
-      if (recentAlbumsToShow.length > 0) {
-        rows.push({ type: AlbumModalRowType.SECTION, text: $t('recent').toUpperCase() });
-        const selectedOffsetDueToNewAlbumRow = 1;
-        for (const [i, album] of recentAlbums.entries()) {
-          rows.push({
-            type: AlbumModalRowType.ALBUM_ITEM,
-            selected: selectedRowIndex === i + selectedOffsetDueToNewAlbumRow,
-            album,
-          });
-        }
-      }
-
-      if (!shared) {
-        rows.push({
-          type: AlbumModalRowType.SECTION,
-          text: (search.length === 0 ? $t('all_albums') : $t('albums')).toUpperCase(),
-        });
-      }
-
-      const selectedOffsetDueToNewAndRecents = 1 + recentAlbumsToShow.length;
-      for (const [i, album] of filteredAlbums.entries()) {
-        rows.push({
-          type: AlbumModalRowType.ALBUM_ITEM,
-          selected: selectedRowIndex === i + selectedOffsetDueToNewAndRecents,
-          album,
-        });
-      }
-    } else if (albums.length > 0) {
-      rows.push({ type: AlbumModalRowType.MESSAGE, text: $t('no_albums_with_name_yet') });
-    } else {
-      rows.push({ type: AlbumModalRowType.MESSAGE, text: $t('no_albums_yet') });
-    }
-    return rows;
-  });
+  const rowConverter = new AlbumModalRowConverter($t, shared, $albumViewSettings.sortBy, $albumViewSettings.sortOrder);
+  const albumModalRows = $derived(rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex));
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onkeydown = (e: KeyboardEvent) => {
