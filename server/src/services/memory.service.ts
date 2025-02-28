@@ -35,6 +35,12 @@ export class MemoryService extends BaseService {
     // generate a memory +/- X days from today
     for (let i = 0; i <= DAYS * 2 + 1; i++) {
       const target = start.plus({ days: i });
+
+      // Don't bother leap year day
+      if (target.month === 2 && target.day === 29) {
+        continue;
+      }
+
       if (lastOnThisDayDate > target) {
         continue;
       }
