@@ -94,9 +94,12 @@ import { Mocked, vitest } from 'vitest';
 
 type Overrides = {
   worker?: ImmichWorker;
+  assetRepository?: AssetRepository;
+  systemMetadataRepository?: SystemMetadataRepository;
   metadataRepository?: MetadataRepository;
   syncRepository?: SyncRepository;
   userRepository?: UserRepository;
+  memoryRepository?: MemoryRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -151,7 +154,14 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides?: Overrides,
 ) => {
-  const { metadataRepository, userRepository, syncRepository } = overrides || {};
+  const {
+    assetRepository,
+    systemMetadataRepository,
+    metadataRepository,
+    memoryRepository,
+    userRepository,
+    syncRepository,
+  } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggingRepositoryMock();
@@ -172,9 +182,7 @@ export const newTestService = <T extends BaseService>(
   const mapMock = newMapRepositoryMock();
   const mediaMock = newMediaRepositoryMock();
   const memoryMock = newMemoryRepositoryMock();
-  const metadataMock = (metadataRepository || newMetadataRepositoryMock()) as Mocked<
-    RepositoryInterface<MetadataRepository>
-  >;
+  const metadataMock = newMetadataRepositoryMock();
   const moveMock = newMoveRepositoryMock();
   const notificationMock = newNotificationRepositoryMock();
   const oauthMock = newOAuthRepositoryMock();
@@ -187,12 +195,12 @@ export const newTestService = <T extends BaseService>(
   const sharedLinkMock = newSharedLinkRepositoryMock();
   const stackMock = newStackRepositoryMock();
   const storageMock = newStorageRepositoryMock();
-  const syncMock = (syncRepository || newSyncRepositoryMock()) as Mocked<RepositoryInterface<SyncRepository>>;
+  const syncMock = newSyncRepositoryMock();
   const systemMock = newSystemMetadataRepositoryMock();
   const tagMock = newTagRepositoryMock();
   const telemetryMock = newTelemetryRepositoryMock();
   const trashMock = newTrashRepositoryMock();
-  const userMock = (userRepository || newUserRepositoryMock()) as Mocked<RepositoryInterface<UserRepository>>;
+  const userMock = newUserRepositoryMock();
   const versionHistoryMock = newVersionHistoryRepositoryMock();
   const viewMock = newViewRepositoryMock();
 
@@ -203,7 +211,7 @@ export const newTestService = <T extends BaseService>(
     auditMock as RepositoryInterface<AuditRepository> as AuditRepository,
     albumMock as RepositoryInterface<AlbumRepository> as AlbumRepository,
     albumUserMock as RepositoryInterface<AlbumUserRepository> as AlbumUserRepository,
-    assetMock as RepositoryInterface<AssetRepository> as AssetRepository,
+    assetRepository || (assetMock as RepositoryInterface<AssetRepository> as AssetRepository),
     configMock as RepositoryInterface<ConfigRepository> as ConfigRepository,
     cronMock as RepositoryInterface<CronRepository> as CronRepository,
     cryptoMock as RepositoryInterface<CryptoRepository> as CryptoRepository,
@@ -215,8 +223,8 @@ export const newTestService = <T extends BaseService>(
     machineLearningMock as RepositoryInterface<MachineLearningRepository> as MachineLearningRepository,
     mapMock as RepositoryInterface<MapRepository> as MapRepository,
     mediaMock as RepositoryInterface<MediaRepository> as MediaRepository,
-    memoryMock as RepositoryInterface<MemoryRepository> as MemoryRepository,
-    metadataMock as RepositoryInterface<MetadataRepository> as MetadataRepository,
+    memoryRepository || (memoryMock as RepositoryInterface<MemoryRepository> as MemoryRepository),
+    metadataRepository || (metadataMock as RepositoryInterface<MetadataRepository> as MetadataRepository),
     moveMock as RepositoryInterface<MoveRepository> as MoveRepository,
     notificationMock as RepositoryInterface<NotificationRepository> as NotificationRepository,
     oauthMock as RepositoryInterface<OAuthRepository> as OAuthRepository,
@@ -229,12 +237,13 @@ export const newTestService = <T extends BaseService>(
     sharedLinkMock as RepositoryInterface<SharedLinkRepository> as SharedLinkRepository,
     stackMock as RepositoryInterface<StackRepository> as StackRepository,
     storageMock as RepositoryInterface<StorageRepository> as StorageRepository,
-    syncMock as RepositoryInterface<SyncRepository> as SyncRepository,
-    systemMock as RepositoryInterface<SystemMetadataRepository> as SystemMetadataRepository,
+    syncRepository || (syncMock as RepositoryInterface<SyncRepository> as SyncRepository),
+    systemMetadataRepository ||
+      (systemMock as RepositoryInterface<SystemMetadataRepository> as SystemMetadataRepository),
     tagMock as RepositoryInterface<TagRepository> as TagRepository,
     telemetryMock as unknown as TelemetryRepository,
     trashMock as RepositoryInterface<TrashRepository> as TrashRepository,
-    userMock as RepositoryInterface<UserRepository> as UserRepository,
+    userRepository || (userMock as RepositoryInterface<UserRepository> as UserRepository),
     versionHistoryMock as RepositoryInterface<VersionHistoryRepository> as VersionHistoryRepository,
     viewMock as RepositoryInterface<ViewRepository> as ViewRepository,
   );

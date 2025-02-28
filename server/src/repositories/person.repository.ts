@@ -7,7 +7,6 @@ import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
-import { mapUpsertColumns } from 'src/utils/database';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsRelations } from 'typeorm';
 
@@ -417,7 +416,17 @@ export class PersonRepository {
     await this.db
       .insertInto('person')
       .values(people)
-      .onConflict((oc) => oc.column('id').doUpdateSet(() => mapUpsertColumns('person', people[0], ['id'])))
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet((eb) => ({
+          birthDate: eb.ref('excluded.birthDate'),
+          color: eb.ref('excluded.color'),
+          faceAssetId: eb.ref('excluded.faceAssetId'),
+          isFavorite: eb.ref('excluded.isFavorite'),
+          isHidden: eb.ref('excluded.isHidden'),
+          name: eb.ref('excluded.name'),
+          thumbnailPath: eb.ref('excluded.thumbnailPath'),
+        })),
+      )
       .execute();
   }
 
