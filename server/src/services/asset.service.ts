@@ -42,7 +42,7 @@ export class AssetService extends BaseService {
       yearsAgo,
       // TODO move this to clients
       title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-      assets: assets.map((asset) => mapAsset(asset, { auth })),
+      assets: assets.map((asset) => mapAsset(asset as AssetEntity, { auth })),
     }));
   }
 

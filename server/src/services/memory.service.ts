@@ -30,19 +30,17 @@ export class MemoryService extends BaseService {
     const start = DateTime.utc().startOf('day').minus({ days: DAYS });
 
     const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
-    let lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state?.lastOnThisDayDate) : start;
+    const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
 
     // generate a memory +/- X days from today
-    for (let i = 0; i <= DAYS * 2 + 1; i++) {
+    for (let i = 0; i <= DAYS * 2; i++) {
       const target = start.plus({ days: i });
-      if (lastOnThisDayDate > target) {
+      if (lastOnThisDayDate >= target) {
         continue;
       }
 
       const showAt = target.startOf('day').toISO();
       const hideAt = target.endOf('day').toISO();
-
-      this.logger.log(`Creating memories for month=${target.month}, day=${target.day}`);
 
       for (const [userId, userIds] of Object.entries(userMap)) {
         const memories = await this.assetRepository.getByDayOfYear(userIds, target);
@@ -67,8 +65,6 @@ export class MemoryService extends BaseService {
         ...state,
         lastOnThisDayDate: target.toISO(),
       });
-
-      lastOnThisDayDate = target;
     }
   }
 
