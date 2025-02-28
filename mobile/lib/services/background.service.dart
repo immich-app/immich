@@ -720,7 +720,6 @@ enum IosBackgroundTask { fetch, processing }
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')
 void _nativeEntry() {
-  HttpOverrides.global = HttpSSLCertOverride();
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();
