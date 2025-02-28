@@ -9,7 +9,11 @@
   import { t } from 'svelte-i18n';
   import { sortAlbums } from '$lib/utils/album-utils';
   import { albumViewSettings } from '$lib/stores/preferences.store';
-  import { type AlbumModalRow, AlbumModalRowType } from '$lib/components/shared-components/add-album-modal/album-modal';
+  import {
+    type AlbumModalRow,
+    AlbumModalRowType,
+    isSelectableRowType,
+  } from '$lib/components/shared-components/add-album-modal/album-modal';
 
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);
@@ -33,6 +37,7 @@
   });
 
   const albumModalRows = $derived.by(() => {
+    // only show recent albums if no search was entered or we're in the normal albums (non-shared) modal.
     const recentAlbumsToShow = !shared && search.length === 0 ? recentAlbums : [];
     const rows: AlbumModalRow[] = [];
     rows.push({ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 });
@@ -40,8 +45,8 @@
     const filteredAlbums = sortAlbums(
       search.length > 0 && albums.length > 0
         ? albums.filter((album) => {
-            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
-          })
+          return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
+        })
         : albums,
       { sortBy: $albumViewSettings.sortBy, orderBy: $albumViewSettings.sortOrder },
     );
@@ -81,12 +86,8 @@
     }
     return rows;
   });
+  const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
-  const selectableRowCount = $derived(
-    albumModalRows.filter(
-      (row) => row.type === AlbumModalRowType.NEW_ALBUM || row.type === AlbumModalRowType.ALBUM_ITEM,
-    ).length,
-  );
   const onkeydown = (e: KeyboardEvent) => {
     if (e.key === 'ArrowUp') {
       e.preventDefault();

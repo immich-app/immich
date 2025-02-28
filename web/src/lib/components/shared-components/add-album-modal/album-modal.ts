@@ -1,5 +1,7 @@
 import type { AlbumResponseDto } from '@immich/sdk';
 
+export const SCROLL_PROPERTIES: ScrollIntoViewOptions = { block: 'center', behavior: 'smooth' };
+
 export enum AlbumModalRowType {
   SECTION = 'section',
   MESSAGE = 'message',
@@ -13,3 +15,6 @@ export type AlbumModalRow = {
   text?: string;
   album?: AlbumResponseDto;
 };
+
+export const isSelectableRowType = (type: AlbumModalRowType) =>
+  type === AlbumModalRowType.NEW_ALBUM || type === AlbumModalRowType.ALBUM_ITEM;

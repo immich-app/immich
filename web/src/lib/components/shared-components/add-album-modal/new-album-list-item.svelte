@@ -3,6 +3,7 @@
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/add-album-modal/album-modal';
 
   interface Props {
     searchQuery?: string;
@@ -15,7 +16,7 @@
   const scrollIntoViewIfSelected: Action = (node) => {
     $effect(() => {
       if (selected) {
-        node.scrollIntoView({ block: 'center', inline: 'nearest' });
+        node.scrollIntoView(SCROLL_PROPERTIES);
       }
     });
   };

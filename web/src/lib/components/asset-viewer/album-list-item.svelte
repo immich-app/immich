@@ -4,6 +4,7 @@
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import type { Action } from 'svelte/action';
+  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/add-album-modal/album-modal';
 
   interface Props {
     album: AlbumResponseDto;
@@ -17,7 +18,7 @@
   const scrollIntoViewIfSelected: Action = (node) => {
     $effect(() => {
       if (selected) {
-        node.scrollIntoView({ block: 'center', inline: 'nearest' });
+        node.scrollIntoView(SCROLL_PROPERTIES);
       }
     });
   };
