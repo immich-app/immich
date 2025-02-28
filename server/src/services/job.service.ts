@@ -255,11 +255,6 @@ export class JobService extends BaseService {
         break;
       }
 
-      case JobName.LINK_LIVE_PHOTOS: {
-        await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
-        break;
-      }
-
       case JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE: {
         if (item.data.source === 'upload' || item.data.source === 'copy') {
           await this.jobRepository.queue({ name: JobName.GENERATE_THUMBNAILS, data: item.data });

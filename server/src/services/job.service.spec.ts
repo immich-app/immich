@@ -236,10 +236,6 @@ describe(JobService.name, () => {
         jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {
-        item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
-        jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
-      },
-      {
         item: { name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: { id: 'asset-1', source: 'upload' } },
         jobs: [JobName.GENERATE_THUMBNAILS],
       },

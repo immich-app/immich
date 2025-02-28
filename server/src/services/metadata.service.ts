@@ -113,20 +113,9 @@ export class MetadataService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.LINK_LIVE_PHOTOS, queue: QueueName.METADATA_EXTRACTION })
-  async handleLivePhotoLinking(job: JobOf<JobName.LINK_LIVE_PHOTOS>): Promise<JobStatus> {
-    const { id } = job;
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
-    if (!asset?.exifInfo) {
-      return JobStatus.FAILED;
-    }
-
-    return this.linkLivePhotos(asset, asset.exifInfo);
-  }
-
-  private async linkLivePhotos(asset: AssetEntity, exifInfo: Insertable<Exif>): Promise<JobStatus> {
+  private async linkLivePhotos(asset: AssetEntity, exifInfo: Insertable<Exif>): Promise<void> {
     if (!exifInfo.livePhotoCID) {
-      return JobStatus.SKIPPED;
+      return;
     }
 
     const otherType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
@@ -139,7 +128,7 @@ export class MetadataService extends BaseService {
     });
 
     if (!match) {
-      return JobStatus.SKIPPED;
+      return;
     }
 
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
@@ -150,8 +139,6 @@ export class MetadataService extends BaseService {
     ]);
 
     await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
-
-    return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
