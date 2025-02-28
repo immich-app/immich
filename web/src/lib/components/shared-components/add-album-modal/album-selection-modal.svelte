@@ -37,7 +37,7 @@
   });
 
   const albumModalRows = $derived.by(() => {
-    // only show recent albums if no search was entered or we're in the normal albums (non-shared) modal.
+    // only show recent albums if no search was entered, or we're in the normal albums (non-shared) modal.
     const recentAlbumsToShow = !shared && search.length === 0 ? recentAlbums : [];
     const rows: AlbumModalRow[] = [];
     rows.push({ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 });
@@ -89,37 +89,41 @@
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
   const onkeydown = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (selectedRowIndex > 0) {
-        selectedRowIndex--;
-      } else {
-        selectedRowIndex = selectableRowCount - 1;
-      }
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (selectedRowIndex < selectableRowCount - 1) {
-        selectedRowIndex++;
-      } else {
-        selectedRowIndex = 0;
-      }
-    }
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      const selectedRow = albumModalRows.find((row) => row.selected);
-      if (selectedRow) {
-        if (selectedRow.type === AlbumModalRowType.NEW_ALBUM) {
-          onNewAlbum(search);
-        } else if (selectedRow.type === AlbumModalRowType.ALBUM_ITEM && selectedRow.album) {
-          onAlbumClick(selectedRow.album);
+    switch (e.key) {
+      case 'ArrowUp': {
+        e.preventDefault();
+        if (selectedRowIndex > 0) {
+          selectedRowIndex--;
+        } else {
+          selectedRowIndex = selectableRowCount - 1;
         }
+        break;
+      }
+      case 'ArrowDown': {
+        e.preventDefault();
+        if (selectedRowIndex < selectableRowCount - 1) {
+          selectedRowIndex++;
+        } else {
+          selectedRowIndex = 0;
+        }
+        break;
+      }
+      case 'Enter': {
+        e.preventDefault();
+        const selectedRow = albumModalRows.find((row) => row.selected);
+        if (selectedRow) {
+          if (selectedRow.type === AlbumModalRowType.NEW_ALBUM) {
+            onNewAlbum(search);
+          } else if (selectedRow.type === AlbumModalRowType.ALBUM_ITEM && selectedRow.album) {
+            onAlbumClick(selectedRow.album);
+          }
+          selectedRowIndex = -1;
+        }
+        break;
+      }
+      default: {
         selectedRowIndex = -1;
       }
-    }
-
-    if (e.key !== 'Enter' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') {
-      selectedRowIndex = -1;
     }
   };
 
