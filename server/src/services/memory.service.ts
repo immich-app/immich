@@ -27,7 +27,7 @@ export class MemoryService extends BaseService {
       userMap[user.id] = [user.id, ...partnerIds];
     }
 
-    const start = DateTime.utc().startOf('day').minus({ days: DAYS });
+    const start = DateTime.utc().startOf('day').minus({ days: DAYS }).minus({ years: 1 });
 
     const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
     let lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state?.lastOnThisDayDate) : start;
