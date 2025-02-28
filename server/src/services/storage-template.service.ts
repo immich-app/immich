@@ -304,6 +304,7 @@ export class StorageTemplateService extends BaseService {
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
+      assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
       album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
     };
