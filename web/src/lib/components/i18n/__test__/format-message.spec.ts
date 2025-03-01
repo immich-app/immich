@@ -70,7 +70,7 @@ describe('FormatMessage component', () => {
     expect(getSanitizedHTML(container)).toBe('You have <strong>1 item</strong>');
   });
 
-  it('protects agains XSS injection', () => {
+  it('protects against XSS injection', () => {
     render(FormatMessage, {
       key: 'xss' as Translations,
     });
