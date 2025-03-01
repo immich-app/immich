@@ -172,6 +172,11 @@ export class MetadataService extends BaseService {
     }
 
     const exifTags = await this.getExifTags(asset);
+    if (!exifTags.FileCreateDate || !exifTags.FileModifyDate) {
+      const stat = await this.storageRepository.stat(asset.originalPath);
+      exifTags.FileCreateDate = stat.ctime.toISOString();
+      exifTags.FileModifyDate = stat.mtime.toISOString();
+    }
 
     this.logger.verbose('Exif Tags', exifTags);
 
