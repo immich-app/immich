@@ -3,7 +3,7 @@
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/add-album-modal/add-album-modal';
+  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
 
   interface Props {
     searchQuery?: string;

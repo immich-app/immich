@@ -4,7 +4,7 @@
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import AlbumListItemDetails from './album-list-item-details.svelte';
   import type { Action } from 'svelte/action';
-  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/add-album-modal/add-album-modal';
+  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
 
   interface Props {
     album: AlbumResponseDto;

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
   import type { OnAction } from '$lib/components/asset-viewer/actions/action';
-  import AlbumSelectionModal from '$lib/components/shared-components/add-album-modal/album-selection-modal.svelte';
+  import AlbumSelectionModal from '$lib/components/shared-components/album-selection/album-selection-modal.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import Portal from '$lib/components/shared-components/portal/portal.svelte';
   import { AssetAction } from '$lib/constants';
