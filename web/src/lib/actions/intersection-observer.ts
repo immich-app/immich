@@ -60,7 +60,7 @@ const observe = (key: HTMLElement | string, target: HTMLElement, properties: Int
     (entries: IntersectionObserverEntry[]) => {
       // This IntersectionObserver is limited to observing a single element, the one the
       // action is attached to. If there are multiple entries, it means that this
-      // observer is being notified of multiple events that have occured quickly together,
+      // observer is being notified of multiple events that have occurred quickly together,
       // and the latest element is the one we are interested in.
 
       entries.sort((a, b) => a.time - b.time);
