@@ -67,7 +67,7 @@ custom_lint:
         - lib/entities/*.entity.dart
         - lib/repositories/{album,asset,backup,database,etag,exif_info,user,timeline,partner}.repository.dart
         - lib/infrastructure/entities/*.entity.dart
-        - lib/infrastructure/repositories/{store,db}.repository.dart
+        - lib/infrastructure/repositories/{store,db,log}.repository.dart
         - lib/providers/infrastructure/db.provider.dart
         # acceptable exceptions for the time being (until Isar is fully replaced)
         - integration_test/test_utils/general_helper.dart
