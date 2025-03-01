@@ -171,20 +171,9 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const [stats, exifTags] = await Promise.all([
-      this.storageRepository.stat(asset.originalPath),
-      this.getExifTags(asset),
-    ]);
+    const exifTags = await this.getExifTags(asset);
 
     this.logger.verbose('Exif Tags', exifTags);
-
-    if (!asset.fileCreatedAt) {
-      asset.fileCreatedAt = stats.mtime;
-    }
-
-    if (!asset.fileModifiedAt) {
-      asset.fileModifiedAt = stats.mtime;
-    }
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
 
@@ -216,7 +205,7 @@ export class MetadataService extends BaseService {
       city: geo.city,
 
       // image/file
-      fileSizeInByte: stats.size,
+      fileSizeInByte: Number.parseInt(exifTags.FileSize!),
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
@@ -251,13 +240,13 @@ export class MetadataService extends BaseService {
         duration: exifTags.Duration?.toString() ?? null,
         localDateTime,
         fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
-        fileModifiedAt: stats.mtime,
+        fileModifiedAt: exifData.modifyDate ?? undefined,
       }),
       this.applyTagList(asset, exifTags),
     ];
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags));
+      promises.push(this.applyMotionPhotos(asset, exifTags, exifData.fileSizeInByte!));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
@@ -436,7 +425,7 @@ export class MetadataService extends BaseService {
     return asset.type === AssetType.IMAGE && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
-  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {
+  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags, fileSize: number) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
@@ -470,8 +459,7 @@ export class MetadataService extends BaseService {
     this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
 
     try {
-      const stat = await this.storageRepository.stat(asset.originalPath);
-      const position = stat.size - length - padding;
+      const position = fileSize - length - padding;
       let video: Buffer;
       // Samsung MotionPhoto video extraction
       //     HEIC-encoded
@@ -659,10 +647,12 @@ export class MetadataService extends BaseService {
       this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
+    const modifyDate = this.toDate(exifTags.FileModifyDate!);
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
-      const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
+      const fileCreatedAt = this.toDate(exifTags.FileCreateDate!);
+      const earliestDate = this.earliestDate(fileCreatedAt, modifyDate);
       this.logger.debug(
         `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for assset ${asset.id}: ${asset.originalPath}`,
       );
@@ -674,17 +664,16 @@ export class MetadataService extends BaseService {
       `Found local date time ${localDateTime.toISOString()} for asset ${asset.id}: ${asset.originalPath}`,
     );
 
-    let modifyDate = asset.fileModifiedAt;
-    try {
-      modifyDate = (exifTags.ModifyDate as ExifDateTime)?.toDate() ?? modifyDate;
-    } catch {}
-
     return {
       dateTimeOriginal,
       timeZone,
       localDateTime,
       modifyDate,
     };
+  }
+
+  private toDate(date: string | ExifDateTime): Date {
+    return typeof date === 'string' ? new Date(date) : date!.toDate();
   }
 
   private earliestDate(a: Date, b: Date) {
