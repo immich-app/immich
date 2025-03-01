@@ -87,7 +87,10 @@ class TimelineService {
   Stream<RenderList> watchAssetSelectionTimeline() async* {
     final user = await _userRepository.me();
 
-    yield* _timelineRepository.watchAssetSelectionTimeline(user.isarId);
+    yield* _timelineRepository.watchAssetSelectionTimeline(
+      user.isarId,
+      _getGroupByOption(),
+    );
   }
 
   GroupAssetsBy _getGroupByOption() {

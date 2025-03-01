@@ -120,7 +120,10 @@ class TimelineRepository extends DatabaseRepository
   }
 
   @override
-  Stream<RenderList> watchAssetSelectionTimeline(int userId) {
+  Stream<RenderList> watchAssetSelectionTimeline(
+    int userId,
+    GroupAssetsBy groupAssetByOption,
+  ) {
     final query = db.assets
         .where()
         .remoteIdIsNotNull()
@@ -130,7 +133,7 @@ class TimelineRepository extends DatabaseRepository
         .stackPrimaryAssetIdIsNull()
         .sortByFileCreatedAtDesc();
 
-    return _watchRenderList(query, GroupAssetsBy.none);
+    return _watchRenderList(query, groupAssetByOption);
   }
 
   Stream<RenderList> _watchRenderList(
