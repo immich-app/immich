@@ -127,6 +127,8 @@
 	<string>We need to manage backup your photos album</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need to manage backup your photos album</string>
+  <key>NSContactsUsageDescription</key>
+  <string>We need contact access to help you assign names to people in your photos from your contacts' names.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>INSendMessageIntent</string>

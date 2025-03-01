@@ -70,6 +70,8 @@ dependencies:
   #image editing packages
   crop_image: ^1.0.13
 
+  fast_contacts: 4.0.0
+
   openapi:
     path: openapi
 
