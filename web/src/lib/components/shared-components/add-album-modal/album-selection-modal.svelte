@@ -1,8 +1,8 @@
 <script lang="ts">
   import { type AlbumResponseDto, getAllAlbums } from '@immich/sdk';
   import { onMount } from 'svelte';
-  import AlbumListItem from '../asset-viewer/album-list-item.svelte';
-  import NewAlbumListItem from './add-album-modal/new-album-list-item.svelte';
+  import AlbumListItem from '../../asset-viewer/album-list-item.svelte';
+  import NewAlbumListItem from './new-album-list-item.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { initInput } from '$lib/actions/focus';
   import { t } from 'svelte-i18n';
