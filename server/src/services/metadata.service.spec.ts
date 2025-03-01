@@ -454,6 +454,7 @@ describe(MetadataService.name, () => {
       mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
       mockReadTags({
         Directory: 'foo/bar/',
+        MotionPhoto: 1,
         MotionPhotoVideo: new BinaryField(0, ''),
         // The below two are included to ensure that the MotionPhotoVideo tag is extracted
         // instead of the EmbeddedVideoFile, since HEIC MotionPhotos include both
@@ -491,7 +492,7 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(mocks.storage.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
@@ -503,6 +504,7 @@ describe(MetadataService.name, () => {
         Directory: 'foo/bar/',
         EmbeddedVideoFile: new BinaryField(0, ''),
         EmbeddedVideoType: 'MotionPhoto_Data',
+        MotionPhoto: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
       mocks.asset.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
@@ -535,7 +537,7 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(mocks.storage.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
@@ -580,7 +582,7 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(mocks.storage.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
@@ -648,11 +650,11 @@ describe(MetadataService.name, () => {
       mocks.storage.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
         isVisible: false,
       });
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(2, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
