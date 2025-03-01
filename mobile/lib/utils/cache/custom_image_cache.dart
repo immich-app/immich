@@ -5,7 +5,7 @@ import 'package:immich_mobile/providers/image/immich_remote_image_provider.dart'
 import 'package:immich_mobile/providers/image/immich_remote_thumbnail_provider.dart';
 
 /// [ImageCache] that uses two caches for small and large images
-/// so that a single large image does not evict all small iamges
+/// so that a single large image does not evict all small images
 final class CustomImageCache implements ImageCache {
   final _small = ImageCache();
   final _large = ImageCache()..maximumSize = 5; // Maximum 5 images

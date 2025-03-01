@@ -117,7 +117,7 @@ class ShareIntentUploadStateNotifier
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
-    // Ignore if the task is cancled or completed
+    // Ignore if the task is canceled or completed
     if (update.progress == downloadFailed ||
         update.progress == downloadCompleted) {
       return;
