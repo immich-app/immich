@@ -104,7 +104,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
-    // Ignore if the task is cancled or completed
+    // Ignore if the task is canceled or completed
     if (update.progress == -2 || update.progress == -1) {
       return;
     }
