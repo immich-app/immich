@@ -3,7 +3,7 @@
   import { mdiPlus } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/add-album-modal/album-modal';
+  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/add-album-modal/add-album-modal';
 
   interface Props {
     searchQuery?: string;
@@ -26,8 +26,9 @@
   type="button"
   onclick={() => onNewAlbum(searchQuery)}
   use:scrollIntoViewIfSelected
-  class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl
-         {selected ? 'bg-gray-200 dark:bg-gray-700' : ''}"
+  class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
+  class:bg-gray-200={selected}
+  class:dark:bg-gray-700={selected}
 >
   <div class="flex h-12 w-12 items-center justify-center">
     <Icon path={mdiPlus} size="30" />

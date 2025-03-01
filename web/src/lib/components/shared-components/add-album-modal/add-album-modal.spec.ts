@@ -2,7 +2,7 @@ import {
   type AlbumModalRow,
   AlbumModalRowConverter,
   AlbumModalRowType,
-} from '$lib/components/shared-components/add-album-modal/album-modal';
+} from '$lib/components/shared-components/add-album-modal/add-album-modal';
 import { AlbumSortBy, SortOrder } from '$lib/stores/preferences.store';
 import type { AlbumResponseDto } from '@immich/sdk';
 import { albumFactory } from '@test-data/factories/album-factory';

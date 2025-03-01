@@ -11,7 +11,7 @@
     AlbumModalRowConverter,
     AlbumModalRowType,
     isSelectableRowType,
-  } from '$lib/components/shared-components/add-album-modal/album-modal';
+  } from '$lib/components/shared-components/add-album-modal/add-album-modal';
 
   let albums: AlbumResponseDto[] = $state([]);
   let recentAlbums: AlbumResponseDto[] = $state([]);
