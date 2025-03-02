@@ -473,7 +473,7 @@ export enum JobName {
   LIBRARY_SYNC_FILE = 'library-sync-file',
   LIBRARY_SYNC_ASSET = 'library-sync-asset',
   LIBRARY_DELETE = 'library-delete',
-  LIBRARY_QUEUE_SYNC_ALL = 'library-queue-sync-all',
+  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-scan-all',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
   // cleanup

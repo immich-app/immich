@@ -47,7 +47,7 @@ export class LibraryService extends BaseService {
         name: 'libraryScan',
         expression: scan.cronExpression,
         onTick: () =>
-          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL }), this.logger),
         start: scan.enabled,
       });
     }
@@ -210,11 +210,17 @@ export class LibraryService extends BaseService {
 
   @OnJob({ name: JobName.LIBRARY_QUEUE_CLEANUP, queue: QueueName.LIBRARY })
   async handleQueueCleanup(): Promise<JobStatus> {
-    this.logger.debug('Cleaning up any pending library deletions');
-    const pendingDeletion = await this.libraryRepository.getAllDeleted();
-    await this.jobRepository.queueAll(
-      pendingDeletion.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
-    );
+    this.logger.log('Checking for any libraries pending deletion...');
+    const pendingDeletions = await this.libraryRepository.getAllDeleted();
+    if (pendingDeletions.length > 0) {
+      const libraryString = pendingDeletions.length === 1 ? 'library' : 'libraries';
+      this.logger.log(`Found ${pendingDeletions.length} ${libraryString} pending deletion, cleaning up...`);
+
+      await this.jobRepository.queueAll(
+        pendingDeletions.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
+      );
+    }
+
     return JobStatus.SUCCESS;
   }
 
@@ -442,9 +448,13 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 
-  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
-  async handleQueueSyncAll(): Promise<JobStatus> {
-    this.logger.debug(`Refreshing all external libraries`);
+  async queueScanAll() {
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: {} });
+  }
+
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, queue: QueueName.LIBRARY })
+  async handleQueueScanAll(): Promise<JobStatus> {
+    this.logger.log(`Refreshing all external libraries`);
 
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
