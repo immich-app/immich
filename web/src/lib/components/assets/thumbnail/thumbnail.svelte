@@ -40,6 +40,7 @@
     thumbnailWidth?: number | undefined;
     thumbnailHeight?: number | undefined;
     selected?: boolean;
+    highlight?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -72,6 +73,7 @@
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
     selected = false,
+    highlight = false,
     selectionCandidate = false,
     disabled = false,
     readonly = false,
@@ -251,7 +253,7 @@
       {/if}
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
-        {#if !readonly && (mouseOver || selected || selectionCandidate)}
+        {#if !readonly && (mouseOver || selected || selectionCandidate || highlight)}
           <button
             type="button"
             onclick={onIconClickedHandler}

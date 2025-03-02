@@ -774,6 +774,29 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
+        {
+          shortcut: { key: 'ArrowRight' },
+          preventDefault: false,
+          onShortcut: async () => {
+            const currentHighlightAsset = assetInteraction.getHighlightAsset();
+            const nextHighlightAsset =
+              currentHighlightAsset === null
+                ? $assetStore.getFirstAsset()
+                : await $assetStore.getNextAsset(currentHighlightAsset);
+            assetInteraction.setHighlightAsset(nextHighlightAsset);
+          },
+        },
+        {
+          shortcut: { key: 'ArrowLeft' },
+          preventDefault: false,
+          onShortcut: async () => {
+            const currentHighlightAsset = assetInteraction.getHighlightAsset();
+            if (currentHighlightAsset !== null) {
+              const previousHighlightAsset = await $assetStore.getPreviousAsset(currentHighlightAsset);
+              assetInteraction.setHighlightAsset(previousHighlightAsset);
+            }
+          },
+        },
       ];
 
       if (assetInteraction.selectionActive) {

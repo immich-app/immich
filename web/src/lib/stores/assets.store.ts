@@ -836,6 +836,13 @@ export class AssetStore {
     this.emit(true);
   }
 
+  getFirstAsset(): AssetResponseDto | null {
+    if (this.buckets.length > 0 && this.buckets[0].assets.length > 0) {
+      return this.buckets[0].assets[0];
+    }
+    return null;
+  }
+
   async getPreviousAsset(asset: AssetResponseDto): Promise<AssetResponseDto | null> {
     const info = await this.getBucketInfoForAsset(asset);
     if (!info) {

@@ -14,6 +14,7 @@ export class AssetInteraction {
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
+  private highlightAsset = $state<AssetResponseDto | null>(null);
 
   isAllTrashed = $derived(this.selectedAssetsArray.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.selectedAssetsArray.every((asset) => asset.isArchived));
@@ -62,5 +63,17 @@ export class AssetInteraction {
     // Range selection
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
+  }
+
+  isHighlightAsset(asset: AssetResponseDto) {
+    return this.highlightAsset?.id === asset.id;
+  }
+
+  setHighlightAsset(asset: AssetResponseDto | null) {
+    this.highlightAsset = asset;
+  }
+
+  getHighlightAsset() {
+    return this.highlightAsset;
   }
 }

@@ -213,6 +213,7 @@
                   onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
                   onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
                   selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
+                  highlight={assetInteraction.isHighlightAsset(asset)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={box.width}
