@@ -57,7 +57,7 @@
 
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
-    queryType: 'query' in searchQuery ? 'smart' : 'metadata',
+    queryType: 'smart',
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
