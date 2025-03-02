@@ -23,5 +23,8 @@ abstract class ITimelineRepository {
     GroupAssetsBy getGroupByOption,
   );
 
-  Stream<RenderList> watchAssetSelectionTimeline(int userId);
+  Stream<RenderList> watchAssetSelectionTimeline(
+    int userId,
+    GroupAssetsBy getGroupByOption,
+  );
 }
