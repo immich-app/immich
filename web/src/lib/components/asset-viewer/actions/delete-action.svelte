@@ -14,14 +14,15 @@
   import { deleteAssets, type AssetResponseDto } from '@immich/sdk';
   import { mdiDeleteForeverOutline, mdiDeleteOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { OnAction } from './action';
+  import type { OnAction, PreAction } from './action';
 
   interface Props {
     asset: AssetResponseDto;
     onAction: OnAction;
+    preAction: PreAction;
   }
 
-  let { asset, onAction }: Props = $props();
+  let { asset, onAction, preAction }: Props = $props();
 
   let showConfirmModal = $state(false);
 
@@ -41,6 +42,7 @@
 
   const trashAsset = async () => {
     try {
+      preAction({ type: AssetAction.TRASH, asset });
       await deleteAssets({ assetBulkDeleteDto: { ids: [asset.id] } });
       onAction({ type: AssetAction.TRASH, asset });
 
