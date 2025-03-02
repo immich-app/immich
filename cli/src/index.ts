@@ -69,6 +69,7 @@ program
       .default(4),
   )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
+  .addOption(new Option('--deleteDuplicates', 'Delete duplicate assets after upload. Requires also --delete.').env('IMMICH_DELETE_DUPLICATES'))
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => upload(paths, program.opts(), options));
 
