@@ -1,20 +1,25 @@
-import type { AssetBucket } from '$lib/stores/assets.store';
+import type { AssetBucket } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
+import { JustifiedLayout } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
-import type createJustifiedLayout from 'justified-layout';
+import type { Adapter } from '@sveltejs/kit';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
 export type DateGroup = {
+  bucket: AssetBucket;
+  index: number;
+  row: number;
+  col: number;
   date: DateTime;
   groupTitle: string;
   assets: AssetResponseDto[];
+  assetsIntersecting: boolean[];
   height: number;
   heightActual: boolean;
   intersecting: boolean;
-  geometry: Geometry;
-  bucket: AssetBucket;
+  geometry: JustifiedLayout | Adapter;
 };
 export type ScrubberListener = (
   bucketDate: string | undefined,
@@ -80,18 +85,12 @@ export function formatGroupTitle(_date: DateTime): string {
   return date.toLocaleString(groupDateFormat);
 }
 
-type Geometry = ReturnType<typeof createJustifiedLayout> & {
-  containerWidth: number;
-};
-
-function emptyGeometry() {
-  return {
-    containerWidth: 0,
-    containerHeight: 0,
-    widowCount: 0,
-    boxes: [],
-  };
-}
+export const emptyGeometry = new JustifiedLayout(Float32Array.from([]), {
+  rowHeight: 1,
+  heightTolerance: 0,
+  rowWidth: 1,
+  spacing: 0,
+});
 
 const formatDateGroupTitle = memoize(formatGroupTitle);
 
@@ -100,17 +99,22 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
     fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
   );
   const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
-  return sorted.map((group) => {
+
+  return sorted.map((group, index) => {
     const date = fromLocalDateTime(group[0].localDateTime).startOf('day');
     return {
+      bucket,
+      index,
+      row: 0,
+      col: 0,
       date,
       groupTitle: formatDateGroupTitle(date),
       assets: group,
+      assetsIntersecting: Array.from({ length: group.length }, () => false),
       height: 0,
       heightActual: false,
       intersecting: false,
-      geometry: emptyGeometry(),
-      bucket,
+      geometry: emptyGeometry,
     };
   });
 }

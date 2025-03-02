@@ -22,12 +22,8 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import { AssetStore } from '$lib/stores/assets.store';
-
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import type { DateGroup } from '$lib/utils/timeline-util';
-
-  import { generateId } from '$lib/utils/generate-id';
-  import { onDestroy } from 'svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
 
@@ -54,10 +50,9 @@
       priority?: number;
       disabled?: boolean;
     };
-    retrieveElement?: boolean;
+
     onIntersected?: (() => void) | undefined;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
-    onRetrieveElement?: ((elment: HTMLElement) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
     class?: string;
@@ -65,8 +60,6 @@
 
   let {
     asset,
-    dateGroup = undefined,
-    assetStore = undefined,
     groupIndex = 0,
     thumbnailSize = undefined,
     thumbnailWidth = undefined,
@@ -79,10 +72,8 @@
     showStackedIcon = true,
     disableMouseOver = false,
     intersectionConfig = {},
-    retrieveElement = false,
     onIntersected = undefined,
     onClick = undefined,
-    onRetrieveElement = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
     class: className = '',
@@ -92,28 +83,12 @@
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
-  const componentId = generateId();
-  let element: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
-  let intersecting = $state(false);
-  let lastRetrievedElement: HTMLElement | undefined = $state();
+  let isIntersecting = $state(false);
   let loaded = $state(false);
-
-  $effect(() => {
-    if (!retrieveElement) {
-      lastRetrievedElement = undefined;
-    }
-  });
-  $effect(() => {
-    if (retrieveElement && element && lastRetrievedElement !== element) {
-      lastRetrievedElement = element;
-      onRetrieveElement?.(element);
-    }
-  });
-
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
-  let display = $derived(intersecting);
+  let isIntersectionEnabled = $derived(!!onIntersected);
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -139,68 +114,39 @@
     callClickHandlers();
   };
 
-  const _onMouseEnter = () => {
+  const onMouseEnter = () => {
     mouseOver = true;
     onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
   };
 
-  const onMouseEnter = () => {
-    if (dateGroup && assetStore) {
-      assetStore.taskManager.queueScrollSensitiveTask({ componentId, task: () => _onMouseEnter() });
-    } else {
-      _onMouseEnter();
-    }
-  };
-
   const onMouseLeave = () => {
-    if (dateGroup && assetStore) {
-      assetStore.taskManager.queueScrollSensitiveTask({ componentId, task: () => (mouseOver = false) });
-    } else {
-      mouseOver = false;
-    }
-  };
-
-  const _onIntersect = () => {
-    intersecting = true;
-    onIntersected?.();
+    mouseOver = false;
   };
 
   const onIntersect = () => {
-    if (intersecting === true) {
+    if (isIntersecting === true) {
       return;
     }
-    if (dateGroup && assetStore) {
-      assetStore.taskManager.intersectedThumbnail(componentId, dateGroup, asset, () => void _onIntersect());
-    } else {
-      void _onIntersect();
-    }
+    isIntersecting = true;
+    onIntersected?.();
   };
 
   const onSeparate = () => {
-    if (intersecting === false) {
+    if (isIntersecting === false) {
       return;
     }
-    if (dateGroup && assetStore) {
-      assetStore.taskManager.separatedThumbnail(componentId, dateGroup, asset, () => (intersecting = false));
-    } else {
-      intersecting = false;
-    }
+    isIntersecting = false;
   };
-
-  onDestroy(() => {
-    assetStore?.taskManager.removeAllTasksForComponent(componentId);
-  });
 </script>
 
 <div
-  bind:this={element}
   use:intersectionObserver={{
     ...intersectionConfig,
     onIntersect,
     onSeparate,
+    disabled: !isIntersectionEnabled,
   }}
   data-asset={asset.id}
-  data-int={intersecting}
   style:width="{width}px"
   style:height="{height}px"
   class="focus-visible:outline-none flex overflow-hidden {disabled
@@ -217,7 +163,17 @@
     ></canvas>
   {/if}
 
-  {#if display}
+  {#if !isIntersectionEnabled || isIntersecting}
+    {#if !loaded && asset.thumbhash}
+      <canvas
+        use:thumbhash={{ base64ThumbHash: asset.thumbhash }}
+        class="absolute object-cover z-10"
+        style:width="{width}px"
+        style:height="{height}px"
+        out:fade={{ duration: THUMBHASH_FADE_DURATION }}
+      ></canvas>
+    {/if}
+
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
     <div
@@ -338,7 +294,6 @@
         {#if asset.type === AssetTypeEnum.Video}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              {assetStore}
               url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
               enablePlayback={mouseOver && $playVideoThumbnailOnHover}
               curve={selected}
@@ -351,7 +306,6 @@
         {#if asset.type === AssetTypeEnum.Image && asset.livePhotoVideoId}
           <div class="absolute top-0 h-full w-full">
             <VideoThumbnail
-              {assetStore}
               url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
               pauseIcon={mdiMotionPauseOutline}
               playIcon={mdiMotionPlayOutline}
