@@ -19,7 +19,7 @@
   import MemoryLane from '$lib/components/photos-page/memory-lane.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
-  import { AssetAction, QueryParameter, type IQueryParameter } from '$lib/constants';
+  import { AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { AssetStore } from '$lib/stores/assets.store';
@@ -28,47 +28,20 @@
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetTypeEnum } from '@immich/sdk';
-  import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiPlus } from '@mdi/js';
+  import { mdiDotsVertical, mdiPlus } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
-  import type { PageData } from './$types';
-  import SideBarLink from '$lib/components/shared-components/side-bar/side-bar-link.svelte';
-  // import SideBarButton from '$lib/components/shared-components/side-bar/side-bar-button.svelte';
-
-  interface Props {
-    data: PageData;
-  }
-
-  const { data }: Props = $props();
-  // let options: { coordinates?: { x1?: number; x2?: number; y1?: number; y2?: number } } = $derived(() => data.options);
-  let options: IQueryParameter = data.options; //  $derived(() => data.options)();
-  let x1 = options.coordinates ? options.coordinates.x1 : undefined;
-  let x2 = options.coordinates ? options.coordinates.x2 : undefined;
-  let y1 = options.coordinates ? options.coordinates.y1 : undefined;
-  let y2 = options.coordinates ? options.coordinates.y2 : undefined;
   // TODO: when getTimebuckets support withArchived
   const isArchived = false;
   const withStacked = true;
-  // let withPartners = $derived(() => (options.assetGridOptions ? options.assetGridOptions.withPartners : true));
-  // const isFavorite = $derived(() => (options.assetGridOptions?.onlyFavorites ? true : undefined));
-  const showCustomSidebar = $derived(() => options.previousRoute !== undefined || options.coordinates !== undefined);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  // const assetStore = $derived(
-  //   () => new AssetStore({ isArchived, withStacked, withPartners: false, isFavorite: false, x1, x2, y1, y2 }),
-  // );
   const assetStore = new AssetStore({
     isArchived,
     withStacked,
     withPartners: false,
     isFavorite: false,
-    x1,
-    x2,
-    y1,
-    y2,
   });
   const assetInteraction = new AssetInteraction();
 
@@ -110,24 +83,6 @@
   beforeNavigate(() => {
     isFaceEditMode.value = false;
   });
-
-  const closePreviousRoute = async () => {
-    const newUrl = new URL($page.url);
-    if (options.previousRoute) {
-      newUrl.searchParams.delete(QueryParameter.PREVIOUS_ROUTE);
-    }
-    if (options.coordinates) {
-      newUrl.searchParams.delete(QueryParameter.COORDINATESX1);
-      newUrl.searchParams.delete(QueryParameter.COORDINATESX2);
-      newUrl.searchParams.delete(QueryParameter.COORDINATESY1);
-      newUrl.searchParams.delete(QueryParameter.COORDINATESY2);
-    }
-    if (options.assetGridOptions) {
-      newUrl.searchParams.delete(QueryParameter.ASSET_GRID_OPTIONS);
-    }
-    options = {};
-    await goto(newUrl);
-  };
 </script>
 
 {#if assetInteraction.selectionActive}

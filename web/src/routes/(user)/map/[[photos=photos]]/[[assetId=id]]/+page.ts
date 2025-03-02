@@ -8,7 +8,7 @@ export const load = (async ({ params, url }) => {
   await authenticate();
   const asset = await getAssetInfoFromParam(params);
   const $t = await getFormatter();
-  const isTimelineOpened = url.searchParams.get(QueryParameter.IS_TIMELINE_OPENED) !== 'false';
+  const isTimelineOpened = url.searchParams.get(QueryParameter.IS_TIMELINE_OPENED) === 'true';
 
   return {
     asset,
