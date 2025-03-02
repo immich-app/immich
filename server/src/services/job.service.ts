@@ -255,11 +255,6 @@ export class JobService extends BaseService {
             this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
         }
-        await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
-        break;
-      }
-
-      case JobName.LINK_LIVE_PHOTOS: {
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
       }

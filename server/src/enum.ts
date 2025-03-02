@@ -437,7 +437,6 @@ export enum JobName {
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
   METADATA_EXTRACTION = 'metadata-extraction',
-  LINK_LIVE_PHOTOS = 'link-live-photos',
 
   // user
   USER_DELETION = 'user-deletion',
