@@ -404,7 +404,7 @@
           </p>
         </div>
         <CircleIconButton
-          title={$videoViewerMuted ? $t('mute_memories') : $t('unmute_memories')}
+          title={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
           icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
           onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
         />
