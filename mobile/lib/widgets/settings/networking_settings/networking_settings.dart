@@ -101,7 +101,7 @@ class NetworkingSettings extends HookConsumerWidget {
           padding: const EdgeInsets.only(top: 8, left: 16, bottom: 8),
           child: NetworkPreferenceTitle(
             title: "current_server_address".tr().toUpperCase(),
-            icon: currentEndpoint!.startsWith('https')
+            icon: (currentEndpoint?.startsWith('https') ?? false)
                 ? Icons.https_outlined
                 : Icons.http_outlined,
           ),
@@ -118,10 +118,16 @@ class NetworkingSettings extends HookConsumerWidget {
               ),
             ),
             child: ListTile(
-              leading:
-                  const Icon(Icons.check_circle_rounded, color: Colors.green),
+              leading: currentEndpoint != null
+                  ? const Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.green,
+                    )
+                  : const Icon(
+                      Icons.circle_outlined,
+                    ),
               title: Text(
-                currentEndpoint,
+                currentEndpoint ?? "--",
                 style: TextStyle(
                   fontSize: 16,
                   fontFamily: 'Inconsolata',
