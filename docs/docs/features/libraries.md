@@ -37,7 +37,7 @@ To validate that Immich can reach your external library, start a shell inside th
 
 ### Exclusion Patterns
 
-By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns are matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. Exclusion patterns can be added in the Scan Settings page for each library. Under the hood, Immich uses the [glob](https://www.npmjs.com/package/glob) package to match patterns, so please refer to [their documentation](https://github.com/isaacs/node-glob#glob-primer) to see what patterns are supported.
+By default, all files in the import paths will be added to the library. If there are files that should not be added, exclusion patterns can be used to exclude them. Exclusion patterns are glob patterns are matched against the full file path. If a file matches an exclusion pattern, it will not be added to the library. Exclusion patterns can be added in the Scan Settings page for each library.
 
 Some basic examples:
 
@@ -48,7 +48,11 @@ Some basic examples:
 
 Special characters such as @ should be escaped, for instance:
 
-- `**/\@eadir/**` will exclude all files in any directory named `@eadir`
+- `**/\@eaDir/**` will exclude all files in any directory named `@eaDir`
+
+:::info
+Internally, Immich uses the [glob](https://www.npmjs.com/package/glob) package to process exclusion patterns, and sometimes those patterns are translated into [Postgres LIKE patterns](https://www.postgresql.org/docs/current/functions-matching.html). The intention is to support basic folder exclusions but we recommend against advanced usage since those can't reliably be translated to the Postgres syntax. Please refer to the [glob documentation](https://github.com/isaacs/node-glob#glob-primer) for a basic overview on glob patterns.
+:::
 
 ### Automatic watching (EXPERIMENTAL)
 
