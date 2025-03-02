@@ -33,6 +33,8 @@
         { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
         { key: ['i'], action: $t('show_or_hide_info') },
         { key: ['s'], action: $t('stack_selected_photos') },
+        { key: ['l'], action: $t('add_to_album') },
+        { key: ['⇧', 'l'], action: $t('add_to_shared_album') },
         { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
         { key: ['⇧', 'd'], action: $t('download') },
         { key: ['Space'], action: $t('play_or_pause_video') },
