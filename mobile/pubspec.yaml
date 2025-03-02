@@ -76,7 +76,7 @@ dependencies:
   # easy to remove packages:
   image_picker: ^1.0.7 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
   logging: ^1.2.0
-  file_picker: ^8.0.0+1
+  file_picker: ^9.0.0
   share_handler: ^0.0.22
 
 # This is uncommented in F-Droid build script

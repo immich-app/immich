@@ -418,10 +418,10 @@ packages:
     dependency: transitive
     description:
       name: ffi
-      sha256: "493f37e7df1804778ff3a53bd691d8692ddf69702cf4c1c1096a2e41b4779e21"
+      sha256: "16ed7b077ef01ad6170a3d0c57caa4a112a38d7a2ed5602e0aca9ca6f3d98da6"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "2.1.3"
   file:
     dependency: transitive
     description:
@@ -434,10 +434,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: aac85f20436608e01a6ffd1fdd4e746a7f33c93a2c83752e626bdfaea139b877
+      sha256: "7423298f08f6fc8cce05792bae329f9a93653fc9c08712831b1a55540127995d"
       url: "https://pub.dev"
     source: hosted
-    version: "8.1.3"
+    version: "9.0.2"
   file_selector_linux:
     dependency: transitive
     description:
@@ -569,10 +569,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_plugin_android_lifecycle
-      sha256: "9d98bd47ef9d34e803d438f17fd32b116d31009f534a6fa5ce3a1167f189a6de"
+      sha256: "1c2b787f99bdca1f3718543f81d38aa1b124817dfeb9fb196201bea85b6134bf"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.21"
+    version: "2.0.26"
   flutter_riverpod:
     dependency: transitive
     description:
@@ -1801,10 +1801,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: "015002c060f1ae9f41a818f2d5640389cc05283e368be19dc8d77cecb43c40c9"
+      sha256: daf97c9d80197ed7b619040e86c8ab9a9dad285e7671ee7390f9180cc828a51e
       url: "https://pub.dev"
     source: hosted
-    version: "5.5.3"
+    version: "5.10.1"
   win32_registry:
     dependency: transitive
     description:
