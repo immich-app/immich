@@ -246,25 +246,30 @@ jobs:
         run: npm run check
         if: ${{ !cancelled() }}
 
-  medium-tests-server:
+  server-medium-tests:
     name: Medium Tests (Server)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
-    runs-on: mich
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
 
-      - name: Production build
-        if: ${{ !cancelled() }}
-        run: docker compose -f e2e/docker-compose.yml build
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
+      - name: Run npm install
+        run: npm ci
 
       - name: Run medium tests
+        run: npm run test:medium
         if: ${{ !cancelled() }}
-        run: make test-medium
 
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)

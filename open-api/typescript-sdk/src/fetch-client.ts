@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.126.1
+ * 1.128.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -3453,7 +3453,8 @@ export enum AlbumUserRole {
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
-    Exif = "exif"
+    Exif = "exif",
+    Manual = "manual"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",

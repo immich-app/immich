@@ -185,7 +185,6 @@
               {@const left = geometry.getLeft(i)}
               {@const width = geometry.getWidth(i)}
               {@const height = geometry.getHeight(i)}
-
               <!-- update ASSET_GRID_PADDING-->
               <div
                 use:intersectionObserver={{

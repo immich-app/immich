@@ -421,6 +421,5 @@ export interface IBulkAsset {
 
 export type SyncAck = {
   type: SyncEntityType;
-  ackEpoch: string;
-  ids: string[];
+  updateId: string;
 };

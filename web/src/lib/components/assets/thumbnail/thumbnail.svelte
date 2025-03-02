@@ -221,7 +221,6 @@
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
     ></canvas>
   {/if}
-
   {#if intersecting}
     {#if !eagerThumbhash && !loaded && asset.thumbhash}
       <canvas
@@ -232,7 +231,6 @@
         out:fade={{ duration: THUMBHASH_FADE_DURATION }}
       ></canvas>
     {/if}
-
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
     <div

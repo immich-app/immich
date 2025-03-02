@@ -9,22 +9,20 @@ type Impossible<K extends keyof any> = {
 type Exact<T, U extends T = T> = U & Impossible<Exclude<keyof U, keyof T>>;
 
 export const fromAck = (ack: string): SyncAck => {
-  const [type, timestamp, ...ids] = ack.split('|');
-  return { type: type as SyncEntityType, ackEpoch: timestamp, ids };
+  const [type, updateId] = ack.split('|');
+  return { type: type as SyncEntityType, updateId };
 };
 
-export const toAck = ({ type, ackEpoch, ids }: SyncAck) => [type, ackEpoch, ...ids].join('|');
+export const toAck = ({ type, updateId }: SyncAck) => [type, updateId].join('|');
 
 export const mapJsonLine = (object: unknown) => JSON.stringify(object) + '\n';
 
 export const serialize = <T extends keyof SyncItem, D extends SyncItem[T]>({
   type,
-  ackEpoch,
-  ids,
+  updateId,
   data,
 }: {
   type: T;
-  ackEpoch: string;
-  ids: string[];
+  updateId: string;
   data: Exact<SyncItem[T], D>;
-}) => mapJsonLine({ type, data, ack: toAck({ type, ackEpoch, ids }) });
+}) => mapJsonLine({ type, data, ack: toAck({ type, updateId }) });

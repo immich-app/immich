@@ -1,10 +1,12 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
+import { getAssetRatio } from '$lib/utils/asset-utils';
 import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
+import createJustifiedLayout from 'justified-layout';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
@@ -15,6 +17,13 @@ import { websocketEvents } from './websocket';
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
+
+const LAYOUT_OPTIONS = {
+  boxSpacing: 2,
+  containerPadding: 0,
+  targetRowHeightTolerance: 0.15,
+  targetRowHeight: 235,
+};
 
 export interface Viewport {
   width: number;
@@ -411,13 +420,6 @@ export class AssetStore {
 
     this.initializedSignal();
     this.initialized = true;
-
-    // TODO: move to top level import after https://github.com/sveltejs/kit/issues/7805 is fixed
-    import('$lib/utils/layout-utils')
-      .then(({ getJustifiedLayoutFromAssets }) => {
-        this.getJustifiedLayoutFromAssets = getJustifiedLayoutFromAssets;
-      })
-      .catch(() => void 0);
   }
 
   async updateOptions(options: AssetStoreOptions) {
@@ -491,7 +493,6 @@ export class AssetStore {
         assetGroup.heightActual = false;
       }
     }
-
     const viewportWidth = this.viewport.width;
     if (!bucket.isBucketHeightActual) {
       const unwrappedWidth = (3 / 2) * bucket.bucketCount * THUMBNAIL_HEIGHT * (7 / 10);
@@ -500,18 +501,16 @@ export class AssetStore {
 
       this.setBucketHeight(bucket, height, false);
     }
-
     const layoutOptions = {
       spacing: 2,
       heightTolerance: 0.15,
       rowHeight: 235,
       rowWidth: Math.floor(viewportWidth),
     };
-
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
-        const rows = Math.ceil(unwrappedWidth / viewportWidth);
+        const rows = Math.ceil(unwrappedWidth / this.viewport.width);
         const height = rows * THUMBNAIL_HEIGHT;
         assetGroup.height = height;
       }
@@ -581,7 +580,6 @@ export class AssetStore {
 
       bucket.assets = assets;
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-      this.maxBucketAssets = Math.max(this.maxBucketAssets, assets.length);
       this.updateGeometry(bucket, true);
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
       bucket.loaded();

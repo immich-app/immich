@@ -1,6 +1,11 @@
+import { Kysely, sql } from 'kysely';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
 import { Writable } from 'node:stream';
+import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
+import postgres, { Notice } from 'postgres';
+import { DB } from 'src/db';
 import { ImmichWorker } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
@@ -58,7 +63,7 @@ import { newDatabaseRepositoryMock } from 'test/repositories/database.repository
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { ILoggingRepository, newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
 import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
@@ -90,6 +95,8 @@ import { Mocked, vitest } from 'vitest';
 type Overrides = {
   worker?: ImmichWorker;
   metadataRepository?: MetadataRepository;
+  syncRepository?: SyncRepository;
+  userRepository?: UserRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -113,7 +120,7 @@ export type ServiceMocks = {
   event: Mocked<RepositoryInterface<EventRepository>>;
   job: Mocked<RepositoryInterface<JobRepository>>;
   library: Mocked<RepositoryInterface<LibraryRepository>>;
-  logger: Mocked<ILoggingRepository>;
+  logger: Mocked<RepositoryInterface<LoggingRepository>>;
   machineLearning: Mocked<RepositoryInterface<MachineLearningRepository>>;
   map: Mocked<RepositoryInterface<MapRepository>>;
   media: Mocked<RepositoryInterface<MediaRepository>>;
@@ -144,7 +151,7 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides?: Overrides,
 ) => {
-  const { metadataRepository } = overrides || {};
+  const { metadataRepository, userRepository, syncRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggingRepositoryMock();
@@ -180,17 +187,17 @@ export const newTestService = <T extends BaseService>(
   const sharedLinkMock = newSharedLinkRepositoryMock();
   const stackMock = newStackRepositoryMock();
   const storageMock = newStorageRepositoryMock();
-  const syncMock = newSyncRepositoryMock();
+  const syncMock = (syncRepository || newSyncRepositoryMock()) as Mocked<RepositoryInterface<SyncRepository>>;
   const systemMock = newSystemMetadataRepositoryMock();
   const tagMock = newTagRepositoryMock();
   const telemetryMock = newTelemetryRepositoryMock();
   const trashMock = newTrashRepositoryMock();
-  const userMock = newUserRepositoryMock();
+  const userMock = (userRepository || newUserRepositoryMock()) as Mocked<RepositoryInterface<UserRepository>>;
   const versionHistoryMock = newVersionHistoryRepositoryMock();
   const viewMock = newViewRepositoryMock();
 
   const sut = new Service(
-    loggerMock as ILoggingRepository as LoggingRepository,
+    loggerMock as RepositoryInterface<LoggingRepository> as LoggingRepository,
     accessMock as IAccessRepository as AccessRepository,
     activityMock as RepositoryInterface<ActivityRepository> as ActivityRepository,
     auditMock as RepositoryInterface<AuditRepository> as AuditRepository,
@@ -298,6 +305,57 @@ function* newPngFactory() {
 }
 
 const pngFactory = newPngFactory();
+
+export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
+  const parsed = parse(process.env.IMMICH_TEST_POSTGRES_URL!);
+
+  const parsedOptions = {
+    ...parsed,
+    ssl: false,
+    host: parsed.host ?? undefined,
+    port: parsed.port ? Number(parsed.port) : undefined,
+    database: parsed.database ?? undefined,
+  };
+
+  const driverOptions = {
+    ...parsedOptions,
+    onnotice: (notice: Notice) => {
+      if (notice['severity'] !== 'NOTICE') {
+        console.warn('Postgres notice:', notice);
+      }
+    },
+    max: 10,
+    types: {
+      date: {
+        to: 1184,
+        from: [1082, 1114, 1184],
+        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
+        parse: (x: string) => new Date(x),
+      },
+      bigint: {
+        to: 20,
+        from: [20],
+        parse: (value: string) => Number.parseInt(value),
+        serialize: (value: number) => value.toString(),
+      },
+    },
+    connection: {
+      TimeZone: 'UTC',
+    },
+  };
+
+  const kysely = new Kysely<DB>({
+    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, max: 1, database: 'postgres' }) }),
+  });
+  const randomSuffix = Math.random().toString(36).slice(2, 7);
+  const dbName = `immich_${suffix ?? randomSuffix}`;
+
+  await sql.raw(`CREATE DATABASE ${dbName} WITH TEMPLATE immich OWNER postgres;`).execute(kysely);
+
+  return new Kysely<DB>({
+    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, database: dbName }) }),
+  });
+};
 
 export const newRandomImage = () => {
   const { value } = pngFactory.next();

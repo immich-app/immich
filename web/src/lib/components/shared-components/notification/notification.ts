@@ -19,7 +19,7 @@ export type Notification = {
   /** The action to take when the notification is clicked */
   action: NotificationAction;
   button?: NotificationButton;
-  /** Timeout in miliseconds */
+  /** Timeout in milliseconds */
   timeout: number;
 };
 

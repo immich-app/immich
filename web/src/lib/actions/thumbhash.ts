@@ -12,7 +12,6 @@ export function thumbhash(canvas: HTMLCanvasElement, { base64ThumbHash }: { base
     void createImageBitmap(new ImageData(rgba, w, h)).then((bitmap) => ctx.transferFromImageBitmap(bitmap));
   }
 }
-
 // This copyright notice applies to the below code
 // It is a modified version of the original that uses `Uint8ClampedArray` instead of `UInt8Array` and has some trivial typing/linting changes
 

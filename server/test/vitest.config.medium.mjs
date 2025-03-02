@@ -7,6 +7,7 @@ export default defineConfig({
     root: './',
     globals: true,
     include: ['test/medium/**/*.spec.ts'],
+    globalSetup: ['test/medium/globalSetup.ts'],
     server: {
       deps: {
         fallbackCJS: true,
