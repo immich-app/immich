@@ -5,28 +5,23 @@ part 'log.entity.g.dart';
 
 @Collection(inheritance: false)
 class LoggerMessage {
-  Id id = Isar.autoIncrement;
-  String message;
-  String? details;
+  final Id id = Isar.autoIncrement;
+  final String message;
+  final String? details;
   @Enumerated(EnumType.ordinal)
-  LogLevel level = LogLevel.INFO;
-  DateTime createdAt;
-  String? context1;
-  String? context2;
+  final LogLevel level;
+  final DateTime createdAt;
+  final String? context1;
+  final String? context2;
 
-  LoggerMessage({
+  const LoggerMessage({
     required this.message,
     required this.details,
-    required this.level,
+    this.level = LogLevel.info,
     required this.createdAt,
     required this.context1,
     required this.context2,
   });
-
-  @override
-  String toString() {
-    return 'LoggerMessage(message: $message, level: $level, createdAt: $createdAt)';
-  }
 
   LogMessage toDto() {
     return LogMessage(

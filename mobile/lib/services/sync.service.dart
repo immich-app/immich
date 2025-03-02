@@ -639,7 +639,7 @@ class SyncService {
   }
 
   /// fast path for common case: only new assets were added to device album
-  /// returns `true` if successfull, else `false`
+  /// returns `true` if successful, else `false`
   Future<bool> _syncDeviceAlbumFast(Album deviceAlbum, Album dbAlbum) async {
     if (!deviceAlbum.modifiedAt.isAfter(dbAlbum.modifiedAt)) {
       return false;
