@@ -1,0 +1,25 @@
+name: Weblate checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'i18n/**'
+
+jobs:
+  enforce-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check weblate lock
+        run: |
+          if [[ "false" = $(curl https://hosted.weblate.org/api/components/immich/immich/lock/ | jq .locked) ]]; then
+            exit 1
+          fi
+      - name: Find Pull Request
+        uses: juliangruber/find-pull-request-action@v1
+        id: find-pr
+        with:
+          branch: chore/translations
+      - name: Fail if existing weblate PR
+        if: ${{ steps.find-pr.outputs.number }}
+        run: exit 1
