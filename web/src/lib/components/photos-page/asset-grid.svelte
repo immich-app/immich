@@ -859,7 +859,7 @@
             key: bucket.viewId + '.bucketintersection',
             onIntersect: () => (lastIntersectedBucketDate = bucket.bucketDate),
             top: '0px',
-            bottom: '-' + (safeViewport.height - 1) + 'px',
+            bottom: '-' + Math.max(0, safeViewport.height - 1) + 'px',
             left: '0px',
             right: '0px',
           },
