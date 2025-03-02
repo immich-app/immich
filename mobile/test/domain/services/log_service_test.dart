@@ -45,8 +45,10 @@ void main() {
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
 
-    sut =
-        await LogService.create(logRepo: mockLogRepo, storeRepo: mockStoreRepo);
+    sut = await LogService.create(
+      logRepository: mockLogRepo,
+      storeRepository: mockStoreRepo,
+    );
   });
 
   tearDown(() async {
@@ -91,8 +93,8 @@ void main() {
     test('Buffers logs until timer elapses', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: true,
         );
 
@@ -109,8 +111,8 @@ void main() {
     test('Batch inserts all logs on timer', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: true,
         );
 
@@ -131,8 +133,8 @@ void main() {
     test('Does not buffer when off', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: false,
         );
 
@@ -165,8 +167,8 @@ void main() {
     test('Combines result from both DB + Buffer', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: true,
         );
 
