@@ -352,7 +352,7 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
-  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
+  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')

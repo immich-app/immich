@@ -64,18 +64,18 @@ describe(AssetService.name, () => {
       mocks.partner.getAll.mockResolvedValue([]);
       mocks.asset.getByDayOfYear.mockResolvedValue([
         {
-          yearsAgo: 1,
+          year: 2023,
           assets: [image1, image2],
         },
         {
-          yearsAgo: 9,
+          year: 2015,
           assets: [image3],
         },
         {
-          yearsAgo: 15,
+          year: 2009,
           assets: [image4],
         },
-      ]);
+      ] as any);
 
       await expect(sut.getMemoryLane(authStub.admin, { day: 15, month: 1 })).resolves.toEqual([
         { yearsAgo: 1, title: '1 year ago', assets: [mapAsset(image1), mapAsset(image2)] },

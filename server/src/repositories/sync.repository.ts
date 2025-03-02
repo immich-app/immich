@@ -53,7 +53,7 @@ export class SyncRepository {
       .select(['id', 'userId'])
       .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
       .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['deletedAt asc', 'userId asc'])
+      .orderBy(['id asc'])
       .stream();
   }
 }

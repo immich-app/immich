@@ -47,7 +47,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   /// Validating the url is the alternative connecting server url without
-  /// saving the infomation to the local database
+  /// saving the information to the local database
   Future<bool> validateAuxilaryServerUrl(String url) async {
     try {
       final validEndpoint = await _apiService.resolveEndpoint(url);

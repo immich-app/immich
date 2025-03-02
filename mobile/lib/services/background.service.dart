@@ -329,7 +329,7 @@ class BackgroundService {
         try {
           _clearErrorNotifications();
 
-          // iOS should time out after some threshhold so it doesn't wait
+          // iOS should time out after some threshold so it doesn't wait
           // indefinitely and can run later
           // Android is fine to wait here until the lock releases
           final waitForLock = Platform.isIOS
@@ -720,7 +720,6 @@ enum IosBackgroundTask { fetch, processing }
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')
 void _nativeEntry() {
-  HttpOverrides.global = HttpSSLCertOverride();
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();

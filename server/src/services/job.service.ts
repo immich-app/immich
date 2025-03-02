@@ -195,7 +195,11 @@ export class JobService extends BaseService {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      this.logger.error(`Unable to run job handler (${queueName}/${job.name}): ${error}`, error?.stack, job.data);
+      this.logger.error(
+        `Unable to run job handler (${queueName}/${job.name}): ${error}`,
+        error?.stack,
+        JSON.stringify(job.data),
+      );
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }

@@ -55,9 +55,10 @@ with
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
 select
-  (
-    (now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date
-  ) / 365 as "yearsAgo",
+  date_part(
+    'year',
+    ("localDateTime" at time zone 'UTC')::date
+  )::int as "year",
   json_agg("res") as "assets"
 from
   "res"
