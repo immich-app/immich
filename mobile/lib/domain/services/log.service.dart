@@ -145,7 +145,7 @@ class LoggerUnInitializedException implements Exception {
 extension LevelDomainToInfraExtension on Level {
   LogLevel toLogLevel() =>
       LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ??
-      LogLevel.INFO;
+      LogLevel.info;
 }
 
 extension on LogLevel {

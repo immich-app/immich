@@ -14,14 +14,14 @@ import '../../test_utils.dart';
 
 final _kInfoLog = LogMessage(
   message: '#Info Message',
-  level: LogLevel.INFO,
+  level: LogLevel.info,
   createdAt: DateTime(2025, 2, 26),
   logger: 'Info Logger',
 );
 
 final _kWarnLog = LogMessage(
   message: '#Warn Message',
-  level: LogLevel.WARNING,
+  level: LogLevel.warning,
   createdAt: DateTime(2025, 2, 27),
   logger: 'Warn Logger',
 );
@@ -40,7 +40,7 @@ void main() {
     when(() => mockLogRepo.truncate(limit: any(named: 'limit')))
         .thenAnswer((_) async => {});
     when(() => mockStoreRepo.tryGet<int>(StoreKey.logLevel))
-        .thenAnswer((_) async => LogLevel.FINE.index);
+        .thenAnswer((_) async => LogLevel.fine.index);
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
@@ -72,14 +72,14 @@ void main() {
     setUp(() async {
       when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any()))
           .thenAnswer((_) async => true);
-      await sut.setlogLevel(LogLevel.SHOUT);
+      await sut.setlogLevel(LogLevel.shout);
     });
 
     test('Updates the log level in store', () {
       final index = verify(
         () => mockStoreRepo.insert<int>(StoreKey.logLevel, captureAny()),
       ).captured.firstOrNull;
-      expect(index, LogLevel.SHOUT.index);
+      expect(index, LogLevel.shout.index);
     });
 
     test('Sets log level on logger', () {
