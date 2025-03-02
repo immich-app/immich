@@ -15,12 +15,12 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/gallery-viewer.svelte';
-  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import { cancelMultiselect, stackAssets } from '$lib/utils/asset-utils';
   import SearchBar from '$lib/components/shared-components/search-bar/search-bar.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
-  import { shortcut } from '$lib/actions/shortcut';
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import {
     type AssetResponseDto,
     searchAssets,
@@ -47,6 +47,7 @@
   import { preferences } from '$lib/stores/user.store';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import StackAction from '$lib/components/photos-page/actions/stack-action.svelte';
 
   const MAX_ASSET_COUNT = 5000;
   let { isViewing: showAssetViewer } = assetViewingStore;
@@ -242,9 +243,33 @@
   function getObjectKeys<T extends object>(obj: T): (keyof T)[] {
     return Object.keys(obj) as (keyof T)[];
   }
+
+  const onStackAssets = async () => {
+    await stackAssets(assetInteraction.selectedAssetsArray);
+  }
+
+  let shortcutList = $derived(
+    (() => {
+      if ($showAssetViewer) {
+        return [];
+      }
+
+      const shortcuts: ShortcutOptions[] = [
+        { shortcut: { key: 'Escape' }, onShortcut: onEscape },
+      ];
+
+      if (assetInteraction.selectionActive) {
+        shortcuts.push(
+          { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
+        );
+      }
+
+      return shortcuts;
+    })(),
+  );
 </script>
 
-<svelte:window use:shortcut={{ shortcut: { key: 'Escape' }, onShortcut: onEscape }} bind:scrollY />
+<svelte:window use:shortcuts={shortcutList} bind:scrollY />
 
 <section>
   {#if assetInteraction.selectionActive}
@@ -263,6 +288,12 @@
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
           <DownloadAction menuItem />
+          {#if assetInteraction.selectedAssets.size > 1}
+            <StackAction
+              onStack={undefined}
+              onUnstack={undefined}
+            />
+          {/if}
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
           <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
