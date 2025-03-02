@@ -49,8 +49,8 @@ abstract final class Bootstrap {
   static Future<void> initDomain(Isar db) async {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
     await LogService.init(
-      logRepo: IsarLogRepository(db),
-      storeRepo: IsarStoreRepository(db),
+      logRepository: IsarLogRepository(db),
+      storeRepository: IsarStoreRepository(db),
     );
   }
 }

@@ -14,14 +14,14 @@ import '../../test_utils.dart';
 
 final _kInfoLog = LogMessage(
   message: '#Info Message',
-  level: LogLevel.INFO,
+  level: LogLevel.info,
   createdAt: DateTime(2025, 2, 26),
   logger: 'Info Logger',
 );
 
 final _kWarnLog = LogMessage(
   message: '#Warn Message',
-  level: LogLevel.WARNING,
+  level: LogLevel.warning,
   createdAt: DateTime(2025, 2, 27),
   logger: 'Warn Logger',
 );
@@ -40,13 +40,15 @@ void main() {
     when(() => mockLogRepo.truncate(limit: any(named: 'limit')))
         .thenAnswer((_) async => {});
     when(() => mockStoreRepo.tryGet<int>(StoreKey.logLevel))
-        .thenAnswer((_) async => LogLevel.FINE.index);
+        .thenAnswer((_) async => LogLevel.fine.index);
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
 
-    sut =
-        await LogService.create(logRepo: mockLogRepo, storeRepo: mockStoreRepo);
+    sut = await LogService.create(
+      logRepository: mockLogRepo,
+      storeRepository: mockStoreRepo,
+    );
   });
 
   tearDown(() async {
@@ -72,14 +74,14 @@ void main() {
     setUp(() async {
       when(() => mockStoreRepo.insert<int>(StoreKey.logLevel, any()))
           .thenAnswer((_) async => true);
-      await sut.setlogLevel(LogLevel.SHOUT);
+      await sut.setlogLevel(LogLevel.shout);
     });
 
     test('Updates the log level in store', () {
       final index = verify(
         () => mockStoreRepo.insert<int>(StoreKey.logLevel, captureAny()),
       ).captured.firstOrNull;
-      expect(index, LogLevel.SHOUT.index);
+      expect(index, LogLevel.shout.index);
     });
 
     test('Sets log level on logger', () {
@@ -91,8 +93,8 @@ void main() {
     test('Buffers logs until timer elapses', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: true,
         );
 
@@ -109,8 +111,8 @@ void main() {
     test('Batch inserts all logs on timer', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: true,
         );
 
@@ -131,8 +133,8 @@ void main() {
     test('Does not buffer when off', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: false,
         );
 
@@ -165,8 +167,8 @@ void main() {
     test('Combines result from both DB + Buffer', () {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
-          logRepo: mockLogRepo,
-          storeRepo: mockStoreRepo,
+          logRepository: mockLogRepo,
+          storeRepository: mockStoreRepo,
           shouldBuffer: true,
         );
 
