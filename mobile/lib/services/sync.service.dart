@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,7 +27,10 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
+import 'package:immich_mobile/utils/file_trash_manager.dart';
 import 'package:logging/logging.dart';
+import 'package:media_store_plus/media_store_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 final syncServiceProvider = Provider(
   (ref) => SyncService(
@@ -220,8 +224,67 @@ class SyncService {
     return null;
   }
 
+  Future<void> _moveToTrashMatchedAssets(Iterable<String> idsToDelete) async {
+    final List<Asset> assets =
+        await _assetRepository.getAllByRemoteId(idsToDelete);
+
+    if (assets.isNotEmpty) {
+      final localAssets = await _assetRepository.getAllLocal();
+
+      // Find the local assets that match the remote assets by fileName
+      final matchedAssets = localAssets
+          .where(
+            (localAsset) => assets.any(
+              (remoteAsset) =>
+                  remoteAsset.fileName.contains(localAsset.fileName),
+            ),
+          )
+          .toList();
+
+      for (var asset in matchedAssets) {
+        Uri? fileUri = await _getGalleryPhotoPath(asset.fileName);
+        if (fileUri != null) {
+          final String? filePath = await MediaStore()
+              .getFilePathFromUri(uriString: fileUri.toString());
+          if (filePath != null) {
+            FileTrashManager.moveToTrash(filePath);
+          }
+        }
+      }
+    }
+  }
+
+  Future<String?> _getDCIMPath() async {
+    Directory? externalDir = await getExternalStorageDirectory();
+    if (externalDir == null) return null;
+
+    String rootPath = externalDir.path.split('/Android').first;
+    String dcimPath = '$rootPath/DCIM';
+
+    return dcimPath;
+  }
+
+  Future<Uri?> _getGalleryPhotoPath(String fileName) async {
+    String? rootPath = await _getDCIMPath();
+    if (rootPath == null) return null;
+
+    final directory = Directory(rootPath);
+    List<FileSystemEntity> albums = directory.listSync();
+
+    for (var album in albums) {
+      if (album is Directory) {
+        String path = '${album.path}/$fileName';
+        final result = await MediaStore().getUriFromFilePath(path: path);
+        if (result != null) {
+          return result;
+        }
+      }
+    }
+    return null;
+  }
+
   /// Deletes remote-only assets, updates merged assets to be local-only
-  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
+  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) async {
     return _assetRepository.transaction(() async {
       await _assetRepository.deleteAllByRemoteId(
         idsToDelete,
@@ -231,6 +294,11 @@ class SyncService {
         idsToDelete,
         state: AssetState.merged,
       );
+
+      if (Platform.isAndroid) {
+        _moveToTrashMatchedAssets(idsToDelete);
+      }
+
       if (merged.isEmpty) return;
       for (final Asset asset in merged) {
         asset.remoteId = null;
@@ -748,9 +816,32 @@ class SyncService {
     return (existing, toUpsert);
   }
 
+  Future<void> _moveToTrashAssets(List<Asset> assetsList) async {
+    for (var asset in assetsList) {
+      if (asset.isTrashed) {
+        // Call delete function for trashed asset
+        Uri? fileUri = await _getGalleryPhotoPath(
+          asset.fileName,
+        ); // Assuming id represents file name
+        if (fileUri != null) {
+          final String? filePath = await MediaStore()
+              .getFilePathFromUri(uriString: fileUri.toString());
+          if (filePath != null) {
+            FileTrashManager.moveToTrash(filePath);
+          }
+        }
+      }
+    }
+  }
+
   /// Inserts or updates the assets in the database with their ExifInfo (if any)
   Future<void> upsertAssetsWithExif(List<Asset> assets) async {
     if (assets.isEmpty) return;
+
+    if (Platform.isAndroid) {
+      _moveToTrashAssets(assets);
+    }
+
     final exifInfos = assets.map((e) => e.exifInfo).nonNulls.toList();
     try {
       await _assetRepository.transaction(() async {
