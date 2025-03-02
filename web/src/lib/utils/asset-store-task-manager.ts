@@ -1,4 +1,4 @@
-import type { AssetBucket, AssetStore } from '$lib/stores/assets.store';
+import type { AssetBucket, AssetStore } from '$lib/stores/assets-store.svelte';
 import { generateId } from '$lib/utils/generate-id';
 import { cancelIdleCB, idleCB } from '$lib/utils/idle-callback-support';
 import { KeyedPriorityQueue } from '$lib/utils/keyed-priority-queue';
