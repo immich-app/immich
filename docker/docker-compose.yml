@@ -53,6 +53,8 @@ services:
     healthcheck:
       test: redis-cli ping || exit 1
     restart: always
+    volumes:
+      - redis-data:/data
 
   database:
     container_name: immich_postgres
@@ -87,3 +89,4 @@ services:
 
 volumes:
   model-cache:
+  redis-data:

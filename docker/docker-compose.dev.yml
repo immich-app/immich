@@ -119,6 +119,8 @@ services:
     image: redis:6.2-alpine@sha256:148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8
     healthcheck:
       test: redis-cli ping || exit 1
+    volumes:
+      - redis-data:/data
 
   database:
     container_name: immich_postgres
@@ -178,3 +180,4 @@ volumes:
   model-cache:
   prometheus-data:
   grafana-data:
+  redis-data:
