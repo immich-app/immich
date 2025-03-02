@@ -1,12 +1,10 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
-import { getAssetRatio } from '$lib/utils/asset-utils';
 import { generateId } from '$lib/utils/generate-id';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import createJustifiedLayout from 'justified-layout';
 import { throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
@@ -17,13 +15,6 @@ import { websocketEvents } from './websocket';
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
-
-const LAYOUT_OPTIONS = {
-  boxSpacing: 2,
-  containerPadding: 0,
-  targetRowHeightTolerance: 0.15,
-  targetRowHeight: 235,
-};
 
 export interface Viewport {
   width: number;

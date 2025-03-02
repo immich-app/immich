@@ -20,7 +20,7 @@
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
-  import { throttle } from 'lodash-es';
+  import { throttle, debounce } from 'lodash-es';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
@@ -81,7 +81,6 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
 
-  let viewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
   let safeViewport: ViewportXY = $state({ width: 0, height: 0, x: 0, y: 0 });
 
   const componentId = generateId();
@@ -113,14 +112,6 @@
       INTERSECTION_ROOT_BOTTOM: THUMBNAIL_INTERSECTION_ROOT_BOTTOM,
     },
   } = TUNABLES;
-
-  const isViewportOrigin = () => {
-    return viewport.height === 0 && viewport.width === 0;
-  };
-
-  const isEqual = (a: ViewportXY, b: ViewportXY) => {
-    return a.height == b.height && a.width == b.width && a.x === b.x && a.y === b.y;
-  };
 
   const completeNav = () => {
     navigating = false;
@@ -249,8 +240,7 @@
     }
     return offset;
   }
-  const _updateViewport = () => void assetStore.updateViewport(safeViewport);
-  let updateViewport = throttle(_updateViewport, 16);
+  let updateViewport = debounce(() => assetStore.updateViewport(safeViewport), 8);
 
   const getMaxScrollPercent = () =>
     (assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - safeViewport.height) /

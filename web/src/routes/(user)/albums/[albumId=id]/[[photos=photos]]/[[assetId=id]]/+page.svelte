@@ -445,10 +445,7 @@
           <AddToAlbum shared />
         </ButtonContextMenu>
         {#if assetInteraction.isAllUserOwned}
-          <FavoriteAction
-            removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={() => assetStore.triggerUpdate()}
-          />
+          <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />

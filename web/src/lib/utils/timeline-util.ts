@@ -2,7 +2,6 @@ import type { AssetBucket } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
 import { JustifiedLayout } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
-import type createJustifiedLayout from 'justified-layout';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
