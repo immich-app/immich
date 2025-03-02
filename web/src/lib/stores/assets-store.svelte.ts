@@ -75,13 +75,14 @@ export class AssetBucket {
     // will be incoked when a bucket is loaded, fulfilling the promise. The canceledSignal
     // callback will be called if the bucket is canceled before it was loaded, rejecting the
     // promise.
-    this.complete = new Promise((resolve, reject) => {
+    this.complete = new Promise<void>((resolve, reject) => {
       this.loadedSignal = resolve;
       this.canceledSignal = reject;
-    });
-    // if no-one waits on complete, and its rejected a uncaught rejection message is logged.
-    // We this message with an empty reject handler, since waiting on a bucket is optional.
-    this.complete.catch(() => void 0);
+    }).catch(() =>
+      // if no-one waits on complete, and its rejected a uncaught rejection message is logged.
+      // We this message with an empty reject handler, since waiting on a bucket is optional.
+      void 0);
+
     this.measuredPromise = new Promise((resolve) => {
       this.measuredSignal = resolve;
     });
@@ -264,11 +265,9 @@ export class AssetStore {
   private createInitializationSignal() {
     // create a promise, and store its resolve callbacks. The initializedSignal callback
     // will be invoked when a the assetstore is initialized.
-    this.complete = new Promise((resolve) => {
+    this.complete = new Promise<void>((resolve) => {
       this.initializedSignal = resolve;
-    });
-    //  uncaught rejection go away
-    this.complete.catch(() => void 0);
+    }).catch(() => void 0);
   }
 
   private addPendingChanges(...changes: PendingChange[]) {
