@@ -181,7 +181,11 @@ Redis (Sentinel) URL example JSON before encoding:
 
 :::info
 
-Other machine learning parameters can be tuned from the admin UI.
+While the `textual` model is the only one required for smart search, some users may experience slow first searches
+due to backups triggering loading of the other models into memory, which blocks other requests until completed.
+To avoid this, you can preload the other models (`visual`, `recognition`, and `detection`) if you have enough RAM to do so.
+
+Additional machine learning parameters can be tuned from the admin UI.
 
 :::
 
