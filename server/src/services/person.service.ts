@@ -242,8 +242,12 @@ export class PersonService extends BaseService {
   }
 
   private async delete(people: PersonEntity[]) {
+    const batchSize = 10000;
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    await this.personRepository.delete(people);
+    for (let i = 0; i < people.length; i += batchSize) {
+      const batch = people.slice(i, i + batchSize);
+      await this.personRepository.delete(batch);
+    }
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
