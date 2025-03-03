@@ -16,6 +16,89 @@ class FacesApi {
 
   final ApiClient apiClient;
 
+  /// Performs an HTTP 'POST /faces' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
+  Future<Response> createFaceWithHttpInfo(AssetFaceCreateDto assetFaceCreateDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/faces';
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetFaceCreateDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
+  Future<void> createFace(AssetFaceCreateDto assetFaceCreateDto,) async {
+    final response = await createFaceWithHttpInfo(assetFaceCreateDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Performs an HTTP 'DELETE /faces/{id}' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
+  Future<Response> deleteFaceWithHttpInfo(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/faces/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = assetFaceDeleteDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
+  Future<void> deleteFace(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
+    final response = await deleteFaceWithHttpInfo(id, assetFaceDeleteDto,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Performs an HTTP 'GET /faces' operation and returns the [Response].
   /// Parameters:
   ///
