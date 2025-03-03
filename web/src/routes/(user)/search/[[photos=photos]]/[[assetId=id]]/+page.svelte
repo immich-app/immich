@@ -246,7 +246,7 @@
 
   const onStackAssets = async () => {
     await stackAssets(assetInteraction.selectedAssetsArray);
-  }
+  };
 
   let shortcutList = $derived(
     (() => {
@@ -254,14 +254,10 @@
         return [];
       }
 
-      const shortcuts: ShortcutOptions[] = [
-        { shortcut: { key: 'Escape' }, onShortcut: onEscape },
-      ];
+      const shortcuts: ShortcutOptions[] = [{ shortcut: { key: 'Escape' }, onShortcut: onEscape }];
 
       if (assetInteraction.selectionActive) {
-        shortcuts.push(
-          { shortcut: { key: 's' }, onShortcut: () => onStackAssets() },
-        );
+        shortcuts.push({ shortcut: { key: 's' }, onShortcut: () => onStackAssets() });
       }
 
       return shortcuts;
@@ -289,10 +285,7 @@
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
           <DownloadAction menuItem />
           {#if assetInteraction.selectedAssets.size > 1}
-            <StackAction
-              onStack={undefined}
-              onUnstack={undefined}
-            />
+            <StackAction onStack={undefined} onUnstack={undefined} />
           {/if}
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
