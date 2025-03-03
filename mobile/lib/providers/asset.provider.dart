@@ -59,7 +59,9 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAllAssets();
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
-      final bool changedUsers = await _userService.refreshUsers();
+      final users = await _userService.getUsersFromServer();
+      final bool changedUsers =
+          users != null && await _syncService.syncUsersFromServer(users);
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       debugPrint(

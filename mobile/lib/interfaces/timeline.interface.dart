@@ -3,6 +3,10 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 
 abstract class ITimelineRepository {
+  Future<List<int>> getTimelineUserIds(int id);
+
+  Stream<List<int>> watchTimelineUsers(int id);
+
   Stream<RenderList> watchArchiveTimeline(int userId);
   Stream<RenderList> watchFavoriteTimeline(int userId);
   Stream<RenderList> watchTrashTimeline(int userId);

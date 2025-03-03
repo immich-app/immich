@@ -22,10 +22,6 @@ abstract interface class IUserRepository implements IDatabaseRepository {
   Future<User> me();
 
   Future<void> clearTable();
-
-  Future<List<int>> getTimelineUserIds(int id);
-
-  Stream<List<int>> watchTimelineUsers(int id);
 }
 
 enum UserSort { id }
