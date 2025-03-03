@@ -23,17 +23,6 @@ class GalleryStackedChildren extends HookConsumerWidget {
     }
 
     final stackElements = ref.watch(assetStackStateProvider(stackId));
-    if (stackElements.length > 1) {
-      final firstElement = stackElements.first;
-      //This is to make sure that the primary element is always the first one
-      //It ensures consistency with the web version of the app where the primary element is always the first one
-      final restElements = stackElements.sublist(1);
-      restElements.sort((a, b) => a.fileCreatedAt.compareTo(b.fileCreatedAt));
-      stackElements
-        ..clear()
-        ..add(firstElement)
-        ..addAll(restElements);
-    }
     final showControls = ref.watch(showControlsProvider);
 
     return IgnorePointer(

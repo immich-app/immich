@@ -207,7 +207,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
         .stackIdEqualTo(stackId)
         // orders primary asset first as its ID is null
         .sortByStackPrimaryAssetId()
-        .thenByFileCreatedAtDesc()
+        .thenByFileCreatedAt()
         .findAll();
   }
 
