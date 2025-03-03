@@ -2,6 +2,7 @@ import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { generateId } from '$lib/utils/generate-id';
+import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
@@ -78,10 +79,12 @@ export class AssetBucket {
     this.complete = new Promise<void>((resolve, reject) => {
       this.loadedSignal = resolve;
       this.canceledSignal = reject;
-    }).catch(() =>
-      // if no-one waits on complete, and its rejected a uncaught rejection message is logged.
-      // We this message with an empty reject handler, since waiting on a bucket is optional.
-      void 0);
+    }).catch(
+      () =>
+        // if no-one waits on complete, and its rejected a uncaught rejection message is logged.
+        // We this message with an empty reject handler, since waiting on a bucket is optional.
+        void 0,
+    );
 
     this.measuredPromise = new Promise((resolve) => {
       this.measuredSignal = resolve;
@@ -246,8 +249,6 @@ export class AssetStore {
   maxBucketAssets = $state(0);
 
   private listeners: BucketListener[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getJustifiedLayoutFromAssets: any;
 
   constructor(
     options: AssetStoreOptions,
@@ -389,9 +390,6 @@ export class AssetStore {
     if (bucketListener) {
       this.addListener(bucketListener);
     }
-    // TODO: move this import and make this method sync after https://github.com/sveltejs/kit/issues/7805 is fixed
-    const { getJustifiedLayoutFromAssets } = await import('$lib/utils/layout-utils');
-    this.getJustifiedLayoutFromAssets = getJustifiedLayoutFromAssets;
     await this.initialiazeTimeBuckets();
   }
 
@@ -505,7 +503,7 @@ export class AssetStore {
         assetGroup.height = height;
       }
 
-      assetGroup.geometry = this.getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
+      assetGroup.geometry = getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
     }
   }
 

@@ -1,5 +1,6 @@
 import type { AssetBucket } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
+import type { JustifiedLayoutInterface } from '$lib/utils/layout-utils';
 import { JustifiedLayout } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, memoize, sortBy } from 'lodash-es';
@@ -13,7 +14,7 @@ export type DateGroup = {
   height: number;
   heightActual: boolean;
   intersecting: boolean;
-  geometry: JustifiedLayout;
+  geometry: JustifiedLayoutInterface;
   bucket: AssetBucket;
 };
 export type ScrubberListener = (

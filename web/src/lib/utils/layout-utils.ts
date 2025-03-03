@@ -5,15 +5,25 @@ import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wa
 import type { AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';
 
-export type GetJustifiedLayout = typeof getJustifiedLayoutFromAssets;
-type Geometry = ReturnType<typeof createJustifiedLayout>;
 let useWasm = TUNABLES.LAYOUT.WASM;
+
+export interface JustifiedLayoutInterface {
+  containerWidth: number;
+  containerHeight: number;
+  getTop(boxIdx: number): number;
+  getLeft(boxIdx: number): number;
+  getWidth(boxIdx: number): number;
+  getHeight(boxIdx: number): number;
+}
 
 export function setWasm(wasm: boolean) {
   useWasm = wasm;
 }
 
-export function getJustifiedLayoutFromAssets(assets: AssetResponseDto[], options: LayoutOptions) {
+export function getJustifiedLayoutFromAssets(
+  assets: AssetResponseDto[],
+  options: LayoutOptions,
+): JustifiedLayoutInterface {
   if (useWasm) {
     return wasmJustifiedLayout(assets, options);
   }
@@ -30,8 +40,9 @@ function wasmJustifiedLayout(assets: AssetResponseDto[], options: LayoutOptions)
   return new JustifiedLayout(aspectRatios, options);
 }
 
+type Geometry = ReturnType<typeof createJustifiedLayout>;
 class Adapter {
-  result: Geometry;
+  result;
   constructor(result: Geometry) {
     this.result = result;
   }
