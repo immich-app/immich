@@ -18,6 +18,12 @@ RecursiveFolder? _findFolderInStructure(
   RecursiveFolder targetFolder,
 ) {
   for (var folder in rootFolder.subfolders) {
+    if (targetFolder.path == '/' &&
+        folder.path.isEmpty &&
+        folder.name == targetFolder.name) {
+      return folder;
+    }
+
     if (folder.path == targetFolder.path && folder.name == targetFolder.name) {
       return folder;
     }
@@ -95,11 +101,13 @@ class FolderPage extends HookConsumerWidget {
           if (folder == null) {
             return FolderContent(
               folder: rootFolder,
+              root: rootFolder,
               sortOrder: sortOrder.value,
             );
           } else {
             return FolderContent(
               folder: currentFolder.value!,
+              root: rootFolder,
               sortOrder: sortOrder.value,
             );
           }
@@ -122,9 +130,15 @@ class FolderPage extends HookConsumerWidget {
 
 class FolderContent extends HookConsumerWidget {
   final RootFolder? folder;
+  final RootFolder root;
   final SortOrder sortOrder;
 
-  const FolderContent({super.key, this.folder, this.sortOrder = SortOrder.asc});
+  const FolderContent({
+    super.key,
+    this.folder,
+    required this.root,
+    this.sortOrder = SortOrder.asc,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -146,76 +160,153 @@ class FolderContent extends HookConsumerWidget {
       return Center(child: const Text("folder_not_found").tr());
     }
 
-    return folderRenderlist.when(
-      data: (list) {
-        return ListView(
-          children: [
-            if (folder!.subfolders.isNotEmpty)
-              ...folder!.subfolders.map(
-                (subfolder) => ListTile(
-                  leading: Icon(Icons.folder, color: context.primaryColor),
-                  title: Text(subfolder.name),
-                  onTap: () =>
-                      context.pushRoute(FolderRoute(folder: subfolder)),
-                ),
-              ),
-            if (!list.isEmpty &&
-                list.allAssets != null &&
-                list.allAssets!.isNotEmpty)
-              ...list.allAssets!.map(
-                (asset) => ListTile(
-                  onTap: () => context.pushRoute(
-                    GalleryViewerRoute(
-                      renderList: list,
-                      initialIndex: list.allAssets!.indexOf(asset),
+    return Column(
+      children: [
+        FolderPath(currentFolder: folder!, root: root),
+        Expanded(
+          child: folderRenderlist.when(
+            data: (list) {
+              if (folder!.subfolders.isEmpty && list.isEmpty) {
+                return Center(child: const Text("empty_folder").tr());
+              }
+
+              return ListView(
+                children: [
+                  if (folder!.subfolders.isNotEmpty)
+                    ...folder!.subfolders.map(
+                      (subfolder) => ListTile(
+                        leading:
+                            Icon(Icons.folder, color: context.primaryColor),
+                        title: Text(subfolder.name),
+                        onTap: () =>
+                            context.pushRoute(FolderRoute(folder: subfolder)),
+                      ),
                     ),
-                  ),
-                  leading: SizedBox(
-                    // height: 100,
-                    width: 80,
-                    child: ThumbnailImage(
-                      asset: asset,
-                      showStorageIndicator: false,
-                    ),
-                  ),
-                  title: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          // Remove the file extension from the file name
-                          // Sometimes the file name has multiple dots (.TS.mp4)
-                          asset.fileName.split('.').first,
-                          softWrap: false,
-                          overflow: TextOverflow.ellipsis,
+                  if (!list.isEmpty &&
+                      list.allAssets != null &&
+                      list.allAssets!.isNotEmpty)
+                    ...list.allAssets!.map(
+                      (asset) => ListTile(
+                        onTap: () => context.pushRoute(
+                          GalleryViewerRoute(
+                            renderList: list,
+                            initialIndex: list.allAssets!.indexOf(asset),
+                          ),
+                        ),
+                        leading: SizedBox(
+                          width: 80,
+                          child: ThumbnailImage(
+                            asset: asset,
+                            showStorageIndicator: false,
+                          ),
+                        ),
+                        title: Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                asset.fileName.split('.').first,
+                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              ".${asset.fileName.substring(asset.fileName.indexOf('.') + 1)}",
+                            ),
+                          ],
+                        ),
+                        subtitle: Text(
+                          "${asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo?.fileSize ?? 0) : ""} ·  ${DateFormat.yMMMd().format(asset.fileCreatedAt)}",
                         ),
                       ),
-                      Text(
-                        // Display the file extension(s)
-                        ".${asset.fileName.substring(asset.fileName.indexOf('.') + 1)}",
-                      ),
-                    ],
+                    ),
+                ],
+              );
+            },
+            loading: () => const Center(
+              child: CircularProgressIndicator(),
+            ),
+            error: (error, stack) {
+              ImmichToast.show(
+                context: context,
+                msg: "failed_to_load_assets".tr(),
+                toastType: ToastType.error,
+              );
+              return Center(child: const Text("failed_to_load_assets").tr());
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class FolderPath extends StatelessWidget {
+  final RootFolder currentFolder;
+  final RootFolder root;
+
+  const FolderPath({
+    super.key,
+    required this.currentFolder,
+    required this.root,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (currentFolder.path.isEmpty || currentFolder.path == '/') {
+      return const SizedBox.shrink();
+    }
+
+    final parts =
+        currentFolder.path.split('/').where((part) => part.isNotEmpty).toList();
+    String currentPath = '';
+
+    return Container(
+      width: double.infinity,
+      alignment: Alignment.centerLeft,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              for (int i = 0; i < parts.length; i++) ...[
+                if (i > 0)
+                  const Text(
+                    ' / ',
+                    style: TextStyle(color: Colors.grey),
                   ),
-                  subtitle: Text(
-                    "${asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo?.fileSize ?? 0) : ""} ·  ${DateFormat.yMMMd().format(asset.fileCreatedAt)}",
+                InkWell(
+                  onTap: () {
+                    currentPath += '/${parts[i]}';
+                    // Find the folder that matches this path
+                    RecursiveFolder? targetFolder = _findFolderInStructure(
+                      root,
+                      RecursiveFolder(
+                        name: parts[i],
+                        // Path with leading slash and without the current part
+                        path: "/${parts.sublist(0, i).join('/')}",
+                        subfolders: const [],
+                      ),
+                    );
+                    print("Target folder: $targetFolder");
+                    if (targetFolder != null) {
+                      context.pushRoute(FolderRoute(folder: targetFolder));
+                    }
+                  },
+                  child: Text(
+                    parts[i],
+                    style: TextStyle(
+                      color: context.primaryColor,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
-              ),
-            if (folder!.subfolders.isEmpty && list.isEmpty)
-              Center(child: const Text("empty_folder").tr()),
-          ],
-        );
-      },
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
+              ],
+            ],
+          ),
+        ),
       ),
-      error: (error, stack) {
-        ImmichToast.show(
-          context: context,
-          msg: "failed_to_load_assets".tr(),
-          toastType: ToastType.error,
-        );
-        return Center(child: const Text("failed_to_load_assets").tr());
-      },
     );
   }
 }
