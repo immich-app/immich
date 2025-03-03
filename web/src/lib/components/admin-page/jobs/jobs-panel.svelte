@@ -169,7 +169,7 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }] (jobName)}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}

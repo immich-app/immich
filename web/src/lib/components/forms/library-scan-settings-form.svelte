@@ -125,7 +125,7 @@
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="w-full text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      {#each exclusionPatterns as exclusionPattern, listIndex}
+      {#each exclusionPatterns as exclusionPattern, listIndex (exclusionPattern)}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
             listIndex % 2 == 0
