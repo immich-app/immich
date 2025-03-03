@@ -38,7 +38,7 @@
   $: dateGroups = bucket.dateGroups;
 
   const {
-    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM, SMALL_GROUP_THRESHOLD },
+    DATEGROUP: { INTERSECTION_ROOT_TOP, INTERSECTION_ROOT_BOTTOM },
   } = TUNABLES;
   /* TODO figure out a way to calculate this*/
   const TITLE_HEIGHT = 51;
@@ -179,7 +179,6 @@
             style:width={geometry.containerWidth + 'px'}
           >
             {#each dateGroup.assets as asset, i (asset.id)}
-              {@const isSmallGroup = dateGroup.assets.length <= SMALL_GROUP_THRESHOLD}
               <!-- getting these together here in this order is very cache-efficient -->
               {@const top = geometry.getTop(i)}
               {@const left = geometry.getLeft(i)}
@@ -223,7 +222,6 @@
                   disabled={assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={width}
                   thumbnailHeight={height}
-                  eagerThumbhash={isSmallGroup}
                 />
               </div>
             {/each}

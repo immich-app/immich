@@ -43,8 +43,6 @@ export const TUNABLES = {
   },
   ASSET_GRID: {
     NAVIGATE_ON_ASSET_IN_VIEW: getBoolean(localStorage.getItem('ASSET_GRID.NAVIGATE_ON_ASSET_IN_VIEW'), false),
-    LARGE_BUCKET_THRESHOLD: getNumber(localStorage.getItem('ASSET_GRID.LARGE_BUCKET_THRESHOLD'), 3000),
-    LARGE_BUCKET_DEBOUNCE_MS: getNumber(localStorage.getItem('ASSET_GRID.LARGE_BUCKET_DEBOUNCE_MS'), 200),
   },
   BUCKET: {
     PRIORITY: getNumber(localStorage.getItem('BUCKET.PRIORITY'), 2),
@@ -56,7 +54,6 @@ export const TUNABLES = {
     INTERSECTION_DISABLED: getBoolean(localStorage.getItem('DATEGROUP.INTERSECTION_DISABLED'), false),
     INTERSECTION_ROOT_TOP: localStorage.getItem('DATEGROUP.INTERSECTION_ROOT_TOP') || '150%',
     INTERSECTION_ROOT_BOTTOM: localStorage.getItem('DATEGROUP.INTERSECTION_ROOT_BOTTOM') || '150%',
-    SMALL_GROUP_THRESHOLD: getNumber(localStorage.getItem('DATEGROUP.SMALL_GROUP_THRESHOLD'), 100),
   },
   THUMBNAIL: {
     PRIORITY: getNumber(localStorage.getItem('THUMBNAIL.PRIORITY'), 8),
