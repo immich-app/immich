@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/immich_logo_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/sync_stream.service.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -185,6 +186,12 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
         },
       ),
       actions: [
+        IconButton(
+          onPressed: () {
+            ref.read(syncStreamServiceProvider).getUsers();
+          },
+          icon: const Icon(Icons.sync),
+        ),
         if (actions != null)
           ...actions!.map(
             (action) => Padding(
