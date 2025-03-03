@@ -520,6 +520,10 @@ class ApiClient {
           return SyncAckSetDto.fromJson(value);
         case 'SyncEntityType':
           return SyncEntityTypeTypeTransformer().decode(value);
+        case 'SyncPartnerDeleteV1':
+          return SyncPartnerDeleteV1.fromJson(value);
+        case 'SyncPartnerV1':
+          return SyncPartnerV1.fromJson(value);
         case 'SyncRequestType':
           return SyncRequestTypeTypeTransformer().decode(value);
         case 'SyncStreamDto':
