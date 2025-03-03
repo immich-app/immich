@@ -25,6 +25,8 @@ class HttpSSLOptions {
 
     if (Platform.isAndroid) {
       _channel.invokeMethod("apply", [
+        allowSelfSignedSSLCert,
+        serverHost,
         clientCert?.data,
         clientCert?.password,
       ]);
