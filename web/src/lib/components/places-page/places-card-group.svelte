@@ -43,7 +43,7 @@
 <div class="mt-4">
   {#if !isCollapsed}
     <div class="flex flex-row flex-wrap gap-4">
-      {#each places as item}
+      {#each places as item (item.id)}
         {@const city = item.exifInfo?.city}
         <a class="relative" href="{AppRoute.SEARCH}?{getMetadataSearchQuery({ city })}" draggable="false">
           <div

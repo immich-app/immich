@@ -183,6 +183,7 @@
     if (!current) {
       return;
     }
+    // eslint-disable-next-line no-self-assign
     current.memory.assets = current.memory.assets;
   };
 
@@ -222,6 +223,7 @@
 
     current.memory.assets = current.memory.assets.filter((asset) => asset.id !== current.asset.id);
 
+    // eslint-disable-next-line no-self-assign
     $memoryStore = $memoryStore;
 
     await removeMemoryAssets({ id: current.memory.id, bulkIdsDto: { ids: [current.asset.id] } });
@@ -351,7 +353,7 @@
           class="hover:text-black"
         />
 
-        {#each current.memory.assets as asset, index}
+        {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)}>
             <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
             {#await resetPromise}
@@ -475,14 +477,10 @@
                   align="bottom-right"
                   class="text-white dark:text-white"
                 >
-                  <MenuOption
-                    onClick={() => handleDeleteMemory(current)}
-                    text={'Remove memory'}
-                    icon={mdiCardsOutline}
-                  />
+                  <MenuOption onClick={() => handleDeleteMemory(current)} text="Remove memory" icon={mdiCardsOutline} />
                   <MenuOption
                     onClick={() => handleDeleteMemoryAsset(current)}
-                    text={'Remove photo from this memory'}
+                    text="Remove photo from this memory"
                     icon={mdiImageMinusOutline}
                   />
                   <!-- shortcut={{ key: 'l', shift: shared }} -->

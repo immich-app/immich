@@ -175,7 +175,7 @@
 <form {onsubmit} autocomplete="off" class="m-4 flex flex-col gap-4">
   <table class="text-left">
     <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-      {#each validatedPaths as validatedPath, listIndex}
+      {#each validatedPaths as validatedPath, listIndex (validatedPath.importPath)}
         <tr
           class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
             listIndex % 2 == 0

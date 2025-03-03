@@ -137,7 +137,7 @@
     await loadNextPage();
   }
 
-  export const loadNextPage = async () => {
+  const loadNextPage = async () => {
     if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
       return;
     }
@@ -230,6 +230,7 @@
     return tagNames.join(', ');
   }
 
+  // eslint-disable-next-line no-self-assign
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
 
   const onAddToAlbum = (assetIds: string[]) => {
