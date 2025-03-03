@@ -8,7 +8,7 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
   import { AppRoute } from '$lib/constants';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { onDestroy } from 'svelte';
   import type { PageData } from './$types';
   import { mdiPlus, mdiArrowLeft } from '@mdi/js';

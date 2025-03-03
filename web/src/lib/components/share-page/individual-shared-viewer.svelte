@@ -17,7 +17,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 

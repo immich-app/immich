@@ -36,7 +36,7 @@
   import { AppRoute, AlbumPageViewMode } from '$lib/constants';
   import { numberOfComments, setNumberOfComments, updateNumberOfComments } from '$lib/stores/activity.store';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
@@ -445,10 +445,7 @@
           <AddToAlbum shared />
         </ButtonContextMenu>
         {#if assetInteraction.isAllUserOwned}
-          <FavoriteAction
-            removeFavorite={assetInteraction.isAllFavorite}
-            onFavorite={() => assetStore.triggerUpdate()}
-          />
+          <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
         {/if}
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem filename="{album.albumName}.zip" />
@@ -462,11 +459,7 @@
                 onClick={() => updateThumbnailUsingCurrentSelection()}
               />
             {/if}
-            <ArchiveAction
-              menuItem
-              unarchive={assetInteraction.isAllArchived}
-              onArchive={() => assetStore.triggerUpdate()}
-            />
+            <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {/if}
 
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
