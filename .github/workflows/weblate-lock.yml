@@ -8,7 +8,9 @@ on:
 
 jobs:
   enforce-lock:
+    name: Check Weblate Lock
     runs-on: ubuntu-latest
+    if: github.head_ref != 'chore/translations'
     steps:
       - name: Check weblate lock
         run: |
@@ -23,3 +25,15 @@ jobs:
       - name: Fail if existing weblate PR
         if: ${{ steps.find-pr.outputs.number }}
         run: exit 1
+  success-check-lock:
+    name: Weblate Lock Check Success
+    needs: [ enforce-lock ]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Any jobs failed?
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1
+      - name: All jobs passed or skipped
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: echo "All jobs passed or skipped" && echo "${{ toJSON(needs.*.result) }}"
