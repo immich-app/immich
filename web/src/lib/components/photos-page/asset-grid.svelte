@@ -20,7 +20,7 @@
   } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
-  import { throttle, debounce } from 'lodash-es';
+  import { throttle } from 'lodash-es';
   import { onDestroy, onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
