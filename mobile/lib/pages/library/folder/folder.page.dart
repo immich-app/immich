@@ -258,7 +258,6 @@ class FolderPath extends StatelessWidget {
 
     final parts =
         currentFolder.path.split('/').where((part) => part.isNotEmpty).toList();
-    String currentPath = '';
 
     return Container(
       width: double.infinity,
@@ -278,7 +277,6 @@ class FolderPath extends StatelessWidget {
                   ),
                 InkWell(
                   onTap: () {
-                    currentPath += '/${parts[i]}';
                     // Find the folder that matches this path
                     RecursiveFolder? targetFolder = _findFolderInStructure(
                       root,
@@ -289,7 +287,6 @@ class FolderPath extends StatelessWidget {
                         subfolders: const [],
                       ),
                     );
-                    print("Target folder: $targetFolder");
                     if (targetFolder != null) {
                       context.pushRoute(FolderRoute(folder: targetFolder));
                     }
