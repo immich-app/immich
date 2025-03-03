@@ -23,7 +23,7 @@
   });
 </script>
 
-{#each albums as album}
+{#each albums as album (album.id)}
   <a
     href={'/albums/' + album.id}
     title={album.albumName}

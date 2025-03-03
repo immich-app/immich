@@ -129,6 +129,7 @@ Used for every occurrence of an HTML tag in a message
 Result: Visit <a href="">docs</a> <strong>now</strong>
 ```
 -->
+<!-- eslint-disable-next-line svelte/require-each-key -->
 {#each parts as { tag, message }}
   {#if tag}
     {#if children}{@render children({ tag, message })}{:else}{message}{/if}

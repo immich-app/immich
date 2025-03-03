@@ -75,7 +75,7 @@ class StoreService {
   }
 
   /// Asynchronously stores the value in the DB and synchronously in the cache
-  Future<void> put<T>(StoreKey<T> key, T value) async {
+  Future<void> put<U extends StoreKey<T>, T>(U key, T value) async {
     if (_cache[key.id] == value) return;
     await _storeRepository.insert(key, value);
     _cache[key.id] = value;

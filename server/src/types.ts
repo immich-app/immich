@@ -303,7 +303,6 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
-  | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }

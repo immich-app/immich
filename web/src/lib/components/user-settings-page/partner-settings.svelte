@@ -144,7 +144,7 @@
             <CircleIconButton
               onclick={() => handleRemovePartner(partner.user)}
               icon={mdiClose}
-              size={'16'}
+              size="16"
               title={$t('stop_sharing_photos_with_user')}
             />
           {/if}
