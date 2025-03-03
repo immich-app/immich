@@ -42,8 +42,8 @@
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
-   `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
-   additionally, update the page location/url with the asset as the asset-grid is scrolled */
+     `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
+     additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
     assetStore: AssetStore;
     assetInteraction: AssetInteraction;
@@ -73,8 +73,10 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = () => {},
-    onEscape = () => {},
+    onSelect = () => {
+    },
+    onEscape = () => {
+    },
     children,
     empty,
   }: Props = $props();
@@ -259,6 +261,7 @@
     }
     return offset;
   }
+
   const _updateViewport = () => void $assetStore.updateViewport(safeViewport);
   const updateViewport = throttle(_updateViewport, 16);
 
@@ -738,14 +741,18 @@
       currentHighlightAsset === null
         ? $assetStore.getFirstAsset()
         : await $assetStore.getNextAsset(currentHighlightAsset);
-    assetInteraction.setHighlightAsset(nextHighlightAsset);
+    if (nextHighlightAsset) {
+      assetInteraction.setHighlightAsset(nextHighlightAsset);
+    }
   };
 
   const highlightPreviousAsset = async () => {
     const currentHighlightAsset = assetInteraction.getHighlightAsset();
     if (currentHighlightAsset !== null) {
       const previousHighlightAsset = await $assetStore.getPreviousAsset(currentHighlightAsset);
-      assetInteraction.setHighlightAsset(previousHighlightAsset);
+      if (previousHighlightAsset) {
+        assetInteraction.setHighlightAsset(previousHighlightAsset);
+      }
     }
   };
 

@@ -180,26 +180,21 @@
 
   const highlightNextAsset = () => {
     const currentHighlightAsset = assetInteraction.getHighlightAsset();
-    let nextHighlightAsset = null;
     if (currentHighlightAsset === null && assets.length > 0) {
-      nextHighlightAsset = assets[0];
+      assetInteraction.setHighlightAsset(assets[0]);
     } else if (currentHighlightAsset !== null && assets.length > 0) {
       const currentIndex = assets.findIndex((a) => a.id === currentHighlightAsset.id);
       if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
-        nextHighlightAsset = assets[currentIndex + 1];
         assetInteraction.setHighlightAsset(assets[currentIndex + 1]);
       }
     }
-    assetInteraction.setHighlightAsset(nextHighlightAsset);
   };
 
   const highlightPreviousAsset = () => {
     const currentHighlightAsset = assetInteraction.getHighlightAsset();
     if (currentHighlightAsset !== null && assets.length > 0) {
       const currentIndex = assets.findIndex((a) => a.id === currentHighlightAsset.id);
-      if (currentIndex <= 0) {
-        assetInteraction.setHighlightAsset(null);
-      } else {
+      if (currentIndex >= 1) {
         assetInteraction.setHighlightAsset(assets[currentIndex - 1]);
       }
     }
