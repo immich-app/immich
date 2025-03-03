@@ -5,7 +5,6 @@ import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import wasm from 'vite-plugin-wasm';
-import topLevelAwait from "vite-plugin-top-level-await";
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -47,7 +46,6 @@ export default defineConfig({
     enhancedImages(),
     svelteTesting(),
     wasm(),
-    topLevelAwait()
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],

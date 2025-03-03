@@ -14,7 +14,6 @@ import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
 
-const layoutUtils = import('$lib/utils/layout-utils');
 let getJustifiedLayoutFromAssets: getJustifiedLayoutFromAssetsFunction;
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
@@ -390,7 +389,7 @@ export class AssetStore {
       throw 'Can only init once';
     }
     if (!getJustifiedLayoutFromAssets) {
-      const module = await layoutUtils;
+      const module = await import('$lib/utils/layout-utils');
       getJustifiedLayoutFromAssets = module.getJustifiedLayoutFromAssets;
     }
 
