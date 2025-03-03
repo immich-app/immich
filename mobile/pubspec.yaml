@@ -99,7 +99,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
   build_runner: ^2.4.8
-  auto_route_generator: ^9.0.0
+  auto_route_generator: ^10.0.0
   flutter_launcher_icons: ^0.14.0
   flutter_native_splash: ^2.3.9
   isar_generator:
