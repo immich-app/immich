@@ -241,7 +241,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from TagsList', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ TagsList: ['Parent'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -251,27 +251,27 @@ describe(MetadataService.name, () => {
     it('should extract hierarchy from TagsList', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ TagsList: ['Parent/Child'] });
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parent);
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.child);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.childUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
     it('should extract tags from Keywords as a string', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: 'Parent' });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -281,7 +281,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from Keywords as a list', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: ['Parent'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -291,7 +291,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from Keywords as a list with a number', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: ['Parent', 2024] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -302,58 +302,58 @@ describe(MetadataService.name, () => {
     it('should extract hierarchal tags from Keywords', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: 'Parent/Child' });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
     it('should ignore Keywords when TagsList is present', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: 'Child', TagsList: ['Parent/Child'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
     it('should extract hierarchy from HierarchicalSubject', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parent);
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.child);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.childUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(3, { userId: 'user-id', value: 'TagA', parent: undefined });
     });
@@ -361,7 +361,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from HierarchicalSubject as a list with a number', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Parent', 2024] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -372,7 +372,7 @@ describe(MetadataService.name, () => {
     it('should extract ignore / characters in a HierarchicalSubject tag', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Mom/Dad'] });
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -386,19 +386,19 @@ describe(MetadataService.name, () => {
     it('should ignore HierarchicalSubject when TagsList is present', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Parent2|Child2'], TagsList: ['Parent/Child'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
@@ -408,7 +408,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(mocks.tag.upsertAssetTags).toHaveBeenCalledWith({ assetId: 'asset-id', tagIds: [] });
+      expect(mocks.tag.replaceAssetTags).toHaveBeenCalledWith('asset-id', []);
     });
 
     it('should not apply motion photos if asset is video', async () => {
