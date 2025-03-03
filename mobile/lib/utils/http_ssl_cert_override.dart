@@ -11,7 +11,10 @@ class HttpSSLCertOverride extends HttpOverrides {
   late final SecurityContext? _ctxWithCert;
 
   HttpSSLCertOverride(
-      this._allowSelfSignedSSLCert, this._serverHost, this._clientCert) {
+    this._allowSelfSignedSSLCert,
+    this._serverHost,
+    this._clientCert,
+  ) {
     if (_clientCert != null) {
       _ctxWithCert = SecurityContext(withTrustedRoots: true);
       if (_ctxWithCert != null) {
