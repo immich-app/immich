@@ -137,7 +137,7 @@ describe(MetadataService.name, () => {
       );
     });
 
-    it('should take the file modification date when missing exif and earliest than creation date', async () => {
+    it('should take the file modification date when missing exif and earlier than creation date', async () => {
       const fileCreatedAt = new Date('2022-01-01T00:00:00.000Z');
       const fileModifiedAt = new Date('2021-01-01T00:00:00.000Z');
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
@@ -160,7 +160,7 @@ describe(MetadataService.name, () => {
       });
     });
 
-    it('should take the file creation date when missing exif and earliest than modification date', async () => {
+    it('should take the file creation date when missing exif and earlier than modification date', async () => {
       const fileCreatedAt = new Date('2021-01-01T00:00:00.000Z');
       const fileModifiedAt = new Date('2022-01-01T00:00:00.000Z');
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);

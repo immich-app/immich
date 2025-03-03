@@ -678,7 +678,7 @@ export class MetadataService extends BaseService {
   }
 
   private toDate(date: string | ExifDateTime): Date {
-    return typeof date === 'string' ? new Date(date) : date!.toDate();
+    return typeof date === 'string' ? new Date(date) : date.toDate();
   }
 
   private earliestDate(a: Date, b: Date) {
