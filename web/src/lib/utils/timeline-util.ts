@@ -3,19 +3,24 @@ import { locale } from '$lib/stores/preferences.store';
 import type { CommonJustifiedLayout } from '$lib/utils/layout-utils';
 import { JustifiedLayout } from '@immich/justified-layout-wasm';
 import type { AssetResponseDto } from '@immich/sdk';
+import type { Adapter } from '@sveltejs/kit';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
 
 export type DateGroup = {
+  bucket: AssetBucket;
+  index: number;
+  row: number;
+  col: number;
   date: DateTime;
   groupTitle: string;
   assets: AssetResponseDto[];
+  assetsIntersecting: boolean[];
   height: number;
   heightActual: boolean;
   intersecting: boolean;
   geometry: CommonJustifiedLayout;
-  bucket: AssetBucket;
 };
 export type ScrubberListener = (
   bucketDate: string | undefined,
@@ -81,7 +86,7 @@ export function formatGroupTitle(_date: DateTime): string {
   return date.toLocaleString(groupDateFormat);
 }
 
-const emptyGeometry = new JustifiedLayout(Float32Array.from([]), {
+export const emptyGeometry = new JustifiedLayout(Float32Array.from([]), {
   rowHeight: 1,
   heightTolerance: 0,
   rowWidth: 1,
@@ -95,17 +100,22 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
     fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
   );
   const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
-  return sorted.map((group) => {
+
+  return sorted.map((group, index) => {
     const date = fromLocalDateTime(group[0].localDateTime).startOf('day');
     return {
+      bucket,
+      index,
+      row: 0,
+      col: 0,
       date,
       groupTitle: formatDateGroupTitle(date),
       assets: group,
+      assetsIntersecting: Array.from({ length: group.length }, () => false),
       height: 0,
       heightActual: false,
       intersecting: false,
       geometry: emptyGeometry,
-      bucket,
     };
   });
 }

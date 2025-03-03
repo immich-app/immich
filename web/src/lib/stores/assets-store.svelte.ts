@@ -1,6 +1,5 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
-import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { generateId } from '$lib/utils/generate-id';
 import { type getJustifiedLayoutFromAssetsFunction } from '$lib/utils/layout-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
@@ -34,8 +33,21 @@ interface AssetLookup {
   assetIndex: number;
 }
 
+const GAP = 12;
+const HEADER = 49; //(1.5rem)
+
+function getPosition(geometry: JustifiedLayout, boxIdx: number) {
+  const top = geometry.getTop(boxIdx);
+  const left = geometry.getLeft(boxIdx);
+  const width = geometry.getWidth(boxIdx);
+  const height = geometry.getHeight(boxIdx);
+
+  return { top, left, width, height };
+}
+
 export class AssetBucket {
   store!: AssetStore;
+  index!: number;
   bucketDate: string = $state('');
   /**
    * The DOM height of the bucket in pixel
@@ -49,7 +61,65 @@ export class AssetBucket {
   bucketCount: number = $derived.by(() => (this.isLoaded ? this.assets.length : this.initialCount));
   initialCount: number = 0;
   assets: AssetResponseDto[] = $state([]);
+
   dateGroups: DateGroup[] = $state([]);
+  dateGroupsAssetsAbsolutePositions = $derived.by(() => {
+    const positions = [];
+    for (let i = 0; i < this.dateGroups.length; i++) {
+      const group = this.dateGroups[i];
+      const idx = this.store.buckets.indexOf(group.bucket);
+      const buckheight = this.store.absoluteBucketHeights[idx];
+
+      const height = buckheight + this.absoluteDateGroupHeights[i];
+      const assets = [];
+      for (let j = 0; j < group.assets.length; j++) {
+        const position = getPosition(group.geometry, j);
+        assets.push({
+          top: height + position.top,
+          bottom: height + position.top + position.height,
+        });
+      }
+      positions.push(assets);
+    }
+    return positions;
+  });
+  absoluteDateGroupHeights = $derived.by(() => {
+    const heights: number[] = [];
+    let cummulativeHeight = 0;
+    const rows = this.dateGroups.slice().pop()?.row || -1;
+    for (let i = 0, j = 0; i <= rows; i++) {
+      let group = this.dateGroups[j];
+      const groupHeight = group.geometry.containerHeight;
+      while (group && group.row === i) {
+        j++;
+        group = this.dateGroups[j];
+        heights.push(cummulativeHeight);
+      }
+      cummulativeHeight += groupHeight + HEADER;
+    }
+    return heights;
+  });
+  absoluteDateGroupWidths = $derived.by(() => {
+    const dateGroupWidths: number[][] = [];
+
+    const rows = this.dateGroups.slice().pop()?.row || 0;
+    for (let i = 0, j = 0; i <= rows; i++) {
+      let cummulativeWidth = 0;
+      const widths: number[] = [];
+      let group = this.dateGroups[j];
+
+      while (group && group.row === i) {
+        const width = group.geometry.containerWidth;
+        j++;
+        group = this.dateGroups[j];
+        widths.push(cummulativeWidth);
+        cummulativeWidth += width + GAP;
+      }
+      dateGroupWidths.push(widths);
+    }
+    return dateGroupWidths;
+  });
+
   cancelToken: AbortController | undefined = $state();
   /**
    * Prevent this asset's load from being canceled; i.e. to force load of offscreen asset.
@@ -58,14 +128,14 @@ export class AssetBucket {
   /**
    * A promise that resolves once the bucket is loaded, and rejects if bucket is canceled.
    */
-  complete!: Promise<void>;
+  complete!: Promise<unknown>;
   loading: boolean = $state(false);
   isLoaded: boolean = $state(false);
   intersecting: boolean = $state(false);
   measured: boolean = $state(false);
   measuredPromise!: Promise<void>;
 
-  constructor(props: Partial<AssetBucket> & { store: AssetStore; bucketDate: string }) {
+  constructor(props: Partial<AssetBucket> & { index: number; store: AssetStore; bucketDate: string }) {
     Object.assign(this, props);
     this.init();
   }
@@ -87,7 +157,6 @@ export class AssetBucket {
         // We this message with an empty reject handler, since waiting on a bucket is optional.
         void 0,
     );
-
     this.measuredPromise = new Promise((resolve) => {
       this.measuredSignal = resolve;
     });
@@ -106,6 +175,33 @@ export class AssetBucket {
   private canceledSignal: (() => void) | undefined;
   measuredSignal: (() => void) | undefined;
 
+  findDateGroupByAssetId(assetId: string) {
+    for (let dateGroupIndex = 0; dateGroupIndex < this.dateGroups.length; dateGroupIndex++) {
+      const dateGroup = this.dateGroups[dateGroupIndex];
+      const assetIndex = dateGroup.assets.findIndex((asset) => asset.id === assetId);
+      if (assetIndex !== -1) {
+        const asset = dateGroup.assets[assetIndex];
+        return {
+          asset,
+          dateGroup,
+          assetIndex,
+        };
+      }
+    }
+    return null;
+  }
+
+  findAssetAbsolutePosition(assetId: string) {
+    const searchResult = this.findDateGroupByAssetId(assetId);
+    if (searchResult) {
+      const dateGroup = searchResult.dateGroup;
+      const bucket = dateGroup.bucket;
+      const assetHeight = bucket.dateGroupsAssetsAbsolutePositions[dateGroup.index][searchResult.assetIndex];
+      return assetHeight.top;
+    }
+    return null;
+  }
+
   cancel() {
     if (this.isLoaded) {
       return;
@@ -114,6 +210,7 @@ export class AssetBucket {
       return;
     }
     this.cancelToken?.abort();
+
     this.canceledSignal?.();
     this.init();
   }
@@ -225,8 +322,6 @@ export class AssetStore {
     height: 0,
     width: 0,
   });
-  private initializedSignal!: () => void;
-  private store$ = writable(this);
 
   /** The svelte key for this view model object */
   viewId = generateId();
@@ -237,11 +332,20 @@ export class AssetStore {
   /**
    * A promise that resolves once the store is initialized.
    */
-  private complete!: Promise<void>;
-  taskManager = new AssetGridTaskManager(this);
-  initialized = $state(false);
+  initialized!: Promise<void>;
+  initializedSignal: (() => void) | undefined;
+  isInitialized = $state(false);
   timelineHeight = $state(0);
   buckets: AssetBucket[] = $state([]);
+  absoluteBucketHeights = $derived.by(() => {
+    const heights: number[] = [];
+    let cummulativeHeight = this.visibleWindow.topSectionHeight;
+    for (const bucket of this.buckets) {
+      heights.push(cummulativeHeight);
+      cummulativeHeight += bucket.bucketHeight;
+    }
+    return heights;
+  });
   assets: AssetResponseDto[] = $derived.by(() => {
     return this.buckets.flatMap(({ assets }) => assets);
   });
@@ -249,6 +353,8 @@ export class AssetStore {
   pendingScrollBucket: AssetBucket | undefined = $state();
   pendingScrollAssetId: string | undefined = $state();
   maxBucketAssets = $state(0);
+  visibleWindow = $state({ topSectionHeight: 0, top: 0, bottom: 0 });
+  firstIntersectingBucket = $state();
 
   private listeners: BucketListener[] = [];
 
@@ -256,21 +362,12 @@ export class AssetStore {
     options: AssetStoreOptions,
     private albumId?: string,
   ) {
-    this.setOptions(options);
-    this.createInitializationSignal();
-    this.store$.set(this);
+    this.setOptions();
+    void this.updateOptions({ ...options });
   }
 
-  private setOptions(options: AssetStoreOptions) {
+  private setOptions(options?: AssetStoreOptions) {
     this.options = { ...options, size: TimeBucketSize.Month };
-  }
-
-  private createInitializationSignal() {
-    // create a promise, and store its resolve callbacks. The initializedSignal callback
-    // will be invoked when a the assetstore is initialized.
-    this.complete = new Promise<void>((resolve) => {
-      this.initializedSignal = resolve;
-    }).catch(() => void 0);
   }
 
   private addPendingChanges(...changes: PendingChange[]) {
@@ -333,6 +430,60 @@ export class AssetStore {
     return batches;
   }
 
+  updateSlidingWindow({ topSectionHeight, top, bottom }: { topSectionHeight: number; top: number; bottom: number }) {
+    this.visibleWindow = { topSectionHeight, top, bottom };
+    this.updateIntersections();
+  }
+
+  updateIntersections() {
+    if (!this.isInitialized) {
+      return;
+    }
+
+    const heights = this.absoluteBucketHeights;
+
+    let firstIntersected;
+
+    for (const [i, bucketTop] of heights.entries()) {
+      const bucket = this.buckets[i];
+      const bucketBottom = bucketTop + bucket.bucketHeight;
+
+      if (bucketTop < this.visibleWindow.bottom && bucketBottom > this.visibleWindow.top) {
+        bucket.intersecting = true;
+        if (!firstIntersected) {
+          firstIntersected = bucket.bucketDate;
+        }
+
+        void this.loadBucket(bucket.bucketDate);
+        const dateGroups = bucket.dateGroups;
+
+        for (const [h, group] of dateGroups.entries()) {
+          const positions = bucket.dateGroupsAssetsAbsolutePositions[h];
+          for (let j = 0; j < group.assets.length; j++) {
+            const assetTop = positions[j].top;
+            const assetBottom = positions[j].bottom;
+            group.assetsIntersecting[j] = assetBottom > this.visibleWindow.top && assetTop < this.visibleWindow.bottom ? true : false;
+          }
+
+          group.intersecting = group.assetsIntersecting.includes(true);
+
+        }
+      } else {
+        bucket.intersecting = false;
+        bucket.cancel();
+        const dateGroups = bucket.dateGroups;
+        for (const group of dateGroups) {
+          for (let j = 0; j < group.assets.length; j++) {
+            group.assetsIntersecting[j] = false;
+          }
+        }
+      }
+    }
+    if (firstIntersected !== this.firstIntersectingBucket) {
+      this.firstIntersectingBucket = firstIntersected;
+    }
+  }
+
   processPendingChanges = throttle(() => {
     for (const { type, values } of this.getPendingChangeBatches()) {
       switch (type) {
@@ -385,7 +536,7 @@ export class AssetStore {
     }
   }
   async init({ bucketListener }: { bucketListener?: BucketListener } = {}) {
-    if (this.initialized) {
+    if (this.isInitialized) {
       throw 'Can only init once';
     }
     if (!getJustifiedLayoutFromAssets) {
@@ -409,40 +560,39 @@ export class AssetStore {
       key: getKey(),
     });
     this.buckets = timebuckets.map(
-      (bucket) => new AssetBucket({ store: this, bucketDate: bucket.timeBucket, initialCount: bucket.count }),
+      (bucket, index) =>
+        new AssetBucket({ index, store: this, bucketDate: bucket.timeBucket, initialCount: bucket.count }),
     );
 
-    this.initializedSignal();
-    this.initialized = true;
+    this.isInitialized = true;
+    // After initialization, we must layout at least the first bucket, or else it will be canceled
+    // since the height of the first bucket is 0, which will not intersect with the sliding window
+    const firstBucket = this.buckets[0];
+    if (firstBucket) {
+      await this.loadBucket(firstBucket.bucketDate, { preventCancel: true });
+    }
+    await this.updateViewportGeometry(false);
+    this.initializedSignal?.();
   }
 
   async updateOptions(options: AssetStoreOptions) {
-    // Make sure to re-initialize if the personId changes
-    const needsReinitializing = this.options.personId !== options.personId;
-    if (!this.initialized && !needsReinitializing) {
-      this.setOptions(options);
-      return;
-    }
     // TODO: don't call updateObjects frequently after
     // init - cancelation of the initialize tasks isn't
     // performed right now, and will cause issues if
     // multiple updateOptions() calls are interleved.
-    await this.complete;
-    this.taskManager.destroy();
-    this.taskManager = new AssetGridTaskManager(this);
-    this.initialized = false;
+    await this.initialized;
+    this.isInitialized = false;
+    this.initialized = new Promise<void>((resolve) => {
+      this.initializedSignal = resolve;
+    });
     this.viewId = generateId();
-    this.createInitializationSignal();
     this.setOptions(options);
     await this.initialiazeTimeBuckets();
-    // this.emit(true);
-    await this.initialLayout(true);
   }
 
   public destroy() {
-    this.taskManager.destroy();
     this.listeners = [];
-    this.initialized = false;
+    this.isInitialized = false;
   }
 
   async updateViewport(viewport: Viewport, force?: boolean) {
@@ -452,18 +602,22 @@ export class AssetStore {
     if (!force && this.viewport.height === viewport.height && this.viewport.width === viewport.width) {
       return;
     }
-    await this.complete;
+    await this.initialized;
     // changing width invalidates the actual height, and needs to be remeasured, since width changes causes
     // layout reflows.
     const changedWidth = this.viewport.width != viewport.width;
     this.viewport = { ...viewport };
-    await this.initialLayout(changedWidth);
+    await this.updateViewportGeometry(changedWidth);
   }
 
-  private async initialLayout(changedWidth: boolean) {
+  private async updateViewportGeometry(changedWidth: boolean) {
+    if (!this.isInitialized) {
+      return;
+    }
     for (const bucket of this.buckets) {
       this.updateGeometry(bucket, changedWidth);
     }
+    this.updateIntersections();
     this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
 
     const loaders = [];
@@ -473,7 +627,7 @@ export class AssetStore {
         break;
       }
       height += bucket.bucketHeight;
-      loaders.push(this.loadBucket(bucket.bucketDate));
+      loaders.push(this.loadBucket(bucket.bucketDate, { preventCancel: true }));
     }
     await Promise.all(loaders);
     this.notifyListeners({ type: 'viewport' });
@@ -495,12 +649,29 @@ export class AssetStore {
 
       this.setBucketHeight(bucket, height, false);
     }
+
+    if (bucket.isLoaded) {
+      bucket.isBucketHeightActual = true;
+    } else {
+      return;
+    }
+
     const layoutOptions = {
       spacing: 2,
       heightTolerance: 0.15,
       rowHeight: 235,
       rowWidth: Math.floor(viewportWidth),
     };
+
+    let cummulativeHeight = 0;
+    let lastRowHeight = 0;
+    let lastRow = 0;
+
+    let dateGroupRow = 0;
+    let dateGroupCol = 0;
+
+    const rowSpaceRemaining: number[] = Array.from({ length: bucket.dateGroups.length });
+    rowSpaceRemaining.fill(viewportWidth, 0, bucket.dateGroups.length);
     for (const assetGroup of bucket.dateGroups) {
       if (!assetGroup.heightActual) {
         const unwrappedWidth = (3 / 2) * assetGroup.assets.length * THUMBNAIL_HEIGHT * (7 / 10);
@@ -508,9 +679,32 @@ export class AssetStore {
         const height = rows * THUMBNAIL_HEIGHT;
         assetGroup.height = height;
       }
-
-      assetGroup.geometry = getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
+      assetGroup.geometry = getJustifiedLayoutFromAssets!(assetGroup.assets, layoutOptions);
+      rowSpaceRemaining[dateGroupRow] -= assetGroup.geometry.containerWidth - 1;
+      if (dateGroupCol > 0) {
+        rowSpaceRemaining[dateGroupRow] -= GAP;
+      }
+      if (rowSpaceRemaining[dateGroupRow] >= 0) {
+        assetGroup.row = dateGroupRow;
+        assetGroup.col = dateGroupCol;
+        dateGroupCol++;
+      } else {
+        dateGroupRow++;
+        dateGroupCol = 0;
+        assetGroup.row = dateGroupRow;
+        assetGroup.col = dateGroupCol;
+        rowSpaceRemaining[dateGroupRow] -= assetGroup.geometry.containerWidth;
+        dateGroupCol++;
+        cummulativeHeight += lastRowHeight;
+        lastRow = assetGroup.row - 1;
+      }
+      lastRowHeight = assetGroup.geometry.containerHeight + HEADER;
+      assetGroup.height = assetGroup.geometry.containerHeight;
     }
+    if (lastRow !== bucket.dateGroups.at(-1).row) {
+      cummulativeHeight += lastRowHeight;
+    }
+    bucket.bucketHeight = cummulativeHeight;
   }
 
   async loadBucket(bucketDate: string, options: { preventCancel?: boolean; pending?: boolean } = {}): Promise<void> {
@@ -547,7 +741,7 @@ export class AssetStore {
         },
         { signal: cancelToken.signal },
       );
-
+      // await this.sleep(5000);
       if (cancelToken.signal.aborted) {
         this.notifyListeners({ type: 'cancel', bucket });
         return;
@@ -572,12 +766,18 @@ export class AssetStore {
         }
       }
 
+      // Attention: setting loaded here, because updateGeometry will be a no-op if
+      // the bucket isn't already loaded, Don't introduce any awaits between this call
+      // and the end of this function
+      bucket.loaded();
       bucket.assets = assets;
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
+      this.maxBucketAssets = Math.max(this.maxBucketAssets, assets.length);
       this.updateGeometry(bucket, true);
+      this.updateIntersections();
       this.timelineHeight = this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0);
-      bucket.loaded();
-      this.notifyListeners({ type: 'loaded', bucket });
+
+      // this.notifyListeners({ type: 'loaded', bucket });
     } catch (error) {
       /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
       if ((error as any).name === 'AbortError') {
@@ -679,7 +879,8 @@ export class AssetStore {
       let bucket = this.getBucketByDate(timeBucket);
 
       if (!bucket) {
-        bucket = new AssetBucket({ store: this, bucketDate: timeBucket, bucketHeight: THUMBNAIL_HEIGHT });
+        const index = this.buckets.length;
+        bucket = new AssetBucket({ index, store: this, bucketDate: timeBucket, bucketHeight: THUMBNAIL_HEIGHT });
         this.buckets.push(bucket);
       }
 
@@ -702,6 +903,7 @@ export class AssetStore {
       bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
       this.updateGeometry(bucket, true);
     }
+    this.updateIntersections();
   }
 
   getBucketByDate(bucketDate: string): AssetBucket | null {
@@ -731,11 +933,8 @@ export class AssetStore {
     try {
       const { at: assetId } = scrollTarget;
       if (assetId) {
-        await this.complete;
-        const bucket = await this.findAndLoadBucketAsPending(assetId);
-        if (bucket) {
-          return;
-        }
+        await this.initialized;
+        return await this.findAndLoadBucketAsPending(assetId);
       }
     } catch {
       // failure
@@ -838,6 +1037,7 @@ export class AssetStore {
       if (changed) {
         bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
         this.updateGeometry(bucket, true);
+        this.updateIntersections();
       }
     }
   }
