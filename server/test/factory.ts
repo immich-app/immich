@@ -10,6 +10,7 @@ import { PartnerRepository } from 'src/repositories/partner.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -162,6 +163,7 @@ export class TestContext {
   sessionRepository: SessionRepository;
   syncRepository: SyncRepository;
   partnerRepository: PartnerRepository;
+  versionHistoryRepository: VersionHistoryRepository;
 
   private constructor(private db: Kysely<DB>) {
     this.userRepository = new UserRepository(this.db);
@@ -170,6 +172,7 @@ export class TestContext {
     this.sessionRepository = new SessionRepository(this.db);
     this.syncRepository = new SyncRepository(this.db);
     this.partnerRepository = new PartnerRepository(this.db);
+    this.versionHistoryRepository = new VersionHistoryRepository(this.db);
   }
 
   static from(db: Kysely<DB>) {
