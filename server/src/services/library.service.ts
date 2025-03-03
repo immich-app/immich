@@ -696,7 +696,7 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const assetCount = await this.assetRepository.getLibraryAssetCount({ libraryId: job.id, withDeleted: true });
+    const assetCount = await this.assetRepository.getLibraryAssetCount(job.id);
 
     if (!assetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);

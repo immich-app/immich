@@ -24,7 +24,7 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
+import { anyUuid, asUuid, mapUpsertColumns, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
@@ -991,25 +991,15 @@ export class AssetRepository {
   })
   async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
     const result = await this.db
-      .selectFrom(
-        this.db
-          .selectFrom(
-            sql`unnest(array[${sql.join(
-              paths.map((path) => sql`${path}`),
-              sql`, `,
-            )}]::text[])`.as('unnested_paths'),
-          )
-          .select(sql`unnested_paths`.as('path'))
-          .as('unnested_paths'),
-      )
-      .select(['path'])
+      .selectFrom(unnest(paths).as('path'))
+      .select('path')
       .where((eb) =>
         eb.not(
           eb.exists(
             this.db
               .selectFrom('assets')
               .select('originalPath')
-              .whereRef('assets.originalPath', '=', sql.ref('unnested_paths.path'))
+              .whereRef('assets.originalPath', '=', eb.ref('path'))
               .where('libraryId', '=', asUuid(libraryId))
               .where('isExternal', '=', true),
           ),
@@ -1020,13 +1010,13 @@ export class AssetRepository {
     return result.map((row) => row.path as string);
   }
 
-  async getLibraryAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
+  async getLibraryAssetCount(libraryId: string): Promise<number> {
     const { count } = await this.db
       .selectFrom('assets')
       .select((eb) => eb.fn.countAll().as('count'))
-      .where('libraryId', '=', asUuid(options.libraryId!))
+      .where('libraryId', '=', asUuid(libraryId))
       .executeTakeFirstOrThrow();
 
-    return count as number;
+    return Number(count);
   }
 }
