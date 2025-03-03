@@ -3,14 +3,25 @@ name: Weblate checks
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'i18n/**'
 
 jobs:
+  pre-job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: found_paths
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            i18n:
+              - 'i18n/!(en)**\.json'
   enforce-lock:
     name: Check Weblate Lock
     runs-on: ubuntu-latest
-    if: github.head_ref != 'chore/translations'
+    if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     steps:
       - name: Check weblate lock
         run: |
