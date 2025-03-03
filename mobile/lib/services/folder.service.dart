@@ -100,7 +100,9 @@ class FolderService {
   }
 
   Future<List<Asset>> getFolderAssets(
-      RootFolder folder, SortOrder order) async {
+    RootFolder folder,
+    SortOrder order,
+  ) async {
     try {
       if (folder is RecursiveFolder) {
         String fullPath =
