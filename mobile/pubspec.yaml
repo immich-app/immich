@@ -8,7 +8,7 @@ environment:
   sdk: '>=3.3.0 <4.0.0'
   flutter: 3.24.5
 
-isar_version: &isar_version 3.1.8 # define the version to be used
+isar_version: &isar_version 4.0.3 # define the version to be used
 
 dependencies:
   flutter:
@@ -28,7 +28,7 @@ dependencies:
   socket_io_client: ^2.0.3+1
   maplibre_gl: 0.19.0+2
   geolocator: ^11.0.0 # used to move to current location in map view
-  flutter_udid: ^3.0.0
+  flutter_udid: ^4.0.0
   flutter_svg: ^2.0.9
   package_info_plus: ^8.0.1
   url_launcher: ^6.2.4
@@ -54,7 +54,7 @@ dependencies:
   device_info_plus: ^11.0.0
   connectivity_plus: ^6.0.0
   wakelock_plus: ^1.1.4
-  flutter_local_notifications: ^17.2.1+2
+  flutter_local_notifications: ^18.0.0
   timezone: ^0.9.2
   octo_image: ^2.0.0
   thumbhash: 0.1.0+1
