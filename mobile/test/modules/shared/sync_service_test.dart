@@ -72,8 +72,8 @@ void main() {
       await StoreService.init(storeRepository: IsarStoreRepository(db));
       await Store.put(StoreKey.currentUser, owner);
       await LogService.init(
-        logRepo: IsarLogRepository(db),
-        storeRepo: IsarStoreRepository(db),
+        logRepository: IsarLogRepository(db),
+        storeRepository: IsarStoreRepository(db),
       );
     });
     final List<Asset> initialAssets = [

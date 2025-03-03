@@ -1,6 +1,6 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
-  import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
+  import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
@@ -58,6 +58,7 @@
     isShared?: boolean;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
+    preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     reactions?: ActivityResponseDto[];
     onClose: (dto: { asset: AssetResponseDto }) => void;
@@ -75,6 +76,7 @@
     isShared = false,
     album = null,
     person = null,
+    preAction = undefined,
     onAction = undefined,
     reactions = $bindable([]),
     onClose,
@@ -366,7 +368,9 @@
   const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
-
+  const handlePreAction = (action: Action) => {
+    preAction?.(action);
+  };
   const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
@@ -431,6 +435,7 @@
         showSlideshow={true}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
+        preAction={handlePreAction}
         onAction={handleAction}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}

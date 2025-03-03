@@ -67,7 +67,7 @@
 </script>
 
 <section id="measure-asset-group-by-date" class="flex flex-wrap gap-x-12" use:measure>
-  {#each bucket.dateGroups as dateGroup}
+  {#each bucket.dateGroups as dateGroup (dateGroup.date)}
     <div id="date-group" data-date-group={dateGroup.date}>
       <div use:resizeObserver={({ height }) => $assetStore.updateBucketDateGroup(bucket, dateGroup, { height })}>
         <div
@@ -83,7 +83,7 @@
           class="relative overflow-clip"
           style:height={dateGroup.geometry.containerHeight + 'px'}
           style:width={dateGroup.geometry.containerWidth + 'px'}
-          style:visibility={'hidden'}
+          style:visibility="hidden"
         ></div>
       </div>
     </div>

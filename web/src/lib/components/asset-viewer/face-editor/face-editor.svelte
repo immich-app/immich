@@ -325,7 +325,7 @@
     <div class="h-[250px] overflow-y-auto mt-2">
       {#if filteredCandidates.length > 0}
         <div class="mt-2 rounded-lg">
-          {#each filteredCandidates as person}
+          {#each filteredCandidates as person (person.id)}
             <button
               onclick={() => tagFace(person)}
               type="button"

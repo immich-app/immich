@@ -6,7 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
   GalleryPermissionNotifier()
-      : super(PermissionStatus.denied) // Denied is the intitial state
+      : super(PermissionStatus.denied) // Denied is the initial state
   {
     // Sets the initial state
     getGalleryPermissionStatus();

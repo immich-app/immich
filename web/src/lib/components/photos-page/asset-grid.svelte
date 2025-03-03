@@ -517,7 +517,6 @@
 
   const handleNext = async () => {
     const nextAsset = await $assetStore.getNextAsset($viewingAsset);
-
     if (nextAsset) {
       const preloadAsset = await $assetStore.getNextAsset(nextAsset);
       assetViewingStore.setAsset(nextAsset, preloadAsset ? [preloadAsset] : []);
@@ -546,7 +545,7 @@
     await navigate({ targetRoute: 'current', assetId: null, assetGridRouteSearchParams: $gridScrollTarget });
   };
 
-  const handleAction = async (action: Action) => {
+  const handlePreAction = async (action: Action) => {
     switch (action.type) {
       case removeAction:
       case AssetAction.TRASH:
@@ -560,7 +559,10 @@
         assetStore.removeAssets([action.asset.id]);
         break;
       }
-
+    }
+  };
+  const handleAction = (action: Action) => {
+    switch (action.type) {
       case AssetAction.ARCHIVE:
       case AssetAction.UNARCHIVE:
       case AssetAction.FAVORITE:
@@ -928,6 +930,7 @@
         {isShared}
         {album}
         {person}
+        preAction={handlePreAction}
         onAction={handleAction}
         onPrevious={handlePrevious}
         onNext={handleNext}

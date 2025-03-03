@@ -34,7 +34,7 @@
   <div class="hidden items-center justify-center pr-2 text-immich-primary dark:text-immich-dark-primary sm:flex">
     {#if device.deviceOS === 'Android'}
       <Icon path={mdiAndroid} size="40" />
-    {:else if device.deviceOS === 'iOS' || device.deviceOS === 'Mac OS'}
+    {:else if device.deviceOS === 'iOS' || device.deviceOS === 'macOS'}
       <Icon path={mdiApple} size="40" />
     {:else if device.deviceOS.includes('Safari')}
       <Icon path={mdiAppleSafari} size="40" />
@@ -44,7 +44,7 @@
       <Icon path={mdiLinux} size="40" />
     {:else if device.deviceOS === 'Ubuntu'}
       <Icon path={mdiUbuntu} size="40" />
-    {:else if device.deviceOS === 'Chromium OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium'}
+    {:else if device.deviceOS === 'Chrome OS' || device.deviceType === 'Chrome' || device.deviceType === 'Chromium' || device.deviceType === 'Mobile Chrome'}
       <Icon path={mdiGoogleChrome} size="40" />
     {:else}
       <Icon path={mdiHelp} size="40" />

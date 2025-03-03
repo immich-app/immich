@@ -28,13 +28,14 @@
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type Viewport } from '$lib/stores/assets.store';
   import { loadMemories, memoryStore } from '$lib/stores/memory.store';
-  import { locale } from '$lib/stores/preferences.store';
+  import { locale, videoViewerMuted } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
-  import { getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
+  import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
   import {
     AssetMediaSize,
+    AssetTypeEnum,
     deleteMemory,
     removeMemoryAssets,
     updateMemory,
@@ -57,6 +58,8 @@
     mdiPlay,
     mdiPlus,
     mdiSelectAll,
+    mdiVolumeOff,
+    mdiVolumeHigh,
   } from '@mdi/js';
   import type { NavigationTarget } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
@@ -91,9 +94,10 @@
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
-  const progressBarController = tweened<number>(0, {
+  let progressBarController = tweened<number>(0, {
     duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
   });
+  let videoPlayer: HTMLVideoElement | undefined = $state();
   const memories = storeDerived(memoryStore, (memories) => {
     memories = memories ?? [];
     const memoryAssets: MemoryAsset[] = [];
@@ -139,7 +143,23 @@
       return;
     }
 
+    // Adjust the progress bar duration to the video length
+    setProgressDuration(asset);
+
     await goto(asHref(asset));
+  };
+  const setProgressDuration = (asset: AssetResponseDto) => {
+    if (asset.type === AssetTypeEnum.Video) {
+      const timeParts = asset.duration.split(':').map(Number);
+      const durationInMilliseconds = (timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]) * 1000;
+      progressBarController = tweened<number>(0, {
+        duration: (from: number, to: number) => (to ? durationInMilliseconds * (to - from) : 0),
+      });
+    } else {
+      progressBarController = tweened<number>(0, {
+        duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
+      });
+    }
   };
   const handleNextAsset = () => handleNavigate(current?.next?.asset);
   const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
@@ -151,18 +171,21 @@
     switch (action) {
       case 'play': {
         paused = false;
+        await videoPlayer?.play();
         await progressBarController.set(1);
         break;
       }
 
       case 'pause': {
         paused = true;
+        videoPlayer?.pause();
         await progressBarController.set($progressBarController);
         break;
       }
 
       case 'reset': {
         paused = false;
+        videoPlayer?.pause();
         resetPromise = progressBarController.set(0);
         break;
       }
@@ -183,6 +206,7 @@
     if (!current) {
       return;
     }
+    // eslint-disable-next-line no-self-assign
     current.memory.assets = current.memory.assets;
   };
 
@@ -202,6 +226,9 @@
     }
 
     current = loadFromParams($memories, $page);
+
+    // Adjust the progress bar duration to the video length
+    setProgressDuration(current.asset);
   };
 
   const handleDeleteMemoryAsset = async (current?: MemoryAsset) => {
@@ -222,6 +249,7 @@
 
     current.memory.assets = current.memory.assets.filter((asset) => asset.id !== current.asset.id);
 
+    // eslint-disable-next-line no-self-assign
     $memoryStore = $memoryStore;
 
     await removeMemoryAssets({ id: current.memory.id, bulkIdsDto: { ids: [current.asset.id] } });
@@ -288,6 +316,12 @@
   $effect(() => {
     handlePromiseError(handleAction(galleryInView ? 'pause' : 'play'));
   });
+
+  $effect(() => {
+    if (videoPlayer) {
+      videoPlayer.muted = $videoViewerMuted;
+    }
+  });
 </script>
 
 <svelte:window
@@ -351,7 +385,7 @@
           class="hover:text-black"
         />
 
-        {#each current.memory.assets as asset, index}
+        {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)}>
             <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
             {#await resetPromise}
@@ -371,6 +405,11 @@
             {(current.assetIndex + 1).toLocaleString($locale)}/{current.memory.assets.length.toLocaleString($locale)}
           </p>
         </div>
+        <CircleIconButton
+          title={$videoViewerMuted ? $t('unmute_memories') : $t('mute_memories')}
+          icon={$videoViewerMuted ? mdiVolumeOff : mdiVolumeHigh}
+          onclick={() => ($videoViewerMuted = !$videoViewerMuted)}
+        />
       </div>
     </ControlAppBar>
 
@@ -434,13 +473,29 @@
         >
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
-              <img
-                transition:fade
-                class="h-full w-full rounded-2xl object-contain transition-all"
-                src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
-                alt={current.asset.exifInfo?.description}
-                draggable="false"
-              />
+              <div transition:fade class="h-full w-full">
+                {#if current.asset.type == AssetTypeEnum.Video}
+                  <video
+                    bind:this={videoPlayer}
+                    autoplay
+                    playsinline
+                    class="h-full w-full rounded-2xl object-contain transition-all"
+                    src={getAssetPlaybackUrl({ id: current.asset.id })}
+                    poster={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
+                    draggable="false"
+                    muted={$videoViewerMuted}
+                    transition:fade
+                  ></video>
+                {:else}
+                  <img
+                    class="h-full w-full rounded-2xl object-contain transition-all"
+                    src={getAssetThumbnailUrl({ id: current.asset.id, size: AssetMediaSize.Preview })}
+                    alt={current.asset.exifInfo?.description}
+                    draggable="false"
+                    transition:fade
+                  />
+                {/if}
+              </div>
             {/key}
 
             <div
@@ -475,14 +530,10 @@
                   align="bottom-right"
                   class="text-white dark:text-white"
                 >
-                  <MenuOption
-                    onClick={() => handleDeleteMemory(current)}
-                    text={'Remove memory'}
-                    icon={mdiCardsOutline}
-                  />
+                  <MenuOption onClick={() => handleDeleteMemory(current)} text="Remove memory" icon={mdiCardsOutline} />
                   <MenuOption
                     onClick={() => handleDeleteMemoryAsset(current)}
-                    text={'Remove photo from this memory'}
+                    text="Remove photo from this memory"
                     icon={mdiImageMinusOutline}
                   />
                   <!-- shortcut={{ key: 'l', shift: shared }} -->

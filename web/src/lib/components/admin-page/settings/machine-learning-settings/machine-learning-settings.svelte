@@ -46,7 +46,7 @@
         <hr />
 
         <div>
-          {#each config.machineLearning.urls as _, i}
+          {#each config.machineLearning.urls as _, i (i)}
             {#snippet removeButton()}
               {#if config.machineLearning.urls.length > 1}
                 <CircleIconButton
@@ -110,7 +110,7 @@
               <p class="immich-form-label pb-2 text-sm">
                 <FormatMessage key="admin.machine_learning_clip_model_description">
                   {#snippet children({ message })}
-                    <a href="https://huggingface.co/immich-app"><u>{message}</u></a>
+                    <a target="_blank" href="https://huggingface.co/immich-app"><u>{message}</u></a>
                   {/snippet}
                 </FormatMessage>
               </p>

@@ -139,7 +139,7 @@
           use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
         >
           {#if !hideSuggestion}
-            {#each suggestedPlaces as place, index}
+            {#each suggestedPlaces as place, index (place.latitude + place.longitude)}
               <button
                 type="button"
                 class=" flex w-full border-t border-gray-400 dark:border-immich-dark-gray h-14 place-items-center bg-gray-200 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===

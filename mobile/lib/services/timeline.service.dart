@@ -21,11 +21,22 @@ class TimelineService {
   final ITimelineRepository _timelineRepository;
   final IUserRepository _userRepository;
   final AppSettingsService _appSettingsService;
-  TimelineService(
+
+  const TimelineService(
     this._timelineRepository,
     this._userRepository,
     this._appSettingsService,
   );
+
+  Future<List<int>> getTimelineUserIds() async {
+    final me = await _userRepository.me();
+    return _timelineRepository.getTimelineUserIds(me.isarId);
+  }
+
+  Stream<List<int>> watchTimelineUserIds() async* {
+    final me = await _userRepository.me();
+    yield* _timelineRepository.watchTimelineUsers(me.isarId);
+  }
 
   Stream<RenderList> watchHomeTimeline(int userId) {
     return _timelineRepository.watchHomeTimeline(userId, _getGroupByOption());

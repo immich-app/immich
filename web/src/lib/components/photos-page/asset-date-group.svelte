@@ -119,7 +119,7 @@
       data-date-group={dateGroup.date}
       style:height={dateGroup.height + 'px'}
       style:width={dateGroup.geometry.containerWidth + 'px'}
-      style:overflow={'clip'}
+      style:overflow="clip"
     >
       {#if !display}
         <Skeleton height={dateGroup.height + 'px'} title={dateGroup.groupTitle} />

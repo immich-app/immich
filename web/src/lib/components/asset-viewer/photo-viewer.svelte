@@ -225,6 +225,7 @@
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
+      <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg"

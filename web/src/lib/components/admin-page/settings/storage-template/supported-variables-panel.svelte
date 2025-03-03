@@ -27,6 +27,7 @@
       <p class="font-medium text-immich-primary dark:text-immich-dark-primary uppercase">{$t('other').toUpperCase()}</p>
       <ul>
         <li>{`{{assetId}}`} - Asset ID</li>
+        <li>{`{{assetIdShort}}`} - Asset ID (last 12 characters)</li>
         <li>{`{{album}}`} - Album Name</li>
       </ul>
     </div>

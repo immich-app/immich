@@ -18,7 +18,7 @@
   class="dark:bg-immich-dark-gray flex h-full rounded-2xl bg-gray-200 ring-gray-400 has-[:focus-visible]:ring dark:ring-gray-600"
 >
   <legend class="sr-only">{label}</legend>
-  {#each filters as filter, index}
+  {#each filters as filter, index (`${id}-${index}`)}
     <div class="group">
       <input
         type="radio"

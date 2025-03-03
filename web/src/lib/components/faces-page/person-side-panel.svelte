@@ -221,7 +221,7 @@
           <LoadingSpinner />
         </div>
       {:else}
-        {#each peopleWithFaces as face, index}
+        {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div

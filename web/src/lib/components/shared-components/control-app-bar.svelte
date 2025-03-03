@@ -75,7 +75,7 @@
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
+        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size="24" class={buttonClass} />
       {/if}
       {@render leading?.()}
     </div>

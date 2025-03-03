@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
@@ -14,6 +15,28 @@ final timelineRepositoryProvider =
 class TimelineRepository extends DatabaseRepository
     implements ITimelineRepository {
   TimelineRepository(super.db);
+
+  @override
+  Future<List<int>> getTimelineUserIds(int id) {
+    return db.users
+        .filter()
+        .inTimelineEqualTo(true)
+        .or()
+        .isarIdEqualTo(id)
+        .isarIdProperty()
+        .findAll();
+  }
+
+  @override
+  Stream<List<int>> watchTimelineUsers(int id) {
+    return db.users
+        .filter()
+        .inTimelineEqualTo(true)
+        .or()
+        .isarIdEqualTo(id)
+        .isarIdProperty()
+        .watch();
+  }
 
   @override
   Stream<RenderList> watchArchiveTimeline(int userId) {

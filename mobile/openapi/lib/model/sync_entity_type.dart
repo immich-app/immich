@@ -25,11 +25,15 @@ class SyncEntityType {
 
   static const userV1 = SyncEntityType._(r'UserV1');
   static const userDeleteV1 = SyncEntityType._(r'UserDeleteV1');
+  static const partnerV1 = SyncEntityType._(r'PartnerV1');
+  static const partnerDeleteV1 = SyncEntityType._(r'PartnerDeleteV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
   static const values = <SyncEntityType>[
     userV1,
     userDeleteV1,
+    partnerV1,
+    partnerDeleteV1,
   ];
 
   static SyncEntityType? fromJson(dynamic value) => SyncEntityTypeTypeTransformer().decode(value);
@@ -70,6 +74,8 @@ class SyncEntityTypeTypeTransformer {
       switch (data) {
         case r'UserV1': return SyncEntityType.userV1;
         case r'UserDeleteV1': return SyncEntityType.userDeleteV1;
+        case r'PartnerV1': return SyncEntityType.partnerV1;
+        case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import type { OnAction } from '$lib/components/asset-viewer/actions/action';
+  import type { OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import AddToAlbumAction from '$lib/components/asset-viewer/actions/add-to-album-action.svelte';
   import ArchiveAction from '$lib/components/asset-viewer/actions/archive-action.svelte';
   import CloseAction from '$lib/components/asset-viewer/actions/close-action.svelte';
@@ -58,6 +58,7 @@
     showSlideshow?: boolean;
     onZoomImage: () => void;
     onCopyImage?: () => Promise<void>;
+    preAction: PreAction;
     onAction: OnAction;
     onRunJob: (name: AssetJobName) => void;
     onPlaySlideshow: () => void;
@@ -76,6 +77,7 @@
     showSlideshow = false,
     onZoomImage,
     onCopyImage,
+    preAction,
     onAction,
     onRunJob,
     onPlaySlideshow,
@@ -149,7 +151,7 @@
     {/if} -->
 
     {#if isOwner}
-      <DeleteAction {asset} {onAction} />
+      <DeleteAction {asset} {onAction} {preAction} />
 
       <ButtonContextMenu direction="left" align="top-right" color="opaque" title={$t('more')} icon={mdiDotsVertical}>
         {#if showSlideshow}

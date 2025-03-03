@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AlbumSelectionModal from '$lib/components/shared-components/album-selection-modal.svelte';
+  import AlbumSelectionModal from '$lib/components/shared-components/album-selection/album-selection-modal.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { addAssetsToAlbum, addAssetsToNewAlbum } from '$lib/utils/asset-utils';
   import type { AlbumResponseDto } from '@immich/sdk';

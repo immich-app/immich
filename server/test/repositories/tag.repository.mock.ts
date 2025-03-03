@@ -7,7 +7,7 @@ export const newTagRepositoryMock = (): Mocked<RepositoryInterface<TagRepository
     getAll: vitest.fn(),
     getByValue: vitest.fn(),
     upsertValue: vitest.fn(),
-    upsertAssetTags: vitest.fn(),
+    replaceAssetTags: vitest.fn(),
 
     get: vitest.fn(),
     create: vitest.fn(),

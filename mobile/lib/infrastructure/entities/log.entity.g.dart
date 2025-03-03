@@ -117,10 +117,9 @@ LoggerMessage _loggerMessageDeserialize(
     createdAt: reader.readDateTime(offsets[2]),
     details: reader.readStringOrNull(offsets[3]),
     level: _LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offsets[4])] ??
-        LogLevel.ALL,
+        LogLevel.info,
     message: reader.readString(offsets[5]),
   );
-  object.id = id;
   return object;
 }
 
@@ -141,7 +140,7 @@ P _loggerMessageDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 4:
       return (_LoggerMessagelevelValueEnumMap[reader.readByteOrNull(offset)] ??
-          LogLevel.ALL) as P;
+          LogLevel.info) as P;
     case 5:
       return (reader.readString(offset)) as P;
     default:
@@ -150,28 +149,28 @@ P _loggerMessageDeserializeProp<P>(
 }
 
 const _LoggerMessagelevelEnumValueMap = {
-  'ALL': 0,
-  'FINEST': 1,
-  'FINER': 2,
-  'FINE': 3,
-  'CONFIG': 4,
-  'INFO': 5,
-  'WARNING': 6,
-  'SEVERE': 7,
-  'SHOUT': 8,
-  'OFF': 9,
+  'all': 0,
+  'finest': 1,
+  'finer': 2,
+  'fine': 3,
+  'config': 4,
+  'info': 5,
+  'warning': 6,
+  'severe': 7,
+  'shout': 8,
+  'off': 9,
 };
 const _LoggerMessagelevelValueEnumMap = {
-  0: LogLevel.ALL,
-  1: LogLevel.FINEST,
-  2: LogLevel.FINER,
-  3: LogLevel.FINE,
-  4: LogLevel.CONFIG,
-  5: LogLevel.INFO,
-  6: LogLevel.WARNING,
-  7: LogLevel.SEVERE,
-  8: LogLevel.SHOUT,
-  9: LogLevel.OFF,
+  0: LogLevel.all,
+  1: LogLevel.finest,
+  2: LogLevel.finer,
+  3: LogLevel.fine,
+  4: LogLevel.config,
+  5: LogLevel.info,
+  6: LogLevel.warning,
+  7: LogLevel.severe,
+  8: LogLevel.shout,
+  9: LogLevel.off,
 };
 
 Id _loggerMessageGetId(LoggerMessage object) {
@@ -183,9 +182,7 @@ List<IsarLinkBase<dynamic>> _loggerMessageGetLinks(LoggerMessage object) {
 }
 
 void _loggerMessageAttach(
-    IsarCollection<dynamic> col, Id id, LoggerMessage object) {
-  object.id = id;
-}
+    IsarCollection<dynamic> col, Id id, LoggerMessage object) {}
 
 extension LoggerMessageQueryWhereSort
     on QueryBuilder<LoggerMessage, LoggerMessage, QWhere> {

@@ -1,19 +1,15 @@
-// ignore_for_file: constant_identifier_names
-
-import 'package:logging/logging.dart';
-
 /// Log levels according to dart logging [Level]
 enum LogLevel {
-  ALL,
-  FINEST,
-  FINER,
-  FINE,
-  CONFIG,
-  INFO,
-  WARNING,
-  SEVERE,
-  SHOUT,
-  OFF,
+  all,
+  finest,
+  finer,
+  fine,
+  config,
+  info,
+  warning,
+  severe,
+  shout,
+  off,
 }
 
 class LogMessage {

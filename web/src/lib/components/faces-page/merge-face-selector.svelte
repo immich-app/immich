@@ -111,7 +111,7 @@
       <div></div>
     {/snippet}
     {#snippet trailing()}
-      <Button size={'sm'} disabled={!hasSelection} onclick={handleMerge}>
+      <Button size="sm" disabled={!hasSelection} onclick={handleMerge}>
         <Icon path={mdiMerge} size={18} />
         <span class="ml-2">{$t('merge')}</span></Button
       >

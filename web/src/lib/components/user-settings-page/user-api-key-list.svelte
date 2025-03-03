@@ -137,37 +137,35 @@
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-          {#each keys as key, index}
-            {#key key.id}
-              <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  index % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-                }`}
-              >
-                <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
-                <td class="w-1/3 text-ellipsis px-4 text-sm"
-                  >{new Date(key.createdAt).toLocaleDateString($locale, format)}
-                </td>
-                <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
-                  <CircleIconButton
-                    color="primary"
-                    icon={mdiPencilOutline}
-                    title={$t('edit_key')}
-                    size="16"
-                    onclick={() => (editKey = key)}
-                  />
-                  <CircleIconButton
-                    color="primary"
-                    icon={mdiTrashCanOutline}
-                    title={$t('delete_key')}
-                    size="16"
-                    onclick={() => handleDelete(key)}
-                  />
-                </td>
-              </tr>
-            {/key}
+          {#each keys as key, index (key.id)}
+            <tr
+              class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                index % 2 == 0
+                  ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                  : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+              }`}
+            >
+              <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
+              <td class="w-1/3 text-ellipsis px-4 text-sm"
+                >{new Date(key.createdAt).toLocaleDateString($locale, format)}
+              </td>
+              <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
+                <CircleIconButton
+                  color="primary"
+                  icon={mdiPencilOutline}
+                  title={$t('edit_key')}
+                  size="16"
+                  onclick={() => (editKey = key)}
+                />
+                <CircleIconButton
+                  color="primary"
+                  icon={mdiTrashCanOutline}
+                  title={$t('delete_key')}
+                  size="16"
+                  onclick={() => handleDelete(key)}
+                />
+              </td>
+            </tr>
           {/each}
         </tbody>
       </table>

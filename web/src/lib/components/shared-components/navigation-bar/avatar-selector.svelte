@@ -18,7 +18,7 @@
 <FullScreenModal title={$t('select_avatar_color')} width="auto" {onClose}>
   <div class="flex items-center justify-center mt-4">
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      {#each colors as color}
+      {#each colors as color (color)}
         <button type="button" onclick={() => onChoose(color)}>
           <UserAvatar label={color} {user} {color} size="xl" showProfileImage={false} />
         </button>

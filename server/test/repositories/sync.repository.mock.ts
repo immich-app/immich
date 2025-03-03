@@ -9,5 +9,7 @@ export const newSyncRepositoryMock = (): Mocked<RepositoryInterface<SyncReposito
     deleteCheckpoints: vitest.fn(),
     getUserUpserts: vitest.fn(),
     getUserDeletes: vitest.fn(),
+    getPartnerUpserts: vitest.fn(),
+    getPartnerDeletes: vitest.fn(),
   };
 };

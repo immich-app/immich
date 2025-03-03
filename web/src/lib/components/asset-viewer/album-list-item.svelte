@@ -3,14 +3,25 @@
   import { type AlbumResponseDto } from '@immich/sdk';
   import { normalizeSearchString } from '$lib/utils/string-utils.js';
   import AlbumListItemDetails from './album-list-item-details.svelte';
+  import type { Action } from 'svelte/action';
+  import { SCROLL_PROPERTIES } from '$lib/components/shared-components/album-selection/album-selection-utils';
 
   interface Props {
     album: AlbumResponseDto;
     searchQuery?: string;
+    selected: boolean;
     onAlbumClick: () => void;
   }
 
-  let { album, searchQuery = '', onAlbumClick }: Props = $props();
+  let { album, searchQuery = '', selected = false, onAlbumClick }: Props = $props();
+
+  const scrollIntoViewIfSelected: Action = (node) => {
+    $effect(() => {
+      if (selected) {
+        node.scrollIntoView(SCROLL_PROPERTIES);
+      }
+    });
+  };
 
   let albumNameArray: string[] = $state(['', '', '']);
 
@@ -31,7 +42,10 @@
 <button
   type="button"
   onclick={onAlbumClick}
+  use:scrollIntoViewIfSelected
   class="flex w-full gap-4 px-6 py-2 text-left transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
+  class:bg-gray-200={selected}
+  class:dark:bg-gray-700={selected}
 >
   <span class="h-12 w-12 shrink-0 rounded-xl bg-slate-300">
     {#if album.albumThumbnailAssetId}

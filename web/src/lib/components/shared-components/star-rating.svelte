@@ -71,7 +71,7 @@
 >
   <legend class="sr-only">{$t('rating')}</legend>
   <div class="flex flex-row" data-testid="star-container">
-    {#each { length: count } as _, index}
+    {#each { length: count } as _, index (index)}
       {@const value = index + 1}
       {@const filled = hoverRating >= value || (hoverRating === 0 && ratingSelection >= value)}
       {@const starId = `${id}-${value}`}

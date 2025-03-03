@@ -169,7 +169,10 @@ class AlbumService {
     final Stopwatch sw = Stopwatch()..start();
     bool changes = false;
     try {
-      await _userService.refreshUsers();
+      final users = await _userService.getUsersFromServer();
+      if (users != null) {
+        await _syncService.syncUsersFromServer(users);
+      }
       final (sharedAlbum, ownedAlbum) = await (
         // Note: `shared: true` is required to get albums that don't belong to
         // us due to unusual behaviour on the API but this will also return our

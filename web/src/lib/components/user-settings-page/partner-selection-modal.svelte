@@ -39,7 +39,7 @@
 <FullScreenModal title={$t('add_partner')} showLogo {onClose}>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
-      {#each availableUsers as user}
+      {#each availableUsers as user (user.id)}
         <button
           type="button"
           onclick={() => selectUser(user)}

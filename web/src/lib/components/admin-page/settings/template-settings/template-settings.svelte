@@ -92,7 +92,7 @@
               <LoadingSpinner />
             {/if}
 
-            {#each templateConfigs as { label, templateKey, descriptionTags, templateName }}
+            {#each templateConfigs as { label, templateKey, descriptionTags, templateName } (templateKey)}
               <SettingTextarea
                 {label}
                 description={$t('admin.template_email_available_tags', { values: { tags: descriptionTags } })}

@@ -44,6 +44,7 @@
       }
     } else {
       $accordionState.delete(key);
+      // eslint-disable-next-line no-self-assign
       $accordionState = $accordionState;
     }
   };

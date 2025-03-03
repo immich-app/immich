@@ -6,7 +6,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
+import 'package:immich_mobile/services/timeline.service.dart';
 
 class CurrentUserProvider extends StateNotifier<User?> {
   CurrentUserProvider(this._apiService) : super(null) {
@@ -46,14 +46,15 @@ final currentUserProvider =
 });
 
 class TimelineUserIdsProvider extends StateNotifier<List<int>> {
-  TimelineUserIdsProvider(this._userService) : super([]) {
-    _userService.getTimelineUserIds().then((users) => state = users);
-    streamSub =
-        _userService.watchTimelineUserIds().listen((users) => state = users);
+  TimelineUserIdsProvider(this._timelineService) : super([]) {
+    _timelineService.getTimelineUserIds().then((users) => state = users);
+    streamSub = _timelineService
+        .watchTimelineUserIds()
+        .listen((users) => state = users);
   }
 
   late final StreamSubscription<List<int>> streamSub;
-  final UserService _userService;
+  final TimelineService _timelineService;
 
   @override
   void dispose() {
@@ -64,5 +65,5 @@ class TimelineUserIdsProvider extends StateNotifier<List<int>> {
 
 final timelineUsersIdsProvider =
     StateNotifierProvider<TimelineUserIdsProvider, List<int>>((ref) {
-  return TimelineUserIdsProvider(ref.watch(userServiceProvider));
+  return TimelineUserIdsProvider(ref.watch(timelineServiceProvider));
 });

@@ -160,7 +160,7 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         }
     }
     
-    // Called by the flutter code when enabled so that we can turn on the backround services
+    // Called by the flutter code when enabled so that we can turn on the background services
     // and save the callback information to communicate on this method channel
     public func handleBackgroundEnable(call: FlutterMethodCall, result: FlutterResult) {
         
@@ -249,7 +249,7 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
         result(true)
     }
     
-    // Returns the number of currently scheduled background processes to Flutter, striclty
+    // Returns the number of currently scheduled background processes to Flutter, strictly
     // for debugging
     func handleNumberOfProcesses(call: FlutterMethodCall, result: @escaping FlutterResult) {
         BGTaskScheduler.shared.getPendingTaskRequests { requests in
@@ -355,7 +355,7 @@ class BackgroundServicePlugin: NSObject, FlutterPlugin {
             let isExpensive = wifiMonitor.currentPath.isExpensive
             if (isExpensive) {
                 // The network is expensive and we have required Wi-Fi
-                // Therfore, we will simply complete the task without
+                // Therefore, we will simply complete the task without
                 // running it
                 task.setTaskCompleted(success: true)
                 return

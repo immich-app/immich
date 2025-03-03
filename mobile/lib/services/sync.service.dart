@@ -6,6 +6,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
@@ -23,7 +24,6 @@ import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -639,7 +639,7 @@ class SyncService {
   }
 
   /// fast path for common case: only new assets were added to device album
-  /// returns `true` if successfull, else `false`
+  /// returns `true` if successful, else `false`
   Future<bool> _syncDeviceAlbumFast(Album deviceAlbum, Album dbAlbum) async {
     if (!deviceAlbum.modifiedAt.isAfter(dbAlbum.modifiedAt)) {
       return false;

@@ -33,6 +33,10 @@ export class MyConsoleLogger extends ConsoleLogger {
     this.isColorEnabled = options?.color || false;
   }
 
+  isLevelEnabled(level: LogLevel) {
+    return isLogLevelEnabled(level, logLevels);
+  }
+
   formatContext(context: string): string {
     let prefix = appName || '';
     if (context) {
@@ -84,7 +88,7 @@ export class LoggingRepository {
   }
 
   isLevelEnabled(level: LogLevel) {
-    return isLogLevelEnabled(level, logLevels);
+    return this.logger.isLevelEnabled(level);
   }
 
   setLogLevel(level: LogLevel | false): void {
@@ -124,7 +128,7 @@ export class LoggingRepository {
   }
 
   private handleFunction(level: LogLevel, message: LogFunction, details: LogDetails[]) {
-    if (this.isLevelEnabled(level)) {
+    if (this.logger.isLevelEnabled(level)) {
       this.handleMessage(level, message(), details);
     }
   }

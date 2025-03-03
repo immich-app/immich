@@ -54,7 +54,7 @@
 </script>
 
 {#await peoplePromise}
-  <div id="spinner" class="flex h-60 items-center justify-center -mb-4">
+  <div id="spinner" class="flex h-[217px] items-center justify-center -mb-4">
     <LoadingSpinner size="24" />
   </div>
 {:then people}
@@ -63,14 +63,14 @@
       ? filterPeople(people, name)
       : filterPeople(people, name).slice(0, numberOfPeople)}
 
-    <div id="people-selection" class="h-60 -mb-4">
+    <div id="people-selection" class="max-h-60 -mb-4 overflow-y-auto immich-scrollbar">
       <div class="flex items-center w-full justify-between gap-6">
         <p class="immich-form-label py-3">{$t('people').toUpperCase()}</p>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
 
       <SingleGridRow
-        class="grid grid-auto-fill-20 -mx-1 gap-1 mt-2 overflow-y-auto immich-scrollbar"
+        class="grid grid-auto-fill-20 gap-1 mt-2 overflow-y-auto immich-scrollbar"
         bind:itemCount={numberOfPeople}
       >
         {#each peopleList as person (person.id)}

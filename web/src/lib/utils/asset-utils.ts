@@ -229,7 +229,7 @@ export const downloadFile = async (asset: AssetResponseDto) => {
 
   if (asset.livePhotoVideoId) {
     const motionAsset = await getAssetInfo({ id: asset.livePhotoVideoId, key: getKey() });
-    if (!isAndroidMotionVideo(motionAsset) || get(preferences).download.includeEmbeddedVideos) {
+    if (!isAndroidMotionVideo(motionAsset) || get(preferences)?.download.includeEmbeddedVideos) {
       assets.push({
         filename: motionAsset.originalFileName,
         id: asset.livePhotoVideoId,

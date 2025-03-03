@@ -79,8 +79,7 @@
       icon: mdiLibraryShelves,
       title: $getJobName(JobName.Library),
       subtitle: $t('admin.library_tasks_description'),
-      allText: $t('all'),
-      missingText: $t('refresh'),
+      missingText: $t('rescan'),
     },
     [JobName.Sidecar]: {
       title: $getJobName(JobName.Sidecar),
@@ -135,14 +134,14 @@
     [JobName.StorageTemplateMigration]: {
       icon: mdiFolderMove,
       title: $getJobName(JobName.StorageTemplateMigration),
-      missingText: $t('missing'),
+      missingText: $t('start'),
       description: StorageMigrationDescription,
     },
     [JobName.Migration]: {
       icon: mdiFolderMove,
       title: $getJobName(JobName.Migration),
       subtitle: $t('admin.migration_job_description'),
-      missingText: $t('missing'),
+      missingText: $t('start'),
     },
   };
 
@@ -170,7 +169,7 @@
 </script>
 
 <div class="flex flex-col gap-7">
-  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }]}
+  {#each jobList as [jobName, { title, subtitle, description, disabled, allText, refreshText, missingText, icon, handleCommand: handleCommandOverride }] (jobName)}
     {@const { jobCounts, queueStatus } = jobs[jobName]}
     <JobTile
       {icon}
