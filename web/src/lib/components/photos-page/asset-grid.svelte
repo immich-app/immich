@@ -834,6 +834,8 @@
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
+
+  $effect(() => assetInteraction.setHighlightAsset(null));
 </script>
 
 <svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
