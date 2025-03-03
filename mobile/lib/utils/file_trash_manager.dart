@@ -4,13 +4,22 @@ import 'package:flutter/services.dart';
 class FileTrashManager {
   static const MethodChannel _channel = MethodChannel('file_trash');
 
-  static Future<bool> moveToTrash(String filePath) async {
+  static Future<bool> moveToTrash(String fileName) async {
     try {
-      final bool success =
-          await _channel.invokeMethod('moveToTrash', {'filePath': filePath});
+      final bool success = await _channel.invokeMethod('moveToTrash', {'fileName': fileName});
       return success;
     } on PlatformException catch (e) {
-      debugPrint("Error: ${e.message}");
+      debugPrint("Error moving to trash: ${e.message}");
+      return false;
+    }
+  }
+
+  static Future<bool> restoreFromTrash(String fileName) async {
+    try {
+      final bool success = await _channel.invokeMethod('restoreFromTrash', {'fileName': fileName});
+      return success;
+    } on PlatformException catch (e) {
+      debugPrint("Error restoring file: ${e.message}");
       return false;
     }
   }
