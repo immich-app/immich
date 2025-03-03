@@ -1092,7 +1092,7 @@ describe(LibraryService.name, () => {
     it('should queue the refresh job', async () => {
       mocks.library.getAll.mockResolvedValue([libraryStub.externalLibrary1]);
 
-      await expect(sut.handleQueueSyncAll()).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleQueueScanAll()).resolves.toBe(JobStatus.SUCCESS);
 
       expect(mocks.job.queue.mock.calls).toEqual([
         [

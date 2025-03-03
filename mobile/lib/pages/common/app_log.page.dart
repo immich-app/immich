@@ -41,16 +41,16 @@ class AppLogPage extends HookConsumerWidget {
     }
 
     Widget buildLeadingIcon(LogLevel level) => switch (level) {
-          LogLevel.INFO => colorStatusIndicator(context.primaryColor),
-          LogLevel.SEVERE => colorStatusIndicator(Colors.redAccent),
-          LogLevel.WARNING => colorStatusIndicator(Colors.orangeAccent),
+          LogLevel.info => colorStatusIndicator(context.primaryColor),
+          LogLevel.severe => colorStatusIndicator(Colors.redAccent),
+          LogLevel.warning => colorStatusIndicator(Colors.orangeAccent),
           _ => colorStatusIndicator(Colors.grey),
         };
 
     Color getTileColor(LogLevel level) => switch (level) {
-          LogLevel.INFO => Colors.transparent,
-          LogLevel.SEVERE => Colors.redAccent.withOpacity(0.25),
-          LogLevel.WARNING => Colors.orangeAccent.withOpacity(0.25),
+          LogLevel.info => Colors.transparent,
+          LogLevel.severe => Colors.redAccent.withOpacity(0.25),
+          LogLevel.warning => Colors.orangeAccent.withOpacity(0.25),
           _ => context.primaryColor.withOpacity(0.1),
         };
 

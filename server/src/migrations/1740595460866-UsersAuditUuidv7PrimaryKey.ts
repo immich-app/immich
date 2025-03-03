@@ -4,7 +4,7 @@ export class UsersAuditUuidv7PrimaryKey1740595460866 implements MigrationInterfa
     name = 'UsersAuditUuidv7PrimaryKey1740595460866'
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_users_audit_deleted_at_asc_user_id_asc"`);
+        await queryRunner.query(`DROP INDEX "IDX_users_audit_deleted_at_asc_user_id_asc"`);
         await queryRunner.query(`ALTER TABLE "users_audit" DROP CONSTRAINT "PK_e9b2bdfd90e7eb5961091175180"`);
         await queryRunner.query(`ALTER TABLE "users_audit" DROP COLUMN "id"`);
         await queryRunner.query(`ALTER TABLE "users_audit" ADD "id" uuid NOT NULL DEFAULT immich_uuid_v7()`);
@@ -14,7 +14,7 @@ export class UsersAuditUuidv7PrimaryKey1740595460866 implements MigrationInterfa
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`DROP INDEX "public"."IDX_users_audit_deleted_at"`);
+        await queryRunner.query(`DROP INDEX "IDX_users_audit_deleted_at"`);
         await queryRunner.query(`ALTER TABLE "users_audit" DROP CONSTRAINT "PK_e9b2bdfd90e7eb5961091175180"`);
         await queryRunner.query(`ALTER TABLE "users_audit" DROP COLUMN "id"`);
         await queryRunner.query(`ALTER TABLE "users_audit" ADD "id" SERIAL NOT NULL`);

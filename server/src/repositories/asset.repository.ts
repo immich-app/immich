@@ -1023,7 +1023,7 @@ export class AssetRepository {
   async getLibraryAssetCount(options: AssetSearchOptions = {}): Promise<number | undefined> {
     const { count } = await this.db
       .selectFrom('assets')
-      .select(sql`COUNT(*)`.as('count'))
+      .select((eb) => eb.fn.countAll().as('count'))
       .where('libraryId', '=', asUuid(options.libraryId!))
       .executeTakeFirstOrThrow();
 

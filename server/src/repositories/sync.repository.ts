@@ -56,4 +56,26 @@ export class SyncRepository {
       .orderBy(['id asc'])
       .stream();
   }
+
+  getPartnerUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('partners')
+      .select(['sharedById', 'sharedWithId', 'inTimeline', 'updateId'])
+      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
+      .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['updateId asc'])
+      .stream();
+  }
+
+  getPartnerDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('partners_audit')
+      .select(['id', 'sharedById', 'sharedWithId'])
+      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
+      .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
+      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['id asc'])
+      .stream();
+  }
 }

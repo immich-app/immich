@@ -39,29 +39,29 @@ class LogService {
   }
 
   static Future<LogService> init({
-    required ILogRepository logRepo,
-    required IStoreRepository storeRepo,
+    required ILogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     if (_instance != null) {
       return _instance!;
     }
     _instance = await create(
-      logRepo: logRepo,
-      storeRepo: storeRepo,
+      logRepository: logRepository,
+      storeRepository: storeRepository,
       shouldBuffer: shouldBuffer,
     );
     return _instance!;
   }
 
   static Future<LogService> create({
-    required ILogRepository logRepo,
-    required IStoreRepository storeRepo,
+    required ILogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
-    final instance = LogService._(logRepo, storeRepo, shouldBuffer);
+    final instance = LogService._(logRepository, storeRepository, shouldBuffer);
     // Truncate logs to 250
-    await logRepo.truncate(limit: kLogTruncateLimit);
+    await logRepository.truncate(limit: kLogTruncateLimit);
     // Get log level from store
     final level = await instance._storeRepository.tryGet(StoreKey.logLevel);
     if (level != null) {
@@ -145,7 +145,7 @@ class LoggerUnInitializedException implements Exception {
 extension LevelDomainToInfraExtension on Level {
   LogLevel toLogLevel() =>
       LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ??
-      LogLevel.INFO;
+      LogLevel.info;
 }
 
 extension on LogLevel {
