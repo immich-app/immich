@@ -5,6 +5,8 @@ import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wa
 import type { AssetResponseDto } from '@immich/sdk';
 import createJustifiedLayout from 'justified-layout';
 
+export type getJustifiedLayoutFromAssetsFunction = typeof getJustifiedLayoutFromAssets;
+
 let useWasm = TUNABLES.LAYOUT.WASM;
 
 export interface JustifiedLayoutInterface {

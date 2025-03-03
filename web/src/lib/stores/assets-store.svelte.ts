@@ -2,7 +2,7 @@ import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { AssetGridTaskManager } from '$lib/utils/asset-store-task-manager';
 import { generateId } from '$lib/utils/generate-id';
-import { getJustifiedLayoutFromAssets } from '$lib/utils/layout-utils';
+import { type getJustifiedLayoutFromAssetsFunction } from '$lib/utils/layout-utils';
 import type { AssetGridRouteSearchParams } from '$lib/utils/navigation';
 import { fromLocalDateTime, splitBucketIntoDateGroups, type DateGroup } from '$lib/utils/timeline-util';
 import { TimeBucketSize, getAssetInfo, getTimeBucket, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
@@ -13,6 +13,9 @@ import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
 import { websocketEvents } from './websocket';
+
+const layoutUtils = import('$lib/utils/layout-utils');
+let getJustifiedLayoutFromAssets: getJustifiedLayoutFromAssetsFunction;
 
 type AssetApiGetTimeBucketsRequest = Parameters<typeof getTimeBuckets>[0];
 export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'>;
@@ -385,6 +388,10 @@ export class AssetStore {
   async init({ bucketListener }: { bucketListener?: BucketListener } = {}) {
     if (this.initialized) {
       throw 'Can only init once';
+    }
+    if (!getJustifiedLayoutFromAssets) {
+      const module = await layoutUtils;
+      getJustifiedLayoutFromAssets = module.getJustifiedLayoutFromAssets;
     }
 
     if (bucketListener) {
