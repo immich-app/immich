@@ -731,6 +731,24 @@
       e.preventDefault();
     }
   };
+
+  const highlightNextAsset = async () => {
+    const currentHighlightAsset = assetInteraction.getHighlightAsset();
+    const nextHighlightAsset =
+      currentHighlightAsset === null
+        ? $assetStore.getFirstAsset()
+        : await $assetStore.getNextAsset(currentHighlightAsset);
+    assetInteraction.setHighlightAsset(nextHighlightAsset);
+  };
+
+  const highlightPreviousAsset = async () => {
+    const currentHighlightAsset = assetInteraction.getHighlightAsset();
+    if (currentHighlightAsset !== null) {
+      const previousHighlightAsset = await $assetStore.getPreviousAsset(currentHighlightAsset);
+      assetInteraction.setHighlightAsset(previousHighlightAsset);
+    }
+  };
+
   onDestroy(() => {
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
@@ -774,29 +792,8 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-        {
-          shortcut: { key: 'ArrowRight' },
-          preventDefault: false,
-          onShortcut: async () => {
-            const currentHighlightAsset = assetInteraction.getHighlightAsset();
-            const nextHighlightAsset =
-              currentHighlightAsset === null
-                ? $assetStore.getFirstAsset()
-                : await $assetStore.getNextAsset(currentHighlightAsset);
-            assetInteraction.setHighlightAsset(nextHighlightAsset);
-          },
-        },
-        {
-          shortcut: { key: 'ArrowLeft' },
-          preventDefault: false,
-          onShortcut: async () => {
-            const currentHighlightAsset = assetInteraction.getHighlightAsset();
-            if (currentHighlightAsset !== null) {
-              const previousHighlightAsset = await $assetStore.getPreviousAsset(currentHighlightAsset);
-              assetInteraction.setHighlightAsset(previousHighlightAsset);
-            }
-          },
-        },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: highlightNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: highlightPreviousAsset },
       ];
 
       if (assetInteraction.selectionActive) {

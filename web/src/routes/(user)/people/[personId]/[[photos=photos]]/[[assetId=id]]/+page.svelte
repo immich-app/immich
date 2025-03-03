@@ -130,8 +130,8 @@
     if ($showAssetViewer || viewMode === PersonPageViewMode.SUGGEST_MERGE) {
       return;
     }
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
+    const wasSelectionActive = assetInteraction.handleEscape();
+    if (wasSelectionActive) {
       return;
     } else {
       await goto(previousRoute);

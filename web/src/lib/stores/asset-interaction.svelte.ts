@@ -14,6 +14,8 @@ export class AssetInteraction {
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
+  // A note on terminlogy: "highlight" means highlighting an asset for selection (i.e via 'ArrowLeft/Right' keyboard shortcuts).
+  // "selected" means the green tick on an asset to then perform various actions on it.
   private highlightAsset = $state<AssetResponseDto | null>(null);
 
   isAllTrashed = $derived(this.selectedAssetsArray.every((asset) => asset.isTrashed));
@@ -63,6 +65,17 @@ export class AssetInteraction {
     // Range selection
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
+
+    this.highlightAsset = null;
+  }
+
+  handleEscape() {
+    const selectionWasActive = this.selectionActive;
+    if (selectionWasActive) {
+      this.clearMultiselect();
+    }
+    this.highlightAsset = null;
+    return selectionWasActive;
   }
 
   isHighlightAsset(asset: AssetResponseDto) {

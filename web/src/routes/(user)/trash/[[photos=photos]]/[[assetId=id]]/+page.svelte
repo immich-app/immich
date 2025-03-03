@@ -86,13 +86,6 @@
     }
   };
 
-  const handleEscape = () => {
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
-      return;
-    }
-  };
-
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -136,7 +129,7 @@
       </HStack>
     {/snippet}
 
-    <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape}>
+    <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={() => assetInteraction.handleEscape()}>
       <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
         {$t('trashed_items_will_be_permanently_deleted_after', { values: { days: $serverConfig.trashDays } })}
       </p>

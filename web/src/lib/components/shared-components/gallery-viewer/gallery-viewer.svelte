@@ -178,6 +178,33 @@
     }
   };
 
+  const highlightNextAsset = () => {
+    const currentHighlightAsset = assetInteraction.getHighlightAsset();
+    let nextHighlightAsset = null;
+    if (currentHighlightAsset === null && assets.length > 0) {
+      nextHighlightAsset = assets[0];
+    } else if (currentHighlightAsset !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === currentHighlightAsset.id);
+      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
+        nextHighlightAsset = assets[currentIndex + 1];
+        assetInteraction.setHighlightAsset(assets[currentIndex + 1]);
+      }
+    }
+    assetInteraction.setHighlightAsset(nextHighlightAsset);
+  };
+
+  const highlightPreviousAsset = () => {
+    const currentHighlightAsset = assetInteraction.getHighlightAsset();
+    if (currentHighlightAsset !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === currentHighlightAsset.id);
+      if (currentIndex <= 0) {
+        assetInteraction.setHighlightAsset(null);
+      } else {
+        assetInteraction.setHighlightAsset(assets[currentIndex - 1]);
+      }
+    }
+  };
+
   let shortcutList = $derived(
     (() => {
       if ($isViewerOpen) {
@@ -188,11 +215,13 @@
         { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: highlightNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: highlightPreviousAsset },
+        { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
       ];
 
       if (assetInteraction.selectionActive) {
         shortcuts.push(
-          { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
           { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
           { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
@@ -386,6 +415,7 @@
           {showArchiveIcon}
           {asset}
           selected={assetInteraction.selectedAssets.has(asset)}
+          highlight={assetInteraction.isHighlightAsset(asset)}
           selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}

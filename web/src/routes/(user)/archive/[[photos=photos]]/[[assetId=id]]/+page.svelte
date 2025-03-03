@@ -28,13 +28,6 @@
   const assetStore = new AssetStore({ isArchived: true });
   const assetInteraction = new AssetInteraction();
 
-  const handleEscape = () => {
-    if (assetInteraction.selectionActive) {
-      assetInteraction.clearMultiselect();
-      return;
-    }
-  };
-
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -66,7 +59,7 @@
     {assetStore}
     {assetInteraction}
     removeAction={AssetAction.UNARCHIVE}
-    onEscape={handleEscape}
+    onEscape={() => assetInteraction.handleEscape()}
   >
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_archived_assets_message')} />
