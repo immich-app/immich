@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
+import { Stats } from 'node:fs';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
@@ -468,8 +469,14 @@ export class LibraryService extends BaseService {
 
     this.logger.debug(`Checking batch of ${assets.length} existing asset(s) in library ${job.libraryId}`);
 
-    for (const asset of assets) {
-      const action = await this.checkExistingAsset(asset, job.libraryId);
+    const stats = await Promise.all(
+      assets.map((asset) => this.storageRepository.stat(asset.originalPath).catch(() => null)),
+    );
+
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i];
+      const stat = stats[i];
+      const action = this.checkExistingAsset(asset, stat);
       switch (action) {
         case AssetSyncResult.OFFLINE: {
           if (asset.status === AssetStatus.TRASHED) {
@@ -514,40 +521,26 @@ export class LibraryService extends BaseService {
       }
     }
 
-    if (assetIdsToOffline.length > 0) {
-      await this.assetRepository.updateAll(assetIdsToOffline, {
+    await Promise.all([
+      this.assetRepository.updateAll(assetIdsToOffline, {
         isOffline: true,
         deletedAt: new Date(),
-      });
-    }
-
-    if (trashedAssetIdsToOffline.length > 0) {
-      await this.assetRepository.updateAll(trashedAssetIdsToOffline, {
+      }),
+      this.assetRepository.updateAll(trashedAssetIdsToOffline, {
         isOffline: true,
-      });
-    }
-
-    if (assetIdsToOnline.length > 0) {
-      await this.assetRepository.updateAll(assetIdsToOnline, {
+      }),
+      this.assetRepository.updateAll(assetIdsToOnline, {
         isOffline: false,
         deletedAt: null,
-      });
-    }
-
-    if (trashedAssetIdsToOnline.length > 0) {
-      await this.assetRepository.updateAll(trashedAssetIdsToOnline, {
+      }),
+      this.assetRepository.updateAll(trashedAssetIdsToOnline, {
         isOffline: false,
-      });
-    }
-
-    if (assetIdsToUpdate.length > 0) {
-      await this.queuePostSyncJobs(assetIdsToUpdate);
-    }
+      }),
+      this.queuePostSyncJobs(assetIdsToUpdate),
+    ]);
 
     const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length - assetIdsToOnline.length;
-
     const cumulativePercentage = ((100 * job.progressCounter) / job.totalAssets).toFixed(1);
-
     this.logger.log(
       `Checked existing asset(s): ${assetIdsToOffline.length + trashedAssetIdsToOffline.length} offlined, ${assetIdsToOnline.length + trashedAssetIdsToOnline.length} onlined, ${assetIdsToUpdate.length} updated, ${remainingCount} unchanged of current batch of ${assets.length} (Total progress: ${job.progressCounter} of ${job.totalAssets}, ${cumulativePercentage} %) in library ${job.libraryId}.`,
     );
@@ -555,23 +548,18 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private async checkExistingAsset(asset: AssetEntity, libraryId: string): Promise<AssetSyncResult> {
-    this.logger.verbose(`Checking existing asset ${asset.originalPath} in library ${libraryId}`);
-
-    let stat;
-    try {
-      stat = await this.storageRepository.stat(asset.originalPath);
-    } catch {
+  private checkExistingAsset(asset: AssetEntity, stat: Stats | null): AssetSyncResult {
+    if (!stat) {
       // File not found on disk or permission error
       if (asset.isOffline) {
         this.logger.verbose(
-          `Asset ${asset.originalPath} is still not accessible, keeping offline in library ${libraryId}`,
+          `Asset ${asset.originalPath} is still not accessible, keeping offline in library ${asset.libraryId}`,
         );
         return AssetSyncResult.DO_NOTHING;
       }
 
       this.logger.debug(
-        `Asset ${asset.originalPath} is no longer on disk or is inaccessible because of permissions, marking offline in library ${libraryId}`,
+        `Asset ${asset.originalPath} is no longer on disk or is inaccessible because of permissions, marking offline in library ${asset.libraryId}`,
       );
       return AssetSyncResult.OFFLINE;
     }
@@ -581,23 +569,8 @@ export class LibraryService extends BaseService {
       return AssetSyncResult.CHECK_OFFLINE;
     }
 
-    if (!asset.fileModifiedAt || !asset.fileCreatedAt || !asset.localDateTime) {
-      this.logger.verbose(`Asset ${asset.originalPath} needs metadata extraction in library ${libraryId}`);
-
-      return AssetSyncResult.UPDATE;
-    }
-
-    const mtime = stat.mtime;
-    const isAssetModified = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
-
-    if (isAssetModified) {
-      this.logger.verbose(
-        `Asset ${asset.originalPath} modification time changed from ${asset.fileModifiedAt?.toISOString()} to ${mtime.toISOString()}, queuing re-import in library ${libraryId}`,
-      );
-
-      await this.assetRepository.updateAll([asset.id], {
-        fileModifiedAt: mtime,
-      });
+    if (stat.mtime !== asset.fileModifiedAt || !asset.fileCreatedAt || !asset.localDateTime) {
+      this.logger.verbose(`Asset ${asset.originalPath} needs metadata extraction in library ${asset.libraryId}`);
 
       return AssetSyncResult.UPDATE;
     }
