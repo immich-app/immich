@@ -92,7 +92,7 @@
     "tailwindcss-preset-email": "^1.3.2",
     "thumbhash": "^0.1.1",
     "typeorm": "^0.3.17",
-    "ua-parser-js": "^1.0.35",
+    "ua-parser-js": "^2.0.0",
     "validator": "^13.12.0"
   },
   "devDependencies": {
