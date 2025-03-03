@@ -25,7 +25,7 @@ dependencies:
   intl: ^0.19.0
   auto_route: ^9.2.0
   fluttertoast: ^8.2.4
-  socket_io_client: ^2.0.3+1
+  socket_io_client: ^3.0.0
   maplibre_gl: 0.19.0+2
   geolocator: ^11.0.0 # used to move to current location in map view
   flutter_udid: ^3.0.0
