@@ -60,7 +60,7 @@ dependencies:
   thumbhash: 0.1.0+1
   async: ^2.11.0
   dynamic_color: ^1.7.0 #package to apply system theme
-  background_downloader: ^8.5.5
+  background_downloader: ^9.0.0
   network_info_plus: ^6.1.1
   native_video_player:
     git:
