@@ -69,7 +69,7 @@
       </div>
     {/if}
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
-      {#each $memoryStore as memory}
+      {#each $memoryStore as memory (memory.id)}
         {#if memory.assets.length > 0}
           <a
             class="memory-card relative mr-8 inline-block aspect-[3/4] md:aspect-video h-[215px] rounded-xl"

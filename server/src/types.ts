@@ -303,7 +303,6 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
-  | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
@@ -351,7 +350,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
   | { name: JobName.LIBRARY_SYNC_ASSET; data: ILibraryAssetJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
-  | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
+  | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Notification

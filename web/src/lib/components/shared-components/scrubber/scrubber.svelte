@@ -278,7 +278,7 @@
     {/if}
   </div>
   <!-- Time Segment -->
-  {#each segments as segment}
+  {#each segments as segment (segment.date)}
     <div
       id="time-segment"
       class="relative"

@@ -425,6 +425,8 @@ Class | Method | HTTP request | Description
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)
  - [SyncEntityType](doc//SyncEntityType.md)
+ - [SyncPartnerDeleteV1](doc//SyncPartnerDeleteV1.md)
+ - [SyncPartnerV1](doc//SyncPartnerV1.md)
  - [SyncRequestType](doc//SyncRequestType.md)
  - [SyncStreamDto](doc//SyncStreamDto.md)
  - [SyncUserDeleteV1](doc//SyncUserDeleteV1.md)

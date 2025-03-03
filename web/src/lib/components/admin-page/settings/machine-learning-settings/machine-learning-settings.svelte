@@ -46,7 +46,7 @@
         <hr />
 
         <div>
-          {#each config.machineLearning.urls as _, i}
+          {#each config.machineLearning.urls as _, i (i)}
             {#snippet removeButton()}
               {#if config.machineLearning.urls.length > 1}
                 <CircleIconButton

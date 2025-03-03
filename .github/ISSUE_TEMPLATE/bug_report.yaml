@@ -3,7 +3,7 @@ description: Report an issue with Immich
 body:
   - type: checkboxes
     attributes:
-      label: I have searched the existing issues to make sure this is not a duplicate report.
+      label: I have searched the existing issues, both open and closed, to make sure this is not a duplicate report.
       options:
         - label: "Yes"
           required: true
