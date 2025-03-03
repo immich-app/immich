@@ -19,6 +19,7 @@
     "@types/byte-size": "^8.1.0",
     "@types/cli-progress": "^3.11.0",
     "@types/lodash-es": "^4.17.12",
+    "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^22.13.4",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
@@ -62,9 +63,11 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "chokidar": "^4.0.3",
     "fast-glob": "^3.3.2",
     "fastq": "^1.17.1",
-    "lodash-es": "^4.17.21"
+    "lodash-es": "^4.17.21",
+    "micromatch": "^4.0.8"
   },
   "volta": {
     "node": "22.14.0"
