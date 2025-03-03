@@ -45,7 +45,7 @@
     "dotenv": "^16.4.7",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.0",
-    "eslint-plugin-svelte": "^2.46.1",
+    "eslint-plugin-svelte": "^3.0.0",
     "eslint-plugin-unicorn": "^56.0.1",
     "factory.ts": "^1.4.1",
     "globals": "^16.0.0",
