@@ -156,7 +156,7 @@ interface UpdateStackAssets {
   values: string[];
 }
 
-export const photoViewer = writable<HTMLImageElement | null>(null);
+export const photoViewerImgElement = writable<HTMLImageElement | null>(null);
 
 type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
 

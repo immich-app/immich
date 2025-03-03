@@ -1,16 +1,15 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/services/asset.service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'asset_stack.provider.g.dart';
 
 class AssetStackNotifier extends StateNotifier<List<Asset>> {
+  final AssetService assetService;
   final String _stackId;
-  final Ref _ref;
 
-  AssetStackNotifier(this._stackId, this._ref) : super([]) {
+  AssetStackNotifier(this.assetService, this._stackId) : super([]) {
     _fetchStack(_stackId);
   }
 
@@ -19,7 +18,7 @@ class AssetStackNotifier extends StateNotifier<List<Asset>> {
       return;
     }
 
-    final stack = await _ref.read(assetStackProvider(stackId).future);
+    final stack = await assetService.getStackAssets(stackId);
     if (stack.isNotEmpty) {
       state = stack;
     }
@@ -35,23 +34,9 @@ class AssetStackNotifier extends StateNotifier<List<Asset>> {
 
 final assetStackStateProvider = StateNotifierProvider.autoDispose
     .family<AssetStackNotifier, List<Asset>, String>(
-  (ref, stackId) => AssetStackNotifier(stackId, ref),
+  (ref, stackId) =>
+      AssetStackNotifier(ref.watch(assetServiceProvider), stackId),
 );
-
-final assetStackProvider =
-    FutureProvider.autoDispose.family<List<Asset>, String>((ref, stackId) {
-  return ref
-      .watch(dbProvider)
-      .assets
-      .filter()
-      .isArchivedEqualTo(false)
-      .isTrashedEqualTo(false)
-      .stackIdEqualTo(stackId)
-      // orders primary asset first as its ID is null
-      .sortByStackPrimaryAssetId()
-      .thenByFileCreatedAtDesc()
-      .findAll();
-});
 
 @riverpod
 int assetStackIndex(AssetStackIndexRef ref, Asset asset) {

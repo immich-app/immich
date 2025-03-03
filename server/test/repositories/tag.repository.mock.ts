@@ -1,7 +1,8 @@
-import { ITagRepository } from 'src/interfaces/tag.interface';
+import { TagRepository } from 'src/repositories/tag.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newTagRepositoryMock = (): Mocked<ITagRepository> => {
+export const newTagRepositoryMock = (): Mocked<RepositoryInterface<TagRepository>> => {
   return {
     getAll: vitest.fn(),
     getByValue: vitest.fn(),

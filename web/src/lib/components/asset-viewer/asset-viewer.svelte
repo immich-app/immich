@@ -43,10 +43,10 @@
   import DetailPanel from './detail-panel.svelte';
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
+  import ImagePanoramaViewer from './image-panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-  import ImagePanoramaViewer from './image-panorama-viewer.svelte';
 
   type HasAsset = boolean;
 
@@ -190,7 +190,7 @@
     }
   };
 
-  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+  const onAssetUpdate = ({ asset: assetUpdate }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
     if (assetUpdate.id === asset.id) {
       asset = assetUpdate;
     }
@@ -198,8 +198,8 @@
 
   onMount(async () => {
     unsubscribes.push(
-      websocketEvents.on('on_upload_success', onAssetUpdate),
-      websocketEvents.on('on_asset_update', onAssetUpdate),
+      websocketEvents.on('on_upload_success', (asset) => onAssetUpdate({ event: 'upload', asset })),
+      websocketEvents.on('on_asset_update', (asset) => onAssetUpdate({ event: 'update', asset })),
     );
 
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -377,6 +377,7 @@
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
+        break;
       }
     }
 
@@ -483,7 +484,7 @@
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
-            checksum={previewStackedAsset.checksum}
+            cacheKey={previewStackedAsset.thumbhash}
             projectionType={previewStackedAsset.exifInfo?.projectionType}
             loopVideo={true}
             onPreviousAsset={() => navigateAsset('previous')}
@@ -500,7 +501,7 @@
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
-              checksum={asset.checksum}
+              cacheKey={asset.thumbhash}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               onPreviousAsset={() => navigateAsset('previous')}
@@ -529,7 +530,7 @@
         {:else}
           <VideoViewer
             assetId={asset.id}
-            checksum={asset.checksum}
+            cacheKey={asset.thumbhash}
             projectionType={asset.exifInfo?.projectionType}
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
             onPreviousAsset={() => navigateAsset('previous')}

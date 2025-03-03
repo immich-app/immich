@@ -73,6 +73,7 @@
       filetype: 'IMG',
       filetypefull: 'IMAGE',
       assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
+      assetIdShort: '56717ccba856',
       album: $t('album_name'),
     };
 
@@ -203,7 +204,7 @@
 
           <p class="p-4 py-2 mt-2 text-xs bg-gray-200 rounded-lg dark:bg-gray-700 dark:text-immich-dark-fg">
             <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
-              >UPLOAD_LOCATION/{$user.storageLabel || $user.id}</span
+              >UPLOAD_LOCATION/library/{$user.storageLabel || $user.id}</span
             >/{parsedTemplate()}.jpg
           </p>
 

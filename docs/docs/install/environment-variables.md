@@ -168,6 +168,8 @@ Redis (Sentinel) URL example JSON before encoding:
 | `MACHINE_LEARNING_ANN_TUNING_LEVEL`                         | ARM-NN GPU tuning level (1: rapid, 2: normal, 3: exhaustive)                                        |               `2`               | machine learning |
 | `MACHINE_LEARNING_DEVICE_IDS`<sup>\*4</sup>                 | Device IDs to use in multi-GPU environments                                                         |               `0`               | machine learning |
 | `MACHINE_LEARNING_MAX_BATCH_SIZE__FACIAL_RECOGNITION`       | Set the maximum number of faces that will be processed at once by the facial recognition model      |  None (`1` if using OpenVINO)   | machine learning |
+| `MACHINE_LEARNING_PING_TIMEOUT`                             | How long (ms) to wait for a PING response when checking if an ML server is available                |             `2000`              | server           |
+| `MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME`                | How long to ignore ML servers that are offline before trying again                                  |             `30000`             | server           |
 
 \*1: It is recommended to begin with this parameter when changing the concurrency levels of the machine learning service and then tune the other ones.
 

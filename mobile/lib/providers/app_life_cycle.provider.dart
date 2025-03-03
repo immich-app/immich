@@ -1,20 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/services/background.service.dart';
+import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
+import 'package:immich_mobile/providers/album/album.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/providers/notification_permission.provider.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/services/immich_logger.service.dart';
+import 'package:immich_mobile/services/background.service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum AppLifeCycleEnum {
@@ -112,7 +114,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       _ref.read(websocketProvider.notifier).disconnect();
     }
 
-    ImmichLogger().flush();
+    unawaited(LogService.I.flush());
   }
 
   void handleAppDetached() {

@@ -1,9 +1,11 @@
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { UserRepository } from 'src/repositories/user.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newUserRepositoryMock = (): Mocked<IUserRepository> => {
+export const newUserRepositoryMock = (): Mocked<RepositoryInterface<UserRepository>> => {
   return {
     get: vitest.fn(),
+    getMetadata: vitest.fn().mockResolvedValue([]),
     getAdmin: vitest.fn(),
     getByEmail: vitest.fn(),
     getByStorageLabel: vitest.fn(),

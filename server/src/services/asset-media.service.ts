@@ -21,27 +21,20 @@ import {
 } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { ASSET_CHECKSUM_CONSTRAINT, AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, AssetType, CacheControl, Permission, StorageFolder } from 'src/enum';
-import { JobName } from 'src/interfaces/job.interface';
+import { AssetStatus, AssetType, CacheControl, JobName, Permission, StorageFolder } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
+import { UploadFile } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
-export interface UploadRequest {
+
+interface UploadRequest {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
   file: UploadFile;
-}
-
-export interface UploadFile {
-  uuid: string;
-  checksum: Buffer;
-  originalPath: string;
-  originalName: string;
-  size: number;
 }
 
 @Injectable()

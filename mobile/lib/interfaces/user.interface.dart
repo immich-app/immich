@@ -4,6 +4,8 @@ import 'package:immich_mobile/interfaces/database.interface.dart';
 abstract interface class IUserRepository implements IDatabaseRepository {
   Future<User?> get(String id);
 
+  Future<User?> getByDbId(int id);
+
   Future<List<User>> getByIds(List<String> ids);
 
   Future<List<User>> getAll({bool self = true, UserSort? sortBy});
@@ -18,6 +20,12 @@ abstract interface class IUserRepository implements IDatabaseRepository {
   Future<void> deleteById(List<int> ids);
 
   Future<User> me();
+
+  Future<void> clearTable();
+
+  Future<List<int>> getTimelineUserIds(int id);
+
+  Stream<List<int>> watchTimelineUsers(int id);
 }
 
 enum UserSort { id }

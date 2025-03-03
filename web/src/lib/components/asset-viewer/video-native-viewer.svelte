@@ -9,11 +9,13 @@
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
 
   interface Props {
     assetId: string;
     loopVideo: boolean;
-    checksum: string;
+    cacheKey: string | null;
     onPreviousAsset?: () => void;
     onNextAsset?: () => void;
     onVideoEnded?: () => void;
@@ -24,7 +26,7 @@
   let {
     assetId,
     loopVideo,
-    checksum,
+    cacheKey,
     onPreviousAsset = () => {},
     onNextAsset = () => {},
     onVideoEnded = () => {},
@@ -39,7 +41,7 @@
 
   onMount(() => {
     if (videoPlayer) {
-      assetFileUrl = getAssetPlaybackUrl({ id: assetId, checksum });
+      assetFileUrl = getAssetPlaybackUrl({ id: assetId, cacheKey });
       forceMuted = false;
       videoPlayer.load();
     }
@@ -84,9 +86,23 @@
       onPreviousAsset();
     }
   };
+
+  let containerWidth = $state(0);
+  let containerHeight = $state(0);
+
+  $effect(() => {
+    if (isFaceEditMode.value) {
+      videoPlayer?.pause();
+    }
+  });
 </script>
 
-<div transition:fade={{ duration: 150 }} class="flex h-full select-none place-content-center place-items-center">
+<div
+  transition:fade={{ duration: 150 }}
+  class="flex h-full select-none place-content-center place-items-center"
+  bind:clientWidth={containerWidth}
+  bind:clientHeight={containerHeight}
+>
   <video
     bind:this={videoPlayer}
     loop={$loopVideoPreference && loopVideo}
@@ -106,7 +122,7 @@
     onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
-    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, checksum })}
+    poster={getAssetThumbnailUrl({ id: assetId, size: AssetMediaSize.Preview, cacheKey })}
     src={assetFileUrl}
   >
   </video>
@@ -115,5 +131,9 @@
     <div class="absolute flex place-content-center place-items-center">
       <LoadingSpinner />
     </div>
+  {/if}
+
+  {#if isFaceEditMode.value}
+    <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
   {/if}
 </div>

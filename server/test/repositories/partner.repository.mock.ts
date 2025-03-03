@@ -1,7 +1,8 @@
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
+import { PartnerRepository } from 'src/repositories/partner.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newPartnerRepositoryMock = (): Mocked<IPartnerRepository> => {
+export const newPartnerRepositoryMock = (): Mocked<RepositoryInterface<PartnerRepository>> => {
   return {
     create: vitest.fn(),
     remove: vitest.fn(),

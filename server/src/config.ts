@@ -5,14 +5,14 @@ import {
   CQMode,
   ImageFormat,
   LogLevel,
+  QueueName,
   ToneMapping,
   TranscodeHWAccel,
   TranscodePolicy,
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { ConcurrentQueueName, QueueName } from 'src/interfaces/job.interface';
-import { ImageOptions } from 'src/types';
+import { ConcurrentQueueName, ImageOptions } from 'src/types';
 
 export interface SystemConfig {
   backup: {

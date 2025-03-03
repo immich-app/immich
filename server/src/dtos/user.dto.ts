@@ -47,7 +47,7 @@ export const mapUser = (entity: UserEntity): UserResponseDto => {
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor: getPreferences(entity).avatar.color,
+    avatarColor: getPreferences(entity.email, entity.metadata || []).avatar.color,
     profileChangedAt: entity.profileChangedAt,
   };
 };
@@ -157,6 +157,6 @@ export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,
-    license: license ?? null,
+    license: license ? { ...license, activatedAt: new Date(license?.activatedAt) } : null,
   };
 }

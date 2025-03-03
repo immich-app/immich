@@ -6,7 +6,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveInfo, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { Permission } from 'src/enum';
-import { ImmichReadStream } from 'src/interfaces/storage.interface';
+import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { BaseService } from 'src/services/base.service';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { usePagination } from 'src/utils/pagination';
@@ -19,7 +19,8 @@ export class DownloadService extends BaseService {
     const archives: DownloadArchiveInfo[] = [];
     let archive: DownloadArchiveInfo = { size: 0, assetIds: [] };
 
-    const preferences = getPreferences(auth.user);
+    const metadata = await this.userRepository.getMetadata(auth.user.id);
+    const preferences = getPreferences(auth.user.email, metadata);
 
     const assetPagination = await this.getDownloadAssets(auth, dto);
     for await (const assets of assetPagination) {

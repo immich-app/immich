@@ -2079,65 +2079,6 @@
         ]
       }
     },
-    "/audit/deletes": {
-      "get": {
-        "operationId": "getAuditDeletes",
-        "parameters": [
-          {
-            "name": "after",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "format": "date-time",
-              "type": "string"
-            }
-          },
-          {
-            "name": "entityType",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "$ref": "#/components/schemas/EntityType"
-            }
-          },
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "format": "uuid",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuditDeletesResponseDto"
-                }
-              }
-            },
-            "description": ""
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          },
-          {
-            "cookie": []
-          },
-          {
-            "api_key": []
-          }
-        ],
-        "tags": [
-          "Audit"
-        ]
-      }
-    },
     "/auth/admin-sign-up": {
       "post": {
         "operationId": "signUpAdmin",
@@ -2487,9 +2428,85 @@
         "tags": [
           "Faces"
         ]
+      },
+      "post": {
+        "operationId": "createFace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
       }
     },
     "/faces/{id}": {
+      "delete": {
+        "operationId": "deleteFace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetFaceDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Faces"
+        ]
+      },
       "put": {
         "operationId": "reassignFacesById",
         "parameters": [
@@ -3129,7 +3146,41 @@
     "/memories": {
       "get": {
         "operationId": "searchMemories",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "for",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "type": "string"
+            }
+          },
+          {
+            "name": "isSaved",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "isTrashed",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/MemoryType"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -5230,7 +5281,17 @@
     "/shared-links": {
       "get": {
         "operationId": "getAllSharedLinks",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "albumId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -5851,6 +5912,107 @@
         ]
       }
     },
+    "/sync/ack": {
+      "delete": {
+        "operationId": "deleteSyncAck",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncAckDeleteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      },
+      "get": {
+        "operationId": "getSyncAck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SyncAckDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      },
+      "post": {
+        "operationId": "sendSyncAck",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncAckSetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
     "/sync/delta-sync": {
       "post": {
         "operationId": "getDeltaSync",
@@ -5919,6 +6081,41 @@
                 }
               }
             },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Sync"
+        ]
+      }
+    },
+    "/sync/stream": {
+      "post": {
+        "operationId": "getSyncStream",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncStreamDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -7458,7 +7655,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.125.7",
+    "version": "1.128.0",
     "contact": {}
   },
   "tags": [],
@@ -8085,6 +8282,58 @@
         ],
         "type": "object"
       },
+      "AssetFaceCreateDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "height": {
+            "type": "integer"
+          },
+          "imageHeight": {
+            "type": "integer"
+          },
+          "imageWidth": {
+            "type": "integer"
+          },
+          "personId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "width": {
+            "type": "integer"
+          },
+          "x": {
+            "type": "integer"
+          },
+          "y": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "assetId",
+          "height",
+          "imageHeight",
+          "imageWidth",
+          "personId",
+          "width",
+          "x",
+          "y"
+        ],
+        "type": "object"
+      },
+      "AssetFaceDeleteDto": {
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "force"
+        ],
+        "type": "object"
+      },
       "AssetFaceResponseDto": {
         "properties": {
           "boundingBoxX1": {
@@ -8633,24 +8882,6 @@
         ],
         "type": "string"
       },
-      "AuditDeletesResponseDto": {
-        "properties": {
-          "ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "needsFullSync": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "ids",
-          "needsFullSync"
-        ],
-        "type": "object"
-      },
       "AvatarResponse": {
         "properties": {
           "color": {
@@ -9064,13 +9295,6 @@
           }
         },
         "type": "object"
-      },
-      "EntityType": {
-        "enum": [
-          "ASSET",
-          "ALBUM"
-        ],
-        "type": "string"
       },
       "ExifResponseDto": {
         "properties": {
@@ -9692,7 +9916,9 @@
         "enum": [
           "person-cleanup",
           "tag-cleanup",
-          "user-cleanup"
+          "user-cleanup",
+          "memory-cleanup",
+          "memory-create"
         ],
         "type": "string"
       },
@@ -9849,6 +10075,10 @@
             "format": "date-time",
             "type": "string"
           },
+          "hideAt": {
+            "format": "date-time",
+            "type": "string"
+          },
           "id": {
             "type": "string"
           },
@@ -9863,6 +10093,10 @@
             "type": "string"
           },
           "seenAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "showAt": {
             "format": "date-time",
             "type": "string"
           },
@@ -10029,6 +10263,11 @@
           },
           "previewPath": {
             "type": "string"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
           },
           "size": {
             "maximum": 1000,
@@ -10686,6 +10925,11 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
           },
           "size": {
             "maximum": 1000,
@@ -11514,6 +11758,34 @@
         ],
         "type": "string"
       },
+      "SharedLinksResponse": {
+        "properties": {
+          "enabled": {
+            "default": true,
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled",
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "SharedLinksUpdate": {
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "sidebarWeb": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
       "SignUpDto": {
         "properties": {
           "email": {
@@ -11609,6 +11881,11 @@
           "query": {
             "type": "string"
           },
+          "rating": {
+            "maximum": 5,
+            "minimum": -1,
+            "type": "number"
+          },
           "size": {
             "maximum": 1000,
             "minimum": 1,
@@ -11675,7 +11952,8 @@
       "SourceType": {
         "enum": [
           "machine-learning",
-          "exif"
+          "exif",
+          "manual"
         ],
         "type": "string"
       },
@@ -11725,6 +12003,113 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "SyncAckDeleteDto": {
+        "properties": {
+          "types": {
+            "items": {
+              "$ref": "#/components/schemas/SyncEntityType"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SyncAckDto": {
+        "properties": {
+          "ack": {
+            "type": "string"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SyncEntityType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "ack",
+          "type"
+        ],
+        "type": "object"
+      },
+      "SyncAckSetDto": {
+        "properties": {
+          "acks": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "acks"
+        ],
+        "type": "object"
+      },
+      "SyncEntityType": {
+        "enum": [
+          "UserV1",
+          "UserDeleteV1"
+        ],
+        "type": "string"
+      },
+      "SyncRequestType": {
+        "enum": [
+          "UsersV1"
+        ],
+        "type": "string"
+      },
+      "SyncStreamDto": {
+        "properties": {
+          "types": {
+            "items": {
+              "$ref": "#/components/schemas/SyncRequestType"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "types"
+        ],
+        "type": "object"
+      },
+      "SyncUserDeleteV1": {
+        "properties": {
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId"
+        ],
+        "type": "object"
+      },
+      "SyncUserV1": {
+        "properties": {
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deletedAt",
+          "email",
+          "id",
+          "name"
+        ],
         "type": "object"
       },
       "SystemConfigBackupsDto": {
@@ -13160,6 +13545,9 @@
           "ratings": {
             "$ref": "#/components/schemas/RatingsResponse"
           },
+          "sharedLinks": {
+            "$ref": "#/components/schemas/SharedLinksResponse"
+          },
           "tags": {
             "$ref": "#/components/schemas/TagsResponse"
           }
@@ -13173,6 +13561,7 @@
           "people",
           "purchase",
           "ratings",
+          "sharedLinks",
           "tags"
         ],
         "type": "object"
@@ -13202,6 +13591,9 @@
           },
           "ratings": {
             "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "sharedLinks": {
+            "$ref": "#/components/schemas/SharedLinksUpdate"
           },
           "tags": {
             "$ref": "#/components/schemas/TagsUpdate"

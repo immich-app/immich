@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { TagEntity } from 'src/entities/tag.entity';
-import { AssetTagItem, ITagRepository } from 'src/interfaces/tag.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DataSource, In, Repository } from 'typeorm';
 
+export type AssetTagItem = { assetId: string; tagId: string };
+
 @Injectable()
-export class TagRepository implements ITagRepository {
+export class TagRepository {
   constructor(
     @InjectDataSource() private dataSource: DataSource,
     @InjectRepository(TagEntity) private repository: Repository<TagEntity>,

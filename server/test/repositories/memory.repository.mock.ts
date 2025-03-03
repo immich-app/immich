@@ -1,7 +1,8 @@
-import { IMemoryRepository } from 'src/types';
+import { MemoryRepository } from 'src/repositories/memory.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newMemoryRepositoryMock = (): Mocked<IMemoryRepository> => {
+export const newMemoryRepositoryMock = (): Mocked<RepositoryInterface<MemoryRepository>> => {
   return {
     search: vitest.fn().mockResolvedValue([]),
     get: vitest.fn(),
@@ -11,5 +12,6 @@ export const newMemoryRepositoryMock = (): Mocked<IMemoryRepository> => {
     getAssetIds: vitest.fn().mockResolvedValue(new Set()),
     addAssetIds: vitest.fn(),
     removeAssetIds: vitest.fn(),
+    cleanup: vitest.fn(),
   };
 };

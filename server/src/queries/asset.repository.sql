@@ -55,9 +55,10 @@ with
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
 select
-  (
-    (now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date
-  ) / 365 as "yearsAgo",
+  date_part(
+    'year',
+    ("localDateTime" at time zone 'UTC')::date
+  )::int as "year",
   json_agg("res") as "assets"
 from
   "res"
@@ -96,6 +97,7 @@ select
       left join "person" on "person"."id" = "asset_faces"."personId"
     where
       "asset_faces"."assetId" = "assets"."id"
+      and "asset_faces"."deletedAt" is null
   ) as "faces",
   (
     select
@@ -159,6 +161,9 @@ where
   "ownerId" = $1::uuid
   and "deviceId" = $2
   and "isVisible" = $3
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -260,6 +265,9 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
   )
 select
   "timeBucket",
@@ -326,6 +334,7 @@ with
       and "assets"."duplicateId" is not null
       and "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
+      and "assets"."stackId" is null
     group by
       "assets"."duplicateId"
   ),

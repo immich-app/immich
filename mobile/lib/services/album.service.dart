@@ -6,23 +6,24 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/entities/backup_album.entity.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
-import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/services/user.service.dart';
@@ -35,7 +36,7 @@ final albumServiceProvider = Provider(
     ref.watch(entityServiceProvider),
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(backupAlbumRepositoryProvider),
     ref.watch(albumMediaRepositoryProvider),
     ref.watch(albumApiRepositoryProvider),
   ),
@@ -47,7 +48,7 @@ class AlbumService {
   final EntityService _entityService;
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
-  final IBackupRepository _backupAlbumRepository;
+  final IBackupAlbumRepository _backupAlbumRepository;
   final IAlbumMediaRepository _albumMediaRepository;
   final IAlbumApiRepository _albumApiRepository;
   final Logger _log = Logger('AlbumService');
@@ -309,7 +310,7 @@ class AlbumService {
         final List<int> idsToRemove =
             _syncService.sharedAssetsToRemove(foreignAssets, existing);
         if (idsToRemove.isNotEmpty) {
-          await _assetRepository.deleteById(idsToRemove);
+          await _assetRepository.deleteByIds(idsToRemove);
         }
       } else {
         await _albumRepository.delete(album.id);
@@ -442,8 +443,29 @@ class AlbumService {
     }
   }
 
-  Future<List<Album>> getAll() async {
+  Future<List<Album>> getAllRemoteAlbums() async {
     return _albumRepository.getAll(remote: true);
+  }
+
+  Future<List<Album>> getAllLocalAlbums() async {
+    return _albumRepository.getAll(remote: false);
+  }
+
+  Stream<List<Album>> watchRemoteAlbums() {
+    return _albumRepository.watchRemoteAlbums();
+  }
+
+  Stream<List<Album>> watchLocalAlbums() {
+    return _albumRepository.watchLocalAlbums();
+  }
+
+  /// Get album by Isar ID
+  Future<Album?> getAlbumById(int id) {
+    return _albumRepository.get(id);
+  }
+
+  Stream<Album?> watchAlbum(int id) {
+    return _albumRepository.watchAlbum(id);
   }
 
   Future<List<Album>> search(
@@ -464,5 +486,9 @@ class AlbumService {
       _log.severe("Error updating album sort order", error, stackTrace);
     }
     return null;
+  }
+
+  Future<void> clearTable() async {
+    await _albumRepository.clearTable();
   }
 }

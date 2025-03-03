@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -151,5 +152,27 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     }
 
     return await query.findAll();
+  }
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.albums.clear();
+    });
+  }
+
+  @override
+  Stream<List<Album>> watchRemoteAlbums() {
+    return db.albums.where().remoteIdIsNotNull().watch();
+  }
+
+  @override
+  Stream<List<Album>> watchLocalAlbums() {
+    return db.albums.where().localIdIsNotNull().watch();
+  }
+
+  @override
+  Stream<Album?> watchAlbum(int id) {
+    return db.albums.watchObject(id, fireImmediately: true);
   }
 }

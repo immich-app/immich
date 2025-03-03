@@ -42,6 +42,14 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
   Future<Album> recalculateMetadata(Album album);
 
   Future<List<Album>> search(String searchTerm, QuickFilterMode filterMode);
+
+  Stream<List<Album>> watchRemoteAlbums();
+
+  Stream<List<Album>> watchLocalAlbums();
+
+  Stream<Album?> watchAlbum(int id);
+
+  Future<void> clearTable();
 }
 
 enum AlbumSort { remoteId, localId }

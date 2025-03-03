@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'node:child_process';
-import { IProcessRepository } from 'src/interfaces/process.interface';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { StorageRepository } from 'src/repositories/storage.repository';
 
 @Injectable()
-export class ProcessRepository implements IProcessRepository {
+export class ProcessRepository {
   constructor(private logger: LoggingRepository) {
-    this.logger.setContext(StorageRepository.name);
+    this.logger.setContext(ProcessRepository.name);
   }
 
   spawn(command: string, args: readonly string[], options?: SpawnOptionsWithoutStdio): ChildProcessWithoutNullStreams {

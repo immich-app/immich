@@ -24,10 +24,13 @@ export default function VersionSwitcher(): JSX.Element {
           { label: 'Next', url: 'https://main.preview.immich.app' },
           { label: 'Latest', url: 'https://immich.app' },
           ...archiveVersions,
-        ];
+        ].map(({ label, url }) => ({
+          label,
+          url: new URL(url),
+        }));
         setVersions(allVersions);
 
-        const activeVersion = allVersions.find((version) => new URL(version.url).origin === window.location.origin);
+        const activeVersion = allVersions.find((version) => version.url.origin === window.location.origin);
         if (activeVersion) {
           setLabel(activeVersion.label);
         }
@@ -49,7 +52,7 @@ export default function VersionSwitcher(): JSX.Element {
         mobile={windowSize === 'mobile'}
         items={versions.map(({ label, url }) => ({
           label,
-          to: url + location.pathname,
+          to: new URL(location.pathname + location.search + location.hash, url).href,
           target: '_self',
         }))}
       />

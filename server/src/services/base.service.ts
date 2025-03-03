@@ -1,4 +1,4 @@
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
 import { SystemConfig } from 'src/config';
@@ -6,48 +6,50 @@ import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Users } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { IAlbumRepository } from 'src/interfaces/album.interface';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { IDatabaseRepository } from 'src/interfaces/database.interface';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository } from 'src/interfaces/job.interface';
-import { ILibraryRepository } from 'src/interfaces/library.interface';
-import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
-import { IMoveRepository } from 'src/interfaces/move.interface';
-import { IPartnerRepository } from 'src/interfaces/partner.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IProcessRepository } from 'src/interfaces/process.interface';
-import { ISearchRepository } from 'src/interfaces/search.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
-import { ISharedLinkRepository } from 'src/interfaces/shared-link.interface';
-import { IStackRepository } from 'src/interfaces/stack.interface';
-import { IStorageRepository } from 'src/interfaces/storage.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
-import { ITagRepository } from 'src/interfaces/tag.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
+import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
+import { CryptoRepository } from 'src/repositories/crypto.repository';
+import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
+import { JobRepository } from 'src/repositories/job.repository';
+import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { MoveRepository } from 'src/repositories/move.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OAuthRepository } from 'src/repositories/oauth.repository';
+import { PartnerRepository } from 'src/repositories/partner.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { SearchRepository } from 'src/repositories/search.repository';
 import { ServerInfoRepository } from 'src/repositories/server-info.repository';
+import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
+import { StackRepository } from 'src/repositories/stack.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
+import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
+import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { AccessRequest, checkAccess, requireAccess } from 'src/utils/access';
 import { getConfig, updateConfig } from 'src/utils/config';
 
+@Injectable()
 export class BaseService {
   protected storageCore: StorageCore;
 
@@ -56,39 +58,40 @@ export class BaseService {
     protected accessRepository: AccessRepository,
     protected activityRepository: ActivityRepository,
     protected auditRepository: AuditRepository,
-    @Inject(IAlbumRepository) protected albumRepository: IAlbumRepository,
+    protected albumRepository: AlbumRepository,
     protected albumUserRepository: AlbumUserRepository,
-    @Inject(IAssetRepository) protected assetRepository: IAssetRepository,
+    protected assetRepository: AssetRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
-    @Inject(ICryptoRepository) protected cryptoRepository: ICryptoRepository,
-    @Inject(IDatabaseRepository) protected databaseRepository: IDatabaseRepository,
-    @Inject(IEventRepository) protected eventRepository: IEventRepository,
-    @Inject(IJobRepository) protected jobRepository: IJobRepository,
+    protected cryptoRepository: CryptoRepository,
+    protected databaseRepository: DatabaseRepository,
+    protected eventRepository: EventRepository,
+    protected jobRepository: JobRepository,
     protected keyRepository: ApiKeyRepository,
-    @Inject(ILibraryRepository) protected libraryRepository: ILibraryRepository,
-    @Inject(IMachineLearningRepository) protected machineLearningRepository: IMachineLearningRepository,
+    protected libraryRepository: LibraryRepository,
+    protected machineLearningRepository: MachineLearningRepository,
     protected mapRepository: MapRepository,
     protected mediaRepository: MediaRepository,
     protected memoryRepository: MemoryRepository,
     protected metadataRepository: MetadataRepository,
-    @Inject(IMoveRepository) protected moveRepository: IMoveRepository,
+    protected moveRepository: MoveRepository,
     protected notificationRepository: NotificationRepository,
     protected oauthRepository: OAuthRepository,
-    @Inject(IPartnerRepository) protected partnerRepository: IPartnerRepository,
-    @Inject(IPersonRepository) protected personRepository: IPersonRepository,
-    @Inject(IProcessRepository) protected processRepository: IProcessRepository,
-    @Inject(ISearchRepository) protected searchRepository: ISearchRepository,
+    protected partnerRepository: PartnerRepository,
+    protected personRepository: PersonRepository,
+    protected processRepository: ProcessRepository,
+    protected searchRepository: SearchRepository,
     protected serverInfoRepository: ServerInfoRepository,
-    @Inject(ISessionRepository) protected sessionRepository: ISessionRepository,
-    @Inject(ISharedLinkRepository) protected sharedLinkRepository: ISharedLinkRepository,
-    @Inject(IStackRepository) protected stackRepository: IStackRepository,
-    @Inject(IStorageRepository) protected storageRepository: IStorageRepository,
-    @Inject(ISystemMetadataRepository) protected systemMetadataRepository: ISystemMetadataRepository,
-    @Inject(ITagRepository) protected tagRepository: ITagRepository,
+    protected sessionRepository: SessionRepository,
+    protected sharedLinkRepository: SharedLinkRepository,
+    protected stackRepository: StackRepository,
+    protected storageRepository: StorageRepository,
+    protected syncRepository: SyncRepository,
+    protected systemMetadataRepository: SystemMetadataRepository,
+    protected tagRepository: TagRepository,
     protected telemetryRepository: TelemetryRepository,
     protected trashRepository: TrashRepository,
-    @Inject(IUserRepository) protected userRepository: IUserRepository,
+    protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
     protected viewRepository: ViewRepository,
   ) {

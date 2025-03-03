@@ -12,9 +12,8 @@ import {
   mapTag,
 } from 'src/dtos/tag.dto';
 import { TagEntity } from 'src/entities/tag.entity';
-import { Permission } from 'src/enum';
-import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { AssetTagItem } from 'src/interfaces/tag.interface';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
+import { AssetTagItem } from 'src/repositories/tag.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { upsertTags } from 'src/utils/tag';

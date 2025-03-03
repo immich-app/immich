@@ -7,6 +7,7 @@ import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AssetEntity,
+  AssetEntityPlaceholder,
   hasPeople,
   searchAssetBuilder,
   truncatedDate,
@@ -21,34 +22,137 @@ import {
   withTagId,
   withTags,
 } from 'src/entities/asset.entity';
-import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import {
-  AssetDeltaSyncOptions,
-  AssetExploreFieldOptions,
-  AssetFullSyncOptions,
-  AssetGetByChecksumOptions,
-  AssetStats,
-  AssetStatsOptions,
-  AssetUpdateDuplicateOptions,
-  DayOfYearAssets,
-  DuplicateGroup,
-  GetByIdsRelations,
-  IAssetRepository,
-  LivePhotoSearchOptions,
-  MonthDay,
-  TimeBucketItem,
-  TimeBucketOptions,
-  TimeBucketSize,
-  WithProperty,
-  WithoutProperty,
-} from 'src/interfaces/asset.interface';
-import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/interfaces/search.interface';
-import { MapMarker, MapMarkerSearchOptions } from 'src/repositories/map.repository';
+import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
+import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
 import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
+export type AssetStats = Record<AssetType, number>;
+
+export interface AssetStatsOptions {
+  isFavorite?: boolean;
+  isArchived?: boolean;
+  isTrashed?: boolean;
+}
+
+export interface LivePhotoSearchOptions {
+  ownerId: string;
+  libraryId?: string | null;
+  livePhotoCID: string;
+  otherAssetId: string;
+  type: AssetType;
+}
+
+export enum WithoutProperty {
+  THUMBNAIL = 'thumbnail',
+  ENCODED_VIDEO = 'encoded-video',
+  EXIF = 'exif',
+  SMART_SEARCH = 'smart-search',
+  DUPLICATE = 'duplicate',
+  FACES = 'faces',
+  SIDECAR = 'sidecar',
+}
+
+export enum WithProperty {
+  SIDECAR = 'sidecar',
+}
+
+export enum TimeBucketSize {
+  DAY = 'DAY',
+  MONTH = 'MONTH',
+}
+
+export interface AssetBuilderOptions {
+  isArchived?: boolean;
+  isFavorite?: boolean;
+  isTrashed?: boolean;
+  isDuplicate?: boolean;
+  albumId?: string;
+  tagId?: string;
+  personId?: string;
+  userIds?: string[];
+  withStacked?: boolean;
+  exifInfo?: boolean;
+  status?: AssetStatus;
+  assetType?: AssetType;
+}
+
+export interface TimeBucketOptions extends AssetBuilderOptions {
+  size: TimeBucketSize;
+  order?: AssetOrder;
+}
+
+export interface TimeBucketItem {
+  timeBucket: string;
+  count: number;
+}
+
+export interface MonthDay {
+  day: number;
+  month: number;
+}
+
+export interface AssetExploreFieldOptions {
+  maxFields: number;
+  minAssetsPerField: number;
+}
+
+export interface AssetFullSyncOptions {
+  ownerId: string;
+  lastId?: string;
+  updatedUntil: Date;
+  limit: number;
+}
+
+export interface AssetDeltaSyncOptions {
+  userIds: string[];
+  updatedAfter: Date;
+  limit: number;
+}
+
+export interface AssetUpdateDuplicateOptions {
+  targetDuplicateId: string | null;
+  assetIds: string[];
+  duplicateIds: string[];
+}
+
+export interface UpsertFileOptions {
+  assetId: string;
+  type: AssetFileType;
+  path: string;
+}
+
+export interface AssetGetByChecksumOptions {
+  ownerId: string;
+  checksum: Buffer;
+  libraryId?: string;
+}
+
+export type AssetPathEntity = Pick<AssetEntity, 'id' | 'originalPath' | 'isOffline'>;
+
+export interface GetByIdsRelations {
+  exifInfo?: boolean;
+  faces?: { person?: boolean; withDeleted?: boolean };
+  files?: boolean;
+  library?: boolean;
+  owner?: boolean;
+  smartSearch?: boolean;
+  stack?: { assets?: boolean };
+  tags?: boolean;
+}
+
+export interface DuplicateGroup {
+  duplicateId: string;
+  assets: AssetEntity[];
+}
+
+export interface DayOfYearAssets {
+  yearsAgo: number;
+  assets: AssetEntity[];
+}
+
 @Injectable()
-export class AssetRepository implements IAssetRepository {
+export class AssetRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   async upsertExif(exif: Insertable<Exif>): Promise<void> {
@@ -79,12 +183,16 @@ export class AssetRepository implements IAssetRepository {
       .execute();
   }
 
-  create(asset: Insertable<Assets>): Promise<AssetEntity> {
-    return this.db.insertInto('assets').values(asset).returningAll().executeTakeFirst() as any as Promise<AssetEntity>;
+  create(asset: Insertable<Assets>): Promise<AssetEntityPlaceholder> {
+    return this.db
+      .insertInto('assets')
+      .values(asset)
+      .returningAll()
+      .executeTakeFirst() as any as Promise<AssetEntityPlaceholder>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
-  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay): Promise<DayOfYearAssets[]> {
+  getByDayOfYear(ownerIds: string[], { day, month }: MonthDay) {
     return this.db
       .with('res', (qb) =>
         qb
@@ -131,16 +239,12 @@ export class AssetRepository implements IAssetRepository {
           .select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo')),
       )
       .selectFrom('res')
-      .select(
-        sql<number>`((now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date) / 365`.as(
-          'yearsAgo',
-        ),
-      )
+      .select(sql<number>`date_part('year', ("localDateTime" at time zone 'UTC')::date)::int`.as('year'))
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
       .limit(10)
-      .execute() as any as Promise<DayOfYearAssets[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
@@ -154,7 +258,11 @@ export class AssetRepository implements IAssetRepository {
       .selectAll('assets')
       .where('assets.id', '=', anyUuid(ids))
       .$if(!!exifInfo, withExif)
-      .$if(!!faces, (qb) => qb.select(faces?.person ? withFacesAndPeople : withFaces))
+      .$if(!!faces, (qb) =>
+        qb.select((eb) =>
+          faces?.person ? withFacesAndPeople(eb, faces.withDeleted) : withFaces(eb, faces?.withDeleted),
+        ),
+      )
       .$if(!!files, (qb) => qb.select(withFiles))
       .$if(!!library, (qb) => qb.select(withLibrary))
       .$if(!!owner, (qb) => qb.select(withOwner))
@@ -291,6 +399,9 @@ export class AssetRepository implements IAssetRepository {
       .where('ownerId', '=', asUuid(ownerId))
       .where('deviceId', '=', deviceId)
       .where('isVisible', '=', true)
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('deletedAt', 'is', null)
       .execute();
 
@@ -458,7 +569,10 @@ export class AssetRepository implements IAssetRepository {
           .where('job_status.duplicatesDetectedAt', 'is', null)
           .where('job_status.previewAt', 'is not', null)
           .where((eb) => eb.exists(eb.selectFrom('smart_search').where('assetId', '=', eb.ref('assets.id'))))
-          .where('assets.isVisible', '=', true),
+          .where('assets.isVisible', '=', true)
+          .where('assets.fileCreatedAt', 'is not', null)
+          .where('assets.fileModifiedAt', 'is not', null)
+          .where('assets.localDateTime', 'is not', null),
       )
       .$if(property === WithoutProperty.ENCODED_VIDEO, (qb) =>
         qb
@@ -524,26 +638,6 @@ export class AssetRepository implements IAssetRepository {
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
   }
 
-  getMapMarkers(ownerIds: string[], options: MapMarkerSearchOptions = {}): Promise<MapMarker[]> {
-    const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
-
-    return this.db
-      .selectFrom('assets')
-      .leftJoin('exif', 'assets.id', 'exif.assetId')
-      .select(['id', 'latitude as lat', 'longitude as lon', 'city', 'state', 'country'])
-      .where('ownerId', '=', anyUuid(ownerIds))
-      .where('latitude', 'is not', null)
-      .where('longitude', 'is not', null)
-      .where('isVisible', '=', true)
-      .where('deletedAt', 'is', null)
-      .$if(!!isArchived, (qb) => qb.where('isArchived', '=', isArchived!))
-      .$if(!!isFavorite, (qb) => qb.where('isFavorite', '=', isFavorite!))
-      .$if(!!fileCreatedAfter, (qb) => qb.where('fileCreatedAt', '>=', fileCreatedAfter!))
-      .$if(!!fileCreatedBefore, (qb) => qb.where('fileCreatedAt', '<=', fileCreatedBefore!))
-      .orderBy('fileCreatedAt', 'desc')
-      .execute() as Promise<MapMarker[]>;
-  }
-
   getStatistics(ownerId: string, { isArchived, isFavorite, isTrashed }: AssetStatsOptions): Promise<AssetStats> {
     return this.db
       .selectFrom('assets')
@@ -552,6 +646,9 @@ export class AssetRepository implements IAssetRepository {
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.VIDEO).as(AssetType.VIDEO))
       .select((eb) => eb.fn.countAll().filterWhere('type', '=', AssetType.OTHER).as(AssetType.OTHER))
       .where('ownerId', '=', asUuid(ownerId))
+      .where('assets.fileCreatedAt', 'is not', null)
+      .where('assets.fileModifiedAt', 'is not', null)
+      .where('assets.localDateTime', 'is not', null)
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (qb) => qb.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (qb) => qb.where('isFavorite', '=', isFavorite!))
@@ -584,6 +681,9 @@ export class AssetRepository implements IAssetRepository {
             .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
             .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.fileCreatedAt', 'is not', null)
+            .where('assets.fileModifiedAt', 'is not', null)
+            .where('assets.localDateTime', 'is not', null)
             .$if(!!options.albumId, (qb) =>
               qb
                 .innerJoin('albums_assets_assets', 'assets.id', 'albums_assets_assets.assetsId')
@@ -690,6 +790,7 @@ export class AssetRepository implements IAssetRepository {
             .where('assets.duplicateId', 'is not', null)
             .where('assets.deletedAt', 'is', null)
             .where('assets.isVisible', '=', true)
+            .where('assets.stackId', 'is', null)
             .groupBy('assets.duplicateId'),
         )
         .with('unique', (qb) =>

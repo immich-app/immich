@@ -31,6 +31,7 @@ The filters smart search allows you to search by include:
   - Not in any album
   - Archived
   - Favorited
+  - Rating
 
 <Tabs>
   <TabItem value="Computer" label="Computer" default>

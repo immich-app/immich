@@ -1,22 +1,23 @@
 <script lang="ts">
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
+  import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton, {
     type Color,
     type Padding,
   } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import ContextMenu from '$lib/components/shared-components/context-menu/context-menu.svelte';
+  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
   import {
     getContextMenuPositionFromBoundingRect,
     getContextMenuPositionFromEvent,
     type Align,
   } from '$lib/utils/context-menu';
   import { generateId } from '$lib/utils/generate-id';
-  import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
-  import { optionClickCallbackStore, selectedIdStore } from '$lib/stores/context-menu.store';
-  import { clickOutside } from '$lib/actions/click-outside';
-  import { shortcuts } from '$lib/actions/shortcut';
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
-  interface Props {
+  type Props = {
     icon: string;
     title: string;
     /**
@@ -36,7 +37,7 @@
     buttonClass?: string | undefined;
     hideContent?: boolean;
     children?: Snippet;
-  }
+  } & HTMLAttributes<HTMLDivElement>;
 
   let {
     icon,
@@ -49,6 +50,7 @@
     buttonClass = undefined,
     hideContent = false,
     children,
+    ...restProps
   }: Props = $props();
 
   let isOpen = $state(false);
@@ -129,6 +131,7 @@
   }}
   use:clickOutside={{ onOutclick: closeDropdown }}
   onresize={onResize}
+  {...restProps}
 >
   <div bind:this={buttonContainer}>
     <CircleIconButton

@@ -68,7 +68,7 @@ In rare cases, the library watcher can hang, preventing Immich from starting up.
 
 ### Nightly job
 
-There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion.
+There is an automatic scan job that is scheduled to run once a day. This job also cleans up any libraries stuck in deletion. It is possible to trigger the cleanup by clicking "Scan all libraries" in the library managment page.
 
 ## Usage
 
@@ -111,11 +111,10 @@ These actions must be performed by the Immich administrator.
 - Click on Administration -> Libraries
 - Click on Create External Library
 - Select which user owns the library, this can not be changed later
+- Enter `/mnt/media/christmas-trip` then click Add
+- Click on Save
 - Click the drop-down menu on the newly created library
 - Click on Rename Library and rename it to "Christmas Trip"
-- Click Edit Import Paths
-- Click on Add Path
-- Enter `/mnt/media/christmas-trip` then click Add
 
 NOTE: We have to use the `/mnt/media/christmas-trip` path and not the `/mnt/nas/christmas-trip` path since all paths have to be what the Docker containers see.
 

@@ -187,6 +187,7 @@ export enum StorageFolder {
 export enum SystemMetadataKey {
   REVERSE_GEOCODING_STATE = 'reverse-geocoding-state',
   FACIAL_RECOGNITION_STATE = 'facial-recognition-state',
+  MEMORIES_STATE = 'memories-state',
   ADMIN_ONBOARDING = 'admin-onboarding',
   SYSTEM_CONFIG = 'system-config',
   SYSTEM_FLAGS = 'system-flags',
@@ -227,12 +228,15 @@ export enum AssetStatus {
 export enum SourceType {
   MACHINE_LEARNING = 'machine-learning',
   EXIF = 'exif',
+  MANUAL = 'manual',
 }
 
 export enum ManualJobName {
   PERSON_CLEANUP = 'person-cleanup',
   TAG_CLEANUP = 'tag-cleanup',
   USER_CLEANUP = 'user-cleanup',
+  MEMORY_CLEANUP = 'memory-cleanup',
+  MEMORY_CREATE = 'memory-create',
 }
 
 export enum AssetPathType {
@@ -383,4 +387,170 @@ export enum ExifOrientation {
   Rotate90CW = 6,
   MirrorHorizontalRotate90CW = 7,
   Rotate270CW = 8,
+}
+
+export enum DatabaseExtension {
+  CUBE = 'cube',
+  EARTH_DISTANCE = 'earthdistance',
+  VECTOR = 'vector',
+  VECTORS = 'vectors',
+}
+
+export enum BootstrapEventPriority {
+  // Database service should be initialized before anything else, most other services need database access
+  DatabaseService = -200,
+  // Initialise config after other bootstrap services, stop other services from using config on bootstrap
+  SystemConfig = 100,
+}
+
+export enum QueueName {
+  THUMBNAIL_GENERATION = 'thumbnailGeneration',
+  METADATA_EXTRACTION = 'metadataExtraction',
+  VIDEO_CONVERSION = 'videoConversion',
+  FACE_DETECTION = 'faceDetection',
+  FACIAL_RECOGNITION = 'facialRecognition',
+  SMART_SEARCH = 'smartSearch',
+  DUPLICATE_DETECTION = 'duplicateDetection',
+  BACKGROUND_TASK = 'backgroundTask',
+  STORAGE_TEMPLATE_MIGRATION = 'storageTemplateMigration',
+  MIGRATION = 'migration',
+  SEARCH = 'search',
+  SIDECAR = 'sidecar',
+  LIBRARY = 'library',
+  NOTIFICATION = 'notifications',
+  BACKUP_DATABASE = 'backupDatabase',
+}
+
+export enum JobName {
+  //backups
+  BACKUP_DATABASE = 'database-backup',
+
+  // conversion
+  QUEUE_VIDEO_CONVERSION = 'queue-video-conversion',
+  VIDEO_CONVERSION = 'video-conversion',
+
+  // thumbnails
+  QUEUE_GENERATE_THUMBNAILS = 'queue-generate-thumbnails',
+  GENERATE_THUMBNAILS = 'generate-thumbnails',
+  GENERATE_PERSON_THUMBNAIL = 'generate-person-thumbnail',
+
+  // metadata
+  QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
+  METADATA_EXTRACTION = 'metadata-extraction',
+  LINK_LIVE_PHOTOS = 'link-live-photos',
+
+  // user
+  USER_DELETION = 'user-deletion',
+  USER_DELETE_CHECK = 'user-delete-check',
+  USER_SYNC_USAGE = 'user-sync-usage',
+
+  // asset
+  ASSET_DELETION = 'asset-deletion',
+  ASSET_DELETION_CHECK = 'asset-deletion-check',
+
+  // storage template
+  STORAGE_TEMPLATE_MIGRATION = 'storage-template-migration',
+  STORAGE_TEMPLATE_MIGRATION_SINGLE = 'storage-template-migration-single',
+
+  // tags
+  TAG_CLEANUP = 'tag-cleanup',
+
+  // migration
+  QUEUE_MIGRATION = 'queue-migration',
+  MIGRATE_ASSET = 'migrate-asset',
+  MIGRATE_PERSON = 'migrate-person',
+
+  // facial recognition
+  PERSON_CLEANUP = 'person-cleanup',
+  QUEUE_FACE_DETECTION = 'queue-face-detection',
+  FACE_DETECTION = 'face-detection',
+  QUEUE_FACIAL_RECOGNITION = 'queue-facial-recognition',
+  FACIAL_RECOGNITION = 'facial-recognition',
+
+  // library management
+  LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
+  LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
+  LIBRARY_SYNC_FILE = 'library-sync-file',
+  LIBRARY_SYNC_ASSET = 'library-sync-asset',
+  LIBRARY_DELETE = 'library-delete',
+  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-scan-all',
+  LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
+
+  // cleanup
+  DELETE_FILES = 'delete-files',
+  CLEAN_OLD_AUDIT_LOGS = 'clean-old-audit-logs',
+  CLEAN_OLD_SESSION_TOKENS = 'clean-old-session-tokens',
+
+  // memories
+  MEMORIES_CLEANUP = 'memories-cleanup',
+  MEMORIES_CREATE = 'memories-create',
+
+  // smart search
+  QUEUE_SMART_SEARCH = 'queue-smart-search',
+  SMART_SEARCH = 'smart-search',
+
+  QUEUE_TRASH_EMPTY = 'queue-trash-empty',
+
+  // duplicate detection
+  QUEUE_DUPLICATE_DETECTION = 'queue-duplicate-detection',
+  DUPLICATE_DETECTION = 'duplicate-detection',
+
+  // XMP sidecars
+  QUEUE_SIDECAR = 'queue-sidecar',
+  SIDECAR_DISCOVERY = 'sidecar-discovery',
+  SIDECAR_SYNC = 'sidecar-sync',
+  SIDECAR_WRITE = 'sidecar-write',
+
+  // Notification
+  NOTIFY_SIGNUP = 'notify-signup',
+  NOTIFY_ALBUM_INVITE = 'notify-album-invite',
+  NOTIFY_ALBUM_UPDATE = 'notify-album-update',
+  SEND_EMAIL = 'notification-send-email',
+
+  // Version check
+  VERSION_CHECK = 'version-check',
+}
+
+export enum JobCommand {
+  START = 'start',
+  PAUSE = 'pause',
+  RESUME = 'resume',
+  EMPTY = 'empty',
+  CLEAR_FAILED = 'clear-failed',
+}
+
+export enum JobStatus {
+  SUCCESS = 'success',
+  FAILED = 'failed',
+  SKIPPED = 'skipped',
+}
+
+export enum QueueCleanType {
+  FAILED = 'failed',
+}
+
+export enum VectorIndex {
+  CLIP = 'clip_index',
+  FACE = 'face_index',
+}
+
+export enum DatabaseLock {
+  GeodataImport = 100,
+  Migrations = 200,
+  SystemFileMounts = 300,
+  StorageTemplateMigration = 420,
+  VersionHistory = 500,
+  CLIPDimSize = 512,
+  Library = 1337,
+  GetSystemConfig = 69,
+  BackupDatabase = 42,
+}
+
+export enum SyncRequestType {
+  UsersV1 = 'UsersV1',
+}
+
+export enum SyncEntityType {
+  UserV1 = 'UserV1',
+  UserDeleteV1 = 'UserDeleteV1',
 }

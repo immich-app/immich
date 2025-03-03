@@ -29,6 +29,7 @@ export default defineConfig({
       '/.well-known/immich': upstream,
       '/custom.css': upstream,
     },
+    allowedHosts: true,
   },
   plugins: [
     sveltekit(),

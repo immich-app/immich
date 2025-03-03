@@ -14,6 +14,7 @@
     date: SearchDateFilter;
     display: SearchDisplayFilters;
     mediaType: MediaType;
+    rating?: number;
   };
 </script>
 
@@ -26,6 +27,7 @@
   import SearchCameraSection, { type SearchCameraFilter } from './search-camera-section.svelte';
   import SearchDateSection from './search-date-section.svelte';
   import SearchMediaSection from './search-media-section.svelte';
+  import SearchRatingsSection from './search-ratings-section.svelte';
   import { parseUtcDate } from '$lib/utils/date-time';
   import SearchDisplaySection from './search-display-section.svelte';
   import SearchTextSection from './search-text-section.svelte';
@@ -34,6 +36,7 @@
   import { mdiTune } from '@mdi/js';
   import { generateId } from '$lib/utils/generate-id';
   import { SvelteSet } from 'svelte/reactivity';
+  import { preferences } from '$lib/stores/user.store';
 
   interface Props {
     searchQuery: MetadataSearchDto | SmartSearchDto;
@@ -54,7 +57,7 @@
 
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
-    queryType: 'query' in searchQuery ? 'smart' : 'metadata',
+    queryType: 'smart',
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
@@ -81,6 +84,7 @@
         : searchQuery.type === AssetTypeEnum.Video
           ? MediaType.Video
           : MediaType.All,
+    rating: searchQuery.rating,
   });
 
   const resetForm = () => {
@@ -94,6 +98,7 @@
       date: {},
       display: {},
       mediaType: MediaType.All,
+      rating: undefined,
     };
   };
 
@@ -124,6 +129,7 @@
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
       tagIds: filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
+      rating: filter.rating,
     };
 
     onSearch(payload);
@@ -160,6 +166,11 @@
 
       <!-- DATE RANGE -->
       <SearchDateSection bind:filters={filter.date} />
+
+      <!-- RATING -->
+      {#if $preferences?.ratings.enabled}
+        <SearchRatingsSection bind:rating={filter.rating} />
+      {/if}
 
       <div class="grid md:grid-cols-2 gap-x-5 gap-y-10">
         <!-- MEDIA TYPE -->

@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/search/search_result.model.dart';
-import 'package:immich_mobile/providers/asset_viewer/render_list.provider.dart';
+import 'package:immich_mobile/services/timeline.service.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/services/search.service.dart';
@@ -44,14 +44,13 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
 }
 
 @riverpod
-AsyncValue<RenderList> paginatedSearchRenderList(
+Future<RenderList> paginatedSearchRenderList(
   PaginatedSearchRenderListRef ref,
 ) {
   final result = ref.watch(paginatedSearchProvider);
-
-  return ref.watch(
-    renderListProviderWithGrouping(
-      (result.assets, GroupAssetsBy.none),
-    ),
+  final timelineService = ref.watch(timelineServiceProvider);
+  return timelineService.getTimelineFromAssets(
+    result.assets,
+    GroupAssetsBy.none,
   );
 }

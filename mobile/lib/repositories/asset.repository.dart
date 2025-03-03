@@ -57,7 +57,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<void> deleteById(List<int> ids) => txn(() async {
+  Future<void> deleteByIds(List<int> ids) => txn(() async {
         await db.assets.deleteAll(ids);
         await db.exifInfos.deleteAll(ids);
       });
@@ -197,6 +197,61 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   @override
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state}) =>
       txn(() => _getAllByRemoteIdImpl(ids, state).deleteAll());
+
+  @override
+  Future<List<Asset>> getStackAssets(String stackId) {
+    return db.assets
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackIdEqualTo(stackId)
+        // orders primary asset first as its ID is null
+        .sortByStackPrimaryAssetId()
+        .thenByFileCreatedAtDesc()
+        .findAll();
+  }
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.assets.clear();
+    });
+  }
+
+  @override
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return db.assets.watchObject(id, fireImmediately: fireImmediately);
+  }
+
+  @override
+  Future<List<Asset>> getTrashAssets(int userId) {
+    return db.assets
+        .where()
+        .remoteIdIsNotNull()
+        .filter()
+        .ownerIdEqualTo(userId)
+        .isTrashedEqualTo(true)
+        .findAll();
+  }
+
+  @override
+  Future<List<Asset>> getRecentlyAddedAssets(int userId) {
+    return db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .sortByFileCreatedAtDesc()
+        .findAll();
+  }
+
+  @override
+  Future<List<Asset>> getMotionAssets(int userId) {
+    return db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .filter()
+        .livePhotoVideoIdIsNotNull()
+        .findAll();
+  }
 }
 
 Future<List<Asset>> _getMatchesImpl(

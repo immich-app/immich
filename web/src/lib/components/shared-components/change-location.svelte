@@ -2,6 +2,7 @@
   import ConfirmDialog from './dialog/confirm-dialog.svelte';
   import { timeDebounceOnSearch } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
+  import { lastChosenLocation } from '$lib/stores/asset-editor.store';
 
   import { clickOutside } from '$lib/actions/click-outside';
   import LoadingSpinner from './loading-spinner.svelte';
@@ -13,6 +14,7 @@
   import { t } from 'svelte-i18n';
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
   import Map from '$lib/components/shared-components/map/map.svelte';
+  import { get } from 'svelte/store';
 
   interface Point {
     lng: number;
@@ -36,9 +38,15 @@
   let hideSuggestion = $state(false);
   let mapElement = $state<ReturnType<typeof Map>>();
 
-  let lat = $derived(asset?.exifInfo?.latitude ?? undefined);
-  let lng = $derived(asset?.exifInfo?.longitude ?? undefined);
-  let zoom = $derived(lat !== undefined && lng !== undefined ? 12.5 : 1);
+  let previousLocation = get(lastChosenLocation);
+
+  let assetLat = $derived(asset?.exifInfo?.latitude ?? undefined);
+  let assetLng = $derived(asset?.exifInfo?.longitude ?? undefined);
+
+  let mapLat = $derived(assetLat ?? previousLocation?.lat ?? undefined);
+  let mapLng = $derived(assetLng ?? previousLocation?.lng ?? undefined);
+
+  let zoom = $derived(mapLat !== undefined && mapLng !== undefined ? 12.5 : 1);
 
   $effect(() => {
     if (places) {
@@ -53,6 +61,7 @@
 
   const handleConfirm = () => {
     if (point) {
+      lastChosenLocation.set(point);
       onConfirm(point);
     } else {
       onCancel();
@@ -109,10 +118,7 @@
     <div class="flex flex-col w-full h-full gap-2">
       <div class="relative w-64 sm:w-96">
         {#if suggestionContainer}
-          <div
-            use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
-            use:listNavigation={suggestionContainer}
-          >
+          <div use:listNavigation={suggestionContainer}>
             <button type="button" class="w-full" onclick={() => (hideSuggestion = false)}>
               <SearchBar
                 placeholder={$t('search_places')}
@@ -126,7 +132,12 @@
           </div>
         {/if}
 
-        <div class="absolute z-[99] w-full" id="suggestion" bind:this={suggestionContainer}>
+        <div
+          class="absolute z-[99] w-full"
+          id="suggestion"
+          bind:this={suggestionContainer}
+          use:clickOutside={{ onOutclick: () => (hideSuggestion = true) }}
+        >
           {#if !hideSuggestion}
             {#each suggestedPlaces as place, index}
               <button
@@ -158,12 +169,12 @@
         {:then { default: Map }}
           <Map
             bind:this={mapElement}
-            mapMarkers={lat !== undefined && lng !== undefined && asset
+            mapMarkers={assetLat !== undefined && assetLng !== undefined && asset
               ? [
                   {
                     id: asset.id,
-                    lat,
-                    lon: lng,
+                    lat: assetLat,
+                    lon: assetLng,
                     city: asset.exifInfo?.city ?? null,
                     state: asset.exifInfo?.state ?? null,
                     country: asset.exifInfo?.country ?? null,
@@ -171,7 +182,7 @@
                 ]
               : []}
             {zoom}
-            center={lat && lng ? { lat, lng } : undefined}
+            center={mapLat && mapLng ? { lat: mapLat, lng: mapLng } : undefined}
             simplified={true}
             clickable={true}
             onClickPoint={(selected) => (point = selected)}
@@ -181,8 +192,8 @@
 
       <div class="grid sm:grid-cols-2 gap-4 text-sm text-left mt-4">
         <CoordinatesInput
-          lat={point ? point.lat : lat}
-          lng={point ? point.lng : lng}
+          lat={point ? point.lat : assetLat}
+          lng={point ? point.lng : assetLng}
           onUpdate={(lat, lng) => {
             point = { lat, lng };
             mapElement?.addClipMapMarker(lng, lat);

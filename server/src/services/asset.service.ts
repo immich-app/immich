@@ -1,6 +1,7 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import {
   AssetResponseDto,
@@ -20,20 +21,13 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryLaneDto } from 'src/dtos/search.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, Permission } from 'src/enum';
-import {
-  ISidecarWriteJob,
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
 import { usePagination } from 'src/utils/pagination';
 
+@Injectable()
 export class AssetService extends BaseService {
   async getMemoryLane(auth: AuthDto, dto: MemoryLaneDto): Promise<MemoryLaneResponseDto[]> {
     const partnerIds = await getMyPartnerIds({
@@ -44,12 +38,15 @@ export class AssetService extends BaseService {
     const userIds = [auth.user.id, ...partnerIds];
 
     const groups = await this.assetRepository.getByDayOfYear(userIds, dto);
-    return groups.map(({ yearsAgo, assets }) => ({
-      yearsAgo,
-      // TODO move this to clients
-      title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
-      assets: assets.map((asset) => mapAsset(asset, { auth })),
-    }));
+    return groups.map(({ year, assets }) => {
+      const yearsAgo = DateTime.utc().year - year;
+      return {
+        yearsAgo,
+        // TODO move this to clients
+        title: `${yearsAgo} year${yearsAgo > 1 ? 's' : ''} ago`,
+        assets: assets.map((asset) => mapAsset(asset as AssetEntity, { auth })),
+      };
+    });
   }
 
   async getStatistics(auth: AuthDto, dto: AssetStatsDto) {

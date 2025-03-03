@@ -1,7 +1,8 @@
-import { IPersonRepository } from 'src/interfaces/person.interface';
+import { PersonRepository } from 'src/repositories/person.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
+export const newPersonRepositoryMock = (): Mocked<RepositoryInterface<PersonRepository>> => {
   return {
     getById: vitest.fn(),
     getAll: vitest.fn(),
@@ -32,5 +33,9 @@ export const newPersonRepositoryMock = (): Mocked<IPersonRepository> => {
     getFaceByIdWithAssets: vitest.fn(),
     getNumberOfPeople: vitest.fn(),
     getLatestFaceDate: vitest.fn(),
+
+    createAssetFace: vitest.fn(),
+    deleteAssetFace: vitest.fn(),
+    softDeleteAssetFaces: vitest.fn(),
   };
 };

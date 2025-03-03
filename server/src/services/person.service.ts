@@ -1,13 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { FACE_THUMBNAIL_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  AssetFaceCreateDto,
+  AssetFaceDeleteDto,
   AssetFaceResponseDto,
   AssetFaceUpdateDto,
   FaceDto,
+  mapFaces,
+  mapPerson,
   MergePersonDto,
   PeopleResponseDto,
   PeopleUpdateDto,
@@ -16,8 +20,6 @@ import {
   PersonSearchDto,
   PersonStatisticsResponseDto,
   PersonUpdateDto,
-  mapFaces,
-  mapPerson,
 } from 'src/dtos/person.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
@@ -27,24 +29,19 @@ import {
   AssetType,
   CacheControl,
   ImageFormat,
+  JobName,
+  JobStatus,
   Permission,
   PersonPathType,
+  QueueName,
   SourceType,
   SystemMetadataKey,
 } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
-import {
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
-import { BoundingBox } from 'src/interfaces/machine-learning.interface';
-import { UpdateFacesData } from 'src/interfaces/person.interface';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { BoundingBox } from 'src/repositories/machine-learning.repository';
+import { UpdateFacesData } from 'src/repositories/person.repository';
 import { BaseService } from 'src/services/base.service';
-import { CropOptions, ImageDimensions, InputDimensions } from 'src/types';
+import { CropOptions, ImageDimensions, InputDimensions, JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -300,7 +297,7 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const relations = { exifInfo: true, faces: { person: false }, files: true };
+    const relations = { exifInfo: true, faces: { person: false, withDeleted: true }, files: true };
     const [asset] = await this.assetRepository.getByIds([id], relations);
     const { previewFile } = getAssetFiles(asset.files);
     if (!asset || !previewFile) {
@@ -721,5 +718,31 @@ export class PersonService extends BaseService {
       width: newHalfSize * 2,
       height: newHalfSize * 2,
     };
+  }
+
+  // TODO return a asset face response
+  async createFace(auth: AuthDto, dto: AssetFaceCreateDto): Promise<void> {
+    await Promise.all([
+      this.requireAccess({ auth, permission: Permission.ASSET_READ, ids: [dto.assetId] }),
+      this.requireAccess({ auth, permission: Permission.PERSON_READ, ids: [dto.personId] }),
+    ]);
+
+    await this.personRepository.createAssetFace({
+      personId: dto.personId,
+      assetId: dto.assetId,
+      imageHeight: dto.imageHeight,
+      imageWidth: dto.imageWidth,
+      boundingBoxX1: dto.x,
+      boundingBoxX2: dto.x + dto.width,
+      boundingBoxY1: dto.y,
+      boundingBoxY2: dto.y + dto.height,
+      sourceType: SourceType.MANUAL,
+    });
+  }
+
+  async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
+    await this.requireAccess({ auth, permission: Permission.FACE_DELETE, ids: [id] });
+
+    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
   }
 }

@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -30,6 +31,10 @@ export class MemoryEntity<T extends MemoryType = MemoryType> {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @Index('IDX_memories_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
+
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;
 
@@ -52,6 +57,12 @@ export class MemoryEntity<T extends MemoryType = MemoryType> {
   /** memories are sorted in ascending order by this value */
   @Column({ type: 'timestamptz' })
   memoryAt!: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  showAt?: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  hideAt?: Date;
 
   /** when the user last viewed the memory */
   @Column({ type: 'timestamptz', nullable: true })

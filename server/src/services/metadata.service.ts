@@ -7,20 +7,29 @@ import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
-import { AssetType, ExifOrientation, ImmichWorker, SourceType } from 'src/enum';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import {
+  AssetType,
+  DatabaseLock,
+  ExifOrientation,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  QueueName,
+  SourceType,
+} from 'src/enum';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { ArgOf } from 'src/repositories/event.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
@@ -78,6 +87,16 @@ export class MetadataService extends BaseService {
   @OnEvent({ name: 'app.shutdown' })
   async onShutdown() {
     await this.metadataRepository.teardown();
+  }
+
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+  }
+
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
   }
 
   private async init() {
@@ -162,6 +181,14 @@ export class MetadataService extends BaseService {
 
     this.logger.verbose('Exif Tags', exifTags);
 
+    if (!asset.fileCreatedAt) {
+      asset.fileCreatedAt = stats.mtime;
+    }
+
+    if (!asset.fileModifiedAt) {
+      asset.fileModifiedAt = stats.mtime;
+    }
+
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
     const { latitude, longitude, country, state, city } = await this.getGeo(exifTags, reverseGeocoding);
 
@@ -221,6 +248,7 @@ export class MetadataService extends BaseService {
       duration: exifTags.Duration?.toString() ?? null,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      fileModifiedAt: stats.mtime,
     });
 
     await this.assetRepository.upsertJobStatus({
@@ -407,7 +435,7 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    this.logger.debug(`Starting motion photo video extraction (${asset.id})`);
+    this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
 
     try {
       const stat = await this.storageRepository.stat(asset.originalPath);
@@ -439,9 +467,9 @@ export class MetadataService extends BaseService {
       });
       if (motionAsset) {
         this.logger.debug(
-          `Asset ${asset.id}'s motion photo video with checksum ${checksum.toString(
+          `Motion photo video with checksum ${checksum.toString(
             'base64',
-          )} already exists in the repository`,
+          )} already exists in the repository for asset ${asset.id}: ${asset.originalPath}`,
         );
 
         // Hide the motion photo video asset if it's not already hidden to prepare for linking
@@ -498,9 +526,12 @@ export class MetadataService extends BaseService {
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: { id: motionAsset.id } });
       }
 
-      this.logger.debug(`Finished motion photo video extraction (${asset.id})`);
+      this.logger.debug(`Finished motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
     } catch (error: Error | any) {
-      this.logger.error(`Failed to extract live photo ${asset.originalPath}: ${error}`, error?.stack);
+      this.logger.error(
+        `Failed to extract motion video for ${asset.id}: ${asset.originalPath}: ${error}`,
+        error?.stack,
+      );
     }
   }
 
@@ -553,11 +584,13 @@ export class MetadataService extends BaseService {
 
     const facesToRemove = asset.faces.filter((face) => face.sourceType === SourceType.EXIF).map((face) => face.id);
     if (facesToRemove.length > 0) {
-      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}`);
+      this.logger.debug(`Removing ${facesToRemove.length} faces for asset ${asset.id}: ${asset.originalPath}`);
     }
 
     if (facesToAdd.length > 0) {
-      this.logger.debug(`Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}`);
+      this.logger.debug(
+        `Creating ${facesToAdd.length} faces from metadata for asset ${asset.id}: ${asset.originalPath}`,
+      );
     }
 
     if (facesToRemove.length > 0 || facesToAdd.length > 0) {
@@ -571,7 +604,7 @@ export class MetadataService extends BaseService {
 
   private getDates(asset: AssetEntity, exifTags: ImmichTags) {
     const dateTime = firstDateTime(exifTags as Maybe<Tags>, EXIF_DATE_TAGS);
-    this.logger.verbose(`Asset ${asset.id} date time is ${dateTime}`);
+    this.logger.verbose(`Date and time is ${dateTime} for asset ${asset.id}: ${asset.originalPath}`);
 
     // timezone
     let timeZone = exifTags.tz ?? null;
@@ -582,23 +615,27 @@ export class MetadataService extends BaseService {
     }
 
     if (timeZone) {
-      this.logger.verbose(`Asset ${asset.id} timezone is ${timeZone} (via ${exifTags.tzSource})`);
+      this.logger.verbose(
+        `Found timezone ${timeZone} via ${exifTags.tzSource} for asset ${asset.id}: ${asset.originalPath}`,
+      );
     } else {
-      this.logger.warn(`Asset ${asset.id} has no time zone information`);
+      this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
     }
 
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
       this.logger.debug(
-        `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification`,
+        `No exif date time found, falling back on earliest of file creation and modification for assset ${asset.id}: ${asset.originalPath}`,
       );
       const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
     }
 
-    this.logger.verbose(`Asset ${asset.id} has a local time of ${localDateTime.toISOString()}`);
+    this.logger.verbose(
+      `Found local date time ${localDateTime.toISOString()} for asset ${asset.id}: ${asset.originalPath}`,
+    );
 
     let modifyDate = asset.fileModifiedAt;
     try {
@@ -624,7 +661,7 @@ export class MetadataService extends BaseService {
     // TODO take ref into account
 
     if (latitude === 0 && longitude === 0) {
-      this.logger.warn('Latitude and longitude of 0, setting to null');
+      this.logger.debug('Latitude and longitude of 0, setting to null');
       latitude = null;
       longitude = null;
     }
@@ -736,6 +773,7 @@ export class MetadataService extends BaseService {
     }
 
     if (sidecarPath) {
+      this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
       await this.assetRepository.update({ id: asset.id, sidecarPath });
       return JobStatus.SUCCESS;
     }
@@ -744,9 +782,7 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    this.logger.debug(
-      `Sidecar file was not found. Checked paths '${sidecarPathWithExt}' and '${sidecarPathWithoutExt}'. Removing sidecarPath for asset ${asset.id}`,
-    );
+    this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
     await this.assetRepository.update({ id: asset.id, sidecarPath: null });
 
     return JobStatus.SUCCESS;

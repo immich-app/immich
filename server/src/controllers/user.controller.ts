@@ -44,7 +44,7 @@ export class UserController {
 
   @Get('me')
   @Authenticated()
-  getMyUser(@Auth() auth: AuthDto): UserAdminResponseDto {
+  getMyUser(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.getMe(auth);
   }
 
@@ -56,7 +56,7 @@ export class UserController {
 
   @Get('me/preferences')
   @Authenticated()
-  getMyPreferences(@Auth() auth: AuthDto): UserPreferencesResponseDto {
+  getMyPreferences(@Auth() auth: AuthDto): Promise<UserPreferencesResponseDto> {
     return this.service.getMyPreferences(auth);
   }
 
@@ -71,7 +71,7 @@ export class UserController {
 
   @Get('me/license')
   @Authenticated()
-  getUserLicense(@Auth() auth: AuthDto): LicenseResponseDto {
+  getUserLicense(@Auth() auth: AuthDto): Promise<LicenseResponseDto> {
     return this.service.getLicense(auth);
   }
 

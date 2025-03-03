@@ -118,7 +118,7 @@
     {/snippet}
   </ControlAppBar>
   <section class="bg-immich-bg px-[70px] pt-[100px] dark:bg-immich-dark-bg">
-    <section id="merge-face-selector relative">
+    <section id="merge-face-selector">
       <div class="mb-10 h-[200px] place-content-center place-items-center">
         <p class="mb-4 text-center uppercase dark:text-white">{$t('choose_matching_people_to_merge')}</p>
 

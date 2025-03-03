@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:isar/isar.dart';
+import 'package:immich_mobile/services/user.service.dart';
 
 class CurrentUserProvider extends StateNotifier<User?> {
   CurrentUserProvider(this._apiService) : super(null) {
@@ -23,7 +23,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
       final user = await _apiService.usersApi.getMyUser();
       final userPreferences = await _apiService.usersApi.getMyPreferences();
       if (user != null) {
-        Store.put(
+        await Store.put(
           StoreKey.currentUser,
           User.fromUserDto(user, userPreferences),
         );
@@ -46,18 +46,14 @@ final currentUserProvider =
 });
 
 class TimelineUserIdsProvider extends StateNotifier<List<int>> {
-  TimelineUserIdsProvider(Isar db, User? currentUser) : super([]) {
-    final query = db.users
-        .filter()
-        .inTimelineEqualTo(true)
-        .or()
-        .isarIdEqualTo(currentUser?.isarId ?? Isar.autoIncrement)
-        .isarIdProperty();
-    query.findAll().then((users) => state = users);
-    streamSub = query.watch().listen((users) => state = users);
+  TimelineUserIdsProvider(this._userService) : super([]) {
+    _userService.getTimelineUserIds().then((users) => state = users);
+    streamSub =
+        _userService.watchTimelineUserIds().listen((users) => state = users);
   }
 
   late final StreamSubscription<List<int>> streamSub;
+  final UserService _userService;
 
   @override
   void dispose() {
@@ -68,8 +64,5 @@ class TimelineUserIdsProvider extends StateNotifier<List<int>> {
 
 final timelineUsersIdsProvider =
     StateNotifierProvider<TimelineUserIdsProvider, List<int>>((ref) {
-  return TimelineUserIdsProvider(
-    ref.watch(dbProvider),
-    ref.watch(currentUserProvider),
-  );
+  return TimelineUserIdsProvider(ref.watch(userServiceProvider));
 });

@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
@@ -57,4 +58,38 @@ class UserRepository extends DatabaseRepository implements IUserRepository {
       .or()
       .isarIdEqualTo(Store.get(StoreKey.currentUser).isarId)
       .findAll();
+
+  @override
+  Future<User?> getByDbId(int id) async {
+    return await db.users.get(id);
+  }
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.users.clear();
+    });
+  }
+
+  @override
+  Future<List<int>> getTimelineUserIds(int id) {
+    return db.users
+        .filter()
+        .inTimelineEqualTo(true)
+        .or()
+        .isarIdEqualTo(id)
+        .isarIdProperty()
+        .findAll();
+  }
+
+  @override
+  Stream<List<int>> watchTimelineUsers(int id) {
+    return db.users
+        .filter()
+        .inTimelineEqualTo(true)
+        .or()
+        .isarIdEqualTo(id)
+        .isarIdProperty()
+        .watch();
+  }
 }

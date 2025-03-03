@@ -190,6 +190,7 @@
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+        aria-label={$t('show_keyboard_shortcuts')}
       />
     </HStack>
   {/snippet}
