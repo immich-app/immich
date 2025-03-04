@@ -521,23 +521,28 @@ export class LibraryService extends BaseService {
       }
     }
 
-    await Promise.all([
-      this.assetRepository.updateAll(assetIdsToOffline, {
-        isOffline: true,
-        deletedAt: new Date(),
-      }),
-      this.assetRepository.updateAll(trashedAssetIdsToOffline, {
-        isOffline: true,
-      }),
-      this.assetRepository.updateAll(assetIdsToOnline, {
-        isOffline: false,
-        deletedAt: null,
-      }),
-      this.assetRepository.updateAll(trashedAssetIdsToOnline, {
-        isOffline: false,
-      }),
-      this.queuePostSyncJobs(assetIdsToUpdate),
-    ]);
+    const promises = [];
+    if (assetIdsToOffline.length > 0) {
+      promises.push(this.assetRepository.updateAll(assetIdsToOffline, { isOffline: true, deletedAt: new Date() }));
+    }
+
+    if (trashedAssetIdsToOffline.length > 0) {
+      promises.push(this.assetRepository.updateAll(trashedAssetIdsToOffline, { isOffline: true }));
+    }
+
+    if (assetIdsToOnline.length > 0) {
+      promises.push(this.assetRepository.updateAll(assetIdsToOnline, { isOffline: false, deletedAt: null }));
+    }
+
+    if (trashedAssetIdsToOnline.length > 0) {
+      promises.push(this.assetRepository.updateAll(trashedAssetIdsToOnline, { isOffline: false }));
+    }
+
+    if (assetIdsToUpdate.length > 0) {
+      promises.push(this.queuePostSyncJobs(assetIdsToUpdate));
+    }
+
+    await Promise.all(promises);
 
     const remainingCount = assets.length - assetIdsToOffline.length - assetIdsToUpdate.length - assetIdsToOnline.length;
     const cumulativePercentage = ((100 * job.progressCounter) / job.totalAssets).toFixed(1);
