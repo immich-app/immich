@@ -97,6 +97,7 @@ type Overrides = {
   metadataRepository?: MetadataRepository;
   syncRepository?: SyncRepository;
   userRepository?: UserRepository;
+  versionHistoryRepository?: VersionHistoryRepository;
 };
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
@@ -151,7 +152,7 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides?: Overrides,
 ) => {
-  const { metadataRepository, userRepository, syncRepository } = overrides || {};
+  const { metadataRepository, userRepository, syncRepository, versionHistoryRepository } = overrides || {};
 
   const accessMock = newAccessRepositoryMock();
   const loggerMock = newLoggingRepositoryMock();
@@ -235,7 +236,8 @@ export const newTestService = <T extends BaseService>(
     telemetryMock as unknown as TelemetryRepository,
     trashMock as RepositoryInterface<TrashRepository> as TrashRepository,
     userMock as RepositoryInterface<UserRepository> as UserRepository,
-    versionHistoryMock as RepositoryInterface<VersionHistoryRepository> as VersionHistoryRepository,
+    versionHistoryRepository ||
+      (versionHistoryMock as RepositoryInterface<VersionHistoryRepository> as VersionHistoryRepository),
     viewMock as RepositoryInterface<ViewRepository> as ViewRepository,
   );
 
