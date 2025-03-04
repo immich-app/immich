@@ -73,7 +73,7 @@
     <div class="mb-2 py-2 sticky">
       <p class="text-xs font-medium">{$t('selected')}</p>
       <div class="my-2">
-        {#each Object.values(selectedUsers) as { user }}
+        {#each Object.values(selectedUsers) as { user } (user.id)}
           {#key user.id}
             <div class="flex place-items-center gap-4 p-4">
               <div
@@ -116,7 +116,7 @@
       <Text>{$t('users')}</Text>
 
       <div class="my-2">
-        {#each users as user}
+        {#each users as user (user.id)}
           {#if !Object.keys(selectedUsers).includes(user.id)}
             <div class="flex place-items-center transition-all hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl">
               <button type="button" onclick={() => handleToggle(user)} class="flex w-full place-items-center gap-4 p-4">
@@ -161,7 +161,7 @@
       </div>
 
       <Stack gap={4}>
-        {#each sharedLinks as sharedLink}
+        {#each sharedLinks as sharedLink (sharedLink.id)}
           <AlbumSharedLink {album} {sharedLink} />
         {/each}
       </Stack>

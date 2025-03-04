@@ -83,6 +83,7 @@
 <FullScreenModal title={shared ? $t('add_to_shared_album') : $t('add_to_album')} {onClose}>
   <div class="mb-2 flex max-h-[400px] flex-col">
     {#if loading}
+      <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each { length: 3 } as _}
         <div class="flex animate-pulse gap-4 px-6 py-2">
           <div class="h-12 w-12 rounded-xl bg-slate-200"></div>
@@ -104,6 +105,7 @@
         use:initInput
       />
       <div class="immich-scrollbar overflow-y-auto">
+        <!-- eslint-disable-next-line svelte/require-each-key -->
         {#each albumModalRows as row}
           {#if row.type === AlbumModalRowType.NEW_ALBUM}
             <NewAlbumListItem selected={row.selected || false} {onNewAlbum} searchQuery={search} />
