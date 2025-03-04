@@ -8,15 +8,16 @@ export class AssetInteraction {
   readonly selectedGroup = new SvelteSet<string>();
   assetSelectionCandidates = $state(new SvelteSet<AssetResponseDto>());
   assetSelectionStart = $state<AssetResponseDto | null>(null);
+  // A note on terminlogy: "highlight" means highlighting an asset for selection (i.e via 'ArrowLeft/Right' keyboard shortcuts).
+  // "selected" means the green tick on an asset to then perform various actions on it.
+  highlightAssetId = $state<string | null>(null);
 
   selectionActive = $derived(this.selectedAssets.size > 0);
   selectedAssetsArray = $derived([...this.selectedAssets]);
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
-  // A note on terminlogy: "highlight" means highlighting an asset for selection (i.e via 'ArrowLeft/Right' keyboard shortcuts).
-  // "selected" means the green tick on an asset to then perform various actions on it.
-  private highlightAsset = $state<AssetResponseDto | null>(null);
+
 
   isAllTrashed = $derived(this.selectedAssetsArray.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.selectedAssetsArray.every((asset) => asset.isArchived));
@@ -25,6 +26,14 @@ export class AssetInteraction {
 
   selectAsset(asset: AssetResponseDto) {
     this.selectedAssets.add(asset);
+  }
+
+  toggleAsset(asset: AssetResponseDto) {
+    if (this.selectedAssets.has(asset)) {
+      this.selectedAssets.delete(asset);
+    } else {
+      this.selectedAssets.add(asset);
+    }
   }
 
   selectAssets(assets: AssetResponseDto[]) {
@@ -66,7 +75,7 @@ export class AssetInteraction {
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
 
-    this.highlightAsset = null;
+    this.highlightAssetId = null;
   }
 
   handleEscape() {
@@ -74,19 +83,11 @@ export class AssetInteraction {
     if (selectionWasActive) {
       this.clearMultiselect();
     }
-    this.highlightAsset = null;
+    this.highlightAssetId = null;
     return selectionWasActive;
   }
 
   isHighlightAsset(asset: AssetResponseDto) {
-    return this.highlightAsset?.id === asset.id;
-  }
-
-  setHighlightAsset(asset: AssetResponseDto | null) {
-    this.highlightAsset = asset;
-  }
-
-  getHighlightAsset() {
-    return this.highlightAsset;
+    return this.highlightAssetId === asset.id;
   }
 }

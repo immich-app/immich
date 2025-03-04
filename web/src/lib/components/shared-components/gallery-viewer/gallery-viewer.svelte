@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
@@ -179,23 +179,21 @@
   };
 
   const highlightNextAsset = () => {
-    const currentHighlightAsset = assetInteraction.getHighlightAsset();
-    if (currentHighlightAsset === null && assets.length > 0) {
-      assetInteraction.setHighlightAsset(assets[0]);
-    } else if (currentHighlightAsset !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === currentHighlightAsset.id);
+    if (assetInteraction.highlightAssetId === null && assets.length > 0) {
+      assetInteraction.highlightAssetId = assets[0].id;
+    } else if (assetInteraction.highlightAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.highlightAssetId);
       if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
-        assetInteraction.setHighlightAsset(assets[currentIndex + 1]);
+        assetInteraction.highlightAssetId = assets[currentIndex + 1].id;
       }
     }
   };
 
   const highlightPreviousAsset = () => {
-    const currentHighlightAsset = assetInteraction.getHighlightAsset();
-    if (currentHighlightAsset !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === currentHighlightAsset.id);
+    if (assetInteraction.highlightAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.highlightAssetId);
       if (currentIndex >= 1) {
-        assetInteraction.setHighlightAsset(assets[currentIndex - 1]);
+        assetInteraction.highlightAssetId = assets[currentIndex - 1].id;
       }
     }
   };
@@ -371,7 +369,9 @@
     }
   });
 
-  $effect(() => assetInteraction.setHighlightAsset(null));
+  $effect(() => {
+    assetInteraction.highlightAssetId = null;
+  });
 </script>
 
 <svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
@@ -408,6 +408,7 @@
           }}
           onSelect={(asset) => handleSelectAssets(asset)}
           onMouseEvent={() => assetMouseEventHandler(asset)}
+          onFocus={() => {assetInteraction.highlightAssetId = asset.id}}
           onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           {showArchiveIcon}
           {asset}

@@ -61,6 +61,7 @@
     onRetrieveElement?: ((elment: HTMLElement) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
+    onFocus?: (() => void) | undefined;
     class?: string;
   }
 
@@ -87,6 +88,7 @@
     onRetrieveElement = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
+    onFocus = undefined,
     class: className = '',
   }: Props = $props();
 
@@ -96,6 +98,7 @@
 
   const componentId = generateId();
   let element: HTMLElement | undefined = $state();
+  let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let intersecting = $state(false);
   let lastRetrievedElement: HTMLElement | undefined = $state();
@@ -112,6 +115,12 @@
       onRetrieveElement?.(element);
     }
   });
+
+  $effect(() => {
+    if(highlight && document.activeElement !== focussableElement) {
+      focussableElement?.focus();
+    }
+  })
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -236,6 +245,8 @@
       tabindex={0}
       onclick={handleClick}
       role="link"
+      bind:this={focussableElement}
+      onfocus={onFocus}
     >
       {#if mouseOver && !disableMouseOver}
         <!-- lazy show the url on mouse over-->
@@ -246,20 +257,21 @@
           style:height="{height}px"
           href={currentUrlReplaceAssetId(asset.id)}
           onclick={(evt) => evt.preventDefault()}
-          tabindex={0}
+          tabindex={-1}
           aria-label="Thumbnail URL"
         >
         </a>
       {/if}
       <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
-        {#if !readonly && (mouseOver || selected || selectionCandidate || highlight)}
+        {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
             type="button"
             onclick={onIconClickedHandler}
             class="absolute p-2 focus:outline-none"
             class:cursor-not-allowed={disabled}
             role="checkbox"
+            tabindex={-1}
             aria-checked={selected}
             {disabled}
           >

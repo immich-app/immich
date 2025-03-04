@@ -736,22 +736,39 @@
   };
 
   const highlightNextAsset = async () => {
-    const currentHighlightAsset = assetInteraction.getHighlightAsset();
-    const nextHighlightAsset =
-      currentHighlightAsset === null
-        ? $assetStore.getFirstAsset()
-        : await $assetStore.getNextAsset(currentHighlightAsset);
-    if (nextHighlightAsset) {
-      assetInteraction.setHighlightAsset(nextHighlightAsset);
+    if (assetInteraction.highlightAssetId === null) {
+      const firstAsset = $assetStore.getFirstAsset();
+      if (firstAsset !== null) {
+        assetInteraction.highlightAssetId = firstAsset.id;
+      }
+    } else {
+      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.highlightAssetId);
+      if (highlightAsset) {
+        const nextAsset = await $assetStore.getNextAsset(highlightAsset);
+        if (nextAsset !== null) {
+          assetInteraction.highlightAssetId = nextAsset.id;
+        }
+      }
     }
   };
 
   const highlightPreviousAsset = async () => {
-    const currentHighlightAsset = assetInteraction.getHighlightAsset();
-    if (currentHighlightAsset !== null) {
-      const previousHighlightAsset = await $assetStore.getPreviousAsset(currentHighlightAsset);
-      if (previousHighlightAsset) {
-        assetInteraction.setHighlightAsset(previousHighlightAsset);
+    if (assetInteraction.highlightAssetId !== null) {
+      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.highlightAssetId);
+      if (highlightAsset) {
+        const prevoiusAsset = await $assetStore.getPreviousAsset(highlightAsset);
+        if (prevoiusAsset) {
+          assetInteraction.highlightAssetId = prevoiusAsset.id;
+        }
+      }
+    }
+  };
+
+  const toggleHighlightedAssetSelection = () => {
+    if (assetInteraction.highlightAssetId) {
+      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.highlightAssetId);
+      if (highlightAsset) {
+        assetInteraction.toggleAsset(highlightAsset);
       }
     }
   };
@@ -801,6 +818,7 @@
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: highlightNextAsset },
         { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: highlightPreviousAsset },
+        { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleHighlightedAssetSelection },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -835,7 +853,9 @@
     }
   });
 
-  $effect(() => assetInteraction.setHighlightAsset(null));
+  $effect(() => {
+    assetInteraction.highlightAssetId = null;
+  });
 </script>
 
 <svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
