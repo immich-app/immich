@@ -234,8 +234,8 @@
     if ($showAssetViewer) {
       return;
     }
-    const wasSelectionActive = assetInteraction.handleEscape();
-    if (wasSelectionActive) {
+    if (assetInteraction.selectionActive) {
+      cancelMultiselect(assetInteraction);
       return;
     }
     await goto(backUrl);

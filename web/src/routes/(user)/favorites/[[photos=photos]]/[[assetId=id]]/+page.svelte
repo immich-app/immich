@@ -32,6 +32,13 @@
   const assetStore = new AssetStore({ isFavorite: true });
   const assetInteraction = new AssetInteraction();
 
+  const handleEscape = () => {
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -73,7 +80,7 @@
     {assetStore}
     {assetInteraction}
     removeAction={AssetAction.UNFAVORITE}
-    onEscape={() => assetInteraction.handleEscape()}
+    onEscape={handleEscape}
   >
     {#snippet empty()}
       <EmptyPlaceholder text={$t('no_favorites_message')} />

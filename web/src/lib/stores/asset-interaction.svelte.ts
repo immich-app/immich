@@ -25,14 +25,6 @@ export class AssetInteraction {
     this.selectedAssets.add(asset);
   }
 
-  toggleAsset(asset: AssetResponseDto) {
-    if (this.selectedAssets.has(asset)) {
-      this.selectedAssets.delete(asset);
-    } else {
-      this.selectedAssets.add(asset);
-    }
-  }
-
   selectAssets(assets: AssetResponseDto[]) {
     for (const asset of assets) {
       this.selectedAssets.add(asset);
@@ -71,14 +63,6 @@ export class AssetInteraction {
     // Range selection
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
-  }
-
-  handleEscape() {
-    const selectionWasActive = this.selectionActive;
-    if (selectionWasActive) {
-      this.clearMultiselect();
-    }
-    return selectionWasActive;
   }
 
   isFocussedAsset(asset: AssetResponseDto) {

@@ -51,7 +51,10 @@
     if ($showAssetViewer) {
       return;
     }
-    assetInteraction.handleEscape();
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
   };
 
   const handleLink: OnLink = ({ still, motion }) => {

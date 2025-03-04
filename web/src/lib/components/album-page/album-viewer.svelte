@@ -51,8 +51,8 @@
   use:shortcut={{
     shortcut: { key: 'Escape' },
     onShortcut: () => {
-      if (!$showAssetViewer) {
-        assetInteraction.handleEscape();
+      if (!$showAssetViewer && assetInteraction.selectionActive) {
+        cancelMultiselect(assetInteraction);
       }
     },
   }}

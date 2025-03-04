@@ -24,6 +24,13 @@
   const assetStore = new AssetStore({ userId: data.partner.id, isArchived: false, withStacked: true });
   const assetInteraction = new AssetInteraction();
 
+  const handleEscape = () => {
+    if (assetInteraction.selectionActive) {
+      assetInteraction.clearMultiselect();
+      return;
+    }
+  };
+
   onDestroy(() => {
     assetStore.destroy();
   });
@@ -51,5 +58,5 @@
       {/snippet}
     </ControlAppBar>
   {/if}
-  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={() => assetInteraction.handleEscape()} />
+  <AssetGrid enableRouting={true} {assetStore} {assetInteraction} onEscape={handleEscape} />
 </main>
