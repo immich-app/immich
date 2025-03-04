@@ -33,6 +33,12 @@ export class ImmichFileResponse {
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
+const cacheControlHeaders: Record<CacheControl, string> = {
+  [CacheControl.PRIVATE_WITH_CACHE]: 'private, max-age=86400, no-transform',
+  [CacheControl.PRIVATE_WITHOUT_CACHE]: 'private, no-cache, no-transform',
+  [CacheControl.NONE]: '',
+};
+
 export const sendFile = async (
   res: Response,
   next: NextFunction,
@@ -44,16 +50,9 @@ export const sendFile = async (
 
   try {
     const file = await handler();
-    switch (file.cacheControl) {
-      case CacheControl.PRIVATE_WITH_CACHE: {
-        res.set('Cache-Control', 'private, max-age=86400, no-transform');
-        break;
-      }
-
-      case CacheControl.PRIVATE_WITHOUT_CACHE: {
-        res.set('Cache-Control', 'private, no-cache, no-transform');
-        break;
-      }
+    const cacheControlHeader = cacheControlHeaders[file.cacheControl];  
+    if (cacheControlHeader) {
+      res.set('Cache-Control', cacheControlHeader);
     }
 
     res.header('Content-Type', file.contentType);
