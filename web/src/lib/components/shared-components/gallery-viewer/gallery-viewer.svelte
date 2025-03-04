@@ -418,7 +418,7 @@
           }}
           onSelect={(asset) => handleSelectAssets(asset)}
           onMouseEvent={() => assetMouseEventHandler(asset)}
-          onFocus={() => {assetInteraction.focussedAssetId = asset.id}}
+          handleFocus={() => {assetInteraction.focussedAssetId = asset.id}}
           onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           {showArchiveIcon}
           {asset}

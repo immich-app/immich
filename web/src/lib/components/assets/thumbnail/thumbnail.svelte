@@ -61,7 +61,7 @@
     onRetrieveElement?: ((elment: HTMLElement) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
-    onFocus?: (() => void) | undefined;
+    handleFocus?: (() => void) | undefined;
     class?: string;
   }
 
@@ -88,7 +88,7 @@
     onRetrieveElement = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
-    onFocus = undefined,
+    handleFocus = undefined,
     class: className = '',
   }: Props = $props();
 
@@ -246,7 +246,7 @@
       onclick={handleClick}
       role="link"
       bind:this={focussableElement}
-      onfocus={onFocus}
+      onfocus={handleFocus}
     >
       {#if mouseOver && !disableMouseOver}
         <!-- lazy show the url on mouse over-->
