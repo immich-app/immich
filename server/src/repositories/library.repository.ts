@@ -82,6 +82,7 @@ export class LibraryRepository {
   }
 
   async softDelete(id: string): Promise<void> {
+    await this.db.updateTable('assets').set({ isVisible: false }).where('assets.libraryId', '=', id).execute();
     await this.db.updateTable('libraries').set({ deletedAt: new Date() }).where('libraries.id', '=', id).execute();
   }
 
