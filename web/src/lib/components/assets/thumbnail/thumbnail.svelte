@@ -117,10 +117,10 @@
   });
 
   $effect(() => {
-    if(focussed && document.activeElement !== focussableElement) {
+    if (focussed && document.activeElement !== focussableElement) {
       focussableElement?.focus();
     }
-  })
+  });
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -237,11 +237,11 @@
       class:cursor-pointer={!disabled}
       onmouseenter={onMouseEnter}
       onmouseleave={onMouseLeave}
-      onkeypress={(evt) => {
+      onkeydown={(evt) => {
         if (evt.key === 'Enter') {
           callClickHandlers();
         }
-        if(evt.key === 'x') {
+        if (evt.key === 'x') {
           onSelect?.(asset);
         }
       }}
