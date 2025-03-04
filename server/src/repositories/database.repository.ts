@@ -139,7 +139,7 @@ export class DatabaseRepository {
       }>`SELECT idx_status FROM pg_vector_index_stat WHERE indexname = ${name}`.execute(this.db);
       return rows[0]?.idx_status === 'UPGRADE';
     } catch (error) {
-      const message: string = (error as any).error;
+      const message: string = (error as any).message;
       if (message.includes('index is not existing')) {
         return true;
       } else if (message.includes('relation "pg_vector_index_stat" does not exist')) {
