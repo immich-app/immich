@@ -15,12 +15,6 @@ def _(parser: ArgumentParser) -> None:
     parser.add_argument("--clip-model", type=str, default="ViT-B-32::openai")
     parser.add_argument("--face-model", type=str, default="buffalo_l")
     parser.add_argument(
-        "--tag-min-score",
-        type=int,
-        default=0.0,
-        help="Returns all tags at or above this score. The default returns all tags.",
-    )
-    parser.add_argument(
         "--face-min-score",
         type=int,
         default=0.034,
@@ -74,10 +68,10 @@ class RecognitionFormDataLoadTest(InferenceLoadTest):
             "facial-recognition": {
                 "recognition": {
                     "modelName": self.environment.parsed_options.face_model,
-                    "options": {"minScore": self.environment.parsed_options.face_min_score},
                 },
                 "detection": {
                     "modelName": self.environment.parsed_options.face_model,
+                    "options": {"minScore": self.environment.parsed_options.face_min_score},
                 },
             }
         }
