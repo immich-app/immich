@@ -53,7 +53,7 @@
       <AddToAlbum shared />
     </ButtonContextMenu>
     <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>
