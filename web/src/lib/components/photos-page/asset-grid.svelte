@@ -73,10 +73,8 @@
     album = null,
     person = null,
     isShowDeleteConfirmation = $bindable(false),
-    onSelect = () => {
-    },
-    onEscape = () => {
-    },
+    onSelect = () => {},
+    onEscape = () => {},
     children,
     empty,
   }: Props = $props();

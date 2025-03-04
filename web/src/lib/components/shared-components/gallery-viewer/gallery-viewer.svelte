@@ -220,11 +220,11 @@
         { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
         { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
         { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleFocussedAssetSelection },
-        { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
       ];
 
       if (assetInteraction.selectionActive) {
         shortcuts.push(
+          { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
           { shortcut: { key: 'Delete' }, onShortcut: onDelete },
           { shortcut: { key: 'Delete', shift: true }, onShortcut: onForceDelete },
           { shortcut: { key: 'D', ctrl: true }, onShortcut: () => deselectAllAssets() },
