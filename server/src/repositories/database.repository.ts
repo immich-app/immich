@@ -220,9 +220,6 @@ export class DatabaseRepository {
   }
 
   tryLock(lock: DatabaseLock): Promise<boolean> {
-    if (this.asyncLock.isBusy(DatabaseLock[lock])) {
-      return Promise.resolve(false);
-    }
     return this.db.connection().execute(async (connection) => this.acquireTryLock(lock, connection));
   }
 
