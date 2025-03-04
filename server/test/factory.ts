@@ -4,13 +4,38 @@ import { Writable } from 'node:stream';
 import { Assets, DB, Partners, Sessions, Users } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType } from 'src/enum';
+import { AccessRepository } from 'src/repositories/access.repository';
+import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { AuditRepository } from 'src/repositories/audit.repository';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LibraryRepository } from 'src/repositories/library.repository';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
+import { MetadataRepository } from 'src/repositories/metadata.repository';
+import { MoveRepository } from 'src/repositories/move.repository';
+import { NotificationRepository } from 'src/repositories/notification.repository';
+import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { PersonRepository } from 'src/repositories/person.repository';
+import { ProcessRepository } from 'src/repositories/process.repository';
+import { SearchRepository } from 'src/repositories/search.repository';
+import { ServerInfoRepository } from 'src/repositories/server-info.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
+import { StackRepository } from 'src/repositories/stack.repository';
+import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
+import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { ViewRepository } from 'src/repositories/view-repository';
+import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -157,22 +182,71 @@ export class TestFactory {
 }
 
 export class TestContext {
-  userRepository: UserRepository;
-  assetRepository: AssetRepository;
-  albumRepository: AlbumRepository;
-  sessionRepository: SessionRepository;
-  syncRepository: SyncRepository;
-  partnerRepository: PartnerRepository;
-  versionHistoryRepository: VersionHistoryRepository;
+  access: AccessRepository;
+  logger: LoggingRepository;
+  activity: ActivityRepository;
+  album: AlbumRepository;
+  apiKey: ApiKeyRepository;
+  asset: AssetRepository;
+  audit: AuditRepository;
+  config: ConfigRepository;
+  library: LibraryRepository;
+  machineLearning: MachineLearningRepository;
+  media: MediaRepository;
+  metadata: MetadataRepository;
+  move: MoveRepository;
+  notification: NotificationRepository;
+  oauth: OAuthRepository;
+  partner: PartnerRepository;
+  person: PersonRepository;
+  process: ProcessRepository;
+  search: SearchRepository;
+  serverInfo: ServerInfoRepository;
+  session: SessionRepository;
+  sharedLink: SharedLinkRepository;
+  stack: StackRepository;
+  storage: StorageRepository;
+  sync: SyncRepository;
+  telemetry: TelemetryRepository;
+  trash: TrashRepository;
+  user: UserRepository;
+  versionHistory: VersionHistoryRepository;
+  view: ViewRepository;
 
   private constructor(private db: Kysely<DB>) {
-    this.userRepository = new UserRepository(this.db);
-    this.assetRepository = new AssetRepository(this.db);
-    this.albumRepository = new AlbumRepository(this.db);
-    this.sessionRepository = new SessionRepository(this.db);
-    this.syncRepository = new SyncRepository(this.db);
-    this.partnerRepository = new PartnerRepository(this.db);
-    this.versionHistoryRepository = new VersionHistoryRepository(this.db);
+    const logger = newLoggingRepositoryMock() as unknown as LoggingRepository;
+    const config = new ConfigRepository();
+
+    this.access = new AccessRepository(this.db);
+    this.logger = logger;
+    this.activity = new ActivityRepository(this.db);
+    this.album = new AlbumRepository(this.db);
+    this.apiKey = new ApiKeyRepository(this.db);
+    this.asset = new AssetRepository(this.db);
+    this.audit = new AuditRepository(this.db);
+    this.config = config;
+    this.library = new LibraryRepository(this.db);
+    this.machineLearning = new MachineLearningRepository(logger);
+    this.media = new MediaRepository(logger);
+    this.metadata = new MetadataRepository(logger);
+    this.move = new MoveRepository(this.db);
+    this.notification = new NotificationRepository(logger);
+    this.oauth = new OAuthRepository(logger);
+    this.partner = new PartnerRepository(this.db);
+    this.person = new PersonRepository(this.db);
+    this.process = new ProcessRepository(logger);
+    this.search = new SearchRepository(logger, this.db);
+    this.serverInfo = new ServerInfoRepository(config, logger);
+    this.session = new SessionRepository(this.db);
+    this.sharedLink = new SharedLinkRepository(this.db);
+    this.stack = new StackRepository(this.db);
+    this.storage = new StorageRepository(logger);
+    this.sync = new SyncRepository(this.db);
+    this.telemetry = newTelemetryRepositoryMock() as unknown as TelemetryRepository;
+    this.trash = new TrashRepository(this.db);
+    this.user = new UserRepository(this.db);
+    this.versionHistory = new VersionHistoryRepository(this.db);
+    this.view = new ViewRepository(this.db);
   }
 
   static from(db: Kysely<DB>) {
@@ -184,18 +258,18 @@ export class TestContext {
   }
 
   createUser(user: User = {}) {
-    return this.userRepository.create(TestFactory.user(user));
+    return this.user.create(TestFactory.user(user));
   }
 
   createPartner(partner: Partner) {
-    return this.partnerRepository.create(TestFactory.partner(partner));
+    return this.partner.create(TestFactory.partner(partner));
   }
 
   createAsset(asset: Asset) {
-    return this.assetRepository.create(TestFactory.asset(asset));
+    return this.asset.create(TestFactory.asset(asset));
   }
 
   createSession(session: Session) {
-    return this.sessionRepository.create(TestFactory.session(session));
+    return this.session.create(TestFactory.session(session));
   }
 }
