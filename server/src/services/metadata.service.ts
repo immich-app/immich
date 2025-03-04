@@ -622,9 +622,8 @@ export class MetadataService extends BaseService {
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
       const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
-
       this.logger.debug(
-        `No valid date found in exif tags from asset ${asset.id}, falling back to earliest timestamp between file creation and file modification: ${earliestDate.toISOString()}`,
+        `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for assset ${asset.id}: ${asset.originalPath}`,
       );
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
