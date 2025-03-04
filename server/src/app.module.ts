@@ -1,8 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
@@ -11,7 +10,6 @@ import postgres from 'postgres';
 import { commands } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
@@ -27,7 +25,6 @@ import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemet
 import { services } from 'src/services';
 import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
-import { DatabaseService } from 'src/services/database.service';
 
 const common = [...repositories, ...services, GlobalExceptionFilter];
 
@@ -48,18 +45,6 @@ const imports = [
   BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
-  TypeOrmModule.forRootAsync({
-    inject: [ModuleRef],
-    useFactory: (moduleRef: ModuleRef) => {
-      return {
-        ...database.config.typeorm,
-        poolErrorHandler: (error) => {
-          moduleRef.get(DatabaseService, { strict: false }).handleConnectionError(error);
-        },
-      };
-    },
-  }),
-  TypeOrmModule.forFeature(entities),
   KyselyModule.forRoot({
     dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
     log(event) {
