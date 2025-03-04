@@ -1,18 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/sync/sync_user_delete.model.dart';
 import 'package:immich_mobile/domain/models/sync/sync_user_update.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
-
-final syncStreamServiceProvider = Provider(
-  (ref) => SyncStreamService(
-    ref.watch(syncApiRepositoryProvider),
-    ref.watch(userRepositoryProvider),
-  ),
-);
 
 class SyncStreamService {
   final ISyncApiRepository _syncApiRepository;
@@ -43,6 +33,7 @@ class SyncStreamService {
           final data = event.data as SyncUserDeleteResponse;
 
           debugPrint("User delete: $data");
+          await _syncApiRepository.ack(event.ack);
         }
       }
     });
