@@ -30,6 +30,7 @@ services:
       - ../server:/usr/src/app
       - ../open-api:/usr/src/open-api
       - ${UPLOAD_LOCATION}/photos:/usr/src/app/upload
+      - ${UPLOAD_LOCATION}/photos/library:/usr/src/app/upload/library:ro
       - ${UPLOAD_LOCATION}/photos/upload:/usr/src/app/upload/upload
       - /usr/src/app/node_modules
       - /etc/localtime:/etc/localtime:ro
