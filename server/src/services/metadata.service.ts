@@ -390,7 +390,10 @@ export class MetadataService extends BaseService {
     }
 
     const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
-    await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds: results.map((tag) => tag.id) });
+    await this.tagRepository.replaceAssetTags(
+      asset.id,
+      results.map((tag) => tag.id),
+    );
   }
 
   private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {

@@ -417,7 +417,7 @@
         <AddToAlbum shared />
       </ButtonContextMenu>
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}

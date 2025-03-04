@@ -172,3 +172,64 @@ export const sha1 = (filepath: string) => {
     rs.on('end', () => resolve(hash.digest('hex')));
   });
 };
+
+/**
+ * Batches items and calls onBatch to process them
+ * when the batch size is reached or the debounce time has passed.
+ */
+export class Batcher<T = unknown> {
+  private items: T[] = [];
+  private readonly batchSize: number;
+  private readonly debounceTimeMs?: number;
+  private readonly onBatch: (items: T[]) => void;
+  private debounceTimer?: NodeJS.Timeout;
+
+  constructor({
+    batchSize,
+    debounceTimeMs,
+    onBatch,
+  }: {
+    batchSize: number;
+    debounceTimeMs?: number;
+    onBatch: (items: T[]) => Promise<void>;
+  }) {
+    this.batchSize = batchSize;
+    this.debounceTimeMs = debounceTimeMs;
+    this.onBatch = onBatch;
+  }
+
+  private setDebounceTimer() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+    }
+    if (this.debounceTimeMs) {
+      this.debounceTimer = setTimeout(() => this.flush(), this.debounceTimeMs);
+    }
+  }
+
+  private clearDebounceTimer() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = undefined;
+    }
+  }
+
+  add(item: T) {
+    this.items.push(item);
+    this.setDebounceTimer();
+    if (this.items.length >= this.batchSize) {
+      this.flush();
+    }
+  }
+
+  flush() {
+    this.clearDebounceTimer();
+    if (this.items.length === 0) {
+      return;
+    }
+
+    this.onBatch(this.items);
+
+    this.items = [];
+  }
+}

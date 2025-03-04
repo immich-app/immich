@@ -43,7 +43,7 @@
       clearSelect={() => assetInteraction.clearMultiselect()}
     >
       <CreateSharedLink />
-      <ButtonContextMenu icon={mdiPlus} title={$t('add')}>
+      <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>

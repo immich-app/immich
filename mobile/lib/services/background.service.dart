@@ -410,7 +410,6 @@ class BackgroundService {
       partnerApiRepository,
       userApiRepository,
       userRepository,
-      syncSerive,
     );
     AlbumService albumService = AlbumService(
       userService,
