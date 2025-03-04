@@ -499,9 +499,7 @@ describe(LibraryService.name, () => {
       const mtime = new Date(assetStub.external.fileModifiedAt.getDate() + 1);
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
-      mocks.storage.stat.mockResolvedValue({
-        mtime,
-      } as Stats);
+      mocks.storage.stat.mockResolvedValue({ mtime } as Stats);
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
