@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
-import 'package:immich_mobile/domain/models/sync/sync_user_delete.model.dart';
-import 'package:immich_mobile/domain/models/sync/sync_user_update.model.dart';
+import 'package:openapi/api.dart';
 
 class SyncStreamService {
   final ISyncApiRepository _syncApiRepository;
@@ -13,8 +12,8 @@ class SyncStreamService {
   void syncUsers() {
     _syncApiRepository.watchUserSyncEvent().listen((events) async {
       for (final event in events) {
-        if (event.data is SyncUserUpdateResponse) {
-          final data = event.data as SyncUserUpdateResponse;
+        if (event.data is SyncUserV1) {
+          final data = event.data as SyncUserV1;
           final user = await _userRepository.get(data.id);
 
           if (user == null) {
@@ -29,8 +28,8 @@ class SyncStreamService {
           await _syncApiRepository.ack(event.ack);
         }
 
-        if (event.data is SyncUserDeleteResponse) {
-          final data = event.data as SyncUserDeleteResponse;
+        if (event.data is SyncUserDeleteV1) {
+          final data = event.data as SyncUserDeleteV1;
 
           debugPrint("User delete: $data");
           await _syncApiRepository.ack(event.ack);
