@@ -1,4 +1,4 @@
-import 'package:immich_mobile/models/sync/sync_event.model.dart';
+import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
 
 abstract interface class ISyncApiRepository {
   Future<void> ack(String data);

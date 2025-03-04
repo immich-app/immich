@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-class SyncUserResponse {
+class SyncUserUpdateResponse {
   final String id;
 
   final String name;
@@ -10,20 +10,20 @@ class SyncUserResponse {
 
   final DateTime? deletedAt;
 
-  SyncUserResponse({
+  SyncUserUpdateResponse({
     required this.id,
     required this.name,
     required this.email,
     required this.deletedAt,
   });
 
-  SyncUserResponse copyWith({
+  SyncUserUpdateResponse copyWith({
     String? id,
     String? name,
     String? email,
     DateTime? deletedAt,
   }) {
-    return SyncUserResponse(
+    return SyncUserUpdateResponse(
       id: id ?? this.id,
       name: name ?? this.name,
       email: email ?? this.email,
@@ -40,8 +40,8 @@ class SyncUserResponse {
     };
   }
 
-  factory SyncUserResponse.fromMap(Map<String, dynamic> map) {
-    return SyncUserResponse(
+  factory SyncUserUpdateResponse.fromMap(Map<String, dynamic> map) {
+    return SyncUserUpdateResponse(
       id: map['id'] as String,
       name: map['name'] as String,
       email: map['email'] as String,
@@ -52,8 +52,10 @@ class SyncUserResponse {
 
   String toJson() => json.encode(toMap());
 
-  factory SyncUserResponse.fromJson(String source) =>
-      SyncUserResponse.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory SyncUserUpdateResponse.fromJson(String source) =>
+      SyncUserUpdateResponse.fromMap(
+        json.decode(source) as Map<String, dynamic>,
+      );
 
   @override
   String toString() {
@@ -61,7 +63,7 @@ class SyncUserResponse {
   }
 
   @override
-  bool operator ==(covariant SyncUserResponse other) {
+  bool operator ==(covariant SyncUserUpdateResponse other) {
     if (identical(this, other)) return true;
 
     return other.id == id &&

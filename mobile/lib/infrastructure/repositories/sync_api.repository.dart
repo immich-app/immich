@@ -5,9 +5,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/interfaces/sync_api.interface.dart';
-import 'package:immich_mobile/models/sync/sync_event.model.dart';
-import 'package:immich_mobile/models/sync/sync_user.model.dart';
+import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
+import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
+import 'package:immich_mobile/domain/models/sync/sync_user_delete.model.dart';
+import 'package:immich_mobile/domain/models/sync/sync_user_update.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
@@ -125,13 +126,19 @@ List<SyncEvent> _parseSyncResponse(
         case SyncEntityType.userV1:
           data.add(
             SyncEvent(
-              syncType: SyncTypeEnum.user,
-              data: SyncUserResponse.fromMap(dataJson),
+              data: SyncUserUpdateResponse.fromMap(dataJson),
               ack: ack,
             ),
           );
           break;
-
+        case SyncEntityType.userDeleteV1:
+          data.add(
+            SyncEvent(
+              data: SyncUserDeleteResponse.fromMap(dataJson),
+              ack: ack,
+            ),
+          );
+          break;
         default:
           debugPrint("[_parseSyncReponse] Unknown type $type");
       }
