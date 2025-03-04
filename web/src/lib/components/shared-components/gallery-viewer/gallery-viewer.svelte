@@ -178,22 +178,31 @@
     }
   };
 
-  const highlightNextAsset = () => {
-    if (assetInteraction.highlightAssetId === null && assets.length > 0) {
-      assetInteraction.highlightAssetId = assets[0].id;
-    } else if (assetInteraction.highlightAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.highlightAssetId);
+  const focusNextAsset = () => {
+    if (assetInteraction.focussedAssetId === null && assets.length > 0) {
+      assetInteraction.focussedAssetId = assets[0].id;
+    } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
       if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
-        assetInteraction.highlightAssetId = assets[currentIndex + 1].id;
+        assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
       }
     }
   };
 
-  const highlightPreviousAsset = () => {
-    if (assetInteraction.highlightAssetId !== null && assets.length > 0) {
-      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.highlightAssetId);
+  const focusPreviousAsset = () => {
+    if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
       if (currentIndex >= 1) {
-        assetInteraction.highlightAssetId = assets[currentIndex - 1].id;
+        assetInteraction.focussedAssetId = assets[currentIndex - 1].id;
+      }
+    }
+  };
+
+  const toggleFocussedAssetSelection = () => {
+    if (assetInteraction.focussedAssetId) {
+      const highlightAsset = assets.find((a) => a.id === assetInteraction.focussedAssetId);
+      if (highlightAsset) {
+        assetInteraction.toggleAsset(highlightAsset);
       }
     }
   };
@@ -208,8 +217,9 @@
         { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
-        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: highlightNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: highlightPreviousAsset },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+        { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleFocussedAssetSelection },
         { shortcut: { key: 'Escape' }, onShortcut: deselectAllAssets },
       ];
 
@@ -370,7 +380,7 @@
   });
 
   $effect(() => {
-    assetInteraction.highlightAssetId = null;
+    assetInteraction.focussedAssetId = null;
   });
 </script>
 
@@ -408,12 +418,12 @@
           }}
           onSelect={(asset) => handleSelectAssets(asset)}
           onMouseEvent={() => assetMouseEventHandler(asset)}
-          onFocus={() => {assetInteraction.highlightAssetId = asset.id}}
+          onFocus={() => {assetInteraction.focussedAssetId = asset.id}}
           onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           {showArchiveIcon}
           {asset}
           selected={assetInteraction.selectedAssets.has(asset)}
-          highlight={assetInteraction.isHighlightAsset(asset)}
+          focussed={assetInteraction.isFocussedAsset(asset)}
           selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}

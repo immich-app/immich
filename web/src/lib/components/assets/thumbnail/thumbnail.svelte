@@ -40,7 +40,7 @@
     thumbnailWidth?: number | undefined;
     thumbnailHeight?: number | undefined;
     selected?: boolean;
-    highlight?: boolean;
+    focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -74,7 +74,7 @@
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
     selected = false,
-    highlight = false,
+    focussed = false,
     selectionCandidate = false,
     disabled = false,
     readonly = false,
@@ -117,7 +117,7 @@
   });
 
   $effect(() => {
-    if(highlight && document.activeElement !== focussableElement) {
+    if(focussed && document.activeElement !== focussableElement) {
       focussableElement?.focus();
     }
   })

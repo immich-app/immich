@@ -735,38 +735,38 @@
     }
   };
 
-  const highlightNextAsset = async () => {
-    if (assetInteraction.highlightAssetId === null) {
+  const focusNextAsset = async () => {
+    if (assetInteraction.focussedAssetId === null) {
       const firstAsset = $assetStore.getFirstAsset();
       if (firstAsset !== null) {
-        assetInteraction.highlightAssetId = firstAsset.id;
+        assetInteraction.focussedAssetId = firstAsset.id;
       }
     } else {
-      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.highlightAssetId);
+      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
       if (highlightAsset) {
         const nextAsset = await $assetStore.getNextAsset(highlightAsset);
         if (nextAsset !== null) {
-          assetInteraction.highlightAssetId = nextAsset.id;
+          assetInteraction.focussedAssetId = nextAsset.id;
         }
       }
     }
   };
 
-  const highlightPreviousAsset = async () => {
-    if (assetInteraction.highlightAssetId !== null) {
-      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.highlightAssetId);
+  const focusPreviousAsset = async () => {
+    if (assetInteraction.focussedAssetId !== null) {
+      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
       if (highlightAsset) {
         const prevoiusAsset = await $assetStore.getPreviousAsset(highlightAsset);
         if (prevoiusAsset) {
-          assetInteraction.highlightAssetId = prevoiusAsset.id;
+          assetInteraction.focussedAssetId = prevoiusAsset.id;
         }
       }
     }
   };
 
-  const toggleHighlightedAssetSelection = () => {
-    if (assetInteraction.highlightAssetId) {
-      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.highlightAssetId);
+  const toggleFocussedAssetSelection = () => {
+    if (assetInteraction.focussedAssetId) {
+      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
       if (highlightAsset) {
         assetInteraction.toggleAsset(highlightAsset);
       }
@@ -816,9 +816,9 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets($assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
-        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: highlightNextAsset },
-        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: highlightPreviousAsset },
-        { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleHighlightedAssetSelection },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
+        { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleFocussedAssetSelection },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -854,7 +854,7 @@
   });
 
   $effect(() => {
-    assetInteraction.highlightAssetId = null;
+    assetInteraction.focussedAssetId = null;
   });
 </script>
 

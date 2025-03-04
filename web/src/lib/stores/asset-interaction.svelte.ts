@@ -8,16 +8,13 @@ export class AssetInteraction {
   readonly selectedGroup = new SvelteSet<string>();
   assetSelectionCandidates = $state(new SvelteSet<AssetResponseDto>());
   assetSelectionStart = $state<AssetResponseDto | null>(null);
-  // A note on terminlogy: "highlight" means highlighting an asset for selection (i.e via 'ArrowLeft/Right' keyboard shortcuts).
-  // "selected" means the green tick on an asset to then perform various actions on it.
-  highlightAssetId = $state<string | null>(null);
+  focussedAssetId = $state<string | null>(null);
 
   selectionActive = $derived(this.selectedAssets.size > 0);
   selectedAssetsArray = $derived([...this.selectedAssets]);
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
-
 
   isAllTrashed = $derived(this.selectedAssetsArray.every((asset) => asset.isTrashed));
   isAllArchived = $derived(this.selectedAssetsArray.every((asset) => asset.isArchived));
@@ -75,7 +72,7 @@ export class AssetInteraction {
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
 
-    this.highlightAssetId = null;
+    this.focussedAssetId = null;
   }
 
   handleEscape() {
@@ -83,11 +80,11 @@ export class AssetInteraction {
     if (selectionWasActive) {
       this.clearMultiselect();
     }
-    this.highlightAssetId = null;
+    this.focussedAssetId = null;
     return selectionWasActive;
   }
 
-  isHighlightAsset(asset: AssetResponseDto) {
-    return this.highlightAssetId === asset.id;
+  isFocussedAsset(asset: AssetResponseDto) {
+    return this.focussedAssetId === asset.id;
   }
 }

@@ -212,9 +212,9 @@
                   onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
                   onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
                   onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
-                  onFocus={() => {assetInteraction.highlightAssetId = asset.id}}
+                  onFocus={() => {assetInteraction.focussedAssetId = asset.id}}
                   selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
-                  highlight={assetInteraction.isHighlightAsset(asset)}
+                  focussed={assetInteraction.isFocussedAsset(asset)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={$assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={box.width}
