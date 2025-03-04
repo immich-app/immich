@@ -4,7 +4,7 @@
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
   import { navigate } from '$lib/utils/navigation';
-  import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
+  import { findTotalOffset, type DateGroup, type ScrollTargetListener, getDateLocaleString } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -166,7 +166,7 @@
               </div>
             {/if}
 
-            <span class="w-full truncate first-letter:capitalize" title={dateGroup.groupTitle}>
+            <span class="w-full truncate first-letter:capitalize" title={getDateLocaleString(dateGroup.date)}>
               {dateGroup.groupTitle}
             </span>
           </div>
