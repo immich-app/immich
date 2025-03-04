@@ -275,6 +275,7 @@
             class:cursor-not-allowed={disabled}
             role="checkbox"
             tabindex={-1}
+            onfocus={handleFocus}
             aria-checked={selected}
             {disabled}
           >
