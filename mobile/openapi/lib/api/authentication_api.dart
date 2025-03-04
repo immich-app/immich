@@ -22,7 +22,7 @@ class AuthenticationApi {
   /// * [ChangePasswordDto] changePasswordDto (required):
   Future<Response> changePasswordWithHttpInfo(ChangePasswordDto changePasswordDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/auth/change-password';
+    final apiPath = r'/auth/change-password';
 
     // ignore: prefer_final_locals
     Object? postBody = changePasswordDto;
@@ -35,7 +35,7 @@ class AuthenticationApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class AuthenticationApi {
   /// * [LoginCredentialDto] loginCredentialDto (required):
   Future<Response> loginWithHttpInfo(LoginCredentialDto loginCredentialDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/auth/login';
+    final apiPath = r'/auth/login';
 
     // ignore: prefer_final_locals
     Object? postBody = loginCredentialDto;
@@ -82,7 +82,7 @@ class AuthenticationApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -113,7 +113,7 @@ class AuthenticationApi {
   /// Performs an HTTP 'POST /auth/logout' operation and returns the [Response].
   Future<Response> logoutWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/auth/logout';
+    final apiPath = r'/auth/logout';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -126,7 +126,7 @@ class AuthenticationApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -157,7 +157,7 @@ class AuthenticationApi {
   /// * [SignUpDto] signUpDto (required):
   Future<Response> signUpAdminWithHttpInfo(SignUpDto signUpDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/auth/admin-sign-up';
+    final apiPath = r'/auth/admin-sign-up';
 
     // ignore: prefer_final_locals
     Object? postBody = signUpDto;
@@ -170,7 +170,7 @@ class AuthenticationApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -201,7 +201,7 @@ class AuthenticationApi {
   /// Performs an HTTP 'POST /auth/validateToken' operation and returns the [Response].
   Future<Response> validateAccessTokenWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/auth/validateToken';
+    final apiPath = r'/auth/validateToken';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -214,7 +214,7 @@ class AuthenticationApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
