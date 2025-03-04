@@ -189,17 +189,17 @@ class MemoryPage extends HookConsumerWidget {
       currentAssetPage.value = otherIndex;
       updateProgressText();
 
+      // Wait for page change animation to finish
+      await Future.delayed(const Duration(milliseconds: 400));
+      // And then precache the next asset
+      await precacheAsset(otherIndex + 1);
+
       final asset = currentMemory.value.assets[otherIndex];
       currentAsset.value = asset;
       ref.read(currentAssetProvider.notifier).set(asset);
       if (asset.isVideo || asset.isMotionPhoto) {
         ref.read(videoPlaybackValueProvider.notifier).reset();
       }
-
-      // Wait for page change animation to finish
-      await Future.delayed(const Duration(milliseconds: 400));
-      // And then precache the next asset
-      await precacheAsset(otherIndex + 1);
     }
 
     /* Notification listener is used instead of OnPageChanged callback since OnPageChanged is called
