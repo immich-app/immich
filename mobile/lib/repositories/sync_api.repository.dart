@@ -8,6 +8,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/models/sync/sync_event.model.dart';
 import 'package:immich_mobile/models/sync/sync_user.model.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:http/http.dart' as http;
@@ -16,23 +17,34 @@ import 'package:openapi/api.dart';
 final syncApiRepositoryProvider = Provider(
   (ref) => SyncApiRepository(
     ref.watch(dbProvider),
+    ref.watch(apiServiceProvider).syncApi,
   ),
 );
 
 class SyncApiRepository extends DatabaseRepository
     implements ISyncApiRepository {
-  SyncApiRepository(super.db);
+  final SyncApi _syncApi;
+  SyncApiRepository(super.db, this._syncApi);
 
   @override
-  Future<void> getUsers() async {
+  Stream<List<SyncEvent>> watchUserSyncEvent() {
+    return _streamSync(
+      types: [SyncRequestType.usersV1],
+      methodName: 'watchUserSyncEvent',
+    );
+  }
+
+  Stream<List<SyncEvent>> _streamSync({
+    required List<SyncRequestType> types,
+    required String methodName,
+    int batchSize = 5000,
+  }) async* {
     final timer = Stopwatch()..start();
-    final batchSize = 100;
     String previousChunk = '';
     List<String> lines = [];
 
     final client = http.Client();
-    final request =
-        _getRequest([SyncRequestType.usersV1, SyncRequestType.usersV1]);
+    final request = _getRequest(types);
     if (request == null) {
       return;
     }
@@ -50,16 +62,20 @@ class SyncApiRepository extends DatabaseRepository
           continue;
         }
 
-        await compute(_parseSyncReponse, lines);
+        final events = await compute(_parseSyncResponse, lines);
+        yield events;
         lines.clear();
       }
     } finally {
-      await compute(_parseSyncReponse, lines);
+      if (lines.isNotEmpty) {
+        final events = await compute(_parseSyncResponse, lines);
+        yield events;
+      }
       client.close();
 
       timer.stop();
       debugPrint(
-        "[SyncApiRepository.getUsers] Elapsed time: ${timer.elapsedMilliseconds}ms",
+        "[SyncApiRepository.$methodName] Elapsed time: ${timer.elapsedMilliseconds}ms",
       );
     }
   }
@@ -85,10 +101,15 @@ class SyncApiRepository extends DatabaseRepository
 
     return request;
   }
+
+  @override
+  Future<void> ack(String data) {
+    return _syncApi.sendSyncAck(SyncAckSetDto(acks: [data]));
+  }
 }
 
 // Need to be outside of the class to be able to use compute
-List<SyncEvent> _parseSyncReponse(
+List<SyncEvent> _parseSyncResponse(
   List<String> lines,
 ) {
   final List<SyncEvent> data = [];

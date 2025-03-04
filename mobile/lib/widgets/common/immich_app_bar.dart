@@ -188,7 +188,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           onPressed: () {
-            ref.read(syncStreamServiceProvider).getUsers();
+            ref.read(syncStreamServiceProvider).syncUsers();
           },
           icon: const Icon(Icons.sync),
         ),

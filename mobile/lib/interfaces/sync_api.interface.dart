@@ -1,3 +1,7 @@
+import 'package:immich_mobile/models/sync/sync_event.model.dart';
+
 abstract interface class ISyncApiRepository {
-  Future<void> getUsers();
+  Future<void> ack(String data);
+
+  Stream<List<SyncEvent>> watchUserSyncEvent();
 }

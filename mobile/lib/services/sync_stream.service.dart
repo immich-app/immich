@@ -10,7 +10,9 @@ class SyncStreamService {
 
   SyncStreamService(this._syncApiRepository);
 
-  void getUsers() {
-    _syncApiRepository.getUsers();
+  void syncUsers() {
+    _syncApiRepository.watchUserSyncEvent().listen((event) {
+      print(event);
+    });
   }
 }
