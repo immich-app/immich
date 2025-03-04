@@ -61,13 +61,11 @@
     "tslib": "^2.6.2",
     "typescript": "^5.7.3",
     "vite": "^6.0.0",
-    "vite-plugin-wasm": "^3.4.1",
     "vitest": "^3.0.0"
   },
   "type": "module",
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
-    "@immich/justified-layout-wasm": "^0.2.1",
     "@immich/sdk": "file:../open-api/typescript-sdk",
     "@immich/ui": "^0.16.0",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",

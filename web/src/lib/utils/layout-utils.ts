@@ -84,6 +84,12 @@ class Adapter {
   }
 }
 
+export const emptyGeometry = new Adapter({
+  containerHeight: 0,
+  widowCount: 0,
+  boxes: [],
+});
+
 export function justifiedLayout(assets: AssetResponseDto[], options: CommonLayoutOptions) {
   const adapter = {
     targetRowHeight: options.rowHeight,

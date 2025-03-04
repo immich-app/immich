@@ -4,7 +4,6 @@ import { svelteTesting } from '@testing-library/svelte/vite';
 import path from 'node:path';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
-import wasm from 'vite-plugin-wasm';
 
 const upstream = {
   target: process.env.IMMICH_SERVER_URL || 'http://immich-server:2283/',
@@ -45,7 +44,6 @@ export default defineConfig({
       : undefined,
     enhancedImages(),
     svelteTesting(),
-    wasm(),
   ],
   optimizeDeps: {
     entries: ['src/**/*.{svelte,ts,html}'],
@@ -57,10 +55,6 @@ export default defineConfig({
     setupFiles: ['./src/test-data/setup.ts'],
     sequence: {
       hooks: 'list',
-    },
-    deps: {
-      // workaround for https://github.com/vitest-dev/vitest/issues/2150
-      inline: ['@immich/justified-layout-wasm'],
     },
   },
 });

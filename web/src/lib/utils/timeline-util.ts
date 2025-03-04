@@ -1,7 +1,7 @@
 import type { AssetBucket } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
-import type { CommonJustifiedLayout } from '$lib/utils/layout-utils';
-import { JustifiedLayout } from '@immich/justified-layout-wasm';
+import { emptyGeometry, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+
 import type { AssetResponseDto } from '@immich/sdk';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
@@ -80,13 +80,6 @@ export function formatGroupTitle(_date: DateTime): string {
 
   return date.toLocaleString(groupDateFormat);
 }
-
-const emptyGeometry = new JustifiedLayout(Float32Array.from([]), {
-  rowHeight: 1,
-  heightTolerance: 0,
-  rowWidth: 1,
-  spacing: 0,
-});
 
 const formatDateGroupTitle = memoize(formatGroupTitle);
 
