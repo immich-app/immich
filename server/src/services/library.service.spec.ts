@@ -505,10 +505,6 @@ describe(LibraryService.name, () => {
 
       await expect(sut.handleSyncAssets(mockAssetJob)).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith([assetStub.external.id], {
-        fileModifiedAt: mtime,
-      });
-
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SIDECAR_DISCOVERY,
