@@ -39,6 +39,10 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.MEMORIES_CREATE };
     }
 
+    case ManualJobName.BACKUP_DATABASE: {
+      return { name: JobName.BACKUP_DATABASE };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }

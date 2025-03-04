@@ -237,6 +237,7 @@ export enum ManualJobName {
   USER_CLEANUP = 'user-cleanup',
   MEMORY_CLEANUP = 'memory-cleanup',
   MEMORY_CREATE = 'memory-create',
+  BACKUP_DATABASE = 'backup-database'
 }
 
 export enum AssetPathType {
