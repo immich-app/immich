@@ -53,7 +53,7 @@
   let { isViewing: showAssetViewer } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
 
-  // The GalleryViewer pushes it's own history state, which causes weird
+  // The GalleryViewer pushes its own history state, which causes weird
   // behavior for history.back(). To prevent that we store the previous page
   // manually and navigate back to that.
   let previousRoute = $state(AppRoute.EXPLORE as string);
@@ -249,7 +249,7 @@
     await stackAssets(assetInteraction.selectedAssetsArray);
   };
 
-  let shortcutList = $derived(
+  const shortcutList = $derived(
     (() => {
       if ($showAssetViewer) {
         return [];
