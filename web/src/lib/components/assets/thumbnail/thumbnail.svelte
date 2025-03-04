@@ -241,6 +241,9 @@
         if (evt.key === 'Enter') {
           callClickHandlers();
         }
+        if(evt.key === 'x') {
+          onSelect?.(asset);
+        }
       }}
       tabindex={0}
       onclick={handleClick}

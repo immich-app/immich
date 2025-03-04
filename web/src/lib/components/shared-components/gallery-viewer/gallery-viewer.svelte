@@ -198,15 +198,6 @@
     }
   };
 
-  const toggleFocussedAssetSelection = () => {
-    if (assetInteraction.focussedAssetId) {
-      const highlightAsset = assets.find((a) => a.id === assetInteraction.focussedAssetId);
-      if (highlightAsset) {
-        assetInteraction.toggleAsset(highlightAsset);
-      }
-    }
-  };
-
   let shortcutList = $derived(
     (() => {
       if ($isViewerOpen) {
@@ -219,7 +210,6 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
         { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
         { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
-        { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleFocussedAssetSelection },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -377,10 +367,6 @@
     if (shiftKeyIsDown && lastAssetMouseEvent) {
       selectAssetCandidates(lastAssetMouseEvent);
     }
-  });
-
-  $effect(() => {
-    assetInteraction.focussedAssetId = null;
   });
 </script>
 

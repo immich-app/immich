@@ -740,9 +740,9 @@
         assetInteraction.focussedAssetId = firstAsset.id;
       }
     } else {
-      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (highlightAsset) {
-        const nextAsset = await $assetStore.getNextAsset(highlightAsset);
+      const focussedAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      if (focussedAsset) {
+        const nextAsset = await $assetStore.getNextAsset(focussedAsset);
         if (nextAsset !== null) {
           assetInteraction.focussedAssetId = nextAsset.id;
         }
@@ -752,21 +752,12 @@
 
   const focusPreviousAsset = async () => {
     if (assetInteraction.focussedAssetId !== null) {
-      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (highlightAsset) {
-        const prevoiusAsset = await $assetStore.getPreviousAsset(highlightAsset);
-        if (prevoiusAsset) {
-          assetInteraction.focussedAssetId = prevoiusAsset.id;
+      const focussedAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      if (focussedAsset) {
+        const previousAsset = await $assetStore.getPreviousAsset(focussedAsset);
+        if (previousAsset) {
+          assetInteraction.focussedAssetId = previousAsset.id;
         }
-      }
-    }
-  };
-
-  const toggleFocussedAssetSelection = () => {
-    if (assetInteraction.focussedAssetId) {
-      const highlightAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
-      if (highlightAsset) {
-        assetInteraction.toggleAsset(highlightAsset);
       }
     }
   };
@@ -816,7 +807,6 @@
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
         { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
-        { shortcut: { key: 'x' }, preventDefault: false, onShortcut: toggleFocussedAssetSelection },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -849,10 +839,6 @@
     if (shiftKeyIsDown && lastAssetMouseEvent) {
       selectAssetCandidates(lastAssetMouseEvent);
     }
-  });
-
-  $effect(() => {
-    assetInteraction.focussedAssetId = null;
   });
 </script>
 

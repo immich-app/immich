@@ -71,8 +71,6 @@ export class AssetInteraction {
     // Range selection
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
-
-    this.focussedAssetId = null;
   }
 
   handleEscape() {
@@ -80,7 +78,6 @@ export class AssetInteraction {
     if (selectionWasActive) {
       this.clearMultiselect();
     }
-    this.focussedAssetId = null;
     return selectionWasActive;
   }
 
