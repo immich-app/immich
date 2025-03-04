@@ -50,10 +50,10 @@
       <div class="p-4">
         <h2>{$t('general')}</h2>
         <div class="text-sm">
-          {#each shortcuts.general as shortcut}
+          {#each shortcuts.general as shortcut (shortcut.key.join('-'))}
             <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
               <div class="flex justify-self-end">
-                {#each shortcut.key as key}
+                {#each shortcut.key as key (key)}
                   <p class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2">
                     {key}
                   </p>
@@ -69,10 +69,10 @@
       <div class="p-4">
         <h2>{$t('actions')}</h2>
         <div class="text-sm">
-          {#each shortcuts.actions as shortcut}
+          {#each shortcuts.actions as shortcut (shortcut.key.join('-'))}
             <div class="grid grid-cols-[30%_70%] items-center gap-4 pt-4 text-sm">
               <div class="flex justify-self-end">
-                {#each shortcut.key as key}
+                {#each shortcut.key as key (key)}
                   <p class="mr-1 flex items-center justify-center justify-self-end rounded-lg bg-immich-primary/25 p-2">
                     {key}
                   </p>

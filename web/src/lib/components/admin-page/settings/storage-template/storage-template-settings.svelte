@@ -225,7 +225,7 @@
                   bind:value={selectedPreset}
                   onchange={handlePresetSelection}
                 >
-                  {#each templateOptions.presetOptions as preset}
+                  {#each templateOptions.presetOptions as preset (preset)}
                     <option value={preset}>{renderTemplate(preset)}</option>
                   {/each}
                 </select>
@@ -246,7 +246,7 @@
                 <SettingInputField
                   label={$t('extension')}
                   inputType={SettingInputFieldType.TEXT}
-                  value={'.jpg'}
+                  value=".jpg"
                   disabled
                 />
               </div>

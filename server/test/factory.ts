@@ -1,14 +1,16 @@
 import { Insertable, Kysely } from 'kysely';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { Writable } from 'node:stream';
-import { Assets, DB, Sessions, Users } from 'src/db';
+import { Assets, DB, Partners, Sessions, Users } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType } from 'src/enum';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { PartnerRepository } from 'src/repositories/partner.repository';
 import { SessionRepository } from 'src/repositories/session.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
 import { UserRepository } from 'src/repositories/user.repository';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -30,6 +32,7 @@ class CustomWritable extends Writable {
 type Asset = Insertable<Assets>;
 type User = Partial<Insertable<Users>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
+type Partner = Insertable<Partners>;
 
 export const newUuid = () => randomUUID() as string;
 
@@ -37,6 +40,7 @@ export class TestFactory {
   private assets: Asset[] = [];
   private sessions: Session[] = [];
   private users: User[] = [];
+  private partners: Partner[] = [];
 
   private constructor(private context: TestContext) {}
 
@@ -100,6 +104,17 @@ export class TestFactory {
     };
   }
 
+  static partner(partner: Partner) {
+    const defaults = {
+      inTimeline: true,
+    };
+
+    return {
+      ...defaults,
+      ...partner,
+    };
+  }
+
   withAsset(asset: Asset) {
     this.assets.push(asset);
     return this;
@@ -115,6 +130,11 @@ export class TestFactory {
     return this;
   }
 
+  withPartner(partner: Partner) {
+    this.partners.push(partner);
+    return this;
+  }
+
   async create() {
     for (const asset of this.assets) {
       await this.context.createAsset(asset);
@@ -122,6 +142,10 @@ export class TestFactory {
 
     for (const user of this.users) {
       await this.context.createUser(user);
+    }
+
+    for (const partner of this.partners) {
+      await this.context.createPartner(partner);
     }
 
     for (const session of this.sessions) {
@@ -138,6 +162,8 @@ export class TestContext {
   albumRepository: AlbumRepository;
   sessionRepository: SessionRepository;
   syncRepository: SyncRepository;
+  partnerRepository: PartnerRepository;
+  versionHistoryRepository: VersionHistoryRepository;
 
   private constructor(private db: Kysely<DB>) {
     this.userRepository = new UserRepository(this.db);
@@ -145,6 +171,8 @@ export class TestContext {
     this.albumRepository = new AlbumRepository(this.db);
     this.sessionRepository = new SessionRepository(this.db);
     this.syncRepository = new SyncRepository(this.db);
+    this.partnerRepository = new PartnerRepository(this.db);
+    this.versionHistoryRepository = new VersionHistoryRepository(this.db);
   }
 
   static from(db: Kysely<DB>) {
@@ -157,6 +185,10 @@ export class TestContext {
 
   createUser(user: User = {}) {
     return this.userRepository.create(TestFactory.user(user));
+  }
+
+  createPartner(partner: Partner) {
+    return this.partnerRepository.create(TestFactory.partner(partner));
   }
 
   createAsset(asset: Asset) {
