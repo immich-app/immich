@@ -57,7 +57,7 @@
     "exclusion_pattern_description": "Met uitsluitingspatrone kan jy lêers en vouers ignoreer wanneer jy jou biblioteek skandeer. Dit is nuttig as jy vouers het wat lêers bevat wat jy nie wil invoer nie, soos RAW-lêers.",
     "external_library_created_at": "Eksterne biblioteek (geskep op {date})",
     "external_library_management": "Eksterne Biblioteek-opsies",
-    "face_detection": "Gesigsopsporing",
+    "face_detection": "Gesig deteksie",
     "failed_job_command": "Opdrag {command} het misluk vir werk: {job}",
     "force_delete_user_warning": "WAARSKUWING: Dit sal onmiddellik die gebruiker en alle bates verwyder. Dit kan nie ontdoen word nie en die lêers kan nie herstel word nie.",
     "forcing_refresh_library_files": "Forseer herlaai van alle biblioteeklêers",
