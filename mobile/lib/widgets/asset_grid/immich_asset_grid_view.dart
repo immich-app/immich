@@ -546,8 +546,18 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
         if (didPop) {
           return;
         } else {
-          _deselectAll();
-          Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
+          if (widget.preselectedAssets == null) {
+            Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
+          }
+          if (_selectedAssets.length != widget.preselectedAssets!.length &&
+              !widget.preselectedAssets!.containsAll(_selectedAssets)) {
+            {
+              _deselectAll();
+              return;
+            }
+          } else {
+            Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
+          }
         }
       },
       child: Stack(
