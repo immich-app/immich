@@ -165,7 +165,7 @@ describe(LibraryService.name, () => {
         name: JobName.LIBRARY_SYNC_FILES,
         data: {
           libraryId: libraryStub.externalLibraryWithImportPaths1.id,
-          assetPaths: ['/data/user1/photo.jpg'],
+          paths: ['/data/user1/photo.jpg'],
           progressCounter: 1,
         },
       });
@@ -217,7 +217,7 @@ describe(LibraryService.name, () => {
         name: JobName.LIBRARY_SYNC_FILES,
         data: {
           libraryId: libraryStub.externalLibraryWithImportPaths1.id,
-          assetPaths: ['/data/user1/photo.jpg'],
+          paths: ['/data/user1/photo.jpg'],
           progressCounter: 1,
         },
       });
@@ -531,7 +531,7 @@ describe(LibraryService.name, () => {
     it('should import a new asset', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.externalLibrary1.id,
-        assetPaths: ['/data/user1/photo.jpg'],
+        paths: ['/data/user1/photo.jpg'],
       };
 
       mocks.asset.createAll.mockResolvedValue([assetStub.image]);
@@ -573,7 +573,7 @@ describe(LibraryService.name, () => {
     it('should not import an asset to a soft deleted library', async () => {
       const mockLibraryJob: ILibraryFileJob = {
         libraryId: libraryStub.externalLibrary1.id,
-        assetPaths: ['/data/user1/photo.jpg'],
+        paths: ['/data/user1/photo.jpg'],
       };
 
       mocks.library.get.mockResolvedValue({ ...libraryStub.externalLibrary1, deletedAt: new Date() });
@@ -917,7 +917,7 @@ describe(LibraryService.name, () => {
           name: JobName.LIBRARY_SYNC_FILES,
           data: {
             libraryId: libraryStub.externalLibraryWithImportPaths1.id,
-            assetPaths: ['/foo/photo.jpg'],
+            paths: ['/foo/photo.jpg'],
           },
         });
       });
@@ -936,7 +936,7 @@ describe(LibraryService.name, () => {
           name: JobName.LIBRARY_SYNC_FILES,
           data: {
             libraryId: libraryStub.externalLibraryWithImportPaths1.id,
-            assetPaths: ['/foo/photo.jpg'],
+            paths: ['/foo/photo.jpg'],
           },
         });
       });
@@ -955,7 +955,7 @@ describe(LibraryService.name, () => {
           name: JobName.LIBRARY_ASSET_REMOVAL,
           data: {
             libraryId: libraryStub.externalLibraryWithImportPaths1.id,
-            assetPaths: [assetStub.image.originalPath],
+            paths: [assetStub.image.originalPath],
           },
         });
       });

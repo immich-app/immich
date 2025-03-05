@@ -104,7 +104,7 @@ export class LibraryService extends BaseService {
         this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SYNC_FILES,
-          data: { libraryId: library.id, assetPaths: [path] },
+          data: { libraryId: library.id, paths: [path] },
         });
       } else {
         this.logger.verbose(`Ignoring file ${event} event for ${path} in library ${library.id}`);
@@ -115,7 +115,7 @@ export class LibraryService extends BaseService {
       this.logger.debug(`File unlink event received for ${path} in library ${library.id}}`);
       await this.jobRepository.queue({
         name: JobName.LIBRARY_ASSET_REMOVAL,
-        data: { libraryId: library.id, assetPaths: [path] },
+        data: { libraryId: library.id, paths: [path] },
       });
     };
 
@@ -237,9 +237,7 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = job.assetPaths.map((assetPath) =>
-      this.processEntity(assetPath, library.ownerId, job.libraryId),
-    );
+    const assetImports = job.paths.map((assetPath) => this.processEntity(assetPath, library.ownerId, job.libraryId));
 
     const assetIds: string[] = [];
 
@@ -627,23 +625,23 @@ export class LibraryService extends BaseService {
 
     for await (const pathBatch of pathsOnDisk) {
       crawlCount += pathBatch.length;
-      const newPaths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
+      const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
 
-      if (newPaths.length > 0) {
-        importCount += newPaths.length;
+      if (paths.length > 0) {
+        importCount += paths.length;
 
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SYNC_FILES,
           data: {
             libraryId: library.id,
-            assetPaths: newPaths,
+            paths,
             progressCounter: crawlCount,
           },
         });
       }
 
       this.logger.log(
-        `Crawled ${crawlCount} file(s) so far: ${newPaths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
+        `Crawled ${crawlCount} file(s) so far: ${paths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
       );
     }
 
@@ -659,8 +657,8 @@ export class LibraryService extends BaseService {
   @OnJob({ name: JobName.LIBRARY_ASSET_REMOVAL, queue: QueueName.LIBRARY })
   async handleAssetRemoval(job: JobOf<JobName.LIBRARY_ASSET_REMOVAL>): Promise<JobStatus> {
     // This is only for handling file unlink events via the file watcher
-    this.logger.verbose(`Deleting asset(s) ${job.assetPaths} from library ${job.libraryId}`);
-    for (const assetPath of job.assetPaths) {
+    this.logger.verbose(`Deleting asset(s) ${job.paths} from library ${job.libraryId}`);
+    for (const assetPath of job.paths) {
       const asset = await this.assetRepository.getByLibraryIdAndOriginalPath(job.libraryId, assetPath);
       if (asset) {
         await this.assetRepository.remove(asset);

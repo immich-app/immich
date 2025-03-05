@@ -210,7 +210,7 @@ export interface IAssetDeleteJob extends IEntityJob {
 
 export interface ILibraryFileJob {
   libraryId: string;
-  assetPaths: string[];
+  paths: string[];
   progressCounter?: number;
   totalAssets?: number;
 }
