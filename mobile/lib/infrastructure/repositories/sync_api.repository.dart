@@ -4,15 +4,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:openapi/api.dart';
 import 'package:http/http.dart' as http;
 
-class SyncApiRepository extends IsarDatabaseRepository
-    implements ISyncApiRepository {
+class SyncApiRepository implements ISyncApiRepository {
   final ApiService _api;
-  const SyncApiRepository(super.db, this._api);
+  const SyncApiRepository(this._api);
 
   @override
   Stream<List<SyncEvent>> watchUserSyncEvent() {
@@ -61,7 +59,7 @@ class SyncApiRepository extends IsarDatabaseRepository
         );
       }
 
-      await for (var chunk in response.stream.transform(utf8.decoder)) {
+      await for (final chunk in response.stream.transform(utf8.decoder)) {
         previousChunk += chunk;
         final parts = previousChunk.split('\n');
         previousChunk = parts.removeLast();
@@ -83,6 +81,11 @@ class SyncApiRepository extends IsarDatabaseRepository
   }
 }
 
+const _kResponseMap = <SyncEntityType, Function(dynamic)>{
+  SyncEntityType.userV1: SyncUserV1.fromJson,
+  SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
+};
+
 // Need to be outside of the class to be able to use compute
 List<SyncEvent> _parseSyncResponse(List<String> lines) {
   final List<SyncEvent> data = [];
@@ -93,27 +96,13 @@ List<SyncEvent> _parseSyncResponse(List<String> lines) {
       final type = SyncEntityType.fromJson(jsonData['type'])!;
       final dataJson = jsonData['data'];
       final ack = jsonData['ack'];
-
-      switch (type) {
-        case SyncEntityType.userV1:
-          data.add(
-            SyncEvent(
-              data: SyncUserV1.fromJson(dataJson),
-              ack: ack,
-            ),
-          );
-          break;
-        case SyncEntityType.userDeleteV1:
-          data.add(
-            SyncEvent(
-              data: SyncUserDeleteV1.fromJson(dataJson),
-              ack: ack,
-            ),
-          );
-          break;
-        default:
-          debugPrint("[_parseSyncReponse] Unknown type $type");
+      final converter = _kResponseMap[type];
+      if (converter == null) {
+        debugPrint("[_parseSyncReponse] Unknown type $type");
+        continue;
       }
+
+      data.add(SyncEvent(data: converter(dataJson), ack: ack));
     } catch (error, stack) {
       debugPrint("[_parseSyncReponse] Error parsing json $error $stack");
     }

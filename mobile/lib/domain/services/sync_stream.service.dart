@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:openapi/api.dart';
@@ -7,8 +9,11 @@ class SyncStreamService {
 
   SyncStreamService(this._syncApiRepository);
 
+  StreamSubscription? _userSyncSubscription;
+
   void syncUsers() {
-    _syncApiRepository.watchUserSyncEvent().listen((events) async {
+    _userSyncSubscription =
+        _syncApiRepository.watchUserSyncEvent().listen((events) async {
       for (final event in events) {
         if (event.data is SyncUserV1) {
           final data = event.data as SyncUserV1;
@@ -36,5 +41,9 @@ class SyncStreamService {
         }
       }
     });
+  }
+
+  Future<void> dispose() async {
+    await _userSyncSubscription?.cancel();
   }
 }
