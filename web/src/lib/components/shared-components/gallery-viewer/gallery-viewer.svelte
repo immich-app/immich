@@ -8,13 +8,11 @@
   import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
-  import { archiveAssets, cancelMultiselect, getAssetRatio } from '$lib/utils/asset-utils';
+  import { archiveAssets, cancelMultiselect } from '$lib/utils/asset-utils';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
-  import { calculateWidth } from '$lib/utils/timeline-util';
   import { type AssetResponseDto } from '@immich/sdk';
-  import justifiedLayout from 'justified-layout';
   import { t } from 'svelte-i18n';
   import AssetViewer from '../../asset-viewer/asset-viewer.svelte';
   import ShowShortcuts from '../show-shortcuts.svelte';
@@ -22,6 +20,8 @@
   import { handlePromiseError } from '$lib/utils';
   import DeleteAssetDialog from '../../photos-page/delete-asset-dialog.svelte';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { debounce } from 'lodash-es';
+  import { getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
 
   interface Props {
     assets: AssetResponseDto[];
@@ -53,11 +53,84 @@
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
 
+  let geometry: CommonJustifiedLayout | undefined = $state();
+
+  $effect(() => {
+    const _assets = assets;
+    updateSlidingWindow();
+
+    geometry = getJustifiedLayoutFromAssets(_assets, {
+      spacing: 2,
+      heightTolerance: 0.15,
+      rowHeight: 235,
+      rowWidth: Math.floor(viewport.width),
+    });
+  });
+
+  let assetLayouts = $derived.by(() => {
+    const assetLayout = [];
+    let containerHeight = 0;
+    let containerWidth = 0;
+    if (geometry) {
+      containerHeight = geometry.containerHeight;
+      containerWidth = geometry.containerWidth;
+      for (const [i, asset] of assets.entries()) {
+        const layout = {
+          asset,
+          top: geometry.getTop(i),
+          left: geometry.getLeft(i),
+          width: geometry.getWidth(i),
+          height: geometry.getHeight(i),
+        };
+        // 54 is the content height of the asset-selection-app-bar
+        const layoutTopWithOffset = layout.top + 54;
+        const layoutBottom = layoutTopWithOffset + layout.height;
+
+        const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
+        assetLayout.push({ ...layout, display });
+      }
+    }
+
+    return {
+      assetLayout,
+      containerHeight,
+      containerWidth,
+    };
+  });
+
   let showShortcuts = $state(false);
   let currentViewAssetIndex = 0;
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
+  let slidingWindow = $state({ top: 0, bottom: 0 });
 
+  const updateSlidingWindow = () => {
+    const v = $state.snapshot(viewport);
+    const top = document.scrollingElement?.scrollTop || 0;
+    const bottom = top + v.height;
+    const w = {
+      top,
+      bottom,
+    };
+    slidingWindow = w;
+  };
+  const debouncedOnIntersected = debounce(() => onIntersected?.(), 750, { maxWait: 100, leading: true });
+
+  let lastIntersectedHeight = 0;
+  $effect(() => {
+    // notify we got to (near) the end of scroll
+    const scrollPercentage =
+      ((slidingWindow.bottom - viewport.height) / (viewport.height - (document.scrollingElement?.clientHeight || 0))) *
+      100;
+
+    if (scrollPercentage > 90) {
+      const intersectedHeight = geometry?.containerHeight || 0;
+      if (lastIntersectedHeight !== intersectedHeight) {
+        debouncedOnIntersected();
+        lastIntersectedHeight = intersectedHeight;
+      }
+    }
+  });
   const viewAssetHandler = async (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     setAsset(assets[currentViewAssetIndex]);
@@ -309,26 +382,6 @@
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
-  let geometry = $derived(
-    (() => {
-      const justifiedLayoutResult = justifiedLayout(
-        assets.map((asset) => getAssetRatio(asset)),
-        {
-          boxSpacing: 2,
-          containerWidth: Math.floor(viewport.width),
-          containerPadding: 0,
-          targetRowHeightTolerance: 0.15,
-          targetRowHeight: 235,
-        },
-      );
-
-      return {
-        ...justifiedLayoutResult,
-        containerWidth: calculateWidth(justifiedLayoutResult.boxes),
-      };
-    })(),
-  );
-
   $effect(() => {
     if (!lastAssetMouseEvent) {
       assetInteraction.clearAssetSelectionCandidates();
@@ -348,7 +401,13 @@
   });
 </script>
 
-<svelte:window onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:window
+  onkeydown={onKeyDown}
+  onkeyup={onKeyUp}
+  onselectstart={onSelectStart}
+  use:shortcuts={shortcutList}
+  onscroll={() => updateSlidingWindow()}
+/>
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
@@ -363,41 +422,45 @@
 {/if}
 
 {#if assets.length > 0}
-  <div class="relative" style="height: {geometry.containerHeight}px;width: {geometry.containerWidth}px ">
-    {#each assets as asset, i (i)}
-      <div
-        class="absolute"
-        style="width: {geometry.boxes[i].width}px; height: {geometry.boxes[i].height}px; top: {geometry.boxes[i]
-          .top}px; left: {geometry.boxes[i].left}px"
-        title={showAssetName ? asset.originalFileName : ''}
-      >
-        <Thumbnail
-          readonly={disableAssetSelect}
-          onClick={(asset) => {
-            if (assetInteraction.selectionActive) {
-              handleSelectAssets(asset);
-              return;
-            }
-            void viewAssetHandler(asset);
-          }}
-          onSelect={(asset) => handleSelectAssets(asset)}
-          onMouseEvent={() => assetMouseEventHandler(asset)}
-          onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
-          {showArchiveIcon}
-          {asset}
-          selected={assetInteraction.selectedAssets.has(asset)}
-          selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-          thumbnailWidth={geometry.boxes[i].width}
-          thumbnailHeight={geometry.boxes[i].height}
-        />
-        {#if showAssetName}
-          <div
-            class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
-          >
-            {asset.originalFileName}
-          </div>
-        {/if}
-      </div>
+  <div id="asd" style="height: {assetLayouts.containerHeight}px;width: {assetLayouts.containerWidth - 1}px">
+    {#each assetLayouts.assetLayout as layout (layout.asset.id)}
+      {@const asset = layout.asset}
+
+      {#if layout.display}
+        <div
+          data-display={layout.display}
+          class="absolute"
+          style:overflow="clip"
+          style="width: {layout.width}px; height: {layout.height}px; top: {layout.top}px; left: {layout.left}px"
+          title={showAssetName ? asset.originalFileName : ''}
+        >
+          <Thumbnail
+            readonly={disableAssetSelect}
+            onClick={(asset) => {
+              if (assetInteraction.selectionActive) {
+                handleSelectAssets(asset);
+                return;
+              }
+              void viewAssetHandler(asset);
+            }}
+            onSelect={(asset) => handleSelectAssets(asset)}
+            onMouseEvent={() => assetMouseEventHandler(asset)}
+            {showArchiveIcon}
+            {asset}
+            selected={assetInteraction.selectedAssets.has(asset)}
+            selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
+            thumbnailWidth={layout.width}
+            thumbnailHeight={layout.height}
+          />
+          {#if showAssetName}
+            <div
+              class="absolute text-center p-1 text-xs font-mono font-semibold w-full bottom-0 bg-gradient-to-t bg-slate-50/75 overflow-clip text-ellipsis whitespace-pre-wrap"
+            >
+              {asset.originalFileName}
+            </div>
+          {/if}
+        </div>
+      {/if}
     {/each}
   </div>
 {/if}
