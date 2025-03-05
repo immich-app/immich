@@ -423,6 +423,12 @@ export class AssetStore {
       this.setOptions(options);
       return;
     }
+
+    // Make sure to re-initialize if the tagId changes
+    if (this.options.tagId === options.tagId) {
+      this.setOptions(options);
+      return;
+    }
     // TODO: don't call updateObjects frequently after
     // init - cancelation of the initialize tasks isn't
     // performed right now, and will cause issues if
