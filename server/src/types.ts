@@ -210,7 +210,7 @@ export interface IAssetDeleteJob extends IEntityJob {
 
 export interface ILibraryFileJob {
   libraryId: string;
-  assetPaths: string[];
+  paths: string[];
   progressCounter?: number;
   totalAssets?: number;
 }
@@ -361,6 +361,7 @@ export type JobItem =
 
   // Library Management
   | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_SYNC_SIDECARS; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
   | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }

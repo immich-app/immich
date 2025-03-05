@@ -19,7 +19,7 @@ export class AssetFileEntity {
 
   @Index('IDX_asset_files_assetId')
   @Column()
-  assetId!: string;
+  assetId?: string;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset?: AssetEntity;

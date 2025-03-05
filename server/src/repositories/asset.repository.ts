@@ -1010,6 +1010,31 @@ export class AssetRepository {
     return result.map((row) => row.path as string);
   }
 
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, paths: [DummyValue.STRING] }],
+  })
+  async filterNewExternalSidecarPaths(libraryId: string, paths: string[]): Promise<string[]> {
+    const result = await this.db
+      .selectFrom(unnest(paths).as('path'))
+      .select('path')
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            this.db
+              .selectFrom('asset_files')
+              .select('path')
+              .whereRef('asset_files.path', '=', eb.ref('path'))
+              .rightJoin('assets', 'assets.id', 'asset_files.assetId')
+              .where((eb) => eb.or([eb('libraryId', '=', asUuid(libraryId)), eb('libraryId', '=', null)]))
+              .where('isExternal', '=', true),
+          ),
+        ),
+      )
+      .execute();
+
+    return result.map((row) => row.path as string);
+  }
+
   async getLibraryAssetCount(libraryId: string): Promise<number> {
     const { count } = await this.db
       .selectFrom('assets')

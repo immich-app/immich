@@ -26,6 +26,18 @@ export const libraryStub = {
     refreshedAt: null,
     exclusionPatterns: [],
   }),
+  externalLibraryWithImportPath: Object.freeze<LibraryEntity>({
+    id: 'library-id-with-paths1',
+    name: 'library-with-import-paths1',
+    assets: [],
+    owner: userStub.admin,
+    ownerId: 'admin_id',
+    importPaths: ['/'],
+    createdAt: new Date('2023-01-01'),
+    updatedAt: new Date('2023-01-01'),
+    refreshedAt: null,
+    exclusionPatterns: [],
+  }),
   externalLibraryWithImportPaths1: Object.freeze<LibraryEntity>({
     id: 'library-id-with-paths1',
     name: 'library-with-import-paths1',

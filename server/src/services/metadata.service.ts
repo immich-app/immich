@@ -743,7 +743,8 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp.
+    // Sidecar files with extensions, i.e. photo.jpg.xmp, have precedence over sidecar files without extensions, i.e. photo.xmp.
     const assetPath = path.parse(asset.originalPath);
     const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
     const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
