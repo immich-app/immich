@@ -15,15 +15,13 @@ RUN mkdir /opt/armnn && \
     cd /opt/ann && \
     sh build.sh
 
-# Warning: 26.3Gb of disk space required to pull this image
-# https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
-# 6.2 or later fails to build as of writing
+# Warning: 25GiB+ disk space required to pull this image
+# TODO: find a way to reduce the image size
 FROM rocm/dev-ubuntu-22.04:6.3.1-complete AS builder-rocm
 
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
-# Install same version as the Dockerfile provided by onnxruntime
 RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-linux-x86_64.sh && \
     chmod +x cmake-3.30.1-linux-x86_64.sh && \
     mkdir -p /code/cmake-3.30.1-linux-x86_64 && \
@@ -32,13 +30,12 @@ RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.
 
 ENV PATH=/code/cmake-3.30.1-linux-x86_64/bin:${PATH}
 
-# Prepare onnxruntime repository & build onnxruntime
-# 1.20.1 fails to build as of writing
 RUN git clone --single-branch --branch v1.20.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
 # Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
-COPY ./0001-fix-rocm-conv-thread-safety.patch /tmp/
-RUN git apply /tmp/0001-fix-rocm-conv-thread-safety.patch
+# TODO: find a way to fix this without disabling algo caching
+COPY ./rocm-PR19567.patch /tmp/
+RUN git apply /tmp/rocm-PR19567.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
