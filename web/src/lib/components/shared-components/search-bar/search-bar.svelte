@@ -36,11 +36,13 @@
   const listboxId = generateId();
 
   const handleSearch = async (payload: SmartSearchDto | MetadataSearchDto) => {
+    console.log('handleSearch', payload);
     const params = getMetadataSearchQuery(payload);
 
     closeDropdown();
     showFilter = false;
     $isSearchEnabled = false;
+    console.log(`approute.search params: ${AppRoute.SEARCH}?${params}`);
     await goto(`${AppRoute.SEARCH}?${params}`);
     onSearch?.();
   };
@@ -98,7 +100,26 @@
   };
 
   const onSubmit = () => {
-    handlePromiseError(handleSearch({ query: value }));
+    const searchType = getSearchType();
+    let payload: SmartSearchDto | MetadataSearchDto = {} as SmartSearchDto | MetadataSearchDto;
+
+    switch (searchType) {
+      case 'smart': {
+        payload = { query: value } as SmartSearchDto;
+        break;
+      }
+      case 'metadata': {
+        console.log('metadata search', value);
+        payload = { originalFileName: value } as MetadataSearchDto;
+        break;
+      }
+      case 'description': {
+        payload = { description: value } as MetadataSearchDto;
+        break;
+      }
+    }
+
+    handlePromiseError(handleSearch(payload));
     saveSearchTerm(value);
   };
 
@@ -143,6 +164,12 @@
     event.preventDefault();
     onSubmit();
   };
+
+  function getSearchType(): 'smart' | 'metadata' | 'description' {
+    const t = localStorage.getItem('searchQueryType');
+    return t === 'smart' || t === 'description' ? t : 'metadata';
+  }
+
 </script>
 
 <svelte:window

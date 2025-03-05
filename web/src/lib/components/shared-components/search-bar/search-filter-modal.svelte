@@ -55,9 +55,19 @@
     return value === null ? undefined : value;
   }
 
+  function storeQueryType(type: SearchFilter['queryType']) {
+    localStorage.setItem('searchQueryType', type);
+  }
+
+  function defaultQueryType(): SearchFilter['queryType'] {
+    const storedQueryType = localStorage.getItem('searchQueryType') as SearchFilter['queryType'];
+    const validQueryTypes: Set<SearchFilter['queryType']> = new Set(['smart', 'metadata', 'description']);
+    return validQueryTypes.has(storedQueryType) ? storedQueryType : 'smart'; // default to smart, to reflect original functionality before this PR.
+  }
+
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
-    queryType: 'smart',
+    queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
@@ -90,7 +100,7 @@
   const resetForm = () => {
     filter = {
       query: '',
-      queryType: 'smart',
+      queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
       location: {},
@@ -135,6 +145,8 @@
     onSearch(payload);
   };
 
+
+
   const onreset = (event: Event) => {
     event.preventDefault();
     resetForm();
@@ -142,8 +154,14 @@
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
+    storeQueryType(filter.queryType);
     search();
   };
+
+  // Will be called whenever queryType changes, not just onsubmit.
+  $effect(() => {
+    storeQueryType(filter.queryType);
+  });
 </script>
 
 <FullScreenModal icon={mdiTune} width="extra-wide" title={$t('search_options')} {onClose}>
