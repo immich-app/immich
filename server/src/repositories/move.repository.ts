@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, MoveHistory } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MoveEntity } from 'src/entities/move.entity';
-import { PathType } from 'src/enum';
+import { AssetPathType, PathType } from 'src/enum';
 
 export type MoveCreate = Pick<MoveEntity, 'oldPath' | 'newPath' | 'entityId' | 'pathType'> & Partial<MoveEntity>;
 
@@ -46,5 +46,29 @@ export class MoveRepository {
       .where('id', '=', id)
       .returningAll()
       .executeTakeFirstOrThrow() as unknown as Promise<MoveEntity>;
+  }
+
+  @GenerateSql()
+  async cleanMoveHistory(): Promise<void> {
+    await this.db
+      .deleteFrom('move_history')
+      .where((eb) =>
+        eb(
+          'move_history.entityId',
+          'not in',
+          eb.selectFrom('assets').select('id').whereRef('assets.id', '=', 'move_history.entityId'),
+        ),
+      )
+      .where('move_history.pathType', '=', sql.lit(AssetPathType.ORIGINAL))
+      .execute();
+  }
+
+  @GenerateSql()
+  async cleanMoveHistorySingle(assetId: string): Promise<void> {
+    await this.db
+      .deleteFrom('move_history')
+      .where('move_history.pathType', '=', sql.lit(AssetPathType.ORIGINAL))
+      .where('entityId', '=', assetId)
+      .execute();
   }
 }

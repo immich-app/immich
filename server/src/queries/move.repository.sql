@@ -15,3 +15,22 @@ where
   "id" = $1
 returning
   *
+
+-- MoveRepository.cleanMoveHistory
+delete from "move_history"
+where
+  "move_history"."entityId" not in (
+    select
+      "id"
+    from
+      "assets"
+    where
+      "assets"."id" = "move_history"."entityId"
+  )
+  and "move_history"."pathType" = 'original'
+
+-- MoveRepository.cleanMoveHistorySingle
+delete from "move_history"
+where
+  "move_history"."pathType" = 'original'
+  and "entityId" = $1
