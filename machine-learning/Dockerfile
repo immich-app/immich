@@ -18,23 +18,23 @@ RUN mkdir /opt/armnn && \
 # Warning: 26.3Gb of disk space required to pull this image
 # https://github.com/microsoft/onnxruntime/blob/main/dockerfiles/Dockerfile.rocm
 # 6.2 or later fails to build as of writing
-FROM rocm/dev-ubuntu-22.04:6.1.2-complete AS builder-rocm
+FROM rocm/dev-ubuntu-22.04:6.3.1-complete AS builder-rocm
 
 WORKDIR /code
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
 # Install same version as the Dockerfile provided by onnxruntime
-RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.27.3/cmake-3.27.3-linux-x86_64.sh && \
-    chmod +x cmake-3.27.3-linux-x86_64.sh && \
-    mkdir -p /code/cmake-3.27.3-linux-x86_64 && \
-    ./cmake-3.27.3-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.27.3-linux-x86_64 && \
-    rm cmake-3.27.3-linux-x86_64.sh
+RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-linux-x86_64.sh && \
+    chmod +x cmake-3.30.1-linux-x86_64.sh && \
+    mkdir -p /code/cmake-3.30.1-linux-x86_64 && \
+    ./cmake-3.30.1-linux-x86_64.sh --skip-license --prefix=/code/cmake-3.30.1-linux-x86_64 && \
+    rm cmake-3.30.1-linux-x86_64.sh
 
-ENV PATH /code/cmake-3.27.3-linux-x86_64/bin:${PATH}
+ENV PATH=/code/cmake-3.30.1-linux-x86_64/bin:${PATH}
 
 # Prepare onnxruntime repository & build onnxruntime
 # 1.20.1 fails to build as of writing
-RUN git clone --single-branch --branch v1.19.2 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
+RUN git clone --single-branch --branch v1.20.1 --recursive "https://github.com/Microsoft/onnxruntime" onnxruntime
 WORKDIR /code/onnxruntime
 # Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
 COPY ./0001-fix-rocm-conv-thread-safety.patch /tmp/
@@ -43,7 +43,7 @@ RUN git apply /tmp/0001-fix-rocm-conv-thread-safety.patch
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 13 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.19.2 --use_rocm --rocm_home=/opt/rocm
+    ONNXRUNTIME_VERSION=1.20.1 --use_rocm --rocm_home=/opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
@@ -114,7 +114,7 @@ COPY --from=builder-armnn \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM rocm/dev-ubuntu-22.04:6.1.2-complete AS prod-rocm
+FROM rocm/dev-ubuntu-22.04:6.3.1-complete AS prod-rocm
 
 
 FROM prod-${DEVICE} AS prod
