@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
 import { LibraryEntity } from 'src/entities/library.entity';
+import { CrawlType } from 'src/enum';
 import { Optional, ValidateUUID } from 'src/validation';
 
 export class CreateLibraryDto {
@@ -52,6 +53,7 @@ export interface CrawlOptionsDto {
   pathsToCrawl: string[];
   includeHidden?: boolean;
   exclusionPatterns?: string[];
+  crawlType?: CrawlType;
 }
 
 export interface WalkOptionsDto extends CrawlOptionsDto {

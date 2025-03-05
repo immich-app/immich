@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto';
+import { CrawlType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
 
@@ -177,7 +178,7 @@ export class StorageRepository {
       return Promise.resolve([]);
     }
 
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path, CrawlType.ASSETS));
 
     return glob(globbedPaths, {
       absolute: true,
@@ -190,12 +191,17 @@ export class StorageRepository {
 
   async *walk(walkOptions: WalkOptionsDto): AsyncGenerator<string[]> {
     const { pathsToCrawl, exclusionPatterns, includeHidden } = walkOptions;
+
     if (pathsToCrawl.length === 0) {
       async function* emptyGenerator() {}
       return emptyGenerator();
     }
 
-    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path));
+    const crawlType = walkOptions.crawlType || CrawlType.ASSETS;
+
+    const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path, crawlType));
+
+    console.warn('Globbing paths:', globbedPaths);
 
     const stream = globStream(globbedPaths, {
       absolute: true,
@@ -231,9 +237,23 @@ export class StorageRepository {
     return () => watcher.close();
   }
 
-  private asGlob(pathToCrawl: string): string {
+  private asGlob = (pathToCrawl: string, crawlType: CrawlType): string => {
     const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
-    return `${escapedPath}/**/${extensions}`;
-  }
+
+    const fileExtensions = (() => {
+      if (crawlType === CrawlType.SIDECARS) {
+        return Object.keys(mimeTypes.sidecar);
+      }
+      return mimeTypes.getSupportedFileExtensions();
+    })();
+
+    let extensions: string;
+    if (fileExtensions.length === 1) {
+      extensions = fileExtensions[0];
+    } else {
+      extensions = `{${fileExtensions.join(',')}}`;
+    }
+
+    return `${escapedPath}/**/*${extensions}`;
+  };
 }

@@ -1,7 +1,7 @@
 import { Insertable, Kysely } from 'kysely';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { Writable } from 'node:stream';
-import { Assets, DB, Partners, Sessions, Users } from 'src/db';
+import { Assets, DB, Libraries, Partners, Sessions, Users } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -56,6 +56,7 @@ class CustomWritable extends Writable {
 
 type Asset = Insertable<Assets>;
 type User = Partial<Insertable<Users>>;
+type Library = Partial<Insertable<Libraries>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
 
@@ -113,6 +114,21 @@ export class TestFactory {
       ...defaults,
       ...user,
       id: userId,
+    };
+  }
+
+  static library(library: Library = {}, ownerId: string) {
+    const libraryId = library.id || newUuid();
+    const defaults: Insertable<Libraries> = {
+      name: library.name || 'Library',
+      importPaths: library.importPaths || [],
+      ownerId: library.ownerId || ownerId,
+      exclusionPatterns: [],
+    };
+
+    return {
+      ...defaults,
+      id: libraryId,
     };
   }
 
