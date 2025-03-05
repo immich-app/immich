@@ -222,6 +222,7 @@ export class AssetMediaService extends BaseService {
         // e.g. disabled or not yet (re)generated
         return { targetSize: AssetMediaSize.PREVIEW };
       }
+      filepath = fullsizeFile.path;
     }
 
     if (!filepath) {
