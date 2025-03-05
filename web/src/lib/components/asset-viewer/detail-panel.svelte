@@ -229,8 +229,8 @@
             <a
               class="w-[90px]"
               href="{AppRoute.PEOPLE}/{person.id}?{QueryParameter.PREVIOUS_ROUTE}={currentAlbum?.id
-                ? `${AppRoute.ALBUMS}/${currentAlbum?.id}`
-                : AppRoute.PHOTOS}"
+                ? `${encodeURIComponent(`${AppRoute.ALBUMS}/${currentAlbum?.id}`)}`
+                : encodeURIComponent(AppRoute.PHOTOS)}"
               onfocus={() => ($boundingBoxesArray = people[index].faces)}
               onblur={() => ($boundingBoxesArray = [])}
               onmouseover={() => ($boundingBoxesArray = people[index].faces)}
