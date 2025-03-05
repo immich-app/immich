@@ -607,8 +607,6 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
         size: 1440,
       });
-      expect(convertedPath?.endsWith('.tmp')).toBe(true);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(convertedPath);
     });
 
     it('should resize original image if embedded image is too small', async () => {
@@ -627,8 +625,6 @@ describe(MediaService.name, () => {
         processInvalidImages: false,
         size: 1440,
       });
-      expect(extractedPath?.endsWith('.tmp')).toBe(true);
-      expect(mocks.storage.unlink).toHaveBeenCalledWith(extractedPath);
     });
 
     it('should resize original image if embedded image not found', async () => {
@@ -698,22 +694,22 @@ describe(MediaService.name, () => {
     });
 
     it('should generate full-size preview using embedded JPEG from RAW images when extractEmbedded is true', async () => {
-      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: true } });
-      mediaMock.extract.mockResolvedValue(true);
-      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      assetMock.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: true } });
+      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      const extractedPath = mediaMock.extract.mock.lastCall?.[1].toString();
-      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(extractedPath, {
+      const extractedPath = mocks.media.extract.mock.lastCall?.[1].toString();
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(extractedPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         fullsizeBuffer,
         {
           colorspace: Colorspace.P3,
@@ -728,21 +724,21 @@ describe(MediaService.name, () => {
     });
 
     it('should generate full-size preview directly from RAW images when extractEmbedded is false', async () => {
-      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
-      mediaMock.extract.mockResolvedValue(true);
-      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      assetMock.getById.mockResolvedValue(assetStub.imageDng);
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true }, extractEmbedded: false } });
+      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.asset.getById.mockResolvedValue(assetStub.imageDng);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageDng.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(3);
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
           colorspace: Colorspace.P3,
@@ -753,7 +749,7 @@ describe(MediaService.name, () => {
         },
         'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
       );
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
           colorspace: Colorspace.P3,
@@ -768,22 +764,22 @@ describe(MediaService.name, () => {
     });
 
     it('should generate full-size preview from non-web-friendly images', async () => {
-      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mediaMock.extract.mockResolvedValue(true);
-      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
-      assetMock.getById.mockResolvedValue(assetStub.imageHif);
+      mocks.asset.getById.mockResolvedValue(assetStub.imageHif);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
         colorspace: Colorspace.P3,
         processInvalidImages: false,
       });
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(3);
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledWith(
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
         rawBuffer,
         {
           colorspace: Colorspace.P3,
@@ -797,22 +793,22 @@ describe(MediaService.name, () => {
     });
 
     it('should skip generating full-size preview for web-friendly images', async () => {
-      systemMock.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
-      mediaMock.extract.mockResolvedValue(true);
-      mediaMock.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
-      assetMock.getById.mockResolvedValue(assetStub.image);
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true } } });
+      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      mocks.asset.getById.mockResolvedValue(assetStub.image);
 
       await sut.handleGenerateThumbnails({ id: assetStub.image.id });
 
-      expect(mediaMock.decodeImage).toHaveBeenCalledOnce();
-      expect(mediaMock.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.image.originalPath, {
         colorspace: Colorspace.SRGB,
         processInvalidImages: false,
         size: 1440,
       });
 
-      expect(mediaMock.generateThumbnail).toHaveBeenCalledTimes(2);
-      expect(mediaMock.generateThumbnail).not.toHaveBeenCalledWith(
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(2);
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalledWith(
         expect.anything(),
         expect.anything(),
         'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',

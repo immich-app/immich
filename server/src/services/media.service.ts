@@ -27,6 +27,7 @@ import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
   DecodeToBufferOptions,
+  GenerateThumbnailOptions,
   JobItem,
   JobOf,
   VideoFormat,
@@ -235,7 +236,10 @@ export class MediaService extends BaseService {
     const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
     const colorspace = this.isSRGB(asset) ? Colorspace.SRGB : image.colorspace;
 
-    const shouldConvertFullsize = image.fullsize.enabled && !mimeTypes.isWebSupportedImage(asset.originalFileName);
+    // prevents this extra "enabled" from leaking into fullsizeOptions later
+    const { enabled: imageFullsizeEnabled, ...imageFullsizeConfig } = image.fullsize;
+
+    const shouldConvertFullsize = imageFullsizeEnabled && !mimeTypes.isWebSupportedImage(asset.originalFileName);
     const shouldExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
     const decodeOptions: DecodeToBufferOptions = { colorspace, processInvalidImages, size: image.preview.size };
 
@@ -284,7 +288,11 @@ export class MediaService extends BaseService {
 
     // did not extract a usable image from RAW
     if (fullsizePath && !useExtracted) {
-      const fullsizeOptions = { ...image.fullsize, ...thumbnailOptions, size: undefined };
+      const fullsizeOptions: GenerateThumbnailOptions = {
+        ...imageFullsizeConfig,
+        ...thumbnailOptions,
+        size: undefined,
+      };
       promises.push(this.mediaRepository.generateThumbnail(data, fullsizeOptions, fullsizePath));
     }
     const outputs = await Promise.all(promises);
