@@ -49,18 +49,21 @@ export function getJustifiedLayoutFromAssets(
 type Geometry = ReturnType<typeof createJustifiedLayout>;
 class Adapter {
   result;
+  width;
   constructor(result: Geometry) {
     this.result = result;
+    this.width = 0;
+    for (const box of this.result.boxes) {
+      if (box.top < 100) {
+        this.width = box.left + box.width;
+      } else {
+        break;
+      }
+    }
   }
 
   get containerWidth() {
-    let width = 0;
-    for (const box of this.result.boxes) {
-      if (box.top < 100) {
-        width = box.left + box.width;
-      }
-    }
-    return width;
+    return this.width;
   }
 
   get containerHeight() {
@@ -84,11 +87,6 @@ class Adapter {
   }
 }
 
-export const emptyGeometry = new Adapter({
-  containerHeight: 0,
-  widowCount: 0,
-  boxes: [],
-});
 
 export function justifiedLayout(assets: AssetResponseDto[], options: CommonLayoutOptions) {
   const adapter = {
@@ -104,3 +102,10 @@ export function justifiedLayout(assets: AssetResponseDto[], options: CommonLayou
   );
   return new Adapter(result);
 }
+
+export const emptyGeometry = () =>
+  new Adapter({
+    containerHeight: 0,
+    widowCount: 0,
+    boxes: [],
+  });
