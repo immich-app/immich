@@ -74,7 +74,7 @@ export class JobService extends BaseService {
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
-    this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
+    this.logger.debug(`Handling command: queue=${queueName},command=${dto.command},force=${dto.force}`);
 
     switch (dto.command) {
       case JobCommand.START: {

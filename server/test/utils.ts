@@ -17,6 +17,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { DownloadRepository } from 'src/repositories/download.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -59,6 +60,7 @@ import { newConfigRepositoryMock } from 'test/repositories/config.repository.moc
 import { newCronRepositoryMock } from 'test/repositories/cron.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
+import { newDownloadRepositoryMock } from 'test/repositories/download.repository.mock';
 import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
 import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
@@ -103,6 +105,7 @@ export type ServiceOverrides = {
   cron: CronRepository;
   crypto: CryptoRepository;
   database: DatabaseRepository;
+  downloadRepository: DownloadRepository;
   event: EventRepository;
   job: JobRepository;
   library: LibraryRepository;
@@ -162,6 +165,7 @@ export const newTestService = <T extends BaseService>(
     asset: newAssetRepositoryMock(),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
+    downloadRepository: newDownloadRepositoryMock(),
     event: newEventRepositoryMock(),
     job: newJobRepositoryMock(),
     apiKey: newKeyRepositoryMock(),
@@ -206,6 +210,7 @@ export const newTestService = <T extends BaseService>(
     overrides.cron || (mocks.cron as As<CronRepository>),
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),
     overrides.database || (mocks.database as As<DatabaseRepository>),
+    overrides.downloadRepository || (mocks.downloadRepository as As<DownloadRepository>),
     overrides.event || (mocks.event as As<EventRepository>),
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),
