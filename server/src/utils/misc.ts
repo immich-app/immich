@@ -11,6 +11,7 @@ import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
+import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
 import { extraSyncModels } from 'src/dtos/sync.dto';
@@ -270,11 +271,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 };
 
-const convertTokenToSqlPattern = (token: any): string => {
-  if (typeof token === 'string') {
-    return token;
-  }
-
+const convertTokenToSqlPattern = (token: parse.Token): string => {
   switch (token.type) {
     case 'slash': {
       return '/';
@@ -303,11 +300,5 @@ const convertTokenToSqlPattern = (token: any): string => {
 
 export const globToSqlPattern = (glob: string) => {
   const tokens = picomatch.parse(glob).tokens;
-
-  let result = '';
-  for (const token of tokens) {
-    result += convertTokenToSqlPattern(token);
-  }
-
-  return result;
+  return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
 };

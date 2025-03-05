@@ -249,9 +249,7 @@ export class LibraryService extends BaseService {
       await this.assetRepository.createAll(chunk).then((assets) => assetIds.push(...assets.map((asset) => asset.id)));
     }
 
-    let progressMessage = '';
-
-    progressMessage =
+    const progressMessage =
       job.progressCounter && job.totalAssets
         ? `(${job.progressCounter} of ${job.totalAssets})`
         : `(${job.progressCounter} done so far)`;
