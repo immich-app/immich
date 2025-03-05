@@ -18,7 +18,6 @@ class SyncApiRepository extends IsarDatabaseRepository
   Stream<List<SyncEvent>> watchUserSyncEvent() {
     return _getSyncStream(
       SyncStreamDto(types: [SyncRequestType.usersV1]),
-      batchSize: 1000,
     );
   }
 
@@ -29,7 +28,7 @@ class SyncApiRepository extends IsarDatabaseRepository
 
   Stream<List<SyncEvent>> _getSyncStream(
     SyncStreamDto dto, {
-    int batchSize = 1000,
+    int batchSize = 5000,
   }) async* {
     final client = http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
@@ -85,9 +84,7 @@ class SyncApiRepository extends IsarDatabaseRepository
 }
 
 // Need to be outside of the class to be able to use compute
-List<SyncEvent> _parseSyncResponse(
-  List<String> lines,
-) {
+List<SyncEvent> _parseSyncResponse(List<String> lines) {
   final List<SyncEvent> data = [];
 
   for (var line in lines) {
