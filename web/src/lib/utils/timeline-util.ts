@@ -3,7 +3,7 @@ import { locale } from '$lib/stores/preferences.store';
 import type { AssetResponseDto } from '@immich/sdk';
 import type createJustifiedLayout from 'justified-layout';
 import { groupBy, memoize, sortBy } from 'lodash-es';
-import { DateTime } from 'luxon';
+import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
 
 export type DateGroup = {
@@ -39,13 +39,6 @@ export const fromLocalDateTime = (localDateTime: string) =>
 export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string) =>
   DateTime.fromISO(dateTimeOriginal, { zone: timeZone });
 
-export const groupDateFormat: Intl.DateTimeFormatOptions = {
-  weekday: 'short',
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-};
-
 export function formatGroupTitle(_date: DateTime): string {
   if (!_date.isValid) {
     return _date.toString();
@@ -77,8 +70,11 @@ export function formatGroupTitle(_date: DateTime): string {
     });
   }
 
-  return date.toLocaleString(groupDateFormat);
+  return getDateLocaleString(date);
 }
+
+export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
+  date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
 type Geometry = ReturnType<typeof createJustifiedLayout> & {
   containerWidth: number;
@@ -97,7 +93,7 @@ const formatDateGroupTitle = memoize(formatGroupTitle);
 
 export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | undefined): DateGroup[] {
   const grouped = groupBy(bucket.assets, (asset) =>
-    fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
+    getDateLocaleString(fromLocalDateTime(asset.localDateTime), { locale }),
   );
   const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
   return sorted.map((group) => {
