@@ -1,7 +1,7 @@
-import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
-import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { assetFactory } from '@test-data/factories/asset-factory';
 import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
+import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
+import { assetFactory } from '@test-data/factories/asset-factory';
+import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 
 describe('Thumbnail component', () => {
   beforeAll(() => {
