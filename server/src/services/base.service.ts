@@ -17,6 +17,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { DownloadRepository } from 'src/repositories/download.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -66,6 +67,7 @@ export class BaseService {
     protected cronRepository: CronRepository,
     protected cryptoRepository: CryptoRepository,
     protected databaseRepository: DatabaseRepository,
+    protected downloadRepository: DownloadRepository,
     protected eventRepository: EventRepository,
     protected jobRepository: JobRepository,
     protected libraryRepository: LibraryRepository,
