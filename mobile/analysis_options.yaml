@@ -70,6 +70,7 @@ custom_lint:
         - lib/infrastructure/repositories/{store,db,log}.repository.dart
         - lib/providers/infrastructure/db.provider.dart
         # acceptable exceptions for the time being (until Isar is fully replaced)
+        - lib/providers/app_life_cycle.provider.dart
         - integration_test/test_utils/general_helper.dart
         - lib/main.dart
         - lib/pages/album/album_asset_selection.page.dart
