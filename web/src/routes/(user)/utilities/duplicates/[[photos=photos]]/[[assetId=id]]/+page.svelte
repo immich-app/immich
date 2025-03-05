@@ -9,29 +9,37 @@
   } from '$lib/components/shared-components/notification/notification';
   import ShowShortcuts from '$lib/components/shared-components/show-shortcuts.svelte';
   import DuplicatesCompareControl from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import type { AssetResponseDto, AlbumResponseDto, AssetBulkUpdateDto } from '@immich/sdk';
+  import { deleteAssets, updateAssets, getAllAlbums } from '@immich/sdk';
   import { featureFlags } from '$lib/stores/server-config.store';
-  import { stackAssets } from '$lib/utils/asset-utils';
+  import { stackAssets, addAssetsToAlbum } from '$lib/utils/asset-utils';
   import { suggestDuplicate } from '$lib/utils/duplicate-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import type { AssetResponseDto } from '@immich/sdk';
-  import { deleteAssets, updateAssets } from '@immich/sdk';
   import { Button, HStack, IconButton, Text } from '@immich/ui';
-  import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { mdiCheckOutline, mdiInformationOutline, mdiKeyboard, mdiTrashCanOutline, mdiCogOutline } from '@mdi/js';
+  import DuplicateOptions from '$lib/components/utilities-page/duplicates/duplicate-options.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import type { SelectedSyncData } from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
 
   interface Props {
     data: PageData;
     isShowKeyboardShortcut?: boolean;
     isShowDuplicateInfo?: boolean;
+    isShowOptions?: boolean;
   }
 
   let {
     data = $bindable(),
     isShowKeyboardShortcut = $bindable(false),
     isShowDuplicateInfo = $bindable(false),
+    isShowOptions = $bindable(false),
   }: Props = $props();
+
+  let isSynchronizeAlbumsActive = $state(true);
+  let isSynchronizeFavoritesActive = $state(true);
+  let isSynchronizeArchivesActive = $state(true);
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -84,11 +92,29 @@
     });
   };
 
-  const handleResolve = async (duplicateId: string, duplicateAssetIds: string[], trashIds: string[]) => {
+  const handleResolve = async (
+    duplicateId: string,
+    duplicateAssetIds: string[],
+    trashIds: string[],
+    selectedDataToSync: SelectedSyncData,
+  ) => {
     return withConfirmation(
       async () => {
+        let assetBulkUpdate: AssetBulkUpdateDto = {
+          ids: duplicateAssetIds,
+          duplicateId: null,
+        };
+        if (isSynchronizeAlbumsActive) {
+          await synchronizeAlbums(duplicateAssetIds);
+        }
+        if (isSynchronizeArchivesActive) {
+          assetBulkUpdate.isArchived = selectedDataToSync.isArchived;
+        }
+        if (isSynchronizeFavoritesActive) {
+          assetBulkUpdate.isFavorite = selectedDataToSync.isFavorite;
+        }
         await deleteAssets({ assetBulkDeleteDto: { ids: trashIds, force: !$featureFlags.trash } });
-        await updateAssets({ assetBulkUpdateDto: { ids: duplicateAssetIds, duplicateId: null } });
+        await updateAssets({ assetBulkUpdateDto: assetBulkUpdate });
 
         duplicates = duplicates.filter((duplicate) => duplicate.duplicateId !== duplicateId);
 
@@ -97,6 +123,17 @@
       trashIds.length > 0 && !$featureFlags.trash ? $t('delete_duplicates_confirmation') : undefined,
       trashIds.length > 0 && !$featureFlags.trash ? $t('permanently_delete') : undefined,
     );
+  };
+
+  const synchronizeAlbums = async (assetIds: string[]) => {
+    const allAlbums: AlbumResponseDto[] = await Promise.all(
+      assetIds.map((assetId) => getAllAlbums({ assetId: assetId })),
+    );
+    const albumIds = [...new Set(allAlbums.flat().map((album) => album.id))];
+
+    albumIds.forEach((albumId) => {
+      addAssetsToAlbum(albumId, assetIds, false);
+    });
   };
 
   const handleStack = async (duplicateId: string, assets: AssetResponseDto[]) => {
@@ -192,6 +229,7 @@
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
         aria-label={$t('show_keyboard_shortcuts')}
       />
+      <CircleIconButton icon={mdiCogOutline} title={$t('options')} onclick={() => (isShowOptions = !isShowOptions)} />
     </HStack>
   {/snippet}
 
@@ -213,9 +251,12 @@
       {#key duplicates[0].duplicateId}
         <DuplicatesCompareControl
           assets={duplicates[0].assets}
-          onResolve={(duplicateAssetIds, trashIds) =>
-            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds)}
+          onResolve={(duplicateAssetIds, trashIds, selectedDataToSync) =>
+            handleResolve(duplicates[0].duplicateId, duplicateAssetIds, trashIds, selectedDataToSync)}
           onStack={(assets) => handleStack(duplicates[0].duplicateId, assets)}
+          {isSynchronizeAlbumsActive}
+          {isSynchronizeFavoritesActive}
+          {isSynchronizeArchivesActive}
         />
       {/key}
     {:else}
@@ -225,6 +266,18 @@
     {/if}
   </div>
 </UserPageLayout>
+
+{#if isShowOptions}
+  <DuplicateOptions
+    synchronizeAlbums={isSynchronizeAlbumsActive}
+    synchronizeFavorites={isSynchronizeFavoritesActive}
+    synchronizeArchives={isSynchronizeArchivesActive}
+    onClose={() => (isShowOptions = false)}
+    onToggleSyncAlbum={() => (isSynchronizeAlbumsActive = !isSynchronizeAlbumsActive)}
+    onToggleSyncFavorites={() => (isSynchronizeFavoritesActive = !isSynchronizeFavoritesActive)}
+    onToggleSyncArchives={() => (isSynchronizeArchivesActive = !isSynchronizeArchivesActive)}
+  />
+{/if}
 
 {#if isShowKeyboardShortcut}
   <ShowShortcuts shortcuts={duplicateShortcuts} onClose={() => (isShowKeyboardShortcut = false)} />
