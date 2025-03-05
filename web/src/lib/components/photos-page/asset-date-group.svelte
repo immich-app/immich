@@ -2,7 +2,7 @@
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
-  import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets.store';
+  import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -89,25 +89,26 @@
   };
 
   onDestroy(() => {
-    $assetStore.taskManager.removeAllTasksForComponent(componentId);
+    assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
 </script>
 
 <section id="asset-group-by-date" class="flex flex-wrap gap-x-12" data-bucket-date={bucketDate} bind:this={element}>
   {#each dateGroups as dateGroup, groupIndex (dateGroup.date)}
     {@const display =
-      dateGroup.intersecting || !!dateGroup.assets.some((asset) => asset.id === $assetStore.pendingScrollAssetId)}
+      dateGroup.intersecting || !!dateGroup.assets.some((asset) => asset.id === assetStore.pendingScrollAssetId)}
+    {@const geometry = dateGroup.geometry!}
 
     <div
       id="date-group"
       use:intersectionObserver={{
         onIntersect: () => {
-          $assetStore.taskManager.intersectedDateGroup(componentId, dateGroup, () =>
+          assetStore.taskManager.intersectedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: true }),
           );
         },
         onSeparate: () => {
-          $assetStore.taskManager.separatedDateGroup(componentId, dateGroup, () =>
+          assetStore.taskManager.separatedDateGroup(componentId, dateGroup, () =>
             assetStore.updateBucketDateGroup(bucket, dateGroup, { intersecting: false }),
           );
         },
@@ -118,8 +119,8 @@
       data-display={display}
       data-date-group={dateGroup.date}
       style:height={dateGroup.height + 'px'}
-      style:width={dateGroup.geometry.containerWidth + 'px'}
-      style:overflow={'clip'}
+      style:width={geometry.containerWidth + 'px'}
+      style:overflow="clip"
     >
       {#if !display}
         <Skeleton height={dateGroup.height + 'px'} title={dateGroup.groupTitle} />
@@ -129,7 +130,7 @@
         <!-- svelte-ignore a11y-no-static-element-interactions -->
         <div
           on:mouseenter={() =>
-            $assetStore.taskManager.queueScrollSensitiveTask({
+            assetStore.taskManager.queueScrollSensitiveTask({
               componentId,
               task: () => {
                 isMouseOverGroup = true;
@@ -137,7 +138,7 @@
               },
             })}
           on:mouseleave={() => {
-            $assetStore.taskManager.queueScrollSensitiveTask({
+            assetStore.taskManager.queueScrollSensitiveTask({
               componentId,
               task: () => {
                 isMouseOverGroup = false;
@@ -149,7 +150,7 @@
           <!-- Date group title -->
           <div
             class="flex z-[100] sticky top-[-1px] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
-            style:width={dateGroup.geometry.containerWidth + 'px'}
+            style:width={geometry.containerWidth + 'px'}
           >
             {#if !singleSelect && ((hoveredDateGroup == dateGroup.groupTitle && isMouseOverGroup) || assetInteraction.selectedGroup.has(dateGroup.groupTitle))}
               <div
@@ -174,11 +175,15 @@
           <!-- Image grid -->
           <div
             class="relative overflow-clip"
-            style:height={dateGroup.geometry.containerHeight + 'px'}
-            style:width={dateGroup.geometry.containerWidth + 'px'}
+            style:height={geometry.containerHeight + 'px'}
+            style:width={geometry.containerWidth + 'px'}
           >
-            {#each dateGroup.assets as asset, index (asset.id)}
-              {@const box = dateGroup.geometry.boxes[index]}
+            {#each dateGroup.assets as asset, i (asset.id)}
+              <!-- getting these together here in this order is very cache-efficient -->
+              {@const top = geometry.getTop(i)}
+              {@const left = geometry.getLeft(i)}
+              {@const width = geometry.getWidth(i)}
+              {@const height = geometry.getHeight(i)}
               <!-- update ASSET_GRID_PADDING-->
               <div
                 use:intersectionObserver={{
@@ -190,10 +195,10 @@
                 }}
                 data-asset-id={asset.id}
                 class="absolute"
-                style:width={box.width + 'px'}
-                style:height={box.height + 'px'}
-                style:top={box.top + 'px'}
-                style:left={box.left + 'px'}
+                style:top={top + 'px'}
+                style:left={left + 'px'}
+                style:width={width + 'px'}
+                style:height={height + 'px'}
               >
                 <Thumbnail
                   {dateGroup}
@@ -203,7 +208,7 @@
                     bottom: renderThumbsAtBottomMargin,
                     top: renderThumbsAtTopMargin,
                   }}
-                  retrieveElement={$assetStore.pendingScrollAssetId === asset.id}
+                  retrieveElement={assetStore.pendingScrollAssetId === asset.id}
                   onRetrieveElement={(element) => onRetrieveElement(dateGroup, asset, element)}
                   showStackedIcon={withStacked}
                   {showArchiveIcon}
@@ -212,11 +217,11 @@
                   onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
                   onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
                   onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
-                  selected={assetInteraction.selectedAssets.has(asset) || $assetStore.albumAssets.has(asset.id)}
+                  selected={assetInteraction.selectedAssets.has(asset) || assetStore.albumAssets.has(asset.id)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-                  disabled={$assetStore.albumAssets.has(asset.id)}
-                  thumbnailWidth={box.width}
-                  thumbnailHeight={box.height}
+                  disabled={assetStore.albumAssets.has(asset.id)}
+                  thumbnailWidth={width}
+                  thumbnailHeight={height}
                 />
               </div>
             {/each}

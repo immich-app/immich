@@ -9,7 +9,8 @@ import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/asset_media.interface.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/exif_info.repository.dart';
@@ -37,12 +39,13 @@ final assetServiceProvider = Provider(
     ref.watch(exifInfoRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(backupAlbumRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(userServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(albumServiceProvider),
+    ref.watch(assetMediaRepositoryProvider),
   ),
 );
 
@@ -52,12 +55,13 @@ class AssetService {
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
   final IETagRepository _etagRepository;
-  final IBackupRepository _backupRepository;
+  final IBackupAlbumRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
   final UserService _userService;
   final BackupService _backupService;
   final AlbumService _albumService;
+  final IAssetMediaRepository _assetMediaRepository;
   final log = Logger('AssetService');
 
   AssetService(
@@ -72,6 +76,7 @@ class AssetService {
     this._userService,
     this._backupService,
     this._albumService,
+    this._assetMediaRepository,
   );
 
   /// Checks the server for updated assets and updates the local database if
@@ -156,30 +161,6 @@ class AssetService {
       log.severe('Error while getting remote assets', error, stack);
       return null;
     }
-  }
-
-  Future<bool> deleteAssets(
-    Iterable<Asset> deleteAssets, {
-    bool? force = false,
-  }) async {
-    try {
-      final List<String> payload = [];
-
-      for (final asset in deleteAssets) {
-        payload.add(asset.remoteId!);
-      }
-
-      await _apiService.assetsApi.deleteAssets(
-        AssetBulkDeleteDto(
-          ids: payload,
-          force: force,
-        ),
-      );
-      return true;
-    } catch (error, stack) {
-      log.severe("Error while deleting assets", error, stack);
-    }
-    return false;
   }
 
   /// Loads the exif information from the database. If there is none, loads
@@ -427,5 +408,120 @@ class AssetService {
     }
 
     return 1.0;
+  }
+
+  Future<List<Asset>> getStackAssets(String stackId) {
+    return _assetRepository.getStackAssets(stackId);
+  }
+
+  Future<void> clearTable() {
+    return _assetRepository.clearTable();
+  }
+
+  /// Delete assets from local file system and unreference from the database
+  Future<void> deleteLocalAssets(Iterable<Asset> assets) async {
+    // Delete files from local gallery
+    final candidates = assets.where((asset) => asset.isLocal);
+
+    final deletedIds = await _assetMediaRepository
+        .deleteAll(candidates.map((asset) => asset.localId!).toList());
+
+    // Modify local database by removing the reference to the local assets
+    if (deletedIds.isNotEmpty) {
+      // Delete records from local database
+      final isarIds = assets
+          .where((asset) => asset.storage == AssetState.local)
+          .map((asset) => asset.id)
+          .toList();
+      await _assetRepository.deleteByIds(isarIds);
+
+      // Modify Merged asset to be remote only
+      final updatedAssets = assets
+          .where((asset) => asset.storage == AssetState.merged)
+          .map((asset) {
+        asset.localId = null;
+        return asset;
+      }).toList();
+
+      await _assetRepository.updateAll(updatedAssets);
+    }
+  }
+
+  /// Delete assets from the server and unreference from the database
+  Future<void> deleteRemoteAssets(
+    Iterable<Asset> assets, {
+    bool shouldDeletePermanently = false,
+  }) async {
+    final candidates = assets.where((a) => a.isRemote);
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    await _apiService.assetsApi.deleteAssets(
+      AssetBulkDeleteDto(
+        ids: candidates.map((a) => a.remoteId!).toList(),
+        force: shouldDeletePermanently,
+      ),
+    );
+
+    /// Update asset info bassed on the deletion type.
+    final payload = shouldDeletePermanently
+        ? assets
+            .where((asset) => asset.storage == AssetState.merged)
+            .map((asset) {
+            asset.remoteId = null;
+            return asset;
+          })
+        : assets.where((asset) => asset.isRemote).map((asset) {
+            asset.isTrashed = true;
+            return asset;
+          });
+
+    await _assetRepository.transaction(() async {
+      await _assetRepository.updateAll(payload.toList());
+
+      if (shouldDeletePermanently) {
+        final remoteAssetIds = assets
+            .where((asset) => asset.storage == AssetState.remote)
+            .map((asset) => asset.id)
+            .toList();
+        await _assetRepository.deleteByIds(remoteAssetIds);
+      }
+    });
+  }
+
+  /// Delete assets on both local file system and the server.
+  /// Unreference from the database.
+  Future<void> deleteAssets(
+    Iterable<Asset> assets, {
+    bool shouldDeletePermanently = false,
+  }) async {
+    final hasLocal = assets.any((asset) => asset.isLocal);
+    final hasRemote = assets.any((asset) => asset.isRemote);
+
+    if (hasLocal) {
+      await deleteLocalAssets(assets);
+    }
+
+    if (hasRemote) {
+      await deleteRemoteAssets(
+        assets,
+        shouldDeletePermanently: shouldDeletePermanently,
+      );
+    }
+  }
+
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return _assetRepository.watchAsset(id, fireImmediately: fireImmediately);
+  }
+
+  Future<List<Asset>> getRecentlyAddedAssets() async {
+    final me = await _userRepository.me();
+    return _assetRepository.getRecentlyAddedAssets(me.isarId);
+  }
+
+  Future<List<Asset>> getMotionAssets() async {
+    final me = await _userRepository.me();
+    return _assetRepository.getMotionAssets(me.isarId);
   }
 }

@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -22,6 +23,10 @@ export class PersonEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Index('IDX_person_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
 
   @Column()
   ownerId!: string;
@@ -49,4 +54,10 @@ export class PersonEntity {
 
   @Column({ default: false })
   isHidden!: boolean;
+
+  @Column({ default: false })
+  isFavorite!: boolean;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  color?: string | null;
 }

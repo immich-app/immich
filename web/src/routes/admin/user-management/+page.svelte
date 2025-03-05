@@ -170,6 +170,7 @@
                   variant="ghost"
                   onclick={() => copyToClipboard(newPassword)}
                   title={$t('copy_password')}
+                  aria-label={$t('copy_password')}
                 />
               </div>
 
@@ -194,7 +195,7 @@
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
-            {#each allUsers as immichUser, index}
+            {#each allUsers as immichUser, index (immichUser.id)}
               <tr
                 class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
                   ? 'bg-red-300 dark:bg-red-900'
@@ -225,6 +226,7 @@
                       icon={mdiPencilOutline}
                       title={$t('edit_user')}
                       onclick={() => editUserHandler(immichUser)}
+                      aria-label={$t('edit_user')}
                     />
                     {#if immichUser.id !== $user.id}
                       <IconButton
@@ -233,6 +235,7 @@
                         icon={mdiTrashCanOutline}
                         title={$t('delete_user')}
                         onclick={() => deleteUserHandler(immichUser)}
+                        aria-label={$t('delete_user')}
                       />
                     {/if}
                   {/if}
@@ -245,6 +248,7 @@
                         values: { date: getDeleteDate(immichUser.deletedAt) },
                       })}
                       onclick={() => restoreUserHandler(immichUser)}
+                      aria-label={$t('admin.user_restore_scheduled_removal')}
                     />
                   {/if}
                 </td>

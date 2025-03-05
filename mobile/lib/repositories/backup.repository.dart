@@ -1,26 +1,25 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
 import 'package:isar/isar.dart';
 
-final backupRepositoryProvider =
-    Provider((ref) => BackupRepository(ref.watch(dbProvider)));
+final backupAlbumRepositoryProvider =
+    Provider((ref) => BackupAlbumRepository(ref.watch(dbProvider)));
 
-class BackupRepository extends DatabaseRepository implements IBackupRepository {
-  BackupRepository(super.db);
+class BackupAlbumRepository extends DatabaseRepository
+    implements IBackupAlbumRepository {
+  BackupAlbumRepository(super.db);
 
   @override
   Future<List<BackupAlbum>> getAll({BackupAlbumSort? sort}) {
     final baseQuery = db.backupAlbums.where();
-    final QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> query;
-    switch (sort) {
-      case null:
-        query = baseQuery.noOp();
-      case BackupAlbumSort.id:
-        query = baseQuery.sortById();
-    }
+    final QueryBuilder<BackupAlbum, BackupAlbum, QAfterSortBy> query =
+        switch (sort) {
+      null => baseQuery.noOp(),
+      BackupAlbumSort.id => baseQuery.sortById(),
+    };
     return query.findAll();
   }
 

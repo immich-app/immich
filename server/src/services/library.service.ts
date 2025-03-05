@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { R_OK } from 'node:constants';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
+import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
@@ -16,11 +17,10 @@ import {
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
-import { AssetType, ImmichWorker } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobOf, JOBS_LIBRARY_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -47,7 +47,7 @@ export class LibraryService extends BaseService {
         name: 'libraryScan',
         expression: scan.cronExpression,
         onTick: () =>
-          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL }), this.logger),
+          handlePromiseError(this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL }), this.logger),
         start: scan.enabled,
       });
     }
@@ -210,11 +210,17 @@ export class LibraryService extends BaseService {
 
   @OnJob({ name: JobName.LIBRARY_QUEUE_CLEANUP, queue: QueueName.LIBRARY })
   async handleQueueCleanup(): Promise<JobStatus> {
-    this.logger.debug('Cleaning up any pending library deletions');
-    const pendingDeletion = await this.libraryRepository.getAllDeleted();
-    await this.jobRepository.queueAll(
-      pendingDeletion.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
-    );
+    this.logger.log('Checking for any libraries pending deletion...');
+    const pendingDeletions = await this.libraryRepository.getAllDeleted();
+    if (pendingDeletions.length > 0) {
+      const libraryString = pendingDeletions.length === 1 ? 'library' : 'libraries';
+      this.logger.log(`Found ${pendingDeletions.length} ${libraryString} pending deletion, cleaning up...`);
+
+      await this.jobRepository.queueAll(
+        pendingDeletions.map((libraryToDelete) => ({ name: JobName.LIBRARY_DELETE, data: { id: libraryToDelete.id } })),
+      );
+    }
+
     return JobStatus.SUCCESS;
   }
 
@@ -223,7 +229,7 @@ export class LibraryService extends BaseService {
       ownerId: dto.ownerId,
       name: dto.name ?? 'New External Library',
       importPaths: dto.importPaths ?? [],
-      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*'],
+      exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*', '**/#recycle/**', '**/#snapshot/**'],
     });
     return mapLibrary(library);
   }
@@ -442,9 +448,13 @@ export class LibraryService extends BaseService {
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ASSETS, data: { id } });
   }
 
-  @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, queue: QueueName.LIBRARY })
-  async handleQueueSyncAll(): Promise<JobStatus> {
-    this.logger.debug(`Refreshing all external libraries`);
+  async queueScanAll() {
+    await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: {} });
+  }
+
+  @OnJob({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, queue: QueueName.LIBRARY })
+  async handleQueueScanAll(): Promise<JobStatus> {
+    this.logger.log(`Refreshing all external libraries`);
 
     await this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_CLEANUP, data: {} });
 
@@ -503,7 +513,7 @@ export class LibraryService extends BaseService {
     }
 
     const mtime = stat.mtime;
-    const isAssetModified = mtime.toISOString() !== asset.fileModifiedAt.toISOString();
+    const isAssetModified = !asset.fileModifiedAt || mtime.toISOString() !== asset.fileModifiedAt.toISOString();
 
     if (asset.isOffline || isAssetModified) {
       this.logger.debug(`Asset was offline or modified, updating asset record ${asset.originalPath}`);

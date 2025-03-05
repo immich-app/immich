@@ -74,26 +74,16 @@ class DownloadTaskTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final progressPercent = (progress * 100).round();
 
-    getStatusText() {
-      switch (status) {
-        case TaskStatus.running:
-          return 'downloading'.tr();
-        case TaskStatus.complete:
-          return 'download_complete'.tr();
-        case TaskStatus.failed:
-          return 'download_failed'.tr();
-        case TaskStatus.canceled:
-          return 'download_canceled'.tr();
-        case TaskStatus.paused:
-          return 'download_paused'.tr();
-        case TaskStatus.enqueued:
-          return 'download_enqueue'.tr();
-        case TaskStatus.notFound:
-          return 'download_notfound'.tr();
-        case TaskStatus.waitingToRetry:
-          return 'download_waiting_to_retry'.tr();
-      }
-    }
+    String getStatusText() => switch (status) {
+          TaskStatus.running => 'downloading'.tr(),
+          TaskStatus.complete => 'download_complete'.tr(),
+          TaskStatus.failed => 'download_failed'.tr(),
+          TaskStatus.canceled => 'download_canceled'.tr(),
+          TaskStatus.paused => 'download_paused'.tr(),
+          TaskStatus.enqueued => 'download_enqueue'.tr(),
+          TaskStatus.notFound => 'download_notfound'.tr(),
+          TaskStatus.waitingToRetry => 'download_waiting_to_retry'.tr(),
+        };
 
     return SizedBox(
       key: const ValueKey('download_progress'),

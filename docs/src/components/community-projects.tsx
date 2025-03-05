@@ -99,6 +99,11 @@ const projects: CommunityProjectProps[] = [
     description: 'Downloads a configurable number of random photos based on people or album ID.',
     url: 'https://github.com/jon6fingrs/immich-dl',
   },
+  {
+    title: 'Immich Upload Optimizer',
+    description: 'Automatically optimize files uploaded to Immich in order to save storage space',
+    url: 'https://github.com/miguelangel-nubla/immich-upload-optimizer',
+  },
 ];
 
 function CommunityProject({ title, description, url }: CommunityProjectProps): JSX.Element {

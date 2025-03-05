@@ -1,12 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/models/search/search_curated_content.model.dart';
-import 'package:immich_mobile/models/search/search_filter.model.dart';
-import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
-import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/models/search/search_curated_content.model.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/search/thumbnail_with_info.dart';
 
 class ExploreGrid extends StatelessWidget {
   final List<SearchCuratedContent> curatedContent;

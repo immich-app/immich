@@ -50,6 +50,13 @@ function HomepageHeader() {
           >
             Demo
           </Link>
+
+          <Link
+            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-primary/10 dark:bg-gray-300  rounded-xl hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
+            to="https://immich.store"
+          >
+            Buy Merch
+          </Link>
         </div>
 
         <div className="my-12 flex gap-1 font-medium place-items-center place-content-center text-immich-primary dark:text-immich-dark-primary">

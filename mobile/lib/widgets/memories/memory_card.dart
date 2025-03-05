@@ -75,11 +75,12 @@ class MemoryCard extends StatelessWidget {
                       key: ValueKey(asset.id),
                       asset: asset,
                       showControls: false,
+                      playbackDelayFactor: 2,
                       image: ImmichImage(
                         asset,
                         width: context.width,
                         height: context.height,
-                        fit: fit,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),

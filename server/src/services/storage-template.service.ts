@@ -3,15 +3,15 @@ import handlebar from 'handlebars';
 import { DateTime } from 'luxon';
 import path from 'node:path';
 import sanitize from 'sanitize-filename';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetPathType, AssetType, StorageFolder } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobOf, JOBS_ASSET_PAGINATION_SIZE, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { AssetPathType, AssetType, DatabaseLock, JobName, JobStatus, QueueName, StorageFolder } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { getLivePhotoMotionFilename } from 'src/utils/file';
 import { usePagination } from 'src/utils/pagination';
 
@@ -152,6 +152,7 @@ export class StorageTemplateService extends BaseService {
       this.logger.log('Storage template migration disabled, skipping');
       return JobStatus.SKIPPED;
     }
+    await this.moveRepository.cleanMoveHistory();
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { withExif: true, withArchived: true }),
     );
@@ -173,6 +174,12 @@ export class StorageTemplateService extends BaseService {
     this.logger.log('Finished storage template migration');
 
     return JobStatus.SUCCESS;
+  }
+
+  @OnEvent({ name: 'asset.delete' })
+  async handleMoveHistoryCleanup({ assetId }: ArgOf<'asset.delete'>) {
+    this.logger.debug(`Cleaning up move history for asset ${assetId}`);
+    await this.moveRepository.cleanMoveHistorySingle(assetId);
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
@@ -304,6 +311,7 @@ export class StorageTemplateService extends BaseService {
       filetype: asset.type == AssetType.IMAGE ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.IMAGE ? 'IMAGE' : 'VIDEO',
       assetId: asset.id,
+      assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
       album: (albumName && sanitize(albumName.replaceAll(/\.+/g, ''))) || '',
     };

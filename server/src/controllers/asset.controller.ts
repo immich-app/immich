@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { EndpointLifecycle } from 'src/decorators';
 import { AssetResponseDto, MemoryLaneResponseDto } from 'src/dtos/asset-response.dto';
 import {
@@ -41,6 +41,10 @@ export class AssetController {
    * Get all asset of a device that are in the database, ID only.
    */
   @Get('/device/:deviceId')
+  @ApiOperation({
+    summary: 'getAllUserAssetsByDeviceId',
+    description: 'Get all asset of a device that are in the database, ID only.',
+  })
   @Authenticated()
   getAllUserAssetsByDeviceId(@Auth() auth: AuthDto, @Param() { deviceId }: DeviceIdDto) {
     return this.service.getUserAssetsByDeviceId(auth, deviceId);

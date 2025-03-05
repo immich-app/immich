@@ -56,10 +56,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.3.0
+        uses: docker/setup-qemu-action@v3.5.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.8.0
+        uses: docker/setup-buildx-action@v3.10.0
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -88,7 +88,7 @@ jobs:
             type=raw,value=latest,enable=${{ github.event_name == 'release' }}
 
       - name: Build and push image
-        uses: docker/build-push-action@v6.12.0
+        uses: docker/build-push-action@v6.15.0
         with:
           file: cli/Dockerfile
           platforms: linux/amd64,linux/arm64

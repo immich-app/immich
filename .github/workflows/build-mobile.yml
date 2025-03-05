@@ -29,9 +29,11 @@ jobs:
           filters: |
             mobile:
               - 'mobile/**'
+            workflow:
+              - '.github/workflows/build-mobile.yml'
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
 
   build-sign-android:
     name: Build and sign Android

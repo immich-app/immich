@@ -1,7 +1,8 @@
-import { ILibraryRepository } from 'src/interfaces/library.interface';
+import { LibraryRepository } from 'src/repositories/library.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newLibraryRepositoryMock = (): Mocked<ILibraryRepository> => {
+export const newLibraryRepositoryMock = (): Mocked<RepositoryInterface<LibraryRepository>> => {
   return {
     get: vitest.fn(),
     create: vitest.fn(),

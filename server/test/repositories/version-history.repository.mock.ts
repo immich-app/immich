@@ -1,7 +1,8 @@
-import { IVersionHistoryRepository } from 'src/types';
+import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newVersionHistoryRepositoryMock = (): Mocked<IVersionHistoryRepository> => {
+export const newVersionHistoryRepositoryMock = (): Mocked<RepositoryInterface<VersionHistoryRepository>> => {
   return {
     getAll: vitest.fn().mockResolvedValue([]),
     getLatest: vitest.fn(),

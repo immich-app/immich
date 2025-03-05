@@ -6,6 +6,7 @@ import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
@@ -23,7 +24,6 @@ import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
@@ -286,7 +286,7 @@ class SyncService {
     }
     final idsToDelete = toRemove.map((e) => e.id).toList();
     try {
-      await _assetRepository.deleteById(idsToDelete);
+      await _assetRepository.deleteByIds(idsToDelete);
       await upsertAssetsWithExif(toAdd + toUpdate);
     } catch (e) {
       _log.severe("Failed to sync remote assets to db", e);
@@ -334,7 +334,7 @@ class SyncService {
     if (toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
       if (idsToRemove.isNotEmpty) {
-        await _assetRepository.deleteById(idsToRemove);
+        await _assetRepository.deleteByIds(idsToRemove);
       }
     } else {
       assert(toDelete.isEmpty);
@@ -531,7 +531,7 @@ class SyncService {
     );
     if (toDelete.isNotEmpty || toUpdate.isNotEmpty) {
       await _assetRepository.transaction(() async {
-        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.deleteByIds(toDelete);
         await _assetRepository.updateAll(toUpdate);
       });
       _log.info(
@@ -639,7 +639,7 @@ class SyncService {
   }
 
   /// fast path for common case: only new assets were added to device album
-  /// returns `true` if successfull, else `false`
+  /// returns `true` if successful, else `false`
   Future<bool> _syncDeviceAlbumFast(Album deviceAlbum, Album dbAlbum) async {
     if (!deviceAlbum.modifiedAt.isAfter(dbAlbum.modifiedAt)) {
       return false;
@@ -826,7 +826,7 @@ class SyncService {
       final (toDelete, toUpdate) =
           _handleAssetRemoval(assets, [], remote: false);
       await _assetRepository.transaction(() async {
-        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.deleteByIds(toDelete);
         await _assetRepository.updateAll(toUpdate);
         await _albumRepository.deleteAllLocal();
       });

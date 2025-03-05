@@ -95,7 +95,7 @@
           <p class="text-sm">{$t('owner')}</p>
         </div>
       </div>
-      {#each album.albumUsers as { user, role }}
+      {#each album.albumUsers as { user, role } (user.id)}
         <div
           class="flex w-full place-items-center justify-between gap-4 p-5 rounded-xl transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
         >

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
@@ -10,7 +11,10 @@ import {
   AudioCodec,
   Colorspace,
   ImageFormat,
+  JobName,
+  JobStatus,
   LogLevel,
+  QueueName,
   StorageFolder,
   TranscodeHWAccel,
   TranscodePolicy,
@@ -18,17 +22,17 @@ import {
   VideoCodec,
   VideoContainer,
 } from 'src/enum';
-import { UpsertFileOptions, WithoutProperty } from 'src/interfaces/asset.interface';
-import {
-  JOBS_ASSET_PAGINATION_SIZE,
-  JobItem,
-  JobName,
-  JobOf,
-  JobStatus,
-  QueueName,
-} from 'src/interfaces/job.interface';
+import { UpsertFileOptions, WithoutProperty } from 'src/repositories/asset.repository';
 import { BaseService } from 'src/services/base.service';
-import { AudioStreamInfo, DecodeToBufferOptions, VideoFormat, VideoInterfaces, VideoStreamInfo } from 'src/types';
+import {
+  AudioStreamInfo,
+  DecodeToBufferOptions,
+  JobItem,
+  JobOf,
+  VideoFormat,
+  VideoInterfaces,
+  VideoStreamInfo,
+} from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -213,7 +217,7 @@ export class MediaService extends BaseService {
       await Promise.all(pathsToDelete.map((path) => this.storageRepository.unlink(path)));
     }
 
-    if (asset.thumbhash != generated.thumbhash) {
+    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, generated.thumbhash) !== 0) {
       await this.assetRepository.update({ id: asset.id, thumbhash: generated.thumbhash });
     }
 

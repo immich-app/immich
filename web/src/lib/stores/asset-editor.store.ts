@@ -17,6 +17,7 @@ export const normaizedRorateDegrees = derived(rotateDegrees, (v) => {
 export const changedOriention = derived(normaizedRorateDegrees, () => get(normaizedRorateDegrees) % 180 > 0);
 //-----other
 export const showCancelConfirmDialog = writable<boolean | CallableFunction>(false);
+export const lastChosenLocation = writable<{ lng: number; lat: number } | null>(null);
 
 export const editTypes = [
   {

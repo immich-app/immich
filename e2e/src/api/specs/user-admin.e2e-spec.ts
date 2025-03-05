@@ -356,5 +356,24 @@ describe('/admin/users', () => {
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.forbidden);
     });
+
+    it('should restore a user', async () => {
+      const user = await utils.userSetup(admin.accessToken, createUserDto.create('restore'));
+
+      await deleteUserAdmin({ id: user.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) });
+
+      const { status, body } = await request(app)
+        .post(`/admin/users/${user.userId}/restore`)
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(
+        expect.objectContaining({
+          id: user.userId,
+          email: user.userEmail,
+          status: 'active',
+          deletedAt: null,
+        }),
+      );
+    });
   });
 });

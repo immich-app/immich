@@ -12,8 +12,9 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { extraSyncModels } from 'src/dtos/sync.dto';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
-import { ILoggingRepository } from 'src/types';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export class ImmichStartupError extends Error {}
 export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
@@ -96,7 +97,7 @@ export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metad
 
 export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
 
-export const handlePromiseError = <T>(promise: Promise<T>, logger: ILoggingRepository): void => {
+export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
@@ -245,6 +246,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    extraModels: extraSyncModels,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);

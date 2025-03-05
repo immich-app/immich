@@ -230,6 +230,10 @@ class ApiClient {
           return AssetDeltaSyncDto.fromJson(value);
         case 'AssetDeltaSyncResponseDto':
           return AssetDeltaSyncResponseDto.fromJson(value);
+        case 'AssetFaceCreateDto':
+          return AssetFaceCreateDto.fromJson(value);
+        case 'AssetFaceDeleteDto':
+          return AssetFaceDeleteDto.fromJson(value);
         case 'AssetFaceResponseDto':
           return AssetFaceResponseDto.fromJson(value);
         case 'AssetFaceUpdateDto':
@@ -266,8 +270,6 @@ class ApiClient {
           return AssetTypeEnumTypeTransformer().decode(value);
         case 'AudioCodec':
           return AudioCodecTypeTransformer().decode(value);
-        case 'AuditDeletesResponseDto':
-          return AuditDeletesResponseDto.fromJson(value);
         case 'AvatarResponse':
           return AvatarResponse.fromJson(value);
         case 'AvatarUpdate':
@@ -314,8 +316,6 @@ class ApiClient {
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':
           return EmailNotificationsUpdate.fromJson(value);
-        case 'EntityType':
-          return EntityTypeTypeTransformer().decode(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'FaceDto':
@@ -496,6 +496,10 @@ class ApiClient {
           return SharedLinkResponseDto.fromJson(value);
         case 'SharedLinkType':
           return SharedLinkTypeTypeTransformer().decode(value);
+        case 'SharedLinksResponse':
+          return SharedLinksResponse.fromJson(value);
+        case 'SharedLinksUpdate':
+          return SharedLinksUpdate.fromJson(value);
         case 'SignUpDto':
           return SignUpDto.fromJson(value);
         case 'SmartSearchDto':
@@ -508,6 +512,26 @@ class ApiClient {
           return StackResponseDto.fromJson(value);
         case 'StackUpdateDto':
           return StackUpdateDto.fromJson(value);
+        case 'SyncAckDeleteDto':
+          return SyncAckDeleteDto.fromJson(value);
+        case 'SyncAckDto':
+          return SyncAckDto.fromJson(value);
+        case 'SyncAckSetDto':
+          return SyncAckSetDto.fromJson(value);
+        case 'SyncEntityType':
+          return SyncEntityTypeTypeTransformer().decode(value);
+        case 'SyncPartnerDeleteV1':
+          return SyncPartnerDeleteV1.fromJson(value);
+        case 'SyncPartnerV1':
+          return SyncPartnerV1.fromJson(value);
+        case 'SyncRequestType':
+          return SyncRequestTypeTypeTransformer().decode(value);
+        case 'SyncStreamDto':
+          return SyncStreamDto.fromJson(value);
+        case 'SyncUserDeleteV1':
+          return SyncUserDeleteV1.fromJson(value);
+        case 'SyncUserV1':
+          return SyncUserV1.fromJson(value);
         case 'SystemConfigBackupsDto':
           return SystemConfigBackupsDto.fromJson(value);
         case 'SystemConfigDto':

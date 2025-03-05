@@ -157,7 +157,6 @@ async function fileUploader(
         }
       } catch (error) {
         console.error(`Error calculating sha1 file=${assetFile.name})`, error);
-        throw error;
       }
     }
 

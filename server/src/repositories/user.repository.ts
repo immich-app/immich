@@ -3,14 +3,9 @@ import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { UserMetadata } from 'src/entities/user-metadata.entity';
+import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
-import {
-  IUserRepository,
-  UserFindOptions,
-  UserListFilter,
-  UserStatsQueryResponse,
-} from 'src/interfaces/user.interface';
+import { UserStatus } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 const columns = [
@@ -33,8 +28,27 @@ const columns = [
 
 type Upsert = Insertable<DbUserMetadata>;
 
+export interface UserListFilter {
+  withDeleted?: boolean;
+}
+
+export interface UserStatsQueryResponse {
+  userId: string;
+  userName: string;
+  photos: number;
+  videos: number;
+  usage: number;
+  usagePhotos: number;
+  usageVideos: number;
+  quotaSizeInBytes: number | null;
+}
+
+export interface UserFindOptions {
+  withDeleted?: boolean;
+}
+
 @Injectable()
-export class UserRepository implements IUserRepository {
+export class UserRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
@@ -48,6 +62,14 @@ export class UserRepository implements IUserRepository {
       .where('users.id', '=', userId)
       .$if(!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
       .executeTakeFirst() as Promise<UserEntity | undefined>;
+  }
+
+  getMetadata(userId: string) {
+    return this.db
+      .selectFrom('user_metadata')
+      .select(['key', 'value'])
+      .where('user_metadata.userId', '=', userId)
+      .execute() as Promise<UserMetadataItem[]>;
   }
 
   @GenerateSql()
@@ -140,6 +162,16 @@ export class UserRepository implements IUserRepository {
       .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
 
+  restore(id: string): Promise<UserEntity> {
+    return this.db
+      .updateTable('users')
+      .set({ status: UserStatus.ACTIVE, deletedAt: null })
+      .where('users.id', '=', asUuid(id))
+      .returning(columns)
+      .returning(withMetadata)
+      .executeTakeFirst() as unknown as Promise<UserEntity>;
+  }
+
   async upsertMetadata<T extends keyof UserMetadata>(id: string, { key, value }: { key: T; value: UserMetadata[T] }) {
     await this.db
       .insertInto('user_metadata')
@@ -157,7 +189,7 @@ export class UserRepository implements IUserRepository {
     await this.db.deleteFrom('user_metadata').where('userId', '=', id).where('key', '=', key).execute();
   }
 
-  delete(user: UserEntity, hard?: boolean): Promise<UserEntity> {
+  delete(user: { id: string }, hard?: boolean): Promise<UserEntity> {
     return hard
       ? (this.db.deleteFrom('users').where('id', '=', user.id).execute() as unknown as Promise<UserEntity>)
       : (this.db
@@ -239,7 +271,7 @@ export class UserRepository implements IUserRepository {
           eb
             .selectFrom('assets')
             .leftJoin('exif', 'exif.assetId', 'assets.id')
-            .select((eb) => eb.fn.coalesce(eb.fn.sum('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
+            .select((eb) => eb.fn.coalesce(eb.fn.sum<number>('exif.fileSizeInByte'), eb.lit(0)).as('usage'))
             .where('assets.libraryId', 'is', null)
             .where('assets.ownerId', '=', eb.ref('users.id')),
         updatedAt: new Date(),

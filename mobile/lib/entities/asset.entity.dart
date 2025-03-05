@@ -545,19 +545,13 @@ enum AssetType {
 }
 
 extension AssetTypeEnumHelper on AssetTypeEnum {
-  AssetType toAssetType() {
-    switch (this) {
-      case AssetTypeEnum.IMAGE:
-        return AssetType.image;
-      case AssetTypeEnum.VIDEO:
-        return AssetType.video;
-      case AssetTypeEnum.AUDIO:
-        return AssetType.audio;
-      case AssetTypeEnum.OTHER:
-        return AssetType.other;
-    }
-    throw Exception();
-  }
+  AssetType toAssetType() => switch (this) {
+        AssetTypeEnum.IMAGE => AssetType.image,
+        AssetTypeEnum.VIDEO => AssetType.video,
+        AssetTypeEnum.AUDIO => AssetType.audio,
+        AssetTypeEnum.OTHER => AssetType.other,
+        _ => throw Exception(),
+      };
 }
 
 /// Describes where the information of this asset came from:

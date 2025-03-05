@@ -202,8 +202,8 @@ order by
 -- AlbumRepository.getMetadataForIds
 select
   "albums"."id" as "albumId",
-  min("assets"."fileCreatedAt") as "startDate",
-  max("assets"."fileCreatedAt") as "endDate",
+  min("assets"."localDateTime") as "startDate",
+  max("assets"."localDateTime") as "endDate",
   count("assets"."id")::int as "assetCount"
 from
   "albums"

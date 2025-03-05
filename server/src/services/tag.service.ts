@@ -1,4 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { Insertable } from 'kysely';
+import { TagAsset } from 'src/db';
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -11,10 +13,7 @@ import {
   TagUpsertDto,
   mapTag,
 } from 'src/dtos/tag.dto';
-import { TagEntity } from 'src/entities/tag.entity';
-import { Permission } from 'src/enum';
-import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { AssetTagItem } from 'src/interfaces/tag.interface';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { upsertTags } from 'src/utils/tag';
@@ -33,10 +32,10 @@ export class TagService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: TagCreateDto) {
-    let parent: TagEntity | undefined;
+    let parent;
     if (dto.parentId) {
       await this.requireAccess({ auth, permission: Permission.TAG_READ, ids: [dto.parentId] });
-      parent = (await this.tagRepository.get(dto.parentId)) || undefined;
+      parent = await this.tagRepository.get(dto.parentId);
       if (!parent) {
         throw new BadRequestException('Tag not found');
       }
@@ -50,7 +49,7 @@ export class TagService extends BaseService {
     }
 
     const { color } = dto;
-    const tag = await this.tagRepository.create({ userId, value, color, parent });
+    const tag = await this.tagRepository.create({ userId, value, color, parentId: parent?.id });
 
     return mapTag(tag);
   }
@@ -59,7 +58,7 @@ export class TagService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.TAG_UPDATE, ids: [id] });
 
     const { color } = dto;
-    const tag = await this.tagRepository.update({ id, color });
+    const tag = await this.tagRepository.update(id, { color });
     return mapTag(tag);
   }
 
@@ -82,15 +81,15 @@ export class TagService extends BaseService {
       this.checkAccess({ auth, permission: Permission.ASSET_UPDATE, ids: dto.assetIds }),
     ]);
 
-    const items: AssetTagItem[] = [];
-    for (const tagId of tagIds) {
-      for (const assetId of assetIds) {
-        items.push({ tagId, assetId });
+    const items: Insertable<TagAsset>[] = [];
+    for (const tagsId of tagIds) {
+      for (const assetsId of assetIds) {
+        items.push({ tagsId, assetsId });
       }
     }
 
     const results = await this.tagRepository.upsertAssetIds(items);
-    for (const assetId of new Set(results.map((item) => item.assetId))) {
+    for (const assetId of new Set(results.map((item) => item.assetsId))) {
       await this.eventRepository.emit('asset.tag', { assetId });
     }
 

@@ -1,11 +1,12 @@
 <script lang="ts">
+  import { onMount, tick } from 'svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiArrowLeft, mdiMerge } from '@mdi/js';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
-  import Button from '../elements/buttons/button.svelte';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
 
@@ -36,6 +37,11 @@
     [potentialMergePeople[index], personMerge2] = [personMerge2, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
+
+  onMount(async () => {
+    await tick();
+    document.querySelector<HTMLElement>('#merge-confirm-button')?.focus();
+  });
 </script>
 
 <FullScreenModal title="{$t('merge_people')} - {title}" {onClose}>
@@ -113,7 +119,9 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button fullwidth color="gray" onclick={onReject}>{$t('no')}</Button>
-    <Button fullwidth onclick={() => onConfirm([personMerge1, personMerge2])}>{$t('yes')}</Button>
+    <Button fullWidth shape="round" color="secondary" onclick={onReject}>{$t('no')}</Button>
+    <Button id="merge-confirm-button" fullWidth shape="round" onclick={() => onConfirm([personMerge1, personMerge2])}>
+      {$t('yes')}
+    </Button>
   {/snippet}
 </FullScreenModal>

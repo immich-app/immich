@@ -5,12 +5,11 @@ import { readFile } from 'node:fs/promises';
 import { DB, SystemMetadata as DbSystemMetadata } from 'src/db';
 import { GenerateSql } from 'src/decorators';
 import { SystemMetadata } from 'src/entities/system-metadata.entity';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
 
 type Upsert = Insertable<DbSystemMetadata>;
 
 @Injectable()
-export class SystemMetadataRepository implements ISystemMetadataRepository {
+export class SystemMetadataRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: ['metadata_key'] })

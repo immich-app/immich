@@ -7,6 +7,14 @@ import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { render } from '@testing-library/svelte';
 import type { MockInstance } from 'vitest';
 
+class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+globalThis.ResizeObserver = ResizeObserver;
+
 vi.mock('$lib/utils', async (originalImport) => {
   const meta = await originalImport<typeof import('$lib/utils')>();
   return {
@@ -40,7 +48,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      checksum: asset.checksum,
+      cacheKey: asset.thumbhash,
     });
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
@@ -49,11 +57,8 @@ describe('PhotoViewer component', () => {
     const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Fullsize,
-      checksum: asset.checksum,
-    });
+    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
   it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
@@ -61,11 +66,13 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
-      id: asset.id,
-      size: AssetMediaSize.Fullsize,
-      checksum: asset.checksum,
-    });
+    // expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+    //   id: asset.id,
+    //   size: AssetMediaSize.Fullsize,
+    //   checksum: asset.checksum,
+    // });
+    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
+    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
   it('not loads original image when shared link download permission is false', () => {
@@ -76,7 +83,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      checksum: asset.checksum,
+      cacheKey: asset.thumbhash,
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
@@ -90,7 +97,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      checksum: asset.checksum,
+      cacheKey: asset.thumbhash,
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();

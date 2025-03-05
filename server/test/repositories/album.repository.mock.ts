@@ -1,7 +1,8 @@
-import { IAlbumRepository } from 'src/interfaces/album.interface';
+import { AlbumRepository } from 'src/repositories/album.repository';
+import { RepositoryInterface } from 'src/types';
 import { Mocked, vitest } from 'vitest';
 
-export const newAlbumRepositoryMock = (): Mocked<IAlbumRepository> => {
+export const newAlbumRepositoryMock = (): Mocked<RepositoryInterface<AlbumRepository>> => {
   return {
     getById: vitest.fn(),
     getByAssetId: vitest.fn(),
