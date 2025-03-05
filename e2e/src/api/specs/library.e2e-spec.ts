@@ -490,7 +490,7 @@ describe('/libraries', () => {
       utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
     });
 
-    it('should not reimport unmodified files', async () => {
+    it('should not reimport a file with unchanged timestamp', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
         importPaths: [`${testAssetDirInternal}/temp/reimport`],
@@ -933,6 +933,8 @@ describe('/libraries', () => {
 
       const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
 
+      expect(assets.count).toBe(1);
+
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
       await utils.scan(admin.accessToken, library.id);
@@ -959,6 +961,58 @@ describe('/libraries', () => {
 
       {
         const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        expect(assets.count).toBe(1);
+      }
+    });
+
+    it('should set a trashed offline asset to online but keep it in trash', async () => {
+      utils.createImageFile(`${testAssetDir}/temp/offline/offline.png`);
+
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/offline`],
+      });
+
+      await utils.scan(admin.accessToken, library.id);
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.count).toBe(1);
+
+      await utils.deleteAssets(admin.accessToken, [assets.items[0].id]);
+
+      {
+        const trashedAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+        expect(trashedAsset.isTrashed).toBe(true);
+      }
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+      expect(offlineAsset.isTrashed).toBe(true);
+      expect(offlineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(offlineAsset.isOffline).toBe(true);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+        expect(assets.count).toBe(1);
+      }
+
+      utils.renameImageFile(`${testAssetDir}/temp/offline.png`, `${testAssetDir}/temp/offline/offline.png`);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      const backOnlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(backOnlineAsset.originalPath).toBe(`${testAssetDirInternal}/temp/offline/offline.png`);
+      expect(backOnlineAsset.isOffline).toBe(false);
+      expect(backOnlineAsset.isTrashed).toBe(true);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
         expect(assets.count).toBe(1);
       }
     });
@@ -1024,16 +1078,17 @@ describe('/libraries', () => {
 
       await utils.scan(admin.accessToken, library.id);
 
-      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+      {
+        const { assets: assetsBefore } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+        expect(assetsBefore.count).toBe(1);
+      }
 
       utils.renameImageFile(`${testAssetDir}/temp/offline/offline.png`, `${testAssetDir}/temp/offline.png`);
 
       await utils.scan(admin.accessToken, library.id);
 
-      {
-        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
-        expect(assets.count).toBe(1);
-      }
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id, withDeleted: true });
+      expect(assets.count).toBe(1);
 
       const offlineAsset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
 
