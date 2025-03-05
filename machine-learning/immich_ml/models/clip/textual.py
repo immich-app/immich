@@ -100,10 +100,11 @@ class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
         if self.is_nllb and language is not None:
             flores_code = WEBLATE_TO_FLORES200.get(language)
             if flores_code is None:
-                log.warning(f"Language '{language}' not found, defaulting to 'en'")
-                flores_code = "eng_Latn"
-            else:
-                log.info(f"Using language '{language}' with code '{flores_code}'")
+                no_country = language.split("-")[0]
+                flores_code = WEBLATE_TO_FLORES200.get(no_country)
+                if flores_code is None:
+                    log.warning(f"Language '{language}' not found, defaulting to 'en'")
+                    flores_code = "eng_Latn"
             text = f"{flores_code}{text}"
         tokens: Encoding = self.tokenizer.encode(text)
         return {"text": np.array([tokens.ids], dtype=np.int32)}
