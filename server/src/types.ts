@@ -53,6 +53,12 @@ export interface CropOptions {
   height: number;
 }
 
+export interface FullsizeImageOptions {
+  format: ImageFormat;
+  quality: number;
+  enabled: boolean;
+}
+
 export interface ImageOptions {
   format: ImageFormat;
   quality: number;
@@ -73,11 +79,11 @@ interface DecodeImageOptions {
 }
 
 export interface DecodeToBufferOptions extends DecodeImageOptions {
-  size: number;
+  size?: number;
   orientation?: ExifOrientation;
 }
 
-export type GenerateThumbnailOptions = ImageOptions & DecodeImageOptions;
+export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality'> & DecodeToBufferOptions;
 
 export type GenerateThumbnailFromBufferOptions = GenerateThumbnailOptions & { raw: RawImageInfo };
 

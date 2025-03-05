@@ -15,6 +15,7 @@ class SystemConfigImageDto {
   SystemConfigImageDto({
     required this.colorspace,
     required this.extractEmbedded,
+    required this.fullsize,
     required this.preview,
     required this.thumbnail,
   });
@@ -22,6 +23,8 @@ class SystemConfigImageDto {
   Colorspace colorspace;
 
   bool extractEmbedded;
+
+  SystemConfigGeneratedFullsizeImageDto fullsize;
 
   SystemConfigGeneratedImageDto preview;
 
@@ -31,6 +34,7 @@ class SystemConfigImageDto {
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigImageDto &&
     other.colorspace == colorspace &&
     other.extractEmbedded == extractEmbedded &&
+    other.fullsize == fullsize &&
     other.preview == preview &&
     other.thumbnail == thumbnail;
 
@@ -39,16 +43,18 @@ class SystemConfigImageDto {
     // ignore: unnecessary_parenthesis
     (colorspace.hashCode) +
     (extractEmbedded.hashCode) +
+    (fullsize.hashCode) +
     (preview.hashCode) +
     (thumbnail.hashCode);
 
   @override
-  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, preview=$preview, thumbnail=$thumbnail]';
+  String toString() => 'SystemConfigImageDto[colorspace=$colorspace, extractEmbedded=$extractEmbedded, fullsize=$fullsize, preview=$preview, thumbnail=$thumbnail]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'colorspace'] = this.colorspace;
       json[r'extractEmbedded'] = this.extractEmbedded;
+      json[r'fullsize'] = this.fullsize;
       json[r'preview'] = this.preview;
       json[r'thumbnail'] = this.thumbnail;
     return json;
@@ -65,6 +71,7 @@ class SystemConfigImageDto {
       return SystemConfigImageDto(
         colorspace: Colorspace.fromJson(json[r'colorspace'])!,
         extractEmbedded: mapValueOfType<bool>(json, r'extractEmbedded')!,
+        fullsize: SystemConfigGeneratedFullsizeImageDto.fromJson(json[r'fullsize'])!,
         preview: SystemConfigGeneratedImageDto.fromJson(json[r'preview'])!,
         thumbnail: SystemConfigGeneratedImageDto.fromJson(json[r'thumbnail'])!,
       );
@@ -116,6 +123,7 @@ class SystemConfigImageDto {
   static const requiredKeys = <String>{
     'colorspace',
     'extractEmbedded',
+    'fullsize',
     'preview',
     'thumbnail',
   };

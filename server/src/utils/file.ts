@@ -46,7 +46,7 @@ export const sendFile = async (
     const file = await handler();
     switch (file.cacheControl) {
       case CacheControl.PRIVATE_WITH_CACHE: {
-        res.set('Cache-Control', 'private, max-age=86400, no-transform');
+        res.set('Cache-Control', 'private, max-age=3600, stale-while-revalidate=86400, no-transform');
         break;
       }
 
