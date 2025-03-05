@@ -33,10 +33,10 @@ export class ImmichFileResponse {
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
-const cacheControlHeaders: Record<CacheControl, string> = {
+const cacheControlHeaders: Record<CacheControl, string | null> = {
   [CacheControl.PRIVATE_WITH_CACHE]: 'private, max-age=86400, no-transform',
   [CacheControl.PRIVATE_WITHOUT_CACHE]: 'private, no-cache, no-transform',
-  [CacheControl.NONE]: '',
+  [CacheControl.NONE]: null,
 };
 
 export const sendFile = async (
