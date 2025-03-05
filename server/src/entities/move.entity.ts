@@ -10,7 +10,7 @@ export class MoveEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'uuid' })
   entityId!: string;
 
   @Column({ type: 'varchar' })

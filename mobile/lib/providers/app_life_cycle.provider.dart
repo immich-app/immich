@@ -17,6 +17,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/background.service.dart';
+import 'package:isar/isar.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 enum AppLifeCycleEnum {
@@ -114,11 +115,13 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       _ref.read(websocketProvider.notifier).disconnect();
     }
 
-    unawaited(LogService.I.flush());
+    LogService.I.flush();
   }
 
-  void handleAppDetached() {
+  Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
+    LogService.I.flush();
+    await Isar.getInstance()?.close();
     // no guarantee this is called at all
     _ref.read(manualUploadProvider.notifier).cancelBackup();
   }

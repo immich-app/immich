@@ -13,7 +13,7 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onFavorite: OnFavorite;
+    onFavorite?: OnFavorite;
     menuItem?: boolean;
     removeFavorite: boolean;
   }
@@ -44,7 +44,7 @@
         asset.isFavorite = isFavorite;
       }
 
-      onFavorite(ids, isFavorite);
+      onFavorite?.(ids, isFavorite);
 
       notificationController.show({
         message: isFavorite
