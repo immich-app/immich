@@ -6,7 +6,6 @@ import { parse } from 'pg-connection-string';
 import { PNG } from 'pngjs';
 import postgres, { Notice } from 'postgres';
 import { DB } from 'src/db';
-import { ImmichWorker } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -92,196 +91,154 @@ import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools';
 import { Mocked, vitest } from 'vitest';
 
-type Overrides = {
-  worker?: ImmichWorker;
-  metadataRepository?: MetadataRepository;
-  syncRepository?: SyncRepository;
-  userRepository?: UserRepository;
+export type ServiceOverrides = {
+  access: AccessRepository;
+  activity: ActivityRepository;
+  album: AlbumRepository;
+  albumUser: AlbumUserRepository;
+  apiKey: ApiKeyRepository;
+  audit: AuditRepository;
+  asset: AssetRepository;
+  config: ConfigRepository;
+  cron: CronRepository;
+  crypto: CryptoRepository;
+  database: DatabaseRepository;
+  event: EventRepository;
+  job: JobRepository;
+  library: LibraryRepository;
+  logger: LoggingRepository;
+  machineLearning: MachineLearningRepository;
+  map: MapRepository;
+  media: MediaRepository;
+  memory: MemoryRepository;
+  metadata: MetadataRepository;
+  move: MoveRepository;
+  notification: NotificationRepository;
+  oauth: OAuthRepository;
+  partner: PartnerRepository;
+  person: PersonRepository;
+  process: ProcessRepository;
+  search: SearchRepository;
+  serverInfo: ServerInfoRepository;
+  session: SessionRepository;
+  sharedLink: SharedLinkRepository;
+  stack: StackRepository;
+  storage: StorageRepository;
+  sync: SyncRepository;
+  systemMetadata: SystemMetadataRepository;
+  tag: TagRepository;
+  telemetry: TelemetryRepository;
+  trash: TrashRepository;
+  user: UserRepository;
+  versionHistory: VersionHistoryRepository;
+  view: ViewRepository;
 };
+
+type As<T> = T extends RepositoryInterface<infer U> ? U : never;
+type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInterface<AccessRepository[K]> };
+
+export type ServiceMocks = {
+  [K in keyof Omit<ServiceOverrides, 'access' | 'telemetry'>]: Mocked<RepositoryInterface<ServiceOverrides[K]>>;
+} & { access: IAccessRepositoryMock; telemetry: ITelemetryRepositoryMock };
+
 type BaseServiceArgs = ConstructorParameters<typeof BaseService>;
 type Constructor<Type, Args extends Array<any>> = {
   new (...deps: Args): Type;
 };
 
-type IAccessRepository = { [K in keyof AccessRepository]: RepositoryInterface<AccessRepository[K]> };
-
-export type ServiceMocks = {
-  access: IAccessRepositoryMock;
-  activity: Mocked<RepositoryInterface<ActivityRepository>>;
-  album: Mocked<RepositoryInterface<AlbumRepository>>;
-  albumUser: Mocked<RepositoryInterface<AlbumUserRepository>>;
-  apiKey: Mocked<RepositoryInterface<ApiKeyRepository>>;
-  audit: Mocked<RepositoryInterface<AuditRepository>>;
-  asset: Mocked<RepositoryInterface<AssetRepository>>;
-  config: Mocked<RepositoryInterface<ConfigRepository>>;
-  cron: Mocked<RepositoryInterface<CronRepository>>;
-  crypto: Mocked<RepositoryInterface<CryptoRepository>>;
-  database: Mocked<RepositoryInterface<DatabaseRepository>>;
-  event: Mocked<RepositoryInterface<EventRepository>>;
-  job: Mocked<RepositoryInterface<JobRepository>>;
-  library: Mocked<RepositoryInterface<LibraryRepository>>;
-  logger: Mocked<RepositoryInterface<LoggingRepository>>;
-  machineLearning: Mocked<RepositoryInterface<MachineLearningRepository>>;
-  map: Mocked<RepositoryInterface<MapRepository>>;
-  media: Mocked<RepositoryInterface<MediaRepository>>;
-  memory: Mocked<RepositoryInterface<MemoryRepository>>;
-  metadata: Mocked<RepositoryInterface<MetadataRepository>>;
-  move: Mocked<RepositoryInterface<MoveRepository>>;
-  notification: Mocked<RepositoryInterface<NotificationRepository>>;
-  oauth: Mocked<RepositoryInterface<OAuthRepository>>;
-  partner: Mocked<RepositoryInterface<PartnerRepository>>;
-  person: Mocked<RepositoryInterface<PersonRepository>>;
-  process: Mocked<RepositoryInterface<ProcessRepository>>;
-  search: Mocked<RepositoryInterface<SearchRepository>>;
-  serverInfo: Mocked<RepositoryInterface<ServerInfoRepository>>;
-  session: Mocked<RepositoryInterface<SessionRepository>>;
-  sharedLink: Mocked<RepositoryInterface<SharedLinkRepository>>;
-  stack: Mocked<RepositoryInterface<StackRepository>>;
-  storage: Mocked<RepositoryInterface<StorageRepository>>;
-  systemMetadata: Mocked<RepositoryInterface<SystemMetadataRepository>>;
-  tag: Mocked<RepositoryInterface<TagRepository>>;
-  telemetry: ITelemetryRepositoryMock;
-  trash: Mocked<RepositoryInterface<TrashRepository>>;
-  user: Mocked<RepositoryInterface<UserRepository>>;
-  versionHistory: Mocked<RepositoryInterface<VersionHistoryRepository>>;
-  view: Mocked<RepositoryInterface<ViewRepository>>;
-};
-
 export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
-  overrides?: Overrides,
+  overrides: Partial<ServiceOverrides> = {},
 ) => {
-  const { metadataRepository, userRepository, syncRepository } = overrides || {};
-
-  const accessMock = newAccessRepositoryMock();
-  const loggerMock = newLoggingRepositoryMock();
-  const cronMock = newCronRepositoryMock();
-  const cryptoMock = newCryptoRepositoryMock();
-  const activityMock = newActivityRepositoryMock();
-  const auditMock = newAuditRepositoryMock();
-  const albumMock = newAlbumRepositoryMock();
-  const albumUserMock = newAlbumUserRepositoryMock();
-  const assetMock = newAssetRepositoryMock();
-  const configMock = newConfigRepositoryMock();
-  const databaseMock = newDatabaseRepositoryMock();
-  const eventMock = newEventRepositoryMock();
-  const jobMock = newJobRepositoryMock();
-  const apiKeyMock = newKeyRepositoryMock();
-  const libraryMock = newLibraryRepositoryMock();
-  const machineLearningMock = newMachineLearningRepositoryMock();
-  const mapMock = newMapRepositoryMock();
-  const mediaMock = newMediaRepositoryMock();
-  const memoryMock = newMemoryRepositoryMock();
-  const metadataMock = (metadataRepository || newMetadataRepositoryMock()) as Mocked<
-    RepositoryInterface<MetadataRepository>
-  >;
-  const moveMock = newMoveRepositoryMock();
-  const notificationMock = newNotificationRepositoryMock();
-  const oauthMock = newOAuthRepositoryMock();
-  const partnerMock = newPartnerRepositoryMock();
-  const personMock = newPersonRepositoryMock();
-  const processMock = newProcessRepositoryMock();
-  const searchMock = newSearchRepositoryMock();
-  const serverInfoMock = newServerInfoRepositoryMock();
-  const sessionMock = newSessionRepositoryMock();
-  const sharedLinkMock = newSharedLinkRepositoryMock();
-  const stackMock = newStackRepositoryMock();
-  const storageMock = newStorageRepositoryMock();
-  const syncMock = (syncRepository || newSyncRepositoryMock()) as Mocked<RepositoryInterface<SyncRepository>>;
-  const systemMock = newSystemMetadataRepositoryMock();
-  const tagMock = newTagRepositoryMock();
-  const telemetryMock = newTelemetryRepositoryMock();
-  const trashMock = newTrashRepositoryMock();
-  const userMock = (userRepository || newUserRepositoryMock()) as Mocked<RepositoryInterface<UserRepository>>;
-  const versionHistoryMock = newVersionHistoryRepositoryMock();
-  const viewMock = newViewRepositoryMock();
+  const mocks: ServiceMocks = {
+    access: newAccessRepositoryMock(),
+    logger: newLoggingRepositoryMock(),
+    cron: newCronRepositoryMock(),
+    crypto: newCryptoRepositoryMock(),
+    activity: newActivityRepositoryMock(),
+    audit: newAuditRepositoryMock(),
+    album: newAlbumRepositoryMock(),
+    albumUser: newAlbumUserRepositoryMock(),
+    asset: newAssetRepositoryMock(),
+    config: newConfigRepositoryMock(),
+    database: newDatabaseRepositoryMock(),
+    event: newEventRepositoryMock(),
+    job: newJobRepositoryMock(),
+    apiKey: newKeyRepositoryMock(),
+    library: newLibraryRepositoryMock(),
+    machineLearning: newMachineLearningRepositoryMock(),
+    map: newMapRepositoryMock(),
+    media: newMediaRepositoryMock(),
+    memory: newMemoryRepositoryMock(),
+    metadata: newMetadataRepositoryMock(),
+    move: newMoveRepositoryMock(),
+    notification: newNotificationRepositoryMock(),
+    oauth: newOAuthRepositoryMock(),
+    partner: newPartnerRepositoryMock(),
+    person: newPersonRepositoryMock(),
+    process: newProcessRepositoryMock(),
+    search: newSearchRepositoryMock(),
+    serverInfo: newServerInfoRepositoryMock(),
+    session: newSessionRepositoryMock(),
+    sharedLink: newSharedLinkRepositoryMock(),
+    stack: newStackRepositoryMock(),
+    storage: newStorageRepositoryMock(),
+    sync: newSyncRepositoryMock(),
+    systemMetadata: newSystemMetadataRepositoryMock(),
+    tag: newTagRepositoryMock(),
+    telemetry: newTelemetryRepositoryMock(),
+    trash: newTrashRepositoryMock(),
+    user: newUserRepositoryMock(),
+    versionHistory: newVersionHistoryRepositoryMock(),
+    view: newViewRepositoryMock(),
+  };
 
   const sut = new Service(
-    loggerMock as RepositoryInterface<LoggingRepository> as LoggingRepository,
-    accessMock as IAccessRepository as AccessRepository,
-    activityMock as RepositoryInterface<ActivityRepository> as ActivityRepository,
-    auditMock as RepositoryInterface<AuditRepository> as AuditRepository,
-    albumMock as RepositoryInterface<AlbumRepository> as AlbumRepository,
-    albumUserMock as RepositoryInterface<AlbumUserRepository> as AlbumUserRepository,
-    assetMock as RepositoryInterface<AssetRepository> as AssetRepository,
-    configMock as RepositoryInterface<ConfigRepository> as ConfigRepository,
-    cronMock as RepositoryInterface<CronRepository> as CronRepository,
-    cryptoMock as RepositoryInterface<CryptoRepository> as CryptoRepository,
-    databaseMock as RepositoryInterface<DatabaseRepository> as DatabaseRepository,
-    eventMock as RepositoryInterface<EventRepository> as EventRepository,
-    jobMock as RepositoryInterface<JobRepository> as JobRepository,
-    apiKeyMock as RepositoryInterface<ApiKeyRepository> as ApiKeyRepository,
-    libraryMock as RepositoryInterface<LibraryRepository> as LibraryRepository,
-    machineLearningMock as RepositoryInterface<MachineLearningRepository> as MachineLearningRepository,
-    mapMock as RepositoryInterface<MapRepository> as MapRepository,
-    mediaMock as RepositoryInterface<MediaRepository> as MediaRepository,
-    memoryMock as RepositoryInterface<MemoryRepository> as MemoryRepository,
-    metadataMock as RepositoryInterface<MetadataRepository> as MetadataRepository,
-    moveMock as RepositoryInterface<MoveRepository> as MoveRepository,
-    notificationMock as RepositoryInterface<NotificationRepository> as NotificationRepository,
-    oauthMock as RepositoryInterface<OAuthRepository> as OAuthRepository,
-    partnerMock as RepositoryInterface<PartnerRepository> as PartnerRepository,
-    personMock as RepositoryInterface<PersonRepository> as PersonRepository,
-    processMock as RepositoryInterface<ProcessRepository> as ProcessRepository,
-    searchMock as RepositoryInterface<SearchRepository> as SearchRepository,
-    serverInfoMock as RepositoryInterface<ServerInfoRepository> as ServerInfoRepository,
-    sessionMock as RepositoryInterface<SessionRepository> as SessionRepository,
-    sharedLinkMock as RepositoryInterface<SharedLinkRepository> as SharedLinkRepository,
-    stackMock as RepositoryInterface<StackRepository> as StackRepository,
-    storageMock as RepositoryInterface<StorageRepository> as StorageRepository,
-    syncMock as RepositoryInterface<SyncRepository> as SyncRepository,
-    systemMock as RepositoryInterface<SystemMetadataRepository> as SystemMetadataRepository,
-    tagMock as RepositoryInterface<TagRepository> as TagRepository,
-    telemetryMock as unknown as TelemetryRepository,
-    trashMock as RepositoryInterface<TrashRepository> as TrashRepository,
-    userMock as RepositoryInterface<UserRepository> as UserRepository,
-    versionHistoryMock as RepositoryInterface<VersionHistoryRepository> as VersionHistoryRepository,
-    viewMock as RepositoryInterface<ViewRepository> as ViewRepository,
+    overrides.logger || (mocks.logger as As<LoggingRepository>),
+    overrides.access || (mocks.access as IAccessRepository as AccessRepository),
+    overrides.activity || (mocks.activity as As<ActivityRepository>),
+    overrides.album || (mocks.album as As<AlbumRepository>),
+    overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
+    overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
+    overrides.asset || (mocks.asset as As<AssetRepository>),
+    overrides.audit || (mocks.audit as As<AuditRepository>),
+    overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
+    overrides.cron || (mocks.cron as As<CronRepository>),
+    overrides.crypto || (mocks.crypto as As<CryptoRepository>),
+    overrides.database || (mocks.database as As<DatabaseRepository>),
+    overrides.event || (mocks.event as As<EventRepository>),
+    overrides.job || (mocks.job as As<JobRepository>),
+    overrides.library || (mocks.library as As<LibraryRepository>),
+    overrides.machineLearning || (mocks.machineLearning as As<MachineLearningRepository>),
+    overrides.map || (mocks.map as As<MapRepository>),
+    overrides.media || (mocks.media as As<MediaRepository>),
+    overrides.memory || (mocks.memory as As<MemoryRepository>),
+    overrides.metadata || (mocks.metadata as As<MetadataRepository>),
+    overrides.move || (mocks.move as As<MoveRepository>),
+    overrides.notification || (mocks.notification as As<NotificationRepository>),
+    overrides.oauth || (mocks.oauth as As<OAuthRepository>),
+    overrides.partner || (mocks.partner as As<PartnerRepository>),
+    overrides.person || (mocks.person as As<PersonRepository>),
+    overrides.process || (mocks.process as As<ProcessRepository>),
+    overrides.search || (mocks.search as As<SearchRepository>),
+    overrides.serverInfo || (mocks.serverInfo as As<ServerInfoRepository>),
+    overrides.session || (mocks.session as As<SessionRepository>),
+    overrides.sharedLink || (mocks.sharedLink as As<SharedLinkRepository>),
+    overrides.stack || (mocks.stack as As<StackRepository>),
+    overrides.storage || (mocks.storage as As<StorageRepository>),
+    overrides.sync || (mocks.sync as As<SyncRepository>),
+    overrides.systemMetadata || (mocks.systemMetadata as As<SystemMetadataRepository>),
+    overrides.tag || (mocks.tag as As<TagRepository>),
+    overrides.telemetry || (mocks.telemetry as unknown as TelemetryRepository),
+    overrides.trash || (mocks.trash as As<TrashRepository>),
+    overrides.user || (mocks.user as As<UserRepository>),
+    overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
+    overrides.view || (mocks.view as As<ViewRepository>),
   );
 
   return {
     sut,
-    mocks: {
-      access: accessMock,
-      apiKey: apiKeyMock,
-      cron: cronMock,
-      crypto: cryptoMock,
-      activity: activityMock,
-      audit: auditMock,
-      album: albumMock,
-      albumUser: albumUserMock,
-      asset: assetMock,
-      config: configMock,
-      database: databaseMock,
-      event: eventMock,
-      job: jobMock,
-      library: libraryMock,
-      logger: loggerMock,
-      machineLearning: machineLearningMock,
-      map: mapMock,
-      media: mediaMock,
-      memory: memoryMock,
-      metadata: metadataMock,
-      move: moveMock,
-      notification: notificationMock,
-      oauth: oauthMock,
-      partner: partnerMock,
-      person: personMock,
-      process: processMock,
-      search: searchMock,
-      serverInfo: serverInfoMock,
-      session: sessionMock,
-      sharedLink: sharedLinkMock,
-      stack: stackMock,
-      storage: storageMock,
-      systemMetadata: systemMock,
-      tag: tagMock,
-      telemetry: telemetryMock,
-      trash: trashMock,
-      user: userMock,
-      versionHistory: versionHistoryMock,
-      view: viewMock,
-    } as ServiceMocks,
+    mocks,
   };
 };
 

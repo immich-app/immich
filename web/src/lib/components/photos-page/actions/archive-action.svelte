@@ -8,7 +8,7 @@
   import { t } from 'svelte-i18n';
 
   interface Props {
-    onArchive: OnArchive;
+    onArchive?: OnArchive;
     menuItem?: boolean;
     unarchive?: boolean;
   }
@@ -28,7 +28,7 @@
     loading = true;
     const ids = await archiveAssets(assets, isArchived);
     if (ids) {
-      onArchive(ids, isArchived);
+      onArchive?.(ids, isArchived);
       clearSelect();
     }
     loading = false;

@@ -37,7 +37,7 @@ describe(SyncService.name, () => {
     it('should detect and sync the first user', async () => {
       const { context, auth, sut, testSync } = await setup();
 
-      const user = await context.userRepository.get(auth.user.id, { withDeleted: false });
+      const user = await context.user.get(auth.user.id, { withDeleted: false });
       if (!user) {
         expect.fail('First user should exist');
       }
@@ -109,7 +109,7 @@ describe(SyncService.name, () => {
       const { auth, context, sut, testSync } = await setup();
 
       const user = await context.createUser();
-      await context.userRepository.delete({ id: user.id }, true);
+      await context.user.delete({ id: user.id }, true);
 
       const response = await testSync(auth, [SyncRequestType.UsersV1]);
 
@@ -167,7 +167,7 @@ describe(SyncService.name, () => {
       const acks = [initialSyncResponse[0].ack];
       await sut.setAcks(auth, { acks });
 
-      const updated = await context.userRepository.update(auth.user.id, { name: 'new name' });
+      const updated = await context.user.update(auth.user.id, { name: 'new name' });
 
       const updatedSyncResponse = await testSync(auth, [SyncRequestType.UsersV1]);
 
@@ -230,7 +230,7 @@ describe(SyncService.name, () => {
       const user2 = await context.createUser();
 
       const partner = await context.createPartner({ sharedById: user2.id, sharedWithId: user1.id });
-      await context.partnerRepository.remove(partner);
+      await context.partner.remove(partner);
 
       const response = await testSync(auth, [SyncRequestType.PartnersV1]);
 
@@ -326,7 +326,7 @@ describe(SyncService.name, () => {
       const acks = [initialSyncResponse[0].ack];
       await sut.setAcks(auth, { acks });
 
-      const updated = await context.partnerRepository.update(
+      const updated = await context.partner.update(
         { sharedById: partner.sharedById, sharedWithId: partner.sharedWithId },
         { inTimeline: true },
       );
