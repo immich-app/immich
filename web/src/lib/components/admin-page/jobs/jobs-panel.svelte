@@ -9,6 +9,7 @@
   import { JobCommand, JobName, sendJobCommand, type AllJobStatusResponseDto, type JobCommandDto } from '@immich/sdk';
   import {
     mdiContentDuplicate,
+    mdiDatabaseExport,
     mdiFaceRecognition,
     mdiFileJpgBox,
     mdiFileXmlBox,
@@ -141,6 +142,12 @@
       icon: mdiFolderMove,
       title: $getJobName(JobName.Migration),
       subtitle: $t('admin.migration_job_description'),
+      missingText: $t('start'),
+    },
+    [JobName.BackupDatabase]: {
+      icon: mdiDatabaseExport,
+      title: $getJobName(JobName.BackupDatabase),
+      subtitle: $t('admin.backup_database_job_description'),
       missingText: $t('start'),
     },
   };
