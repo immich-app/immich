@@ -1,5 +1,7 @@
 <script lang="ts" module>
-  void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
+  if (!maplibregl.getRTLTextPluginStatus()) {
+    void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
+  }
 </script>
 
 <script lang="ts">
@@ -40,10 +42,12 @@
     simplified?: boolean;
     clickable?: boolean;
     useLocationPin?: boolean;
+    mapContainer?: HTMLElement;
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
+    onChangeBounds?: (bounds: maplibregl.LngLatBounds) => void;
   }
 
   let {
@@ -55,10 +59,12 @@
     simplified = false,
     clickable = false,
     useLocationPin = false,
+    mapContainer = $bindable(undefined),
     onOpenInMapView = undefined,
     onSelect = () => {},
     onClickPoint = () => {},
     popup,
+    onChangeBounds,
   }: Props = $props();
 
   let map: maplibregl.Map | undefined = $state();
@@ -67,6 +73,15 @@
   const theme = $derived($mapSettings.allowDarkMode ? $colorTheme.value : Theme.LIGHT);
   const styleUrl = $derived(theme === Theme.DARK ? $serverConfig.mapDarkStyleUrl : $serverConfig.mapLightStyleUrl);
   const style = $derived(fetch(styleUrl).then((response) => response.json()));
+
+  let isAssetGridOpened: boolean = $state(true);
+
+  const changeBounds = () => {
+    if (isAssetGridOpened && map && onChangeBounds) {
+      const bounds = map.getBounds();
+      onChangeBounds(bounds);
+    }
+  };
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (map) {
@@ -145,7 +160,7 @@
   <MapLibre
     {hash}
     {style}
-    class="h-full"
+    class={`relative w-full overflow-hidden transition ease-in-out h-full ${isAssetGridOpened ? 'h-1/2' : 'h-full'}`}
     {center}
     {zoom}
     attributionControl={false}
@@ -153,13 +168,14 @@
     on:load={(event) => event.detail.setMaxZoom(18)}
     on:load={(event) => event.detail.on('click', handleMapClick)}
     bind:map
+    on:moveend={changeBounds}
   >
     {#snippet children({ map }: { map: maplibregl.Map })}
       <NavigationControl position="top-left" showCompass={!simplified} />
 
       {#if !simplified}
         <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
+        <FullscreenControl position="top-left" container={mapContainer} />
         <ScaleControl />
         <AttributionControl compact={false} />
       {/if}
@@ -241,6 +257,7 @@
       </GeoJSON>
     {/snippet}
   </MapLibre>
+
   <style>
     .location-pin {
       transform: translate(0, -50%);
