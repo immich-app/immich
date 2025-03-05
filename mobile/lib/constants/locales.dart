@@ -5,7 +5,7 @@ const Map<String, Locale> locales = {
   'English (en_US)': Locale('en', 'US'),
   // Additional locales
   'Arabic (ar_JO)': Locale('ar', 'JO'),
-  'Catalan (ca)': Locale('ca', 'CA'),
+  'Catalan (ca)': Locale('ca'),
   'Chinese (zh_CN)': Locale('zh', 'CN'),
   'Chinese Simplified (zh_Hans)': Locale('zh', 'Hans'),
   'Chinese TW (zh_TW)': Locale('zh', 'TW'),
