@@ -136,7 +136,7 @@ jobs:
             suffix: -cuda
 
           - platforms: linux/amd64
-            runner: mich
+            runner: ubuntu-latest
             device: rocm
             suffix: -rocm
 
