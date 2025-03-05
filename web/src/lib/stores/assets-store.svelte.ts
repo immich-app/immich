@@ -419,6 +419,10 @@ export class AssetStore {
   async updateOptions(options: AssetStoreOptions) {
     // Make sure to re-initialize if the personId changes
     const needsReinitializing = this.options.personId !== options.personId;
+    if (this.options.tagId === options.tagId) {
+      this.setOptions(options);
+      return;
+    }
     if (!this.initialized && !needsReinitializing) {
       this.setOptions(options);
       return;
