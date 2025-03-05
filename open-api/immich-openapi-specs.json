@@ -11851,6 +11851,9 @@
           "isVisible": {
             "type": "boolean"
           },
+          "language": {
+            "type": "string"
+          },
           "lensModel": {
             "nullable": true,
             "type": "string"
