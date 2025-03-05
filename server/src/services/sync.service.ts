@@ -4,7 +4,7 @@ import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
 import { AUDIT_LOG_MAX_DURATION } from 'src/constants';
 import { SessionSyncCheckpoints } from 'src/db';
-import { AssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
+import { AssetResponseDto, hexOrBufferToBase64, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetDeltaSyncDto,
@@ -26,6 +26,7 @@ const SYNC_TYPES_ORDER = [
   //
   SyncRequestType.UsersV1,
   SyncRequestType.PartnersV1,
+  SyncRequestType.AssetsV1,
 ];
 
 const throwSessionRequired = () => {
@@ -110,6 +111,33 @@ export class SyncService extends BaseService {
           const upserts = this.syncRepository.getPartnerUpserts(auth.user.id, checkpointMap[SyncEntityType.PartnerV1]);
           for await (const { updateId, ...data } of upserts) {
             response.write(serialize({ type: SyncEntityType.PartnerV1, updateId, data }));
+          }
+
+          break;
+        }
+
+        case SyncRequestType.AssetsV1: {
+          const deletes = this.syncRepository.getAssetDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.AssetDeleteV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.AssetDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getAssetUpserts(auth.user.id, checkpointMap[SyncEntityType.AssetV1]);
+          for await (const { updateId, checksum, thumbhash, ...data } of upserts) {
+            response.write(
+              serialize({
+                type: SyncEntityType.AssetV1,
+                updateId,
+                data: {
+                  ...data,
+                  checksum: hexOrBufferToBase64(checksum),
+                  thumbhash: thumbhash ? hexOrBufferToBase64(thumbhash) : null,
+                },
+              }),
+            );
           }
 
           break;

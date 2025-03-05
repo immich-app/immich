@@ -78,4 +78,39 @@ export class SyncRepository {
       .orderBy(['id asc'])
       .stream();
   }
+
+  getAssetUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('assets')
+      .select([
+        'id',
+        'ownerId',
+        'thumbhash',
+        'checksum',
+        'fileCreatedAt',
+        'fileModifiedAt',
+        'localDateTime',
+        'type',
+        'deletedAt',
+        'isFavorite',
+        'isVisible',
+        'updateId',
+      ])
+      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
+      .where('ownerId', '=', userId)
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['updateId asc'])
+      .stream();
+  }
+
+  getAssetDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('assets_audit')
+      .select(['id', 'assetId'])
+      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
+      .where('ownerId', '=', userId)
+      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['id asc'])
+      .stream();
+  }
 }

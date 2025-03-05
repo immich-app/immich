@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetStatus, AssetType, SyncEntityType, SyncRequestType } from 'src/enum';
 import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
@@ -56,11 +56,31 @@ export class SyncPartnerDeleteV1 {
   sharedWithId!: string;
 }
 
+export class SyncAssetV1 {
+  id!: string;
+  ownerId!: string;
+  thumbhash!: string | null;
+  checksum!: string;
+  fileCreatedAt!: Date | null;
+  fileModifiedAt!: Date | null;
+  localDateTime!: Date | null;
+  type!: AssetType;
+  deletedAt!: Date | null;
+  isFavorite!: boolean;
+  isVisible!: boolean;
+}
+
+export class SyncAssetDeleteV1 {
+  assetId!: string;
+}
+
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
+  [SyncEntityType.AssetV1]: SyncAssetV1;
+  [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
 };
 
 const responseDtos = [
@@ -69,6 +89,8 @@ const responseDtos = [
   SyncUserDeleteV1,
   SyncPartnerV1,
   SyncPartnerDeleteV1,
+  SyncAssetV1,
+  SyncAssetDeleteV1,
 ];
 
 export const extraSyncModels = responseDtos;

@@ -12049,12 +12049,95 @@
         ],
         "type": "object"
       },
+      "SyncAssetDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetV1": {
+        "properties": {
+          "checksum": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "localDateTime": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "thumbhash": {
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "OTHER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "checksum",
+          "deletedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "id",
+          "isFavorite",
+          "isVisible",
+          "localDateTime",
+          "ownerId",
+          "thumbhash",
+          "type"
+        ],
+        "type": "object"
+      },
       "SyncEntityType": {
         "enum": [
           "UserV1",
           "UserDeleteV1",
           "PartnerV1",
-          "PartnerDeleteV1"
+          "PartnerDeleteV1",
+          "AssetV1",
+          "AssetDeleteV1",
+          "AssetExifV1",
+          "PartnerAssetV1",
+          "PartnerAssetDeleteV1",
+          "PartnerAssetExifV1"
         ],
         "type": "string"
       },
@@ -12095,7 +12178,9 @@
       "SyncRequestType": {
         "enum": [
           "UsersV1",
-          "PartnersV1"
+          "PartnersV1",
+          "AssetsV1",
+          "PartnerAssetsV1"
         ],
         "type": "string"
       },

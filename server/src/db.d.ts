@@ -4,7 +4,7 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { AssetType, Permission, SyncEntityType } from 'src/enum';
+import { AssetType, Permission, SyncEntityType} from 'src/enum';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -116,6 +116,13 @@ export interface AssetJobStatus {
   metadataExtractedAt: Timestamp | null;
   previewAt: Timestamp | null;
   thumbnailAt: Timestamp | null;
+}
+
+export interface AssetsAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  assetId: string;
+  ownerId: string;
 }
 
 export interface Assets {
@@ -458,6 +465,7 @@ export interface DB {
   asset_job_status: AssetJobStatus;
   asset_stack: AssetStack;
   assets: Assets;
+  assets_audit: AssetsAudit;
   audit: Audit;
   exif: Exif;
   face_search: FaceSearch;

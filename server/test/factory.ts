@@ -54,7 +54,7 @@ class CustomWritable extends Writable {
   }
 }
 
-type Asset = Insertable<Assets>;
+type Asset = Partial<Insertable<Assets>>;
 type User = Partial<Insertable<Users>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;

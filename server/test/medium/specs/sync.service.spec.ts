@@ -3,6 +3,7 @@ import { SyncRequestType } from 'src/enum';
 import { SyncService } from 'src/services/sync.service';
 import { TestContext, TestFactory } from 'test/factory';
 import { getKyselyDB, newTestService } from 'test/utils';
+import { hexOrBufferToBase64 } from '../../../src/dtos/asset-response.dto';
 
 const setup = async () => {
   const user = TestFactory.user();
@@ -186,6 +187,58 @@ describe(SyncService.name, () => {
           },
         ]),
       );
+    });
+  });
+
+  describe.concurrent('assets', () => {
+    it('should detect and sync the first asset', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
+      const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
+      const date = new Date().toISOString();
+
+      const asset = TestFactory.asset({
+        ownerId: auth.user.id,
+        checksum: Buffer.from(checksum, 'base64'),
+        thumbhash: Buffer.from(thumbhash, 'base64'),
+        fileCreatedAt: date,
+        fileModifiedAt: date,
+        deletedAt: null,
+      });
+      await context.createAsset(asset);
+
+      const initialSyncResponse = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(initialSyncResponse).toHaveLength(1);
+      expect(initialSyncResponse).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              id: asset.id,
+              ownerId: asset.ownerId,
+              thumbhash,
+              checksum,
+              deletedAt: null,
+              fileCreatedAt: date,
+              fileModifiedAt: date,
+              isFavorite: false,
+              isVisible: true,
+              localDateTime: null,
+              type: asset.type,
+            },
+            type: 'AssetV1',
+          },
+        ]),
+      );
+
+      const acks = [initialSyncResponse[0].ack];
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
     });
   });
 
