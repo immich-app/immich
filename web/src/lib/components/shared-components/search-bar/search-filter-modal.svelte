@@ -145,8 +145,6 @@
     onSearch(payload);
   };
 
-
-
   const onreset = (event: Event) => {
     event.preventDefault();
     resetForm();

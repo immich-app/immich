@@ -166,7 +166,6 @@
     const t = localStorage.getItem('searchQueryType');
     return t === 'smart' || t === 'description' ? t : 'metadata';
   }
-
 </script>
 
 <svelte:window
