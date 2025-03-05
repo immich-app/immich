@@ -135,15 +135,15 @@ jobs:
             device: cuda
             suffix: -cuda
 
-          - platform: linux/amd64
-            runner: ubuntu-latest
-            device: openvino
-            suffix: -openvino
-
           - platforms: linux/amd64
             runner: mich
             device: rocm
             suffix: -rocm
+
+          - platform: linux/amd64
+            runner: ubuntu-latest
+            device: openvino
+            suffix: -openvino
 
           - platform: linux/arm64
             runner: ubuntu-24.04-arm
@@ -240,6 +240,8 @@ jobs:
           - device: cpu
           - device: cuda
             suffix: -cuda
+          - device: rocm
+            suffix: -rocm
           - device: openvino
             suffix: -openvino
           - device: armnn
