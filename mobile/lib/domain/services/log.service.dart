@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/log.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
@@ -91,12 +92,13 @@ class LogService {
   }
 
   /// Flush pending log messages to persistent storage
-  Future<void> flush() async {
+  void flush() {
     if (_flushTimer == null) {
       return;
     }
     _flushTimer!.cancel();
-    await _flushBufferToDatabase();
+    // TODO: Rename enable this after moving to sqlite - #16504
+    // await _flushBufferToDatabase();
   }
 
   Future<void> dispose() {
@@ -106,6 +108,10 @@ class LogService {
   }
 
   void _writeLogToDatabase(LogRecord r) {
+    if (kDebugMode) {
+      debugPrint('[${r.level.name}] [${r.time}] ${r.message}');
+    }
+
     final record = LogMessage(
       message: r.message,
       level: r.level.toLogLevel(),
