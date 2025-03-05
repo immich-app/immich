@@ -63,6 +63,7 @@
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
     handleFocus?: (() => void) | undefined;
     class?: string;
+    overrideDisplayForTest?: boolean;
   }
 
   let {
@@ -90,6 +91,7 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     class: className = '',
+    overrideDisplayForTest = false,
   }: Props = $props();
 
   let {
@@ -228,7 +230,7 @@
     ></canvas>
   {/if}
 
-  {#if display}
+  {#if display || overrideDisplayForTest}
     <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
     <div
@@ -250,6 +252,7 @@
       role="link"
       bind:this={focussableElement}
       onfocus={handleFocus}
+      data-testid="container-with-tabindex"
     >
       {#if mouseOver && !disableMouseOver}
         <!-- lazy show the url on mouse over-->
