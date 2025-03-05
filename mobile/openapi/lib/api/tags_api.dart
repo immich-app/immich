@@ -22,7 +22,7 @@ class TagsApi {
   /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
   Future<Response> bulkTagAssetsWithHttpInfo(TagBulkAssetsDto tagBulkAssetsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/assets';
+    final apiPath = r'/tags/assets';
 
     // ignore: prefer_final_locals
     Object? postBody = tagBulkAssetsDto;
@@ -35,7 +35,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -69,7 +69,7 @@ class TagsApi {
   /// * [TagCreateDto] tagCreateDto (required):
   Future<Response> createTagWithHttpInfo(TagCreateDto tagCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags';
+    final apiPath = r'/tags';
 
     // ignore: prefer_final_locals
     Object? postBody = tagCreateDto;
@@ -82,7 +82,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -116,7 +116,7 @@ class TagsApi {
   /// * [String] id (required):
   Future<Response> deleteTagWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/{id}'
+    final apiPath = r'/tags/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -130,7 +130,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -153,7 +153,7 @@ class TagsApi {
   /// Performs an HTTP 'GET /tags' operation and returns the [Response].
   Future<Response> getAllTagsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/tags';
+    final apiPath = r'/tags';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -166,7 +166,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -200,7 +200,7 @@ class TagsApi {
   /// * [String] id (required):
   Future<Response> getTagByIdWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/{id}'
+    final apiPath = r'/tags/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -214,7 +214,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -250,7 +250,7 @@ class TagsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> tagAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/{id}/assets'
+    final apiPath = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -264,7 +264,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -305,7 +305,7 @@ class TagsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> untagAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/{id}/assets'
+    final apiPath = r'/tags/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -319,7 +319,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -360,7 +360,7 @@ class TagsApi {
   /// * [TagUpdateDto] tagUpdateDto (required):
   Future<Response> updateTagWithHttpInfo(String id, TagUpdateDto tagUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags/{id}'
+    final apiPath = r'/tags/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -374,7 +374,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -410,7 +410,7 @@ class TagsApi {
   /// * [TagUpsertDto] tagUpsertDto (required):
   Future<Response> upsertTagsWithHttpInfo(TagUpsertDto tagUpsertDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/tags';
+    final apiPath = r'/tags';
 
     // ignore: prefer_final_locals
     Object? postBody = tagUpsertDto;
@@ -423,7 +423,7 @@ class TagsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

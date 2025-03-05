@@ -83,7 +83,7 @@ dependencies:
 # Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
 dependency_overrides:
   # TODO: remove once Isar is updated
-  analyzer: ^6.3.0
+  analyzer: ^6.0.0
   # TODO: remove once analyzer override is removed
   meta: ^1.11.0
   # TODO: remove once analyzer override is removed

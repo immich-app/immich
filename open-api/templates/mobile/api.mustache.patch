@@ -1,0 +1,29 @@
+--- api.mustache	2025-01-22 05:50:25
++++ api.mustache.modified	2025-01-22 05:52:23
+@@ -51,7 +51,7 @@
+   {{/allParams}}
+   Future<Response> {{{nickname}}}WithHttpInfo({{#allParams}}{{#required}}{{{dataType}}} {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}}{{#hasOptionalParams}}{ {{#allParams}}{{^required}}{{{dataType}}}? {{{paramName}}},{{^-last}} {{/-last}}{{/required}}{{/allParams}} }{{/hasOptionalParams}}) async {
+     // ignore: prefer_const_declarations
+-    final path = r'{{{path}}}'{{#pathParams}}
++    final apiPath = r'{{{path}}}'{{#pathParams}}
+       .replaceAll({{=<% %>=}}'{<% baseName %>}'<%={{ }}=%>, {{{paramName}}}{{^isString}}.toString(){{/isString}}){{/pathParams}};
+ 
+     // ignore: prefer_final_locals
+@@ -90,7 +90,7 @@
+ 
+     {{#isMultipart}}
+     bool hasFields = false;
+-    final mp = MultipartRequest('{{{httpMethod}}}', Uri.parse(path));
++    final mp = MultipartRequest('{{{httpMethod}}}', Uri.parse(apiPath));
+     {{#formParams}}
+     {{^isFile}}
+     if ({{{paramName}}} != null) {
+@@ -121,7 +121,7 @@
+     {{/isMultipart}}
+ 
+     return apiClient.invokeAPI(
+-      path,
++      apiPath,
+       '{{{httpMethod}}}',
+       queryParams,
+       postBody,

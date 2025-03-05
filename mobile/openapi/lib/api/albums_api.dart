@@ -26,7 +26,7 @@ class AlbumsApi {
   /// * [String] key:
   Future<Response> addAssetsToAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}/assets'
+    final apiPath = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -44,7 +44,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -87,7 +87,7 @@ class AlbumsApi {
   /// * [AddUsersDto] addUsersDto (required):
   Future<Response> addUsersToAlbumWithHttpInfo(String id, AddUsersDto addUsersDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}/users'
+    final apiPath = r'/albums/{id}/users'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -101,7 +101,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -137,7 +137,7 @@ class AlbumsApi {
   /// * [CreateAlbumDto] createAlbumDto (required):
   Future<Response> createAlbumWithHttpInfo(CreateAlbumDto createAlbumDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums';
+    final apiPath = r'/albums';
 
     // ignore: prefer_final_locals
     Object? postBody = createAlbumDto;
@@ -150,7 +150,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -184,7 +184,7 @@ class AlbumsApi {
   /// * [String] id (required):
   Future<Response> deleteAlbumWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}'
+    final apiPath = r'/albums/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -198,7 +198,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -228,7 +228,7 @@ class AlbumsApi {
   /// * [bool] withoutAssets:
   Future<Response> getAlbumInfoWithHttpInfo(String id, { String? key, bool? withoutAssets, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}'
+    final apiPath = r'/albums/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -249,7 +249,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -284,7 +284,7 @@ class AlbumsApi {
   /// Performs an HTTP 'GET /albums/statistics' operation and returns the [Response].
   Future<Response> getAlbumStatisticsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/statistics';
+    final apiPath = r'/albums/statistics';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -297,7 +297,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -331,7 +331,7 @@ class AlbumsApi {
   /// * [bool] shared:
   Future<Response> getAllAlbumsWithHttpInfo({ String? assetId, bool? shared, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums';
+    final apiPath = r'/albums';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -351,7 +351,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -393,7 +393,7 @@ class AlbumsApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> removeAssetFromAlbumWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}/assets'
+    final apiPath = r'/albums/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -407,7 +407,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -448,7 +448,7 @@ class AlbumsApi {
   /// * [String] userId (required):
   Future<Response> removeUserFromAlbumWithHttpInfo(String id, String userId,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}/user/{userId}'
+    final apiPath = r'/albums/{id}/user/{userId}'
       .replaceAll('{id}', id)
       .replaceAll('{userId}', userId);
 
@@ -463,7 +463,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -493,7 +493,7 @@ class AlbumsApi {
   /// * [UpdateAlbumDto] updateAlbumDto (required):
   Future<Response> updateAlbumInfoWithHttpInfo(String id, UpdateAlbumDto updateAlbumDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}'
+    final apiPath = r'/albums/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -507,7 +507,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PATCH',
       queryParams,
       postBody,
@@ -547,7 +547,7 @@ class AlbumsApi {
   /// * [UpdateAlbumUserDto] updateAlbumUserDto (required):
   Future<Response> updateAlbumUserWithHttpInfo(String id, String userId, UpdateAlbumUserDto updateAlbumUserDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/albums/{id}/user/{userId}'
+    final apiPath = r'/albums/{id}/user/{userId}'
       .replaceAll('{id}', id)
       .replaceAll('{userId}', userId);
 
@@ -562,7 +562,7 @@ class AlbumsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

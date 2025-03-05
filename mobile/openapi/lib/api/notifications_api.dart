@@ -24,7 +24,7 @@ class NotificationsApi {
   /// * [TemplateDto] templateDto (required):
   Future<Response> getNotificationTemplateWithHttpInfo(String name, TemplateDto templateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/notifications/templates/{name}'
+    final apiPath = r'/notifications/templates/{name}'
       .replaceAll('{name}', name);
 
     // ignore: prefer_final_locals
@@ -38,7 +38,7 @@ class NotificationsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -74,7 +74,7 @@ class NotificationsApi {
   /// * [SystemConfigSmtpDto] systemConfigSmtpDto (required):
   Future<Response> sendTestEmailWithHttpInfo(SystemConfigSmtpDto systemConfigSmtpDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/notifications/test-email';
+    final apiPath = r'/notifications/test-email';
 
     // ignore: prefer_final_locals
     Object? postBody = systemConfigSmtpDto;
@@ -87,7 +87,7 @@ class NotificationsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

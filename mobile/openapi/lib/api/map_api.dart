@@ -32,7 +32,7 @@ class MapApi {
   /// * [bool] withSharedAlbums:
   Future<Response> getMapMarkersWithHttpInfo({ DateTime? fileCreatedAfter, DateTime? fileCreatedBefore, bool? isArchived, bool? isFavorite, bool? withPartners, bool? withSharedAlbums, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/map/markers';
+    final apiPath = r'/map/markers';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -64,7 +64,7 @@ class MapApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -113,7 +113,7 @@ class MapApi {
   /// * [double] lon (required):
   Future<Response> reverseGeocodeWithHttpInfo(double lat, double lon,) async {
     // ignore: prefer_const_declarations
-    final path = r'/map/reverse-geocode';
+    final apiPath = r'/map/reverse-geocode';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -129,7 +129,7 @@ class MapApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
