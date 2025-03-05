@@ -97,8 +97,13 @@ class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
 
     def tokenize(self, text: str, language: str | None = None) -> dict[str, NDArray[np.int32]]:
         text = clean_text(text, canonicalize=self.canonicalize)
-        if self.is_nllb:
-            flores_code = code if language and (code := WEBLATE_TO_FLORES200.get(language)) else "eng_Latn"
+        if self.is_nllb and language is not None:
+            flores_code = WEBLATE_TO_FLORES200.get(language)
+            if flores_code is None:
+                log.warning(f"Language '{language}' not found, defaulting to 'en'")
+                flores_code = "eng_Latn"
+            else:
+                log.info(f"Using language '{language}' with code '{flores_code}'")
             text = f"{flores_code}{text}"
         tokens: Encoding = self.tokenizer.encode(text)
         return {"text": np.array([tokens.ids], dtype=np.int32)}
