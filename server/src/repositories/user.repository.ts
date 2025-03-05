@@ -5,7 +5,7 @@ import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
-import { UserStatus } from 'src/enum';
+import { AssetType, UserStatus } from 'src/enum';
 import { asUuid } from 'src/utils/database';
 
 const columns = [
@@ -209,11 +209,11 @@ export class UserRepository {
       .select((eb) => [
         eb.fn
           .countAll()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', 'IMAGE'), eb('assets.isVisible', '=', true)]))
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.isVisible', '=', true)]))
           .as('photos'),
         eb.fn
           .countAll()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', 'VIDEO'), eb('assets.isVisible', '=', true)]))
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.isVisible', '=', true)]))
           .as('videos'),
         eb.fn
           .coalesce(eb.fn.sum('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))
@@ -222,7 +222,9 @@ export class UserRepository {
           .coalesce(
             eb.fn
               .sum('exif.fileSizeInByte')
-              .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'IMAGE')])),
+              .filterWhere((eb) =>
+                eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', AssetType.IMAGE)]),
+              ),
             eb.lit(0),
           )
           .as('usagePhotos'),
@@ -230,7 +232,9 @@ export class UserRepository {
           .coalesce(
             eb.fn
               .sum('exif.fileSizeInByte')
-              .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'VIDEO')])),
+              .filterWhere((eb) =>
+                eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', AssetType.VIDEO)]),
+              ),
             eb.lit(0),
           )
           .as('usageVideos'),
