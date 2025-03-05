@@ -52,6 +52,7 @@ export const sendFile = async (
     const file = await handler();
     const cacheControlHeader = cacheControlHeaders[file.cacheControl];  
     if (cacheControlHeader) {
+      // set the header to Cache-Control
       res.set('Cache-Control', cacheControlHeader);
     }
 
