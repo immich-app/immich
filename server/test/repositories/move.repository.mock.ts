@@ -8,5 +8,7 @@ export const newMoveRepositoryMock = (): Mocked<RepositoryInterface<MoveReposito
     getByEntity: vitest.fn(),
     update: vitest.fn(),
     delete: vitest.fn(),
+    cleanMoveHistory: vitest.fn(),
+    cleanMoveHistorySingle: vitest.fn(),
   };
 };
