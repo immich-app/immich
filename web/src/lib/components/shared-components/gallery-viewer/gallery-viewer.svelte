@@ -183,7 +183,7 @@
       assetInteraction.focussedAssetId = assets[0].id;
     } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
       const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
-      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
+      if (currentIndex !== -1 && (currentIndex + 1) < assets.length) {
         assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
       }
     }
