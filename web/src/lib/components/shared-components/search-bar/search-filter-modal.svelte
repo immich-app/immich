@@ -2,7 +2,7 @@
   import type { SearchLocationFilter } from './search-location-section.svelte';
   import type { SearchDisplayFilters } from './search-display-section.svelte';
   import type { SearchDateFilter } from './search-date-section.svelte';
-  import { MediaType, QueryType, VALID_QUERY_TYPES } from '$lib/constants';
+  import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
 
   export type SearchFilter = {
     query: string;
@@ -61,7 +61,7 @@
 
   function defaultQueryType(): QueryType {
     const storedQueryType = localStorage.getItem('searchQueryType') as QueryType;
-    return VALID_QUERY_TYPES.has(storedQueryType) ? storedQueryType : QueryType.SMART;
+    return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
 
   let filter: SearchFilter = $state({
