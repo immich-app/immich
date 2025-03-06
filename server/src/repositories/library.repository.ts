@@ -26,6 +26,13 @@ const userColumns = [
   'users.profileChangedAt',
 ] as const;
 
+export enum AssetSyncResult {
+  DO_NOTHING,
+  UPDATE,
+  OFFLINE,
+  CHECK_OFFLINE,
+}
+
 const withOwner = (eb: ExpressionBuilder<DB, 'libraries'>) => {
   return jsonObjectFrom(eb.selectFrom('users').whereRef('users.id', '=', 'libraries.ownerId').select(userColumns)).as(
     'owner',

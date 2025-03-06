@@ -22,7 +22,7 @@ class FacesApi {
   /// * [AssetFaceCreateDto] assetFaceCreateDto (required):
   Future<Response> createFaceWithHttpInfo(AssetFaceCreateDto assetFaceCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces';
+    final apiPath = r'/faces';
 
     // ignore: prefer_final_locals
     Object? postBody = assetFaceCreateDto;
@@ -35,7 +35,7 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -63,7 +63,7 @@ class FacesApi {
   /// * [AssetFaceDeleteDto] assetFaceDeleteDto (required):
   Future<Response> deleteFaceWithHttpInfo(String id, AssetFaceDeleteDto assetFaceDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces/{id}'
+    final apiPath = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -77,7 +77,7 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -105,7 +105,7 @@ class FacesApi {
   /// * [String] id (required):
   Future<Response> getFacesWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces';
+    final apiPath = r'/faces';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -120,7 +120,7 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -159,7 +159,7 @@ class FacesApi {
   /// * [FaceDto] faceDto (required):
   Future<Response> reassignFacesByIdWithHttpInfo(String id, FaceDto faceDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/faces/{id}'
+    final apiPath = r'/faces/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -173,7 +173,7 @@ class FacesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
