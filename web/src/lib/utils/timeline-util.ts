@@ -17,7 +17,6 @@ export type DateGroup = {
   assets: AssetResponseDto[];
   assetsIntersecting: boolean[];
   height: number;
-  heightActual: boolean;
   intersecting: boolean;
   geometry: CommonJustifiedLayout;
 };

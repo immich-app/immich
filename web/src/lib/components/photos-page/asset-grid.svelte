@@ -4,7 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, AssetStore, splitBucketIntoDateGroups, type Viewport } from '$lib/stores/assets-store.svelte';
+  import { AssetBucket, AssetStore, splitBucketIntoDateGroups } from '$lib/stores/assets-store.svelte';
   import { locale, showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -14,20 +14,17 @@
   import { navigate } from '$lib/utils/navigation';
   import { formatGroupTitle, type ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
-  import { throttle } from 'lodash-es';
+  import { throttle, update } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
   import ShowShortcuts from '../shared-components/show-shortcuts.svelte';
   import AssetDateGroup from './asset-date-group.svelte';
   import DeleteAssetDialog from './delete-asset-dialog.svelte';
-
-  import { resizeObserver } from '$lib/actions/resize-observer';
-
+  import { resizeObserver, type OnResizeCallback } from '$lib/actions/resize-observer';
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { page } from '$app/stores';
   import type { UpdatePayload } from 'vite';
-  import { isTimelineScrolling } from '$lib/stores/timeline.store';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
@@ -73,31 +70,22 @@
 
   let { isViewing: showAssetViewer, asset: viewingAsset, preloadAssets, gridScrollTarget } = assetViewingStore;
 
-  let viewport: Viewport = $state({
-    height: 0,
-    width: 0,
-  });
-
   let element: HTMLElement | undefined = $state();
+
   let timelineElement: HTMLElement | undefined = $state();
   let showShortcuts = $state(false);
   let showSkeleton = $state(true);
-  let internalScroll = false;
-
   let scrubBucketPercent = $state(0);
   let scrubBucket: { bucketDate: string | undefined } | undefined = $state();
   let scrubOverallPercent: number = $state(0);
-  let topSectionHeight = $state(0);
-  let topSectionOffset = $state(0);
+
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
+  let test = $state({ width: 0, height: 0 });
+
   const completeNav = async () => {
-    if (internalScroll) {
-      internalScroll = false;
-      return;
-    }
     if ($gridScrollTarget?.at) {
       const bucket = await assetStore.scheduleScrollToAssetId($gridScrollTarget, () => {
         element?.scrollTo({ top: 0 });
@@ -106,7 +94,7 @@
       if (bucket) {
         const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
         if (height) {
-          element?.scrollTo({ top: height + topSectionHeight });
+          element?.scrollTo({ top: height });
           showSkeleton = false;
           assetStore.updateIntersections();
         }
@@ -166,16 +154,20 @@
     return () => void 0;
   };
 
+  const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
+  const compensateScrollCallback = (delta: number) => element?.scrollBy(0, delta);
+  const topSectionResizeObserver: OnResizeCallback = ({ target, height }) =>
+    (assetStore.topSectionHeight = height + target.offsetTop);
+
   onMount(() => {
-    void assetStore.init().then(() => (assetStore.connect(), updateSlidingWindow()));
+    assetStore.setCompensateScrollCallback(compensateScrollCallback);
     if (!enableRouting) {
       showSkeleton = false;
     }
-    const dispose = hmrSupport();
+    const disposeHmr = hmrSupport();
     return () => {
-      assetStore.disconnect();
-      assetStore.destroy();
-      dispose();
+      assetStore.setCompensateScrollCallback(null);
+      disposeHmr();
     };
   });
 
@@ -191,19 +183,18 @@
   }
 
   const getMaxScrollPercent = () =>
-    (assetStore.timelineHeight + bottomSectionHeight + topSectionHeight - viewport.height) /
-    (assetStore.timelineHeight + bottomSectionHeight + topSectionHeight);
+    (assetStore.timelineHeight + bottomSectionHeight + assetStore.topSectionHeight - assetStore.viewport.height) /
+    (assetStore.timelineHeight + bottomSectionHeight + assetStore.topSectionHeight);
 
   const getMaxScroll = () => {
     if (!element || !timelineElement) {
       return 0;
     }
-
-    return topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
+    return assetStore.topSectionHeight + bottomSectionHeight + (timelineElement.clientHeight - element.clientHeight);
   };
 
   const scrollToBucketAndOffset = (bucket: AssetBucket, bucketScrollPercent: number) => {
-    const topOffset = getOffset(bucket.bucketDate) + topSectionHeight + topSectionOffset;
+    const topOffset = getOffset(bucket.bucketDate) + assetStore.topSectionHeight;
     const maxScrollPercent = getMaxScrollPercent();
     const delta = bucket.bucketHeight * bucketScrollPercent;
     const scrollTop = (topOffset + delta) * maxScrollPercent;
@@ -219,7 +210,7 @@
     scrollPercent: number,
     bucketScrollPercent: number,
   ) => {
-    if (!bucketDate || assetStore.timelineHeight < viewport.height * 2) {
+    if (!bucketDate || assetStore.timelineHeight < assetStore.viewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust - use use the overall percent instead
       const maxScroll = getMaxScroll();
       const offset = maxScroll * scrollPercent;
@@ -237,24 +228,14 @@
   };
   const onScrub = throttle(_onScrub, 16, { leading: false, trailing: true });
 
-  let scrollObserverTimer: NodeJS.Timeout;
-
   const _handleTimelineScroll = () => {
-    $isTimelineScrolling = true;
-    if (scrollObserverTimer) {
-      clearTimeout(scrollObserverTimer);
-    }
-    scrollObserverTimer = setTimeout(() => {
-      $isTimelineScrolling = false;
-    }, 1000);
-
     leadout = false;
 
     if (!element) {
       return;
     }
 
-    if (assetStore.timelineHeight < viewport.height * 2) {
+    if (assetStore.timelineHeight < assetStore.viewport.height * 2) {
       // edge case - scroll limited due to size of content, must adjust -  use the overall percent instead
       const maxScroll = getMaxScroll();
       scrubOverallPercent = Math.min(1, element.scrollTop / maxScroll);
@@ -263,7 +244,7 @@
       scrubBucketPercent = 0;
     } else {
       let top = element?.scrollTop;
-      if (top < topSectionHeight) {
+      if (top < assetStore.topSectionHeight) {
         // in the lead-in area
         scrubBucket = undefined;
         scrubBucketPercent = 0;
@@ -278,7 +259,7 @@
 
       // create virtual buckets....
       const vbuckets = [
-        { bucketHeight: topSectionHeight, bucketDate: undefined },
+        { bucketHeight: assetStore.topSectionHeight, bucketDate: undefined },
         ...assetStore.buckets,
         { bucketHeight: bottomSectionHeight, bucketDate: undefined },
       ];
@@ -300,12 +281,6 @@
         scrubOverallPercent = 1;
       }
     }
-  };
-
-  const updateSlidingWindow = () => {
-    const top = element?.scrollTop || 0;
-    const bottom = viewport.height + top;
-    assetStore.updateSlidingWindow({ topSectionHeight, top, bottom });
   };
 
   const handleTimelineScroll = throttle(_handleTimelineScroll, 16, { leading: false, trailing: true });
@@ -669,8 +644,8 @@
   <Scrubber
     invisible={showSkeleton}
     {assetStore}
-    height={viewport.height}
-    timelineTopOffset={topSectionHeight}
+    height={assetStore.viewport.height}
+    timelineTopOffset={assetStore.topSectionHeight}
     timelineBottomOffset={bottomSectionHeight}
     {leadout}
     {scrubOverallPercent}
@@ -685,10 +660,8 @@
   id="asset-grid"
   class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
   tabindex="-1"
-  use:resizeObserver={({ height, width }) => {
-    viewport = { height, width };
-    void assetStore.updateViewport(viewport);
-  }}
+  bind:clientHeight={assetStore.viewportHeight}
+  bind:clientWidth={assetStore.viewportWidth}
   bind:this={element}
   onscroll={() => (handleTimelineScroll(), updateSlidingWindow())}
 >
@@ -699,7 +672,7 @@
     style:height={assetStore.timelineHeight + 500 + 'px'}
   >
     <section
-      use:resizeObserver={({ target, height }) => ((topSectionHeight = height), (topSectionOffset = target.offsetTop))}
+      use:resizeObserver={topSectionResizeObserver}
       class:invisible={showSkeleton}
       style:position="absolute"
       style:left="0"

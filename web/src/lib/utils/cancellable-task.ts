@@ -37,17 +37,19 @@ export class CancellableTask {
     // if there is a cancel token, task is currently executing, so wait on the promise. If it
     // isn't, then  the task is in new state, it hasn't been loaded, nor has it been executed.
     // in either case, we wait on the promise.
-    // debugger
     await this.complete;
   }
 
-  async execute<F extends (abortSignal: AbortSignal) => Promise<void>>(f: F, preventCancel: boolean): Promise<'DONE' | 'WAITED' | 'LOADED' | 'CANCELED' | 'ERRORED'> {
+  async execute<F extends (abortSignal: AbortSignal) => Promise<void>>(
+    f: F,
+    preventCancel: boolean,
+  ): Promise<'DONE' | 'WAITED' | 'LOADED' | 'CANCELED' | 'ERRORED'> {
     if (this.isLoaded) {
-      return 'DONE'
+      return 'DONE';
     }
 
     // if promise is pending, wait on previous request instead.
-    if (this.cancelToken != null) {
+    if (this.cancelToken) {
       // if promise is pending, and preventCancel is requested,
       // do not allow transition from prevent cancel to allow cancel.
       if (!this.isPreventCancel && preventCancel) {
@@ -70,7 +72,7 @@ export class CancellableTask {
         return 'CANCELED';
       }
       this.errored(error);
-      return 'ERRORED'
+      return 'ERRORED';
     } finally {
       this.cancelToken = null;
     }
@@ -91,6 +93,15 @@ export class CancellableTask {
         // We this message with an empty reject handler, since waiting on a bucket is optional.
         void 0,
     );
+  }
+
+  // will reset this job back to the initial state (isLoaded=false, no errors, etc)
+  async reset() {
+    this.cancel();
+    if (this.cancelToken) {
+      await this.waitForCompletion();
+    }
+    this.init();
   }
 
   cancel() {

@@ -89,17 +89,17 @@ describe('AssetStore', () => {
       expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
     });
 
-    // it('cancels bucket loading', async () => {
-    //   const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
-    //   const loadPromise = assetStore.loadBucket(bucket!.bucketDate);
+    it('cancels bucket loading', async () => {
+      const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
+      const loadPromise = assetStore.loadBucket(bucket!.bucketDate);
 
-    //   const abortSpy = vi.spyOn(bucket!.cancelToken!, 'abort');
-    //   bucket?.cancel();
-    //   expect(abortSpy).toBeCalledTimes(1);
+      const abortSpy = vi.spyOn(bucket!.cancelToken!, 'abort');
+      bucket?.cancel();
+      expect(abortSpy).toBeCalledTimes(1);
 
-    //   await loadPromise;
-    //   expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')?.assets.length).toEqual(0);
-    // });
+      await loadPromise;
+      expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')?.assets.length).toEqual(0);
+    });
 
     it('prevents loading buckets multiple times', async () => {
       await Promise.all([
@@ -214,7 +214,7 @@ describe('AssetStore', () => {
     });
 
     // disabled due to the wasm Justified Layout import
-    it.skip('ignores trashed assets when isTrashed is true', () => {
+    it('ignores trashed assets when isTrashed is true', () => {
       const asset = assetFactory.build({ isTrashed: false });
       const trashedAsset = assetFactory.build({ isTrashed: true });
 

@@ -87,7 +87,6 @@ class Adapter {
   }
 }
 
-
 export function justifiedLayout(assets: AssetResponseDto[], options: CommonLayoutOptions) {
   const adapter = {
     targetRowHeight: options.rowHeight,

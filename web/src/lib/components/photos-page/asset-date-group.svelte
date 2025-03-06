@@ -35,9 +35,6 @@
     onSelectAssetCandidates,
   }: Props = $props();
 
-  const assetStore = $derived(bucket.store);
-  const dateGroups = $derived(bucket.dateGroups);
-
   let isMouseOverGroup = $state(false);
   let hoveredDateGroup = $state();
 
@@ -77,7 +74,7 @@
   };
 </script>
 
-{#each dateGroups as dateGroup, groupIndex (dateGroup.date)}
+{#each bucket.dateGroups as dateGroup, groupIndex (dateGroup.date)}
   {@const geometry = dateGroup.geometry!}
   {@const display = dateGroup.intersecting || true}
   {@const absoluteWidth = dateGroup.left}
@@ -137,7 +134,6 @@
           >
             <Thumbnail
               {dateGroup}
-              {assetStore}
               showStackedIcon={withStacked}
               {showArchiveIcon}
               asset={intersectingAsset.asset}
@@ -146,9 +142,9 @@
               onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
               onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, intersectingAsset.asset)}
               selected={assetInteraction.selectedAssets.has(intersectingAsset.asset) ||
-                assetStore.albumAssets.has(intersectingAsset.asset.id)}
+                dateGroup.bucket.store.albumAssets.has(intersectingAsset.asset.id)}
               selectionCandidate={assetInteraction.assetSelectionCandidates.has(intersectingAsset.asset)}
-              disabled={assetStore.albumAssets.has(intersectingAsset.asset.id)}
+              disabled={dateGroup.bucket.store.albumAssets.has(intersectingAsset.asset.id)}
               thumbnailWidth={intersectingAsset.width}
               thumbnailHeight={intersectingAsset.height}
             />

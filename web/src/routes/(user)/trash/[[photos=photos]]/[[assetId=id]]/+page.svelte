@@ -36,8 +36,10 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const options = { isTrashed: true };
-  const assetStore = new AssetStore(options);
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ isTrashed: true }));
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   const handleEmptyTrash = async () => {
@@ -92,10 +94,6 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
 {#if assetInteraction.selectionActive}

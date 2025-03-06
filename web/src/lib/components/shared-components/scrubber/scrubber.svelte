@@ -1,10 +1,9 @@
 <script lang="ts">
   import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
-  import { DateTime } from 'luxon';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
-  import { isTimelineScrolling } from '$lib/stores/timeline.store';
-  import { fade, fly } from 'svelte/transition';
+  import { DateTime } from 'luxon';
+  import { fly } from 'svelte/transition';
 
   interface Props {
     timelineTopOffset?: number;
@@ -240,16 +239,7 @@
     <div
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
-    >
-      {#if $isTimelineScrolling && scrubBucket?.bucketDate}
-        <p
-          transition:fade={{ duration: 200 }}
-          class="truncate pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
-        >
-          {assetStore.getBucketByDate(scrubBucket.bucketDate)?.bucketDateFormattted}
-        </p>
-      {/if}
-    </div>
+    ></div>
   {/if}
   <div id="lead-in" class="relative" style:height={relativeTopOffset + 'px'} data-label={segments.at(0)?.dateFormatted}>
     {#if relativeTopOffset > 6}

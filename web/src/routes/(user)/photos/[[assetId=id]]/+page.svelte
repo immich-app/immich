@@ -33,7 +33,10 @@
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true }));
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   let selectedAssets = $derived(assetInteraction.selectedAssetsArray);
@@ -66,10 +69,6 @@
     assetStore.addAssets([motion]);
     assetStore.updateAssets([still]);
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 
   beforeNavigate(() => {
     isFaceEditMode.value = false;

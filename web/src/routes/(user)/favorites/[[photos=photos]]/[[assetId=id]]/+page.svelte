@@ -29,7 +29,10 @@
 
   let { data }: Props = $props();
 
-  const assetStore = new AssetStore({ isFavorite: true });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ isFavorite: true }));
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -38,10 +41,6 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
 <!-- Multiselection mode app bar -->
