@@ -233,23 +233,28 @@ export class StorageTemplateService extends BaseService {
 
       switch (extension) {
         case 'jpeg':
-        case 'jpe':
+        case 'jpe': {
           extension = 'jpg';
           break;
-        case 'tif':
+        }
+        case 'tif': {
           extension = 'tiff';
           break;
-        case '3gpp':
+        }
+        case '3gpp': {
           extension = '3gp';
           break;
+        }
         case 'mpeg':
-        case 'mpe':
+        case 'mpe': {
           extension = 'mpg';
           break;
+        }
         case 'm2ts':
-        case 'm2t':
+        case 'm2t': {
           extension = 'mts';
           break;
+        }
       }
 
       let albumName = null;
