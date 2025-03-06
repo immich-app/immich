@@ -87,22 +87,18 @@ class DriftUserRepository extends DriftDatabaseRepository
   const DriftUserRepository(this._db) : super(_db);
 
   @override
-  Future<void> delete(List<int> ids) async {
-    await transaction(() async {
-      await _db.managers.userEntity.filter((row) => row.id.isIn(ids)).delete();
-    });
+  Future<void> delete(List<int> ids) {
+    return _db.managers.userEntity.filter((row) => row.id.isIn(ids)).delete();
   }
 
   @override
-  Future<void> deleteAll() async {
-    await transaction(() async {
-      await _db.managers.userEntity.delete();
-    });
+  Future<void> deleteAll() {
+    return _db.managers.userEntity.delete();
   }
 
   @override
-  Future<User?> get(int id) async {
-    return await _db.managers.userEntity
+  Future<User?> get(int id) {
+    return _db.managers.userEntity
         .filter((row) => row.id.equals(id))
         .getSingleOrNull();
   }
@@ -110,62 +106,45 @@ class DriftUserRepository extends DriftDatabaseRepository
   @override
   Future<List<User>> getAll({SortUserBy? sortBy}) async {
     final query = _db.userEntity.select();
-    switch (sortBy) {
-      case SortUserBy.id:
-        query.orderBy([(u) => OrderingTerm(expression: u.id)]);
-        break;
-      default:
-        break;
+    if (sortBy != null) {
+      query.orderBy([(u) => OrderingTerm(expression: u.id)]);
     }
     return await query.get();
   }
 
   @override
-  Future<User?> getByUserId(String id) async {
-    return await _db.managers.userEntity
+  Future<User?> getByUserId(String id) {
+    return _db.managers.userEntity
         .filter((row) => row.uid.equals(id))
         .getSingleOrNull();
   }
 
   @override
-  Future<List<User?>> getByUserIds(List<String> ids) async {
-    return await _db.managers.userEntity
-        .filter((row) => row.uid.isIn(ids))
-        .get();
+  Future<List<User?>> getByUserIds(List<String> ids) {
+    return _db.managers.userEntity.filter((row) => row.uid.isIn(ids)).get();
   }
 
   @override
   Future<bool> insert(User user) async {
-    return await transaction(() async {
-      return await _db.userEntity.insertOnConflictUpdate(user.toCompanion()) ==
-          1;
-    });
+    return await _db.userEntity.insertOnConflictUpdate(user.toCompanion()) == 1;
   }
 
   @override
-  Future<User> update(User user) async {
-    return await transaction(() async {
-      return await _db.userEntity.insertReturning(
-        user.toCompanion(),
-        onConflict: DoUpdate((_) => user.toCompanion()),
-      );
-    });
+  Future<User> update(User user) {
+    return _db.userEntity.insertReturning(
+      user.toCompanion(),
+      onConflict: DoUpdate((_) => user.toCompanion()),
+    );
   }
 
   @override
   Future<bool> updateAll(List<User> users) async {
-    await transaction(
-      () async => await _db.batch((batch) {
-        final rows = users.map((u) => u.toCompanion());
-        for (final row in rows) {
-          batch.insert(
-            _db.userEntity,
-            row,
-            onConflict: DoUpdate((_) => row),
-          );
-        }
-      }),
-    );
+    await _db.batch((batch) {
+      final rows = users.map((u) => u.toCompanion());
+      for (final row in rows) {
+        batch.insert(_db.userEntity, row, onConflict: DoUpdate((_) => row));
+      }
+    });
 
     return true;
   }
