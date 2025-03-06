@@ -31,7 +31,6 @@
   import { recentAlbumsDropdown } from '$lib/stores/preferences.store';
   import RecentAlbums from '$lib/components/shared-components/side-bar/recent-albums.svelte';
   import { fly } from 'svelte/transition';
-  import { isOpen } from '$lib/stores/side-bar.store';
 
   let isArchiveSelected: boolean = $state(false);
   let isFavoritesSelected: boolean = $state(false);
