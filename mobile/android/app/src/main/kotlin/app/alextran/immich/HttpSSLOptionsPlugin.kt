@@ -82,7 +82,7 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
   }
 
   @SuppressLint("CustomX509TrustManager")
-  class AllowSelfSignedTrustManager(private val host: String?) : X509ExtendedTrustManager() {
+  class AllowSelfSignedTrustManager(private val serverHost: String?) : X509ExtendedTrustManager() {
     private val defaultTrustManager: X509ExtendedTrustManager = getDefaultTrustManager()
 
     override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) =
@@ -97,23 +97,23 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
     ) = defaultTrustManager.checkClientTrusted(chain, authType, engine)
 
     override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
-      if (host == null) return
+      if (serverHost == null) return
       defaultTrustManager.checkServerTrusted(chain, authType)
     }
 
     override fun checkServerTrusted(
       chain: Array<out X509Certificate>?, authType: String?, socket: Socket?
     ) {
-      if (host == null) return
+      if (serverHost == null) return
       val socketAddress = socket?.remoteSocketAddress
-      if (socketAddress is InetSocketAddress && socketAddress.hostName == host) return
+      if (socketAddress is InetSocketAddress && socketAddress.hostName == serverHost) return
       defaultTrustManager.checkServerTrusted(chain, authType, socket)
     }
 
     override fun checkServerTrusted(
       chain: Array<out X509Certificate>?, authType: String?, engine: SSLEngine?
     ) {
-      if (host == null || engine?.peerHost == host) return
+      if (serverHost == null || engine?.peerHost == serverHost) return
       defaultTrustManager.checkServerTrusted(chain, authType, engine)
     }
 
