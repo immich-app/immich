@@ -49,12 +49,12 @@ class MainActivity : FlutterActivity() {
     }
 
     private fun moveToTrash(fileName: String): Boolean {
-    val uri = getFileUri(fileName)
+        val uri = getFileUri(fileName)
 
-    Log.e("FILE_URI", uri.toString())
+        Log.e("FILE_URI", uri.toString())
 
-    return uri?.let { moveToTrash(it) } ?: false
-}
+        return uri?.let { moveToTrash(it) } ?: false
+    }
 
     private fun moveToTrash(contentUri: Uri): Boolean {
         return try {
@@ -88,11 +88,11 @@ class MainActivity : FlutterActivity() {
 
 
     private fun untrashImage(name: String): Boolean {
-    val uri = getTrashedFileUri(contentResolver,name)
-    Log.e("FILE_URI", uri.toString())
+        val uri = getTrashedFileUri(contentResolver,name)
+        Log.e("FILE_URI", uri.toString())
 
-    return uri?.let { untrashImage(it) } ?: false
-}
+        return uri?.let { untrashImage(it) } ?: false
+    }
 
 
     private fun untrashImage(contentUri: Uri): Boolean {
