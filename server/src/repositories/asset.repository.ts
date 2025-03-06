@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';
@@ -24,7 +24,8 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
+import { anyUuid, asUuid, mapUpsertColumns, unnest } from 'src/utils/database';
+import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
 export type AssetStats = Record<AssetType, number>;
@@ -189,6 +190,10 @@ export class AssetRepository {
       .values(asset)
       .returningAll()
       .executeTakeFirst() as any as Promise<AssetEntityPlaceholder>;
+  }
+
+  createAll(assets: Insertable<Assets>[]): Promise<AssetEntity[]> {
+    return this.db.insertInto('assets').values(assets).returningAll().execute() as any as Promise<AssetEntity[]>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
@@ -384,6 +389,17 @@ export class AssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
+  async getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+    const builder = this.db
+      .selectFrom('assets')
+      .select('id')
+      .where('libraryId', '=', asUuid(libraryId))
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0);
+    const items = await builder.execute();
+    return paginationHelper(items as any as AssetEntity[], pagination.take);
+  }
+
   /**
    * Get assets by device's Id on the database
    * @param ownerId
@@ -468,6 +484,10 @@ export class AssetRepository {
       return;
     }
     await this.db.updateTable('assets').set(options).where('id', '=', anyUuid(ids)).execute();
+  }
+
+  async updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void> {
+    await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
   @GenerateSql({
@@ -938,5 +958,65 @@ export class AssetRepository {
           .doUpdateSet(() => mapUpsertColumns('asset_files', values[0], ASSET_FILE_CONFLICT_KEYS)),
       )
       .execute();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
+  })
+  async detectOfflineExternalAssets(
+    libraryId: string,
+    importPaths: string[],
+    exclusionPatterns: string[],
+  ): Promise<UpdateResult> {
+    const paths = importPaths.map((importPath) => `${importPath}%`);
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+
+    return this.db
+      .updateTable('assets')
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where('isOffline', '=', false)
+      .where('isExternal', '=', true)
+      .where('libraryId', '=', asUuid(libraryId))
+      .where((eb) =>
+        eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
+      )
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, paths: [DummyValue.STRING] }],
+  })
+  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
+    const result = await this.db
+      .selectFrom(unnest(paths).as('path'))
+      .select('path')
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            this.db
+              .selectFrom('assets')
+              .select('originalPath')
+              .whereRef('assets.originalPath', '=', eb.ref('path'))
+              .where('libraryId', '=', asUuid(libraryId))
+              .where('isExternal', '=', true),
+          ),
+        ),
+      )
+      .execute();
+
+    return result.map((row) => row.path as string);
+  }
+
+  async getLibraryAssetCount(libraryId: string): Promise<number> {
+    const { count } = await this.db
+      .selectFrom('assets')
+      .select((eb) => eb.fn.countAll().as('count'))
+      .where('libraryId', '=', asUuid(libraryId))
+      .executeTakeFirstOrThrow();
+
+    return Number(count);
   }
 }

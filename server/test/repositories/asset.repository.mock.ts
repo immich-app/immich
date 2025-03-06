@@ -5,6 +5,7 @@ import { Mocked, vitest } from 'vitest';
 export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetRepository>> => {
   return {
     create: vitest.fn(),
+    createAll: vitest.fn(),
     upsertExif: vitest.fn(),
     upsertJobStatus: vitest.fn(),
     getByDayOfYear: vitest.fn(),
@@ -23,6 +24,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
     getAllByDeviceId: vitest.fn(),
     getLivePhotoCount: vitest.fn(),
+    getAllInLibrary: vitest.fn(),
+    getLibraryAssetCount: vitest.fn(),
     updateAll: vitest.fn(),
     updateDuplicates: vitest.fn(),
     getByLibraryIdAndOriginalPath: vitest.fn(),
@@ -39,5 +42,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getDuplicates: vitest.fn(),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
+    detectOfflineExternalAssets: vitest.fn(),
+    filterNewExternalAssetPaths: vitest.fn(),
+    updateByLibraryId: vitest.fn(),
   };
 };

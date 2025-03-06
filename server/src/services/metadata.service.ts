@@ -662,10 +662,10 @@ export class MetadataService extends BaseService {
     let dateTimeOriginal = dateTime?.toDate();
     let localDateTime = dateTime?.toDateTime().setZone('UTC', { keepLocalTime: true }).toJSDate();
     if (!localDateTime || !dateTimeOriginal) {
-      this.logger.debug(
-        `No exif date time found, falling back on earliest of file creation and modification for assset ${asset.id}: ${asset.originalPath}`,
-      );
       const earliestDate = this.earliestDate(asset.fileModifiedAt, asset.fileCreatedAt);
+      this.logger.debug(
+        `No exif date time found, falling back on ${earliestDate.toISOString()}, earliest of file creation and modification for assset ${asset.id}: ${asset.originalPath}`,
+      );
       dateTimeOriginal = earliestDate;
       localDateTime = earliestDate;
     }
