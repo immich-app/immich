@@ -561,7 +561,7 @@ export class AssetRepository {
     return this.getById(asset.id, { exifInfo: true, faces: { person: true } }) as Promise<AssetEntity>;
   }
 
-  async remove(asset: AssetEntity): Promise<void> {
+  async remove(asset: { id: string }): Promise<void> {
     await this.db.deleteFrom('assets').where('id', '=', asUuid(asset.id)).execute();
   }
 
