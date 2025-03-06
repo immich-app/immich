@@ -45,6 +45,7 @@ export const sendFile = async (
   handler: () => Promise<ImmichFileResponse>,
   logger: LoggingRepository,
 ): Promise<void> => {
+  //Promisified version of 'res.sendFile' for cleaner async handling
   const _sendFile = (path: string, options: SendFileOptions) =>
     promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
@@ -61,6 +62,7 @@ export const sendFile = async (
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
+    //Configure options for serving
     const options: SendFileOptions = { dotfiles: 'allow' };
     if (!isAbsolute(file.path)) {
       options.root = process.cwd();
