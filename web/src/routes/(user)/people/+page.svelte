@@ -274,12 +274,12 @@
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
-    newName = person.name;
+    edittingPerson = person;
   };
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
     try {
-      if (name == targetPerson.name || showMergeModal) {
+      if (name == targetPerson.name) {
         return;
       }
 
