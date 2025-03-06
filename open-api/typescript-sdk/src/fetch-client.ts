@@ -3580,7 +3580,8 @@ export enum ManualJobName {
     TagCleanup = "tag-cleanup",
     UserCleanup = "user-cleanup",
     MemoryCleanup = "memory-cleanup",
-    MemoryCreate = "memory-create"
+    MemoryCreate = "memory-create",
+    BackupDatabase = "backup-database"
 }
 export enum JobName {
     ThumbnailGeneration = "thumbnailGeneration",
