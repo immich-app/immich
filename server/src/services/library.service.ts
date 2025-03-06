@@ -24,7 +24,6 @@ import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -341,34 +340,37 @@ export class LibraryService extends BaseService {
 
     await this.assetRepository.updateByLibraryId(libraryId, { deletedAt: new Date() });
 
-    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId, withDeleted: true }),
-    );
-
     let assetsFound = false;
+    let chunk: string[] = [];
+
+    const queueChunk = async () => {
+      if (chunk.length > 0) {
+        assetsFound = true;
+        this.logger.debug(`Queueing deletion of ${chunk.length} asset(s) in library ${libraryId}`);
+        await this.jobRepository.queueAll(
+          chunk.map((id) => ({ name: JobName.ASSET_DELETION, data: { id, deleteOnDisk: false } })),
+        );
+        chunk = [];
+      }
+    };
 
     this.logger.debug(`Will delete all assets in library ${libraryId}`);
-    for await (const assets of assetPagination) {
-      if (assets.length > 0) {
-        assetsFound = true;
-      }
+    const assets = this.libraryRepository.streamAssetIds(libraryId);
+    for await (const asset of assets) {
+      chunk.push(asset.id);
 
-      this.logger.debug(`Queueing deletion of ${assets.length} asset(s) in library ${libraryId}`);
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: asset.id,
-            deleteOnDisk: false,
-          },
-        })),
-      );
+      if (chunk.length >= 10_000) {
+        await queueChunk();
+      }
     }
+
+    await queueChunk();
 
     if (!assetsFound) {
       this.logger.log(`Deleting library ${libraryId}`);
       await this.libraryRepository.delete(libraryId);
     }
+
     return JobStatus.SUCCESS;
   }
 
@@ -676,7 +678,6 @@ export class LibraryService extends BaseService {
     }
 
     const assetCount = await this.assetRepository.getLibraryAssetCount(job.id);
-
     if (!assetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);
       return JobStatus.SUCCESS;
@@ -702,42 +703,47 @@ export class LibraryService extends BaseService {
       return JobStatus.SUCCESS;
     }
 
-    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
+    let chunk: string[] = [];
+    let count = 0;
 
-    const existingAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAllInLibrary(pagination, job.id),
-    );
+    const queueChunk = async () => {
+      if (chunk.length > 0) {
+        count += chunk.length;
 
-    let currentAssetCount = 0;
-    for await (const assets of existingAssets) {
-      if (assets.length === 0) {
-        throw new BadRequestException(`Failed to get assets for library ${job.id}`);
+        await this.jobRepository.queue({
+          name: JobName.LIBRARY_SYNC_ASSETS,
+          data: {
+            libraryId: library.id,
+            importPaths: library.importPaths,
+            exclusionPatterns: library.exclusionPatterns,
+            assetIds: chunk.map((id) => id),
+            progressCounter: count,
+            totalAssets: assetCount,
+          },
+        });
+        chunk = [];
+
+        const completePercentage = ((100 * count) / assetCount).toFixed(1);
+
+        this.logger.log(
+          `Queued check of ${count} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
+        );
       }
+    };
 
-      currentAssetCount += assets.length;
+    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
+    const existingAssets = this.libraryRepository.streamAssetIds(library.id);
 
-      await this.jobRepository.queue({
-        name: JobName.LIBRARY_SYNC_ASSETS,
-        data: {
-          libraryId: library.id,
-          importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
-          assetIds: assets.map(({ id }) => id),
-          progressCounter: currentAssetCount,
-          totalAssets: assetCount,
-        },
-      });
-
-      const completePercentage = ((100 * currentAssetCount) / assetCount).toFixed(1);
-
-      this.logger.log(
-        `Queued check of ${currentAssetCount} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
-      );
+    for await (const asset of existingAssets) {
+      chunk.push(asset.id);
+      if (chunk.length === 10_000) {
+        await queueChunk();
+      }
     }
 
-    if (currentAssetCount) {
-      this.logger.log(`Finished queuing ${currentAssetCount} asset check(s) for library ${library.id}`);
-    }
+    await queueChunk();
+
+    this.logger.log(`Finished queuing ${count} asset check(s) for library ${library.id}`);
 
     return JobStatus.SUCCESS;
   }

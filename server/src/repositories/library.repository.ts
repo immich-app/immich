@@ -144,4 +144,8 @@ export class LibraryRepository {
       total: Number(stats.photos) + Number(stats.videos),
     };
   }
+
+  streamAssetIds(libraryId: string) {
+    return this.db.selectFrom('assets').select(['id']).where('libraryId', '=', libraryId).stream();
+  }
 }
