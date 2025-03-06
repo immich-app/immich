@@ -11,7 +11,6 @@
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     notificationController,
     NotificationType,
@@ -335,12 +334,12 @@
     );
   };
 
-  const handleMergeCancel = () => {
+  const handleMergeCancel = async () => {
     if (!personMerge1) {
       return;
     }
 
-    updateName(personMerge1.id, newName);
+    await updateName(personMerge1.id, newName);
     showMergeModal = false;
   };
 </script>
