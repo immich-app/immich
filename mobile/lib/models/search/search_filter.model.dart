@@ -5,10 +5,11 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 
 class SearchLocationFilter {
-  String? country;
-  String? state;
-  String? city;
-  SearchLocationFilter({
+  final String? country;
+  final String? state;
+  final String? city;
+
+  const SearchLocationFilter({
     this.country,
     this.state,
     this.city,
@@ -65,9 +66,10 @@ class SearchLocationFilter {
 }
 
 class SearchCameraFilter {
-  String? make;
-  String? model;
-  SearchCameraFilter({
+  final String? make;
+  final String? model;
+
+  const SearchCameraFilter({
     this.make,
     this.model,
   });
@@ -116,9 +118,10 @@ class SearchCameraFilter {
 }
 
 class SearchDateFilter {
-  DateTime? takenBefore;
-  DateTime? takenAfter;
-  SearchDateFilter({
+  final DateTime? takenBefore;
+  final DateTime? takenAfter;
+
+  const SearchDateFilter({
     this.takenBefore,
     this.takenAfter,
   });
@@ -172,10 +175,11 @@ class SearchDateFilter {
 }
 
 class SearchDisplayFilters {
-  bool isNotInAlbum = false;
-  bool isArchive = false;
-  bool isFavorite = false;
-  SearchDisplayFilters({
+  final bool isNotInAlbum;
+  final bool isArchive;
+  final bool isFavorite;
+
+  const SearchDisplayFilters({
     required this.isNotInAlbum,
     required this.isArchive,
     required this.isFavorite,
@@ -233,19 +237,19 @@ class SearchDisplayFilters {
 }
 
 class SearchFilter {
-  String? context;
-  String? filename;
-  String? description;
-  Set<Person> people;
-  SearchLocationFilter location;
-  SearchCameraFilter camera;
-  SearchDateFilter date;
-  SearchDisplayFilters display;
+  final String? context;
+  final String? filename;
+  final String? description;
+  final Set<Person> people;
+  final SearchLocationFilter location;
+  final SearchCameraFilter camera;
+  final SearchDateFilter date;
+  final SearchDisplayFilters display;
 
   // Enum
-  AssetType mediaType;
+  final AssetType mediaType;
 
-  SearchFilter({
+  const SearchFilter({
     this.context,
     this.filename,
     this.description,
