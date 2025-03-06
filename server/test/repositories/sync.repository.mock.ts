@@ -11,5 +11,11 @@ export const newSyncRepositoryMock = (): Mocked<RepositoryInterface<SyncReposito
     getUserDeletes: vitest.fn(),
     getPartnerUpserts: vitest.fn(),
     getPartnerDeletes: vitest.fn(),
+    getPartnerAssetsUpserts: vitest.fn(),
+    getPartnerAssetDeletes: vitest.fn(),
+    getAssetDeletes: vitest.fn(),
+    getAssetUpserts: vitest.fn(),
+    getAssetExifsUpserts: vitest.fn(),
+    getPartnerAssetExifsUpserts: vitest.fn(),
   };
 };

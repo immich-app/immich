@@ -1,6 +1,6 @@
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SyncRequestType } from 'src/enum';
-import { SyncService } from 'src/services/sync.service';
+import { SyncEntityType, SyncRequestType } from 'src/enum';
+import { SYNC_TYPES_ORDER, SyncService } from 'src/services/sync.service';
 import { TestContext, TestFactory } from 'test/factory';
 import { getKyselyDB, newTestService } from 'test/utils';
 
@@ -33,6 +33,14 @@ const setup = async () => {
 };
 
 describe(SyncService.name, () => {
+  it('should have all the types in the ordering variable', () => {
+    for (const key in SyncRequestType) {
+      expect(SYNC_TYPES_ORDER).includes(key);
+    }
+
+    expect(SYNC_TYPES_ORDER.length).toBe(Object.keys(SyncRequestType).length);
+  });
+
   describe.concurrent('users', () => {
     it('should detect and sync the first user', async () => {
       const { context, auth, sut, testSync } = await setup();
@@ -360,6 +368,345 @@ describe(SyncService.name, () => {
       const response = await testSync(auth, [SyncRequestType.PartnersV1]);
 
       expect(response).toHaveLength(0);
+    });
+
+    it('should not sync a partner delete after a user is deleted', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      await context.createPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
+      await context.user.delete({ id: user2.id }, true);
+
+      const response = await testSync(auth, [SyncRequestType.PartnersV1]);
+
+      expect(response).toHaveLength(0);
+    });
+  });
+
+  describe.concurrent('assets', () => {
+    it('should detect and sync the first asset', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
+      const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
+      const date = new Date().toISOString();
+
+      const asset = TestFactory.asset({
+        ownerId: auth.user.id,
+        checksum: Buffer.from(checksum, 'base64'),
+        thumbhash: Buffer.from(thumbhash, 'base64'),
+        fileCreatedAt: date,
+        fileModifiedAt: date,
+        deletedAt: null,
+      });
+      await context.createAsset(asset);
+
+      const initialSyncResponse = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(initialSyncResponse).toHaveLength(1);
+      expect(initialSyncResponse).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              id: asset.id,
+              ownerId: asset.ownerId,
+              thumbhash,
+              checksum,
+              deletedAt: null,
+              fileCreatedAt: date,
+              fileModifiedAt: date,
+              isFavorite: false,
+              isVisible: true,
+              localDateTime: null,
+              type: asset.type,
+            },
+            type: 'AssetV1',
+          },
+        ]),
+      );
+
+      const acks = [initialSyncResponse[0].ack];
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
+    });
+
+    it('should detect and sync a deleted asset', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const asset = TestFactory.asset({ ownerId: auth.user.id });
+      await context.createAsset(asset);
+      await context.asset.remove(asset);
+
+      const response = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(response).toHaveLength(1);
+      expect(response).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              assetId: asset.id,
+            },
+            type: 'AssetDeleteV1',
+          },
+        ]),
+      );
+
+      const acks = response.map(({ ack }) => ack);
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
+    });
+
+    it('should not sync an asset for an unrelated user', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+
+      const asset = TestFactory.asset({ ownerId: user2.id });
+      await context.createAsset(asset);
+
+      const response = await testSync(auth, [SyncRequestType.AssetsV1]);
+
+      expect(response).toHaveLength(0);
+    });
+  });
+
+  describe.concurrent(SyncRequestType.PartnerAssetsV1, () => {
+    it('should detect and sync the first partner asset', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const checksum = '1115vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
+      const thumbhash = '2225vHcVkZzNp3Q9G+FEA0nu6zUbGb4Tj4UOXkN0wRA=';
+      const date = new Date().toISOString();
+
+      const user2 = await context.createUser();
+
+      const asset = TestFactory.asset({
+        ownerId: user2.id,
+        checksum: Buffer.from(checksum, 'base64'),
+        thumbhash: Buffer.from(thumbhash, 'base64'),
+        fileCreatedAt: date,
+        fileModifiedAt: date,
+        deletedAt: null,
+      });
+      await context.createAsset(asset);
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+
+      const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
+
+      expect(initialSyncResponse).toHaveLength(1);
+      expect(initialSyncResponse).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              id: asset.id,
+              ownerId: asset.ownerId,
+              thumbhash,
+              checksum,
+              deletedAt: null,
+              fileCreatedAt: date,
+              fileModifiedAt: date,
+              isFavorite: false,
+              isVisible: true,
+              localDateTime: null,
+              type: asset.type,
+            },
+            type: SyncEntityType.PartnerAssetV1,
+          },
+        ]),
+      );
+
+      const acks = [initialSyncResponse[0].ack];
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
+    });
+
+    it('should detect and sync a deleted partner asset', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      const asset = TestFactory.asset({ ownerId: user2.id });
+      await context.createAsset(asset);
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      await context.asset.remove(asset);
+
+      const response = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
+
+      expect(response).toHaveLength(1);
+      expect(response).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              assetId: asset.id,
+            },
+            type: SyncEntityType.PartnerAssetDeleteV1,
+          },
+        ]),
+      );
+
+      const acks = response.map(({ ack }) => ack);
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
+    });
+
+    it('should not sync a deleted partner asset due to a user delete', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      await context.createAsset({ ownerId: user2.id });
+      await context.user.delete({ id: user2.id }, true);
+
+      const response = await testSync(auth, [SyncRequestType.PartnerAssetsV1]);
+
+      expect(response).toHaveLength(0);
+    });
+
+    it('should not sync a deleted partner asset due to a partner delete (unshare)', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      await context.createAsset({ ownerId: user2.id });
+      const partner = { sharedById: user2.id, sharedWithId: auth.user.id };
+      await context.partner.create(partner);
+
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(1);
+
+      await context.partner.remove(partner);
+
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
+    });
+  });
+
+  describe.concurrent(SyncRequestType.AssetExifsV1, () => {
+    it('should detect and sync the first asset exif', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const asset = TestFactory.asset({ ownerId: auth.user.id });
+      const exif = { assetId: asset.id, make: 'Canon' };
+
+      await context.createAsset(asset);
+      await context.asset.upsertExif(exif);
+
+      const initialSyncResponse = await testSync(auth, [SyncRequestType.AssetExifsV1]);
+
+      expect(initialSyncResponse).toHaveLength(1);
+      expect(initialSyncResponse).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              assetId: asset.id,
+              city: null,
+              country: null,
+              dateTimeOriginal: null,
+              description: '',
+              exifImageHeight: null,
+              exifImageWidth: null,
+              exposureTime: null,
+              fNumber: null,
+              fileSizeInByte: null,
+              focalLength: null,
+              fps: null,
+              iso: null,
+              latitude: null,
+              lensModel: null,
+              longitude: null,
+              make: 'Canon',
+              model: null,
+              modifyDate: null,
+              orientation: null,
+              profileDescription: null,
+              projectionType: null,
+              rating: null,
+              state: null,
+              timeZone: null,
+            },
+            type: SyncEntityType.AssetExifV1,
+          },
+        ]),
+      );
+
+      const acks = [initialSyncResponse[0].ack];
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.AssetExifsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
+    });
+  });
+
+  describe.concurrent(SyncRequestType.PartnerAssetExifsV1, () => {
+    it('should detect and sync the first partner asset exif', async () => {
+      const { auth, context, sut, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      const asset = TestFactory.asset({ ownerId: user2.id });
+      await context.createAsset(asset);
+      const exif = { assetId: asset.id, make: 'Canon' };
+      await context.asset.upsertExif(exif);
+
+      const initialSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+
+      expect(initialSyncResponse).toHaveLength(1);
+      expect(initialSyncResponse).toEqual(
+        expect.arrayContaining([
+          {
+            ack: expect.any(String),
+            data: {
+              assetId: asset.id,
+              city: null,
+              country: null,
+              dateTimeOriginal: null,
+              description: '',
+              exifImageHeight: null,
+              exifImageWidth: null,
+              exposureTime: null,
+              fNumber: null,
+              fileSizeInByte: null,
+              focalLength: null,
+              fps: null,
+              iso: null,
+              latitude: null,
+              lensModel: null,
+              longitude: null,
+              make: 'Canon',
+              model: null,
+              modifyDate: null,
+              orientation: null,
+              profileDescription: null,
+              projectionType: null,
+              rating: null,
+              state: null,
+              timeZone: null,
+            },
+            type: SyncEntityType.PartnerAssetExifV1,
+          },
+        ]),
+      );
+
+      const acks = [initialSyncResponse[0].ack];
+      await sut.setAcks(auth, { acks });
+
+      const ackSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
+
+      expect(ackSyncResponse).toHaveLength(0);
     });
   });
 });

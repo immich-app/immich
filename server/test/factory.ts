@@ -54,7 +54,7 @@ class CustomWritable extends Writable {
   }
 }
 
-type Asset = Insertable<Assets>;
+type Asset = Partial<Insertable<Assets>>;
 type User = Partial<Insertable<Users>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
@@ -161,10 +161,6 @@ export class TestFactory {
   }
 
   async create() {
-    for (const asset of this.assets) {
-      await this.context.createAsset(asset);
-    }
-
     for (const user of this.users) {
       await this.context.createUser(user);
     }
@@ -175,6 +171,10 @@ export class TestFactory {
 
     for (const session of this.sessions) {
       await this.context.createSession(session);
+    }
+
+    for (const asset of this.assets) {
+      await this.context.createAsset(asset);
     }
 
     return this.context;
@@ -213,7 +213,7 @@ export class TestContext {
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
 
-  private constructor(private db: Kysely<DB>) {
+  private constructor(public db: Kysely<DB>) {
     const logger = newLoggingRepositoryMock() as unknown as LoggingRepository;
     const config = new ConfigRepository();
 
