@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
@@ -12,14 +13,13 @@ import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
-import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
+import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
-import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
@@ -36,7 +36,7 @@ final syncServiceProvider = Provider(
     ref.watch(albumApiRepositoryProvider),
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
-    ref.watch(exifInfoRepositoryProvider),
+    ref.watch(exifRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
   ),
@@ -756,7 +756,7 @@ class SyncService {
       await _assetRepository.transaction(() async {
         await _assetRepository.updateAll(assets);
         for (final Asset added in assets) {
-          added.exifInfo?.id = added.id;
+          added.exifInfo ??= added.exifInfo?.copyWith(assetId: added.id);
         }
         await _exifInfoRepository.updateAll(exifInfos);
       });

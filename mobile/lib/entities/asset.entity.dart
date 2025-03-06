@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
+    as entity;
+import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
-import 'package:photo_manager/photo_manager.dart' show AssetEntity;
-import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
+import 'package:photo_manager/photo_manager.dart' show AssetEntity;
 
 part 'asset.entity.g.dart';
 
@@ -27,8 +30,9 @@ class Asset {
         width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
         ownerId = fastHash(remote.ownerId),
-        exifInfo =
-            remote.exifInfo != null ? ExifInfo.fromDto(remote.exifInfo!) : null,
+        exifInfo = remote.exifInfo == null
+            ? null
+            : ExifDtoConverter.fromDto(remote.exifInfo!),
         isFavorite = remote.isFavorite,
         isArchived = remote.isArchived,
         isTrashed = remote.isTrashed,
@@ -359,14 +363,14 @@ class Asset {
           localId: localId,
           width: a.width ?? width,
           height: a.height ?? height,
-          exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+          exifInfo: a.exifInfo?.copyWith(assetId: id) ?? exifInfo,
         );
       } else if (isRemote) {
         return _copyWith(
           localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
-          exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
+          exifInfo: exifInfo ?? a.exifInfo?.copyWith(assetId: id),
         );
       } else {
         // TODO: Revisit this and remove all bool field assignments
@@ -407,7 +411,7 @@ class Asset {
           isArchived: a.isArchived,
           isTrashed: a.isTrashed,
           isOffline: a.isOffline,
-          exifInfo: a.exifInfo?.copyWith(id: id) ?? exifInfo,
+          exifInfo: a.exifInfo?.copyWith(assetId: id) ?? exifInfo,
           thumbhash: a.thumbhash,
         );
       } else {
@@ -416,7 +420,8 @@ class Asset {
           localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
-          exifInfo: exifInfo ?? a.exifInfo?.copyWith(id: id),
+          exifInfo: exifInfo ??
+              a.exifInfo?.copyWith(assetId: id), // updated to use assetId
         );
       }
     }
@@ -476,8 +481,8 @@ class Asset {
   Future<void> put(Isar db) async {
     await db.assets.put(this);
     if (exifInfo != null) {
-      exifInfo!.id = id;
-      await db.exifInfos.put(exifInfo!);
+      await db.exifInfos
+          .put(entity.ExifInfo.fromDto(exifInfo!.copyWith(assetId: id)));
     }
   }
 
