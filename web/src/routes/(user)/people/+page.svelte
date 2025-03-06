@@ -274,13 +274,12 @@
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
-    edittingPerson = person;
-    personMerge1 = person;
+    newName = person.name;
   };
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
     try {
-      if (name == targetPerson.name) {
+      if (name == targetPerson.name || showMergeModal) {
         return;
       }
 
@@ -305,7 +304,6 @@
         showMergeModal = true;
         return;
       }
-
       await updateName(targetPerson.id, name);
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
@@ -351,7 +349,9 @@
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    onClose={() => (showMergeModal = false)}
+    onClose={() => {
+      showMergeModal = false;
+    }}
     onReject={() => handleMergeCancel()}
     onConfirm={handleMergeSamePerson}
   />
