@@ -1,9 +1,9 @@
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:isar/isar.dart';
 
 class IsarStoreRepository extends IsarDatabaseRepository
@@ -78,7 +78,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
         const (DateTime) => entity.intValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-        const (User) => await UserRepository(_db).getByDbId(entity.intValue!),
+        const (User) => await IsarUserRepository(_db).get(entity.intValue!),
         _ => null,
       } as T?;
 
@@ -89,7 +89,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (User) => (
-          (await UserRepository(_db).update(value as User)).isarId,
+          (await IsarUserRepository(_db).update(value as User)).id,
           null,
         ),
       _ => throw UnsupportedError(

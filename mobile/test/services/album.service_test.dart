@@ -146,7 +146,7 @@ void main() {
         () => albumApiRepository.create(
           "name",
           assetIds: [AssetStub.image1.remoteId!],
-          sharedUserIds: [UserStub.user1.id],
+          sharedUserIds: [UserStub.user1.uid],
         ),
       ).called(1);
       verify(
@@ -204,7 +204,7 @@ void main() {
       when(
         () => albumRepository.addUsers(
           AlbumStub.emptyAlbum,
-          AlbumStub.emptyAlbum.sharedUsers.toList(),
+          AlbumStub.emptyAlbum.sharedUsers.map((u) => u.toDto()).toList(),
         ),
       ).thenAnswer((_) async => AlbumStub.emptyAlbum);
 
@@ -214,7 +214,7 @@ void main() {
 
       final result = await sut.addUsers(
         AlbumStub.emptyAlbum,
-        [UserStub.user2.id],
+        [UserStub.user2.uid],
       );
 
       expect(result, true);

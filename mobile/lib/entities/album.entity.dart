@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:isar/isar.dart';
 // ignore: implementation_imports
