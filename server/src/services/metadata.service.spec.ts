@@ -454,6 +454,7 @@ describe(MetadataService.name, () => {
       mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.livePhotoWithOriginalFileName, livePhotoVideoId: null }]);
       mockReadTags({
         Directory: 'foo/bar/',
+        MotionPhoto: 1,
         MotionPhotoVideo: new BinaryField(0, ''),
         // The below two are included to ensure that the MotionPhotoVideo tag is extracted
         // instead of the EmbeddedVideoFile, since HEIC MotionPhotos include both
@@ -491,10 +492,11 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(mocks.storage.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
+      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
     });
 
     it('should extract the EmbeddedVideo tag from Samsung JPEG motion photos', async () => {
@@ -503,6 +505,7 @@ describe(MetadataService.name, () => {
         Directory: 'foo/bar/',
         EmbeddedVideoFile: new BinaryField(0, ''),
         EmbeddedVideoType: 'MotionPhoto_Data',
+        MotionPhoto: 1,
       });
       mocks.crypto.hashSha1.mockReturnValue(randomBytes(512));
       mocks.asset.create.mockResolvedValue(assetStub.livePhotoMotionAsset);
@@ -535,10 +538,11 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(mocks.storage.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
+      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
     });
 
     it('should extract the motion photo video from the XMP directory entry ', async () => {
@@ -580,10 +584,11 @@ describe(MetadataService.name, () => {
       });
       expect(mocks.user.updateUsage).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.ownerId, 512);
       expect(mocks.storage.createFile).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.originalPath, video);
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoWithOriginalFileName.id,
         livePhotoVideoId: fileStub.livePhotoMotion.uuid,
       });
+      expect(mocks.asset.update).toHaveBeenCalledTimes(2);
     });
 
     it('should delete old motion photo video assets if they do not match what is extracted', async () => {
@@ -648,14 +653,15 @@ describe(MetadataService.name, () => {
       mocks.storage.readFile.mockResolvedValue(video);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(1, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoMotionAsset.id,
         isVisible: false,
       });
-      expect(mocks.asset.update).toHaveBeenNthCalledWith(2, {
+      expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
       });
+      expect(mocks.asset.update).toHaveBeenCalledTimes(3);
     });
 
     it('should not update storage usage if motion photo is external', async () => {
