@@ -31,6 +31,7 @@ class ApiService implements Authentication {
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
+  late ViewApi viewApi;
   late MemoriesApi memoriesApi;
 
   ApiService() {
@@ -64,6 +65,7 @@ class ApiService implements Authentication {
     downloadApi = DownloadApi(_apiClient);
     trashApi = TrashApi(_apiClient);
     stacksApi = StacksApi(_apiClient);
+    viewApi = ViewApi(_apiClient);
     memoriesApi = MemoriesApi(_apiClient);
   }
 
