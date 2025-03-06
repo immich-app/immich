@@ -49,7 +49,7 @@ class User {
   final int quotaUsageInBytes;
   final int quotaSizeInBytes;
 
-  int get id => fastHash(uid);
+  int get id => HashUtils.fastHash(uid);
   bool get hasQuota => quotaSizeInBytes > 0;
 
   const User({

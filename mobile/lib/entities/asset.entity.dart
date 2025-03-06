@@ -29,7 +29,7 @@ class Asset {
         height = remote.exifInfo?.exifImageHeight?.toInt(),
         width = remote.exifInfo?.exifImageWidth?.toInt(),
         livePhotoVideoId = remote.livePhotoVideoId,
-        ownerId = fastHash(remote.ownerId),
+        ownerId = HashUtils.fastHash(remote.ownerId),
         exifInfo = remote.exifInfo == null
             ? null
             : ExifDtoConverter.fromDto(remote.exifInfo!),

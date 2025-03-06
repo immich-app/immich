@@ -7,7 +7,7 @@ part 'user.entity.g.dart';
 
 @Collection(inheritance: false)
 class User {
-  Id get isarId => fastHash(id);
+  Id get isarId => HashUtils.fastHash(id);
   @Index(unique: true, replace: false, type: IndexType.hash)
   final String id;
   final DateTime updatedAt;

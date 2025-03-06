@@ -146,7 +146,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       _log.severe("Unable to get user information from the server.");
     } else {
       await Store.put(StoreKey.deviceId, deviceId);
-      await Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
+      await Store.put(StoreKey.deviceIdHash, HashUtils.fastHash(deviceId));
       await Store.put(
         StoreKey.currentUser,
         UserConverter.fromAdminDto(userResponse, userPreferences),

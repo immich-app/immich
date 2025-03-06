@@ -7,5 +7,5 @@ part 'duplicated_asset.entity.g.dart';
 class DuplicatedAsset {
   String id;
   DuplicatedAsset(this.id);
-  Id get isarId => fastHash(id);
+  Id get isarId => HashUtils.fastHash(id);
 }

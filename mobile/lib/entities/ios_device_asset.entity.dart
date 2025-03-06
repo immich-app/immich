@@ -10,5 +10,5 @@ class IOSDeviceAsset extends DeviceAsset {
 
   @Index(replace: true, unique: true, type: IndexType.hash)
   String id;
-  Id get isarId => fastHash(id);
+  Id get isarId => HashUtils.fastHash(id);
 }

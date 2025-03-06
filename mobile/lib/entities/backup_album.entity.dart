@@ -12,7 +12,7 @@ class BackupAlbum {
 
   BackupAlbum(this.id, this.lastBackup, this.selection);
 
-  Id get isarId => fastHash(id);
+  Id get isarId => HashUtils.fastHash(id);
 }
 
 enum BackupSelection {
