@@ -23,7 +23,7 @@
   import { fade } from 'svelte/transition';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
-  import { isSidebarOpen } from '$lib/stores/side-bar.store';
+  import { isSidebarOpen } from '$lib/stores/side-bar.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -67,7 +67,7 @@
         icon={mdiMenu}
         padding="2"
         onclick={() => {
-          $isSidebarOpen = !$isSidebarOpen;
+          isSidebarOpen.value = !isSidebarOpen.value;
         }}
         class="md:hidden"
       />

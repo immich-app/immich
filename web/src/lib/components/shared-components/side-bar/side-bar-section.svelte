@@ -2,7 +2,7 @@
   import { focusTrap } from '$lib/actions/focus-trap';
   import { shortcuts } from '$lib/actions/shortcut';
   import { menuButtonId } from '$lib/components/shared-components/navigation-bar/navigation-bar.svelte';
-  import { isSidebarOpen } from '$lib/stores/side-bar.store';
+  import { isSidebarOpen } from '$lib/stores/side-bar.svelte';
   import { onMount, type Snippet } from 'svelte';
 
   interface Props {
@@ -20,10 +20,10 @@
   });
 
   const closeSidebar = () => {
-    $isSidebarOpen = innerWidth >= mdBreakpoint ? true : false;
+    isSidebarOpen.value = innerWidth >= mdBreakpoint ? true : false;
   };
 
-  let isHidden = $derived(!$isSidebarOpen && innerWidth < mdBreakpoint);
+  let isHidden = $derived(!isSidebarOpen.value && innerWidth < mdBreakpoint);
 
   const handleEscape = () => {
     closeSidebar();
@@ -38,14 +38,14 @@
   id="sidebar"
   tabindex="-1"
   class="immich-scrollbar group relative z-10 flex w-0 flex-col gap-1 overflow-y-auto overflow-x-hidden bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-bg md:w-64 pr-6"
-  class:shadow-2xl={$isSidebarOpen && innerWidth < mdBreakpoint}
-  class:dark:border-r-immich-dark-gray={$isSidebarOpen && innerWidth < mdBreakpoint}
-  class:border-r={$isSidebarOpen && innerWidth < mdBreakpoint}
-  class:pr-6={$isSidebarOpen}
-  class:w-64={$isSidebarOpen}
+  class:shadow-2xl={isSidebarOpen.value && innerWidth < mdBreakpoint}
+  class:dark:border-r-immich-dark-gray={isSidebarOpen.value && innerWidth < mdBreakpoint}
+  class:border-r={isSidebarOpen.value && innerWidth < mdBreakpoint}
+  class:pr-6={isSidebarOpen.value}
+  class:w-64={isSidebarOpen.value}
   inert={isHidden}
-  onfocusin={() => ($isSidebarOpen = true)}
-  use:focusTrap={{ active: $isSidebarOpen && innerWidth < mdBreakpoint }}
+  onfocusin={() => (isSidebarOpen.value = true)}
+  use:focusTrap={{ active: isSidebarOpen.value && innerWidth < mdBreakpoint }}
   use:shortcuts={[
     {
       shortcut: { key: 'Escape' },
