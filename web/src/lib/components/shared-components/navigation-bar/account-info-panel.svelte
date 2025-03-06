@@ -1,7 +1,6 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute } from '$lib/constants';
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
@@ -48,11 +47,11 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl px-4 bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
-    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
+    class="mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
   >
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
@@ -72,7 +71,7 @@
       <p class="text-center text-lg font-medium text-immich-primary dark:text-immich-dark-primary">
         {$user.name}
       </p>
-      <p class="text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
+      <p class="text-center text-sm text-gray-500 dark:text-immich-dark-fg">{$user.email}</p>
     </div>
 
     <div class="flex flex-col gap-1">
@@ -98,19 +97,14 @@
           {$t('administration')}
         </Button>
       {/if}
-      <ThemeButton showText />
     </div>
   </div>
 
-  <div class="mb-4 flex flex-row">
-    <button
-      type="button"
-      class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      onclick={onLogout}
-    >
-      <Icon path={mdiLogout} size={24} />
-      {$t('sign_out')}</button
-    >
+  <div class="mb-4 mt-2 flex flex-row justify-center gap-1">
+    <ThemeButton padding="2" />
+    <Button variant="ghost" color="secondary" leadingIcon={mdiLogout} onclick={onLogout}>
+      {$t('sign_out')}
+    </Button>
   </div>
 </div>
 

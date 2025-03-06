@@ -3,7 +3,6 @@
   import CircleIconButton, { type Padding } from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { Theme } from '$lib/constants';
   import { colorTheme, handleToggleTheme } from '$lib/stores/preferences.store';
-  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   let icon = $derived($colorTheme.value === Theme.LIGHT ? moonPath : sunPath);
@@ -12,35 +11,19 @@
 
   interface Props {
     padding?: Padding;
-    showText?: boolean;
   }
 
-  let { padding = '3', showText = false }: Props = $props();
+  let { padding = '3' }: Props = $props();
 </script>
 
 {#if !$colorTheme.system}
-  {#if showText}
-    <Button
-      leadingIcon={icon}
-      variant="outline"
-      color="secondary"
-      size="small"
-      shape="round"
-      onclick={handleToggleTheme}
-      role="switch"
-      aria-checked={isDark ? 'true' : 'false'}
-    >
-      {$t('dark_theme')}
-    </Button>
-  {:else}
-    <CircleIconButton
-      title={$t('dark_theme')}
-      {icon}
-      {viewBox}
-      role="switch"
-      aria-checked={isDark ? 'true' : 'false'}
-      onclick={handleToggleTheme}
-      {padding}
-    />
-  {/if}
+  <CircleIconButton
+    title={$t('toggle_theme')}
+    {icon}
+    {viewBox}
+    role="switch"
+    aria-checked={isDark ? 'true' : 'false'}
+    onclick={handleToggleTheme}
+    {padding}
+  />
 {/if}
