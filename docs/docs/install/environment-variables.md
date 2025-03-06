@@ -198,12 +198,11 @@ Additional machine learning parameters can be tuned from the admin UI.
 | `IMMICH_TELEMETRY_INCLUDE` | Collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`. Note: You can also specify `all` to enable all |         | server     | api, microservices |
 | `IMMICH_TELEMETRY_EXCLUDE` | Do not collect these telemetries. List of `host`, `api`, `io`, `repo`, `job`                                          |         | server     | api, microservices |
 
-## Docker Secrets
+## Secrets
 
-The following variables support the use of [Docker secrets][docker-secrets] for additional security.
+The following variables support reading from files, either via [Systemd Credentials][systemd-creds] or [Docker secrets][docker-secrets] for additional security.
 
-To use any of these, replace the regular environment variable with the equivalent `_FILE` environment variable. The value of
-the `_FILE` variable should be set to the path of a file containing the variable value.
+To use any of these, either set `CREDENTIALS_DIRECTORY` to a directory that contains files whose name is the “regular variable” name, and whose content is the secret. If using Docker Secrets, setting `CREDENTIALS_DIRECTORY=/run/secrets` will cause all secrets present to be used. Alternatively, replace the regular variable with the equivalent `_FILE` environment variable as below. The value of the `_FILE` variable should be set to the path of a file containing the variable value.
 
 | Regular Variable   | Equivalent Docker Secrets '\_FILE' Variable |
 | :----------------- | :------------------------------------------ |
@@ -225,3 +224,4 @@ to use a Docker secret for the password in the Redis container.
 [docker-secrets-docs]: https://github.com/docker-library/docs/tree/master/postgres#docker-secrets
 [docker-secrets]: https://docs.docker.com/engine/swarm/secrets/
 [ioredis]: https://ioredis.readthedocs.io/en/latest/README/#connect-to-redis
+[systemd-creds]: https://systemd.io/CREDENTIALS/
