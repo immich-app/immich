@@ -6,7 +6,6 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import {
-    mdiAccountEditOutline,
     mdiAccountMultipleCheckOutline,
     mdiCalendarEditOutline,
     mdiDotsVertical,
@@ -22,22 +21,13 @@
   interface Props {
     person: PersonResponseDto;
     preload?: boolean;
-    onChangeName: () => void;
     onSetBirthDate: () => void;
     onMergePeople: () => void;
     onHidePerson: () => void;
     onToggleFavorite: () => void;
   }
 
-  let {
-    person,
-    preload = false,
-    onChangeName,
-    onSetBirthDate,
-    onMergePeople,
-    onHidePerson,
-    onToggleFavorite,
-  }: Props = $props();
+  let { person, preload = false, onSetBirthDate, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
 
   let showVerticalDots = $state(false);
 </script>
@@ -63,6 +53,7 @@
         altText={person.name}
         title={person.name}
         widthStyle="100%"
+        circle
       />
       {#if person.isFavorite}
         <div class="absolute top-2 left-2">
@@ -70,14 +61,6 @@
         </div>
       {/if}
     </div>
-    {#if person.name}
-      <span
-        class="text-white-shadow absolute bottom-2 left-0 w-full select-text px-1 text-center font-medium text-white"
-        title={person.name}
-      >
-        {person.name}
-      </span>
-    {/if}
   </a>
 
   {#if showVerticalDots}
@@ -91,7 +74,6 @@
         title={$t('show_person_options')}
       >
         <MenuOption onClick={onHidePerson} icon={mdiEyeOffOutline} text={$t('hide_person')} />
-        <MenuOption onClick={onChangeName} icon={mdiAccountEditOutline} text={$t('change_name')} />
         <MenuOption onClick={onSetBirthDate} icon={mdiCalendarEditOutline} text={$t('set_date_of_birth')} />
         <MenuOption onClick={onMergePeople} icon={mdiAccountMultipleCheckOutline} text={$t('merge_people')} />
         <MenuOption
