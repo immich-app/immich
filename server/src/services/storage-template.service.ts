@@ -226,9 +226,36 @@ export class StorageTemplateService extends BaseService {
 
     try {
       const source = asset.originalPath;
-      const extension = path.extname(source).split('.').pop() as string;
+      let extension = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${extension}`));
+      extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+
+      switch (extension) {
+        case 'jpeg':
+        case 'jpe': {
+          extension = 'jpg';
+          break;
+        }
+        case 'tif': {
+          extension = 'tiff';
+          break;
+        }
+        case '3gpp': {
+          extension = '3gp';
+          break;
+        }
+        case 'mpeg':
+        case 'mpe': {
+          extension = 'mpg';
+          break;
+        }
+        case 'm2ts':
+        case 'm2t': {
+          extension = 'mts';
+          break;
+        }
+      }
 
       let albumName = null;
       if (this.template.needsAlbum) {
