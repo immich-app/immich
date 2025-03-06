@@ -11,11 +11,13 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.security.KeyStore
 import java.security.cert.X509Certificate
+import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.KeyManager
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLEngine
+import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509ExtendedTrustManager
@@ -24,7 +26,6 @@ import javax.net.ssl.X509ExtendedTrustManager
  * Android plugin for Dart `HttpSSLOptions`
  */
 class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
-
   private var methodChannel: MethodChannel? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -70,6 +71,8 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
         val sslContext = SSLContext.getInstance("TLS")
         sslContext.init(km, tm, null)
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.socketFactory)
+
+        HttpsURLConnection.setDefaultHostnameVerifier(AllowSelfSignedHostnameVerifier(args[1] as String))
 
         result.success(true)
       }
@@ -120,6 +123,20 @@ class HttpSSLOptionsPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
       val factory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
       factory.init(null as KeyStore?)
       return factory.trustManagers.filterIsInstance<X509ExtendedTrustManager>().first()
+    }
+  }
+
+  class AllowSelfSignedHostnameVerifier(private val serverHost: String?) : HostnameVerifier {
+    companion object {
+      private val _defaultHostnameVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
+    }
+
+    override fun verify(hostname: String?, session: SSLSession?): Boolean {
+      if (serverHost == null || hostname == serverHost) {
+        return true
+      } else {
+        return _defaultHostnameVerifier.verify(hostname, session)
+      }
     }
   }
 }
