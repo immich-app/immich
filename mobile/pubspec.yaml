@@ -66,6 +66,10 @@ dependencies:
     git:
       url: https://github.com/immich-app/native_video_player
       ref: '5459d54'
+  
+  # DB
+  drift: ^2.23.1
+  drift_flutter: ^0.2.4
 
   #image editing packages
   crop_image: ^1.0.13
@@ -82,12 +86,6 @@ dependencies:
 # This is uncommented in F-Droid build script
 # Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
 dependency_overrides:
-  # TODO: remove once Isar is updated
-  analyzer: ^6.0.0
-  # TODO: remove once analyzer override is removed
-  meta: ^1.11.0
-  # TODO: remove once analyzer override is removed
-  analyzer_plugin: ^0.11.3
 #f  geolocator_android:
 #f    git:
 #f      url: https://github.com/Zverik/flutter-geolocator.git
@@ -98,7 +96,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  build_runner: ^2.4.8
+  build_runner: ^2.4.13
   auto_route_generator: ^9.0.0
   flutter_launcher_icons: ^0.14.0
   flutter_native_splash: ^2.3.9
@@ -114,6 +112,9 @@ dev_dependencies:
   immich_mobile_immich_lint:
     path: './immich_lint'
   fake_async: ^1.3.1
+
+  # DB Tools
+  drift_dev: ^2.23.1
 
 flutter:
   uses-material-design: true
