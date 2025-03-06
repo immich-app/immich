@@ -66,8 +66,8 @@ download:
       locale_code: es-MX
     - file: mobile/assets/i18n/sv-FI.json
       locale_code: sv-FI
-    - file: mobile/assets/i18n/ca-CA.json
-      locale_code: ca-CA
+    - file: mobile/assets/i18n/ca.json
+      locale_code: ca
     - file: mobile/assets/i18n/hu-HU.json
       locale_code: hu-HU
     - file: mobile/assets/i18n/lv-LV.json

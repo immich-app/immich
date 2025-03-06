@@ -541,7 +541,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/RunnerProfile.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 196;
+				CURRENT_PROJECT_VERSION = 197;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
@@ -685,7 +685,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 196;
+				CURRENT_PROJECT_VERSION = 197;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
@@ -715,7 +715,7 @@
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 196;
+				CURRENT_PROJECT_VERSION = 197;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_BITCODE = NO;
@@ -748,7 +748,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 196;
+				CURRENT_PROJECT_VERSION = 197;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -791,7 +791,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 196;
+				CURRENT_PROJECT_VERSION = 197;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -831,7 +831,7 @@
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 196;
+				CURRENT_PROJECT_VERSION = 197;
 				CUSTOM_GROUP_ID = group.app.immich.share;
 				DEVELOPMENT_TEAM = 2F67MQ8R79;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;

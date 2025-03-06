@@ -10,6 +10,7 @@ export interface PaginationResult<T> {
 
 export type Paginated<T> = Promise<PaginationResult<T>>;
 
+/** @deprecated use `this.db. ... .stream()` instead */
 export async function* usePagination<T>(
   pageSize: number,
   getNextPage: (pagination: PaginationOptions) => PaginationResult<T> | Paginated<T>,
