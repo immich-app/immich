@@ -172,7 +172,7 @@ export class MetadataService extends BaseService {
     }
 
     const exifTags = await this.getExifTags(asset);
-    if (!exifTags.FileCreateDate || !exifTags.FileModifyDate || !exifTags.FileSize) {
+    if (!exifTags.FileCreateDate || !exifTags.FileModifyDate || exifTags.FileSize === undefined) {
       this.logger.warn(`Missing file creation or modification date for asset ${asset.id}: ${asset.originalPath}`);
       const stat = await this.storageRepository.stat(asset.originalPath);
       exifTags.FileCreateDate = stat.ctime.toISOString();
