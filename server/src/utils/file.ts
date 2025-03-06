@@ -36,7 +36,7 @@ type SendFileOptions = SendFile[1];
 const cacheControlHeaders: Record<CacheControl, string | null> = {
   [CacheControl.PRIVATE_WITH_CACHE]: 'private, max-age=86400, no-transform',
   [CacheControl.PRIVATE_WITHOUT_CACHE]: 'private, no-cache, no-transform',
-  [CacheControl.NONE]: null, // Falsy value to prevent adding Cache-Control header
+  [CacheControl.NONE]: null, // falsy value to prevent adding Cache-Control header
 };
 
 export const sendFile = async (
@@ -45,7 +45,7 @@ export const sendFile = async (
   handler: () => Promise<ImmichFileResponse>,
   logger: LoggingRepository,
 ): Promise<void> => {
-  // Promisified version of 'res.sendFile' for cleaner async handling
+  // promisified version of 'res.sendFile' for cleaner async handling
   const _sendFile = (path: string, options: SendFileOptions) =>
     promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
@@ -62,7 +62,7 @@ export const sendFile = async (
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
-    //Configure options for serving
+    // configure options for serving
     const options: SendFileOptions = { dotfiles: 'allow' };
     if (!isAbsolute(file.path)) {
       options.root = process.cwd();
