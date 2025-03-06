@@ -275,11 +275,12 @@
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
     edittingPerson = person;
+    newName = person.name;
   };
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
     try {
-      if (name == targetPerson.name) {
+      if (name == targetPerson.name || showMergeModal) {
         return;
       }
 
