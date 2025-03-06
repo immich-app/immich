@@ -277,6 +277,7 @@
   "filename_search": "File name or extension",
   "filter": "Filter",
   "folders": "Folders",
+  "folder": "Folder",
   "failed_to_load_folder": "Failed to load folder",
   "failed_to_load_assets": "Failed to load assets",
   "folder_not_found": "Folder not found",

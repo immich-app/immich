@@ -78,7 +78,6 @@ class LibraryPage extends ConsumerWidget {
                 PeopleCollectionCard(),
                 PlacesCollectionCard(),
                 LocalAlbumsCollectionCard(),
-                FoldersCollectionCard(),
               ],
             ),
             const SizedBox(height: 12),
@@ -129,6 +128,19 @@ class QuickAccessButtons extends ConsumerWidget {
                 bottomRight: Radius.circular(partners.isEmpty ? 20 : 0),
               ),
             ),
+            leading: const Icon(
+              Icons.folder_outlined,
+              size: 26,
+            ),
+            title: Text(
+              'folders'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () => context.pushRoute(FolderRoute()),
+          ),
+          ListTile(
             leading: const Icon(
               Icons.group_outlined,
               size: 26,
@@ -367,54 +379,6 @@ class PlacesCollectionCard extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   'places'.tr(),
-                  style: context.textTheme.titleSmall?.copyWith(
-                    color: context.colorScheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class FoldersCollectionCard extends StatelessWidget {
-  const FoldersCollectionCard({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isTablet = constraints.maxWidth > 600;
-        final widthFactor = isTablet ? 0.25 : 0.5;
-        final size = context.width * widthFactor - 20.0;
-
-        return GestureDetector(
-          onTap: () => context.pushRoute(FolderRoute()),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: size,
-                width: size,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: context.colorScheme.secondaryContainer.withAlpha(100),
-                ),
-                child: IgnorePointer(
-                  child: Icon(
-                    Icons.folder_outlined,
-                    color: context.primaryColor,
-                    size: 48,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'folders'.tr(),
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,

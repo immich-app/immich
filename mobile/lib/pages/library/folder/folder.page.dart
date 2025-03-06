@@ -5,8 +5,10 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
 import 'package:immich_mobile/models/folder/root_folder.model.dart';
+import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/folder.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -17,7 +19,7 @@ RecursiveFolder? _findFolderInStructure(
   RootFolder rootFolder,
   RecursiveFolder targetFolder,
 ) {
-  for (var folder in rootFolder.subfolders) {
+  for (final folder in rootFolder.subfolders) {
     if (targetFolder.path == '/' &&
         folder.path.isEmpty &&
         folder.name == targetFolder.name) {
@@ -76,7 +78,7 @@ class FolderPage extends HookConsumerWidget {
     );
 
     void onToggleSortOrder() {
-      var newOrder =
+      final newOrder =
           sortOrder.value == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
 
       ref.read(folderStructureProvider.notifier).fetchFolders(newOrder);
@@ -160,6 +162,18 @@ class FolderContent extends HookConsumerWidget {
       return Center(child: const Text("folder_not_found").tr());
     }
 
+    getSubtitle(int subFolderCount) {
+      if (subFolderCount > 0) {
+        return "$subFolderCount ${tr("folders")}".toLowerCase();
+      }
+
+      if (subFolderCount == 1) {
+        return "1 ${tr("folder")}".toLowerCase();
+      }
+
+      return "";
+    }
+
     return Column(
       children: [
         FolderPath(currentFolder: folder!, root: root),
@@ -174,10 +188,28 @@ class FolderContent extends HookConsumerWidget {
                 children: [
                   if (folder!.subfolders.isNotEmpty)
                     ...folder!.subfolders.map(
-                      (subfolder) => ListTile(
-                        leading:
-                            Icon(Icons.folder, color: context.primaryColor),
-                        title: Text(subfolder.name),
+                      (subfolder) => LargeLeadingTile(
+                        leading: Icon(
+                          Icons.folder,
+                          color: context.primaryColor,
+                          size: 48,
+                        ),
+                        title: Text(
+                          subfolder.name,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: subfolder.subfolders.isNotEmpty
+                            ? Text(
+                                getSubtitle(subfolder.subfolders.length),
+                                style: context.textTheme.bodyMedium?.copyWith(
+                                  color: context.colorScheme.onSurfaceSecondary,
+                                ),
+                              )
+                            : null,
                         onTap: () =>
                             context.pushRoute(FolderRoute(folder: subfolder)),
                       ),
@@ -186,36 +218,40 @@ class FolderContent extends HookConsumerWidget {
                       list.allAssets != null &&
                       list.allAssets!.isNotEmpty)
                     ...list.allAssets!.map(
-                      (asset) => ListTile(
+                      (asset) => LargeLeadingTile(
                         onTap: () => context.pushRoute(
                           GalleryViewerRoute(
                             renderList: list,
                             initialIndex: list.allAssets!.indexOf(asset),
                           ),
                         ),
-                        leading: SizedBox(
-                          width: 80,
-                          child: ThumbnailImage(
-                            asset: asset,
-                            showStorageIndicator: false,
+                        leading: ClipRRect(
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(15),
+                          ),
+                          child: SizedBox(
+                            width: 80,
+                            height: 80,
+                            child: ThumbnailImage(
+                              asset: asset,
+                              showStorageIndicator: false,
+                            ),
                           ),
                         ),
-                        title: Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                asset.fileName.split('.').first,
-                                softWrap: false,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Text(
-                              ".${asset.fileName.substring(asset.fileName.indexOf('.') + 1)}",
-                            ),
-                          ],
+                        title: Text(
+                          asset.fileName,
+                          maxLines: 2,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         subtitle: Text(
-                          "${asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo?.fileSize ?? 0) : ""} ·  ${DateFormat.yMMMd().format(asset.fileCreatedAt)}",
+                          "${asset.exifInfo?.fileSize != null ? formatBytes(asset.exifInfo?.fileSize ?? 0) : ""} • ${DateFormat.yMMMd().format(asset.fileCreatedAt)}",
+                          style: context.textTheme.bodyMedium?.copyWith(
+                            color: context.colorScheme.onSurfaceSecondary,
+                          ),
                         ),
                       ),
                     ),
@@ -256,9 +292,6 @@ class FolderPath extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final parts =
-        currentFolder.path.split('/').where((part) => part.isNotEmpty).toList();
-
     return Container(
       width: double.infinity,
       alignment: Alignment.centerLeft,
@@ -269,37 +302,15 @@ class FolderPath extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              for (int i = 0; i < parts.length; i++) ...[
-                if (i > 0)
-                  const Text(
-                    ' / ',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                InkWell(
-                  onTap: () {
-                    // Find the folder that matches this path
-                    RecursiveFolder? targetFolder = _findFolderInStructure(
-                      root,
-                      RecursiveFolder(
-                        name: parts[i],
-                        // Path with leading slash and without the current part
-                        path: "/${parts.sublist(0, i).join('/')}",
-                        subfolders: const [],
-                      ),
-                    );
-                    if (targetFolder != null) {
-                      context.pushRoute(FolderRoute(folder: targetFolder));
-                    }
-                  },
-                  child: Text(
-                    parts[i],
-                    style: TextStyle(
-                      color: context.primaryColor,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
+              Text(
+                currentFolder.path,
+                style: TextStyle(
+                  fontFamily: 'Inconsolata',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: context.colorScheme.onSurface.withAlpha(175),
                 ),
-              ],
+              ),
             ],
           ),
         ),
