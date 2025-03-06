@@ -1,4 +1,8 @@
 <script lang="ts" module>
+  import { Protocol } from 'pmtiles';
+
+  let protocol = new Protocol();
+  void maplibregl.addProtocol('pmtiles', protocol.tile);
   void maplibregl.setRTLTextPlugin(mapboxRtlUrl, true);
 </script>
 
