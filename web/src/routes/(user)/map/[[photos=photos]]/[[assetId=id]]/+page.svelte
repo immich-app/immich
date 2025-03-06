@@ -220,7 +220,6 @@
     // refresh only if the assets displayed on screen has changed to avoid refresh the AssetGrid when nothing has changed on screen
     if (currentAssets.length === 0 || assetsInBounds.toString() !== currentAssets.toString()) {
       coordinates = { x1: lng_e, x2: lng_w, y1: lat_e, y2: lat_w };
-      // newGrid();
       currentAssets = assetsInBounds;
     }
   }

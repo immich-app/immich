@@ -93,22 +93,6 @@ export interface IQueryParameter {
   assetGridOptions?: AssetGridOptions;
 }
 
-export const createAssetGridOptionsFromArray = (enumArray: string[]): AssetGridOptions => {
-  const defaultValues: AssetGridOptions = {} as AssetGridOptions;
-
-  for (const key of Object.keys(AssetGridOptionsValues)) {
-    defaultValues[key as keyof AssetGridOptions] = false;
-  }
-
-  for (const enumValue of Object.values(AssetGridOptionsValues)) {
-    if (enumArray.includes(enumValue)) {
-      defaultValues[enumValue as keyof AssetGridOptions] = true;
-    }
-  }
-
-  return defaultValues;
-};
-
 export enum QueryParameter {
   ACTION = 'action',
   ID = 'id',

@@ -676,6 +676,9 @@ export class AssetRepository {
 
   @GenerateSql({ params: [{ size: TimeBucketSize.MONTH, x1: 1, x2: 2, y1: 2, y2: 1 }] })
   async getTimeBuckets(options: TimeBucketOptions): Promise<TimeBucketItem[]> {
+    const coordinatesDefined =
+      options.x1 !== undefined && options.x2 !== undefined && options.y1 !== undefined && options.y2 !== undefined;
+
     return (
       this.db
         .with('assets', (qb) =>
@@ -715,38 +718,29 @@ export class AssetRepository {
              /* the API already makes sure that -180 < x1, x2 < 180
             /* the first case is when you search an asset with the International Date Line (x1 is on the west side, x2 on the east)
             */
-            .$if(
-              options.x1 !== undefined &&
-                options.x2 !== undefined &&
-                options.y1 !== undefined &&
-                options.y2 !== undefined &&
-                options.x1 > options.x2,
-              (qb) =>
-                qb
-                  .innerJoin('exif', 'exif.assetId', 'assets.id')
-                  .where('exif.longitude', 'is not', null) // Add NULL check
-                  .where('exif.latitude', 'is not', null) // Add NULL check
-                  .where((eb) =>
-                    eb.or([eb('exif.longitude', '>', options.x1!), eb('exif.longitude', '<', options.x2!)]),
-                  )
-                  .where('exif.latitude', '>', options.y2!)
-                  .where('exif.latitude', '<', options.y1!),
-            )
-            .$if(
-              options.x1 !== undefined &&
-                options.x2 !== undefined &&
-                options.y1 !== undefined &&
-                options.y2 !== undefined &&
-                options.x1 <= options.x2,
-              (qb) =>
-                qb
-                  .innerJoin('exif', 'exif.assetId', 'assets.id')
-                  .where('exif.longitude', 'is not', null) // Add NULL check
-                  .where('exif.latitude', 'is not', null) // Add NULL check
-                  .where('exif.longitude', '>', options.x1!)
-                  .where('exif.longitude', '<', options.x2!)
-                  .where('exif.latitude', '>', options.y2!)
-                  .where('exif.latitude', '<', options.y1!),
+            .$if(coordinatesDefined, (qb) =>
+              qb
+                .$if(options.x1! > options.x2!, (qb) =>
+                  qb
+                    .innerJoin('exif', 'exif.assetId', 'assets.id')
+                    .where('exif.longitude', 'is not', null)
+                    .where('exif.latitude', 'is not', null)
+                    .where((eb) =>
+                      eb.or([eb('exif.longitude', '>', options.x1!), eb('exif.longitude', '<', options.x2!)]),
+                    )
+                    .where('exif.latitude', '>', options.y2!)
+                    .where('exif.latitude', '<', options.y1!),
+                )
+                .$if(options.x1! <= options.x2!, (qb) =>
+                  qb
+                    .innerJoin('exif', 'exif.assetId', 'assets.id')
+                    .where('exif.longitude', 'is not', null)
+                    .where('exif.latitude', 'is not', null)
+                    .where('exif.longitude', '>', options.x1!)
+                    .where('exif.longitude', '<', options.x2!)
+                    .where('exif.latitude', '>', options.y2!)
+                    .where('exif.latitude', '<', options.y1!),
+                ),
             ),
         )
         .selectFrom('assets')
@@ -765,6 +759,9 @@ export class AssetRepository {
 
   @GenerateSql({ params: [DummyValue.TIME_BUCKET, { size: TimeBucketSize.MONTH, withStacked: true }] })
   async getTimeBucket(timeBucket: string, options: TimeBucketOptions): Promise<AssetEntity[]> {
+    const coordinatesDefined =
+      options.x1 !== undefined && options.x2 !== undefined && options.y1 !== undefined && options.y2 !== undefined;
+
     return (
       this.db
         .selectFrom('assets')
@@ -809,36 +806,27 @@ export class AssetRepository {
         /* the API already makes sure that -180 < x1, x2 < 180
         /* the first case is when you search an asset with the International Date Line (x1 is on the west side, x2 on the east)
         */
-        .$if(
-          options.x1 !== undefined &&
-            options.x2 !== undefined &&
-            options.y1 !== undefined &&
-            options.y2 !== undefined &&
-            options.x1 > options.x2,
-          (qb) =>
-            qb
-              // .innerJoin('exif', 'exif.assetId', 'assets.id')
-              .where('exif.longitude', 'is not', null) // Add NULL check
-              .where('exif.latitude', 'is not', null) // Add NULL check
-              .where((eb) => eb.or([eb('exif.longitude', '>', options.x1!), eb('exif.longitude', '<', options.x2!)]))
-              .where('exif.latitude', '>', options.y2!)
-              .where('exif.latitude', '<', options.y1!),
-        )
-        .$if(
-          options.x1 !== undefined &&
-            options.x2 !== undefined &&
-            options.y1 !== undefined &&
-            options.y2 !== undefined &&
-            options.x1 <= options.x2,
-          (qb) =>
-            qb
-              // .innerJoin('exif', 'exif.assetId', 'assets.id')
-              .where('exif.longitude', 'is not', null) // Add NULL check
-              .where('exif.latitude', 'is not', null) // Add NULL check
-              .where('exif.longitude', '>', options.x1!)
-              .where('exif.longitude', '<', options.x2!)
-              .where('exif.latitude', '>', options.y2!)
-              .where('exif.latitude', '<', options.y1!),
+        .$if(coordinatesDefined, (qb) =>
+          qb
+            .$if(options.x1! > options.x2!, (qb) =>
+              qb
+                .innerJoin('exif', 'exif.assetId', 'assets.id')
+                .where('exif.longitude', 'is not', null)
+                .where('exif.latitude', 'is not', null)
+                .where((eb) => eb.or([eb('exif.longitude', '>', options.x1!), eb('exif.longitude', '<', options.x2!)]))
+                .where('exif.latitude', '>', options.y2!)
+                .where('exif.latitude', '<', options.y1!),
+            )
+            .$if(options.x1! <= options.x2!, (qb) =>
+              qb
+                .innerJoin('exif', 'exif.assetId', 'assets.id')
+                .where('exif.longitude', 'is not', null)
+                .where('exif.latitude', 'is not', null)
+                .where('exif.longitude', '>', options.x1!)
+                .where('exif.longitude', '<', options.x2!)
+                .where('exif.latitude', '>', options.y2!)
+                .where('exif.latitude', '<', options.y1!),
+            ),
         )
         .orderBy('assets.localDateTime', options.order ?? 'desc')
         .execute() as any as Promise<AssetEntity[]>

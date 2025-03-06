@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 import { ApiProperty } from '@nestjs/swagger';
@@ -45,7 +45,6 @@ export class TimeBucketDto {
   order?: AssetOrder;
 
   @Optional()
-  @IsNumber()
   @Min(-180)
   @Max(180)
   @Type(() => Number)
@@ -53,7 +52,6 @@ export class TimeBucketDto {
   x1?: number;
 
   @Optional()
-  @IsNumber()
   @Min(-90)
   @Max(90)
   @Type(() => Number)
@@ -61,7 +59,6 @@ export class TimeBucketDto {
   y1?: number;
 
   @Optional()
-  @IsNumber()
   @Min(-180)
   @Max(180)
   @Type(() => Number)
@@ -69,7 +66,6 @@ export class TimeBucketDto {
   x2?: number;
 
   @Optional()
-  @IsNumber()
   @Min(-90)
   @Max(90)
   @Type(() => Number)

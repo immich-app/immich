@@ -32,17 +32,8 @@
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  // TODO: when getTimebuckets support withArchived
-  const isArchived = false;
-  const withStacked = true;
-
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const assetStore = new AssetStore({
-    isArchived,
-    withStacked,
-    withPartners: false,
-    isFavorite: false,
-  });
+  const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
   const assetInteraction = new AssetInteraction();
 
   let selectedAssets = $derived(assetInteraction.selectedAssetsArray);

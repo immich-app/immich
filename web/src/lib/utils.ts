@@ -343,13 +343,3 @@ export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T]
 
 // eslint-disable-next-line unicorn/prefer-code-point
 export const decodeBase64 = (data: string) => Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
-
-export const parseNumberOrUndefined = (value: string | null): number | undefined => {
-  return value !== null && !Number.isNaN(Number(value)) ? Number(value) : undefined;
-};
-
-export const checkEnumInArray = <T extends Record<string, string>>(enumArray: string[], enumType: T): boolean => {
-  const enumValues = Object.values(enumType) as string[];
-
-  return enumArray.some((value) => enumValues.includes(value));
-};
