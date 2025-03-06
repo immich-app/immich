@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/services/partner.service.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 
 class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
   final PartnerService _partnerService;

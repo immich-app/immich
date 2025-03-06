@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
@@ -25,7 +26,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
       if (user != null) {
         await Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(user, userPreferences),
+          UserConverter.fromAdminDto(user, userPreferences),
         );
       }
     } catch (_) {}

@@ -33,7 +33,7 @@ class AlbumsPage extends HookConsumerWidget {
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
     final filterMode = useState(QuickFilterMode.all);
-    final userId = ref.watch(currentUserProvider)?.id;
+    final userId = ref.watch(currentUserProvider)?.uid;
     final searchFocusNode = useFocusNode();
 
     toggleViewMode() {

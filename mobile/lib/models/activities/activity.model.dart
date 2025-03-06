@@ -1,4 +1,4 @@
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 
 enum ActivityType { comment, like }
 
