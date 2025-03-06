@@ -45,7 +45,7 @@ export const sendFile = async (
   handler: () => Promise<ImmichFileResponse>,
   logger: LoggingRepository,
 ): Promise<void> => {
-  //Promisified version of 'res.sendFile' for cleaner async handling
+  // Promisified version of 'res.sendFile' for cleaner async handling
   const _sendFile = (path: string, options: SendFileOptions) =>
     promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
