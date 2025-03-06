@@ -2,17 +2,14 @@
 
 echo "Initializing Immich ML $IMMICH_SOURCE_REF"
 
-if ! [ "$DEVICE" = "openvino" ]; then
-	: "${MACHINE_LEARNING_WORKER_TIMEOUT:=120}"
-else
-	: "${MACHINE_LEARNING_WORKER_TIMEOUT:=300}"
-fi
-
 # mimalloc seems to increase memory usage dramatically with openvino, need to investigate
 if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then
 	lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 	export LD_PRELOAD="$lib_path"
 	export LD_BIND_NOW=1
+	: "${MACHINE_LEARNING_WORKER_TIMEOUT:=120}"
+else
+	: "${MACHINE_LEARNING_WORKER_TIMEOUT:=300}"
 fi
 
 : "${IMMICH_HOST:=[::]}"
