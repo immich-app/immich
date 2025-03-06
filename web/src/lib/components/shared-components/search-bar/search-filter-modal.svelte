@@ -64,7 +64,6 @@
     return VALID_QUERY_TYPES.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
 
-
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
     queryType: defaultQueryType(),
