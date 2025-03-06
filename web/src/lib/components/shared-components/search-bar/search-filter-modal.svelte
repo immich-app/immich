@@ -2,7 +2,7 @@
   import type { SearchLocationFilter } from './search-location-section.svelte';
   import type { SearchDisplayFilters } from './search-display-section.svelte';
   import type { SearchDateFilter } from './search-date-section.svelte';
-  import { MediaType } from '$lib/constants';
+  import { MediaType, QueryType, VALID_QUERY_TYPES } from '$lib/constants';
 
   export type SearchFilter = {
     query: string;
@@ -59,11 +59,11 @@
     localStorage.setItem('searchQueryType', type);
   }
 
-  function defaultQueryType(): SearchFilter['queryType'] {
-    const storedQueryType = localStorage.getItem('searchQueryType') as SearchFilter['queryType'];
-    const validQueryTypes: Set<SearchFilter['queryType']> = new Set(['smart', 'metadata', 'description']);
-    return validQueryTypes.has(storedQueryType) ? storedQueryType : 'smart'; // default to smart, to reflect original functionality before this PR.
+  function defaultQueryType(): QueryType {
+    const storedQueryType = localStorage.getItem('searchQueryType') as QueryType;
+    return VALID_QUERY_TYPES.has(storedQueryType) ? storedQueryType : QueryType.SMART;
   }
+
 
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
