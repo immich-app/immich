@@ -42,7 +42,7 @@ RUN git apply /tmp/0001-disable-rocm-conv-algo-caching.patch
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 17 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.20.1 --use_rocm --rocm_home=/opt/rocm --use_migraphx
+    ONNXRUNTIME_VERSION=1.20.1 --use_migraphx --migraphx_home /opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
