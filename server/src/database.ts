@@ -52,5 +52,6 @@ export const columns = {
     'shared_links.password',
   ],
   userDto: ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'],
+  tagDto: ['id', 'value', 'createdAt', 'updatedAt', 'color', 'parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
 } as const;

@@ -34,7 +34,7 @@ describe(MetadataService.name, () => {
   let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, mocks } = newTestService(MetadataService, { metadataRepository }));
+    ({ sut, mocks } = newTestService(MetadataService, { metadata: metadataRepository }));
 
     mocks.storage.stat.mockResolvedValue({ size: 123_456 } as Stats);
 
