@@ -129,6 +129,19 @@ class QuickAccessButtons extends ConsumerWidget {
               ),
             ),
             leading: const Icon(
+              Icons.folder_outlined,
+              size: 26,
+            ),
+            title: Text(
+              'folders'.tr(),
+              style: context.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () => context.pushRoute(FolderRoute()),
+          ),
+          ListTile(
+            leading: const Icon(
               Icons.group_outlined,
               size: 26,
             ),

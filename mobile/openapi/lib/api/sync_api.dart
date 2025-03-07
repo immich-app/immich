@@ -22,7 +22,7 @@ class SyncApi {
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
   Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/ack';
+    final apiPath = r'/sync/ack';
 
     // ignore: prefer_final_locals
     Object? postBody = syncAckDeleteDto;
@@ -35,7 +35,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -61,7 +61,7 @@ class SyncApi {
   /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
   Future<Response> getDeltaSyncWithHttpInfo(AssetDeltaSyncDto assetDeltaSyncDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/delta-sync';
+    final apiPath = r'/sync/delta-sync';
 
     // ignore: prefer_final_locals
     Object? postBody = assetDeltaSyncDto;
@@ -74,7 +74,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -108,7 +108,7 @@ class SyncApi {
   /// * [AssetFullSyncDto] assetFullSyncDto (required):
   Future<Response> getFullSyncForUserWithHttpInfo(AssetFullSyncDto assetFullSyncDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/full-sync';
+    final apiPath = r'/sync/full-sync';
 
     // ignore: prefer_final_locals
     Object? postBody = assetFullSyncDto;
@@ -121,7 +121,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -155,7 +155,7 @@ class SyncApi {
   /// Performs an HTTP 'GET /sync/ack' operation and returns the [Response].
   Future<Response> getSyncAckWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/ack';
+    final apiPath = r'/sync/ack';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -168,7 +168,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -202,7 +202,7 @@ class SyncApi {
   /// * [SyncStreamDto] syncStreamDto (required):
   Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/stream';
+    final apiPath = r'/sync/stream';
 
     // ignore: prefer_final_locals
     Object? postBody = syncStreamDto;
@@ -215,7 +215,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -241,7 +241,7 @@ class SyncApi {
   /// * [SyncAckSetDto] syncAckSetDto (required):
   Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sync/ack';
+    final apiPath = r'/sync/ack';
 
     // ignore: prefer_final_locals
     Object? postBody = syncAckSetDto;
@@ -254,7 +254,7 @@ class SyncApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

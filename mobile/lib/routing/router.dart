@@ -5,6 +5,8 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/models/folder/recursive_folder.model.dart';
+import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
@@ -206,6 +208,11 @@ class AppRouter extends RootStackRouter {
       page: PartnerRoute.page,
       guards: [_authGuard, _duplicateGuard],
       transitionsBuilder: TransitionsBuilders.slideLeft,
+    ),
+    CustomRoute(
+      page: FolderRoute.page,
+      guards: [_authGuard],
+      transitionsBuilder: TransitionsBuilders.fadeIn,
     ),
     AutoRoute(
       page: PartnerDetailRoute.page,

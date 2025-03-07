@@ -11,7 +11,8 @@ import { authStub } from 'test/fixtures/auth.stub';
 import { faceStub } from 'test/fixtures/face.stub';
 import { partnerStub } from 'test/fixtures/partner.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { factory } from 'test/small.factory';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
 
 const stats: AssetStats = {
@@ -473,28 +474,30 @@ describe(AssetService.name, () => {
     });
 
     it('should immediately queue assets for deletion if trash is disabled', async () => {
-      mocks.asset.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
+      const asset = factory.asset({ isOffline: false });
+
+      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: false } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith(expect.anything(), { trashedBefore: new Date() });
+      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(new Date());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: assetStub.image.id, deleteOnDisk: true } },
+        { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
     });
 
     it('should queue assets for deletion after trash duration', async () => {
-      mocks.asset.getAll.mockResolvedValue({ hasNextPage: false, items: [assetStub.image] });
+      const asset = factory.asset({ isOffline: false });
+
+      mocks.asset.streamDeletedAssets.mockReturnValue(makeStream([asset]));
       mocks.systemMetadata.get.mockResolvedValue({ trash: { enabled: true, days: 7 } });
 
       await expect(sut.handleAssetDeletionCheck()).resolves.toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.getAll).toHaveBeenCalledWith(expect.anything(), {
-        trashedBefore: DateTime.now().minus({ days: 7 }).toJSDate(),
-      });
+      expect(mocks.asset.streamDeletedAssets).toHaveBeenCalledWith(DateTime.now().minus({ days: 7 }).toJSDate());
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
-        { name: JobName.ASSET_DELETION, data: { id: assetStub.image.id, deleteOnDisk: true } },
+        { name: JobName.ASSET_DELETION, data: { id: asset.id, deleteOnDisk: true } },
       ]);
     });
   });

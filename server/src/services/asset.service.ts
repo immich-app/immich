@@ -25,7 +25,6 @@ import { AssetStatus, JobName, JobStatus, Permission, QueueName } from 'src/enum
 import { BaseService } from 'src/services/base.service';
 import { ISidecarWriteJob, JobItem, JobOf } from 'src/types';
 import { getAssetFiles, getMyPartnerIds, onAfterUnlink, onBeforeLink, onBeforeUnlink } from 'src/utils/asset.util';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -156,21 +155,29 @@ export class AssetService extends BaseService {
     const trashedBefore = DateTime.now()
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { trashedBefore }),
-    );
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: asset.id,
-            deleteOnDisk: !asset.isOffline,
-          },
-        })),
-      );
+    let chunk: Array<{ id: string; isOffline: boolean }> = [];
+    const queueChunk = async () => {
+      if (chunk.length > 0) {
+        await this.jobRepository.queueAll(
+          chunk.map(({ id, isOffline }) => ({
+            name: JobName.ASSET_DELETION,
+            data: { id, deleteOnDisk: !isOffline },
+          })),
+        );
+        chunk = [];
+      }
+    };
+
+    const assets = this.assetRepository.streamDeletedAssets(trashedBefore);
+    for await (const asset of assets) {
+      chunk.push(asset);
+      if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueChunk();
+      }
     }
+
+    await queueChunk();
 
     return JobStatus.SUCCESS;
   }
