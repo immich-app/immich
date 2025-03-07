@@ -79,7 +79,7 @@ SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
     "MIGraphXExecutionProvider",
     "OpenVINOExecutionProvider",
-    # "CPUExecutionProvider",
+    "CPUExecutionProvider",
 ]
 
 RKNN_SUPPORTED_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
