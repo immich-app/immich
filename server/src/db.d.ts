@@ -4,7 +4,7 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { Permission, SyncEntityType } from 'src/enum';
+import { AssetType, Permission, SyncEntityType } from 'src/enum';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -100,7 +100,7 @@ export interface AssetFaces {
 }
 
 export interface AssetFiles {
-  assetId: string;
+  assetId: string | null;
   createdAt: Generated<Timestamp>;
   id: Generated<string>;
   path: string;
@@ -145,7 +145,7 @@ export interface Assets {
   stackId: string | null;
   status: Generated<AssetsStatusEnum>;
   thumbhash: Buffer | null;
-  type: string;
+  type: AssetType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }

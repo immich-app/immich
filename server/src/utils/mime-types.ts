@@ -114,5 +114,5 @@ export const mimeTypes = {
     }
     return AssetType.OTHER;
   },
-  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video), ...Object.keys(sidecar)],
+  getSupportedFileExtensions: () => [...Object.keys(image), ...Object.keys(video)],
 };

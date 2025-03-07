@@ -1,32 +1,12 @@
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { StackEntity } from 'src/entities/stack.entity';
-import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
+import { AssetStatus, AssetType } from 'src/enum';
+import { assetFileStub } from 'test/fixtures/asset-file.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { libraryStub } from 'test/fixtures/library.stub';
 import { userStub } from 'test/fixtures/user.stub';
-
-const previewFile: AssetFileEntity = {
-  id: 'file-1',
-  assetId: 'asset-id',
-  type: AssetFileType.PREVIEW,
-  path: '/uploads/user-id/thumbs/path.jpg',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-};
-
-const thumbnailFile: AssetFileEntity = {
-  id: 'file-2',
-  assetId: 'asset-id',
-  type: AssetFileType.THUMBNAIL,
-  path: '/uploads/user-id/webp/path.ext',
-  createdAt: new Date('2023-02-23T05:06:29.716Z'),
-  updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-};
-
-const files: AssetFileEntity[] = [previewFile, thumbnailFile];
 
 export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity => {
   return {
@@ -51,7 +31,7 @@ export const assetStub = {
     ownerId: 'user-id',
     deviceId: 'device-id',
     originalPath: 'upload/library/IMG_123.jpg',
-    files: [thumbnailFile],
+    files: [assetFileStub.thumbnailFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
     thumbhash: Buffer.from('blablabla', 'base64'),
@@ -85,7 +65,7 @@ export const assetStub = {
     ownerId: 'user-id',
     deviceId: 'device-id',
     originalPath: 'upload/library/IMG_456.jpg',
-    files: [previewFile],
+    files: [assetFileStub.previewFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
     thumbhash: Buffer.from('blablabla', 'base64'),
@@ -123,7 +103,7 @@ export const assetStub = {
     ownerId: 'user-id',
     deviceId: 'device-id',
     originalPath: '/original/path.ext',
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
     thumbhash: null,
@@ -159,7 +139,7 @@ export const assetStub = {
     deviceId: 'device-id',
     originalPath: '/original/path.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     type: AssetType.IMAGE,
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
@@ -204,7 +184,7 @@ export const assetStub = {
     ownerId: 'user-id',
     deviceId: 'device-id',
     originalPath: '/original/path.jpg',
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
     thumbhash: Buffer.from('blablabla', 'base64'),
@@ -245,7 +225,7 @@ export const assetStub = {
     originalPath: '/original/path.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -286,7 +266,7 @@ export const assetStub = {
     originalPath: '/original/path.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -326,7 +306,7 @@ export const assetStub = {
     originalPath: '/original/path.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -366,7 +346,7 @@ export const assetStub = {
     originalPath: '/data/user1/photo.jpg',
     checksum: Buffer.from('path hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -406,7 +386,7 @@ export const assetStub = {
     originalPath: '/original/path.ext',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -442,7 +422,7 @@ export const assetStub = {
     ownerId: 'user-id',
     deviceId: 'device-id',
     originalPath: '/original/path.ext',
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
     thumbhash: Buffer.from('blablabla', 'base64'),
@@ -483,7 +463,7 @@ export const assetStub = {
     originalPath: '/original/path.ext',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.VIDEO,
-    files: [previewFile],
+    files: [assetFileStub.previewFile],
     thumbhash: null,
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -571,7 +551,7 @@ export const assetStub = {
     originalPath: '/original/path.ext',
     sidecarPath: null,
     type: AssetType.IMAGE,
-    files: [previewFile],
+    files: [assetFileStub.previewFile],
     thumbhash: null,
     encodedVideoPath: null,
     createdAt: new Date('2023-02-22T05:06:29.716Z'),
@@ -614,7 +594,7 @@ export const assetStub = {
     thumbhash: null,
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files: [previewFile],
+    files: [assetFileStub.previewFile],
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -649,7 +629,7 @@ export const assetStub = {
     thumbhash: null,
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files: [previewFile],
+    files: [assetFileStub.previewFile],
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -684,7 +664,7 @@ export const assetStub = {
     originalPath: '/original/path.ext',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.VIDEO,
-    files: [previewFile],
+    files: [assetFileStub.previewFile],
     thumbhash: null,
     encodedVideoPath: '/encoded/video/path.mp4',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -721,7 +701,7 @@ export const assetStub = {
     originalPath: '/data/user1/photo.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -761,7 +741,7 @@ export const assetStub = {
     originalPath: '/original/path.dng',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -801,7 +781,7 @@ export const assetStub = {
     originalPath: '/original/path.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
@@ -843,7 +823,7 @@ export const assetStub = {
     originalPath: '/original/path.jpg',
     checksum: Buffer.from('file hash', 'utf8'),
     type: AssetType.IMAGE,
-    files,
+    files: [assetFileStub.previewFile, assetFileStub.thumbnailFile],
     thumbhash: Buffer.from('blablabla', 'base64'),
     encodedVideoPath: null,
     createdAt: new Date('2023-02-23T05:06:29.716Z'),

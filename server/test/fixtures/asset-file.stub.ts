@@ -1,0 +1,63 @@
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFileType } from 'src/enum';
+
+export const assetFileStub = {
+  xmpSidecarWithExtension: Object.freeze<AssetFileEntity>({
+    id: 'xmp-sidecar',
+    assetId: 'asset-id',
+    type: AssetFileType.SIDECAR,
+    path: 'upload/library/IMG_123.jpg.xmp',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    libraryId: 'library-id',
+  }),
+  sidecarMissingExtension: Object.freeze<AssetFileEntity>({
+    id: 'xmp-sidecar-without-extension',
+    assetId: 'asset-id',
+    type: AssetFileType.SIDECAR,
+    path: 'upload/library/IMG_123.jpg',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    libraryId: 'library-id',
+  }),
+  sidecarUppercaseExtension: Object.freeze<AssetFileEntity>({
+    id: 'xmp-sidecar-uppercase-extension',
+    assetId: 'asset-id',
+    type: AssetFileType.SIDECAR,
+    path: 'upload/library/IMG_123.jpg.XMP',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    libraryId: 'library-id',
+  }),
+  xmpSidecarOrpahed: Object.freeze<AssetFileEntity>({
+    id: 'xmp-sidecar-uppercase-extension',
+    assetId: undefined,
+    type: AssetFileType.SIDECAR,
+    path: 'upload/library/IMG_123.jpg.xmp',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    libraryId: 'library-id',
+  }),
+  previewFile: Object.freeze<AssetFileEntity>({
+    id: 'file-1',
+    assetId: 'asset-id',
+    type: AssetFileType.PREVIEW,
+    path: '/uploads/user-id/thumbs/path.jpg',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  }),
+  thumbnailFile: Object.freeze<AssetFileEntity>({
+    id: 'file-2',
+    assetId: 'asset-id',
+    type: AssetFileType.THUMBNAIL,
+    path: '/uploads/user-id/webp/path.ext',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+  }),
+};

@@ -53,7 +53,6 @@ const globalSetup = async () => {
   // @ts-expect-error
   const dataSource = new DataSource(config);
   await dataSource.initialize();
-  await dataSource.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
   await dataSource.runMigrations();
   await dataSource.destroy();
 };

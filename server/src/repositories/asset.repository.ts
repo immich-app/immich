@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import {
   AssetEntity,
   AssetEntityPlaceholder,
@@ -24,7 +24,7 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { anyUuid, asUuid, mapUpsertColumns, unnest } from 'src/utils/database';
+import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
@@ -162,7 +162,41 @@ export class AssetRepository {
       .insertInto('exif')
       .values(value)
       .onConflict((oc) =>
-        oc.columns(EXIF_CONFLICT_KEYS).doUpdateSet(() => mapUpsertColumns('exif', value, EXIF_CONFLICT_KEYS)),
+        oc.column('assetId').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              description: eb.ref('excluded.description'),
+              exifImageWidth: eb.ref('excluded.exifImageWidth'),
+              exifImageHeight: eb.ref('excluded.exifImageHeight'),
+              fileSizeInByte: eb.ref('excluded.fileSizeInByte'),
+              orientation: eb.ref('excluded.orientation'),
+              dateTimeOriginal: eb.ref('excluded.dateTimeOriginal'),
+              modifyDate: eb.ref('excluded.modifyDate'),
+              timeZone: eb.ref('excluded.timeZone'),
+              latitude: eb.ref('excluded.latitude'),
+              longitude: eb.ref('excluded.longitude'),
+              projectionType: eb.ref('excluded.projectionType'),
+              city: eb.ref('excluded.city'),
+              livePhotoCID: eb.ref('excluded.livePhotoCID'),
+              autoStackId: eb.ref('excluded.autoStackId'),
+              state: eb.ref('excluded.state'),
+              country: eb.ref('excluded.country'),
+              make: eb.ref('excluded.make'),
+              model: eb.ref('excluded.model'),
+              lensModel: eb.ref('excluded.lensModel'),
+              fNumber: eb.ref('excluded.fNumber'),
+              focalLength: eb.ref('excluded.focalLength'),
+              iso: eb.ref('excluded.iso'),
+              exposureTime: eb.ref('excluded.exposureTime'),
+              profileDescription: eb.ref('excluded.profileDescription'),
+              colorspace: eb.ref('excluded.colorspace'),
+              bitsPerSample: eb.ref('excluded.bitsPerSample'),
+              rating: eb.ref('excluded.rating'),
+              fps: eb.ref('excluded.fps'),
+            },
+            value,
+          ),
+        ),
       )
       .execute();
   }
@@ -177,9 +211,18 @@ export class AssetRepository {
       .insertInto('asset_job_status')
       .values(values)
       .onConflict((oc) =>
-        oc
-          .columns(JOB_STATUS_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_job_status', values[0], JOB_STATUS_CONFLICT_KEYS)),
+        oc.column('assetId').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
+              facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
+              metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
+              previewAt: eb.ref('excluded.previewAt'),
+              thumbnailAt: eb.ref('excluded.thumbnailAt'),
+            },
+            values[0],
+          ),
+        ),
       )
       .execute();
   }
@@ -374,6 +417,26 @@ export class AssetRepository {
       .where('originalPath', '=', originalPath)
       .limit(1)
       .executeTakeFirst() as any as Promise<AssetEntity | undefined>;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getByLibraryIdAndSidecarPath(libraryId: string, sidecarBasePath: string): Promise<AssetEntity[]> {
+    return this.db
+      .selectFrom('assets')
+      .selectAll('assets')
+      .where('assets.libraryId', '=', asUuid(libraryId))
+      .where('originalPath', 'like', `${sidecarBasePath}%`)
+      .execute() as any as Promise<AssetEntity[]>;
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  getAssetFilesByAssetIdAndType(assetId: string, type: AssetFileType): Promise<AssetFileEntity[]> {
+    return this.db
+      .selectFrom('asset_files')
+      .selectAll('asset_files')
+      .where('assetId', '=', asUuid(assetId))
+      .where('type', '=', type)
+      .execute() as any as Promise<AssetFileEntity[]>;
   }
 
   async getAll(
@@ -930,34 +993,70 @@ export class AssetRepository {
       .execute() as any as Promise<AssetEntity[]>;
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
-    await this.db
+  async upsertFile(file: Pick<Insertable<AssetFiles>, 'id' | 'assetId' | 'path' | 'type'>): Promise<AssetFileEntity> {
+    if (!file.assetId && file.type !== AssetFileType.SIDECAR) {
+      throw new Error('Asset ID is required for file upsert');
+    }
+
+    const value = { ...file, assetId: file.assetId ? asUuid(file.assetId) : null };
+
+    const newFile = (await this.db
       .insertInto('asset_files')
       .values(value)
       .onConflict((oc) =>
         oc
-          .columns(ASSET_FILE_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_files', value, ASSET_FILE_CONFLICT_KEYS)),
+          .columns(['assetId', 'type'])
+          .where('type', '<>', 'sidecar')
+          .doUpdateSet((eb) => ({
+            path: eb.ref('excluded.path'),
+          })),
       )
-      .execute();
+      .returningAll()
+      .execute()) as any as Promise<AssetFileEntity>;
+
+    return newFile;
   }
 
-  async upsertFiles(files: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
+  async upsertFiles(files: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>[]): Promise<AssetFileEntity[]> {
     if (files.length === 0) {
-      return;
+      return [];
     }
 
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
-    await this.db
+    const values = files.map((row) => ({ ...row, assetId: row.assetId ? asUuid(row.assetId) : null }));
+    return (await this.db
       .insertInto('asset_files')
       .values(values)
       .onConflict((oc) =>
         oc
-          .columns(ASSET_FILE_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_files', values[0], ASSET_FILE_CONFLICT_KEYS)),
+          .columns(['assetId', 'type'])
+          .where('type', '<>', 'sidecar')
+          .doUpdateSet((eb) => ({
+            path: eb.ref('excluded.path'),
+          })),
       )
-      .execute();
+      .returningAll()
+      .execute()) as any as Promise<AssetFileEntity[]>;
+  }
+
+  async getAssetFileById(assetFileId: string): Promise<AssetFileEntity | undefined> {
+    return this.db
+      .selectFrom('asset_files')
+      .selectAll('asset_files')
+      .where('asset_files.id', '=', asUuid(assetFileId))
+      .limit(1)
+      .executeTakeFirst() as any as Promise<AssetFileEntity | undefined>;
+  }
+
+  async getAssetSidecarsByPath(assetPath: string): Promise<AssetFileEntity | undefined> {
+    // TODO: check if this regex works
+    const assetPathWithoutExtension = assetPath.replace(/\.[^.]+$/, '');
+    return this.db
+      .selectFrom('asset_files')
+      .selectAll('asset_files')
+      .where('asset_files.id', 'like', `${assetPathWithoutExtension}%`)
+      .where('asset_files.type', '=', AssetFileType.SIDECAR)
+      .limit(1)
+      .executeTakeFirst() as any as Promise<AssetFileEntity | undefined>;
   }
 
   @GenerateSql({
@@ -1025,7 +1124,7 @@ export class AssetRepository {
               .select('path')
               .whereRef('asset_files.path', '=', eb.ref('path'))
               .rightJoin('assets', 'assets.id', 'asset_files.assetId')
-              .where((eb) => eb.or([eb('libraryId', '=', asUuid(libraryId)), eb('libraryId', '=', null)]))
+              .where((eb) => eb.or([eb('assets.libraryId', '=', asUuid(libraryId)), eb('assets.libraryId', '=', null)]))
               .where('isExternal', '=', true),
           ),
         ),

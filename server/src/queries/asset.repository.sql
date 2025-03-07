@@ -152,6 +152,24 @@ where
 limit
   $3
 
+-- AssetRepository.getByLibraryIdAndSidecarPath
+select
+  "assets".*
+from
+  "assets"
+where
+  "assets"."libraryId" = $1::uuid
+  and "originalPath" like $2
+
+-- AssetRepository.getAssetFilesByAssetIdAndType
+select
+  "asset_files".*
+from
+  "asset_files"
+where
+  "assetId" = $1::uuid
+  and "type" = $2
+
 -- AssetRepository.getAllByDeviceId
 select
   "deviceAssetId"

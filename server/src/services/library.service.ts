@@ -16,15 +16,25 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
+import { SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, AssetType, CrawlType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  CrawlType,
+  DatabaseLock,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  QueueName,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
 import { handlePromiseError } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -238,24 +248,31 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = job.paths.map((assetPath) => this.processSidecar(assetPath, library.ownerId, job.libraryId));
+    const sidecarImports = job.paths.map((path) => this.processSidecar(path, library.ownerId, job.libraryId));
 
-    const assetIds: string[] = [];
+    const sidecarIds: string[] = [];
 
-    for (let i = 0; i < assetImports.length; i += 5000) {
+    for (let i = 0; i < sidecarImports.length; i += 5000) {
       // Chunk the imports to avoid the postgres limit of max parameters at once
-      const chunk = assetImports.slice(i, i + 5000);
-      await this.assetRepository.createAll(chunk).then((assets) => assetIds.push(...assets.map((asset) => asset.id)));
+      const chunk = sidecarImports.slice(i, i + 5000);
+      await this.assetRepository
+        .upsertFiles(chunk)
+        .then((sidecars) => sidecarIds.push(...sidecars.map((sidecar) => sidecar.id)));
     }
 
     const progressMessage =
-      job.progressCounter && job.totalAssets
-        ? `(${job.progressCounter} of ${job.totalAssets})`
+      job.progressCounter && job.totalCount
+        ? `(${job.progressCounter} of ${job.totalCount})`
         : `(${job.progressCounter} done so far)`;
 
-    this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
+    this.logger.log(`Imported ${sidecarIds.length} ${progressMessage} sidecar(s) into library ${job.libraryId}`);
 
-    await this.queuePostSyncJobs(assetIds);
+    await this.jobRepository.queueAll(
+      sidecarIds.map((sidecarId) => ({
+        name: JobName.SIDECAR_RECONCILIATION,
+        data: { id: sidecarId },
+      })),
+    );
 
     return JobStatus.SUCCESS;
   }
@@ -283,8 +300,8 @@ export class LibraryService extends BaseService {
     }
 
     const progressMessage =
-      job.progressCounter && job.totalAssets
-        ? `(${job.progressCounter} of ${job.totalAssets})`
+      job.progressCounter && job.totalCount
+        ? `(${job.progressCounter} of ${job.totalCount})`
         : `(${job.progressCounter} done so far)`;
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
@@ -376,34 +393,37 @@ export class LibraryService extends BaseService {
 
     await this.assetRepository.updateByLibraryId(libraryId, { deletedAt: new Date() });
 
-    const assetPagination = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAll(pagination, { libraryId, withDeleted: true }),
-    );
-
     let assetsFound = false;
+    let chunk: string[] = [];
+
+    const queueChunk = async () => {
+      if (chunk.length > 0) {
+        assetsFound = true;
+        this.logger.debug(`Queueing deletion of ${chunk.length} asset(s) in library ${libraryId}`);
+        await this.jobRepository.queueAll(
+          chunk.map((id) => ({ name: JobName.ASSET_DELETION, data: { id, deleteOnDisk: false } })),
+        );
+        chunk = [];
+      }
+    };
 
     this.logger.debug(`Will delete all assets in library ${libraryId}`);
-    for await (const assets of assetPagination) {
-      if (assets.length > 0) {
-        assetsFound = true;
-      }
+    const assets = this.libraryRepository.streamAssetIds(libraryId);
+    for await (const asset of assets) {
+      chunk.push(asset.id);
 
-      this.logger.debug(`Queueing deletion of ${assets.length} asset(s) in library ${libraryId}`);
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: JobName.ASSET_DELETION,
-          data: {
-            id: asset.id,
-            deleteOnDisk: false,
-          },
-        })),
-      );
+      if (chunk.length >= 10_000) {
+        await queueChunk();
+      }
     }
+
+    await queueChunk();
 
     if (!assetsFound) {
       this.logger.log(`Deleting library ${libraryId}`);
       await this.libraryRepository.delete(libraryId);
     }
+
     return JobStatus.SUCCESS;
   }
 
@@ -430,24 +450,11 @@ export class LibraryService extends BaseService {
   }
 
   private processSidecar(filePath: string, ownerId: string, libraryId: string) {
-    const assetPath = path.normalize(filePath);
+    const sidecarPath = path.normalize(filePath);
 
     return {
-      ownerId,
-      libraryId,
-      checksum: this.cryptoRepository.hashSha1(`path:${assetPath}`),
-      originalPath: assetPath,
-
-      fileCreatedAt: null,
-      fileModifiedAt: null,
-      localDateTime: null,
-      // TODO: device asset id is deprecated, remove it
-      deviceAssetId: `${basename(assetPath)}`.replaceAll(/\s+/g, ''),
-      deviceId: 'Library Import',
-      type: mimeTypes.isVideo(assetPath) ? AssetType.VIDEO : AssetType.IMAGE,
-      originalFileName: parse(assetPath).base,
-      isExternal: true,
-      livePhotoVideoId: null,
+      path: sidecarPath,
+      type: AssetFileType.SIDECAR,
     };
   }
 
@@ -649,6 +656,7 @@ export class LibraryService extends BaseService {
       this.logger.debug(`Library ${job.id} not found, skipping refresh`);
       return JobStatus.SKIPPED;
     }
+
     this.logger.debug(`Validating import paths for library ${library.id}...`);
 
     const validImportPaths: string[] = [];
@@ -775,7 +783,6 @@ export class LibraryService extends BaseService {
     }
 
     const assetCount = await this.assetRepository.getLibraryAssetCount(job.id);
-
     if (!assetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);
       return JobStatus.SUCCESS;
@@ -801,42 +808,47 @@ export class LibraryService extends BaseService {
       return JobStatus.SUCCESS;
     }
 
-    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
+    let chunk: string[] = [];
+    let count = 0;
 
-    const existingAssets = usePagination(JOBS_LIBRARY_PAGINATION_SIZE, (pagination) =>
-      this.assetRepository.getAllInLibrary(pagination, job.id),
-    );
+    const queueChunk = async () => {
+      if (chunk.length > 0) {
+        count += chunk.length;
 
-    let currentAssetCount = 0;
-    for await (const assets of existingAssets) {
-      if (assets.length === 0) {
-        throw new BadRequestException(`Failed to get assets for library ${job.id}`);
+        await this.jobRepository.queue({
+          name: JobName.LIBRARY_SYNC_ASSETS,
+          data: {
+            libraryId: library.id,
+            importPaths: library.importPaths,
+            exclusionPatterns: library.exclusionPatterns,
+            assetIds: chunk.map((id) => id),
+            progressCounter: count,
+            totalAssets: assetCount,
+          },
+        });
+        chunk = [];
+
+        const completePercentage = ((100 * count) / assetCount).toFixed(1);
+
+        this.logger.log(
+          `Queued check of ${count} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
+        );
       }
+    };
 
-      currentAssetCount += assets.length;
+    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
+    const existingAssets = this.libraryRepository.streamAssetIds(library.id);
 
-      await this.jobRepository.queue({
-        name: JobName.LIBRARY_SYNC_ASSETS,
-        data: {
-          libraryId: library.id,
-          importPaths: library.importPaths,
-          exclusionPatterns: library.exclusionPatterns,
-          assetIds: assets.map(({ id }) => id),
-          progressCounter: currentAssetCount,
-          totalAssets: assetCount,
-        },
-      });
-
-      const completePercentage = ((100 * currentAssetCount) / assetCount).toFixed(1);
-
-      this.logger.log(
-        `Queued check of ${currentAssetCount} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
-      );
+    for await (const asset of existingAssets) {
+      chunk.push(asset.id);
+      if (chunk.length === 10_000) {
+        await queueChunk();
+      }
     }
 
-    if (currentAssetCount) {
-      this.logger.log(`Finished queuing ${currentAssetCount} asset check(s) for library ${library.id}`);
-    }
+    await queueChunk();
+
+    this.logger.log(`Finished queuing ${count} asset check(s) for library ${library.id}`);
 
     return JobStatus.SUCCESS;
   }

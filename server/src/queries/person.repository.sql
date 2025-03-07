@@ -13,12 +13,6 @@ set
   "personId" = $1
 where
   "asset_faces"."sourceType" = $2
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
 
 -- PersonRepository.delete
 delete from "person"
@@ -29,12 +23,6 @@ where
 delete from "asset_faces"
 where
   "asset_faces"."sourceType" = $1
-VACUUM
-ANALYZE asset_faces,
-face_search,
-person
-REINDEX TABLE asset_faces
-REINDEX TABLE person
 
 -- PersonRepository.getAllWithoutFaces
 select

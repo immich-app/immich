@@ -4,18 +4,24 @@ import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { sep } from 'node:path';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { WalkOptionsDto } from 'src/dtos/library.dto';
+import { LibraryResponseDto, WalkOptionsDto } from 'src/dtos/library.dto';
 import { CrawlType, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { TestContext, TestFactory } from 'test/factory';
 
 import { readdir } from 'node:fs/promises';
+import { LibraryEntity } from 'src/entities/library.entity';
 import { getKyselyDB, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
-type SidecarTest = {
+type sidecarCrawlTests = {
   description: string;
   sidecars: string[];
   files: string[];
+};
+
+type sidecarImportTests = {
+  description: string;
+  sidecars: string[];
 };
 
 describe(LibraryService.name, () => {
@@ -24,7 +30,21 @@ describe(LibraryService.name, () => {
   let context: TestContext;
   let tempDirectory: string;
 
-  beforeAll(async () => {
+  const removeTempDirectory = () => {
+    if (tempDirectory) {
+      try {
+        rmSync(tempDirectory, { recursive: true, force: true });
+      } catch (err: any) {
+        if (err.code !== 'ENOENT') {
+          throw err;
+        }
+      }
+    }
+  };
+
+  const cleanTempDirectory = async () => {
+    removeTempDirectory();
+
     tempDirectory = await new Promise<string>((resolve, reject) => {
       mkdtemp(`${tmpdir()}${sep}library-service-test`, (err, directory) => {
         if (err) reject(err);
@@ -35,6 +55,10 @@ describe(LibraryService.name, () => {
     if (!tempDirectory) {
       throw new Error('Temporary path not created');
     }
+  };
+
+  beforeAll(async () => {
+    await cleanTempDirectory();
 
     const db = await getKyselyDB();
     context = await TestContext.from(db).withUser({ isAdmin: true }).create();
@@ -42,50 +66,81 @@ describe(LibraryService.name, () => {
     ({ sut, mocks } = newTestService(LibraryService, context));
   });
 
-  afterAll(async () => {
-    if (tempDirectory) {
-      rmSync(tempDirectory, { recursive: true });
-    }
+  afterAll(() => {
+    removeTempDirectory();
   });
 
   it('should be defined', () => {
     expect(sut).toBeDefined();
   });
 
-  describe('handleQueueSyncFiles', () => {
-    const sidecarTests: SidecarTest[] = [
-      /* {
-        description: 'should handle jpg file no sidecar',
+  describe('Sidecar discovery and reconciliation', () => {
+    let library: LibraryResponseDto;
+
+    const crawlTests: sidecarCrawlTests[] = [
+      {
+        description: 'jpg file without sidecar',
         sidecars: [],
         files: ['image.jpg'],
       },
       {
-        description: 'should handle jpg file with xmp',
+        description: 'jpg file with .xmp',
         sidecars: ['image.jpg.xmp'],
         files: ['image.jpg'],
-      },*/
+      },
       {
-        description: 'should handle jpg file with xmp without extension',
+        description: 'jpg and png file with .xmp',
+        sidecars: ['image.jpg.xmp'],
+        files: ['image.jpg', 'image.png'],
+      },
+      {
+        description: '.jpg.xmp without image file',
+        sidecars: ['image.jpg.xmp'],
+        files: [],
+      },
+      {
+        description: '.xmp without image file',
+        sidecars: ['image.xmp'],
+        files: [],
+      },
+      {
+        description: 'jpg file with .xmp',
         sidecars: ['image.xmp'],
         files: ['image.jpg'],
       },
-      /*  {
-        description: 'should handle jpg file both sidecars xmp',
+      {
+        description: 'jpg file with .xmp and .jpg.xmp',
         sidecars: ['image.jpg.xmp', 'image.xmp'],
         files: ['image.jpg'],
-      },*/
+      },
+      {
+        description: 'jpg and png file with .jpg.xmp and .png.xmp',
+        sidecars: ['image.jpg.xmp', 'image.png.xmp'],
+        files: ['image.jpg', 'image.png'],
+      },
+      {
+        description: 'jpg and png file with .jpg.xmp and .png.xmp and .xmp',
+        sidecars: ['image.jpg.xmp', 'image.png.xmp', 'image.xmp'],
+        files: ['image.jpg', 'image.png'],
+      },
     ];
 
-    it.each(sidecarTests)('$description', async ({ sidecars, files }) => {
-      for (const file of files) {
-        const data = newRandomImage();
-        await writeFile(`${tempDirectory}${sep}${file}`, data);
-      }
+    const importTests: sidecarImportTests[] = [
+      {
+        description: 'jpg.xmp',
+        sidecars: ['image.jpg.xmp'],
+      },
+      {
+        description: '.xmp',
+        sidecars: ['image.xmp'],
+      },
+      {
+        description: 'both .xmp and .jpg.xmp',
+        sidecars: ['image.xmp', 'image.jpg.xmp'],
+      },
+    ];
 
-      for (const sidecar of sidecars) {
-        await writeFile(`${tempDirectory}${sep}${sidecar}`, '');
-      }
-
+    beforeAll(async () => {
       const userDto = TestFactory.user();
       const sessionDto = TestFactory.session({ userId: userDto.id });
       const authDto = TestFactory.auth({ user: userDto });
@@ -97,35 +152,86 @@ describe(LibraryService.name, () => {
         expect.fail('First user should exist');
       }
 
-      const libraryDto = TestFactory.library({ importPaths: [tempDirectory] }, user.id);
+      const libraryDto = TestFactory.library({}, user.id);
 
-      const library = await sut.create(libraryDto);
+      library = await sut.create(libraryDto);
+    });
+
+    beforeEach(async () => {
+      await cleanTempDirectory();
+      mocks.job.queue.mockClear();
+    });
+
+    afterEach(() => {
+      removeTempDirectory();
+    });
+
+    it.each(crawlTests)('Should crawl $description', async ({ sidecars, files }) => {
+      for (const file of files) {
+        const data = newRandomImage();
+        await writeFile(`${tempDirectory}${sep}${file}`, data);
+      }
+
+      for (const sidecar of sidecars) {
+        await writeFile(`${tempDirectory}${sep}${sidecar}`, '');
+      }
+
+      await sut.update(library.id, { importPaths: [tempDirectory] });
 
       await expect(sut.handleQueueSyncFiles({ id: library.id })).resolves.toBe(JobStatus.SUCCESS);
 
       if (sidecars.length > 0) {
-        expect(mocks.job.queue).toHaveBeenCalledWith({
-          name: JobName.LIBRARY_SYNC_SIDECARS,
-          data: {
-            libraryId: library.id,
-            paths: sidecars.map((sidecar) => `${tempDirectory}${sep}${sidecar}`),
-            progressCounter: expect.any(Number),
-          },
-        });
+        expect(mocks.job.queue).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: JobName.LIBRARY_SYNC_SIDECARS,
+            data: expect.objectContaining({
+              libraryId: library.id,
+              paths: sidecars.map((sidecar) => `${tempDirectory}${sep}${sidecar}`),
+            }),
+          }),
+        );
+      } else {
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: JobName.LIBRARY_SYNC_SIDECARS,
+          }),
+        );
       }
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.LIBRARY_SYNC_FILES,
-        data: {
-          libraryId: library.id,
-          paths: files.map((file) => `${tempDirectory}${sep}${file}`),
-          progressCounter: expect.any(Number),
-        },
-      });
-
-      for (const file of [...files, ...sidecars]) {
-        rmSync(`${tempDirectory}${sep}${file}`);
+      if (files.length > 0) {
+        expect(mocks.job.queue).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: JobName.LIBRARY_SYNC_FILES,
+            data: expect.objectContaining({
+              libraryId: library.id,
+              paths: files.map((file) => `${tempDirectory}${sep}${file}`),
+            }),
+          }),
+        );
+      } else {
+        expect(mocks.job.queue).not.toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: JobName.LIBRARY_SYNC_FILES,
+          }),
+        );
       }
+    });
+
+    it.each(importTests)('Should import $description', async ({ sidecars }) => {
+      await sut.update(library.id, { importPaths: [tempDirectory] });
+
+      await expect(sut.handleSyncSidecars({ paths: sidecars, libraryId: library.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith(
+        sidecars.map(() =>
+          expect.objectContaining({
+            name: JobName.SIDECAR_RECONCILIATION,
+            data: expect.objectContaining({
+              id: expect.any(String),
+            }),
+          }),
+        ),
+      );
     });
   });
 });

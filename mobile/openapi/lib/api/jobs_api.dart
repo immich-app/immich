@@ -22,7 +22,7 @@ class JobsApi {
   /// * [JobCreateDto] jobCreateDto (required):
   Future<Response> createJobWithHttpInfo(JobCreateDto jobCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/jobs';
+    final apiPath = r'/jobs';
 
     // ignore: prefer_final_locals
     Object? postBody = jobCreateDto;
@@ -35,7 +35,7 @@ class JobsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -58,7 +58,7 @@ class JobsApi {
   /// Performs an HTTP 'GET /jobs' operation and returns the [Response].
   Future<Response> getAllJobsStatusWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/jobs';
+    final apiPath = r'/jobs';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -71,7 +71,7 @@ class JobsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -104,7 +104,7 @@ class JobsApi {
   /// * [JobCommandDto] jobCommandDto (required):
   Future<Response> sendJobCommandWithHttpInfo(JobName id, JobCommandDto jobCommandDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/jobs/{id}'
+    final apiPath = r'/jobs/{id}'
       .replaceAll('{id}', id.toString());
 
     // ignore: prefer_final_locals
@@ -118,7 +118,7 @@ class JobsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

@@ -152,6 +152,7 @@ export class StorageTemplateService extends BaseService {
       this.logger.log('Storage template migration disabled, skipping');
       return JobStatus.SKIPPED;
     }
+    await this.moveRepository.cleanMoveHistory();
     const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) =>
       this.assetRepository.getAll(pagination, { withExif: true, withArchived: true }),
     );
@@ -173,6 +174,12 @@ export class StorageTemplateService extends BaseService {
     this.logger.log('Finished storage template migration');
 
     return JobStatus.SUCCESS;
+  }
+
+  @OnEvent({ name: 'asset.delete' })
+  async handleMoveHistoryCleanup({ assetId }: ArgOf<'asset.delete'>) {
+    this.logger.debug(`Cleaning up move history for asset ${assetId}`);
+    await this.moveRepository.cleanMoveHistorySingle(assetId);
   }
 
   async moveAsset(asset: AssetEntity, metadata: MoveAssetMetadata) {
@@ -219,9 +226,36 @@ export class StorageTemplateService extends BaseService {
 
     try {
       const source = asset.originalPath;
-      const extension = path.extname(source).split('.').pop() as string;
+      let extension = path.extname(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filename, `.${extension}`));
+      extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
+
+      switch (extension) {
+        case 'jpeg':
+        case 'jpe': {
+          extension = 'jpg';
+          break;
+        }
+        case 'tif': {
+          extension = 'tiff';
+          break;
+        }
+        case '3gpp': {
+          extension = '3gp';
+          break;
+        }
+        case 'mpeg':
+        case 'mpe': {
+          extension = 'mpg';
+          break;
+        }
+        case 'm2ts':
+        case 'm2t': {
+          extension = 'mts';
+          break;
+        }
+      }
 
       let albumName = null;
       if (this.template.needsAlbum) {

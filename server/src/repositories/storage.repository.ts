@@ -201,8 +201,6 @@ export class StorageRepository {
 
     const globbedPaths = pathsToCrawl.map((path) => this.asGlob(path, crawlType));
 
-    console.warn('Globbing paths:', globbedPaths);
-
     const stream = globStream(globbedPaths, {
       absolute: true,
       caseSensitiveMatch: false,

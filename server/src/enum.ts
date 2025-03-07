@@ -36,7 +36,6 @@ export enum AssetFileType {
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
   SIDECAR = 'sidecar',
-  SIDECAR_WITHOUT_EXTENSION = 'sidecar_without_extension',
 }
 
 export enum AlbumUserRole {
@@ -506,6 +505,7 @@ export enum JobName {
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
   SIDECAR_DISCOVERY = 'sidecar-discovery',
+  SIDECAR_RECONCILIATION = 'sidecar-reconciliation',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
 
