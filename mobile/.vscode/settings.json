@@ -5,5 +5,5 @@
   },
   "files.watcherExclude": {
     "**/.fvm": true
-  },
+  }
 }
