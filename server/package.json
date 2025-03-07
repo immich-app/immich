@@ -107,6 +107,7 @@
     "@types/archiver": "^6.0.0",
     "@types/async-lock": "^1.4.2",
     "@types/bcrypt": "^5.0.0",
+    "@types/cookie": "^0.6.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/express": "^4.17.17",
     "@types/fluent-ffmpeg": "^2.1.21",
