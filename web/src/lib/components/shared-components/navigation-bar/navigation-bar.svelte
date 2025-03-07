@@ -63,7 +63,7 @@
     <div class="flex flex-row ml-4">
       <CircleIconButton
         id={menuButtonId}
-        title={'Main menu'}
+        title={$t('main_menu')}
         icon={mdiMenu}
         padding="2"
         onclick={() => {

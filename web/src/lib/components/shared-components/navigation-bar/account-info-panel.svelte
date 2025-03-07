@@ -16,10 +16,9 @@
 
   interface Props {
     onLogout: () => void;
-    onClose?: () => void;
   }
 
-  let { onLogout, onClose = () => {} }: Props = $props();
+  let { onLogout }: Props = $props();
 
   let isShowSelectAvatar = $state(false);
 
