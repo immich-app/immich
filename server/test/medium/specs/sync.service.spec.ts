@@ -41,7 +41,7 @@ describe(SyncService.name, () => {
     expect(SYNC_TYPES_ORDER.length).toBe(Object.keys(SyncRequestType).length);
   });
 
-  describe.concurrent('users', () => {
+  describe.concurrent(SyncEntityType.UserV1, () => {
     it('should detect and sync the first user', async () => {
       const { context, auth, sut, testSync } = await setup();
 
@@ -197,7 +197,7 @@ describe(SyncService.name, () => {
     });
   });
 
-  describe.concurrent('partners', () => {
+  describe.concurrent(SyncEntityType.PartnerV1, () => {
     it('should detect and sync the first partner', async () => {
       const { auth, context, sut, testSync } = await setup();
 
@@ -357,7 +357,7 @@ describe(SyncService.name, () => {
       );
     });
 
-    it('should not sync a partner for an unrelated user', async () => {
+    it('should not sync a partner or partner delete for an unrelated user', async () => {
       const { auth, context, testSync } = await setup();
 
       const user2 = await context.createUser();
@@ -365,9 +365,11 @@ describe(SyncService.name, () => {
 
       await context.createPartner({ sharedById: user2.id, sharedWithId: user3.id });
 
-      const response = await testSync(auth, [SyncRequestType.PartnersV1]);
+      expect(await testSync(auth, [SyncRequestType.PartnersV1])).toHaveLength(0);
 
-      expect(response).toHaveLength(0);
+      await context.partner.remove({ sharedById: user2.id, sharedWithId: user3.id });
+
+      expect(await testSync(auth, [SyncRequestType.PartnersV1])).toHaveLength(0);
     });
 
     it('should not sync a partner delete after a user is deleted', async () => {
@@ -377,13 +379,11 @@ describe(SyncService.name, () => {
       await context.createPartner({ sharedById: user2.id, sharedWithId: auth.user.id });
       await context.user.delete({ id: user2.id }, true);
 
-      const response = await testSync(auth, [SyncRequestType.PartnersV1]);
-
-      expect(response).toHaveLength(0);
+      expect(await testSync(auth, [SyncRequestType.PartnersV1])).toHaveLength(0);
     });
   });
 
-  describe.concurrent('assets', () => {
+  describe.concurrent(SyncEntityType.AssetV1, () => {
     it('should detect and sync the first asset', async () => {
       const { auth, context, sut, testSync } = await setup();
 
@@ -464,17 +464,22 @@ describe(SyncService.name, () => {
       expect(ackSyncResponse).toHaveLength(0);
     });
 
-    it('should not sync an asset for an unrelated user', async () => {
+    it('should not sync an asset or asset delete for an unrelated user', async () => {
       const { auth, context, testSync } = await setup();
 
       const user2 = await context.createUser();
+      const session = TestFactory.session({ userId: user2.id });
+      const auth2 = TestFactory.auth({ session, user: user2 });
 
       const asset = TestFactory.asset({ ownerId: user2.id });
       await context.createAsset(asset);
 
-      const response = await testSync(auth, [SyncRequestType.AssetsV1]);
+      expect(await testSync(auth2, [SyncRequestType.AssetsV1])).toHaveLength(1);
+      expect(await testSync(auth, [SyncRequestType.AssetsV1])).toHaveLength(0);
 
-      expect(response).toHaveLength(0);
+      await context.asset.remove(asset);
+      expect(await testSync(auth2, [SyncRequestType.AssetsV1])).toHaveLength(1);
+      expect(await testSync(auth, [SyncRequestType.AssetsV1])).toHaveLength(0);
     });
   });
 
@@ -591,6 +596,40 @@ describe(SyncService.name, () => {
 
       await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
     });
+
+    it('should not sync an asset or asset delete for own user', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      const asset = await context.createAsset({ ownerId: auth.user.id });
+      const partner = { sharedById: user2.id, sharedWithId: auth.user.id };
+      await context.partner.create(partner);
+
+      await expect(testSync(auth, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
+
+      await context.asset.remove(asset);
+
+      await expect(testSync(auth, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
+    });
+
+    it('should not sync an asset or asset delete for unrelated user', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      const session = TestFactory.session({ userId: user2.id });
+      const auth2 = TestFactory.auth({ session, user: user2 });
+      const asset = await context.createAsset({ ownerId: user2.id });
+
+      await expect(testSync(auth2, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
+
+      await context.asset.remove(asset);
+
+      await expect(testSync(auth2, [SyncRequestType.AssetsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetsV1])).resolves.toHaveLength(0);
+    });
   });
 
   describe.concurrent(SyncRequestType.AssetExifsV1, () => {
@@ -648,6 +687,24 @@ describe(SyncService.name, () => {
       const ackSyncResponse = await testSync(auth, [SyncRequestType.AssetExifsV1]);
 
       expect(ackSyncResponse).toHaveLength(0);
+    });
+
+    it('should only sync asset exif for own user', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      const session = TestFactory.session({ userId: user2.id });
+      const auth2 = TestFactory.auth({ session, user: user2 });
+
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      const asset = TestFactory.asset({ ownerId: user2.id });
+      const exif = { assetId: asset.id, make: 'Canon' };
+
+      await context.createAsset(asset);
+      await context.asset.upsertExif(exif);
+
+      await expect(testSync(auth2, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(0);
     });
   });
 
@@ -707,6 +764,37 @@ describe(SyncService.name, () => {
       const ackSyncResponse = await testSync(auth, [SyncRequestType.PartnerAssetExifsV1]);
 
       expect(ackSyncResponse).toHaveLength(0);
+    });
+
+    it('should not sync partner asset exif for own user', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      const asset = TestFactory.asset({ ownerId: auth.user.id });
+      const exif = { assetId: asset.id, make: 'Canon' };
+      await context.createAsset(asset);
+      await context.asset.upsertExif(exif);
+
+      await expect(testSync(auth, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
+    });
+
+    it('should not sync partner asset exif for unrelated user', async () => {
+      const { auth, context, testSync } = await setup();
+
+      const user2 = await context.createUser();
+      const user3 = await context.createUser();
+      const session = TestFactory.session({ userId: user3.id });
+      const authUser3 = TestFactory.auth({ session, user: user3 });
+      await context.partner.create({ sharedById: user2.id, sharedWithId: auth.user.id });
+      const asset = TestFactory.asset({ ownerId: user3.id });
+      const exif = { assetId: asset.id, make: 'Canon' };
+      await context.createAsset(asset);
+      await context.asset.upsertExif(exif);
+
+      await expect(testSync(authUser3, [SyncRequestType.AssetExifsV1])).resolves.toHaveLength(1);
+      await expect(testSync(auth, [SyncRequestType.PartnerAssetExifsV1])).resolves.toHaveLength(0);
     });
   });
 });
