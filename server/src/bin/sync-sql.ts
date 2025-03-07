@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClassConstructor } from 'class-transformer';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ClsModule } from 'nestjs-cls';
@@ -14,15 +13,13 @@ import { join } from 'node:path';
 import postgres from 'postgres';
 import { format } from 'sql-formatter';
 import { GENERATE_SQL_KEY, GenerateSqlQueries } from 'src/decorators';
-import { entities } from 'src/entities';
 import { repositories } from 'src/repositories';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
-import { Logger } from 'typeorm';
 
-export class SqlLogger implements Logger {
+export class SqlLogger {
   queries: string[] = [];
   errors: Array<{ error: string | Error; query: string }> = [];
 
@@ -38,11 +35,6 @@ export class SqlLogger implements Logger {
   logQueryError(error: string | Error, query: string) {
     this.errors.push({ error, query });
   }
-
-  logQuerySlow() {}
-  logSchemaBuild() {}
-  logMigration() {}
-  log() {}
 }
 
 const reflector = new Reflector();
@@ -94,13 +86,6 @@ class SqlGenerator {
           },
         }),
         ClsModule.forRoot(cls.config),
-        TypeOrmModule.forRoot({
-          ...database.config.typeorm,
-          entities,
-          logging: ['query'],
-          logger: this.sqlLogger,
-        }),
-        TypeOrmModule.forFeature(entities),
         OpenTelemetryModule.forRoot(otel),
       ],
       providers: [...repositories, AuthService, SchedulerRegistry],

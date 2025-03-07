@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
@@ -24,7 +23,7 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { anyUuid, asUuid, mapUpsertColumns, unnest } from 'src/utils/database';
+import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
@@ -162,7 +161,41 @@ export class AssetRepository {
       .insertInto('exif')
       .values(value)
       .onConflict((oc) =>
-        oc.columns(EXIF_CONFLICT_KEYS).doUpdateSet(() => mapUpsertColumns('exif', value, EXIF_CONFLICT_KEYS)),
+        oc.column('assetId').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              description: eb.ref('excluded.description'),
+              exifImageWidth: eb.ref('excluded.exifImageWidth'),
+              exifImageHeight: eb.ref('excluded.exifImageHeight'),
+              fileSizeInByte: eb.ref('excluded.fileSizeInByte'),
+              orientation: eb.ref('excluded.orientation'),
+              dateTimeOriginal: eb.ref('excluded.dateTimeOriginal'),
+              modifyDate: eb.ref('excluded.modifyDate'),
+              timeZone: eb.ref('excluded.timeZone'),
+              latitude: eb.ref('excluded.latitude'),
+              longitude: eb.ref('excluded.longitude'),
+              projectionType: eb.ref('excluded.projectionType'),
+              city: eb.ref('excluded.city'),
+              livePhotoCID: eb.ref('excluded.livePhotoCID'),
+              autoStackId: eb.ref('excluded.autoStackId'),
+              state: eb.ref('excluded.state'),
+              country: eb.ref('excluded.country'),
+              make: eb.ref('excluded.make'),
+              model: eb.ref('excluded.model'),
+              lensModel: eb.ref('excluded.lensModel'),
+              fNumber: eb.ref('excluded.fNumber'),
+              focalLength: eb.ref('excluded.focalLength'),
+              iso: eb.ref('excluded.iso'),
+              exposureTime: eb.ref('excluded.exposureTime'),
+              profileDescription: eb.ref('excluded.profileDescription'),
+              colorspace: eb.ref('excluded.colorspace'),
+              bitsPerSample: eb.ref('excluded.bitsPerSample'),
+              rating: eb.ref('excluded.rating'),
+              fps: eb.ref('excluded.fps'),
+            },
+            value,
+          ),
+        ),
       )
       .execute();
   }
@@ -177,9 +210,18 @@ export class AssetRepository {
       .insertInto('asset_job_status')
       .values(values)
       .onConflict((oc) =>
-        oc
-          .columns(JOB_STATUS_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_job_status', values[0], JOB_STATUS_CONFLICT_KEYS)),
+        oc.column('assetId').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
+              facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
+              metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
+              previewAt: eb.ref('excluded.previewAt'),
+              thumbnailAt: eb.ref('excluded.thumbnailAt'),
+            },
+            values[0],
+          ),
+        ),
       )
       .execute();
   }
@@ -383,17 +425,6 @@ export class AssetRepository {
     const builder = searchAssetBuilder(this.db, options)
       .select(withFiles)
       .orderBy('assets.createdAt', orderDirection ?? 'asc')
-      .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0);
-    const items = await builder.execute();
-    return paginationHelper(items as any as AssetEntity[], pagination.take);
-  }
-
-  async getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
-    const builder = this.db
-      .selectFrom('assets')
-      .select('id')
-      .where('libraryId', '=', asUuid(libraryId))
       .limit(pagination.take + 1)
       .offset(pagination.skip ?? 0);
     const items = await builder.execute();
@@ -936,9 +967,9 @@ export class AssetRepository {
       .insertInto('asset_files')
       .values(value)
       .onConflict((oc) =>
-        oc
-          .columns(ASSET_FILE_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_files', value, ASSET_FILE_CONFLICT_KEYS)),
+        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+          path: eb.ref('excluded.path'),
+        })),
       )
       .execute();
   }
@@ -953,9 +984,9 @@ export class AssetRepository {
       .insertInto('asset_files')
       .values(values)
       .onConflict((oc) =>
-        oc
-          .columns(ASSET_FILE_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_files', values[0], ASSET_FILE_CONFLICT_KEYS)),
+        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+          path: eb.ref('excluded.path'),
+        })),
       )
       .execute();
   }
