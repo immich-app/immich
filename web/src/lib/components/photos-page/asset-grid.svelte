@@ -709,14 +709,14 @@
 
   const focusNextAsset = async () => {
     if (assetInteraction.focussedAssetId === null) {
-      const firstAsset = $assetStore.getFirstAsset();
+      const firstAsset = assetStore.getFirstAsset();
       if (firstAsset !== null) {
         assetInteraction.focussedAssetId = firstAsset.id;
       }
     } else {
-      const focussedAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      const focussedAsset = assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
       if (focussedAsset) {
-        const nextAsset = await $assetStore.getNextAsset(focussedAsset);
+        const nextAsset = await assetStore.getNextAsset(focussedAsset);
         if (nextAsset !== null) {
           assetInteraction.focussedAssetId = nextAsset.id;
         }
@@ -726,9 +726,9 @@
 
   const focusPreviousAsset = async () => {
     if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = $assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      const focussedAsset = assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
       if (focussedAsset) {
-        const previousAsset = await $assetStore.getPreviousAsset(focussedAsset);
+        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
         if (previousAsset) {
           assetInteraction.focussedAssetId = previousAsset.id;
         }
