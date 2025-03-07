@@ -186,8 +186,6 @@ export class MetadataService extends BaseService {
 
     const { width, height } = this.getImageDimensions(exifTags);
 
-    this.logger.debug(`Collecting exif data for ${asset.id}: ${JSON.stringify(exifTags)}`);
-
     const exifData: Insertable<Exif> = {
       assetId: asset.id,
 
