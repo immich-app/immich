@@ -402,6 +402,7 @@ class BackgroundService {
       exifInfoRepository,
       userRepository,
       eTagRepository,
+      settingsService,
     );
     UserService userService = UserService(
       partnerApiRepository,

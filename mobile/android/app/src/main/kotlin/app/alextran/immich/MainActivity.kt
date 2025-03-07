@@ -111,21 +111,21 @@ class MainActivity : FlutterActivity() {
     }
 
     fun getTrashedFileUri(contentResolver: ContentResolver, fileName: String): Uri? {
-    val contentUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
-    val projection = arrayOf(MediaStore.Files.FileColumns._ID)
+        val contentUri = MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        val projection = arrayOf(MediaStore.Files.FileColumns._ID)
 
-    val queryArgs = Bundle().apply {
-        putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Files.FileColumns.DISPLAY_NAME} = ?")
-        putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(fileName))
-        putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
-    }
-
-    contentResolver.query(contentUri, projection, queryArgs, null)?.use { cursor ->
-        if (cursor.moveToFirst()) {
-            val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
-            return ContentUris.withAppendedId(contentUri, id)
+        val queryArgs = Bundle().apply {
+            putString(ContentResolver.QUERY_ARG_SQL_SELECTION, "${MediaStore.Files.FileColumns.DISPLAY_NAME} = ?")
+            putStringArray(ContentResolver.QUERY_ARG_SQL_SELECTION_ARGS, arrayOf(fileName))
+            putInt(MediaStore.QUERY_ARG_MATCH_TRASHED, MediaStore.MATCH_ONLY)
         }
+
+        contentResolver.query(contentUri, projection, queryArgs, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns._ID))
+                return ContentUris.withAppendedId(contentUri, id)
+            }
+        }
+        return null
     }
-    return null
-}
 }

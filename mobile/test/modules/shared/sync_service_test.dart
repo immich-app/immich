@@ -52,6 +52,7 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
+    final MockAppSettingService appSettingService = MockAppSettingService();
     final owner = User(
       id: "1",
       updatedAt: DateTime.now(),
@@ -86,6 +87,7 @@ void main() {
         exifInfoRepository,
         userRepository,
         eTagRepository,
+        appSettingService,
       );
       when(() => eTagRepository.get(owner.isarId))
           .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));

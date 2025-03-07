@@ -236,6 +236,8 @@ enum StoreKey<T> {
 
   // Video settings
   loadOriginalVideo<bool>(136, type: bool),
+
+  manageLocalMediaAndroid<bool>(137, type: bool),
   ;
 
   const StoreKey(
