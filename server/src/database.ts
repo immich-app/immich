@@ -15,6 +15,14 @@ export type AuthApiKey = {
   permissions: Permission[];
 };
 
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  profileImagePath: string;
+  profileChangedAt: Date;
+};
+
 export type AuthSharedLink = {
   id: string;
   expiresAt: Date | null;

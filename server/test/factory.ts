@@ -1,5 +1,5 @@
 import { Insertable, Kysely } from 'kysely';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { Assets, DB, Partners, Sessions, Users } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -36,6 +36,7 @@ import { VersionHistoryRepository } from 'src/repositories/version-history.repos
 import { ViewRepository } from 'src/repositories/view-repository';
 import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
+import { newUuid } from 'test/small.factory';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -58,8 +59,6 @@ type Asset = Insertable<Assets>;
 type User = Partial<Insertable<Users>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
-
-export const newUuid = () => randomUUID() as string;
 
 export class TestFactory {
   private assets: Asset[] = [];
