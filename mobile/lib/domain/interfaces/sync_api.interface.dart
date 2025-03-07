@@ -6,4 +6,6 @@ abstract interface class ISyncApiRepository {
   Stream<List<SyncEvent>> watchUserSyncEvent();
 
   Stream<List<SyncEvent>> watchAssetSyncEvent();
+
+  Stream<List<SyncEvent>> watchExifSyncEvent();
 }

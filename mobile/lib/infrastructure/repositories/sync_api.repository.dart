@@ -16,14 +16,30 @@ class SyncApiRepository implements ISyncApiRepository {
   Stream<List<SyncEvent>> watchUserSyncEvent() {
     return _getSyncStream(
       SyncStreamDto(types: [SyncRequestType.usersV1]),
+      methodName: 'watchUserSyncEvent',
     );
   }
 
   @override
   Stream<List<SyncEvent>> watchAssetSyncEvent() {
     return _getSyncStream(
-      SyncStreamDto(types: [SyncRequestType.assetsV1]),
+      SyncStreamDto(
+        types: [SyncRequestType.assetsV1, SyncRequestType.partnerAssetsV1],
+      ),
       methodName: 'watchAssetSyncEvent',
+    );
+  }
+
+  @override
+  Stream<List<SyncEvent>> watchExifSyncEvent() {
+    return _getSyncStream(
+      SyncStreamDto(
+        types: [
+          SyncRequestType.assetExifsV1,
+          SyncRequestType.partnerAssetExifsV1,
+        ],
+      ),
+      methodName: 'watchExifSyncEvent',
     );
   }
 
@@ -34,7 +50,7 @@ class SyncApiRepository implements ISyncApiRepository {
 
   Stream<List<SyncEvent>> _getSyncStream(
     SyncStreamDto dto, {
-    int batchSize = 20000,
+    int batchSize = 10000,
     String methodName = '',
   }) async* {
     final stopwatch = Stopwatch()..start();
@@ -95,17 +111,33 @@ class SyncApiRepository implements ISyncApiRepository {
 }
 
 const _kResponseMap = <SyncEntityType, Function(dynamic)>{
+  /// user
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
+
+  /// partners
+  SyncEntityType.partnerV1: SyncPartnerV1.fromJson,
+  SyncEntityType.partnerDeleteV1: SyncPartnerDeleteV1.fromJson,
+
+  /// assets
   SyncEntityType.assetV1: SyncAssetV1.fromJson,
   SyncEntityType.assetDeleteV1: SyncAssetDeleteV1.fromJson,
+  SyncEntityType.assetExifV1: SyncAssetExifV1.fromJson,
+
+  /// partners' assets
+  SyncEntityType.partnerAssetV1: SyncAssetV1.fromJson,
+  SyncEntityType.partnerAssetDeleteV1: SyncAssetDeleteV1.fromJson,
+  SyncEntityType.partnerAssetExifV1: SyncAssetExifV1.fromJson,
+
+  /// album
 };
 
 // Need to be outside of the class to be able to use compute
 List<SyncEvent> _parseSyncResponse(List<String> lines) {
+  final stopwatch = Stopwatch()..start();
   final List<SyncEvent> data = [];
 
-  for (var line in lines) {
+  for (final line in lines) {
     try {
       final jsonData = jsonDecode(line);
       final type = SyncEntityType.fromJson(jsonData['type'])!;
@@ -113,15 +145,19 @@ List<SyncEvent> _parseSyncResponse(List<String> lines) {
       final ack = jsonData['ack'];
       final converter = _kResponseMap[type];
       if (converter == null) {
-        debugPrint("[_parseSyncReponse] Unknown type $type");
+        debugPrint("[_parseSyncResponse] Unknown type $type");
         continue;
       }
 
       data.add(SyncEvent(data: converter(dataJson), ack: ack));
     } catch (error, stack) {
-      debugPrint("[_parseSyncReponse] Error parsing json $error $stack");
+      debugPrint("[_parseSyncResponse] Error parsing json $error $stack");
     }
   }
+
+  debugPrint(
+    "[_parseSyncResponse] Parsed ${data.length} events in ${stopwatch.elapsedMilliseconds}ms",
+  );
 
   return data;
 }

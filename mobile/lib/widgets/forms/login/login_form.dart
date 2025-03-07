@@ -165,9 +165,13 @@ class LoginForm extends HookConsumerWidget {
     }
 
     populateTestLoginInfo1() {
-      emailController.text = 'testuser@email.com';
-      passwordController.text = 'password';
-      serverEndpointController.text = 'http://10.1.15.216:2283/api';
+      emailController.text = 'admin@immich.cloud';
+      passwordController.text = 'kthxbye';
+      serverEndpointController.text =
+          'https://pr-16658.preview.internal.immich.cloud/';
+      // emailController.text = 'testuser@email.com';
+      // passwordController.text = 'password';
+      // serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
     login() async {
