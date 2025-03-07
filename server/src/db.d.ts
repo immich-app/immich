@@ -4,7 +4,8 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { AssetType, Permission, SyncEntityType } from 'src/enum';
+import { OnThisDayData } from 'src/entities/memory.entity';
+import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -231,7 +232,7 @@ export interface Libraries {
 
 export interface Memories {
   createdAt: Generated<Timestamp>;
-  data: Json;
+  data: OnThisDayData;
   deletedAt: Timestamp | null;
   hideAt: Timestamp | null;
   id: Generated<string>;
@@ -240,7 +241,7 @@ export interface Memories {
   ownerId: string;
   seenAt: Timestamp | null;
   showAt: Timestamp | null;
-  type: string;
+  type: MemoryType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
