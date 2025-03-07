@@ -637,6 +637,14 @@ export class AssetRepository {
     return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
   }
 
+  streamDeletedAssets(trashedBefore: Date) {
+    return this.db
+      .selectFrom('assets')
+      .select(['id', 'isOffline'])
+      .where('assets.deletedAt', '<=', trashedBefore)
+      .stream();
+  }
+
   @GenerateSql(
     ...Object.values(WithProperty).map((property) => ({
       name: property,

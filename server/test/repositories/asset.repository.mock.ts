@@ -46,5 +46,6 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     updateByLibraryId: vitest.fn(),
     streamStorageTemplateAssets: vitest.fn(),
     getStorageTemplateAsset: vitest.fn(),
+    streamDeletedAssets: vitest.fn(),
   };
 };
