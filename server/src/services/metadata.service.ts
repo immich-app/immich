@@ -186,6 +186,8 @@ export class MetadataService extends BaseService {
 
     const { width, height } = this.getImageDimensions(exifTags);
 
+    this.logger.debug(`Collecting exif data for ${asset.id}: ${JSON.stringify(exifTags)}`);
+
     const exifData: Insertable<Exif> = {
       assetId: asset.id,
 
@@ -211,8 +213,8 @@ export class MetadataService extends BaseService {
       colorspace: exifTags.ColorSpace ?? null,
 
       // camera
-      make: exifTags.Make ?? null,
-      model: exifTags.Model ?? null,
+      make: exifTags.Make ?? exifTags?.Device?.Manufacturer ?? exifTags.AndroidMake ?? null,
+      model: exifTags.Model ?? exifTags?.Device?.ModelName ?? exifTags.AndroidModel ?? null,
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
