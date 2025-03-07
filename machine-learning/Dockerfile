@@ -23,7 +23,7 @@ FROM rocm/dev-ubuntu-22.04:6.3.1-complete AS builder-rocm
 
 WORKDIR /code
 
-RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv
+RUN apt-get update && apt-get install -y --no-install-recommends wget git python3.10-venv migraphx migraphx-dev half
 RUN wget -nv https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-linux-x86_64.sh && \
     chmod +x cmake-3.30.1-linux-x86_64.sh && \
     mkdir -p /code/cmake-3.30.1-linux-x86_64 && \
@@ -42,7 +42,7 @@ RUN git apply /tmp/0001-disable-rocm-conv-algo-caching.patch
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
 RUN ./build.sh --allow_running_as_root --config Release --build_wheel --update --build --parallel 17 --cmake_extra_defines\
-    ONNXRUNTIME_VERSION=1.20.1 --use_rocm --rocm_home=/opt/rocm
+    ONNXRUNTIME_VERSION=1.20.1 --use_rocm --rocm_home=/opt/rocm --use_migraphx --migraphx_home=/opt/rocm
 RUN mv /code/onnxruntime/build/Linux/Release/dist/*.whl /opt/
 
 FROM builder-${DEVICE} AS builder
@@ -117,7 +117,7 @@ FROM prod-${DEVICE} AS prod
 ARG DEVICE
 
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) && \
+    apt-get install -y --no-install-recommends tini $(if ! [ "$DEVICE" = "openvino" ] && ! [ "$DEVICE" = "rocm" ]; then echo "libmimalloc2.0"; fi) $(if [ "$DEVICE" = "rocm" ]; then echo "migraphx"; fi) && \
     apt-get autoremove -yqq && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

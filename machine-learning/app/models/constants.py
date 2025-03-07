@@ -77,9 +77,9 @@ _INSIGHTFACE_MODELS = {
 
 SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
-    "ROCMExecutionProvider",
+    "MIGraphXExecutionProvider",
     "OpenVINOExecutionProvider",
-    "CPUExecutionProvider",
+    # "CPUExecutionProvider",
 ]
 
 RKNN_SUPPORTED_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
