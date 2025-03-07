@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayUnique, IsNotEmpty, IsString } from 'class-validator';
-import { LibraryEntity } from 'src/entities/library.entity';
+import { Library } from 'src/database';
 import { Optional, ValidateUUID } from 'src/validation';
 
 export class CreateLibraryDto {
@@ -120,7 +120,7 @@ export class LibraryStatsResponseDto {
   usage = 0;
 }
 
-export function mapLibrary(entity: LibraryEntity): LibraryResponseDto {
+export function mapLibrary(entity: Library): LibraryResponseDto {
   let assetCount = 0;
   if (entity.assets) {
     assetCount = entity.assets.length;
