@@ -12,5 +12,6 @@ export const newLibraryRepositoryMock = (): Mocked<RepositoryInterface<LibraryRe
     getStatistics: vitest.fn(),
     getAllDeleted: vitest.fn(),
     getAll: vitest.fn(),
+    streamAssetIds: vitest.fn(),
   };
 };

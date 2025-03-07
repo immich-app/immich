@@ -245,7 +245,7 @@
     "storage_template_hash_verification_enabled_description": "Enables hash verification, don't disable this unless you're certain of the implications",
     "storage_template_migration": "Storage template migration",
     "storage_template_migration_description": "Apply the current <link>{template}</link> to previously uploaded assets",
-    "storage_template_migration_info": "Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the <link>{job}</link>.",
+    "storage_template_migration_info": "The storage template will convert all extensions to lowercase. Template changes will only apply to new assets. To retroactively apply the template to previously uploaded assets, run the <link>{job}</link>.",
     "storage_template_migration_job": "Storage Template Migration Job",
     "storage_template_more_details": "For more details about this feature, refer to the <template-link>Storage Template</template-link> and its <implications-link>implications</implications-link>",
     "storage_template_onboarding_description": "When enabled, this feature will auto-organize files based on a user-defined template. Due to stability issues the feature has been turned off by default. For more information, please see the <link>documentation</link>.",

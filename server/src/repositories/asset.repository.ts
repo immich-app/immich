@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Selectable, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { ASSET_FILE_CONFLICT_KEYS, EXIF_CONFLICT_KEYS, JOB_STATUS_CONFLICT_KEYS } from 'src/constants';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
@@ -24,7 +23,8 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
-import { anyUuid, asUuid, mapUpsertColumns } from 'src/utils/database';
+import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
+import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
 
 export type AssetStats = Record<AssetType, number>;
@@ -161,7 +161,41 @@ export class AssetRepository {
       .insertInto('exif')
       .values(value)
       .onConflict((oc) =>
-        oc.columns(EXIF_CONFLICT_KEYS).doUpdateSet(() => mapUpsertColumns('exif', value, EXIF_CONFLICT_KEYS)),
+        oc.column('assetId').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              description: eb.ref('excluded.description'),
+              exifImageWidth: eb.ref('excluded.exifImageWidth'),
+              exifImageHeight: eb.ref('excluded.exifImageHeight'),
+              fileSizeInByte: eb.ref('excluded.fileSizeInByte'),
+              orientation: eb.ref('excluded.orientation'),
+              dateTimeOriginal: eb.ref('excluded.dateTimeOriginal'),
+              modifyDate: eb.ref('excluded.modifyDate'),
+              timeZone: eb.ref('excluded.timeZone'),
+              latitude: eb.ref('excluded.latitude'),
+              longitude: eb.ref('excluded.longitude'),
+              projectionType: eb.ref('excluded.projectionType'),
+              city: eb.ref('excluded.city'),
+              livePhotoCID: eb.ref('excluded.livePhotoCID'),
+              autoStackId: eb.ref('excluded.autoStackId'),
+              state: eb.ref('excluded.state'),
+              country: eb.ref('excluded.country'),
+              make: eb.ref('excluded.make'),
+              model: eb.ref('excluded.model'),
+              lensModel: eb.ref('excluded.lensModel'),
+              fNumber: eb.ref('excluded.fNumber'),
+              focalLength: eb.ref('excluded.focalLength'),
+              iso: eb.ref('excluded.iso'),
+              exposureTime: eb.ref('excluded.exposureTime'),
+              profileDescription: eb.ref('excluded.profileDescription'),
+              colorspace: eb.ref('excluded.colorspace'),
+              bitsPerSample: eb.ref('excluded.bitsPerSample'),
+              rating: eb.ref('excluded.rating'),
+              fps: eb.ref('excluded.fps'),
+            },
+            value,
+          ),
+        ),
       )
       .execute();
   }
@@ -176,9 +210,18 @@ export class AssetRepository {
       .insertInto('asset_job_status')
       .values(values)
       .onConflict((oc) =>
-        oc
-          .columns(JOB_STATUS_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_job_status', values[0], JOB_STATUS_CONFLICT_KEYS)),
+        oc.column('assetId').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              duplicatesDetectedAt: eb.ref('excluded.duplicatesDetectedAt'),
+              facesRecognizedAt: eb.ref('excluded.facesRecognizedAt'),
+              metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
+              previewAt: eb.ref('excluded.previewAt'),
+              thumbnailAt: eb.ref('excluded.thumbnailAt'),
+            },
+            values[0],
+          ),
+        ),
       )
       .execute();
   }
@@ -189,6 +232,10 @@ export class AssetRepository {
       .values(asset)
       .returningAll()
       .executeTakeFirst() as any as Promise<AssetEntityPlaceholder>;
+  }
+
+  createAll(assets: Insertable<Assets>[]): Promise<AssetEntity[]> {
+    return this.db.insertInto('assets').values(assets).returningAll().execute() as any as Promise<AssetEntity[]>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { day: 1, month: 1 }] })
@@ -468,6 +515,10 @@ export class AssetRepository {
       return;
     }
     await this.db.updateTable('assets').set(options).where('id', '=', anyUuid(ids)).execute();
+  }
+
+  async updateByLibraryId(libraryId: string, options: Updateable<Assets>): Promise<void> {
+    await this.db.updateTable('assets').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
 
   @GenerateSql({
@@ -916,9 +967,9 @@ export class AssetRepository {
       .insertInto('asset_files')
       .values(value)
       .onConflict((oc) =>
-        oc
-          .columns(ASSET_FILE_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_files', value, ASSET_FILE_CONFLICT_KEYS)),
+        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+          path: eb.ref('excluded.path'),
+        })),
       )
       .execute();
   }
@@ -933,9 +984,9 @@ export class AssetRepository {
       .insertInto('asset_files')
       .values(values)
       .onConflict((oc) =>
-        oc
-          .columns(ASSET_FILE_CONFLICT_KEYS)
-          .doUpdateSet(() => mapUpsertColumns('asset_files', values[0], ASSET_FILE_CONFLICT_KEYS)),
+        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
+          path: eb.ref('excluded.path'),
+        })),
       )
       .execute();
   }
@@ -949,5 +1000,65 @@ export class AssetRepository {
       .deleteFrom('asset_files')
       .where('id', '=', anyUuid(files.map((file) => file.id)))
       .execute();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
+  })
+  async detectOfflineExternalAssets(
+    libraryId: string,
+    importPaths: string[],
+    exclusionPatterns: string[],
+  ): Promise<UpdateResult> {
+    const paths = importPaths.map((importPath) => `${importPath}%`);
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+
+    return this.db
+      .updateTable('assets')
+      .set({
+        isOffline: true,
+        deletedAt: new Date(),
+      })
+      .where('isOffline', '=', false)
+      .where('isExternal', '=', true)
+      .where('libraryId', '=', asUuid(libraryId))
+      .where((eb) =>
+        eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
+      )
+      .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, paths: [DummyValue.STRING] }],
+  })
+  async filterNewExternalAssetPaths(libraryId: string, paths: string[]): Promise<string[]> {
+    const result = await this.db
+      .selectFrom(unnest(paths).as('path'))
+      .select('path')
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            this.db
+              .selectFrom('assets')
+              .select('originalPath')
+              .whereRef('assets.originalPath', '=', eb.ref('path'))
+              .where('libraryId', '=', asUuid(libraryId))
+              .where('isExternal', '=', true),
+          ),
+        ),
+      )
+      .execute();
+
+    return result.map((row) => row.path as string);
+  }
+
+  async getLibraryAssetCount(libraryId: string): Promise<number> {
+    const { count } = await this.db
+      .selectFrom('assets')
+      .select((eb) => eb.fn.countAll().as('count'))
+      .where('libraryId', '=', asUuid(libraryId))
+      .executeTakeFirstOrThrow();
+
+    return Number(count);
   }
 }

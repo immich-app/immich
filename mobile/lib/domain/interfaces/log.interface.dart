@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:immich_mobile/domain/interfaces/db.interface.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 
-abstract interface class ILogRepository {
+abstract interface class ILogRepository implements IDatabaseRepository {
   Future<bool> insert(LogMessage log);
 
   Future<bool> insertAll(Iterable<LogMessage> logs);
