@@ -23,24 +23,26 @@ class SyncStreamService {
     }
 
     _isUserSyncing = true;
+    final Map<String, String> acks = {};
     _userSyncSubscription = _syncApiRepository.watchUserSyncEvent().listen(
       (events) async {
         for (final event in events) {
           if (event.data is SyncUserV1) {
-            final data = event.data as SyncUserV1;
-            debugPrint("User Update: $data");
+            // final data = event.data as SyncUserV1;
 
-            // await _syncApiRepository.ack(event.ack);
+            acks['SyncUserV1'] = event.ack;
           }
 
           if (event.data is SyncUserDeleteV1) {
-            final data = event.data as SyncUserDeleteV1;
+            // final data = event.data as SyncUserDeleteV1;
 
-            debugPrint("User delete: $data");
-            // await _syncApiRepository.ack(event.ack);
+            acks['SyncUserDeleteV1'] = event.ack;
           }
         }
-        await _syncApiRepository.ack(events.last.ack);
+
+        for (final ack in acks.values) {
+          await _syncApiRepository.ack(ack);
+        }
       },
       onDone: () {
         _isUserSyncing = false;
@@ -58,6 +60,7 @@ class SyncStreamService {
     }
     _isAssetSyncing = true;
     int eventCount = 0;
+    final Map<String, String> acks = {};
 
     _assetSyncSubscription = _syncApiRepository.watchAssetSyncEvent().listen(
       (events) async {
@@ -66,17 +69,18 @@ class SyncStreamService {
         for (final event in events) {
           if (event.data is SyncAssetV1) {
             // final data = event.data as SyncAssetV1;
-            // await _syncApiRepository.ack(event.ack);
+            acks['SyncAssetV1'] = event.ack;
           }
 
           if (event.data is SyncAssetDeleteV1) {
             // final data = event.data as SyncAssetDeleteV1;
-
-            // debugPrint("Asset delete: $data");
-            // await _syncApiRepository.ack(event.ack);
+            acks['SyncAssetDeleteV1'] = event.ack;
           }
         }
-        await _syncApiRepository.ack(events.last.ack);
+
+        for (final ack in acks.values) {
+          await _syncApiRepository.ack(ack);
+        }
       },
       onDone: () {
         _isAssetSyncing = false;
@@ -95,6 +99,7 @@ class SyncStreamService {
 
     _isExifSyncing = true;
     int eventCount = 0;
+    final Map<String, String> acks = {};
 
     _exifSyncSubscription = _syncApiRepository.watchExifSyncEvent().listen(
       (events) async {
@@ -104,10 +109,13 @@ class SyncStreamService {
           if (event.data is SyncAssetExifV1) {
             // final data = event.data as SyncAssetExifV1;
 
-            // await _syncApiRepository.ack(event.ack);
+            acks['SyncAssetExifV1'] = event.ack;
           }
         }
-        await _syncApiRepository.ack(events.last.ack);
+
+        for (final ack in acks.values) {
+          await _syncApiRepository.ack(ack);
+        }
       },
       onDone: () {
         _isExifSyncing = false;
