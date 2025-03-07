@@ -18,12 +18,16 @@
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ isArchived: true });
+  onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
 

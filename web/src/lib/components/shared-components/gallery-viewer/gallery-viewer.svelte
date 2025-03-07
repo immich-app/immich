@@ -422,13 +422,16 @@
 {/if}
 
 {#if assets.length > 0}
-  <div id="asd" style="height: {assetLayouts.containerHeight}px;width: {assetLayouts.containerWidth - 1}px">
+  <div
+    style:position="relative"
+    style:height={assetLayouts.containerHeight + 'px'}
+    style:width={assetLayouts.containerWidth - 1 + 'px'}
+  >
     {#each assetLayouts.assetLayout as layout (layout.asset.id)}
       {@const asset = layout.asset}
 
       {#if layout.display}
         <div
-          data-display={layout.display}
           class="absolute"
           style:overflow="clip"
           style="width: {layout.width}px; height: {layout.height}px; top: {layout.top}px; left: {layout.left}px"

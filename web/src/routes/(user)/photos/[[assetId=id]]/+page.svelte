@@ -34,7 +34,7 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
   const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true }));
+  void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();

@@ -21,13 +21,11 @@
   import ImageThumbnail from './image-thumbnail.svelte';
   import VideoThumbnail from './video-thumbnail.svelte';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
-  import type { DateGroup } from '$lib/utils/timeline-util';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
 
   interface Props {
     asset: AssetResponseDto;
-    dateGroup?: DateGroup | undefined;
     groupIndex?: number;
     thumbnailSize?: number | undefined;
     thumbnailWidth?: number | undefined;

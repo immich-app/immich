@@ -30,7 +30,7 @@
   let { data }: Props = $props();
 
   const assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ isFavorite: true }));
+  void assetStore.updateOptions({ isFavorite: true });
   onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();

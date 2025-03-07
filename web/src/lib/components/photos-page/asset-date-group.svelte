@@ -1,13 +1,11 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-
   import { AssetBucket } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly } from 'svelte/transition';
   import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
-
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
   interface Props {
@@ -76,9 +74,8 @@
 
 {#each bucket.dateGroups as dateGroup, groupIndex (dateGroup.date)}
   {@const geometry = dateGroup.geometry!}
-  {@const display = dateGroup.intersecting || true}
+  {@const display = dateGroup.intersecting}
   {@const absoluteWidth = dateGroup.left}
-
   {#if display}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <section
@@ -124,31 +121,34 @@
         style:height={geometry.containerHeight + 'px'}
         style:width={geometry.containerWidth + 'px'}
       >
-        {#each dateGroup.intersectingAssets as intersectingAsset (intersectingAsset.id)}
-          <div
-            class="absolute"
-            style:top={intersectingAsset.top + 'px'}
-            style:left={intersectingAsset.left + 'px'}
-            style:width={intersectingAsset.width + 'px'}
-            style:height={intersectingAsset.height + 'px'}
-          >
-            <Thumbnail
-              {dateGroup}
-              showStackedIcon={withStacked}
-              {showArchiveIcon}
-              asset={intersectingAsset.asset}
-              {groupIndex}
-              onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
-              onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
-              onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, intersectingAsset.asset)}
-              selected={assetInteraction.selectedAssets.has(intersectingAsset.asset) ||
-                dateGroup.bucket.store.albumAssets.has(intersectingAsset.asset.id)}
-              selectionCandidate={assetInteraction.assetSelectionCandidates.has(intersectingAsset.asset)}
-              disabled={dateGroup.bucket.store.albumAssets.has(intersectingAsset.asset.id)}
-              thumbnailWidth={intersectingAsset.width}
-              thumbnailHeight={intersectingAsset.height}
-            />
-          </div>
+        {#each dateGroup.assetsIntersecting as intersectingAsset (intersectingAsset.id)}
+          {#if intersectingAsset.intersecting}
+            {@const position = intersectingAsset.position}
+            {@const asset = intersectingAsset.asset}
+            <div
+              class="absolute"
+              style:top={position.top + 'px'}
+              style:left={position.left + 'px'}
+              style:width={position.width + 'px'}
+              style:height={position.height + 'px'}
+            >
+              <Thumbnail
+                showStackedIcon={withStacked}
+                {showArchiveIcon}
+                asset={intersectingAsset.asset}
+                {groupIndex}
+                onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
+                onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
+                onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, intersectingAsset.asset)}
+                selected={assetInteraction.selectedAssets.has(asset) ||
+                  dateGroup.bucket.store.albumAssets.has(asset.id)}
+                selectionCandidate={assetInteraction.assetSelectionCandidates.has(intersectingAsset.asset)}
+                disabled={dateGroup.bucket.store.albumAssets.has(asset.id)}
+                thumbnailWidth={position.width}
+                thumbnailHeight={position.height}
+              />
+            </div>
+          {/if}
         {/each}
       </div>
     </section>

@@ -137,6 +137,7 @@
     await loadNextPage(true);
   }
 
+  // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
   export const loadNextPage = async (force?: boolean) => {
     if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
       return;

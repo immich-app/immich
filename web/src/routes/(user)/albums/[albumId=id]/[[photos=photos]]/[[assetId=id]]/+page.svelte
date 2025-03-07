@@ -578,7 +578,6 @@
           isSelectionMode={true}
         />
       {:else}
-        {@debug}
         <AssetGrid
           enableRouting={true}
           {album}
