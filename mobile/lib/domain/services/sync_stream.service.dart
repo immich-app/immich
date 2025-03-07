@@ -43,6 +43,28 @@ class SyncStreamService {
     });
   }
 
+  void syncAssets() {
+    int eventCount = 0;
+    _syncApiRepository.watchAssetSyncEvent().listen((events) async {
+      eventCount += events.length;
+      debugPrint("Asset events: $eventCount");
+      for (final event in events) {
+        if (event.data is SyncAssetV1) {
+          final data = event.data as SyncAssetV1;
+          // debugPrint("Asset Update: $data");
+          // await _syncApiRepository.ack(event.ack);
+        }
+
+        if (event.data is SyncAssetDeleteV1) {
+          final data = event.data as SyncAssetDeleteV1;
+
+          // debugPrint("Asset delete: $data");
+          // await _syncApiRepository.ack(event.ack);
+        }
+      }
+    });
+  }
+
   Future<void> dispose() async {
     await _userSyncSubscription?.cancel();
   }

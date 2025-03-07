@@ -20,14 +20,24 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 
   @override
+  Stream<List<SyncEvent>> watchAssetSyncEvent() {
+    return _getSyncStream(
+      SyncStreamDto(types: [SyncRequestType.assetsV1]),
+      methodName: 'watchAssetSyncEvent',
+    );
+  }
+
+  @override
   Future<void> ack(String data) {
     return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: [data]));
   }
 
   Stream<List<SyncEvent>> _getSyncStream(
     SyncStreamDto dto, {
-    int batchSize = 5000,
+    int batchSize = 20000,
+    String methodName = '',
   }) async* {
+    final stopwatch = Stopwatch()..start();
     final client = http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
@@ -77,6 +87,9 @@ class SyncApiRepository implements ISyncApiRepository {
         yield await compute(_parseSyncResponse, lines);
       }
       client.close();
+      debugPrint(
+        "[_getSyncStream] [$methodName] Sync stream took ${stopwatch.elapsedMilliseconds}ms",
+      );
     }
   }
 }
@@ -84,6 +97,8 @@ class SyncApiRepository implements ISyncApiRepository {
 const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
+  SyncEntityType.assetV1: SyncAssetV1.fromJson,
+  SyncEntityType.assetDeleteV1: SyncAssetDeleteV1.fromJson,
 };
 
 // Need to be outside of the class to be able to use compute
