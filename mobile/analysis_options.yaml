@@ -36,6 +36,8 @@ analyzer:
   exclude:
     - openapi/**
     - lib/generated_plugin_registrant.dart
+    - lib/**/*.g.dart
+    - lib/**/*.drift.dart
 
   plugins:
     - custom_lint

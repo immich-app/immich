@@ -21,7 +21,7 @@ final storeRepositoryProvider = Provider<IStoreRepository>.internal(
 );
 
 typedef StoreRepositoryRef = ProviderRef<IStoreRepository>;
-String _$storeServiceHash() => r'a072a39c42ad1a4d1133706f408c89c2415ba35e';
+String _$storeServiceHash() => r'5805e67bd1a522e571a0ca7cb5e87586717482d4';
 
 /// See also [storeService].
 @ProviderFor(storeService)
