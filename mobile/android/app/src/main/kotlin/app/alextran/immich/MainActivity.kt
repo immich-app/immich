@@ -96,7 +96,6 @@ class MainActivity : FlutterActivity() {
 
 
     private fun untrashImage(contentUri: Uri): Boolean {
-        Log.e("TrashError", "UNTRASH STARTED")
         return try {
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.IS_TRASHED, 0) // Restore file
