@@ -125,7 +125,9 @@
           {#if intersectingAsset.intersecting}
             {@const position = intersectingAsset.position}
             {@const asset = intersectingAsset.asset}
+            <!-- note: don't remove data-asset-id - its used by web e2e tests -->
             <div
+              data-asset-id={asset.id}
               class="absolute"
               style:top={position.top + 'px'}
               style:left={position.left + 'px'}
