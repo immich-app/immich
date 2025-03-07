@@ -99,6 +99,7 @@ export class SyncRepository {
     return this.db
       .selectFrom('assets_audit')
       .select(['id', 'assetId'])
+      .where('ownerId', '=', userId)
       .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
       .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
