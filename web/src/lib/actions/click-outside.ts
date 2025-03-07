@@ -2,7 +2,7 @@ import { matchesShortcut } from '$lib/actions/shortcut';
 import type { ActionReturn } from 'svelte/action';
 
 interface Options {
-  onOutclick?: () => void;
+  onOutclick?: (event: MouseEvent) => void;
   onEscape?: () => void;
 }
 
@@ -21,7 +21,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
       return;
     }
 
-    onOutclick?.();
+    onOutclick?.(event);
   };
 
   const handleKey = (event: KeyboardEvent) => {
