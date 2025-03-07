@@ -27,7 +27,7 @@
   };
 
   let canScrollLeft = $derived(scrollLeftPosition > 0);
-  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < innerWidth - offsetWidth);
+  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < Math.floor(innerWidth - offsetWidth));
 
   const scrollBy = 400;
   const scrollLeft = () => memoryLaneElement?.scrollBy({ left: -scrollBy, behavior: 'smooth' });
