@@ -19,7 +19,7 @@ class SearchApi {
   /// Performs an HTTP 'GET /search/cities' operation and returns the [Response].
   Future<Response> getAssetsByCityWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/search/cities';
+    final apiPath = r'/search/cities';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -63,7 +63,7 @@ class SearchApi {
   /// Performs an HTTP 'GET /search/explore' operation and returns the [Response].
   Future<Response> getExploreDataWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/search/explore';
+    final apiPath = r'/search/explore';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -76,7 +76,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -121,7 +121,7 @@ class SearchApi {
   /// * [String] state:
   Future<Response> getSearchSuggestionsWithHttpInfo(SearchSuggestionType type, { String? country, bool? includeNull, String? make, String? model, String? state, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/search/suggestions';
+    final apiPath = r'/search/suggestions';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -151,7 +151,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -199,7 +199,7 @@ class SearchApi {
   /// * [MetadataSearchDto] metadataSearchDto (required):
   Future<Response> searchAssetsWithHttpInfo(MetadataSearchDto metadataSearchDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/search/metadata';
+    final apiPath = r'/search/metadata';
 
     // ignore: prefer_final_locals
     Object? postBody = metadataSearchDto;
@@ -212,7 +212,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -248,7 +248,7 @@ class SearchApi {
   /// * [bool] withHidden:
   Future<Response> searchPersonWithHttpInfo(String name, { bool? withHidden, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/search/person';
+    final apiPath = r'/search/person';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -266,7 +266,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -305,7 +305,7 @@ class SearchApi {
   /// * [String] name (required):
   Future<Response> searchPlacesWithHttpInfo(String name,) async {
     // ignore: prefer_const_declarations
-    final path = r'/search/places';
+    final apiPath = r'/search/places';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -320,7 +320,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -357,7 +357,7 @@ class SearchApi {
   /// * [RandomSearchDto] randomSearchDto (required):
   Future<Response> searchRandomWithHttpInfo(RandomSearchDto randomSearchDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/search/random';
+    final apiPath = r'/search/random';
 
     // ignore: prefer_final_locals
     Object? postBody = randomSearchDto;
@@ -370,7 +370,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -407,7 +407,7 @@ class SearchApi {
   /// * [SmartSearchDto] smartSearchDto (required):
   Future<Response> searchSmartWithHttpInfo(SmartSearchDto smartSearchDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/search/smart';
+    final apiPath = r'/search/smart';
 
     // ignore: prefer_final_locals
     Object? postBody = smartSearchDto;
@@ -420,7 +420,7 @@ class SearchApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

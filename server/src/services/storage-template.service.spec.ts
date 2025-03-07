@@ -105,7 +105,7 @@ describe(StorageTemplateService.name, () => {
     it('should migrate single moving picture', async () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
       const newMotionPicturePath = `upload/library/${userStub.user1.id}/2022/2022-06-19/${assetStub.livePhotoStillAsset.id}.mp4`;
-      const newStillPicturePath = `upload/library/${userStub.user1.id}/2022/2022-06-19/${assetStub.livePhotoStillAsset.id}.jpeg`;
+      const newStillPicturePath = `upload/library/${userStub.user1.id}/2022/2022-06-19/${assetStub.livePhotoStillAsset.id}.jpg`;
 
       mocks.asset.getByIds.mockImplementation((ids) => {
         const assets = [assetStub.livePhotoStillAsset, assetStub.livePhotoMotionAsset];

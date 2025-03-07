@@ -24,7 +24,7 @@ class DownloadApi {
   /// * [String] key:
   Future<Response> downloadArchiveWithHttpInfo(AssetIdsDto assetIdsDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/download/archive';
+    final apiPath = r'/download/archive';
 
     // ignore: prefer_final_locals
     Object? postBody = assetIdsDto;
@@ -41,7 +41,7 @@ class DownloadApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -79,7 +79,7 @@ class DownloadApi {
   /// * [String] key:
   Future<Response> getDownloadInfoWithHttpInfo(DownloadInfoDto downloadInfoDto, { String? key, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/download/info';
+    final apiPath = r'/download/info';
 
     // ignore: prefer_final_locals
     Object? postBody = downloadInfoDto;
@@ -96,7 +96,7 @@ class DownloadApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,

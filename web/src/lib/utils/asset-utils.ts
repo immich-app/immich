@@ -5,7 +5,7 @@ import { NotificationType, notificationController } from '$lib/components/shared
 import { AppRoute } from '$lib/constants';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets.store';
+import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';

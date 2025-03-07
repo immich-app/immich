@@ -28,6 +28,7 @@ import {
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
+  getConfig,
   getConfigDefaults,
   login,
   scanLibrary,
@@ -121,6 +122,7 @@ const execPromise = promisify(exec);
 const onEvent = ({ event, id }: { event: EventType; id: string }) => {
   // console.log(`Received event: ${event} [id=${id}]`);
   const set = events[event];
+
   set.add(id);
 
   const idCallback = idCallbacks[id];
@@ -414,6 +416,8 @@ export const utils = {
 
     rmSync(path, { recursive: true });
   },
+
+  getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
 
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 

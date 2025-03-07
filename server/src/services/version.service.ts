@@ -25,11 +25,24 @@ export class VersionService extends BaseService {
     await this.handleVersionCheck();
 
     await this.databaseRepository.withLock(DatabaseLock.VersionHistory, async () => {
-      const latest = await this.versionRepository.getLatest();
+      const previous = await this.versionRepository.getLatest();
       const current = serverVersion.toString();
-      if (!latest || latest.version !== current) {
-        this.logger.log(`Version has changed, adding ${current} to history`);
+
+      if (!previous) {
         await this.versionRepository.create({ version: current });
+        return;
+      }
+
+      if (previous.version !== current) {
+        const previousVersion = new SemVer(previous.version);
+
+        this.logger.log(`Adding ${current} to upgrade history`);
+        await this.versionRepository.create({ version: current });
+
+        const needsNewMemories = semver.lt(previousVersion, '1.129.0');
+        if (needsNewMemories) {
+          await this.jobRepository.queue({ name: JobName.MEMORIES_CREATE });
+        }
       }
     });
   }

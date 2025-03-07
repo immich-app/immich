@@ -1,7 +1,8 @@
-import type { AssetBucket } from '$lib/stores/assets.store';
+import type { AssetBucket } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
+import { emptyGeometry, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+
 import type { AssetResponseDto } from '@immich/sdk';
-import type createJustifiedLayout from 'justified-layout';
 import { groupBy, memoize, sortBy } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { get } from 'svelte/store';
@@ -13,7 +14,7 @@ export type DateGroup = {
   height: number;
   heightActual: boolean;
   intersecting: boolean;
-  geometry: Geometry;
+  geometry: CommonJustifiedLayout;
   bucket: AssetBucket;
 };
 export type ScrubberListener = (
@@ -80,19 +81,6 @@ export function formatGroupTitle(_date: DateTime): string {
   return date.toLocaleString(groupDateFormat);
 }
 
-type Geometry = ReturnType<typeof createJustifiedLayout> & {
-  containerWidth: number;
-};
-
-function emptyGeometry() {
-  return {
-    containerWidth: 0,
-    containerHeight: 0,
-    widowCount: 0,
-    boxes: [],
-  };
-}
-
 const formatDateGroupTitle = memoize(formatGroupTitle);
 
 export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | undefined): DateGroup[] {
@@ -109,7 +97,7 @@ export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | 
       height: 0,
       heightActual: false,
       intersecting: false,
-      geometry: emptyGeometry(),
+      geometry: emptyGeometry,
       bucket,
     };
   });

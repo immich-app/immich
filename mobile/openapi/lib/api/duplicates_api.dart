@@ -19,7 +19,7 @@ class DuplicatesApi {
   /// Performs an HTTP 'GET /duplicates' operation and returns the [Response].
   Future<Response> getAssetDuplicatesWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/duplicates';
+    final apiPath = r'/duplicates';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class DuplicatesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,

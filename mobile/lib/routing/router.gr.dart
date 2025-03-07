@@ -1175,6 +1175,40 @@ class PartnerRoute extends PageRouteInfo<void> {
   );
 }
 
+/// manually written (with love) route for
+/// [FolderPage]
+class FolderRoute extends PageRouteInfo<FolderRouteArgs> {
+  FolderRoute({
+    RecursiveFolder? folder,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FolderRoute.name,
+          args: FolderRouteArgs(folder: folder),
+          initialChildren: children,
+        );
+
+  static const String name = 'FolderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<FolderRouteArgs>();
+      return FolderPage(folder: args.folder);
+    },
+  );
+}
+
+class FolderRouteArgs {
+  const FolderRouteArgs({this.folder});
+
+  final RecursiveFolder? folder;
+
+  @override
+  String toString() {
+    return 'FolderRouteArgs{folder: $folder}';
+  }
+}
+
 /// generated route for
 /// [PeopleCollectionPage]
 class PeopleCollectionRoute extends PageRouteInfo<void> {

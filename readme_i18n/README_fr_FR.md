@@ -61,7 +61,7 @@ Vous pouvez trouver la documentation principale ainsi que les guides d'installat
 
 Vous pouvez accéder à la démo en ligne sur https://demo.immich.app
 
-Pour l'application mobile, vous pouvez utiliser `https://demo.immich.app/api` dans le champ `URL du point d'accès au serveur`
+Pour l'application mobile, vous pouvez utiliser `https://demo.immich.app` dans le champ `URL du point d'accès au serveur`
 
 ```bash title="Identifiants pour la démo"
 Les identifiants

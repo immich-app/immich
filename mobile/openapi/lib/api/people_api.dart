@@ -22,7 +22,7 @@ class PeopleApi {
   /// * [PersonCreateDto] personCreateDto (required):
   Future<Response> createPersonWithHttpInfo(PersonCreateDto personCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people';
+    final apiPath = r'/people';
 
     // ignore: prefer_final_locals
     Object? postBody = personCreateDto;
@@ -35,7 +35,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -79,7 +79,7 @@ class PeopleApi {
   /// * [bool] withHidden:
   Future<Response> getAllPeopleWithHttpInfo({ String? closestAssetId, String? closestPersonId, num? page, num? size, bool? withHidden, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/people';
+    final apiPath = r'/people';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -108,7 +108,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -152,7 +152,7 @@ class PeopleApi {
   /// * [String] id (required):
   Future<Response> getPersonWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}'
+    final apiPath = r'/people/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -166,7 +166,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -200,7 +200,7 @@ class PeopleApi {
   /// * [String] id (required):
   Future<Response> getPersonStatisticsWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}/statistics'
+    final apiPath = r'/people/{id}/statistics'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -214,7 +214,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -248,7 +248,7 @@ class PeopleApi {
   /// * [String] id (required):
   Future<Response> getPersonThumbnailWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}/thumbnail'
+    final apiPath = r'/people/{id}/thumbnail'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -262,7 +262,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -298,7 +298,7 @@ class PeopleApi {
   /// * [MergePersonDto] mergePersonDto (required):
   Future<Response> mergePersonWithHttpInfo(String id, MergePersonDto mergePersonDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}/merge'
+    final apiPath = r'/people/{id}/merge'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -312,7 +312,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -353,7 +353,7 @@ class PeopleApi {
   /// * [AssetFaceUpdateDto] assetFaceUpdateDto (required):
   Future<Response> reassignFacesWithHttpInfo(String id, AssetFaceUpdateDto assetFaceUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}/reassign'
+    final apiPath = r'/people/{id}/reassign'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -367,7 +367,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -406,7 +406,7 @@ class PeopleApi {
   /// * [PeopleUpdateDto] peopleUpdateDto (required):
   Future<Response> updatePeopleWithHttpInfo(PeopleUpdateDto peopleUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people';
+    final apiPath = r'/people';
 
     // ignore: prefer_final_locals
     Object? postBody = peopleUpdateDto;
@@ -419,7 +419,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -458,7 +458,7 @@ class PeopleApi {
   /// * [PersonUpdateDto] personUpdateDto (required):
   Future<Response> updatePersonWithHttpInfo(String id, PersonUpdateDto personUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/people/{id}'
+    final apiPath = r'/people/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -472,7 +472,7 @@ class PeopleApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

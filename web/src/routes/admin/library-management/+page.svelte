@@ -121,7 +121,7 @@
   };
 
   const handleAddImportPath = () => {
-    if (!updateLibraryIndex || !importPathToAdd) {
+    if ((updateLibraryIndex !== 0 && !updateLibraryIndex) || !importPathToAdd) {
       return;
     }
 

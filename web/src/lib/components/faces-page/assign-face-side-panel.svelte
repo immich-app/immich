@@ -6,7 +6,7 @@
   import { mdiArrowLeftThin, mdiClose, mdiMagnify, mdiPlus } from '@mdi/js';
   import { linear } from 'svelte/easing';
   import { fly } from 'svelte/transition';
-  import { photoViewerImgElement } from '$lib/stores/assets.store';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import ImageThumbnail from '../assets/thumbnail/image-thumbnail.svelte';
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';

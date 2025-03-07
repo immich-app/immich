@@ -133,7 +133,7 @@
   "backup_info_card_assets": "zapisi",
   "backup_manual_cancelled": "Cancelled",
   "backup_manual_failed": "Failed",
-  "backup_manual_in_progress": "Upload already in progress. Try after some time",
+  "backup_manual_in_progress": "Upload already in progress. Try after sometime",
   "backup_manual_success": "Success",
   "backup_manual_title": "Upload status",
   "backup_options_page_title": "Backup options",

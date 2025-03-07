@@ -26,7 +26,7 @@
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { type Viewport } from '$lib/stores/assets.store';
+  import { type Viewport } from '$lib/stores/assets-store.svelte';
   import { loadMemories, memoryStore } from '$lib/stores/memory.store';
   import { locale, videoViewerMuted } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
@@ -352,7 +352,7 @@
 
       <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={handleUpdate} />
 
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
