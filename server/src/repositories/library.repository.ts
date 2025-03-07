@@ -26,6 +26,13 @@ const userColumns = [
   'users.profileChangedAt',
 ] as const;
 
+export enum AssetSyncResult {
+  DO_NOTHING,
+  UPDATE,
+  OFFLINE,
+  CHECK_OFFLINE,
+}
+
 const withOwner = (eb: ExpressionBuilder<DB, 'libraries'>) => {
   return jsonObjectFrom(eb.selectFrom('users').whereRef('users.id', '=', 'libraries.ownerId').select(userColumns)).as(
     'owner',
@@ -136,5 +143,9 @@ export class LibraryRepository {
       usage: Number(stats.usage),
       total: Number(stats.photos) + Number(stats.videos),
     };
+  }
+
+  streamAssetIds(libraryId: string) {
+    return this.db.selectFrom('assets').select(['id']).where('libraryId', '=', libraryId).stream();
   }
 }

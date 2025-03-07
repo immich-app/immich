@@ -21,12 +21,12 @@ describe(VersionService.name, () => {
     it('record the current version on startup', async () => {
       const { context, sut } = await setup();
 
-      const itemsBefore = await context.versionHistoryRepository.getAll();
+      const itemsBefore = await context.versionHistory.getAll();
       expect(itemsBefore).toHaveLength(0);
 
       await sut.onBootstrap();
 
-      const itemsAfter = await context.versionHistoryRepository.getAll();
+      const itemsAfter = await context.versionHistory.getAll();
       expect(itemsAfter).toHaveLength(1);
       expect(itemsAfter[0]).toEqual({
         createdAt: expect.any(Date),
@@ -38,7 +38,7 @@ describe(VersionService.name, () => {
     it('should queue memory creation when upgrading from 1.128.0', async () => {
       const { context, jobMock, sut } = await setup();
 
-      await context.versionHistoryRepository.create({ version: 'v1.128.0' });
+      await context.versionHistory.create({ version: 'v1.128.0' });
       await sut.onBootstrap();
 
       expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.MEMORIES_CREATE });
@@ -47,7 +47,7 @@ describe(VersionService.name, () => {
     it('should not queue memory creation when upgrading from 1.129.0', async () => {
       const { context, jobMock, sut } = await setup();
 
-      await context.versionHistoryRepository.create({ version: 'v1.129.0' });
+      await context.versionHistory.create({ version: 'v1.129.0' });
       await sut.onBootstrap();
 
       expect(jobMock.queue).not.toHaveBeenCalled();

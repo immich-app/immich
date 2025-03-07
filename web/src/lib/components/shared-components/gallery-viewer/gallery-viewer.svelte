@@ -5,7 +5,7 @@
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, getAssetRatio } from '$lib/utils/asset-utils';

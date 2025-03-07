@@ -32,5 +32,5 @@ The `/api/something` endpoint is now `/api/something-else`
 - [ ] I have confirmed that any new dependencies are strictly necessary.
 - [ ] I have written tests for new code (if applicable)
 - [ ] I have followed naming conventions/patterns in the surrounding code
-- [ ] All code in `src/services` uses repositories implementations for database calls, filesystem operations, etc.
-- [ ] All code in `src/repositories/` is pretty basic/simple and does not have any immich specific logic (that belongs in `src/services`)
+- [ ] All code in `src/services/` uses repositories implementations for database calls, filesystem operations, etc.
+- [ ] All code in `src/repositories/` is pretty basic/simple and does not have any immich specific logic (that belongs in `src/services/`)
