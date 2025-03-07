@@ -431,17 +431,6 @@ export class AssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
-  async getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
-    const builder = this.db
-      .selectFrom('assets')
-      .select('id')
-      .where('libraryId', '=', asUuid(libraryId))
-      .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0);
-    const items = await builder.execute();
-    return paginationHelper(items as any as AssetEntity[], pagination.take);
-  }
-
   /**
    * Get assets by device's Id on the database
    * @param ownerId
