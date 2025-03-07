@@ -210,8 +210,8 @@
       if (onNext) {
         asset = await onNext();
       } else {
-        currentViewAssetIndex = currentViewAssetIndex + 1;
-        asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
+        currentViewAssetIndex = Math.min(currentViewAssetIndex + 1, assets.length - 1);
+        asset = assets[currentViewAssetIndex];
       }
 
       if (!asset) {
@@ -256,8 +256,8 @@
       if (onPrevious) {
         asset = await onPrevious();
       } else {
-        currentViewAssetIndex = currentViewAssetIndex - 1;
-        asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
+        currentViewAssetIndex = Math.max(currentViewAssetIndex - 1, 0);
+        asset = assets[currentViewAssetIndex];
       }
 
       if (!asset) {
