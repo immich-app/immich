@@ -31,7 +31,7 @@ class IntersectingCalc {
   // --- public ---
   readonly #group: AssetDateGroup;
   readonly #index: number;
-  intersecting = $derived.by(() => this.#isIntersecting(this.#index));
+  intersecting = $derived(this.#isIntersecting());
   position = $derived.by(() => {
     const geo = this.#group.geometry;
     const index = this.#index;
