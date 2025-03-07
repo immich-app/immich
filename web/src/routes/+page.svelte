@@ -9,7 +9,7 @@
     <div class="flex place-content-center place-items-center">
       <Logo variant="icon" class="text-center" size="landing" />
     </div>
-    <Heading size="giant" color="primary">{$t('welcome_to_immich')}</Heading>
+    <Heading size="giant" color="primary" tag="h1">{$t('welcome_to_immich')}</Heading>
     <Button href={AppRoute.AUTH_REGISTER} size="giant" shape="round">
       <span class="px-2 font-bold">{$t('getting_started')}</span>
     </Button>
