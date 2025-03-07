@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { Insertable, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DB, SessionSyncCheckpoints } from 'src/db';
 import { SyncEntityType } from 'src/enum';
 import { SyncAck } from 'src/types';
+
+type auditTables = 'users_audit' | 'partners_audit' | 'assets_audit';
+type upsertTables = 'users' | 'partners' | 'assets' | 'exif';
 
 @Injectable()
 export class SyncRepository {
@@ -42,9 +45,7 @@ export class SyncRepository {
     return this.db
       .selectFrom('users')
       .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
-      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['updateId asc'])
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 
@@ -52,9 +53,7 @@ export class SyncRepository {
     return this.db
       .selectFrom('users_audit')
       .select(['id', 'userId'])
-      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['id asc'])
+      .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
   }
 
@@ -63,9 +62,7 @@ export class SyncRepository {
       .selectFrom('partners')
       .select(['sharedById', 'sharedWithId', 'inTimeline', 'updateId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .orderBy(['updateId asc'])
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 
@@ -74,9 +71,7 @@ export class SyncRepository {
       .selectFrom('partners_audit')
       .select(['id', 'sharedById', 'sharedWithId'])
       .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
-      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['id asc'])
+      .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
   }
 
@@ -85,9 +80,7 @@ export class SyncRepository {
       .selectFrom('assets')
       .select(columns.syncAsset)
       .where('ownerId', '=', userId)
-      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['updateId asc'])
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 
@@ -98,9 +91,7 @@ export class SyncRepository {
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
       )
-      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
-      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['updateId asc'])
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 
@@ -109,9 +100,7 @@ export class SyncRepository {
       .selectFrom('assets_audit')
       .select(['id', 'assetId'])
       .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .where('ownerId', '=', userId)
-      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['id asc'])
+      .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
   }
 
@@ -122,35 +111,51 @@ export class SyncRepository {
       .where('ownerId', 'in', (eb) =>
         eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
       )
-      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
-      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['id asc'])
+      .$call((qb) => this.auditTableFilters(qb, ack))
       .stream();
   }
 
   getAssetExifsUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('exif')
-      .innerJoin('assets', 'assets.id', 'exif.assetId')
       .select(columns.syncAssetExif)
-      .where('assets.ownerId', '=', userId)
-      .$if(!!ack, (qb) => qb.where('exif.updateId', '>', ack!.updateId))
-      .where('exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['exif.updateId asc'])
+      .where('assetId', 'in', (eb) => eb.selectFrom('assets').select('id').where('ownerId', '=', userId))
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
   }
 
   getPartnerAssetExifsUpserts(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('exif')
-      .innerJoin('assets', 'assets.id', 'exif.assetId')
       .select(columns.syncAssetExif)
-      .where('assets.ownerId', 'in', (eb) =>
-        eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
+      .where('assetId', 'in', (eb) =>
+        eb
+          .selectFrom('assets')
+          .select('id')
+          .where('ownerId', 'in', (eb) =>
+            eb.selectFrom('partners').select(['sharedById']).where('sharedWithId', '=', userId),
+          ),
       )
-      .$if(!!ack, (qb) => qb.where('exif.updateId', '>', ack!.updateId))
-      .where('exif.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
-      .orderBy(['exif.updateId asc'])
+      .$call((qb) => this.upsertTableFilters(qb, ack))
       .stream();
+  }
+
+  private auditTableFilters<T extends keyof Pick<DB, auditTables>, D>(qb: SelectQueryBuilder<DB, T, D>, ack?: SyncAck) {
+    const builder = qb as SelectQueryBuilder<DB, auditTables, D>;
+    return builder
+      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
+      .orderBy(['id asc']) as SelectQueryBuilder<DB, T, D>;
+  }
+
+  private upsertTableFilters<T extends keyof Pick<DB, upsertTables>, D>(
+    qb: SelectQueryBuilder<DB, T, D>,
+    ack?: SyncAck,
+  ) {
+    const builder = qb as SelectQueryBuilder<DB, upsertTables, D>;
+    return builder
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
+      .orderBy(['updateId asc']) as SelectQueryBuilder<DB, T, D>;
   }
 }
