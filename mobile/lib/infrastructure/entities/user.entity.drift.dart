@@ -20,7 +20,7 @@ typedef $$UserEntityTableCreateCompanionBuilder = i2.UserEntityCompanion
   i0.Value<bool> isPartnerSharedBy,
   i0.Value<bool> isPartnerSharedWith,
   i0.Value<bool> inTimeline,
-  required String profileImagePath,
+  i0.Value<String?> profileImagePath,
   i0.Value<bool> memoryEnabled,
   required i1.AvatarColor avatarColor,
 });
@@ -37,7 +37,7 @@ typedef $$UserEntityTableUpdateCompanionBuilder = i2.UserEntityCompanion
   i0.Value<bool> isPartnerSharedBy,
   i0.Value<bool> isPartnerSharedWith,
   i0.Value<bool> inTimeline,
-  i0.Value<String> profileImagePath,
+  i0.Value<String?> profileImagePath,
   i0.Value<bool> memoryEnabled,
   i0.Value<i1.AvatarColor> avatarColor,
 });
@@ -254,7 +254,7 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
             i0.Value<bool> isPartnerSharedBy = const i0.Value.absent(),
             i0.Value<bool> isPartnerSharedWith = const i0.Value.absent(),
             i0.Value<bool> inTimeline = const i0.Value.absent(),
-            i0.Value<String> profileImagePath = const i0.Value.absent(),
+            i0.Value<String?> profileImagePath = const i0.Value.absent(),
             i0.Value<bool> memoryEnabled = const i0.Value.absent(),
             i0.Value<i1.AvatarColor> avatarColor = const i0.Value.absent(),
           }) =>
@@ -286,7 +286,7 @@ class $$UserEntityTableTableManager extends i0.RootTableManager<
             i0.Value<bool> isPartnerSharedBy = const i0.Value.absent(),
             i0.Value<bool> isPartnerSharedWith = const i0.Value.absent(),
             i0.Value<bool> inTimeline = const i0.Value.absent(),
-            required String profileImagePath,
+            i0.Value<String?> profileImagePath = const i0.Value.absent(),
             i0.Value<bool> memoryEnabled = const i0.Value.absent(),
             required i1.AvatarColor avatarColor,
           }) =>
@@ -429,8 +429,8 @@ class $UserEntityTable extends i3.UserEntity
       const i0.VerificationMeta('profileImagePath');
   @override
   late final i0.GeneratedColumn<String> profileImagePath =
-      i0.GeneratedColumn<String>('profile_image_path', aliasedName, false,
-          type: i0.DriftSqlType.string, requiredDuringInsert: true);
+      i0.GeneratedColumn<String>('profile_image_path', aliasedName, true,
+          type: i0.DriftSqlType.string, requiredDuringInsert: false);
   static const i0.VerificationMeta _memoryEnabledMeta =
       const i0.VerificationMeta('memoryEnabled');
   @override
@@ -540,8 +540,6 @@ class $UserEntityTable extends i3.UserEntity
           _profileImagePathMeta,
           profileImagePath.isAcceptableOrUnknown(
               data['profile_image_path']!, _profileImagePathMeta));
-    } else if (isInserting) {
-      context.missing(_profileImagePathMeta);
     }
     if (data.containsKey('memory_enabled')) {
       context.handle(
@@ -570,8 +568,7 @@ class $UserEntityTable extends i3.UserEntity
       updatedAt: attachedDatabase.typeMapping.read(
           i0.DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       profileImagePath: attachedDatabase.typeMapping.read(
-          i0.DriftSqlType.string,
-          data['${effectivePrefix}profile_image_path'])!,
+          i0.DriftSqlType.string, data['${effectivePrefix}profile_image_path']),
       avatarColor: i2.$UserEntityTable.$converteravatarColor.fromSql(
           attachedDatabase.typeMapping.read(
               i0.DriftSqlType.int, data['${effectivePrefix}avatar_color'])!),
@@ -612,7 +609,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.User> {
   final i0.Value<bool> isPartnerSharedBy;
   final i0.Value<bool> isPartnerSharedWith;
   final i0.Value<bool> inTimeline;
-  final i0.Value<String> profileImagePath;
+  final i0.Value<String?> profileImagePath;
   final i0.Value<bool> memoryEnabled;
   final i0.Value<i1.AvatarColor> avatarColor;
   const UserEntityCompanion({
@@ -643,13 +640,12 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.User> {
     this.isPartnerSharedBy = const i0.Value.absent(),
     this.isPartnerSharedWith = const i0.Value.absent(),
     this.inTimeline = const i0.Value.absent(),
-    required String profileImagePath,
+    this.profileImagePath = const i0.Value.absent(),
     this.memoryEnabled = const i0.Value.absent(),
     required i1.AvatarColor avatarColor,
   })  : uid = i0.Value(uid),
         name = i0.Value(name),
         email = i0.Value(email),
-        profileImagePath = i0.Value(profileImagePath),
         avatarColor = i0.Value(avatarColor);
   static i0.Insertable<i1.User> custom({
     i0.Expression<int>? id,
@@ -698,7 +694,7 @@ class UserEntityCompanion extends i0.UpdateCompanion<i1.User> {
       i0.Value<bool>? isPartnerSharedBy,
       i0.Value<bool>? isPartnerSharedWith,
       i0.Value<bool>? inTimeline,
-      i0.Value<String>? profileImagePath,
+      i0.Value<String?>? profileImagePath,
       i0.Value<bool>? memoryEnabled,
       i0.Value<i1.AvatarColor>? avatarColor}) {
     return i2.UserEntityCompanion(

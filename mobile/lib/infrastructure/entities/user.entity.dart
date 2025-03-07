@@ -95,7 +95,7 @@ class UserEntity extends Table {
       boolean().withDefault(const Constant(false))();
   BoolColumn get inTimeline => boolean().withDefault(const Constant(false))();
   // User prefs
-  TextColumn get profileImagePath => text()();
+  TextColumn get profileImagePath => text().nullable()();
   BoolColumn get memoryEnabled => boolean().withDefault(const Constant(true))();
   IntColumn get avatarColor => intEnum<model.AvatarColor>()();
 
