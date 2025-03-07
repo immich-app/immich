@@ -1,13 +1,9 @@
 class SyncEvent {
-  // dynamic
+  // ignore: avoid-dynamic
   final dynamic data;
-
   final String ack;
 
-  SyncEvent({
-    required this.data,
-    required this.ack,
-  });
+  const SyncEvent({required this.data, required this.ack});
 
   @override
   String toString() => 'SyncEvent(data: $data, ack: $ack)';

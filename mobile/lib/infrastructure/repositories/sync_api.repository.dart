@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:openapi/api.dart';
-import 'package:http/http.dart' as http;
 
 class SyncApiRepository implements ISyncApiRepository {
   final ApiService _api;
@@ -14,9 +14,7 @@ class SyncApiRepository implements ISyncApiRepository {
 
   @override
   Stream<List<SyncEvent>> watchUserSyncEvent() {
-    return _getSyncStream(
-      SyncStreamDto(types: [SyncRequestType.usersV1]),
-    );
+    return _getSyncStream(SyncStreamDto(types: [SyncRequestType.usersV1]));
   }
 
   @override
@@ -31,7 +29,7 @@ class SyncApiRepository implements ISyncApiRepository {
     final client = http.Client();
     final endpoint = "${_api.apiClient.basePath}/sync/stream";
 
-    final headers = <String, String>{
+    final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/jsonlines+json',
     };
@@ -61,6 +59,7 @@ class SyncApiRepository implements ISyncApiRepository {
 
       await for (final chunk in response.stream.transform(utf8.decoder)) {
         previousChunk += chunk;
+        // ignore: move-variable-outside-iteration
         final parts = previousChunk.split('\n');
         previousChunk = parts.removeLast();
         lines.addAll(parts);
@@ -81,6 +80,7 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 }
 
+// ignore: avoid-dynamic
 const _kResponseMap = <SyncEntityType, Function(dynamic)>{
   SyncEntityType.userV1: SyncUserV1.fromJson,
   SyncEntityType.userDeleteV1: SyncUserDeleteV1.fromJson,
@@ -90,7 +90,7 @@ const _kResponseMap = <SyncEntityType, Function(dynamic)>{
 List<SyncEvent> _parseSyncResponse(List<String> lines) {
   final List<SyncEvent> data = [];
 
-  for (var line in lines) {
+  for (final line in lines) {
     try {
       final jsonData = jsonDecode(line);
       final type = SyncEntityType.fromJson(jsonData['type'])!;
