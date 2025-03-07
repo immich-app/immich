@@ -6,5 +6,4 @@
   "files.watcherExclude": {
     "**/.fvm": true
   },
-  "dart.lineLength": 80,
 }
