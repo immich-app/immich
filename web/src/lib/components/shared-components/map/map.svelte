@@ -7,6 +7,7 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
   import { Theme } from '$lib/constants';
+  import type { MapBounds } from '$lib/models/map';
   import { colorTheme, mapSettings } from '$lib/stores/preferences.store';
   import { serverConfig } from '$lib/stores/server-config.store';
   import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -14,7 +15,7 @@
   import mapboxRtlUrl from '@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js?url';
   import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-  import type { GeoJSONSource, LngLatLike } from 'maplibre-gl';
+  import type { GeoJSONSource, LngLatLike, LngLatBounds } from 'maplibre-gl';
   import maplibregl from 'maplibre-gl';
   import { t } from 'svelte-i18n';
   import {
@@ -47,7 +48,7 @@
     onSelect?: (assetIds: string[]) => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
-    onChangeBounds?: (bounds: maplibregl.LngLatBounds) => void;
+    onChangeBounds?: (bounds: MapBounds) => void;
   }
 
   let {
@@ -79,9 +80,53 @@
   const changeBounds = () => {
     if (isAssetGridOpened && map && onChangeBounds) {
       const bounds = map.getBounds();
-      onChangeBounds(bounds);
+      const normalizedBounds = getNormalizedBounds(bounds);
+      onChangeBounds(normalizedBounds);
     }
   };
+
+  /*
+  /* Normalizing longitude bounds:
+  /* This correction is necessary because 
+  /* - MapLibre GL allows users to pan the map continuously in the longitude direction
+  /*   (i.e., the map can be panned to the left indefinitely, and the same for the right).
+  /* - part of the map is over dateline
+  /* which can result in longitude coordinates outside the standard -180° to 180° range.
+  */
+  function getNormalizedBounds(bounds: LngLatBounds): MapBounds {
+    let boundWest = undefined,
+      boundEast = undefined,
+      boundSouth = undefined,
+      boundNorth = undefined;
+
+    if (Math.abs(bounds.getWest()) + Math.abs(bounds.getEast()) > 360) {
+      // World Wrap: If the total span between bounds exceeds 360°, it means the view wraps around the entire world.
+      // In this case, we set the bounds to cover the entire longitude range (-180° to 180°).
+      boundWest = -180;
+      boundEast = 180;
+      // } else if (Math.abs(bounds.getWest()) > 180) {
+    } else if (bounds.getWest() < -180) {
+      // West Out of Bounds: If the west bound is beyond -180°,
+      // we normalize it by adding 360° to bring it into the valid range.
+      boundWest = bounds.getWest() + 360;
+      boundEast = bounds.getEast();
+      // } else if (Math.abs(bounds.getEast()) > 180) {
+    } else if (bounds.getEast() > 180) {
+      // East Out of Bounds: If the east bound is beyond +180°,
+      // we normalize it by subtracting 360° to bring it into the valid range.
+      boundWest = bounds.getWest();
+      boundEast = bounds.getEast() - 360;
+    } else {
+      // Normal Case: If both bounds are within the valid range, we use them as-is.
+      boundWest = bounds.getWest();
+      boundEast = bounds.getEast();
+    }
+
+    boundNorth = bounds.getNorth();
+    boundSouth = bounds.getSouth();
+
+    return { boundWest, boundEast, boundSouth, boundNorth };
+  }
 
   export function addClipMapMarker(lng: number, lat: number) {
     if (map) {

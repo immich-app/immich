@@ -1,20 +1,6 @@
 import { DeduplicateJoinsPlugin, ExpressionBuilder, Kysely, SelectQueryBuilder, sql } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
-import { DB } from 'src/db';
-import { AlbumEntity } from 'src/entities/album.entity';
-import { AssetFaceEntity } from 'src/entities/asset-face.entity';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
-import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
-import { ExifEntity } from 'src/entities/exif.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
-import { SharedLinkEntity } from 'src/entities/shared-link.entity';
-import { SmartSearchEntity } from 'src/entities/smart-search.entity';
-import { StackEntity } from 'src/entities/stack.entity';
-import { TagEntity } from 'src/entities/tag.entity';
-import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import { TimeBucketSize } from 'src/repositories/asset.repository';
-import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import {
   Column,
@@ -31,6 +17,21 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { DB } from 'src/db';
+import { AlbumEntity } from 'src/entities/album.entity';
+import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetJobStatusEntity } from 'src/entities/asset-job-status.entity';
+import { ExifEntity } from 'src/entities/exif.entity';
+import { LibraryEntity } from 'src/entities/library.entity';
+import { SharedLinkEntity } from 'src/entities/shared-link.entity';
+import { SmartSearchEntity } from 'src/entities/smart-search.entity';
+import { StackEntity } from 'src/entities/stack.entity';
+import { TagEntity } from 'src/entities/tag.entity';
+import { UserEntity } from 'src/entities/user.entity';
+import { TimeBucketSize } from 'src/repositories/asset.repository';
+import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 
@@ -344,6 +345,31 @@ export function withTagId<O>(qb: SelectQueryBuilder<DB, 'assets', O>, tagId: str
         .whereRef('tag_asset.assetsId', '=', 'assets.id')
         .where('tags_closure.id_ancestor', '=', tagId),
     ),
+  );
+}
+
+export function insideBounds(
+  eb: ExpressionBuilder<DB, 'assets' | 'exif'>,
+  { x1, x2, y1, y2 }: { x1: number; x2: number; y1: number; y2: number },
+) {
+  /**
+  /* the Client already makes sure that -180 < x1, x2 < 180
+  /* the first case is when the part of the map contains the International Date Line (x1 is on the west side, x2 on the east)
+  /* then x1 >= x2
+  */
+  return eb.exists(
+    eb
+      .selectFrom('assets')
+      .where((eb) =>
+        eb.and([
+          eb('exif.longitude', 'is not', null),
+          eb('exif.latitude', 'is not', null),
+          eb('exif.latitude', '>=', y1),
+          eb('exif.latitude', '<=', y2),
+        ]),
+      )
+      .$if(x1 >= x2, (qb) => qb.where((eb) => eb.or([eb('exif.longitude', '>=', x1), eb('exif.longitude', '<=', x2)])))
+      .$if(x1 < x2, (qb) => qb.where('exif.longitude', '>=', x1).where('exif.longitude', '<=', x2)),
   );
 }
 

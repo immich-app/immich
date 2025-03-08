@@ -26,14 +26,7 @@
   import { mdiArrowDown, mdiArrowUp } from '@mdi/js';
   import Button from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
-  import maplibregl from 'maplibre-gl';
-
-  interface Coordinates {
-    x1: number | undefined;
-    x2: number | undefined;
-    y1: number | undefined;
-    y2: number | undefined;
-  }
+  import type { MapBounds } from '$lib/models/map';
 
   interface Props {
     data: PageData;
@@ -51,19 +44,24 @@
   let isAssetGridOpenedOnInit = data.isTimelineOpened;
   let isAssetGridOpened = $state(isAssetGridOpenedOnInit);
 
-  let coordinates: Coordinates = $state({ x1: undefined, x2: undefined, y1: undefined, y2: undefined });
+  let bounds: MapBounds = $state({
+    boundWest: undefined,
+    boundEast: undefined,
+    boundSouth: undefined,
+    boundNorth: undefined,
+  });
   let numberOfAssets: number | undefined = $state(undefined);
 
   let timelineStore: AssetStore | undefined = $derived.by(() => {
-    return coordinates.x1 && coordinates.x2 && coordinates.y1 && coordinates.y2
+    return bounds.boundWest && bounds.boundEast && bounds.boundSouth && bounds.boundNorth
       ? new AssetStore({
           isArchived: false,
           withPartners: $mapSettings.withPartners,
           isFavorite: false,
-          x1: coordinates.x1,
-          x2: coordinates.x2,
-          y1: coordinates.y1,
-          y2: coordinates.y2,
+          x1: bounds.boundWest,
+          x2: bounds.boundEast,
+          y1: bounds.boundSouth,
+          y2: bounds.boundNorth,
         })
       : undefined;
   });
@@ -187,48 +185,45 @@
     return asset;
   }
 
-  function onChangeBounds(bounds: maplibregl.LngLatBounds) {
-    let lng_e: number, lng_w: number, lat_e: number, lat_w: number;
+  function onChangeBounds(newBounds: MapBounds) {
+    const { boundWest, boundEast, boundSouth, boundNorth } = newBounds;
 
-    /*
-    /*
-    /* longitude and latitude can be >180 and <180 with maplibre
-    /* that part fixes it to always have longitude coordinates -180 < x1, x2 < 180
-    /*
-    */
-    if (Math.abs(bounds._ne.lng) + Math.abs(bounds._sw.lng) > 360) {
-      lng_e = -180;
-      lng_w = 180;
-    } else if (Math.abs(bounds._sw.lng) > 180) {
-      lng_e = bounds._sw.lng + 360;
-      lng_w = bounds._ne.lng;
-    } else if (Math.abs(bounds._ne.lng) > 180) {
-      lng_e = bounds._sw.lng;
-      lng_w = bounds._ne.lng - 360;
-    } else {
-      lng_e = bounds._sw.lng;
-      lng_w = bounds._ne.lng;
+    if (!boundWest || !boundEast || !boundSouth || !boundNorth) {
+      return;
     }
 
-    lat_e = bounds._ne.lat;
-    lat_w = bounds._sw.lat;
-
     // TODO: get the number of assets from the server?
-    let assetsInBounds = mapMarkers.filter((mapMarker) => isAssetinBounds(mapMarker, lng_e, lng_w, lat_e, lat_w));
+    let assetsInBounds = mapMarkers.filter((mapMarker) =>
+      isAssetInBounds(mapMarker, boundWest!, boundEast!, boundSouth!, boundNorth!),
+    );
     numberOfAssets = assetsInBounds.length;
 
     // refresh only if the assets displayed on screen has changed to avoid refresh the AssetGrid when nothing has changed on screen
     if (currentAssets.length === 0 || assetsInBounds.toString() !== currentAssets.toString()) {
-      coordinates = { x1: lng_e, x2: lng_w, y1: lat_e, y2: lat_w };
+      bounds = newBounds;
       currentAssets = assetsInBounds;
     }
   }
 
-  const isAssetinBounds = (mapMarker: MapMarkerResponseDto, x1: number, x2: number, y1: number, y2: number) => {
-    // if x1 is before the international date line, and x2 after it, you want to check if the asset is after x1 OR after x2
+  const isAssetInBounds = (
+    mapMarker: MapMarkerResponseDto,
+    boundWest: number,
+    boundEast: number,
+    boundSouth: number,
+    boundNorth: number,
+  ) => {
+    // if part of the map contains the international date line
+    // => boundWest is positive, boundEast is negative => boundWest >= boundEast
+    // you want to check if the longitude of marker is after boundWest OR after boundEast
+    // longitude of marker is normalized to -180 to 180
     const isLonWithinBounds =
-      x1 > x2 ? mapMarker.lon >= x1 || mapMarker.lon <= x2 : mapMarker.lon >= x1 && mapMarker.lon <= x2;
-    const isLatWithinBounds = mapMarker.lat >= y2 && mapMarker.lat <= y1;
+      boundWest >= boundEast
+        ? boundWest <= mapMarker.lon || mapMarker.lon <= boundEast
+        : boundWest <= mapMarker.lon && mapMarker.lon <= boundEast;
+
+    // lat of marker is larger southern bound and smaller than northern bound
+    const isLatWithinBounds = boundSouth <= mapMarker.lat && mapMarker.lat <= boundNorth;
+
     return isLonWithinBounds && isLatWithinBounds;
   };
 </script>

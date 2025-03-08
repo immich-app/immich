@@ -655,10 +655,17 @@ export class MetadataService extends BaseService {
   }
 
   private async getGeo(tags: ImmichTags, reverseGeocoding: SystemConfig['reverseGeocoding']) {
+    /*
+     * tags.GPSLatitude and tags.GPSLongitude are composite values from exiftool
+     * they are signed values, which take the zero meridian and equator into account
+     * e.g. 10° West is -10, 10° East is 10
+     *
+     * No need to take GPSLatitudeRef and GPSLongitudeRef into account
+     * https://exiftool.org/faq.html#Q14
+     * https://exiftool.org/TagNames/Composite.html
+     */
     let latitude = validate(tags.GPSLatitude);
     let longitude = validate(tags.GPSLongitude);
-
-    // TODO take ref into account
 
     if (latitude === 0 && longitude === 0) {
       this.logger.debug('Latitude and longitude of 0, setting to null');

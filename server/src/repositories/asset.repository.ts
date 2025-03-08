@@ -9,10 +9,12 @@ import {
   AssetEntity,
   AssetEntityPlaceholder,
   hasPeople,
+  insideBounds,
   searchAssetBuilder,
   truncatedDate,
   withAlbums,
   withExif,
+  withExifInner,
   withFaces,
   withFacesAndPeople,
   withFiles,
@@ -714,32 +716,11 @@ export class AssetRepository {
               qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
             )
             .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-            /**
-             /* the API already makes sure that -180 < x1, x2 < 180
-            /* the first case is when you search an asset with the International Date Line (x1 is on the west side, x2 on the east)
-            */
             .$if(coordinatesDefined, (qb) =>
               qb
-                .$if(options.x1! > options.x2!, (qb) =>
-                  qb
-                    .innerJoin('exif', 'exif.assetId', 'assets.id')
-                    .where('exif.longitude', 'is not', null)
-                    .where('exif.latitude', 'is not', null)
-                    .where((eb) =>
-                      eb.or([eb('exif.longitude', '>', options.x1!), eb('exif.longitude', '<', options.x2!)]),
-                    )
-                    .where('exif.latitude', '>', options.y2!)
-                    .where('exif.latitude', '<', options.y1!),
-                )
-                .$if(options.x1! <= options.x2!, (qb) =>
-                  qb
-                    .innerJoin('exif', 'exif.assetId', 'assets.id')
-                    .where('exif.longitude', 'is not', null)
-                    .where('exif.latitude', 'is not', null)
-                    .where('exif.longitude', '>', options.x1!)
-                    .where('exif.longitude', '<', options.x2!)
-                    .where('exif.latitude', '>', options.y2!)
-                    .where('exif.latitude', '<', options.y1!),
+                .$call(withExifInner)
+                .where((eb) =>
+                  insideBounds(eb, { x1: options.x1!, x2: options.x2!, y1: options.y1!, y2: options.y2! }),
                 ),
             ),
         )
@@ -762,75 +743,50 @@ export class AssetRepository {
     const coordinatesDefined =
       options.x1 !== undefined && options.x2 !== undefined && options.y1 !== undefined && options.y2 !== undefined;
 
-    return (
-      this.db
-        .selectFrom('assets')
-        .selectAll('assets')
-        .$call(withExif)
-        .$if(!!options.albumId, (qb) => withAlbums(qb, { albumId: options.albumId }))
-        .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
-        .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
-        .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
-        .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
-        .$if(!!options.withStacked, (qb) =>
-          qb
-            .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
-            .where((eb) =>
-              eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
-            )
-            .leftJoinLateral(
-              (eb) =>
-                eb
-                  .selectFrom('assets as stacked')
-                  .selectAll('asset_stack')
-                  .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
-                  .whereRef('stacked.stackId', '=', 'asset_stack.id')
-                  .where('stacked.deletedAt', 'is', null)
-                  .where('stacked.isArchived', '=', false)
-                  .groupBy('asset_stack.id')
-                  .as('stacked_assets'),
-              (join) => join.on('asset_stack.id', 'is not', null),
-            )
-            .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
-        )
-        .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
-        .$if(options.isDuplicate !== undefined, (qb) =>
-          qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
-        )
-        .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
-        .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
-        .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-        .where('assets.isVisible', '=', true)
-        .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
-        /**
-        /* the API already makes sure that -180 < x1, x2 < 180
-        /* the first case is when you search an asset with the International Date Line (x1 is on the west side, x2 on the east)
-        */
-        .$if(coordinatesDefined, (qb) =>
-          qb
-            .$if(options.x1! > options.x2!, (qb) =>
-              qb
-                .innerJoin('exif', 'exif.assetId', 'assets.id')
-                .where('exif.longitude', 'is not', null)
-                .where('exif.latitude', 'is not', null)
-                .where((eb) => eb.or([eb('exif.longitude', '>', options.x1!), eb('exif.longitude', '<', options.x2!)]))
-                .where('exif.latitude', '>', options.y2!)
-                .where('exif.latitude', '<', options.y1!),
-            )
-            .$if(options.x1! <= options.x2!, (qb) =>
-              qb
-                .innerJoin('exif', 'exif.assetId', 'assets.id')
-                .where('exif.longitude', 'is not', null)
-                .where('exif.latitude', 'is not', null)
-                .where('exif.longitude', '>', options.x1!)
-                .where('exif.longitude', '<', options.x2!)
-                .where('exif.latitude', '>', options.y2!)
-                .where('exif.latitude', '<', options.y1!),
-            ),
-        )
-        .orderBy('assets.localDateTime', options.order ?? 'desc')
-        .execute() as any as Promise<AssetEntity[]>
-    );
+    return this.db
+      .selectFrom('assets')
+      .selectAll('assets')
+      .$call(withExif)
+      .$if(!!options.albumId, (qb) => withAlbums(qb, { albumId: options.albumId }))
+      .$if(!!options.personId, (qb) => hasPeople(qb, [options.personId!]))
+      .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
+      .$if(options.isArchived !== undefined, (qb) => qb.where('assets.isArchived', '=', options.isArchived!))
+      .$if(options.isFavorite !== undefined, (qb) => qb.where('assets.isFavorite', '=', options.isFavorite!))
+      .$if(!!options.withStacked, (qb) =>
+        qb
+          .leftJoin('asset_stack', 'asset_stack.id', 'assets.stackId')
+          .where((eb) =>
+            eb.or([eb('asset_stack.primaryAssetId', '=', eb.ref('assets.id')), eb('assets.stackId', 'is', null)]),
+          )
+          .leftJoinLateral(
+            (eb) =>
+              eb
+                .selectFrom('assets as stacked')
+                .selectAll('asset_stack')
+                .select((eb) => eb.fn.count(eb.table('stacked')).as('assetCount'))
+                .whereRef('stacked.stackId', '=', 'asset_stack.id')
+                .where('stacked.deletedAt', 'is', null)
+                .where('stacked.isArchived', '=', false)
+                .groupBy('asset_stack.id')
+                .as('stacked_assets'),
+            (join) => join.on('asset_stack.id', 'is not', null),
+          )
+          .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack')),
+      )
+      .$if(!!options.assetType, (qb) => qb.where('assets.type', '=', options.assetType!))
+      .$if(options.isDuplicate !== undefined, (qb) =>
+        qb.where('assets.duplicateId', options.isDuplicate ? 'is not' : 'is', null),
+      )
+      .$if(!!options.isTrashed, (qb) => qb.where('assets.status', '!=', AssetStatus.DELETED))
+      .$if(!!options.tagId, (qb) => withTagId(qb, options.tagId!))
+      .where('assets.deletedAt', options.isTrashed ? 'is not' : 'is', null)
+      .where('assets.isVisible', '=', true)
+      .where(truncatedDate(options.size), '=', timeBucket.replace(/^[+-]/, ''))
+      .$if(coordinatesDefined, (qb) =>
+        qb.where((eb) => insideBounds(eb, { x1: options.x1!, x2: options.x2!, y1: options.y1!, y2: options.y2! })),
+      )
+      .orderBy('assets.localDateTime', options.order ?? 'desc')
+      .execute() as any as Promise<AssetEntity[]>;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
