@@ -290,7 +290,6 @@
             grayTheme={false}
             value={terms?.query ?? ''}
             searchQuery={terms}
-            onSearch={() => performSearch()}
           />
         </div>
       </ControlAppBar>
