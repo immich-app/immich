@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsPositive, IsString } from 'class-validator';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
-import { SyncEntityType, SyncRequestType } from 'src/enum';
+import { AssetType, SyncEntityType, SyncRequestType } from 'src/enum';
 import { Optional, ValidateDate, ValidateUUID } from 'src/validation';
 
 export class AssetFullSyncDto {
@@ -56,11 +56,73 @@ export class SyncPartnerDeleteV1 {
   sharedWithId!: string;
 }
 
+export class SyncAssetV1 {
+  id!: string;
+  ownerId!: string;
+  thumbhash!: string | null;
+  checksum!: string;
+  fileCreatedAt!: Date | null;
+  fileModifiedAt!: Date | null;
+  localDateTime!: Date | null;
+  type!: AssetType;
+  deletedAt!: Date | null;
+  isFavorite!: boolean;
+  isVisible!: boolean;
+}
+
+export class SyncAssetDeleteV1 {
+  assetId!: string;
+}
+
+export class SyncAssetExifV1 {
+  assetId!: string;
+  description!: string | null;
+  @ApiProperty({ type: 'integer' })
+  exifImageWidth!: number | null;
+  @ApiProperty({ type: 'integer' })
+  exifImageHeight!: number | null;
+  @ApiProperty({ type: 'integer' })
+  fileSizeInByte!: number | null;
+  orientation!: string | null;
+  dateTimeOriginal!: Date | null;
+  modifyDate!: Date | null;
+  timeZone!: string | null;
+  @ApiProperty({ type: 'integer' })
+  latitude!: number | null;
+  @ApiProperty({ type: 'integer' })
+  longitude!: number | null;
+  projectionType!: string | null;
+  city!: string | null;
+  state!: string | null;
+  country!: string | null;
+  make!: string | null;
+  model!: string | null;
+  lensModel!: string | null;
+  @ApiProperty({ type: 'integer' })
+  fNumber!: number | null;
+  @ApiProperty({ type: 'integer' })
+  focalLength!: number | null;
+  @ApiProperty({ type: 'integer' })
+  iso!: number | null;
+  exposureTime!: string | null;
+  profileDescription!: string | null;
+  @ApiProperty({ type: 'integer' })
+  rating!: number | null;
+  @ApiProperty({ type: 'integer' })
+  fps!: number | null;
+}
+
 export type SyncItem = {
   [SyncEntityType.UserV1]: SyncUserV1;
   [SyncEntityType.UserDeleteV1]: SyncUserDeleteV1;
   [SyncEntityType.PartnerV1]: SyncPartnerV1;
   [SyncEntityType.PartnerDeleteV1]: SyncPartnerDeleteV1;
+  [SyncEntityType.AssetV1]: SyncAssetV1;
+  [SyncEntityType.AssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.PartnerAssetV1]: SyncAssetV1;
+  [SyncEntityType.PartnerAssetDeleteV1]: SyncAssetDeleteV1;
+  [SyncEntityType.PartnerAssetExifV1]: SyncAssetExifV1;
 };
 
 const responseDtos = [
@@ -69,6 +131,9 @@ const responseDtos = [
   SyncUserDeleteV1,
   SyncPartnerV1,
   SyncPartnerDeleteV1,
+  SyncAssetV1,
+  SyncAssetDeleteV1,
+  SyncAssetExifV1,
 ];
 
 export const extraSyncModels = responseDtos;

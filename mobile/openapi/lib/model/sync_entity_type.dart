@@ -27,6 +27,12 @@ class SyncEntityType {
   static const userDeleteV1 = SyncEntityType._(r'UserDeleteV1');
   static const partnerV1 = SyncEntityType._(r'PartnerV1');
   static const partnerDeleteV1 = SyncEntityType._(r'PartnerDeleteV1');
+  static const assetV1 = SyncEntityType._(r'AssetV1');
+  static const assetDeleteV1 = SyncEntityType._(r'AssetDeleteV1');
+  static const assetExifV1 = SyncEntityType._(r'AssetExifV1');
+  static const partnerAssetV1 = SyncEntityType._(r'PartnerAssetV1');
+  static const partnerAssetDeleteV1 = SyncEntityType._(r'PartnerAssetDeleteV1');
+  static const partnerAssetExifV1 = SyncEntityType._(r'PartnerAssetExifV1');
 
   /// List of all possible values in this [enum][SyncEntityType].
   static const values = <SyncEntityType>[
@@ -34,6 +40,12 @@ class SyncEntityType {
     userDeleteV1,
     partnerV1,
     partnerDeleteV1,
+    assetV1,
+    assetDeleteV1,
+    assetExifV1,
+    partnerAssetV1,
+    partnerAssetDeleteV1,
+    partnerAssetExifV1,
   ];
 
   static SyncEntityType? fromJson(dynamic value) => SyncEntityTypeTypeTransformer().decode(value);
@@ -76,6 +88,12 @@ class SyncEntityTypeTypeTransformer {
         case r'UserDeleteV1': return SyncEntityType.userDeleteV1;
         case r'PartnerV1': return SyncEntityType.partnerV1;
         case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
+        case r'AssetV1': return SyncEntityType.assetV1;
+        case r'AssetDeleteV1': return SyncEntityType.assetDeleteV1;
+        case r'AssetExifV1': return SyncEntityType.assetExifV1;
+        case r'PartnerAssetV1': return SyncEntityType.partnerAssetV1;
+        case r'PartnerAssetDeleteV1': return SyncEntityType.partnerAssetDeleteV1;
+        case r'PartnerAssetExifV1': return SyncEntityType.partnerAssetExifV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

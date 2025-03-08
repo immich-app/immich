@@ -119,6 +119,13 @@ export interface AssetJobStatus {
   thumbnailAt: Timestamp | null;
 }
 
+export interface AssetsAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  assetId: string;
+  ownerId: string;
+}
+
 export interface Assets {
   checksum: Buffer;
   createdAt: Generated<Timestamp>;
@@ -168,6 +175,8 @@ export interface Audit {
 
 export interface Exif {
   assetId: string;
+  updateId: Generated<string>;
+  updatedAt: Generated<Timestamp>;
   autoStackId: string | null;
   bitsPerSample: number | null;
   city: string | null;
@@ -459,6 +468,7 @@ export interface DB {
   asset_job_status: AssetJobStatus;
   asset_stack: AssetStack;
   assets: Assets;
+  assets_audit: AssetsAudit;
   audit: Audit;
   exif: Exif;
   face_search: FaceSearch;
