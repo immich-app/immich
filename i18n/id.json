@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Bingkai B maksimum",
     "transcoding_max_b_frames_description": "Nilai yang lebih tinggi meningkatkan efisiensi kompresi, tetapi membuat pengodean lebih lambat. Mungkin tidak kompatibel dengan akselerasi perangkat keras pada perangkat lawas. 0 menonaktifkan bingkai B, sedangkan -1 mengatur nilai ini secara otomatis.",
     "transcoding_max_bitrate": "Kecepatan bit maksimum",
-    "transcoding_max_bitrate_description": "Menetapkan kecepatan bit maksimum dapat membuat ukuran berkas lebih dapat diprediksi dengan kekurangan minor pada kualitas. Pada 720p, nilai umum adalah 2600k untuk VP9 atau HEVC, atau 4500k untuk H.264. Dinonaktifkan jika ditetapkan ke 0.",
+    "transcoding_max_bitrate_description": "Menetapkan kecepatan bit maksimum dapat membuat ukuran berkas lebih dapat diprediksi dengan kekurangan minor pada kualitas. Pada 720p, nilai umum adalah 2600 kbit/s untuk VP9 atau HEVC, atau 4500 kbit/s untuk H.264. Dinonaktifkan jika ditetapkan ke 0.",
     "transcoding_max_keyframe_interval": "Interval bingkai kunci maksimum",
     "transcoding_max_keyframe_interval_description": "Menetapkan jarak bingkai maksimum antara bingkai kunci. Nilai yang lebih rendah membuat efisiensi kompresi lebih buruk, tetapi meningkatkan waktu pencarian dan dapat meningkatkan kualitas dalam adegan dengan gerakan cepat. 0 menetapkan nilai ini secara otomatis.",
     "transcoding_optimal_description": "Video lebih tinggi dari resolusi sasaran atau tidak dalam format yang diterima",

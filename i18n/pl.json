@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Maksymalne klatki B (B-Frames)",
     "transcoding_max_b_frames_description": "Wyższe wartości poprawiają wydajność kompresji, ale spowalniają kodowanie. Może nie być kompatybilny z akceleracją sprzętową na starszych urządzeniach. 0 wyłącza klatki B (B-frames), natomiast -1 ustawia tę wartość automatycznie.",
     "transcoding_max_bitrate": "Maksymalna szybkość transmisji",
-    "transcoding_max_bitrate_description": "Ustawienie maksymalnej szybkości transmisji może sprawić, że rozmiary plików będą bardziej przewidywalne przy niewielkim koszcie na jakość. Przy rozdzielczości 720p typowe wartości to 2600k dla VP9 lub HEVC, lub 4500k dla H.264. Wyłączone, jeśli ustawione na 0.",
+    "transcoding_max_bitrate_description": "Ustawienie maksymalnej szybkości transmisji może sprawić, że rozmiary plików będą bardziej przewidywalne przy niewielkim koszcie na jakość. Przy rozdzielczości 720p typowe wartości to 2600 kbit/s dla VP9 lub HEVC, lub 4500 kbit/s dla H.264. Wyłączone, jeśli ustawione na 0.",
     "transcoding_max_keyframe_interval": "Maksymalny interwał klatek kluczowych",
     "transcoding_max_keyframe_interval_description": "Ustawia maksymalny dystans między klatkami kluczowymi. Niższe wartości przyspieszają przeszukiwanie filmów i mogą poprawić jakość w scenach z dużą ilością ruchu, kosztem gorszej efektywności kompresji. 0 ustawia tą wartość automatycznie.",
     "transcoding_optimal_description": "Filmy w rozdzielczości wyższej niż docelowa lub w nieakceptowanym formacie",

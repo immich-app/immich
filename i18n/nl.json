@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Maximum B-Frames",
     "transcoding_max_b_frames_description": "Hogere waarden verbeteren de compressie efficiëntie, maar vertragen de codering. Is mogelijk niet compatibel met hardwareversnelling op oudere apparaten. 0 schakelt B-frames uit, terwijl -1 deze waarde automatisch instelt.",
     "transcoding_max_bitrate": "Maximum bitrate",
-    "transcoding_max_bitrate_description": "Het instellen van een maximale bitrate kan de bestandsgrootte voorspelbaarder maken, tegen geringe kosten voor de kwaliteit. Bij 720p zijn de typische waarden 2600k voor VP9 of HEVC, of 4500k voor H.264. Uitgeschakeld indien ingesteld op 0.",
+    "transcoding_max_bitrate_description": "Het instellen van een maximale bitrate kan de bestandsgrootte voorspelbaarder maken, tegen geringe kosten voor de kwaliteit. Bij 720p zijn de typische waarden 2600 kbit/s voor VP9 of HEVC, of 4500 kbit/s voor H.264. Uitgeschakeld indien ingesteld op 0.",
     "transcoding_max_keyframe_interval": "Maximum keyframe interval",
     "transcoding_max_keyframe_interval_description": "Stelt de maximale frameafstand tussen keyframes in. Lagere waarden verslechteren de compressie efficiëntie, maar verbeteren de zoektijden en kunnen de kwaliteit verbeteren in scènes met snelle bewegingen. 0 stelt deze waarde automatisch in.",
     "transcoding_optimal_description": "Video's met een hogere resolutie dan de doelresolutie of niet in een geaccepteerd formaat",

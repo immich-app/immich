@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Nombre maximum de trames B",
     "transcoding_max_b_frames_description": "Des valeurs plus élevées améliorent l'efficacité de la compression, mais ralentissent l'encodage. Elles peuvent ne pas être compatibles avec l'accélération matérielle sur les anciens appareils. Une valeur de 0 désactive les trames B, tandis qu'une valeur de -1 définit automatiquement ce paramètre.",
     "transcoding_max_bitrate": "Débit binaire maximal",
-    "transcoding_max_bitrate_description": "Définir un débit binaire maximal peut résulter en des fichiers de taille plus prédictible, au prix d'une légère perte en qualité. En 720p, les valeurs sont 2600k pour du VP9 ou du HEVC ou 4500k pour du H.264. Désactivé si le débit binaire est à 0.",
+    "transcoding_max_bitrate_description": "Définir un débit binaire maximal peut résulter en des fichiers de taille plus prédictible, au prix d'une légère perte en qualité. En 720p, les valeurs sont 2600 kbit/s pour du VP9 ou du HEVC ou 4500 kbit/s pour du H.264. Désactivé si le débit binaire est à 0.",
     "transcoding_max_keyframe_interval": "Intervalle maximal entre les images clés",
     "transcoding_max_keyframe_interval_description": "Définit la distance maximale de trames entre les images clés. Les valeurs plus basses diminuent l'efficacité de la compression, mais améliorent les temps de recherche et peuvent améliorer la qualité dans les scènes avec des mouvements rapides. Une valeur de 0 définit automatiquement ce paramètre.",
     "transcoding_optimal_description": "Les vidéos dont la résolution est supérieure à celle attendue ou celles qui ne sont pas dans un format accepté",

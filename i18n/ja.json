@@ -256,7 +256,7 @@
     "transcoding_max_b_frames": "最大Bフレーム",
     "transcoding_max_b_frames_description": "値を高くすると圧縮効率が向上しますが、エンコード速度が遅くなります。古いデバイスのハードウェアアクセラレーションでは対応していない場合があります。\"0\" はBフレームを無効にし、\"-1\" はこの値を自動的に設定します。",
     "transcoding_max_bitrate": "最大ビットレート",
-    "transcoding_max_bitrate_description": "最大ビットレートを設定すると、品質にわずかな影響を与えながらも、ファイルサイズを予測しやすくなります。720pの場合、一般的な値は VP9 や HEVC で \"2600k\"、H.264 で \"4500k\" です。\"0\" に設定すると無効になります。",
+    "transcoding_max_bitrate_description": "最大ビットレートを設定すると、品質にわずかな影響を与えながらも、ファイルサイズを予測しやすくなります。720pの場合、一般的な値は VP9 や HEVC で \"2600 kbit/s\"、H.264 で \"4500 kbit/s\" です。\"0\" に設定すると無効になります。",
     "transcoding_max_keyframe_interval": "最大キーフレーム間隔",
     "transcoding_max_keyframe_interval_description": "キーフレーム間の最大フレーム間隔を設定します。値を低くすると圧縮効率が悪化しますが、シーク時間が改善され、動きの速いシーンの品質が向上する場合があります。\"0\" に設定すると、この値が自動的に設定されます。",
     "transcoding_optimal_description": "設定解像度を超える動画、または容認されていない形式の動画",

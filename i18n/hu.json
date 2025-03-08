@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "B-képkockák maximum száma",
     "transcoding_max_b_frames_description": "Nagyobb értékek megnövelik a tömörítés hatékonyságát, de lelassítják a kódolást. Nem minden hardvereszköz támogatja. A 0 érték kikapcsolja a B-képkockákat, míg -1 esetén a szoftver magának választ értéket.",
     "transcoding_max_bitrate": "Maximum bitráta",
-    "transcoding_max_bitrate_description": "Maximum bitráta beállítása konzisztensebb fájlméretet eredményez egy kevés minőségi romlás árán. 720p esetén jellemző érték lehet 2600k a VP9 vagy HEVC kódoláshoz, 4500k a H.264 kódoláshoz. A 0 érték esetén nincs maximum bitráta.",
+    "transcoding_max_bitrate_description": "Maximum bitráta beállítása konzisztensebb fájlméretet eredményez egy kevés minőségi romlás árán. 720p esetén jellemző érték lehet 2600 kbit/s a VP9 vagy HEVC kódoláshoz, 4500 kbit/s a H.264 kódoláshoz. A 0 érték esetén nincs maximum bitráta.",
     "transcoding_max_keyframe_interval": "Maximum kulcskocka intervallum",
     "transcoding_max_keyframe_interval_description": "Beállítja a kulcskockák közötti legnagyobb lehetséges távolságot. Alacsony érték csökkenti a tömörítési hatékonyságot, de lejátszás közben az előre- és hátratekerés gyorsabb, valamint javíthatja a gyorsan mozgó jelenetek képminőségét. 0 esetén a szoftver magának állítja be az értéket.",
     "transcoding_optimal_description": "A célfelbontásnál nagyobb vagy a nem elfogadott formátumú videókat",

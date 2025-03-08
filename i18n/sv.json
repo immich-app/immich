@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Max B-ramar",
     "transcoding_max_b_frames_description": "Högre värden förbättrar kompressionseffektiviteten, men saktar ner kodningen. Kan vara inkompatibel med hårdvaruacceleration på äldre enheter. 0 avaktiverar B-frames, medan -1 anger detta värde automatiskt.",
     "transcoding_max_bitrate": "Max bithastighet",
-    "transcoding_max_bitrate_description": "En maximal bitrate kan göra filstorlekar mer förutsägbara till en liten kostnad på kvalitet. Vid 720p är typiska värden 2600k för VP9 eller HEVC, eller 4500k för H.264. Inaktiverad om satt till 0.",
+    "transcoding_max_bitrate_description": "En maximal bitrate kan göra filstorlekar mer förutsägbara till en liten kostnad på kvalitet. Vid 720p är typiska värden 2600 kbit/s för VP9 eller HEVC, eller 4500 kbit/s för H.264. Inaktiverad om satt till 0.",
     "transcoding_max_keyframe_interval": "Max nyckelbildruteintervall",
     "transcoding_max_keyframe_interval_description": "Sätter det maximala bildruteavståndet mellan nyckelbildrutor. Lägre värden försämrar kompressionseffektiviteten, men förbättrar söktiderna och kan förbättra kvaliteten i scener med snabb rörelse. 0 ställer in detta värde automatiskt.",
     "transcoding_optimal_description": "Videor som är högre än mållösning eller inte i ett accepterat format",

@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Maksimalni B-kadri",
     "transcoding_max_b_frames_description": "Više vrednosti poboljšavaju efikasnost kompresije, ali usporavaju kodiranje. Možda nije kompatibilno sa hardverskim ubrzanjem na starijim uređajima. 0 onemogućava B-kadre, dok -1 automatski postavlja ovu vrednost.",
     "transcoding_max_bitrate": "Maksimalni bitrate",
-    "transcoding_max_bitrate_description": "Podešavanje maksimalnog bitrate-a može učiniti veličine datoteka predvidljivijim uz manju cenu kvaliteta. Pri 720p, tipične vrednosti su 2600k za VP9 ili HEVC, ili 4500k za H.264. Onemogućeno ako je postavljeno na 0.",
+    "transcoding_max_bitrate_description": "Podešavanje maksimalnog bitrate-a može učiniti veličine datoteka predvidljivijim uz manju cenu kvaliteta. Pri 720p, tipične vrednosti su 2600 kbit/s za VP9 ili HEVC, ili 4500 kbit/s za H.264. Onemogućeno ako je postavljeno na 0.",
     "transcoding_max_keyframe_interval": "Maksimalni interval keyframe-a",
     "transcoding_max_keyframe_interval_description": "Postavlja maksimalnu udaljenost kadrova između ključnih kadrova. Niže vrednosti pogoršavaju efikasnost kompresije, ali poboljšavaju vreme traženja i mogu poboljšati kvalitet scena sa brzim kretanjem. 0 automatski postavlja ovu vrednost.",
     "transcoding_optimal_description": "Video snimci veći od ciljne rezolucije ili nisu u prihvaćenom formatu",

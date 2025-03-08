@@ -299,7 +299,7 @@
     "transcoding_max_b_frames": "B-kehysten enimmäismäärä",
     "transcoding_max_b_frames_description": "Korkeampi arvo parantaa pakkausta, mutta hidastaa enkoodausta. Ei välttämättä ole yhteensopiva vanhempien laitteiden kanssa. 0 poistaa B-kehykset käytöstä, -1 määrittää arvon automaattisesti.",
     "transcoding_max_bitrate": "Suurin bittinopeus",
-    "transcoding_max_bitrate_description": "Suurimman sallitun bittinopeuden asettaminen tekee tiedostojen koosta ennustettavampaa vaikka laatu voi hieman heiketä. 720p videossa tyypilliset arvot ovat 2600k VP9:lle ja HEVC:lle, tai 4500k H.254:lle. Jos 0, ei käytössä.",
+    "transcoding_max_bitrate_description": "Suurimman sallitun bittinopeuden asettaminen tekee tiedostojen koosta ennustettavampaa vaikka laatu voi hieman heiketä. 720p videossa tyypilliset arvot ovat 2600 kbit/s VP9:lle ja HEVC:lle, tai 4500 kbit/s H.254:lle. Jos 0, ei käytössä.",
     "transcoding_max_keyframe_interval": "Suurin avainkehysten väli",
     "transcoding_max_keyframe_interval_description": "Asettaa avainkehysten välin maksimiarvon. Alempi arvo huonontaa pakkauksen tehoa, mutta parantaa hakuaikoja ja voi parantaa laatua nopealiikkeisissä kohtauksissa. 0 asettaa arvon automaattisesti.",
     "transcoding_optimal_description": "Videot, joiden resoluutio on korkeampi kuin kohteen, tai ei hyväksytyssä formaatissa",

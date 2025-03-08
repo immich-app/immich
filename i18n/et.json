@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Maksimaalne B-kaadrite arv",
     "transcoding_max_b_frames_description": "Kõrgemad väärtused parandavad pakkimise efektiivsust, aga aeglustavad kodeerimist. See valik ei pruugi olla ühilduv riistvaralise kiirendusega vanematel seadmetel. 0 lülitab B-kaadrid välja, -1 määrab väärtuse automaatselt.",
     "transcoding_max_bitrate": "Maksimaalne bitisagedus",
-    "transcoding_max_bitrate_description": "Maksimaalse bitisageduse määramine teeb failisuurused ennustatavamaks, väikese kvaliteedikao hinnaga. 720p resolutsiooni puhul on tüüpilised väärtused 2600k (VP9 ja HEVC) või 4500k (H.264). Väärtus 0 eemaldab piirangu.",
+    "transcoding_max_bitrate_description": "Maksimaalse bitisageduse määramine teeb failisuurused ennustatavamaks, väikese kvaliteedikao hinnaga. 720p resolutsiooni puhul on tüüpilised väärtused 2600 kbit/s (VP9 ja HEVC) või 4500 kbit/s (H.264). Väärtus 0 eemaldab piirangu.",
     "transcoding_max_keyframe_interval": "Maksimaalne võtmekaadri intervall",
     "transcoding_max_keyframe_interval_description": "Määrab maksimaalse kauguse võtmekaadrite vahel. Madalamad väärtused vähendavad pakkimise efektiivsust, aga parandavad otsimiskiirust ning võivad tõsta kiire liikumisega stseenide kvaliteeti. 0 määrab väärtuse automaatselt.",
     "transcoding_optimal_description": "Kõrgema kui lubatud resolutsiooniga või mittelubatud formaadis videod",
