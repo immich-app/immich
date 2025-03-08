@@ -34,6 +34,11 @@ dev = [
     "pytest-cov>=4.1.0",
     "ruff>=0.0.272",
     "pytest-mock>=3.11.1",
+    "types-pyyaml>=6.0.12.20241230",
+    "types-requests>=2.32.0.20250306",
+    "types-setuptools>=75.8.2.20250305",
+    "types-simplejson>=3.20.0.20250218",
+    "types-ujson>=5.10.0.20240515",
 ]
 cpu = ["onnxruntime>=1.15.0,<2"]
 cuda = ["onnxruntime-gpu>=1.17.0,<2"]
