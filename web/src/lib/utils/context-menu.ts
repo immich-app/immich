@@ -1,4 +1,4 @@
-export type Align = 'middle' | 'top-left' | 'top-right';
+export type Align = 'middle' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 export type ContextMenuPosition = { x: number; y: number };
 
@@ -27,6 +27,12 @@ export const getContextMenuPositionFromBoundingRect = (rect: DOMRect, align: Ali
     }
     case 'top-right': {
       return { x: rect.x + rect.width, y: rect.y };
+    }
+    case 'bottom-left': {
+      return { x: rect.x, y: rect.y + rect.height };
+    }
+    case 'bottom-right': {
+      return { x: rect.x + rect.width, y: rect.y + rect.height };
     }
   }
 };

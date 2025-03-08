@@ -1,17 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { FileReportItemDto } from 'src/dtos/audit.dto';
-import {
-  AssetFileType,
-  AssetPathType,
-  DatabaseAction,
-  EntityType,
-  JobStatus,
-  PersonPathType,
-  UserPathType,
-} from 'src/enum';
+import { AssetFileType, AssetPathType, JobStatus, PersonPathType, UserPathType } from 'src/enum';
 import { AuditService } from 'src/services/audit.service';
-import { auditStub } from 'test/fixtures/audit.stub';
-import { authStub } from 'test/fixtures/auth.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(AuditService.name, () => {
@@ -30,40 +20,6 @@ describe(AuditService.name, () => {
     it('should delete old audit entries', async () => {
       await expect(sut.handleCleanup()).resolves.toBe(JobStatus.SUCCESS);
       expect(mocks.audit.removeBefore).toHaveBeenCalledWith(expect.any(Date));
-    });
-  });
-
-  describe('getDeletes', () => {
-    it('should require full sync if the request is older than 100 days', async () => {
-      mocks.audit.getAfter.mockResolvedValue([]);
-
-      const date = new Date(2022, 0, 1);
-      await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
-        needsFullSync: true,
-        ids: [],
-      });
-
-      expect(mocks.audit.getAfter).toHaveBeenCalledWith(date, {
-        action: DatabaseAction.DELETE,
-        userIds: [authStub.admin.user.id],
-        entityType: EntityType.ASSET,
-      });
-    });
-
-    it('should get any new or updated assets and deleted ids', async () => {
-      mocks.audit.getAfter.mockResolvedValue([auditStub.delete.entityId]);
-
-      const date = new Date();
-      await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
-        needsFullSync: false,
-        ids: ['asset-deleted'],
-      });
-
-      expect(mocks.audit.getAfter).toHaveBeenCalledWith(date, {
-        action: DatabaseAction.DELETE,
-        userIds: [authStub.admin.user.id],
-        entityType: EntityType.ASSET,
-      });
     });
   });
 

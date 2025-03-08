@@ -5,12 +5,12 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
@@ -29,16 +29,15 @@ void main() {
   setUpAll(() async {
     TestUtils.init();
     db = await TestUtils.initIsar();
-    Store.init(db);
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     mockApiService = MockApiService();
     mockSearchApi = MockSearchApi();
     when(() => mockApiService.searchApi).thenReturn(mockSearchApi);
     registerFallbackValue(MockSmartSearchDto());
     registerFallbackValue(MockMetadataSearchDto());
     overrides = [
-      paginatedSearchRenderListProvider
-          .overrideWithValue(AsyncValue.data(RenderList.empty())),
       dbProvider.overrideWithValue(db),
+      isarProvider.overrideWithValue(db),
       apiServiceProvider.overrideWithValue(mockApiService),
     ];
   });

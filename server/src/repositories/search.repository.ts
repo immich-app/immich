@@ -109,6 +109,7 @@ export interface SearchExifOptions {
   model?: string | null;
   state?: string | null;
   description?: string | null;
+  rating?: number | null;
 }
 
 export interface SearchEmbeddingOptions {
@@ -317,6 +318,7 @@ export class SearchRepository {
           .where('assets.isVisible', '=', true)
           .where('assets.type', '=', type)
           .where('assets.id', '!=', asUuid(assetId))
+          .where('assets.stackId', 'is', null)
           .orderBy(sql`smart_search.embedding <=> ${embedding}`)
           .limit(64),
       )
@@ -402,7 +404,7 @@ export class SearchRepository {
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.isVisible', '=', true)
           .where('assets.isArchived', '=', false)
-          .where('assets.type', '=', 'IMAGE')
+          .where('assets.type', '=', AssetType.IMAGE)
           .where('assets.deletedAt', 'is', null)
           .orderBy('city')
           .limit(1);
@@ -419,7 +421,7 @@ export class SearchRepository {
                 .where('assets.ownerId', '=', anyUuid(userIds))
                 .where('assets.isVisible', '=', true)
                 .where('assets.isArchived', '=', false)
-                .where('assets.type', '=', 'IMAGE')
+                .where('assets.type', '=', AssetType.IMAGE)
                 .where('assets.deletedAt', 'is', null)
                 .whereRef('exif.city', '>', 'cte.city')
                 .orderBy('city')

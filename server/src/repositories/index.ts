@@ -9,6 +9,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { DownloadRepository } from 'src/repositories/download.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
@@ -30,6 +31,7 @@ import { SessionRepository } from 'src/repositories/session.repository';
 import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
+import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
@@ -50,6 +52,7 @@ export const repositories = [
   CronRepository,
   CryptoRepository,
   DatabaseRepository,
+  DownloadRepository,
   EventRepository,
   JobRepository,
   LibraryRepository,
@@ -71,6 +74,7 @@ export const repositories = [
   SharedLinkRepository,
   StackRepository,
   StorageRepository,
+  SyncRepository,
   SystemMetadataRepository,
   TagRepository,
   TelemetryRepository,

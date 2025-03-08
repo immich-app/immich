@@ -112,6 +112,7 @@ with
       and "assets"."isVisible" = $3
       and "assets"."type" = $4
       and "assets"."id" != $5::uuid
+      and "assets"."stackId" is null
     order by
       smart_search.embedding <=> $6
     limit

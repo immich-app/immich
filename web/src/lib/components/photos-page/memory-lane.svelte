@@ -2,20 +2,18 @@
   import { resizeObserver } from '$lib/actions/resize-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { memoryStore } from '$lib/stores/memory.store';
+  import { loadMemories, memoryStore } from '$lib/stores/memory.store';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
-  import { getMemoryLane } from '@immich/sdk';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { fade } from 'svelte/transition';
   import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   let shouldRender = $derived($memoryStore?.length > 0);
 
   onMount(async () => {
-    const localTime = new Date();
-    $memoryStore = await getMemoryLane({ month: localTime.getMonth() + 1, day: localTime.getDate() });
+    await loadMemories();
   });
 
   let memoryLaneElement: HTMLElement | undefined = $state();
@@ -29,7 +27,7 @@
   };
 
   let canScrollLeft = $derived(scrollLeftPosition > 0);
-  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < innerWidth - offsetWidth);
+  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < Math.floor(innerWidth - offsetWidth));
 
   const scrollBy = 400;
   const scrollLeft = () => memoryLaneElement?.scrollBy({ left: -scrollBy, behavior: 'smooth' });
@@ -40,7 +38,8 @@
   <section
     id="memory-lane"
     bind:this={memoryLaneElement}
-    class="relative mt-5 overflow-hidden whitespace-nowrap transition-all"
+    class="relative mt-5 overflow-x-scroll overflow-y-hidden whitespace-nowrap transition-all"
+    style="scrollbar-width:none"
     use:resizeObserver={({ width }) => (offsetWidth = width)}
     onscroll={onScroll}
   >
@@ -71,10 +70,10 @@
       </div>
     {/if}
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
-      {#each $memoryStore as memory (memory.yearsAgo)}
+      {#each $memoryStore as memory (memory.id)}
         {#if memory.assets.length > 0}
           <a
-            class="memory-card relative mr-8 inline-block aspect-video h-[215px] rounded-xl"
+            class="memory-card relative mr-8 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] xl:aspect-video h-[215px] rounded-xl"
             href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
           >
             <img
@@ -84,7 +83,7 @@
               draggable="false"
             />
             <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
-              {$memoryLaneTitle(memory.yearsAgo)}
+              {$memoryLaneTitle(memory)}
             </p>
             <div
               class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"

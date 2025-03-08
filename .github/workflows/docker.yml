@@ -5,7 +5,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
   release:
     types: [published]
 
@@ -36,10 +35,12 @@ jobs:
               - 'i18n/**'
             machine-learning:
               - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/docker.yml'
 
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'release' }}" >> "$GITHUB_OUTPUT"
 
   retag_ml:
     name: Re-Tag ML
@@ -95,128 +96,40 @@ jobs:
     name: Build and Push ML
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_ml == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     env:
       image: immich-machine-learning
       context: machine-learning
       file: machine-learning/Dockerfile
+      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
     strategy:
       # Prevent a failure in one image from stopping the other builds
       fail-fast: false
       matrix:
         include:
-          - platforms: linux/amd64,linux/arm64
+          - platform: linux/amd64
+            runner: ubuntu-latest
             device: cpu
 
-          - platforms: linux/amd64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+            device: cpu
+
+          - platform: linux/amd64
+            runner: ubuntu-latest
             device: cuda
             suffix: -cuda
 
-          - platforms: linux/amd64
+          - platform: linux/amd64
+            runner: ubuntu-latest
             device: openvino
             suffix: -openvino
 
-          - platforms: linux/arm64
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
             device: armnn
             suffix: -armnn
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.4.0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.9.0
-
-      - name: Login to Docker Hub
-        # Only push to Docker Hub when making a release
-        if: ${{ github.event_name == 'release' }}
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        # Skip when PR from a fork
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate docker image tags
-        id: metadata
-        uses: docker/metadata-action@v5
-        with:
-          flavor: |
-            # Disable latest tag
-            latest=false
-          images: |
-            name=ghcr.io/${{ github.repository_owner }}/${{env.image}}
-            name=altran1502/${{env.image}},enable=${{ github.event_name == 'release' }}
-          tags: |
-            # Tag with branch name
-            type=ref,event=branch,suffix=${{ matrix.suffix }}
-            # Tag with pr-number
-            type=ref,event=pr,suffix=${{ matrix.suffix }}
-            # Tag with long commit sha hash
-            type=sha,format=long,prefix=commit-,suffix=${{ matrix.suffix }}
-            # Tag with git tag on release
-            type=ref,event=tag,suffix=${{ matrix.suffix }}
-            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.suffix }}
-
-      - name: Determine build cache output
-        id: cache-target
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # Essentially just ignore the cache output (PR can't write to registry cache)
-            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
-          else
-            echo "cache-to=type=registry,mode=max,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{ env.image }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Build and push image
-        uses: docker/build-push-action@v6.13.0
-        with:
-          context: ${{ env.context }}
-          file: ${{ env.file }}
-          platforms: ${{ matrix.platforms }}
-          # Skip pushing when PR from a fork
-          push: ${{ !github.event.pull_request.head.repo.fork }}
-          cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/immich-build-cache:${{env.image}}
-          cache-to: ${{ steps.cache-target.outputs.cache-to }}
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
-          build-args: |
-            DEVICE=${{ matrix.device }}
-            BUILD_ID=${{ github.run_id }}
-            BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
-            BUILD_SOURCE_REF=${{ github.ref_name }}
-            BUILD_SOURCE_COMMIT=${{ github.sha }}
-
-
-  build_and_push_server:
-    name: Build and Push Server
-    runs-on: ${{ matrix.runner }}
-    needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
-    env:
-      image: immich-server
-      context: .
-      file: server/Dockerfile
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
-      DOCKER_REPO: altran1502/immich-server
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: linux/amd64
-            runner: ubuntu-latest
-          - platform: linux/arm64
-            runner: ubuntu-24.04-arm
     steps:
       - name: Prepare
         run: |
@@ -227,37 +140,49 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        if: ${{ !github.event.pull_request.head.repo.fork }}
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        uses: docker/setup-buildx-action@v3.10.0
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        # Skip when PR from a fork
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate cache key suffix
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          else
+            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+          fi
+
+      - name: Generate cache target
+        id: cache-target
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            # Essentially just ignore the cache output (forks can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push image
         id: build
-        uses: docker/build-push-action@v6.13.0
+        uses: docker/build-push-action@v6.15.0
         with:
           context: ${{ env.context }}
           file: ${{ env.file }}
-          platforms: ${{ matrix.platform }}
-          # Skip pushing when PR from a fork
-          push: ${{ !github.event.pull_request.head.repo.fork }}
+          platforms: ${{ matrix.platforms }}
           labels: ${{ steps.metadata.outputs.labels }}
-          outputs: type=image,"name=${{ env.GHCR_REPO }},${{ env.DOCKER_REPO }}",push-by-digest=true,name-canonical=true,push=true
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
+          cache-from: |
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }}
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-main
+          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
           build-args: |
-            DEVICE=cpu
+            DEVICE=${{ matrix.device }}
             BUILD_ID=${{ github.run_id }}
             BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
             BUILD_SOURCE_REF=${{ github.ref_name }}
@@ -272,29 +197,40 @@ jobs:
       - name: Upload digest
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
+          name: ml-digests-${{ matrix.device }}-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
 
-  merge_server:
-    name: Merge & Push Server
+  merge_ml:
+    name: Merge & Push ML
     runs-on: ubuntu-latest
-    if: ${{ needs.pre-job.outputs.should_run_server == 'true' && !github.event.pull_request.head.repo.fork }}
+    if: ${{ needs.pre-job.outputs.should_run_ml == 'true' && !github.event.pull_request.head.repo.fork }}
     env:
-      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
-      DOCKER_REPO: altran1502/immich-server
+      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-machine-learning
+      DOCKER_REPO: altran1502/immich-machine-learning
+    strategy:
+      matrix:
+        include:
+          - device: cpu
+          - device: cuda
+            suffix: -cuda
+          - device: openvino
+            suffix: -openvino
+          - device: armnn
+            suffix: -armnn
     needs:
-      - build_and_push_server
+      - build_and_push_ml
     steps:
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
           path: ${{ runner.temp }}/digests
-          pattern: digests-*
+          pattern: ml-digests-${{ matrix.device }}-*
           merge-multiple: true
 
       - name: Login to Docker Hub
+        if: ${{ github.event_name == 'release' }}
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -313,6 +249,8 @@ jobs:
       - name: Generate docker image tags
         id: meta
         uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
         with:
           flavor: |
             # Disable latest tag
@@ -335,8 +273,160 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *) \
-            $(printf '${{ env.DOCKER_REPO }}@sha256:%s ' *)
+            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
+
+  build_and_push_server:
+    name: Build and Push Server
+    runs-on: ${{ matrix.runner }}
+    needs: pre-job
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
+    env:
+      image: immich-server
+      context: .
+      file: server/Dockerfile
+      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate cache key suffix
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "CACHE_KEY_SUFFIX=pr-${{ github.event.number }}" >> $GITHUB_ENV
+          else
+            echo "CACHE_KEY_SUFFIX=$(echo ${{ github.ref_name }} | sed 's/[^a-zA-Z0-9]/-/g')" >> $GITHUB_ENV
+          fi
+
+      - name: Generate cache target
+        id: cache-target
+        run: |
+          if [[ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]]; then
+            # Essentially just ignore the cache output (forks can't write to registry cache)
+            echo "cache-to=type=local,dest=/tmp/discard,ignore-error=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-to=type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ matrix.device }}-${{ env.CACHE_KEY_SUFFIX }},mode=max,compression=zstd" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v6.15.0
+        with:
+          context: ${{ env.context }}
+          file: ${{ env.file }}
+          platforms: ${{ matrix.platform }}
+          labels: ${{ steps.metadata.outputs.labels }}
+          cache-to: ${{ steps.cache-target.outputs.cache-to }}
+          cache-from: |
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-${{ env.CACHE_KEY_SUFFIX }}
+            type=registry,ref=${{ env.GHCR_REPO }}-build-cache:${{ env.PLATFORM_PAIR }}-main
+          outputs: type=image,"name=${{ env.GHCR_REPO }}",push-by-digest=true,name-canonical=true,push=${{ !github.event.pull_request.head.repo.fork }}
+          build-args: |
+            DEVICE=cpu
+            BUILD_ID=${{ github.run_id }}
+            BUILD_IMAGE=${{ github.event_name == 'release' && github.ref_name || steps.metadata.outputs.tags }}
+            BUILD_SOURCE_REF=${{ github.ref_name }}
+            BUILD_SOURCE_COMMIT=${{ github.sha }}
+
+      - name: Export digest
+        run: |
+          mkdir -p ${{ runner.temp }}/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${digest#sha256:}"
+
+      - name: Upload digest
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-digests-${{ env.PLATFORM_PAIR }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  merge_server:
+    name: Merge & Push Server
+    runs-on: ubuntu-latest
+    if: ${{ needs.pre-job.outputs.should_run_server == 'true' && !github.event.pull_request.head.repo.fork }}
+    env:
+      GHCR_REPO: ghcr.io/${{ github.repository_owner }}/immich-server
+      DOCKER_REPO: altran1502/immich-server
+    needs:
+      - build_and_push_server
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: server-digests-*
+          merge-multiple: true
+
+      - name: Login to Docker Hub
+        if: ${{ github.event_name == 'release' }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate docker image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
+        with:
+          flavor: |
+            # Disable latest tag
+            latest=false
+          images: |
+            name=${{ env.GHCR_REPO }}
+            name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
+          tags: |
+            # Tag with branch name
+            type=ref,event=branch,suffix=${{ matrix.suffix }}
+            # Tag with pr-number
+            type=ref,event=pr,suffix=${{ matrix.suffix }}
+            # Tag with long commit sha hash
+            type=sha,format=long,prefix=commit-,suffix=${{ matrix.suffix }}
+            # Tag with git tag on release
+            type=ref,event=tag,suffix=${{ matrix.suffix }}
+            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.suffix }}
+
+      - name: Create manifest list and push
+        working-directory: ${{ runner.temp }}/digests
+        run: |
+          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.GHCR_REPO }}@sha256:%s ' *)
 
   success-check-server:
     name: Docker Build & Push Server Success
@@ -353,7 +443,7 @@ jobs:
 
   success-check-ml:
     name: Docker Build & Push ML Success
-    needs: [build_and_push_ml, retag_ml]
+    needs: [merge_ml, retag_ml]
     runs-on: ubuntu-latest
     if: always()
     steps:

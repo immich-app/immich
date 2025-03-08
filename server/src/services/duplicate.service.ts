@@ -59,6 +59,11 @@ export class DuplicateService extends BaseService {
       return JobStatus.FAILED;
     }
 
+    if (asset.stackId) {
+      this.logger.debug(`Asset ${id} is part of a stack, skipping`);
+      return JobStatus.SKIPPED;
+    }
+
     if (!asset.isVisible) {
       this.logger.debug(`Asset ${id} is not visible, skipping`);
       return JobStatus.SKIPPED;

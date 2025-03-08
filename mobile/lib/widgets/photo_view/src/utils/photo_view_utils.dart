@@ -26,7 +26,7 @@ double getScaleForScaleState(
 }
 
 /// Internal class to wraps custom scale boundaries (min, max and initial)
-/// Also, stores values regarding the two sizes: the container and teh child.
+/// Also, stores values regarding the two sizes: the container and the child.
 class ScaleBoundaries {
   const ScaleBoundaries(
     this._minScale,

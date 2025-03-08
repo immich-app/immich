@@ -83,7 +83,6 @@ class AlbumAssetSelectionRoute
     Key? key,
     required Set<Asset> existingAssets,
     bool canDeselect = false,
-    required QueryBuilder<Asset, Asset, QAfterSortBy>? query,
     List<PageRouteInfo>? children,
   }) : super(
           AlbumAssetSelectionRoute.name,
@@ -91,7 +90,6 @@ class AlbumAssetSelectionRoute
             key: key,
             existingAssets: existingAssets,
             canDeselect: canDeselect,
-            query: query,
           ),
           initialChildren: children,
         );
@@ -106,7 +104,6 @@ class AlbumAssetSelectionRoute
         key: args.key,
         existingAssets: args.existingAssets,
         canDeselect: args.canDeselect,
-        query: args.query,
       );
     },
   );
@@ -117,7 +114,6 @@ class AlbumAssetSelectionRouteArgs {
     this.key,
     required this.existingAssets,
     this.canDeselect = false,
-    required this.query,
   });
 
   final Key? key;
@@ -126,11 +122,9 @@ class AlbumAssetSelectionRouteArgs {
 
   final bool canDeselect;
 
-  final QueryBuilder<Asset, Asset, QAfterSortBy>? query;
-
   @override
   String toString() {
-    return 'AlbumAssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect, query: $query}';
+    return 'AlbumAssetSelectionRouteArgs{key: $key, existingAssets: $existingAssets, canDeselect: $canDeselect}';
   }
 }
 
@@ -392,7 +386,7 @@ class AllVideosRoute extends PageRouteInfo<void> {
 class AppLogDetailRoute extends PageRouteInfo<AppLogDetailRouteArgs> {
   AppLogDetailRoute({
     Key? key,
-    required LoggerMessage logMessage,
+    required LogMessage logMessage,
     List<PageRouteInfo>? children,
   }) : super(
           AppLogDetailRoute.name,
@@ -425,7 +419,7 @@ class AppLogDetailRouteArgs {
 
   final Key? key;
 
-  final LoggerMessage logMessage;
+  final LogMessage logMessage;
 
   @override
   String toString() {
@@ -1179,6 +1173,40 @@ class PartnerRoute extends PageRouteInfo<void> {
       return const PartnerPage();
     },
   );
+}
+
+/// manually written (with love) route for
+/// [FolderPage]
+class FolderRoute extends PageRouteInfo<FolderRouteArgs> {
+  FolderRoute({
+    RecursiveFolder? folder,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FolderRoute.name,
+          args: FolderRouteArgs(folder: folder),
+          initialChildren: children,
+        );
+
+  static const String name = 'FolderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<FolderRouteArgs>();
+      return FolderPage(folder: args.folder);
+    },
+  );
+}
+
+class FolderRouteArgs {
+  const FolderRouteArgs({this.folder});
+
+  final RecursiveFolder? folder;
+
+  @override
+  String toString() {
+    return 'FolderRouteArgs{folder: $folder}';
+  }
 }
 
 /// generated route for

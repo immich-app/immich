@@ -140,7 +140,7 @@ export class UserService extends BaseService {
     if (!license) {
       throw new NotFoundException();
     }
-    return license.value;
+    return { ...license.value, activatedAt: new Date(license.value.activatedAt) };
   }
 
   async deleteLicense({ user }: AuthDto): Promise<void> {
@@ -170,17 +170,14 @@ export class UserService extends BaseService {
       throw new BadRequestException('Invalid license key');
     }
 
-    const licenseData = {
-      ...license,
-      activatedAt: new Date(),
-    };
+    const activatedAt = new Date();
 
     await this.userRepository.upsertMetadata(auth.user.id, {
       key: UserMetadataKey.LICENSE,
-      value: licenseData,
+      value: { ...license, activatedAt: activatedAt.toISOString() },
     });
 
-    return licenseData;
+    return { ...license, activatedAt };
   }
 
   @OnJob({ name: JobName.USER_SYNC_USAGE, queue: QueueName.BACKGROUND_TASK })

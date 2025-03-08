@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
+import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Memories } from 'src/db';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
+import { MemorySearchDto } from 'src/dtos/memory.dto';
 import { IBulkAsset } from 'src/types';
 
 @Injectable()
@@ -11,10 +13,41 @@ export class MemoryRepository implements IBulkAsset {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  search(ownerId: string) {
+  cleanup() {
+    return this.db
+      .deleteFrom('memories')
+      .where('createdAt', '<', DateTime.now().minus({ days: 30 }).toJSDate())
+      .where('isSaved', '=', false)
+      .execute();
+  }
+
+  @GenerateSql(
+    { params: [DummyValue.UUID, {}] },
+    { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
+  )
+  search(ownerId: string, dto: MemorySearchDto) {
     return this.db
       .selectFrom('memories')
-      .selectAll()
+      .selectAll('memories')
+      .select((eb) =>
+        jsonArrayFrom(
+          eb
+            .selectFrom('assets')
+            .selectAll('assets')
+            .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
+            .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+            .orderBy('assets.fileCreatedAt', 'asc')
+            .where('assets.deletedAt', 'is', null),
+        ).as('assets'),
+      )
+      .$if(dto.isSaved !== undefined, (qb) => qb.where('isSaved', '=', dto.isSaved!))
+      .$if(dto.type !== undefined, (qb) => qb.where('type', '=', dto.type!))
+      .$if(dto.for !== undefined, (qb) =>
+        qb
+          .where((where) => where.or([where('showAt', 'is', null), where('showAt', '<=', dto.for!)]))
+          .where((where) => where.or([where('hideAt', 'is', null), where('hideAt', '>=', dto.for!)])),
+      )
+      .where('deletedAt', dto.isTrashed ? 'is not' : 'is', null)
       .where('ownerId', '=', ownerId)
       .orderBy('memoryAt', 'desc')
       .execute();
@@ -105,6 +138,7 @@ export class MemoryRepository implements IBulkAsset {
             .selectAll('assets')
             .innerJoin('memories_assets_assets', 'assets.id', 'memories_assets_assets.assetsId')
             .whereRef('memories_assets_assets.memoriesId', '=', 'memories.id')
+            .orderBy('assets.fileCreatedAt', 'asc')
             .where('assets.deletedAt', 'is', null),
         ).as('assets'),
       )

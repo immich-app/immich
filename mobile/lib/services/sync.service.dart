@@ -3,30 +3,30 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
-import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
-import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/file_trash_manager.dart';
@@ -40,7 +40,7 @@ final syncServiceProvider = Provider(
     ref.watch(albumApiRepositoryProvider),
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
-    ref.watch(exifInfoRepositoryProvider),
+    ref.watch(exifRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
     ref.watch(appSettingsServiceProvider),
@@ -324,7 +324,7 @@ class SyncService {
     }
     final idsToDelete = toRemove.map((e) => e.id).toList();
     try {
-      await _assetRepository.deleteById(idsToDelete);
+      await _assetRepository.deleteByIds(idsToDelete);
       await upsertAssetsWithExif(toAdd + toUpdate);
     } catch (e) {
       _log.severe("Failed to sync remote assets to db", e);
@@ -372,7 +372,7 @@ class SyncService {
     if (toDelete.isNotEmpty) {
       final List<int> idsToRemove = sharedAssetsToRemove(toDelete, existing);
       if (idsToRemove.isNotEmpty) {
-        await _assetRepository.deleteById(idsToRemove);
+        await _assetRepository.deleteByIds(idsToRemove);
       }
     } else {
       assert(toDelete.isEmpty);
@@ -569,7 +569,7 @@ class SyncService {
     );
     if (toDelete.isNotEmpty || toUpdate.isNotEmpty) {
       await _assetRepository.transaction(() async {
-        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.deleteByIds(toDelete);
         await _assetRepository.updateAll(toUpdate);
       });
       _log.info(
@@ -677,7 +677,7 @@ class SyncService {
   }
 
   /// fast path for common case: only new assets were added to device album
-  /// returns `true` if successfull, else `false`
+  /// returns `true` if successful, else `false`
   Future<bool> _syncDeviceAlbumFast(Album deviceAlbum, Album dbAlbum) async {
     if (!deviceAlbum.modifiedAt.isAfter(dbAlbum.modifiedAt)) {
       return false;
@@ -812,7 +812,7 @@ class SyncService {
       await _assetRepository.transaction(() async {
         await _assetRepository.updateAll(assets);
         for (final Asset added in assets) {
-          added.exifInfo?.id = added.id;
+          added.exifInfo ??= added.exifInfo?.copyWith(assetId: added.id);
         }
         await _exifInfoRepository.updateAll(exifInfos);
       });
@@ -882,7 +882,7 @@ class SyncService {
       final (toDelete, toUpdate) =
           _handleAssetRemoval(assets, [], remote: false);
       await _assetRepository.transaction(() async {
-        await _assetRepository.deleteById(toDelete);
+        await _assetRepository.deleteByIds(toDelete);
         await _assetRepository.updateAll(toUpdate);
         await _albumRepository.deleteAllLocal();
       });

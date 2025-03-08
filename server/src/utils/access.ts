@@ -217,6 +217,10 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
       return await access.authDevice.checkOwnerAccess(auth.user.id, ids);
     }
 
+    case Permission.FACE_DELETE: {
+      return access.person.checkFaceOwnerAccess(auth.user.id, ids);
+    }
+
     case Permission.TAG_ASSET:
     case Permission.TAG_READ:
     case Permission.TAG_UPDATE:

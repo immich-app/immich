@@ -10,7 +10,7 @@ import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
-import { LogLevel, SystemMetadataKey } from 'src/enum';
+import { SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
@@ -76,7 +76,7 @@ export class MapRepository {
     this.logger.log('Geodata import completed');
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], []] })
+  @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
   getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}) {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
@@ -89,25 +89,31 @@ export class MapRepository {
           .on('exif.longitude', 'is not', null),
       )
       .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
-      .leftJoin('albums_assets_assets', (join) => join.onRef('assets.id', '=', 'albums_assets_assets.assetsId'))
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
       .where('deletedAt', 'is', null)
-      .where((builder) => {
+      .where((eb) => {
         const expression: Expression<SqlBool>[] = [];
 
         if (ownerIds.length > 0) {
-          expression.push(builder('ownerId', 'in', ownerIds));
+          expression.push(eb('ownerId', 'in', ownerIds));
         }
 
         if (albumIds.length > 0) {
-          expression.push(builder('albums_assets_assets.albumsId', 'in', albumIds));
+          expression.push(
+            eb.exists((eb) =>
+              eb
+                .selectFrom('albums_assets_assets')
+                .whereRef('assets.id', '=', 'albums_assets_assets.assetsId')
+                .where('albums_assets_assets.albumsId', 'in', albumIds),
+            ),
+          );
         }
 
-        return builder.or(expression);
+        return eb.or(expression);
       })
       .orderBy('fileCreatedAt', 'desc')
       .execute() as Promise<MapMarker[]>;
@@ -131,9 +137,7 @@ export class MapRepository {
       .executeTakeFirst();
 
     if (response) {
-      if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
-        this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
-      }
+      this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
       const country = getName(countryCode, 'en') ?? null;
@@ -161,9 +165,8 @@ export class MapRepository {
       return { country: null, state: null, city: null };
     }
 
-    if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
-      this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
-    }
+    this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
+
     const { admin_a3 } = ne_response;
     const country = getName(admin_a3, 'en') ?? null;
     const state = null;

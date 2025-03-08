@@ -10,8 +10,11 @@ import { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/o
 import _ from 'lodash';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
+import picomatch from 'picomatch';
+import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, serverVersion } from 'src/constants';
+import { extraSyncModels } from 'src/dtos/sync.dto';
 import { ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
@@ -245,6 +248,7 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    extraModels: extraSyncModels,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);
@@ -265,4 +269,36 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
     writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
   }
+};
+
+const convertTokenToSqlPattern = (token: parse.Token): string => {
+  switch (token.type) {
+    case 'slash': {
+      return '/';
+    }
+    case 'text': {
+      return token.value;
+    }
+    case 'globstar':
+    case 'star': {
+      return '%';
+    }
+    case 'underscore': {
+      return String.raw`\_`;
+    }
+    case 'qmark': {
+      return '_';
+    }
+    case 'dot': {
+      return '.';
+    }
+    default: {
+      return '';
+    }
+  }
+};
+
+export const globToSqlPattern = (glob: string) => {
+  const tokens = picomatch.parse(glob).tokens;
+  return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
 };

@@ -31,6 +31,14 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.USER_DELETE_CHECK };
     }
 
+    case ManualJobName.MEMORY_CLEANUP: {
+      return { name: JobName.MEMORIES_CLEANUP };
+    }
+
+    case ManualJobName.MEMORY_CREATE: {
+      return { name: JobName.MEMORIES_CREATE };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }
@@ -62,7 +70,7 @@ export class JobService extends BaseService {
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
-    this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
+    this.logger.debug(`Handling command: queue=${queueName},command=${dto.command},force=${dto.force}`);
 
     switch (dto.command) {
       case JobCommand.START: {
@@ -162,7 +170,7 @@ export class JobService extends BaseService {
       }
 
       case QueueName.LIBRARY: {
-        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, data: { force } });
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
       }
 
       case QueueName.BACKUP_DATABASE: {
@@ -187,7 +195,11 @@ export class JobService extends BaseService {
         await this.onDone(job);
       }
     } catch (error: Error | any) {
-      this.logger.error(`Unable to run job handler (${queueName}/${job.name}): ${error}`, error?.stack, job.data);
+      this.logger.error(
+        `Unable to run job handler (${queueName}/${job.name}): ${error}`,
+        error?.stack,
+        JSON.stringify(job.data),
+      );
     } finally {
       this.telemetryRepository.jobs.addToGauge(queueMetric, -1);
     }
@@ -207,6 +219,8 @@ export class JobService extends BaseService {
       { name: JobName.ASSET_DELETION_CHECK },
       { name: JobName.USER_DELETE_CHECK },
       { name: JobName.PERSON_CLEANUP },
+      { name: JobName.MEMORIES_CLEANUP },
+      { name: JobName.MEMORIES_CREATE },
       { name: JobName.QUEUE_GENERATE_THUMBNAILS, data: { force: false } },
       { name: JobName.CLEAN_OLD_AUDIT_LOGS },
       { name: JobName.USER_SYNC_USAGE },
@@ -241,11 +255,6 @@ export class JobService extends BaseService {
             this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
         }
-        await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
-        break;
-      }
-
-      case JobName.LINK_LIVE_PHOTOS: {
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
       }

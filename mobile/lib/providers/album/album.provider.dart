@@ -5,7 +5,6 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 
@@ -150,17 +149,6 @@ final albumWatcher =
       yield album;
     }
   }
-});
-
-final albumRenderlistProvider =
-    StreamProvider.autoDispose.family<RenderList, int>((ref, id) {
-  final album = ref.watch(albumWatcher(id)).value;
-
-  if (album != null) {
-    return ref.watch(albumServiceProvider).getRenderListGenerator(album);
-  }
-
-  return const Stream.empty();
 });
 
 class LocalAlbumsNotifier extends StateNotifier<List<Album>> {

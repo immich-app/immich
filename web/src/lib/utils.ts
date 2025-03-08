@@ -6,6 +6,7 @@ import {
   AssetJobName,
   AssetMediaSize,
   JobName,
+  MemoryType,
   finishOAuth,
   getAssetOriginalPath,
   getAssetPlaybackPath,
@@ -16,6 +17,7 @@ import {
   linkOAuthAccount,
   startOAuth,
   unlinkOAuthAccount,
+  type MemoryResponseDto,
   type PersonResponseDto,
   type SharedLinkResponseDto,
   type UserResponseDto,
@@ -144,7 +146,7 @@ export const getJobName = derived(t, ($t) => {
       [JobName.Migration]: $t('admin.migration_job'),
       [JobName.BackgroundTask]: $t('admin.background_task_job'),
       [JobName.Search]: $t('search'),
-      [JobName.Library]: $t('library'),
+      [JobName.Library]: $t('external_libraries'),
       [JobName.Notifications]: $t('notifications'),
       [JobName.BackupDatabase]: $t('admin.backup_database'),
     };
@@ -320,7 +322,14 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 };
 
 export const memoryLaneTitle = derived(t, ($t) => {
-  return (yearsAgo: number) => $t('years_ago', { values: { years: yearsAgo } });
+  return (memory: MemoryResponseDto) => {
+    const now = new Date();
+    if (memory.type === MemoryType.OnThisDay) {
+      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
+    }
+
+    return $t('unknown');
+  };
 });
 
 export const withError = async <T>(fn: () => Promise<T>): Promise<[undefined, T] | [unknown, undefined]> => {

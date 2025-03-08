@@ -95,7 +95,7 @@ describe('/shared-links', () => {
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
       expect(resp.text).toContain(
-        `<meta name="description" content="${metadataAlbum.assets.length} shared photos & videos" />`,
+        `<meta name="description" content="${metadataAlbum.assets.length} shared photos &amp; videos" />`,
       );
     });
 
@@ -103,14 +103,14 @@ describe('/shared-links', () => {
       const resp = await request(shareUrl).get(`/${linkWithAlbum.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta name="description" content="0 shared photos & videos" />`);
+      expect(resp.text).toContain(`<meta name="description" content="0 shared photos &amp; videos" />`);
     });
 
     it('should have correct asset count in meta tag for shared asset', async () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta name="description" content="1 shared photos & videos" />`);
+      expect(resp.text).toContain(`<meta name="description" content="1 shared photos &amp; videos" />`);
     });
 
     it('should have fqdn og:image meta tag for shared asset', async () => {

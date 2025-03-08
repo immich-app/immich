@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
@@ -5,9 +6,8 @@ import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
-import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,7 +18,7 @@ class MockAssetRepository extends Mock implements IAssetRepository {}
 
 class MockUserRepository extends Mock implements IUserRepository {}
 
-class MockBackupRepository extends Mock implements IBackupRepository {}
+class MockBackupRepository extends Mock implements IBackupAlbumRepository {}
 
 class MockExifInfoRepository extends Mock implements IExifInfoRepository {}
 

@@ -18,7 +18,7 @@ export class ViewRepository {
       .where('isVisible', '=', true)
       .where('isArchived', '=', false)
       .where('deletedAt', 'is', null)
-      .where('fileModifiedAt', 'is not', null)
+      .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)
       .where('localDateTime', 'is not', null)
       .execute();
@@ -38,7 +38,7 @@ export class ViewRepository {
       .where('isVisible', '=', true)
       .where('isArchived', '=', false)
       .where('deletedAt', 'is', null)
-      .where('fileModifiedAt', 'is not', null)
+      .where('fileCreatedAt', 'is not', null)
       .where('fileModifiedAt', 'is not', null)
       .where('localDateTime', 'is not', null)
       .where('originalPath', 'like', `%${normalizedPath}/%`)

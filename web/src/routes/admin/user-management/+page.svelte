@@ -195,7 +195,7 @@
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
           {#if allUsers}
-            {#each allUsers as immichUser, index}
+            {#each allUsers as immichUser, index (immichUser.id)}
               <tr
                 class="flex h-[80px] overflow-hidden w-full place-items-center text-center dark:text-immich-dark-fg {immichUser.deletedAt
                   ? 'bg-red-300 dark:bg-red-900'

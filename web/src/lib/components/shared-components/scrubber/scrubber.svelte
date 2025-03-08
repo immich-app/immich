@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets.store';
+  import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets-store.svelte';
   import { DateTime } from 'luxon';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
@@ -92,14 +92,14 @@
     scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
   });
 
-  let timelineFullHeight = $derived($assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
+  let timelineFullHeight = $derived(assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
 
   const listener: BucketListener = (event) => {
     const { type } = event;
     if (type === 'viewport') {
-      segments = calculateSegments($assetStore.buckets);
+      segments = calculateSegments(assetStore.buckets);
       scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
     }
   };
@@ -128,7 +128,7 @@
 
     for (const [i, bucket] of buckets.entries()) {
       const scrollBarPercentage =
-        bucket.bucketHeight / ($assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
+        bucket.bucketHeight / (assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
 
       const segment = {
         count: bucket.assets.length,
@@ -278,7 +278,7 @@
     {/if}
   </div>
   <!-- Time Segment -->
-  {#each segments as segment}
+  {#each segments as segment (segment.date)}
     <div
       id="time-segment"
       class="relative"

@@ -41,7 +41,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state});
 
-  Future<void> deleteById(List<int> ids);
+  Future<void> deleteByIds(List<int> ids);
 
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
@@ -59,6 +59,15 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
   Future<List<String>> getAllDuplicatedAssetIds();
 
   Future<List<Asset>> getStackAssets(String stackId);
+
+  Future<void> clearTable();
+
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false});
+
+  Future<List<Asset>> getTrashAssets(int userId);
+
+  Future<List<Asset>> getRecentlyAddedAssets(int userId);
+  Future<List<Asset>> getMotionAssets(int userId);
 }
 
 enum AssetSort { checksum, ownerIdChecksum }

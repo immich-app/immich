@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -8,7 +8,6 @@ import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
 final albumRepositoryProvider =
@@ -156,6 +155,13 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.albums.clear();
+    });
+  }
+
+  @override
   Stream<List<Album>> watchRemoteAlbums() {
     return db.albums.where().remoteIdIsNotNull().watch();
   }
@@ -168,23 +174,5 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   @override
   Stream<Album?> watchAlbum(int id) {
     return db.albums.watchObject(id, fireImmediately: true);
-  }
-
-  @override
-  Stream<RenderList> getRenderListStream(Album album) async* {
-    final query = album.assets.filter().isTrashedEqualTo(false);
-    final withSortedOption = switch (album.sortOrder) {
-      SortOrder.asc => query.sortByFileCreatedAt(),
-      SortOrder.desc => query.sortByFileCreatedAtDesc(),
-    };
-
-    yield await RenderList.fromQuery(
-      withSortedOption,
-      GroupAssetsBy.none,
-    );
-
-    await for (final _ in query.watchLazy()) {
-      yield await RenderList.fromQuery(withSortedOption, GroupAssetsBy.none);
-    }
   }
 }

@@ -54,7 +54,7 @@ export class StorageService extends BaseService {
         this.logger.log('Successfully verified system mount folder checks');
       } catch (error) {
         if (envData.storage.ignoreMountCheckErrors) {
-          this.logger.error(error);
+          this.logger.error(error as Error);
           this.logger.warn('Ignoring mount folder errors');
         } else {
           throw error;
