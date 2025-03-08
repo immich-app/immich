@@ -49,7 +49,7 @@ class PeopleCollectionPage extends HookConsumerWidget {
                     decoration: InputDecoration(
                       contentPadding: const EdgeInsets.only(left: 24),
                       filled: true,
-                      fillColor: context.primaryColor.withOpacity(0.1),
+                      fillColor: context.primaryColor.withValues(alpha: 0.1),
                       hintStyle: context.textTheme.bodyLarge?.copyWith(
                         color: context.themeData.colorScheme.onSurfaceSecondary,
                       ),

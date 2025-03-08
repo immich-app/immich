@@ -101,7 +101,7 @@ class GalleryAppBar extends ConsumerWidget {
         duration: const Duration(milliseconds: 100),
         opacity: showControls ? 1.0 : 0.0,
         child: Container(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           child: TopControlAppBar(
             isOwner: isOwner,
             isPartner: isPartner,

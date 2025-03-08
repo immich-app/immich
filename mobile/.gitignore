@@ -56,3 +56,4 @@ libisar.so
 
 # FVM Version
 .fvm/
+app/
