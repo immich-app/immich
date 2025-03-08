@@ -14,6 +14,7 @@ class UserAdminUpdateDto {
   /// Returns a new [UserAdminUpdateDto] instance.
   UserAdminUpdateDto({
     this.email,
+    this.isAdmin = false,
     this.name,
     this.password,
     this.quotaSizeInBytes,
@@ -28,6 +29,8 @@ class UserAdminUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   String? email;
+
+  bool isAdmin;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -61,6 +64,7 @@ class UserAdminUpdateDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserAdminUpdateDto &&
     other.email == email &&
+    other.isAdmin == isAdmin &&
     other.name == name &&
     other.password == password &&
     other.quotaSizeInBytes == quotaSizeInBytes &&
@@ -71,6 +75,7 @@ class UserAdminUpdateDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email == null ? 0 : email!.hashCode) +
+    (isAdmin.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
@@ -78,7 +83,7 @@ class UserAdminUpdateDto {
     (storageLabel == null ? 0 : storageLabel!.hashCode);
 
   @override
-  String toString() => 'UserAdminUpdateDto[email=$email, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
+  String toString() => 'UserAdminUpdateDto[email=$email, isAdmin=$isAdmin, name=$name, password=$password, quotaSizeInBytes=$quotaSizeInBytes, shouldChangePassword=$shouldChangePassword, storageLabel=$storageLabel]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -87,6 +92,7 @@ class UserAdminUpdateDto {
     } else {
     //  json[r'email'] = null;
     }
+      json[r'isAdmin'] = this.isAdmin;
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -125,6 +131,7 @@ class UserAdminUpdateDto {
 
       return UserAdminUpdateDto(
         email: mapValueOfType<String>(json, r'email'),
+        isAdmin: mapValueOfType<bool>(json, r'isAdmin') ?? false,
         name: mapValueOfType<String>(json, r'name'),
         password: mapValueOfType<String>(json, r'password'),
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),

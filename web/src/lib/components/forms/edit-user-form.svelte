@@ -1,5 +1,6 @@
 <script lang="ts">
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { AppRoute } from '$lib/constants';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -17,6 +18,7 @@
     onClose: () => void;
     onResetPasswordSuccess: () => void;
     onEditSuccess: () => void;
+    isAdminDisabled?: boolean;
   }
 
   let {
@@ -26,11 +28,13 @@
     onClose,
     onResetPasswordSuccess,
     onEditSuccess,
+    isAdminDisabled,
   }: Props = $props();
 
   let quotaSize = $state(user.quotaSizeInBytes ? convertFromBytes(user.quotaSizeInBytes, ByteUnit.GiB) : null);
 
   const previousQutoa = user.quotaSizeInBytes;
+  const disabled = isAdminDisabled;
 
   let quotaSizeWarning = $derived(
     previousQutoa !== convertToBytes(Number(quotaSize), ByteUnit.GiB) &&
@@ -41,7 +45,7 @@
 
   const editUser = async () => {
     try {
-      const { id, email, name, storageLabel } = user;
+      const { id, email, name, storageLabel, isAdmin } = user;
       await updateUserAdmin({
         id,
         userAdminUpdateDto: {
@@ -49,6 +53,7 @@
           name,
           storageLabel: storageLabel || '',
           quotaSizeInBytes: quotaSize ? convertToBytes(Number(quotaSize), ByteUnit.GiB) : null,
+          isAdmin,
         },
       });
 
@@ -109,28 +114,28 @@
 
 <FullScreenModal title={$t('edit_user')} icon={mdiAccountEditOutline} {onClose}>
   <form onsubmit={onSubmit} autocomplete="off" id="edit-user-form">
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="immich-form-label" for="email">{$t('email')}</label>
       <input class="immich-form-input" id="email" name="email" type="email" bind:value={user.email} />
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="immich-form-label" for="name">{$t('name')}</label>
       <input class="immich-form-input" id="name" name="name" type="text" required bind:value={user.name} />
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="flex items-center gap-2 immich-form-label" for="quotaSize">
         {$t('admin.quota_size_gib')}
         {#if quotaSizeWarning}
-          <p class="text-red-400 text-sm">{$t('errors.quota_higher_than_disk_size')}</p>
+          <p class="text-sm text-red-400">{$t('errors.quota_higher_than_disk_size')}</p>
         {/if}</label
       >
       <input class="immich-form-input" id="quotaSize" name="quotaSize" type="number" min="0" bind:value={quotaSize} />
       <p>{$t('admin.note_unlimited_quota')}</p>
     </div>
 
-    <div class="my-4 flex flex-col gap-2">
+    <div class="flex flex-col gap-2 my-4">
       <label class="immich-form-label" for="storage-label">{$t('storage_label')}</label>
       <input
         class="immich-form-input"
@@ -146,6 +151,10 @@
           {$t('admin.storage_template_migration_job')}
         </a>
       </p>
+    </div>
+
+    <div class="flex flex-col gap-2 my-4">
+      <SettingSwitch title={$t('admin.admin_user')} {disabled} bind:checked={user.isAdmin} />
     </div>
   </form>
 
