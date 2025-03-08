@@ -98,10 +98,9 @@ class GalleryAppBar extends ConsumerWidget {
 
     handleLocateAsset() async {
       // Go back to the gallery
-      while (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      context.navigateTo(const TabControllerRoute(children: [PhotosRoute()]));
+      await context.maybePop();
+      await context
+          .navigateTo(const TabControllerRoute(children: [PhotosRoute()]));
       // Scroll to the asset's date
       scrollToDateNotifierProvider.scrollToDate(asset.fileCreatedAt);
     }
