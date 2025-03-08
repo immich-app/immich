@@ -22,14 +22,14 @@
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shortcut } from '$lib/actions/shortcut';
   import {
+    type AlbumResponseDto,
     type AssetResponseDto,
+    getPerson,
+    getTagById,
+    type MetadataSearchDto,
     searchAssets,
     searchSmart,
-    getPerson,
     type SmartSearchDto,
-    type MetadataSearchDto,
-    type AlbumResponseDto,
-    getTagById,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
@@ -71,15 +71,11 @@
   let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
 
-  const performSearch = () => {
-    handlePromiseError(onSearchQueryUpdate());
-  };
-
   $effect(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     terms;
     setTimeout(() => {
-      performSearch();
+      handlePromiseError(onSearchQueryUpdate());
     });
   });
 
