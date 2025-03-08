@@ -146,6 +146,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       format: ImageFormat.JPEG,
       quality: 80,
     },
+    fullsize: { enabled: false, format: ImageFormat.JPEG, quality: 80 },
     colorspace: Colorspace.P3,
     extractEmbedded: false,
   },

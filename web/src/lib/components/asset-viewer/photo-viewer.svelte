@@ -6,7 +6,7 @@
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
-  import { getAssetOriginalUrl, getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
+  import { getAssetThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { isWebCompatibleImage, canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
   import { getBoundingBox } from '$lib/utils/people-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -68,23 +68,22 @@
     $boundingBoxesArray = [];
   });
 
-  const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
+  const preload = (targetSize: AssetMediaSize, preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.thumbhash);
+        img.src = getAssetUrl(preloadAsset.id, targetSize, preloadAsset.thumbhash);
       }
     }
   };
 
-  const getAssetUrl = (id: string, useOriginal: boolean, cacheKey: string | null) => {
+  const getAssetUrl = (id: string, targetSize: AssetMediaSize, cacheKey: string | null) => {
+    let finalAssetMediaSize = targetSize;
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+      finalAssetMediaSize = AssetMediaSize.Preview;
     }
 
-    return useOriginal
-      ? getAssetOriginalUrl({ id, cacheKey })
-      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
+    return getAssetThumbnailUrl({ id, size: finalAssetMediaSize, cacheKey });
   };
 
   copyImage = async () => {
@@ -152,21 +151,23 @@
       loader?.removeEventListener('error', onerror);
     };
   });
-  let isWebCompatible = $derived(isWebCompatibleImage(asset));
-  let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
-  // when true, will force loading of the original image
 
-  let forceUseOriginal: boolean = $derived(
-    asset.originalMimeType === 'image/gif' || ($photoZoomState.currentZoom > 1 && isWebCompatible),
+  let isWebCompatible = $derived(isWebCompatibleImage(asset));
+
+  let useOriginalByDefault = $derived(isWebCompatible && $alwaysLoadOriginalFile);
+
+  // when true, will force loading of the original image
+  let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
+
+  const targetImageSize = $derived(
+    useOriginalByDefault || forceUseOriginal ? AssetMediaSize.Fullsize : AssetMediaSize.Preview,
   );
 
-  let useOriginalImage = $derived(useOriginalByDefault || forceUseOriginal);
-
   $effect(() => {
-    preload(useOriginalImage, preloadAssets);
+    preload(targetImageSize, preloadAssets);
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.thumbhash));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, targetImageSize, asset.checksum));
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
