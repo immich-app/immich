@@ -25,6 +25,7 @@
     shortcuts = {
       general: [
         { key: ['←', '→'], action: $t('previous_or_next_photo') },
+        { key: ['x'], action: $t('select') },
         { key: ['Esc'], action: $t('back_close_deselect') },
         { key: ['Ctrl', 'k'], action: $t('search_your_photos') },
         { key: ['Ctrl', '⇧', 'k'], action: $t('open_the_search_filters') },

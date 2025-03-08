@@ -42,8 +42,8 @@
     isSelectionMode?: boolean;
     singleSelect?: boolean;
     /** `true` if this asset grid is responds to navigation events; if `true`, then look at the
-   `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
-   additionally, update the page location/url with the asset as the asset-grid is scrolled */
+     `AssetViewingStore.gridScrollTarget` and load and scroll to the asset specified, and
+     additionally, update the page location/url with the asset as the asset-grid is scrolled */
     enableRouting: boolean;
     assetStore: AssetStore;
     assetInteraction: AssetInteraction;
@@ -706,6 +706,36 @@
       e.preventDefault();
     }
   };
+
+  const focusNextAsset = async () => {
+    if (assetInteraction.focussedAssetId === null) {
+      const firstAsset = assetStore.getFirstAsset();
+      if (firstAsset !== null) {
+        assetInteraction.focussedAssetId = firstAsset.id;
+      }
+    } else {
+      const focussedAsset = assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      if (focussedAsset) {
+        const nextAsset = await assetStore.getNextAsset(focussedAsset);
+        if (nextAsset !== null) {
+          assetInteraction.focussedAssetId = nextAsset.id;
+        }
+      }
+    }
+  };
+
+  const focusPreviousAsset = async () => {
+    if (assetInteraction.focussedAssetId !== null) {
+      const focussedAsset = assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      if (focussedAsset) {
+        const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
+        if (previousAsset) {
+          assetInteraction.focussedAssetId = previousAsset.id;
+        }
+      }
+    }
+  };
+
   onDestroy(() => {
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
@@ -749,6 +779,8 @@
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets(assetStore, assetInteraction) },
         { shortcut: { key: 'PageDown' }, preventDefault: false, onShortcut: focusElement },
         { shortcut: { key: 'PageUp' }, preventDefault: false, onShortcut: focusElement },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
       ];
 
       if (assetInteraction.selectionActive) {

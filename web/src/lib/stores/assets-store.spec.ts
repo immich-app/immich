@@ -308,6 +308,34 @@ describe('AssetStore', () => {
     });
   });
 
+  describe('firstAsset', () => {
+    let assetStore: AssetStore;
+
+    beforeEach(async () => {
+      assetStore = new AssetStore({});
+      sdkMock.getTimeBuckets.mockResolvedValue([]);
+      await assetStore.init();
+      await assetStore.updateViewport({ width: 0, height: 0 });
+    });
+
+    it('empty store returns null', () => {
+      expect(assetStore.getFirstAsset()).toBeNull();
+    });
+
+    it('populated store returns first asset', () => {
+      const assetOne = assetFactory.build({
+        fileCreatedAt: '2024-01-20T12:00:00.000Z',
+        localDateTime: '2024-01-20T12:00:00.000Z',
+      });
+      const assetTwo = assetFactory.build({
+        fileCreatedAt: '2024-01-15T12:00:00.000Z',
+        localDateTime: '2024-01-15T12:00:00.000Z',
+      });
+      assetStore.addAssets([assetOne, assetTwo]);
+      expect(assetStore.getFirstAsset()).toEqual(assetOne);
+    });
+  });
+
   describe('getPreviousAsset', () => {
     let assetStore: AssetStore;
     const bucketAssets: Record<string, AssetResponseDto[]> = {

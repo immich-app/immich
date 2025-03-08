@@ -88,6 +88,10 @@
     }
   };
 
+  const assetOnFocusHandler = (asset: AssetResponseDto) => {
+    assetInteraction.focussedAssetId = asset.id;
+  };
+
   onDestroy(() => {
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
@@ -218,6 +222,8 @@
                   onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
                   onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
                   selected={assetInteraction.selectedAssets.has(asset) || assetStore.albumAssets.has(asset.id)}
+                  handleFocus={() => assetOnFocusHandler(asset)}
+                  focussed={assetInteraction.isFocussedAsset(asset)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={width}

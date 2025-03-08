@@ -8,6 +8,7 @@ export class AssetInteraction {
   readonly selectedGroup = new SvelteSet<string>();
   assetSelectionCandidates = $state(new SvelteSet<AssetResponseDto>());
   assetSelectionStart = $state<AssetResponseDto | null>(null);
+  focussedAssetId = $state<string | null>(null);
 
   selectionActive = $derived(this.selectedAssets.size > 0);
   selectedAssetsArray = $derived([...this.selectedAssets]);
@@ -62,5 +63,9 @@ export class AssetInteraction {
     // Range selection
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
+  }
+
+  isFocussedAsset(asset: AssetResponseDto) {
+    return this.focussedAssetId === asset.id;
   }
 }
