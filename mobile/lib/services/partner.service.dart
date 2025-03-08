@@ -1,11 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
-import 'package:immich_mobile/interfaces/user.interface.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:logging/logging.dart';
 
 final partnerServiceProvider = Provider(
@@ -46,11 +46,10 @@ class PartnerService {
 
   Future<bool> removePartner(User partner) async {
     try {
-      await _partnerApiRepository.delete(partner.id);
-      partner.isPartnerSharedBy = false;
-      await _userRepository.update(partner);
+      await _partnerApiRepository.delete(partner.uid);
+      await _userRepository.update(partner.copyWith(isPartnerSharedBy: false));
     } catch (e) {
-      _log.warning("Failed to remove partner ${partner.id}", e);
+      _log.warning("Failed to remove partner ${partner.uid}", e);
       return false;
     }
     return true;
@@ -58,12 +57,11 @@ class PartnerService {
 
   Future<bool> addPartner(User partner) async {
     try {
-      await _partnerApiRepository.create(partner.id);
-      partner.isPartnerSharedBy = true;
-      await _userRepository.update(partner);
+      await _partnerApiRepository.create(partner.uid);
+      await _userRepository.update(partner.copyWith(isPartnerSharedBy: true));
       return true;
     } catch (e) {
-      _log.warning("Failed to add partner ${partner.id}", e);
+      _log.warning("Failed to add partner ${partner.uid}", e);
     }
     return false;
   }
@@ -71,14 +69,14 @@ class PartnerService {
   Future<bool> updatePartner(User partner, {required bool inTimeline}) async {
     try {
       final dto = await _partnerApiRepository.update(
-        partner.id,
+        partner.uid,
         inTimeline: inTimeline,
       );
-      partner.inTimeline = dto.inTimeline;
-      await _userRepository.update(partner);
+      await _userRepository
+          .update(partner.copyWith(inTimeline: dto.inTimeline));
       return true;
     } catch (e) {
-      _log.warning("Failed to update partner ${partner.id}", e);
+      _log.warning("Failed to update partner ${partner.uid}", e);
     }
     return false;
   }

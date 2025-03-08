@@ -67,8 +67,9 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
                 profileImagePath,
               );
           if (user != null) {
-            user.profileImagePath = profileImagePath;
-            await Store.put(StoreKey.currentUser, user);
+            final updatedUser =
+                user.copyWith(profileImagePath: profileImagePath);
+            await Store.put(StoreKey.currentUser, updatedUser);
             ref.read(currentUserProvider.notifier).refresh();
           }
         }

@@ -1,4 +1,4 @@
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 
 /// Key for each possible value in the `Store`.
 /// Defines the data type for each value

@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
@@ -86,7 +87,7 @@ class AlbumMediaRepository implements IAlbumMediaRepository {
       shared: false,
       activityEnabled: false,
     );
-    album.owner.value = Store.get(StoreKey.currentUser);
+    album.owner.value = User.fromDto(Store.get(StoreKey.currentUser));
     album.localId = assetPathEntity.id;
     album.isAll = assetPathEntity.isAll;
     return album;

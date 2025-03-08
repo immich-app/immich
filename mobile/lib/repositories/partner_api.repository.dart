@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -26,13 +27,13 @@ class PartnerApiRepository extends ApiRepository
             : PartnerDirection.with_,
       ),
     );
-    return response.map(User.fromPartnerDto).toList();
+    return response.map(UserConverter.fromPartnerDto).toList();
   }
 
   @override
   Future<User> create(String id) async {
     final dto = await checkNull(_api.createPartner(id));
-    return User.fromPartnerDto(dto);
+    return UserConverter.fromPartnerDto(dto);
   }
 
   @override
@@ -46,6 +47,6 @@ class PartnerApiRepository extends ApiRepository
         UpdatePartnerDto(inTimeline: inTimeline),
       ),
     );
-    return User.fromPartnerDto(dto);
+    return UserConverter.fromPartnerDto(dto);
   }
 }

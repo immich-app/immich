@@ -3,20 +3,20 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
+import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
-import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
-import 'package:immich_mobile/widgets/asset_viewer/top_control_app_bar.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
-import 'package:immich_mobile/providers/trash.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/upload_dialog.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
+import 'package:immich_mobile/providers/trash.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
+import 'package:immich_mobile/widgets/asset_grid/upload_dialog.dart';
+import 'package:immich_mobile/widgets/asset_viewer/top_control_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GalleryAppBar extends ConsumerWidget {
@@ -31,12 +31,12 @@ class GalleryAppBar extends ConsumerWidget {
       return const SizedBox();
     }
     final album = ref.watch(currentAlbumProvider);
-    final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.isarId;
+    final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.id;
     final showControls = ref.watch(showControlsProvider);
 
     final isPartner = ref
         .watch(partnerSharedWithProvider)
-        .map((e) => e.isarId)
+        .map((e) => e.id)
         .contains(asset.ownerId);
 
     toggleFavorite(Asset asset) =>
