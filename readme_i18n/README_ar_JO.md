@@ -65,7 +65,7 @@ https://immich.app
 https://demo.immich.app
 
 بالنسبة لتطبيق الهاتف المحمول، يمكنك استخدام 
-`https://demo.immich.app/api` 
+`https://demo.immich.app` 
 ل `نقطة نهاية الخادم`
 
 ```bash title="Demo Credential"

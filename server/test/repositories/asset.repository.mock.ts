@@ -44,5 +44,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
+    streamStorageTemplateAssets: vitest.fn(),
+    getStorageTemplateAsset: vitest.fn(),
+    streamDeletedAssets: vitest.fn(),
   };
 };
