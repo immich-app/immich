@@ -201,7 +201,7 @@ describe('/people', () => {
       expect(body).toMatchObject({
         id: expect.any(String),
         name: 'New Person',
-        birthDate: '1990-01-01T00:00:00.000Z',
+        birthDate: '1990-01-01',
       });
     });
 
@@ -262,7 +262,7 @@ describe('/people', () => {
         .set('Authorization', `Bearer ${admin.accessToken}`)
         .send({ birthDate: '1990-01-01' });
       expect(status).toBe(200);
-      expect(body).toMatchObject({ birthDate: '1990-01-01T00:00:00.000Z' });
+      expect(body).toMatchObject({ birthDate: '1990-01-01' });
     });
 
     it('should clear a date of birth', async () => {

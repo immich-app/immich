@@ -7,6 +7,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
+import { asDateString } from 'src/utils/date';
 import {
   IsDateStringFormat,
   MaxDateString,
@@ -32,7 +33,7 @@ export class PersonCreateDto {
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
   @Optional({ nullable: true })
-  birthDate?: string | null;
+  birthDate?: Date | null;
 
   /**
    * Person visibility
@@ -222,7 +223,7 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: person.birthDate,
+    birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,

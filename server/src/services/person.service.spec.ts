@@ -222,7 +222,7 @@ describe(PersonService.name, () => {
       mocks.person.update.mockResolvedValue(personStub.withBirthDate);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set(['person-1']));
 
-      await expect(sut.update(authStub.admin, 'person-1', { birthDate: '1976-06-30' })).resolves.toEqual({
+      await expect(sut.update(authStub.admin, 'person-1', { birthDate: new Date('1976-06-30') })).resolves.toEqual({
         id: 'person-1',
         name: 'Person 1',
         birthDate: '1976-06-30',
@@ -231,7 +231,7 @@ describe(PersonService.name, () => {
         isFavorite: false,
         updatedAt: expect.any(Date),
       });
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: '1976-06-30' });
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'person-1', birthDate: new Date('1976-06-30') });
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['person-1']));
