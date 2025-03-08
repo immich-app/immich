@@ -41,8 +41,8 @@ jobs:
         with:
           token: ${{ steps.generate-token.outputs.token }}
 
-      - name: Install Poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Bump version
         run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
@@ -74,7 +74,7 @@ jobs:
         with:
           app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
-      
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
