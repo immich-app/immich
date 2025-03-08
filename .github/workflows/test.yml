@@ -398,7 +398,7 @@ jobs:
           uv run black --check app export
       - name: Run mypy type checking
         run: |
-          uv run mypy --non-interactive --strict app/
+          uv run mypy --strict app/
       - name: Run tests and coverage
         run: |
           uv run pytest app --cov=app --cov-report term-missing
