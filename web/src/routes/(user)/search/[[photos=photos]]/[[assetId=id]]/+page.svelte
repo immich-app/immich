@@ -286,11 +286,7 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
-          <SearchBar
-            grayTheme={false}
-            value={terms?.query ?? ''}
-            searchQuery={terms}
-          />
+          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>
@@ -354,12 +350,7 @@
     {/if}
     <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
       {#if searchResultAssets.length > 0}
-        <GalleryViewer
-          assets={searchResultAssets}
-          {assetInteraction}
-          showArchiveIcon={true}
-          {viewport}
-        />
+        <GalleryViewer assets={searchResultAssets} {assetInteraction} showArchiveIcon={true} {viewport} />
       {:else if !isLoading}
         <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
           <div class="flex flex-col content-center items-center text-center">
