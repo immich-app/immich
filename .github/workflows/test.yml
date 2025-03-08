@@ -389,7 +389,7 @@ jobs:
         #   cache: 'uv'
       - name: Install dependencies
         run: |
-          uv sync --group cpu
+          uv sync --extra cpu
       - name: Lint with ruff
         run: |
           uv run ruff check --output-format=github app export
