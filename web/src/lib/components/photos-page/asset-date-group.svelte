@@ -79,6 +79,7 @@
   {#if display}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <section
+      data-group
       style:position="absolute"
       style:transform={`translate3d(${absoluteWidth}px,${dateGroup.top}px,0)`}
       onmouseenter={() => {
