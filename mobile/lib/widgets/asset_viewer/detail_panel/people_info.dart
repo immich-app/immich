@@ -49,7 +49,11 @@ class PeopleInfo extends ConsumerWidget {
                 id: p.id,
                 label: p.name,
                 subtitle: p.birthDate != null
-                    ? "${"exif_bottom_sheet_person_age".tr()} ${_calculateAge(p.birthDate!)}"
+                    ? "exif_bottom_sheet_person_age".tr(
+                        args: [
+                          _calculateAge(p.birthDate!).toString(),
+                        ],
+                      )
                     : null,
               ),
             )
