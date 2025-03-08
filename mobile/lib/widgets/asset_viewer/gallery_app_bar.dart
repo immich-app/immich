@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
@@ -101,6 +102,7 @@ class GalleryAppBar extends ConsumerWidget {
       await context.maybePop();
       await context
           .navigateTo(const TabControllerRoute(children: [PhotosRoute()]));
+      ref.read(tabProvider.notifier).update((state) => state = TabEnum.home);
       // Scroll to the asset's date
       scrollToDateNotifierProvider.scrollToDate(asset.fileCreatedAt);
     }
