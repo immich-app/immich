@@ -12,20 +12,23 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
-  import { AssetStore } from '$lib/stores/assets-store.svelte';
+
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ isArchived: true });
+  onDestroy(() => assetStore.destroy());
 
-  const assetStore = new AssetStore({ isArchived: true });
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -34,10 +37,6 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
 {#if assetInteraction.selectionActive}
