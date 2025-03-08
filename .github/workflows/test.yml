@@ -380,27 +380,28 @@ jobs:
         working-directory: ./machine-learning
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-          cache: 'poetry'
+        # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
+        # with:
+        #   python-version: 3.11
+        #   cache: 'uv'
       - name: Install dependencies
         run: |
-          poetry install --with dev --with cpu
+          uv sync --extra cpu
       - name: Lint with ruff
         run: |
-          poetry run ruff check --output-format=github app export
+          uv run ruff check --output-format=github app export
       - name: Check black formatting
         run: |
-          poetry run black --check app export
+          uv run black --check app export
       - name: Run mypy type checking
         run: |
-          poetry run mypy --install-types --non-interactive --strict app/
+          uv run mypy --strict app/
       - name: Run tests and coverage
         run: |
-          poetry run pytest app --cov=app --cov-report term-missing
+          uv run pytest app --cov=app --cov-report term-missing
 
   shellcheck:
     name: ShellCheck
