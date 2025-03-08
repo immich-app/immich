@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,14 +14,18 @@ import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
+import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
+import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
@@ -39,6 +44,8 @@ final syncServiceProvider = Provider(
     ref.watch(exifRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
+    ref.watch(appSettingsServiceProvider),
+    ref.watch(localFilesManagerRepositoryProvider),
   ),
 );
 
@@ -54,6 +61,8 @@ class SyncService {
   final IETagRepository _eTagRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
+  final AppSettingsService _appSettingsService;
+  final ILocalFilesManager _localFilesManager;
 
   SyncService(
     this._hashService,
@@ -65,6 +74,8 @@ class SyncService {
     this._exifInfoRepository,
     this._userRepository,
     this._eTagRepository,
+    this._appSettingsService,
+    this._localFilesManager,
   );
 
   // public methods:
@@ -220,8 +231,31 @@ class SyncService {
     return null;
   }
 
+  Future<void> _moveToTrashMatchedAssets(Iterable<String> idsToDelete) async {
+    final List<Asset> assets =
+        await _assetRepository.getAllByRemoteId(idsToDelete);
+
+    if (assets.isNotEmpty) {
+      final localAssets = await _assetRepository.getAllLocal();
+
+      // Find the local assets that match the remote assets by fileName
+      final matchedAssets = localAssets
+          .where(
+            (localAsset) => assets.any(
+              (remoteAsset) =>
+                  remoteAsset.fileName.contains(localAsset.fileName),
+            ),
+          )
+          .toList();
+
+      for (var asset in matchedAssets) {
+        _localFilesManager.moveToTrash(asset.fileName);
+      }
+    }
+  }
+
   /// Deletes remote-only assets, updates merged assets to be local-only
-  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) {
+  Future<void> handleRemoteAssetRemoval(List<String> idsToDelete) async {
     return _assetRepository.transaction(() async {
       await _assetRepository.deleteAllByRemoteId(
         idsToDelete,
@@ -231,6 +265,12 @@ class SyncService {
         idsToDelete,
         state: AssetState.merged,
       );
+      if (Platform.isAndroid &&
+          _appSettingsService.getSetting<bool>(
+            AppSettingsEnum.manageLocalMediaAndroid,
+          )) {
+        await _moveToTrashMatchedAssets(idsToDelete);
+      }
       if (merged.isEmpty) return;
       for (final Asset asset in merged) {
         asset.remoteId = null;
@@ -748,9 +788,27 @@ class SyncService {
     return (existing, toUpsert);
   }
 
+  Future<void> _moveToTrashAssets(List<Asset> assetsList) async {
+    for (var asset in assetsList) {
+      if (asset.isTrashed) {
+        _localFilesManager.moveToTrash(asset.fileName);
+      } else {
+        _localFilesManager.restoreFromTrash(asset.fileName);
+      }
+    }
+  }
+
   /// Inserts or updates the assets in the database with their ExifInfo (if any)
   Future<void> upsertAssetsWithExif(List<Asset> assets) async {
     if (assets.isEmpty) return;
+
+    if (Platform.isAndroid &&
+        _appSettingsService.getSetting<bool>(
+          AppSettingsEnum.manageLocalMediaAndroid,
+        )) {
+      _moveToTrashAssets(assets);
+    }
+
     final exifInfos = assets.map((e) => e.exifInfo).nonNulls.toList();
     try {
       await _assetRepository.transaction(() async {
