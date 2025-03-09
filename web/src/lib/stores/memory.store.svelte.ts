@@ -24,9 +24,9 @@ export type MemoryAsset = MemoryIndex & {
 };
 
 class MemoryStoreSvelte {
-  private initialized = false;
   memories = $state<MemoryResponseDto[]>([]);
-  memoryAssets = $derived.by(() => {
+  private initialized = false;
+  private memoryAssets = $derived.by(() => {
     const memoryAssets: MemoryAsset[] = [];
     let previous: MemoryAsset | undefined;
     for (const [memoryIndex, memory] of this.memories.entries()) {

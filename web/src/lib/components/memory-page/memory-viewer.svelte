@@ -77,10 +77,10 @@
   let videoPlayer: HTMLVideoElement | undefined = $state();
 
   const loadFromParams = (page: typeof $page | NavigationTarget | null) => {
-    const currentAssetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
+    const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
     handlePromiseError(handleAction($isViewing ? 'pause' : 'reset'));
 
-    current = memoryStore.getMemoryAsset(currentAssetId);
+    current = memoryStore.getMemoryAsset(assetId);
   };
   const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
   const handleNavigate = async (asset?: AssetResponseDto) => {
