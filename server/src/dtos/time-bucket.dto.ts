@@ -1,10 +1,10 @@
-import { IsEnum, IsNotEmpty, IsString, Max, Min } from 'class-validator';
+import { IsEnum, IsLatitude, IsLongitude, IsNotEmpty, IsString, Max, Min } from 'class-validator';
 import { Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 import { AssetOrder } from 'src/enum';
 import { TimeBucketSize } from 'src/repositories/asset.repository';
+import { Type } from 'class-transformer';
 
 export class TimeBucketDto {
   @IsNotEmpty()
@@ -45,29 +45,25 @@ export class TimeBucketDto {
   order?: AssetOrder;
 
   @Optional()
-  @Min(-180)
-  @Max(180)
+  @IsLongitude({ message: ({ property }) => `${property} must be a number between -180 and 180` })
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   x1?: number;
 
   @Optional()
-  @Min(-90)
-  @Max(90)
+  @IsLatitude({ message: ({ property }) => `${property} must be a number between -90 and 90` })
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   y1?: number;
 
   @Optional()
-  @Min(-180)
-  @Max(180)
+  @IsLongitude({ message: ({ property }) => `${property} must be a number between -180 and 180` })
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   x2?: number;
 
   @Optional()
-  @Min(-90)
-  @Max(90)
+  @IsLatitude({ message: ({ property }) => `${property} must be a number between -90 and 90` })
   @Type(() => Number)
   @ApiProperty({ type: 'number', format: 'double' })
   y2?: number;
