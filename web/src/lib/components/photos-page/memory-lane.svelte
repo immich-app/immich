@@ -2,7 +2,7 @@
   import { resizeObserver } from '$lib/actions/resize-observer';
   import Icon from '$lib/components/elements/icon.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import { loadMemories, memoryStore } from '$lib/stores/memory.store';
+  import { memoryStore } from '$lib/stores/memory.store.svelte';
   import { getAssetThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { mdiChevronLeft, mdiChevronRight } from '@mdi/js';
@@ -10,10 +10,10 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
 
-  let shouldRender = $derived($memoryStore?.length > 0);
+  let shouldRender = $derived(memoryStore.memories?.length > 0);
 
   onMount(async () => {
-    await loadMemories();
+    await memoryStore.initialize();
   });
 
   let memoryLaneElement: HTMLElement | undefined = $state();
@@ -52,8 +52,8 @@
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               onclick={scrollLeft}
             >
-              <Icon path={mdiChevronLeft} size="36" /></button
-            >
+              <Icon path={mdiChevronLeft} size="36" />
+            </button>
           </div>
         {/if}
         {#if canScrollRight}
@@ -63,33 +63,31 @@
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
               onclick={scrollRight}
             >
-              <Icon path={mdiChevronRight} size="36" /></button
-            >
+              <Icon path={mdiChevronRight} size="36" />
+            </button>
           </div>
         {/if}
       </div>
     {/if}
     <div class="inline-block" use:resizeObserver={({ width }) => (innerWidth = width)}>
-      {#each $memoryStore as memory (memory.id)}
-        {#if memory.assets.length > 0}
-          <a
-            class="memory-card relative mr-8 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] xl:aspect-video h-[215px] rounded-xl"
-            href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
-          >
-            <img
-              class="h-full w-full rounded-xl object-cover"
-              src={getAssetThumbnailUrl(memory.assets[0].id)}
-              alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
-              draggable="false"
-            />
-            <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
-              {$memoryLaneTitle(memory)}
-            </p>
-            <div
-              class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
-            ></div>
-          </a>
-        {/if}
+      {#each memoryStore.memories as memory (memory.id)}
+        <a
+          class="memory-card relative mr-8 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] xl:aspect-video h-[215px] rounded-xl"
+          href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
+        >
+          <img
+            class="h-full w-full rounded-xl object-cover"
+            src={getAssetThumbnailUrl(memory.assets[0].id)}
+            alt={$t('memory_lane_title', { values: { title: $getAltText(memory.assets[0]) } })}
+            draggable="false"
+          />
+          <p class="absolute bottom-2 left-4 z-10 text-lg text-white">
+            {$memoryLaneTitle(memory)}
+          </p>
+          <div
+            class="absolute left-0 top-0 z-0 h-full w-full rounded-xl bg-gradient-to-t from-black/40 via-transparent to-transparent transition-all hover:bg-black/20"
+          ></div>
+        </a>
       {/each}
     </div>
   </section>

@@ -27,7 +27,7 @@
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
   import { type Viewport } from '$lib/stores/assets-store.svelte';
-  import { loadMemories, memoryStore } from '$lib/stores/memory.store';
+  import { type MemoryAsset, memoryStore } from '$lib/stores/memory.store.svelte';
   import { locale, videoViewerMuted } from '$lib/stores/preferences.store';
   import { preferences } from '$lib/stores/user.store';
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
@@ -40,7 +40,6 @@
     removeMemoryAssets,
     updateMemory,
     type AssetResponseDto,
-    type MemoryResponseDto,
   } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
@@ -66,22 +65,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { tweened } from 'svelte/motion';
-  import { derived as storeDerived } from 'svelte/store';
   import { fade } from 'svelte/transition';
-
-  type MemoryIndex = {
-    memoryIndex: number;
-    assetIndex: number;
-  };
-
-  type MemoryAsset = MemoryIndex & {
-    memory: MemoryResponseDto;
-    asset: AssetResponseDto;
-    previousMemory?: MemoryResponseDto;
-    previous?: MemoryAsset;
-    next?: MemoryAsset;
-    nextMemory?: MemoryResponseDto;
-  };
 
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
@@ -98,39 +82,12 @@
     duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
   });
   let videoPlayer: HTMLVideoElement | undefined = $state();
-  const memories = storeDerived(memoryStore, (memories) => {
-    memories = memories ?? [];
-    const memoryAssets: MemoryAsset[] = [];
-    let previous: MemoryAsset | undefined;
-    for (const [memoryIndex, memory] of memories.entries()) {
-      for (const [assetIndex, asset] of memory.assets.entries()) {
-        const current = {
-          memory,
-          memoryIndex,
-          previousMemory: memories[memoryIndex - 1],
-          nextMemory: memories[memoryIndex + 1],
-          asset,
-          assetIndex,
-          previous,
-        };
 
-        memoryAssets.push(current);
-
-        if (previous) {
-          previous.next = current;
-        }
-
-        previous = current;
-      }
-    }
-
-    return memoryAssets;
-  });
-
-  const loadFromParams = (memories: MemoryAsset[], page: typeof $page | NavigationTarget | null) => {
-    const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
+  const loadFromParams = (page: typeof $page | NavigationTarget | null) => {
+    const currentAssetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
     handlePromiseError(handleAction($isViewing ? 'pause' : 'reset'));
-    return memories.find((memory) => memory.asset.id === assetId) ?? memories[0];
+
+    current = memoryStore.getMemoryAsset(currentAssetId);
   };
   const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
   const handleNavigate = async (asset?: AssetResponseDto) => {
@@ -220,15 +177,16 @@
   };
 
   const init = () => {
-    $memoryStore = $memoryStore.filter((memory) => memory.assets.length > 0);
-    if ($memoryStore.length === 0) {
+    if (memoryStore.memories.length === 0) {
       return handlePromiseError(goto(AppRoute.PHOTOS));
     }
 
-    current = loadFromParams($memories, $page);
+    loadFromParams($page);
 
     // Adjust the progress bar duration to the video length
-    setProgressDuration(current.asset);
+    if (currentAsset) {
+      setProgressDuration(current.asset);
+    }
   };
 
   const handleDeleteMemoryAsset = async (current?: MemoryAsset) => {
@@ -264,7 +222,7 @@
 
     notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
 
-    await loadMemories();
+    await memoryStore.loadAllMemories();
     init();
   };
 
@@ -289,9 +247,7 @@
   };
 
   onMount(async () => {
-    if (!$memoryStore) {
-      await loadMemories();
-    }
+    await memoryStore.initialize();
 
     init();
   });
@@ -306,7 +262,7 @@
       target = $page;
     }
 
-    current = loadFromParams($memories, target);
+    loadFromParams(target);
   });
 
   $effect(() => {
@@ -367,7 +323,7 @@
 {/if}
 
 <section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
-  {#if current && current.memory.assets.length > 0}
+  {#if current}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark multiRow>
       {#snippet leading()}
         {#if current}
@@ -530,10 +486,10 @@
                   align="bottom-right"
                   class="text-white dark:text-white"
                 >
-                  <MenuOption onClick={() => handleDeleteMemory(current)} text="Remove memory" icon={mdiCardsOutline} />
+                  <MenuOption onClick={() => handleDeleteMemory()} text={$t('remove_memory')} icon={mdiCardsOutline} />
                   <MenuOption
-                    onClick={() => handleDeleteMemoryAsset(current)}
-                    text="Remove photo from this memory"
+                    onClick={() => handleDeleteMemoryAsset()}
+                    text={$t('remove_photo_from_memory')}
                     icon={mdiImageMinusOutline}
                   />
                   <!-- shortcut={{ key: 'l', shift: shared }} -->
