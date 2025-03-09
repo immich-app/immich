@@ -1,5 +1,12 @@
 import { asLocalTimeISO } from '$lib/utils/date-time';
-import { type AssetResponseDto, type MemoryResponseDto, searchMemories } from '@immich/sdk';
+import {
+  type AssetResponseDto,
+  deleteMemory,
+  type MemoryResponseDto,
+  removeMemoryAssets,
+  searchMemories,
+  updateMemory,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 
 type MemoryIndex = {
@@ -49,6 +56,47 @@ class MemoryStoreSvelte {
 
   getMemoryAsset(assetId: string | undefined) {
     return this.memoryAssets.find((memoryAsset) => memoryAsset.asset.id === assetId) ?? this.memoryAssets[0];
+  }
+
+  hideAssetsFromMemory(ids: string[]) {
+    const idSet = new Set<string>(ids);
+    for (const memory of this.memories) {
+      memory.assets = memory.assets.filter((asset) => !idSet.has(asset.id));
+    }
+    this.memories = this.memories.filter((memory) => memory.assets.length > 0);
+  }
+
+  async deleteMemory(id: string) {
+    const memory = this.memories.find((memory) => memory.id === id);
+    if (memory) {
+      await deleteMemory({ id: memory.id });
+      this.memories = this.memories.filter((memory) => memory.id !== id);
+    }
+  }
+
+  async deleteAssetFromMemory(assetId: string) {
+    const memoryWithAsset = this.memories.find((memory) => memory.assets.some((asset) => asset.id === assetId));
+
+    if (memoryWithAsset) {
+      if (memoryWithAsset.assets.length === 1) {
+        return await this.deleteMemory(memoryWithAsset.id);
+      }
+      await removeMemoryAssets({ id: memoryWithAsset.id, bulkIdsDto: { ids: [assetId] } });
+      memoryWithAsset.assets = memoryWithAsset.assets.filter((asset) => asset.id !== assetId);
+    }
+  }
+
+  async updatedMemorySaved(id: string, isSaved: boolean) {
+    const memory = this.memories.find((memory) => memory.id === id);
+    if (memory) {
+      await updateMemory({
+        id,
+        memoryUpdateDto: {
+          isSaved,
+        },
+      });
+      memory.isSaved = isSaved;
+    }
   }
 
   async initialize() {

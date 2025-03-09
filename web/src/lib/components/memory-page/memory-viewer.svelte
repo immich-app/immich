@@ -33,14 +33,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import {
-    AssetMediaSize,
-    AssetTypeEnum,
-    deleteMemory,
-    removeMemoryAssets,
-    updateMemory,
-    type AssetResponseDto,
-  } from '@immich/sdk';
+  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -164,8 +157,7 @@
     if (!current) {
       return;
     }
-    const idSet = new Set(ids);
-    current.memory.assets = current.memory.assets.filter((asset) => !idSet.has(asset.id));
+    memoryStore.hideAssetsFromMemory(ids);
     init();
   };
   const handleDeleteMemoryAsset = async () => {
@@ -173,34 +165,16 @@
       return;
     }
 
-    if (current.memory.assets.length === 1) {
-      return handleDeleteMemory();
-    }
-
-    if (current.previous) {
-      current.previous.next = current.next;
-    }
-    if (current.next) {
-      current.next.previous = current.previous;
-    }
-
-    current.memory.assets = current.memory.assets.filter((asset) => asset.id !== current.asset.id);
-
-    // eslint-disable-next-line no-self-assign
-    $memoryStore = $memoryStore;
-
-    await removeMemoryAssets({ id: current.memory.id, bulkIdsDto: { ids: [current.asset.id] } });
+    await memoryStore.deleteAssetFromMemory(current.asset.id);
+    init();
   };
   const handleDeleteMemory = async () => {
     if (!current) {
       return;
     }
 
-    await deleteMemory({ id: current.memory.id });
-
+    await memoryStore.deleteMemory(current.memory.id);
     notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
-
-    await memoryStore.loadAllMemories();
     init();
   };
   const handleSaveMemory = async () => {
@@ -208,19 +182,13 @@
       return;
     }
 
-    current.memory.isSaved = !current.memory.isSaved;
-
-    await updateMemory({
-      id: current.memory.id,
-      memoryUpdateDto: {
-        isSaved: current.memory.isSaved,
-      },
-    });
-
+    const newSavedState = !current.memory.isSaved;
+    await memoryStore.updatedMemorySaved(current.memory.id, newSavedState);
     notificationController.show({
-      message: current.memory.isSaved ? $t('added_to_favorites') : $t('removed_from_favorites'),
+      message: newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'),
       type: NotificationType.Info,
     });
+    init();
   };
 
   const init = () => {
