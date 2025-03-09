@@ -6,7 +6,6 @@ import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
-import { libraryStub } from 'test/fixtures/library.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
 const previewFile: AssetFileEntity = {
@@ -396,7 +395,6 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     libraryId: 'library-id',
-    library: libraryStub.externalLibrary1,
     tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
@@ -751,7 +749,6 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     libraryId: 'library-id',
-    library: libraryStub.externalLibrary1,
     tags: [],
     sharedLinks: [],
     originalFileName: 'photo.jpg',
