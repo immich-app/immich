@@ -109,7 +109,7 @@ class MemoryStoreSvelte {
     await this.loadAllMemories();
   }
 
-  async loadAllMemories() {
+  private async loadAllMemories() {
     const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
     this.memories = memories.filter((memory) => memory.assets.length > 0);
   }
