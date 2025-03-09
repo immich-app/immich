@@ -45,12 +45,20 @@ extension MapMarkers on MapLibreMapController {
       MapUtils.defaultHeatMapLayerId,
       const CircleLayerProperties(
         circleRadius: 10,
-        circleColor: "rgba(172, 203, 250, 0.5)",
+        circleColor: "rgba(100,86,34,0.7)",
         circleBlur: 1.0,
-        circleOpacity: 1.0,
-        circleStrokeWidth: 0.0,
+        circleOpacity: 0.7,
+        circleStrokeWidth: 0.2,
+        circleStrokeColor: "rgba(255,0,0,0.7)",
+        circleStrokeOpacity: 0.7,
       ),
     );
+
+    // await addHeatmapLayer(
+    //   MapUtils.defaultSourceId,
+    //   MapUtils.defaultHeatMapLayerId,
+    //   MapUtils.defaultHeatMapLayerProperties,
+    // );
 
     _completer.complete();
   }
