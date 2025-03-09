@@ -6,7 +6,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { MemoryType } from 'src/enum';
 import { MemoryItem } from 'src/types';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
-import { AuthDto } from './auth.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 
 class MemoryBaseDto {
   @ValidateBoolean({ optional: true })
