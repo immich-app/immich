@@ -50,11 +50,11 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
-              title={$t('previous_memories')}
-              aria-label={$t('previous_memories')}
+              title={$t('previous')}
+              aria-label={$t('previous')}
               onclick={scrollLeft}
             >
-              <Icon path={mdiChevronLeft} size="36" ariaLabel={$t('previous_memories')} /></button
+              <Icon path={mdiChevronLeft} size="36" ariaLabel={$t('previous')} /></button
             >
           </div>
         {/if}
@@ -63,11 +63,11 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
-              title={$t('next_memories')}
-              aria-label={$t('next_memories')}
+              title={$t('next')}
+              aria-label={$t('next')}
               onclick={scrollRight}
             >
-              <Icon path={mdiChevronRight} size="36" ariaLabel={$t('next_memories')} /></button
+              <Icon path={mdiChevronRight} size="36" ariaLabel={$t('next')} /></button
             >
           </div>
         {/if}
