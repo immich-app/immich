@@ -159,15 +159,8 @@
       await (current?.next ? handleNextAsset() : handleAction('pause'));
     }
   };
-  const handleUpdate = () => {
-    if (!current) {
-      return;
-    }
-    // eslint-disable-next-line no-self-assign
-    current.memory.assets = current.memory.assets;
-  };
 
-  const handleRemove = (ids: string[]) => {
+  const handleDeleteOrArchiveAssets = (ids: string[]) => {
     if (!current) {
       return;
     }
@@ -175,27 +168,13 @@
     current.memory.assets = current.memory.assets.filter((asset) => !idSet.has(asset.id));
     init();
   };
-
-  const init = () => {
-    if (memoryStore.memories.length === 0) {
-      return handlePromiseError(goto(AppRoute.PHOTOS));
-    }
-
-    loadFromParams($page);
-
-    // Adjust the progress bar duration to the video length
-    if (currentAsset) {
-      setProgressDuration(current.asset);
-    }
-  };
-
-  const handleDeleteMemoryAsset = async (current?: MemoryAsset) => {
+  const handleDeleteMemoryAsset = async () => {
     if (!current) {
       return;
     }
 
     if (current.memory.assets.length === 1) {
-      return handleDeleteMemory(current);
+      return handleDeleteMemory();
     }
 
     if (current.previous) {
@@ -212,8 +191,7 @@
 
     await removeMemoryAssets({ id: current.memory.id, bulkIdsDto: { ids: [current.asset.id] } });
   };
-
-  const handleDeleteMemory = async (current?: MemoryAsset) => {
+  const handleDeleteMemory = async () => {
     if (!current) {
       return;
     }
@@ -225,8 +203,7 @@
     await memoryStore.loadAllMemories();
     init();
   };
-
-  const handleSaveMemory = async (current?: MemoryAsset) => {
+  const handleSaveMemory = async () => {
     if (!current) {
       return;
     }
@@ -244,6 +221,19 @@
       message: current.memory.isSaved ? $t('added_to_favorites') : $t('removed_from_favorites'),
       type: NotificationType.Info,
     });
+  };
+
+  const init = () => {
+    if (memoryStore.memories.length === 0) {
+      return handlePromiseError(goto(AppRoute.PHOTOS));
+    }
+
+    loadFromParams($page);
+
+    // Adjust the progress bar duration to the video length
+    if (current) {
+      setProgressDuration(current.asset);
+    }
   };
 
   onMount(async () => {
@@ -306,17 +296,17 @@
         <AddToAlbum shared />
       </ButtonContextMenu>
 
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={handleUpdate} />
+      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
-        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={handleRemove} />
+        <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={handleDeleteOrArchiveAssets} />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
         {/if}
-        <DeleteAssets menuItem onAssetDelete={handleRemove} />
+        <DeleteAssets menuItem onAssetDelete={handleDeleteOrArchiveAssets} />
       </ButtonContextMenu>
     </AssetSelectControlBar>
   </div>
@@ -467,7 +457,7 @@
                   size="giant"
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
-                  onclick={() => handleSaveMemory(current)}
+                  onclick={() => handleSaveMemory()}
                   class="text-white dark:text-white"
                 />
                 <!-- <IconButton

@@ -6,6 +6,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { MemoryType } from 'src/enum';
 import { MemoryItem } from 'src/types';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
+import { AuthDto } from './auth.dto';
 
 class MemoryBaseDto {
   @ValidateBoolean({ optional: true })
@@ -88,7 +89,7 @@ export class MemoryResponseDto {
   assets!: AssetResponseDto[];
 }
 
-export const mapMemory = (entity: MemoryItem): MemoryResponseDto => {
+export const mapMemory = (entity: MemoryItem, auth: AuthDto): MemoryResponseDto => {
   return {
     id: entity.id,
     createdAt: entity.createdAt,
@@ -102,6 +103,6 @@ export const mapMemory = (entity: MemoryItem): MemoryResponseDto => {
     type: entity.type as MemoryType,
     data: entity.data as unknown as MemoryData,
     isSaved: entity.isSaved,
-    assets: ('assets' in entity ? entity.assets : []).map((asset) => mapAsset(asset as AssetEntity)),
+    assets: ('assets' in entity ? entity.assets : []).map((asset) => mapAsset(asset as AssetEntity, { auth })),
   };
 };
