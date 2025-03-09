@@ -44,7 +44,19 @@ class PeopleInfo extends ConsumerWidget {
     }
 
     final curatedPeople = people
-            ?.map((p) => SearchCuratedContent(id: p.id, label: p.name))
+            ?.map(
+              (p) => SearchCuratedContent(
+                id: p.id,
+                label: p.name,
+                subtitle: p.birthDate != null
+                    ? "exif_bottom_sheet_person_age".tr(
+                        args: [
+                          _calculateAge(p.birthDate!).toString(),
+                        ],
+                      )
+                    : null,
+              ),
+            )
             .toList() ??
         [];
 
@@ -98,5 +110,18 @@ class PeopleInfo extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  int _calculateAge(DateTime birthDate) {
+    DateTime today = DateTime.now();
+    int age = today.year - birthDate.year;
+
+    // Check if the birthday has occurred this year
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+
+    return age;
   }
 }
