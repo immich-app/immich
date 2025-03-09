@@ -6,7 +6,7 @@ import 'package:immich_mobile/models/map/map_marker.model.dart';
 import 'package:immich_mobile/utils/map_utils.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-extension MapMarkers on MaplibreMapController {
+extension MapMarkers on MapLibreMapController {
   static var _completer = Completer()..complete();
 
   Future<void> addGeoJSONSourceForMarkers(List<MapMarker> markers) async {
@@ -40,10 +40,16 @@ extension MapMarkers on MaplibreMapController {
 
     await addGeoJSONSourceForMarkers(markers);
 
-    await addHeatmapLayer(
+    await addCircleLayer(
       MapUtils.defaultSourceId,
       MapUtils.defaultHeatMapLayerId,
-      MapUtils.defaultHeatMapLayerProperties,
+      const CircleLayerProperties(
+        circleRadius: 10,
+        circleColor: "rgba(172, 203, 250, 0.5)",
+        circleBlur: 1.0,
+        circleOpacity: 1.0,
+        circleStrokeWidth: 0.0,
+      ),
     );
 
     _completer.complete();
