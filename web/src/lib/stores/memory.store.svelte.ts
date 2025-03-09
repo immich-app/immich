@@ -63,6 +63,7 @@ class MemoryStoreSvelte {
     for (const memory of this.memories) {
       memory.assets = memory.assets.filter((asset) => !idSet.has(asset.id));
     }
+    // if we removed all assets from a memory, then lets remove those memories (we don't show memories with 0 assets)
     this.memories = this.memories.filter((memory) => memory.assets.length > 0);
   }
 
