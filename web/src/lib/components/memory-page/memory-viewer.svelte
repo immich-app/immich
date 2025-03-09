@@ -80,7 +80,7 @@
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
     handlePromiseError(handleAction($isViewing ? 'pause' : 'reset'));
 
-    current = memoryStore.getMemoryAsset(assetId);
+    return memoryStore.getMemoryAsset(assetId);
   };
   const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
   const handleNavigate = async (asset?: AssetResponseDto) => {
@@ -196,12 +196,10 @@
       return handlePromiseError(goto(AppRoute.PHOTOS));
     }
 
-    loadFromParams($page);
+    current = loadFromParams($page);
 
     // Adjust the progress bar duration to the video length
-    if (current) {
-      setProgressDuration(current.asset);
-    }
+    setProgressDuration(current.asset);
   };
 
   onMount(async () => {
@@ -220,7 +218,7 @@
       target = $page;
     }
 
-    loadFromParams(target);
+    current = loadFromParams(target);
   });
 
   $effect(() => {
