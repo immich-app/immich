@@ -42,7 +42,7 @@ dependencies:
   path_provider: ^2.1.2
   collection: ^1.18.0
   http_parser: ^4.0.2
-  flutter_web_auth: 0.6.0
+  flutter_web_auth_2: ^5.0.0-alpha.0
   easy_image_viewer: ^1.4.0
   isar:
     version: *isar_version
