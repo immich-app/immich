@@ -10,6 +10,21 @@ The admin password can be reset by running the [reset-admin-password](/docs/admi
 
 You can see the list of all users by running [list-users](/docs/administration/server-commands.md) Command on the Immich-server.
 
+### How can I set a user quota below 1 GB?
+
+You can set the quota to a number of bytes using the API.
+Here, an example of 1 byte is used.
+
+```bash title="Set user quota"
+# Get list of user IDs
+curl https://immich.domain.tld/api/admin/users -H 'Accept: application/json' -H 'x-api-key: YOURAPIKEYHERE'
+
+# Set quota to 1 byte for specified ID
+curl -X PUT https://immich.domain.tld/api/admin/users/USERIDHERE \
+-H 'Content-Type: application/json' -H 'Accept: application/json' -H 'x-api-key: YOURAPIKEYHERE' \
+--data-raw '{ "quotaSizeInBytes": 1 }'
+```
+
 ---
 
 ## Mobile App
