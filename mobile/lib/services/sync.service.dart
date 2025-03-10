@@ -148,7 +148,7 @@ class SyncService {
     final changes = diffSortedListsSync(
       users,
       dbUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
+      compare: (User a, User b) => a.uid.compareTo(b.uid),
       both: (User a, User b) {
         if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
             a.isPartnerSharedBy != b.isPartnerSharedBy ||

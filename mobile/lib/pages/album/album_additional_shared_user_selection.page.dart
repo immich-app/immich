@@ -26,7 +26,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
     final sharedUsersList = useState<Set<User>>({});
 
     addNewUsersHandler() {
-      context.maybePop(sharedUsersList.value.map((e) => e.id).toList());
+      context.maybePop(sharedUsersList.value.map((e) => e.uid).toList());
     }
 
     buildTileIcon(User user) {

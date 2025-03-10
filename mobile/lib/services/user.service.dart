@@ -74,7 +74,7 @@ class UserService {
     diffSortedListsSync(
       users,
       sharedBy,
-      compare: (User a, User b) => a.id.compareTo(b.id),
+      compare: (User a, User b) => a.uid.compareTo(b.uid),
       both: (User a, User b) {
         updatedSharedBy.add(a.copyWith(isPartnerSharedBy: true));
         return true;
@@ -88,7 +88,7 @@ class UserService {
     diffSortedListsSync(
       updatedSharedBy,
       sharedWith,
-      compare: (User a, User b) => a.id.compareTo(b.id),
+      compare: (User a, User b) => a.uid.compareTo(b.uid),
       both: (User a, User b) {
         updatedSharedWith.add(
           a.copyWith(inTimeline: b.inTimeline, isPartnerSharedWith: true),
