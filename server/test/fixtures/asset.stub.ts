@@ -3,9 +3,9 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { StackEntity } from 'src/entities/stack.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
+import { StorageAsset } from 'src/types';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
-import { libraryStub } from 'test/fixtures/library.stub';
 import { userStub } from 'test/fixtures/user.stub';
 
 const previewFile: AssetFileEntity = {
@@ -40,6 +40,21 @@ export const stackStub = (stackId: string, assets: AssetEntity[]): StackEntity =
 };
 
 export const assetStub = {
+  storageAsset: (asset: Partial<StorageAsset> = {}) => ({
+    id: 'asset-id',
+    ownerId: 'user-id',
+    livePhotoVideoId: null,
+    type: AssetType.IMAGE,
+    isExternal: false,
+    checksum: Buffer.from('file hash'),
+    timeZone: null,
+    fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
+    originalPath: '/original/path.jpg',
+    originalFileName: 'IMG_123.jpg',
+    sidecarPath: null,
+    fileSizeInByte: 12_345,
+    ...asset,
+  }),
   noResizePath: Object.freeze<AssetEntity>({
     id: 'asset-id',
     status: AssetStatus.ACTIVE,
@@ -296,6 +311,7 @@ export const assetStub = {
     isFavorite: false,
     isArchived: false,
     duration: null,
+    libraryId: 'library-id',
     isVisible: true,
     isExternal: false,
     livePhotoVideo: null,
@@ -379,7 +395,6 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     libraryId: 'library-id',
-    library: libraryStub.externalLibrary1,
     tags: [],
     sharedLinks: [],
     originalFileName: 'asset-id.jpg',
@@ -734,7 +749,6 @@ export const assetStub = {
     livePhotoVideo: null,
     livePhotoVideoId: null,
     libraryId: 'library-id',
-    library: libraryStub.externalLibrary1,
     tags: [],
     sharedLinks: [],
     originalFileName: 'photo.jpg',

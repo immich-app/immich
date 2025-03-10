@@ -1,3 +1,4 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/services/search.service.dart';
 import 'package:openapi/api.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -6,7 +7,7 @@ part 'search_filter.provider.g.dart';
 
 @riverpod
 Future<List<String>> getSearchSuggestions(
-  GetSearchSuggestionsRef ref,
+  Ref ref,
   SearchSuggestionType type, {
   String? locationCountry,
   String? locationState,

@@ -62,7 +62,7 @@ Dokumentation och installationsguider hittas på https://imiich.app/.
 
 Ett webb-demo finns att testa på https://demo.immich.app
 
-Använd `https://demo.immich.app/api` i mobilappen som `Server Endpoint URL`
+Använd `https://demo.immich.app` i mobilappen som `Server Endpoint URL`
 
 ```bash title="Inloggningsuppgifter För Demo"
 Inloggsningsuppgifter

@@ -1,6 +1,6 @@
 {
   "name": "immich-web",
-  "version": "1.128.0",
+  "version": "1.129.0",
   "license": "GNU Affero General Public License version 3",
   "scripts": {
     "dev": "vite dev --host 0.0.0.0 --port 3000",
@@ -68,7 +68,7 @@
   "dependencies": {
     "@formatjs/icu-messageformat-parser": "^2.9.8",
     "@immich/sdk": "file:../open-api/typescript-sdk",
-    "@immich/ui": "^0.16.0",
+    "@immich/ui": "^0.17.0",
     "@mapbox/mapbox-gl-rtl-text": "0.2.3",
     "@mdi/js": "^7.4.47",
     "@photo-sphere-viewer/core": "^5.11.5",
@@ -84,6 +84,7 @@
     "justified-layout": "^4.1.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.4.4",
+    "pmtiles": "^4.3.0",
     "qrcode": "^1.5.4",
     "socket.io-client": "~4.8.0",
     "svelte-gestures": "^5.1.3",

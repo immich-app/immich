@@ -11,7 +11,7 @@ Just restarting the containers does not replace the environment within the conta
 
 In order to recreate the container using docker compose, run `docker compose up -d`.
 In most cases docker will recognize that the `.env` file has changed and recreate the affected containers.
-If this should not work, try running `docker compose up -d --force-recreate`.
+If this does not work, try running `docker compose up -d --force-recreate`.
 
 :::
 
@@ -20,8 +20,8 @@ If this should not work, try running `docker compose up -d --force-recreate`.
 | Variable           | Description                     |  Default  | Containers               |
 | :----------------- | :------------------------------ | :-------: | :----------------------- |
 | `IMMICH_VERSION`   | Image tags                      | `release` | server, machine learning |
-| `UPLOAD_LOCATION`  | Host Path for uploads           |           | server                   |
-| `DB_DATA_LOCATION` | Host Path for Postgres database |           | database                 |
+| `UPLOAD_LOCATION`  | Host path for uploads           |           | server                   |
+| `DB_DATA_LOCATION` | Host path for Postgres database |           | database                 |
 
 :::tip
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
@@ -33,15 +33,15 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | :---------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------: | :----------------------- | :----------------- |
 | `TZ`                                | Timezone                                                                                  |        <sup>\*1</sup>        | server                   | microservices      |
 | `IMMICH_ENV`                        | Environment (production, development)                                                     |         `production`         | server, machine learning | api, microservices |
-| `IMMICH_LOG_LEVEL`                  | Log Level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
-| `IMMICH_MEDIA_LOCATION`             | Media Location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
+| `IMMICH_LOG_LEVEL`                  | Log level (verbose, debug, log, warn, error)                                              |            `log`             | server, machine learning | api, microservices |
+| `IMMICH_MEDIA_LOCATION`             | Media location inside the container ⚠️**You probably shouldn't set this**<sup>\*2</sup>⚠️ |   `./upload`<sup>\*3</sup>   | server                   | api, microservices |
 | `IMMICH_CONFIG_FILE`                | Path to config file                                                                       |                              | server                   | api, microservices |
 | `NO_COLOR`                          | Set to `true` to disable color-coded log output                                           |           `false`            | server, machine learning |                    |
-| `CPU_CORES`                         | Amount of cores available to the immich server                                            | auto-detected cpu core count | server                   |                    |
+| `CPU_CORES`                         | Number of cores available to the Immich server                                            | auto-detected CPU core count | server                   |                    |
 | `IMMICH_API_METRICS_PORT`           | Port for the OTEL metrics                                                                 |            `8081`            | server                   | api                |
 | `IMMICH_MICROSERVICES_METRICS_PORT` | Port for the OTEL metrics                                                                 |            `8082`            | server                   | microservices      |
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                       |                              | server                   | microservices      |
-| `IMMICH_TRUSTED_PROXIES`            | List of comma separated IPs set as trusted proxies                                        |                              | server                   | api                |
+| `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                        |                              | server                   | api                |
 | `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/docs/administration/system-integrity)                             |                              | server                   | api, microservices |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
@@ -50,7 +50,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 \*2: This path is where the Immich code looks for the files, which is internal to the docker container. Setting it to a path on your host will certainly break things, you should use the `UPLOAD_LOCATION` variable instead.
 
 \*3: With the default `WORKDIR` of `/usr/src/app`, this path will resolve to `/usr/src/app/upload`.
-It only need to be set if the Immich deployment method is changing.
+It only needs to be set if the Immich deployment method is changing.
 
 ## Workers
 
@@ -75,12 +75,12 @@ Information on the current workers can be found [here](/docs/administration/jobs
 | Variable                            | Description                                                              |   Default    | Containers                     |
 | :---------------------------------- | :----------------------------------------------------------------------- | :----------: | :----------------------------- |
 | `DB_URL`                            | Database URL                                                             |              | server                         |
-| `DB_HOSTNAME`                       | Database Host                                                            |  `database`  | server                         |
-| `DB_PORT`                           | Database Port                                                            |    `5432`    | server                         |
-| `DB_USERNAME`                       | Database User                                                            |  `postgres`  | server, database<sup>\*1</sup> |
-| `DB_PASSWORD`                       | Database Password                                                        |  `postgres`  | server, database<sup>\*1</sup> |
-| `DB_DATABASE_NAME`                  | Database Name                                                            |   `immich`   | server, database<sup>\*1</sup> |
-| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database Vector Extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server                         |
+| `DB_HOSTNAME`                       | Database host                                                            |  `database`  | server                         |
+| `DB_PORT`                           | Database port                                                            |    `5432`    | server                         |
+| `DB_USERNAME`                       | Database user                                                            |  `postgres`  | server, database<sup>\*1</sup> |
+| `DB_PASSWORD`                       | Database password                                                        |  `postgres`  | server, database<sup>\*1</sup> |
+| `DB_DATABASE_NAME`                  | Database name                                                            |   `immich`   | server, database<sup>\*1</sup> |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`pgvector`, `pgvecto.rs`])            | `pgvecto.rs` | server                         |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`]) |   `false`    | server                         |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
@@ -103,18 +103,18 @@ When `DB_URL` is defined, the `DB_HOSTNAME`, `DB_PORT`, `DB_USERNAME`, `DB_PASSW
 | Variable         | Description    | Default | Containers |
 | :--------------- | :------------- | :-----: | :--------- |
 | `REDIS_URL`      | Redis URL      |         | server     |
-| `REDIS_SOCKET`   | Redis Socket   |         | server     |
-| `REDIS_HOSTNAME` | Redis Host     | `redis` | server     |
-| `REDIS_PORT`     | Redis Port     | `6379`  | server     |
-| `REDIS_USERNAME` | Redis Username |         | server     |
-| `REDIS_PASSWORD` | Redis Password |         | server     |
-| `REDIS_DBINDEX`  | Redis DB Index |   `0`   | server     |
+| `REDIS_SOCKET`   | Redis socket   |         | server     |
+| `REDIS_HOSTNAME` | Redis host     | `redis` | server     |
+| `REDIS_PORT`     | Redis port     | `6379`  | server     |
+| `REDIS_USERNAME` | Redis username |         | server     |
+| `REDIS_PASSWORD` | Redis password |         | server     |
+| `REDIS_DBINDEX`  | Redis DB index |   `0`   | server     |
 
 :::info
 All `REDIS_` variables must be provided to all Immich workers, including `api` and `microservices`.
 
 `REDIS_URL` must start with `ioredis://` and then include a `base64` encoded JSON string for the configuration.
-More info can be found in the upstream [ioredis] documentation.
+More information can be found in the upstream [ioredis] documentation.
 
 When `REDIS_URL` or `REDIS_SOCKET` are defined, the `REDIS_HOSTNAME`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_PASSWORD`, and `REDIS_DBINDEX` variables are ignored.
 :::
@@ -216,7 +216,7 @@ the `_FILE` variable should be set to the path of a file containing the variable
 details on how to use Docker Secrets in the Postgres image.
 
 \*2: See [this comment][docker-secrets-example] for an example of how
-to use use a Docker secret for the password in the Redis container.
+to use a Docker secret for the password in the Redis container.
 
 [tz-list]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
 [docker-secrets-example]: https://github.com/docker-library/redis/issues/46#issuecomment-335326234

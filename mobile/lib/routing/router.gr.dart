@@ -789,6 +789,53 @@ class FilterImageRouteArgs {
 }
 
 /// generated route for
+/// [FolderPage]
+class FolderRoute extends PageRouteInfo<FolderRouteArgs> {
+  FolderRoute({
+    Key? key,
+    RecursiveFolder? folder,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FolderRoute.name,
+          args: FolderRouteArgs(
+            key: key,
+            folder: folder,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'FolderRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args =
+          data.argsAs<FolderRouteArgs>(orElse: () => const FolderRouteArgs());
+      return FolderPage(
+        key: args.key,
+        folder: args.folder,
+      );
+    },
+  );
+}
+
+class FolderRouteArgs {
+  const FolderRouteArgs({
+    this.key,
+    this.folder,
+  });
+
+  final Key? key;
+
+  final RecursiveFolder? folder;
+
+  @override
+  String toString() {
+    return 'FolderRouteArgs{key: $key, folder: $folder}';
+  }
+}
+
+/// generated route for
 /// [GalleryViewerPage]
 class GalleryViewerRoute extends PageRouteInfo<GalleryViewerRouteArgs> {
   GalleryViewerRoute({

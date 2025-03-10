@@ -1,97 +1,71 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
-import { jsonObjectFrom } from 'kysely/helpers/postgres';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DB, Libraries } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { LibraryStatsResponseDto } from 'src/dtos/library.dto';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetType } from 'src/enum';
 
-const userColumns = [
-  'users.id',
-  'users.email',
-  'users.createdAt',
-  'users.profileImagePath',
-  'users.isAdmin',
-  'users.shouldChangePassword',
-  'users.deletedAt',
-  'users.oauthId',
-  'users.updatedAt',
-  'users.storageLabel',
-  'users.name',
-  'users.quotaSizeInBytes',
-  'users.quotaUsageInBytes',
-  'users.status',
-  'users.profileChangedAt',
-] as const;
-
-const withOwner = (eb: ExpressionBuilder<DB, 'libraries'>) => {
-  return jsonObjectFrom(eb.selectFrom('users').whereRef('users.id', '=', 'libraries.ownerId').select(userColumns)).as(
-    'owner',
-  );
-};
+export enum AssetSyncResult {
+  DO_NOTHING,
+  UPDATE,
+  OFFLINE,
+  CHECK_OFFLINE,
+}
 
 @Injectable()
 export class LibraryRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  get(id: string, withDeleted = false): Promise<LibraryEntity | undefined> {
+  get(id: string, withDeleted = false) {
     return this.db
       .selectFrom('libraries')
       .selectAll('libraries')
-      .select(withOwner)
       .where('libraries.id', '=', id)
       .$if(!withDeleted, (qb) => qb.where('libraries.deletedAt', 'is', null))
-      .executeTakeFirst() as Promise<LibraryEntity | undefined>;
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [] })
-  getAll(withDeleted = false): Promise<LibraryEntity[]> {
+  getAll(withDeleted = false) {
     return this.db
       .selectFrom('libraries')
       .selectAll('libraries')
-      .select(withOwner)
       .orderBy('createdAt', 'asc')
       .$if(!withDeleted, (qb) => qb.where('libraries.deletedAt', 'is', null))
-      .execute() as unknown as Promise<LibraryEntity[]>;
+      .execute();
   }
 
   @GenerateSql()
-  getAllDeleted(): Promise<LibraryEntity[]> {
+  getAllDeleted() {
     return this.db
       .selectFrom('libraries')
       .selectAll('libraries')
-      .select(withOwner)
       .where('libraries.deletedAt', 'is not', null)
       .orderBy('createdAt', 'asc')
-      .execute() as unknown as Promise<LibraryEntity[]>;
+      .execute();
   }
 
-  create(library: Insertable<Libraries>): Promise<LibraryEntity> {
-    return this.db
-      .insertInto('libraries')
-      .values(library)
-      .returningAll()
-      .executeTakeFirstOrThrow() as Promise<LibraryEntity>;
+  create(library: Insertable<Libraries>) {
+    return this.db.insertInto('libraries').values(library).returningAll().executeTakeFirstOrThrow();
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string) {
     await this.db.deleteFrom('libraries').where('libraries.id', '=', id).execute();
   }
 
-  async softDelete(id: string): Promise<void> {
+  async softDelete(id: string) {
     await this.db.updateTable('libraries').set({ deletedAt: new Date() }).where('libraries.id', '=', id).execute();
   }
 
-  update(id: string, library: Updateable<Libraries>): Promise<LibraryEntity> {
+  update(id: string, library: Updateable<Libraries>) {
     return this.db
       .updateTable('libraries')
       .set(library)
       .where('libraries.id', '=', id)
       .returningAll()
-      .executeTakeFirstOrThrow() as Promise<LibraryEntity>;
+      .executeTakeFirstOrThrow();
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -136,5 +110,9 @@ export class LibraryRepository {
       usage: Number(stats.usage),
       total: Number(stats.photos) + Number(stats.videos),
     };
+  }
+
+  streamAssetIds(libraryId: string) {
+    return this.db.selectFrom('assets').select(['id']).where('libraryId', '=', libraryId).stream();
   }
 }

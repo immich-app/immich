@@ -26,7 +26,7 @@ class MemoryService {
     try {
       final now = DateTime.now();
       final data = await _apiService.memoriesApi.searchMemories(
-        for_: now,
+        for_: DateTime.utc(now.year, now.month, now.day, 0, 0, 0),
       );
 
       if (data == null) {

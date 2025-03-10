@@ -64,7 +64,7 @@
 Die Web-Demo kannst Du unter https://demo.immich.app finden.
 Die Demo läuft auf einer Free Tier Oracle VM in Amsterdam mit einer 2.4Ghz Quad-Core ARM64 CPU und 24GB RAM.
 
-Für die Handy-App kannst Du `https://demo.immich.app/api` als `Server Endpoint URL` angeben.
+Für die Handy-App kannst Du `https://demo.immich.app` als `Server Endpoint URL` angeben.
 
 ### Login Daten
 

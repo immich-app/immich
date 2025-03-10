@@ -27,7 +27,7 @@
   };
 
   let canScrollLeft = $derived(scrollLeftPosition > 0);
-  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < innerWidth - offsetWidth);
+  let canScrollRight = $derived(Math.ceil(scrollLeftPosition) < Math.floor(innerWidth - offsetWidth));
 
   const scrollBy = 400;
   const scrollLeft = () => memoryLaneElement?.scrollBy({ left: -scrollBy, behavior: 'smooth' });
@@ -38,7 +38,8 @@
   <section
     id="memory-lane"
     bind:this={memoryLaneElement}
-    class="relative mt-5 overflow-hidden whitespace-nowrap transition-all"
+    class="relative mt-5 overflow-x-scroll overflow-y-hidden whitespace-nowrap transition-all"
+    style="scrollbar-width:none"
     use:resizeObserver={({ width }) => (offsetWidth = width)}
     onscroll={onScroll}
   >
@@ -49,9 +50,11 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
+              title={$t('previous')}
+              aria-label={$t('previous')}
               onclick={scrollLeft}
             >
-              <Icon path={mdiChevronLeft} size="36" /></button
+              <Icon path={mdiChevronLeft} size="36" ariaLabel={$t('previous')} /></button
             >
           </div>
         {/if}
@@ -60,9 +63,11 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
+              title={$t('next')}
+              aria-label={$t('next')}
               onclick={scrollRight}
             >
-              <Icon path={mdiChevronRight} size="36" /></button
+              <Icon path={mdiChevronRight} size="36" ariaLabel={$t('next')} /></button
             >
           </div>
         {/if}
@@ -72,7 +77,7 @@
       {#each $memoryStore as memory (memory.id)}
         {#if memory.assets.length > 0}
           <a
-            class="memory-card relative mr-8 inline-block aspect-[3/4] md:aspect-video h-[215px] rounded-xl"
+            class="memory-card relative mr-8 last:mr-0 inline-block aspect-[3/4] md:aspect-[4/3] xl:aspect-video h-[215px] rounded-xl"
             href="{AppRoute.MEMORY}?{QueryParameter.ID}={memory.assets[0].id}"
           >
             <img

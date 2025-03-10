@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 1.128.0+186
+version: 1.129.0+187
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -17,9 +17,9 @@ dependencies:
   path_provider_ios:
   photo_manager: ^3.6.1
   photo_manager_image_provider: ^2.2.0
-  flutter_hooks: ^0.20.4
-  hooks_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
+  flutter_hooks: ^0.21.2
+  hooks_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
   intl: ^0.19.0
@@ -34,7 +34,7 @@ dependencies:
   url_launcher: ^6.2.4
   http: ^1.1.0
   cancellation_token_http: ^2.0.0
-  easy_localization: ^3.0.3
+  easy_localization: ^3.0.7+1
   share_plus: ^10.0.0
   flutter_displaymode: ^0.6.0
   scrollable_positioned_list: ^0.3.8
@@ -42,7 +42,7 @@ dependencies:
   path_provider: ^2.1.2
   collection: ^1.18.0
   http_parser: ^4.0.2
-  flutter_web_auth: 0.6.0
+  flutter_web_auth_2: ^5.0.0-alpha.0
   easy_image_viewer: ^1.4.0
   isar:
     version: *isar_version
@@ -65,7 +65,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: '4530808'
+      ref: '5459d54'
 
   #image editing packages
   crop_image: ^1.0.13
@@ -83,7 +83,7 @@ dependencies:
 # Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
 dependency_overrides:
   # TODO: remove once Isar is updated
-  analyzer: ^6.3.0
+  analyzer: ^6.0.0
   # TODO: remove once analyzer override is removed
   meta: ^1.11.0
   # TODO: remove once analyzer override is removed
@@ -108,8 +108,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   custom_lint: ^0.6.4
-  riverpod_lint: ^2.3.7
-  riverpod_generator: ^2.3.9
+  riverpod_lint: ^2.6.1
+  riverpod_generator: ^2.6.1
   mocktail: ^1.0.3
   immich_mobile_immich_lint:
     path: './immich_lint'
