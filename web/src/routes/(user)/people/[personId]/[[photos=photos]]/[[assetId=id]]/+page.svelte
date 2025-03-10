@@ -548,11 +548,10 @@
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
                     {#if person.birthDate}
-                      {@const personBirthDate = DateTime.fromISO(person.birthDate)}
                       <p class="text-sm text-gray-500 dark:text-immich-gray">
                         {$t('person_birthdate', {
                           values: {
-                            date: personBirthDate.toLocaleString(
+                            date: DateTime.fromISO(person.birthDate).toLocaleString(
                               {
                                 month: 'numeric',
                                 day: 'numeric',
