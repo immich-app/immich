@@ -4,12 +4,11 @@ import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AuthType, Permission } from 'src/enum';
 import { AuthService } from 'src/services/auth.service';
-import { keyStub } from 'test/fixtures/api-key.stub';
-import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const oauthResponse = {
@@ -398,7 +397,10 @@ describe('AuthService', () => {
     });
 
     it('should throw an error if api key has insufficient permissions', async () => {
-      mocks.apiKey.getKey.mockResolvedValue(keyStub.authKey);
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
@@ -409,14 +411,18 @@ describe('AuthService', () => {
     });
 
     it('should return an auth dto', async () => {
-      mocks.apiKey.getKey.mockResolvedValue(keyStub.authKey);
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [] });
+
+      mocks.apiKey.getKey.mockResolvedValue({ ...authApiKey, user: authUser });
+
       await expect(
         sut.authenticate({
           headers: { 'x-api-key': 'auth_token' },
           queryParams: {},
           metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
         }),
-      ).resolves.toEqual({ user: userStub.admin, apiKey: keyStub.authKey });
+      ).resolves.toEqual({ user: authUser, apiKey: expect.objectContaining(authApiKey) });
       expect(mocks.apiKey.getKey).toHaveBeenCalledWith('auth_token (hashed)');
     });
   });
@@ -622,19 +628,27 @@ describe('AuthService', () => {
 
   describe('link', () => {
     it('should link an account', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [] });
+      const auth = { user: authUser, apiKey: authApiKey };
+
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.update.mockResolvedValue(userStub.user1);
 
-      await sut.link(authStub.user1, { url: 'http://immich/user-settings?code=abc123' });
+      await sut.link(auth, { url: 'http://immich/user-settings?code=abc123' });
 
-      expect(mocks.user.update).toHaveBeenCalledWith(authStub.user1.user.id, { oauthId: sub });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: sub });
     });
 
     it('should not link an already linked oauth.sub', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [] });
+      const auth = { user: authUser, apiKey: authApiKey };
+
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserEntity);
 
-      await expect(sut.link(authStub.user1, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
+      await expect(sut.link(auth, { url: 'http://immich/user-settings?code=abc123' })).rejects.toBeInstanceOf(
         BadRequestException,
       );
 
@@ -644,12 +658,16 @@ describe('AuthService', () => {
 
   describe('unlink', () => {
     it('should unlink an account', async () => {
+      const authUser = factory.authUser();
+      const authApiKey = factory.authApiKey({ permissions: [] });
+      const auth = { user: authUser, apiKey: authApiKey };
+
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.user.update.mockResolvedValue(userStub.user1);
 
-      await sut.unlink(authStub.user1);
+      await sut.unlink(auth);
 
-      expect(mocks.user.update).toHaveBeenCalledWith(authStub.user1.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
     });
   });
 });

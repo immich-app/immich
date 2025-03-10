@@ -23,6 +23,7 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
+import { StorageAsset } from 'src/types';
 import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
@@ -431,17 +432,6 @@ export class AssetRepository {
     return paginationHelper(items as any as AssetEntity[], pagination.take);
   }
 
-  async getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
-    const builder = this.db
-      .selectFrom('assets')
-      .select('id')
-      .where('libraryId', '=', asUuid(libraryId))
-      .limit(pagination.take + 1)
-      .offset(pagination.skip ?? 0);
-    const items = await builder.execute();
-    return paginationHelper(items as any as AssetEntity[], pagination.take);
-  }
-
   /**
    * Get assets by device's Id on the database
    * @param ownerId
@@ -613,6 +603,46 @@ export class AssetRepository {
       .where('exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
+  }
+
+  private storageTemplateAssetQuery() {
+    return this.db
+      .selectFrom('assets')
+      .innerJoin('exif', 'assets.id', 'exif.assetId')
+      .select([
+        'assets.id',
+        'assets.ownerId',
+        'assets.type',
+        'assets.checksum',
+        'assets.originalPath',
+        'assets.isExternal',
+        'assets.sidecarPath',
+        'assets.originalFileName',
+        'assets.livePhotoVideoId',
+        'assets.fileCreatedAt',
+        'exif.timeZone',
+        'exif.fileSizeInByte',
+      ])
+      .where('assets.deletedAt', 'is', null)
+      .where('assets.fileCreatedAt', 'is not', null);
+  }
+
+  getStorageTemplateAsset(id: string): Promise<StorageAsset | undefined> {
+    return this.storageTemplateAssetQuery().where('assets.id', '=', id).executeTakeFirst() as Promise<
+      StorageAsset | undefined
+    >;
+  }
+
+  streamStorageTemplateAssets() {
+    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
+  }
+
+  streamDeletedAssets(trashedBefore: Date) {
+    return this.db
+      .selectFrom('assets')
+      .select(['id', 'isOffline'])
+      .where('assets.deletedAt', '<=', trashedBefore)
+      .stream();
   }
 
   @GenerateSql(

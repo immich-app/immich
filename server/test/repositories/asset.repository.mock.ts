@@ -24,7 +24,6 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),
     getAllByDeviceId: vitest.fn(),
     getLivePhotoCount: vitest.fn(),
-    getAllInLibrary: vitest.fn(),
     getLibraryAssetCount: vitest.fn(),
     updateAll: vitest.fn(),
     updateDuplicates: vitest.fn(),
@@ -45,5 +44,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     detectOfflineExternalAssets: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
     updateByLibraryId: vitest.fn(),
+    streamStorageTemplateAssets: vitest.fn(),
+    getStorageTemplateAsset: vitest.fn(),
+    streamDeletedAssets: vitest.fn(),
   };
 };

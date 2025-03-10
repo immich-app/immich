@@ -332,7 +332,7 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
       );
     }
 
-    if (index != -1 && index < widget.renderList.elements.length) {
+    if (index < widget.renderList.elements.length) {
       // Not sure why the index is shifted, but it works. :3
       _scrollToIndex(index + 1);
     } else {

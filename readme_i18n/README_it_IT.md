@@ -61,7 +61,7 @@ La documentazione ufficiale, inclusa la guida all'installazione, è disponibile 
 
 Prova la demo del progetto https://demo.immich.app
 
-Sull'app mobile, imposta `https://demo.immich.app/api` come `Server Endpoint URL`
+Sull'app mobile, imposta `https://demo.immich.app` come `Server Endpoint URL`
 
 ```bash title="Demo Credential"
 Credenziali di accesso
