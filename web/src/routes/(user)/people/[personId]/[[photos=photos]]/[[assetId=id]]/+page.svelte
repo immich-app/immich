@@ -547,7 +547,7 @@
                     <p class="text-sm text-gray-500 dark:text-immich-gray">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
-                    {#if person.birthDate != null}
+                    {#if person.birthDate}
                       {@const personBirthDate = DateTime.fromISO(person.birthDate)}
                       <p class="text-sm text-gray-500 dark:text-immich-gray">
                         {$t('person_birthdate', {
