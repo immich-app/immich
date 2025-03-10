@@ -26,7 +26,7 @@ export class LibraryEntity {
   assets!: AssetEntity[];
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner?: UserEntity;
 
   @Column()
   ownerId!: string;
