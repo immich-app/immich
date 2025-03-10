@@ -183,7 +183,7 @@
     }
 
     const newSavedState = !current.memory.isSaved;
-    await memoryStore.updatedMemorySaved(current.memory.id, newSavedState);
+    await memoryStore.updateMemorySaved(current.memory.id, newSavedState);
     notificationController.show({
       message: newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'),
       type: NotificationType.Info,

@@ -80,14 +80,15 @@ class MemoryStoreSvelte {
 
     if (memoryWithAsset) {
       if (memoryWithAsset.assets.length === 1) {
-        return await this.deleteMemory(memoryWithAsset.id);
+        await this.deleteMemory(memoryWithAsset.id);
+      } else {
+        await removeMemoryAssets({ id: memoryWithAsset.id, bulkIdsDto: { ids: [assetId] } });
+        memoryWithAsset.assets = memoryWithAsset.assets.filter((asset) => asset.id !== assetId);
       }
-      await removeMemoryAssets({ id: memoryWithAsset.id, bulkIdsDto: { ids: [assetId] } });
-      memoryWithAsset.assets = memoryWithAsset.assets.filter((asset) => asset.id !== assetId);
     }
   }
 
-  async updatedMemorySaved(id: string, isSaved: boolean) {
+  async updateMemorySaved(id: string, isSaved: boolean) {
     const memory = this.memories.find((memory) => memory.id === id);
     if (memory) {
       await updateMemory({
