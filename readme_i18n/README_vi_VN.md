@@ -65,7 +65,7 @@
 
 Truy cập bản demo [tại đây](https://demo.immich.app). Bản demo đang chạy trên máy ảo Oracle Free-tier ở Amsterdam với CPU ARM64 lõi tứ 2,4 GHz và RAM 24 GB.
 
-Đối với ứng dụng di động, bạn có thể sử dụng `https://demo.immich.app/api` cho `Server Endpoint URL`
+Đối với ứng dụng di động, bạn có thể sử dụng `https://demo.immich.app` cho `Server Endpoint URL`
 
 ### Thông tin đăng nhập
 

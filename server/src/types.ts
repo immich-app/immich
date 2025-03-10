@@ -1,4 +1,5 @@
 import {
+  AssetType,
   DatabaseExtension,
   ExifOrientation,
   ImageFormat,
@@ -439,4 +440,19 @@ export interface IBulkAsset {
 export type SyncAck = {
   type: SyncEntityType;
   updateId: string;
+};
+
+export type StorageAsset = {
+  id: string;
+  ownerId: string;
+  livePhotoVideoId: string | null;
+  type: AssetType;
+  isExternal: boolean;
+  checksum: Buffer;
+  timeZone: string | null;
+  fileCreatedAt: Date;
+  originalPath: string;
+  originalFileName: string;
+  sidecarPath: string | null;
+  fileSizeInByte: number | null;
 };

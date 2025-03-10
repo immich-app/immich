@@ -198,6 +198,8 @@ export class DatabaseRepository {
     const { database } = this.configRepository.getEnv();
     const dataSource = new DataSource(database.config.typeorm);
 
+    this.logger.log('Running migrations, this may take a while');
+
     await dataSource.initialize();
     await dataSource.runMigrations(options);
     await dataSource.destroy();

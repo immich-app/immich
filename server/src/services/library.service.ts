@@ -412,7 +412,7 @@ export class LibraryService extends BaseService {
     for await (const asset of assets) {
       chunk.push(asset.id);
 
-      if (chunk.length >= 10_000) {
+      if (chunk.length >= JOBS_LIBRARY_PAGINATION_SIZE) {
         await queueChunk();
       }
     }
@@ -841,7 +841,7 @@ export class LibraryService extends BaseService {
 
     for await (const asset of existingAssets) {
       chunk.push(asset.id);
-      if (chunk.length === 10_000) {
+      if (chunk.length === JOBS_LIBRARY_PAGINATION_SIZE) {
         await queueChunk();
       }
     }

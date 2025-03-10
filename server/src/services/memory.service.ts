@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { JsonObject } from 'src/db';
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -97,7 +96,7 @@ export class MemoryService extends BaseService {
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data: dto.data as unknown as JsonObject,
+        data: dto.data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         seenAt: dto.seenAt,

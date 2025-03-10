@@ -48,6 +48,10 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     upsertExif: vitest.fn(),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
+    streamStorageTemplateAssets: vitest.fn(),
+    getStorageTemplateAsset: vitest.fn(),
+    streamDeletedAssets: vitest.fn(),
     upsertJobStatus: vitest.fn(),
+    getAssetSidecarsByPath: vitest.fn(),
   };
 };

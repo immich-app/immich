@@ -1082,6 +1082,7 @@ describe(MetadataService.name, () => {
         }),
       );
     });
+
     it('should handle valid negative rating value', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Rating: -1 });
@@ -1193,6 +1194,23 @@ describe(MetadataService.name, () => {
         libraryId: 'library-id',
         type: 'VIDEO',
       });
+    });
+
+    it.each([
+      { Make: '1', Model: '2', Device: { Manufacturer: '3', ModelName: '4' }, AndroidMake: '4', AndroidModel: '5' },
+      { Device: { Manufacturer: '1', ModelName: '2' }, AndroidMake: '3', AndroidModel: '4' },
+      { AndroidMake: '1', AndroidModel: '2' },
+    ])('should read camera make and model correct place %s', async (metaData) => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags(metaData);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          make: '1',
+          model: '2',
+        }),
+      );
     });
   });
 

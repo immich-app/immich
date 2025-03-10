@@ -1,5 +1,5 @@
 import { sql } from 'kysely';
-import { Permission } from 'src/enum';
+import { AssetStatus, AssetType, Permission } from 'src/enum';
 
 export type AuthUser = {
   id: string;
@@ -10,9 +10,63 @@ export type AuthUser = {
   quotaSizeInBytes: number | null;
 };
 
+export type Library = {
+  id: string;
+  ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  updateId: string;
+  name: string;
+  importPaths: string[];
+  exclusionPatterns: string[];
+  deletedAt: Date | null;
+  refreshedAt: Date | null;
+  assets?: Asset[];
+};
+
 export type AuthApiKey = {
   id: string;
   permissions: Permission[];
+};
+
+export type User = {
+  id: string;
+  name: string;
+  email: string;
+  profileImagePath: string;
+  profileChangedAt: Date;
+};
+
+export type Asset = {
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  id: string;
+  updateId: string;
+  status: AssetStatus;
+  checksum: Buffer<ArrayBufferLike>;
+  deviceAssetId: string;
+  deviceId: string;
+  duplicateId: string | null;
+  duration: string | null;
+  encodedVideoPath: string | null;
+  fileCreatedAt: Date | null;
+  fileModifiedAt: Date | null;
+  isArchived: boolean;
+  isExternal: boolean;
+  isFavorite: boolean;
+  isOffline: boolean;
+  isVisible: boolean;
+  libraryId: string | null;
+  livePhotoVideoId: string | null;
+  localDateTime: Date | null;
+  originalFileName: string;
+  originalPath: string;
+  ownerId: string;
+  sidecarPath: string | null;
+  stackId: string | null;
+  thumbhash: Buffer<ArrayBufferLike> | null;
+  type: AssetType;
 };
 
 export type AuthSharedLink = {
