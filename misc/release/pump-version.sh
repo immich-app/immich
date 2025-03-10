@@ -73,7 +73,7 @@ if [ "$CURRENT_SERVER" != "$NEXT_SERVER" ]; then
   npm --prefix web i --package-lock-only
   npm --prefix e2e version "$SERVER_PUMP"
   npm --prefix e2e i --package-lock-only
-  poetry --directory machine-learning version "$SERVER_PUMP"
+  uvx --from=toml-cli toml set --toml-path=pyproject.toml project.version "$SERVER_PUMP"
 fi
 
 if [ "$CURRENT_MOBILE" != "$NEXT_MOBILE" ]; then

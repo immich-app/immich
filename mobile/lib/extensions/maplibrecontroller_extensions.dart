@@ -40,11 +40,25 @@ extension MapMarkers on MapLibreMapController {
 
     await addGeoJSONSourceForMarkers(markers);
 
-    await addHeatmapLayer(
+    await addCircleLayer(
       MapUtils.defaultSourceId,
       MapUtils.defaultHeatMapLayerId,
-      MapUtils.defaultHeatMapLayerProperties,
+      const CircleLayerProperties(
+        circleRadius: 10,
+        circleColor: "rgba(150,86,34,0.7)",
+        circleBlur: 1.0,
+        circleOpacity: 0.7,
+        circleStrokeWidth: 0.1,
+        circleStrokeColor: "rgba(203,46,19,0.5)",
+        circleStrokeOpacity: 0.7,
+      ),
     );
+
+    // await addHeatmapLayer(
+    //   MapUtils.defaultSourceId,
+    //   MapUtils.defaultHeatMapLayerId,
+    //   MapUtils.defaultHeatMapLayerProperties,
+    // );
 
     _completer.complete();
   }
