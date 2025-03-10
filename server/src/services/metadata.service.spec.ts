@@ -52,6 +52,10 @@ describe(MetadataService.name, () => {
 
   describe('onBootstrapEvent', () => {
     it('should pause and resume queue during init', async () => {
+      mocks.job.pause.mockResolvedValue();
+      mocks.map.init.mockResolvedValue();
+      mocks.job.resume.mockResolvedValue();
+
       await sut.onBootstrap();
 
       expect(mocks.job.pause).toHaveBeenCalledTimes(1);

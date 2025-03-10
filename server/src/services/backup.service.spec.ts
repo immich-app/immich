@@ -22,6 +22,7 @@ describe(BackupService.name, () => {
   describe('onBootstrapEvent', () => {
     it('should init cron job and handle config changes', async () => {
       mocks.database.tryLock.mockResolvedValue(true);
+      mocks.cron.create.mockResolvedValue();
 
       await sut.onConfigInit({ newConfig: systemConfigStub.backupEnabled as SystemConfig });
 
@@ -47,10 +48,14 @@ describe(BackupService.name, () => {
   describe('onConfigUpdateEvent', () => {
     beforeEach(async () => {
       mocks.database.tryLock.mockResolvedValue(true);
+      mocks.cron.create.mockResolvedValue();
+
       await sut.onConfigInit({ newConfig: defaults });
     });
 
     it('should update cron job if backup is enabled', () => {
+      mocks.cron.update.mockResolvedValue();
+
       sut.onConfigUpdate({
         oldConfig: defaults,
         newConfig: {

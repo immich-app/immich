@@ -34,9 +34,9 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { newUuid } from 'test/small.factory';
+import { automock } from 'test/utils';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -213,7 +213,7 @@ export class TestContext {
   view: ViewRepository;
 
   private constructor(public db: Kysely<DB>) {
-    const logger = newLoggingRepositoryMock() as unknown as LoggingRepository;
+    const logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
     const config = new ConfigRepository();
 
     this.access = new AccessRepository(this.db);
