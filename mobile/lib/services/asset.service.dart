@@ -20,7 +20,8 @@ import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart'
+    hide userServiceProvider;
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -30,7 +31,6 @@ import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:openapi/api.dart';
@@ -45,7 +45,6 @@ final assetServiceProvider = Provider(
     ref.watch(backupAlbumRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
-    ref.watch(userServiceProvider),
     ref.watch(backupServiceProvider),
     ref.watch(albumServiceProvider),
     ref.watch(storeServiceProvider),
@@ -62,7 +61,6 @@ class AssetService {
   final IBackupAlbumRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
-  final UserService _userService;
   final BackupService _backupService;
   final AlbumService _albumService;
   final StoreService _storeService;
@@ -78,7 +76,6 @@ class AssetService {
     this._backupRepository,
     this._apiService,
     this._syncService,
-    this._userService,
     this._backupService,
     this._albumService,
     this._storeService,
@@ -97,7 +94,6 @@ class AssetService {
       users: syncedUsers,
       getChangedAssets: _getRemoteAssetChanges,
       loadAssets: _getRemoteAssets,
-      refreshUsers: _userService.getUsersFromServer,
     );
     debugPrint("refreshRemoteAssets full took ${sw.elapsedMilliseconds}ms");
     return changes;
