@@ -131,7 +131,6 @@
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
       />
-      {console.log(asset.fileCreatedAt)}
     {/each}
   </div>
 
