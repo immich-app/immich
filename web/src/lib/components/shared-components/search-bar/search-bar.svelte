@@ -32,6 +32,7 @@
   let showFilter = $state(false);
   let isSearchSuggestions = $state(false);
   let selectedId: string | undefined = $state();
+  let isFocus = $state(false);
 
   const listboxId = generateId();
 
@@ -150,10 +151,12 @@
 
   const openDropdown = () => {
     showSuggestions = true;
+    isFocus = true;
   };
 
   const closeDropdown = () => {
     showSuggestions = false;
+    isFocus = false;
     searchHistoryBox?.clearSelection();
   };
 
@@ -165,6 +168,18 @@
   function getSearchType(): 'smart' | 'metadata' | 'description' {
     const t = localStorage.getItem('searchQueryType');
     return t === 'smart' || t === 'description' ? t : 'metadata';
+  }
+
+  function getSearchTypeText(): string {
+    const searchType = getSearchType();
+    switch (searchType) {
+      case 'smart':
+        return $t('context');
+      case 'metadata':
+        return $t('filename');
+      case 'description':
+        return $t('description');
+    }
   }
 </script>
 
@@ -237,6 +252,21 @@
     <div class="absolute inset-y-0 {showClearIcon ? 'right-14' : 'right-2'} flex items-center pl-6 transition-all">
       <CircleIconButton title={$t('show_search_options')} icon={mdiTune} onclick={onFilterClick} size="20" />
     </div>
+
+    {#if isFocus}
+      <div
+        class="absolute inset-y-0 flex items-center"
+        class:right-16={isFocus}
+        class:right-28={isFocus && value.length > 0}
+      >
+        <p
+          class="bg-immich-primary text-white dark:bg-immich-dark-primary/90 dark:text-black/75 rounded-full px-3 py-1 text-xs z-10"
+        >
+          {getSearchTypeText()}
+        </p>
+      </div>
+    {/if}
+
     {#if showClearIcon}
       <div class="absolute inset-y-0 right-0 flex items-center pr-2">
         <CircleIconButton onclick={onClear} icon={mdiClose} title={$t('clear')} size="20" />
