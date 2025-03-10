@@ -987,6 +987,7 @@
   "permanently_deleted_asset": "Permanently deleted asset",
   "permanently_deleted_assets_count": "Permanently deleted {count, plural, one {# asset} other {# assets}}",
   "person": "Person",
+  "person_birthdate": "Born on {date}",
   "person_hidden": "{name}{hidden, select, true { (hidden)} other {}}",
   "photo_shared_all_users": "Looks like you shared your photos with all users or you don't have any user to share with.",
   "photos": "Photos",
