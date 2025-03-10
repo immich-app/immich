@@ -6,12 +6,11 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
     as entity;
 import 'package:immich_mobile/interfaces/album.interface.dart';
@@ -21,6 +20,7 @@ import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/models/albums/album_add_asset_response.model.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
@@ -33,6 +33,7 @@ import 'package:logging/logging.dart';
 final albumServiceProvider = Provider(
   (ref) => AlbumService(
     ref.watch(syncServiceProvider),
+    ref.watch(userServiceProvider),
     ref.watch(entityServiceProvider),
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
@@ -44,6 +45,7 @@ final albumServiceProvider = Provider(
 
 class AlbumService {
   final SyncService _syncService;
+  final UserService _userService;
   final EntityService _entityService;
   final IAlbumRepository _albumRepository;
   final IAssetRepository _assetRepository;
@@ -56,6 +58,7 @@ class AlbumService {
 
   AlbumService(
     this._syncService,
+    this._userService,
     this._entityService,
     this._albumRepository,
     this._assetRepository,
@@ -292,7 +295,7 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = Store.get(StoreKey.currentUser).id;
+      final userId = _userService.getMyUser().id;
       if (album.owner.value?.isarId == userId) {
         await _albumApiRepository.delete(album.remoteId!);
       }

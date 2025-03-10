@@ -16,6 +16,7 @@ import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
@@ -400,8 +401,13 @@ class BackgroundService {
         HashService(assetRepository, this, albumMediaRepository);
     EntityService entityService =
         EntityService(assetRepository, userRepository);
+    UserService userService = UserService(
+      userRepository: userRepository,
+      userApiRepository: userApiRepository,
+      storeService: StoreService.I,
+    );
     IPartnerRepository partnerRepository = PartnerRepository(db);
-    SyncService syncSerive = SyncService(
+    SyncService syncService = SyncService(
       hashService,
       entityService,
       albumMediaRepository,
@@ -411,13 +417,14 @@ class BackgroundService {
       exifInfoRepository,
       partnerRepository,
       userRepository,
-      StoreService.I,
+      userService,
       eTagRepository,
       partnerApiRepository,
       userApiRepository,
     );
     AlbumService albumService = AlbumService(
-      syncSerive,
+      syncService,
+      userService,
       entityService,
       albumRepository,
       assetRepository,
