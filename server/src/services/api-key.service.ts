@@ -7,7 +7,7 @@ import { ApiKeyItem } from 'src/types';
 import { isGranted } from 'src/utils/access';
 
 @Injectable()
-export class APIKeyService extends BaseService {
+export class ApiKeyService extends BaseService {
   async create(auth: AuthDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
     const secret = this.cryptoRepository.newPassword(32);
 

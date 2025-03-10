@@ -34,9 +34,9 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { newUuid } from 'test/small.factory';
+import { automock } from 'test/utils';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -55,7 +55,7 @@ class CustomWritable extends Writable {
   }
 }
 
-type Asset = Insertable<Assets>;
+type Asset = Partial<Insertable<Assets>>;
 type User = Partial<Insertable<Users>>;
 type Library = Partial<Insertable<Libraries>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
@@ -176,10 +176,6 @@ export class TestFactory {
   }
 
   async create() {
-    for (const asset of this.assets) {
-      await this.context.createAsset(asset);
-    }
-
     for (const user of this.users) {
       await this.context.createUser(user);
     }
@@ -190,6 +186,10 @@ export class TestFactory {
 
     for (const session of this.sessions) {
       await this.context.createSession(session);
+    }
+
+    for (const asset of this.assets) {
+      await this.context.createAsset(asset);
     }
 
     return this.context;
@@ -228,8 +228,8 @@ export class TestContext {
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
 
-  private constructor(private db: Kysely<DB>) {
-    const logger = newLoggingRepositoryMock() as unknown as LoggingRepository;
+  private constructor(public db: Kysely<DB>) {
+    const logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
     const config = new ConfigRepository();
 
     this.access = new AccessRepository(this.db);

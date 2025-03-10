@@ -295,7 +295,7 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SIDECAR_RECONCILIATION, queue: QueueName.SIDECAR })
   async handleSidecarReconciliation({ id }: JobOf<JobName.SIDECAR_RECONCILIATION>): Promise<JobStatus> {
-    // This job is called when a new sidecar file is found
+    // This job is called by the library service when a new sidecar file is found
     const sidecar = await this.assetRepository.getAssetFileById(id);
 
     if (!sidecar || sidecar.type !== AssetFileType.SIDECAR || !sidecar.libraryId) {
@@ -303,17 +303,13 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    // FIXME: must be case insensitive!
-    if (!sidecar.path.endsWith('.xmp')) {
+    if (!sidecar.path.toLowerCase().endsWith('.xmp')) {
       this.logger.error(`Asset file sidecar path is missing .xmp extension: ${sidecar.path}`);
       return JobStatus.FAILED;
     }
 
     if (!sidecar.assetId) {
-      // Sidecar is currently orphaned, attempt to find the asset it belongs to
-
-      //FIXME: make case insensitive
-      const pathWithoutExtension = sidecar.path.replace(/\.xmp$/i, '');
+      const pathWithoutExtension = sidecar.path.toLowerCase().replace(/\.xmp$/i, '');
 
       const assets = await this.assetRepository.getByLibraryIdAndSidecarPath(sidecar.libraryId, pathWithoutExtension);
 
@@ -331,40 +327,41 @@ export class MetadataService extends BaseService {
         return JobStatus.FAILED;
       }
 
-      // Tenatively assign the sidecar to this asset, but don't store it yet
       sidecar.assetId = assets[0].id;
     }
 
-    let currentSidecarForAsset = await this.assetRepository.getAssetFilesByAssetIdAndType(
+    let currentSidecarsForAsset = await this.assetRepository.getAssetFilesByAssetIdAndType(
       sidecar.assetId,
       AssetFileType.SIDECAR,
     );
 
-    let sidecarUpdated = false;
+    let storeSidecar = false;
 
-    if (currentSidecarForAsset.length === 0) {
-      // No sidecar for this asset, store the new one
-      sidecarUpdated = true;
-    }
-
-    if (currentSidecarForAsset.length > 1) {
+    if (currentSidecarsForAsset.length === 0) {
+      // No existing sidecar for this asset, store the new one
+      storeSidecar = true;
+    } else if (currentSidecarsForAsset.length > 1) {
       this.logger.error(
-        `Multiple sidecars found for asset ${sidecar.assetId}: ${currentSidecarForAsset.map((s) => s.path).join(', ')}`,
+        `Multiple sidecars found for asset ${sidecar.assetId}: ${currentSidecarsForAsset.map((s) => s.path).join(', ')}`,
       );
       return JobStatus.FAILED;
+    } else {
+      const currentSidecar = currentSidecarsForAsset[0];
+      if (currentSidecar.id === sidecar.id) {
+        // Sidecar is already stored, do nothing
+        return JobStatus.SUCCESS;
+      }
+
+      if (sidecar.path.length > currentSidecar.path.length) {
+        this.logger.verbose(
+          `Replacing sidecar ${currentSidecar.path} with ${sidecar.path} for asset ${sidecar.assetId}`,
+        );
+        await this.assetRepository.upsertFile({ ...currentSidecar, assetId: null });
+        storeSidecar = true;
+      }
     }
 
-    if (currentSidecarForAsset[0].id === sidecar.id) {
-      // Sidecar is already stored, do nothing
-      return JobStatus.SUCCESS;
-    }
-
-    if (sidecar.path.length > currentSidecarForAsset[0].path.length) {
-      // New sidecar has precedence, store it
-      sidecarUpdated = true;
-    }
-
-    if (sidecarUpdated) {
+    if (storeSidecar) {
       await this.assetRepository.upsertFile(sidecar);
       await this.assetRepository.update({ id: sidecar.assetId, sidecarPath: sidecar.path });
 
@@ -855,7 +852,7 @@ export class MetadataService extends BaseService {
     }
 
     if (asset.isExternal) {
-      // We can take advantage of a speedup that currently only exists for external libraries but will be added to all assets
+      // We can take advantage of a speedup that currently only exists for external libraries but will be added to all assets later
       const sidecar = await this.assetRepository.getAssetSidecarsByPath(asset.originalPath);
       if (sidecar) {
         this.logger.debug(

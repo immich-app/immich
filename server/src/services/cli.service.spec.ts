@@ -31,6 +31,8 @@ describe(CliService.name, () => {
 
     it('should default to a random password', async () => {
       mocks.user.getAdmin.mockResolvedValue(userStub.admin);
+      mocks.user.update.mockResolvedValue(userStub.admin);
+
       const ask = vitest.fn().mockImplementation(() => {});
 
       const response = await sut.resetAdminPassword(ask);
@@ -45,6 +47,8 @@ describe(CliService.name, () => {
 
     it('should use the supplied password', async () => {
       mocks.user.getAdmin.mockResolvedValue(userStub.admin);
+      mocks.user.update.mockResolvedValue(userStub.admin);
+
       const ask = vitest.fn().mockResolvedValue('new-password');
 
       const response = await sut.resetAdminPassword(ask);

@@ -1,12 +1,18 @@
 import { AssetEntity } from 'src/entities/asset.entity';
 import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType } from 'src/enum';
-import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Index('UQ_assetId_type', ['assetId', 'type'], {
-  unique: true,
-  where: "NOT type = 'sidecar'",
-})
+@Unique('UQ_assetId_type', ['assetId', 'type'])
 @Index('UQ_libraryId_path', ['libraryId', 'path'], {
   unique: true,
   where: '"libraryId" IS NOT NULL',

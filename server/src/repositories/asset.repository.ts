@@ -583,7 +583,7 @@ export class AssetRepository {
     return this.getById(asset.id, { exifInfo: true, faces: { person: true } }) as Promise<AssetEntity>;
   }
 
-  async remove(asset: AssetEntity): Promise<void> {
+  async remove(asset: { id: string }): Promise<void> {
     await this.db.deleteFrom('assets').where('id', '=', asUuid(asset.id)).execute();
   }
 
@@ -1000,8 +1000,8 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
-      .where('isVisible', '=', true)
-      .where('updatedAt', '<=', updatedUntil)
+      .where('assets.isVisible', '=', true)
+      .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
       .limit(limit)
@@ -1028,8 +1028,8 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
-      .where('isVisible', '=', true)
-      .where('updatedAt', '>', options.updatedAfter)
+      .where('assets.isVisible', '=', true)
+      .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
   }

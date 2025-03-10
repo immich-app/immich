@@ -36,6 +36,9 @@ describe(LibraryService.name, () => {
 
   describe('onConfigInit', () => {
     it('should init cron job and handle config changes', async () => {
+      mocks.cron.create.mockResolvedValue();
+      mocks.cron.update.mockResolvedValue();
+
       await sut.onConfigInit({ newConfig: defaults });
 
       expect(mocks.cron.create).toHaveBeenCalled();
@@ -65,6 +68,7 @@ describe(LibraryService.name, () => {
       mocks.library.get.mockImplementation((id) =>
         Promise.resolve([library1, library2].find((library) => library.id === id)),
       );
+      mocks.cron.create.mockResolvedValue();
 
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
 
@@ -74,6 +78,8 @@ describe(LibraryService.name, () => {
     });
 
     it('should not initialize watcher when watching is disabled', async () => {
+      mocks.cron.create.mockResolvedValue();
+
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchDisabled as SystemConfig });
 
       expect(mocks.storage.watch).not.toHaveBeenCalled();
@@ -99,6 +105,8 @@ describe(LibraryService.name, () => {
   describe('onConfigUpdateEvent', () => {
     beforeEach(async () => {
       mocks.database.tryLock.mockResolvedValue(true);
+      mocks.cron.create.mockResolvedValue();
+
       await sut.onConfigInit({ newConfig: defaults });
     });
 
@@ -111,6 +119,9 @@ describe(LibraryService.name, () => {
 
     it('should update cron job and enable watching', async () => {
       mocks.library.getAll.mockResolvedValue([]);
+      mocks.cron.create.mockResolvedValue();
+      mocks.cron.update.mockResolvedValue();
+
       await sut.onConfigUpdate({
         newConfig: systemConfigStub.libraryScanAndWatch as SystemConfig,
         oldConfig: defaults,
@@ -125,6 +136,9 @@ describe(LibraryService.name, () => {
 
     it('should update cron job and disable watching', async () => {
       mocks.library.getAll.mockResolvedValue([]);
+      mocks.cron.create.mockResolvedValue();
+      mocks.cron.update.mockResolvedValue();
+
       await sut.onConfigUpdate({
         newConfig: systemConfigStub.libraryScanAndWatch as SystemConfig,
         oldConfig: defaults,
@@ -640,6 +654,7 @@ describe(LibraryService.name, () => {
 
       const mockClose = vitest.fn();
       mocks.storage.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
+      mocks.cron.create.mockResolvedValue();
 
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
       await sut.delete(library.id);
@@ -785,6 +800,7 @@ describe(LibraryService.name, () => {
         mocks.library.create.mockResolvedValue(library);
         mocks.library.get.mockResolvedValue(library);
         mocks.library.getAll.mockResolvedValue([]);
+        mocks.cron.create.mockResolvedValue();
 
         await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
         await sut.create({ ownerId: authStub.admin.user.id, importPaths: library.importPaths });
@@ -852,6 +868,7 @@ describe(LibraryService.name, () => {
   describe('update', () => {
     beforeEach(async () => {
       mocks.library.getAll.mockResolvedValue([]);
+      mocks.cron.create.mockResolvedValue();
 
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
     });
@@ -898,6 +915,8 @@ describe(LibraryService.name, () => {
 
     describe('watching disabled', () => {
       beforeEach(async () => {
+        mocks.cron.create.mockResolvedValue();
+
         await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchDisabled as SystemConfig });
       });
 
@@ -915,6 +934,8 @@ describe(LibraryService.name, () => {
     describe('watching enabled', () => {
       beforeEach(async () => {
         mocks.library.getAll.mockResolvedValue([]);
+        mocks.cron.create.mockResolvedValue();
+
         await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
       });
 
@@ -1087,6 +1108,7 @@ describe(LibraryService.name, () => {
 
       const mockClose = vitest.fn();
       mocks.storage.watch.mockImplementation(makeMockWatcher({ close: mockClose }));
+      mocks.cron.create.mockResolvedValue();
 
       await sut.onConfigInit({ newConfig: systemConfigStub.libraryWatchEnabled as SystemConfig });
       await sut.onShutdown();

@@ -1,5 +1,5 @@
 import { AssetEntity } from 'src/entities/asset.entity';
-import { Index, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+import { Index, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { Column } from 'typeorm/decorator/columns/Column.js';
 import { Entity } from 'typeorm/decorator/entity/Entity.js';
 
@@ -11,6 +11,13 @@ export class ExifEntity {
 
   @PrimaryColumn()
   assetId!: string;
+
+  @UpdateDateColumn({ type: 'timestamptz', default: () => 'clock_timestamp()' })
+  updatedAt?: Date;
+
+  @Index('IDX_asset_exif_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
 
   /* General info */
   @Column({ type: 'text', default: '' })

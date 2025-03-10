@@ -3,12 +3,14 @@ import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
-import { newFakeLoggingRepository } from 'test/repositories/logger.repository.mock';
-import { newRandomImage, newTestService, ServiceMocks } from 'test/utils';
+import { automock, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
-const metadataRepository = new MetadataRepository(newFakeLoggingRepository());
+const metadataRepository = new MetadataRepository(
+  automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
+);
 
 const createTestFile = async (exifData: Record<string, any>) => {
   const data = newRandomImage();

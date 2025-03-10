@@ -2,7 +2,7 @@ import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType } from 'src/enum';
 
 export const assetFileStub = {
-  xmpSidecarWithExtension: Object.freeze<AssetFileEntity>({
+  sidecarWithExtension: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar',
     assetId: 'asset-id',
     type: AssetFileType.SIDECAR,
@@ -12,7 +12,17 @@ export const assetFileStub = {
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
     libraryId: 'library-id',
   }),
-  sidecarMissingExtension: Object.freeze<AssetFileEntity>({
+  sidecarWithoutExtension: Object.freeze<AssetFileEntity>({
+    id: 'xmp-sidecar-without-extension',
+    assetId: 'asset-id',
+    type: AssetFileType.SIDECAR,
+    path: 'upload/library/IMG_123.xmp',
+    createdAt: new Date('2023-02-23T05:06:29.716Z'),
+    updatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    libraryId: 'library-id',
+  }),
+  sidecarWithoutXMP: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-without-extension',
     assetId: 'asset-id',
     type: AssetFileType.SIDECAR,
