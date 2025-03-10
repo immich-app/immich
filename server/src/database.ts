@@ -10,6 +10,20 @@ export type AuthUser = {
   quotaSizeInBytes: number | null;
 };
 
+export type Library = {
+  id: string;
+  ownerId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  updateId: string;
+  name: string;
+  importPaths: string[];
+  exclusionPatterns: string[];
+  deletedAt: Date | null;
+  refreshedAt: Date | null;
+  assets?: Asset[];
+};
+
 export type AuthApiKey = {
   id: string;
   permissions: Permission[];
