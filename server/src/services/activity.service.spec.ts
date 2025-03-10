@@ -146,6 +146,7 @@ describe(ActivityService.name, () => {
       const activity = factory.activity();
 
       mocks.access.activity.checkOwnerAccess.mockResolvedValue(new Set([activity.id]));
+      mocks.activity.delete.mockResolvedValue();
 
       await sut.delete(factory.auth(), activity.id);
 
@@ -156,6 +157,7 @@ describe(ActivityService.name, () => {
       const activity = factory.activity();
 
       mocks.access.activity.checkAlbumOwnerAccess.mockResolvedValue(new Set([activity.id]));
+      mocks.activity.delete.mockResolvedValue();
 
       await sut.delete(factory.auth(), activity.id);
 

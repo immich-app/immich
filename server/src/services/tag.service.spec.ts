@@ -87,9 +87,12 @@ describe(TagService.name, () => {
 
     it('should create a new tag with optional color', async () => {
       mocks.tag.create.mockResolvedValue(tagStub.colorCreate);
+      mocks.tag.getByValue.mockResolvedValue(void 0);
+
       await expect(sut.create(authStub.admin, { name: 'tag-1', color: '#000000' })).resolves.toEqual(
         tagResponseStub.color1,
       );
+
       expect(mocks.tag.create).toHaveBeenCalledWith({
         userId: authStub.admin.user.id,
         value: 'tag-1',
@@ -168,6 +171,8 @@ describe(TagService.name, () => {
 
     it('should remove a tag', async () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
+      mocks.tag.delete.mockResolvedValue();
+
       await sut.remove(authStub.admin, 'tag-1');
       expect(mocks.tag.delete).toHaveBeenCalledWith('tag-1');
     });
@@ -223,6 +228,7 @@ describe(TagService.name, () => {
     it('should accept accept ids that are new and reject the rest', async () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
+      mocks.tag.addAssetIds.mockResolvedValue();
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-2']));
 
       await expect(
@@ -242,6 +248,8 @@ describe(TagService.name, () => {
   describe('removeAssets', () => {
     it('should throw an error for an invalid id', async () => {
       mocks.tag.getAssetIds.mockResolvedValue(new Set());
+      mocks.tag.removeAssetIds.mockResolvedValue();
+
       await expect(sut.removeAssets(authStub.admin, 'tag-1', { ids: ['asset-1'] })).resolves.toEqual([
         { id: 'asset-1', success: false, error: 'not_found' },
       ]);
@@ -250,6 +258,7 @@ describe(TagService.name, () => {
     it('should accept accept ids that are tagged and reject the rest', async () => {
       mocks.tag.get.mockResolvedValue(tagStub.tag);
       mocks.tag.getAssetIds.mockResolvedValue(new Set(['asset-1']));
+      mocks.tag.removeAssetIds.mockResolvedValue();
 
       await expect(
         sut.removeAssets(authStub.admin, 'tag-1', {
@@ -267,7 +276,10 @@ describe(TagService.name, () => {
 
   describe('handleTagCleanup', () => {
     it('should delete empty tags', async () => {
+      mocks.tag.deleteEmptyTags.mockResolvedValue();
+
       await expect(sut.handleTagCleanup()).resolves.toBe(JobStatus.SUCCESS);
+
       expect(mocks.tag.deleteEmptyTags).toHaveBeenCalled();
     });
   });
