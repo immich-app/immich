@@ -65,7 +65,7 @@
         widthStyle="100%"
       />
       {#if person.isFavorite}
-        <div class="absolute top-2 left-2">
+        <div class="absolute top-4 left-4">
           <Icon path={mdiHeart} size="24" class="text-white" />
         </div>
       {/if}
