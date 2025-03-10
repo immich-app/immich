@@ -20,7 +20,7 @@ final storeRepositoryProvider = Provider<IStoreRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef StoreRepositoryRef = ProviderRef<IStoreRepository>;
+typedef StoreRepositoryRef = Ref<IStoreRepository>;
 String _$storeServiceHash() => r'a072a39c42ad1a4d1133706f408c89c2415ba35e';
 
 /// See also [storeService].
@@ -34,6 +34,6 @@ final storeServiceProvider = Provider<StoreService>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef StoreServiceRef = ProviderRef<StoreService>;
+typedef StoreServiceRef = Ref<StoreService>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
