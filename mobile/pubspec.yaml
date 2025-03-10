@@ -14,7 +14,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  path_provider_ios:
   photo_manager: ^3.6.1
   photo_manager_image_provider: ^2.2.0
   flutter_hooks: ^0.21.2
@@ -39,7 +38,8 @@ dependencies:
   flutter_displaymode: ^0.6.0
   scrollable_positioned_list: ^0.3.8
   path: ^1.8.3
-  path_provider: ^2.1.2
+  path_provider: ^2.1.5
+  path_provider_ios: ^2.0.11
   collection: ^1.18.0
   http_parser: ^4.0.2
   flutter_web_auth_2: ^5.0.0-alpha.0
