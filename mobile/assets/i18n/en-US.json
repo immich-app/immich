@@ -21,6 +21,8 @@
   "advanced_settings_tile_title": "Advanced",
   "advanced_settings_troubleshooting_subtitle": "Enable additional features for troubleshooting",
   "advanced_settings_troubleshooting_title": "Troubleshooting",
+  "advanced_settings_sync_remote_deletions_title": "Sync remote deletions",
+  "advanced_settings_sync_remote_deletions_subtitle": "Automatically delete or restore an asset on this device when that action is taken on the web",
   "album_info_card_backup_album_excluded": "EXCLUDED",
   "album_info_card_backup_album_included": "INCLUDED",
   "albums": "Albums",

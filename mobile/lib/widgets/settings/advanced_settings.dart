@@ -47,13 +47,13 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
-      SettingsSwitchListTile(
-        enabled: true,
-        valueNotifier: manageLocalMediaAndroid,
-        title: "Sync remote deletions",
-        subtitle:
-            "Automatically delete or restore an asset on this device when that action is taken on the server",
-      ),
+      if (Platform.isAndroid)
+        SettingsSwitchListTile(
+          enabled: true,
+          valueNotifier: manageLocalMediaAndroid,
+          title: "advanced_settings_sync_remote_deletions_title".tr(),
+          subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+        ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(args: [logLevel]),
         valueNotifier: levelId,
