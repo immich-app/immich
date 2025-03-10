@@ -19,20 +19,16 @@ FROM builder-${DEVICE} AS builder
 
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=true \
-    VIRTUAL_ENV="/opt/venv" \
-    PATH="/opt/venv/bin:${PATH}"
+    PYTHONUNBUFFERED=1
+WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-RUN pip install --upgrade pip && pip install poetry
-RUN poetry config installer.max-workers 10 && \
-    poetry config virtualenvs.create false
-RUN python3 -m venv /opt/venv
-
-COPY poetry.lock pyproject.toml ./
-RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress
 
 FROM python:3.11-slim-bookworm@sha256:614c8691ab74150465ec9123378cd4dde7a6e57be9e558c3108df40664667a4c AS prod-cpu
 
@@ -93,7 +89,7 @@ WORKDIR /usr/src/app
 ENV TRANSFORMERS_CACHE=/cache \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH" \
+    PATH="/usr/src/app/.venv/bin:$PATH" \
     PYTHONPATH=/usr/src \
     DEVICE=${DEVICE}
 
@@ -102,7 +98,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo "fs.suid_dumpable 0" >> /etc/sysctl.conf && \
     echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
-COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /usr/src/app/.venv /usr/src/app/.venv
 COPY ann/ann.py /usr/src/ann/ann.py
 COPY start.sh log_conf.json gunicorn_conf.py ./
 COPY app .

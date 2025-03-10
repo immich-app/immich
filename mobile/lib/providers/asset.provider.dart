@@ -31,7 +31,7 @@ class AssetNotifier extends StateNotifier<bool> {
   final SyncService _syncService;
   final ETagService _etagService;
   final ExifService _exifService;
-  final StateNotifierProviderRef _ref;
+  final Ref _ref;
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;

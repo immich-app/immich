@@ -1,3 +1,4 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/services/person.service.dart';
@@ -9,7 +10,7 @@ part 'people.provider.g.dart';
 
 @riverpod
 Future<List<Person>> getAllPeople(
-  GetAllPeopleRef ref,
+  Ref ref,
 ) async {
   final PersonService personService = ref.read(personServiceProvider);
 
@@ -19,7 +20,7 @@ Future<List<Person>> getAllPeople(
 }
 
 @riverpod
-Future<RenderList> personAssets(PersonAssetsRef ref, String personId) async {
+Future<RenderList> personAssets(Ref ref, String personId) async {
   final PersonService personService = ref.read(personServiceProvider);
   final assets = await personService.getPersonAssets(personId);
 
@@ -31,7 +32,7 @@ Future<RenderList> personAssets(PersonAssetsRef ref, String personId) async {
 
 @riverpod
 Future<bool> updatePersonName(
-  UpdatePersonNameRef ref,
+  Ref ref,
   String personId,
   String updatedName,
 ) async {

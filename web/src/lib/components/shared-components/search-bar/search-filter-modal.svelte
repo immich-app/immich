@@ -2,7 +2,7 @@
   import type { SearchLocationFilter } from './search-location-section.svelte';
   import type { SearchDisplayFilters } from './search-display-section.svelte';
   import type { SearchDateFilter } from './search-date-section.svelte';
-  import { MediaType } from '$lib/constants';
+  import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
 
   export type SearchFilter = {
     query: string;
@@ -55,9 +55,18 @@
     return value === null ? undefined : value;
   }
 
+  function storeQueryType(type: SearchFilter['queryType']) {
+    localStorage.setItem('searchQueryType', type);
+  }
+
+  function defaultQueryType(): QueryType {
+    const storedQueryType = localStorage.getItem('searchQueryType') as QueryType;
+    return validQueryTypes.has(storedQueryType) ? storedQueryType : QueryType.SMART;
+  }
+
   let filter: SearchFilter = $state({
     query: 'query' in searchQuery ? searchQuery.query : searchQuery.originalFileName || '',
-    queryType: 'smart',
+    queryType: defaultQueryType(),
     personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
     tagIds: new SvelteSet('tagIds' in searchQuery ? searchQuery.tagIds : []),
     location: {
@@ -90,7 +99,7 @@
   const resetForm = () => {
     filter = {
       query: '',
-      queryType: 'smart',
+      queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
       location: {},
@@ -142,8 +151,14 @@
 
   const onsubmit = (event: Event) => {
     event.preventDefault();
+    storeQueryType(filter.queryType);
     search();
   };
+
+  // Will be called whenever queryType changes, not just onsubmit.
+  $effect(() => {
+    storeQueryType(filter.queryType);
+  });
 </script>
 
 <FullScreenModal icon={mdiTune} width="extra-wide" title={$t('search_options')} {onClose}>

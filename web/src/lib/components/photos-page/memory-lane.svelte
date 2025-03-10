@@ -50,10 +50,12 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
+              title={$t('previous')}
+              aria-label={$t('previous')}
               onclick={scrollLeft}
             >
-              <Icon path={mdiChevronLeft} size="36" />
-            </button>
+              <Icon path={mdiChevronLeft} size="36" ariaLabel={$t('previous')} /></button
+            >
           </div>
         {/if}
         {#if canScrollRight}
@@ -61,10 +63,12 @@
             <button
               type="button"
               class="rounded-full border border-gray-500 bg-gray-100 p-2 text-gray-500 opacity-50 hover:opacity-100"
+              title={$t('next')}
+              aria-label={$t('next')}
               onclick={scrollRight}
             >
-              <Icon path={mdiChevronRight} size="36" />
-            </button>
+              <Icon path={mdiChevronRight} size="36" ariaLabel={$t('next')} /></button
+            >
           </div>
         {/if}
       </div>

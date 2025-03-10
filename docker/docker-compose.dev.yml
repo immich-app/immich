@@ -25,7 +25,7 @@ services:
       context: ../
       dockerfile: server/Dockerfile
       target: dev
-    restart: always
+    restart: unless-stopped
     volumes:
       - ../server:/usr/src/app
       - ../open-api:/usr/src/open-api
