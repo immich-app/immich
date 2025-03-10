@@ -241,7 +241,7 @@
           class="absolute z-30 {className} top-[41px]"
           style:cursor="unset"
           style:width="{width}px"
-          style:height="{height-41}px"
+          style:height="{height - 41}px"
           href={currentUrlReplaceAssetId(asset.id)}
           onclick={(evt) => evt.preventDefault()}
           tabindex={0}
