@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Adresa URL vydavateľa",
     "oauth_mobile_redirect_uri": "URI mobilného presmerovania",
     "oauth_mobile_redirect_uri_override": "Prepísanie URI mobilného presmerovania",
-    "oauth_mobile_redirect_uri_override_description": "Povoľte, keď poskytovateľ protokolu OAuth nepovoľuje identifikátor URI pre mobilné zariadenia, napríklad '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Povoľte, keď poskytovateľ protokolu OAuth nepovoľuje identifikátor URI pre mobilné zariadenia, napríklad ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritmus podpisovania profilu",
     "oauth_profile_signing_algorithm_description": "Algoritmus používaný na prihlásenie užívateľského profilu.",
     "oauth_scope": "Rozsah",

@@ -187,7 +187,7 @@
     "oauth_issuer_url": "簽發者網址",
     "oauth_mobile_redirect_uri": "移動端重定向 URI",
     "oauth_mobile_redirect_uri_override": "移動端重定向 URI 覆蓋",
-    "oauth_mobile_redirect_uri_override_description": "當 OAuth 提供者不允許使用行動 URI（如「'{callback}'」）時啟用",
+    "oauth_mobile_redirect_uri_override_description": "當 OAuth 提供者不允許使用行動 URI（如「{callback}」）時啟用",
     "oauth_profile_signing_algorithm": "設定檔簽章演算法",
     "oauth_profile_signing_algorithm_description": "用於簽署使用者設定檔的演算法。",
     "oauth_scope": "範圍",

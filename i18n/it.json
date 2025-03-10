@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL emittente",
     "oauth_mobile_redirect_uri": "URI reindirizzamento mobile",
     "oauth_mobile_redirect_uri_override": "Sovrascrivi URI reindirizzamento cellulare",
-    "oauth_mobile_redirect_uri_override_description": "Abilita quando il gestore OAuth non consente un URL come '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Abilita quando il gestore OAuth non consente un URL come ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritmo firma profilo",
     "oauth_profile_signing_algorithm_description": "L'algoritmo usato per firmare il profilo utente.",
     "oauth_scope": "Ambito di autorizzazione",

@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Utgiverens URL",
     "oauth_mobile_redirect_uri": "Mobil omdirigerings-URI",
     "oauth_mobile_redirect_uri_override": "Mobil omdirigerings-URI overstyring",
-    "oauth_mobile_redirect_uri_override_description": "Aktiver når OAuth-leverandøren ikke tillater en mobil URI, som '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktiver når OAuth-leverandøren ikke tillater en mobil URI, som ''{callback}''",
     "oauth_profile_signing_algorithm": "Profilsigneringsalgoritme",
     "oauth_profile_signing_algorithm_description": "Algoritme brukt for å signere brukerprofilen.",
     "oauth_scope": "Omfang",

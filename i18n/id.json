@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL Penerbit",
     "oauth_mobile_redirect_uri": "URI pengalihan ponsel",
     "oauth_mobile_redirect_uri_override": "Penimpaan URI penerusan ponsel",
-    "oauth_mobile_redirect_uri_override_description": "Aktifkan ketika provider OAuth tidak mengizinkan tautan mobile, seperti '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktifkan ketika provider OAuth tidak mengizinkan tautan mobile, seperti ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritma penandatanganan profil",
     "oauth_profile_signing_algorithm_description": "Algoritma yang digunakan untuk menandatangani profil pengguna.",
     "oauth_scope": "Cakupan",

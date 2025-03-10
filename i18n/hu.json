@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Kibocsátó URL",
     "oauth_mobile_redirect_uri": "Mobil átirányítási URI",
     "oauth_mobile_redirect_uri_override": "Mobil átirányítási URI felülírás",
-    "oauth_mobile_redirect_uri_override_description": "Engedélyezd, ha az OAuth szolgáltató tiltja a mobil URI-t, mint például '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Engedélyezd, ha az OAuth szolgáltató tiltja a mobil URI-t, mint például ''{callback}''",
     "oauth_profile_signing_algorithm": "Profil aláíró algoritmus",
     "oauth_profile_signing_algorithm_description": "A felhasználói profil aláírásához használt algoritmus.",
     "oauth_scope": "Hatókör",

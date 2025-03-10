@@ -187,7 +187,7 @@
     "oauth_issuer_url": "כתובת אתר המנפיק",
     "oauth_mobile_redirect_uri": "URI להפניה מחדש בנייד",
     "oauth_mobile_redirect_uri_override": "עקיפת URI להפניה מחדש בנייד",
-    "oauth_mobile_redirect_uri_override_description": "אפשר כאשר ספק OAuth לא מאפשר כתובת URI לנייד, כמו '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "אפשר כאשר ספק OAuth לא מאפשר כתובת URI לנייד, כמו ''{callback}''",
     "oauth_profile_signing_algorithm": "אלגוריתם חתימת פרופיל",
     "oauth_profile_signing_algorithm_description": "אלגוריתם המשמש לחתימה על פרופיל המשתמש.",
     "oauth_scope": "רמת הרשאה",

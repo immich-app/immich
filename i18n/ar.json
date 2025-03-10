@@ -187,7 +187,7 @@
     "oauth_issuer_url": "عنوان URL الخاص بجهة الإصدار",
     "oauth_mobile_redirect_uri": "عنوان URI لإعادة التوجيه على الهاتف",
     "oauth_mobile_redirect_uri_override": "تجاوز عنوان URI لإعادة التوجيه على الهاتف",
-    "oauth_mobile_redirect_uri_override_description": "قم بتفعيله عندما لا يسمح موفر OAuth بمعرف URI للجوال، مثل '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "قم بتفعيله عندما لا يسمح موفر OAuth بمعرف URI للجوال، مثل ''{callback}''",
     "oauth_profile_signing_algorithm": "خوارزمية توقيع الملف الشخصي",
     "oauth_profile_signing_algorithm_description": "الخوارزمية المستخدمة للتوقيع على ملف تعريف المستخدم.",
     "oauth_scope": "النطاق",

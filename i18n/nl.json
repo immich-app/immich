@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Uitgever URL",
     "oauth_mobile_redirect_uri": "Omleidings URI voor mobiel",
     "oauth_mobile_redirect_uri_override": "Omleidings URI voor mobiele app overschrijven",
-    "oauth_mobile_redirect_uri_override_description": "Inschakelen wanneer de OAuth-provider geen mobiele URI toestaat, zoals '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Inschakelen wanneer de OAuth-provider geen mobiele URI toestaat, zoals ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritme voor profielondertekening",
     "oauth_profile_signing_algorithm_description": "Algoritme voor het ondertekenen van het gebruikersprofiel.",
     "oauth_scope": "Scope",

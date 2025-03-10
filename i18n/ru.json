@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL-адрес эмитента",
     "oauth_mobile_redirect_uri": "URI редиректа для мобильных",
     "oauth_mobile_redirect_uri_override": "Перенаправление URI для мобильных устройств",
-    "oauth_mobile_redirect_uri_override_description": "Включите, если поставщик OAuth не разрешает использование мобильного URI, например, '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Включите, если поставщик OAuth не разрешает использование мобильного URI, например, ''{callback}''",
     "oauth_profile_signing_algorithm": "Алгоритм подписи профиля",
     "oauth_profile_signing_algorithm_description": "Алгоритм, используемый для входа в профиль пользователя.",
     "oauth_scope": "Разрешения",

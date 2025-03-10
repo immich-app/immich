@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL Pengeluar",
     "oauth_mobile_redirect_uri": "URI ubah hala mudah alih",
     "oauth_mobile_redirect_uri_override": "Penggantian URI ubah hala mudah alih",
-    "oauth_mobile_redirect_uri_override_description": "Aktifkan apabila pembekal OAuth tidak membenarkan URI mudah alih, seperti '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktifkan apabila pembekal OAuth tidak membenarkan URI mudah alih, seperti ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritma tandatangan profil",
     "oauth_profile_signing_algorithm_description": "Algoritma digunakan untuk menandatangani profil pengguna.",
     "oauth_scope": "Skop",

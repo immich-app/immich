@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Adres URL wydawcy",
     "oauth_mobile_redirect_uri": "Mobilny adres zwrotny",
     "oauth_mobile_redirect_uri_override": "Zapasowy URI przekierowania mobilnego",
-    "oauth_mobile_redirect_uri_override_description": "Włącz, gdy dostawca OAuth nie pozwala na mobilne identyfikatory URI typu '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Włącz, gdy dostawca OAuth nie pozwala na mobilne identyfikatory URI typu ''{callback}''",
     "oauth_profile_signing_algorithm": "Algorytm logowania do profilu",
     "oauth_profile_signing_algorithm_description": "Algorytm używany podczas logowania do profilu użytkownika.",
     "oauth_scope": "Zakres",

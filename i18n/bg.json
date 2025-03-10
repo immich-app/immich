@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL на издателя",
     "oauth_mobile_redirect_uri": "URI за мобилно пренасочване",
     "oauth_mobile_redirect_uri_override": "URI пренасочване за мобилни устройства",
-    "oauth_mobile_redirect_uri_override_description": "Разреши когато доставчика за OAuth удостоверяване не позволява за мобилни URI идентификатори, като '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Разреши когато доставчика за OAuth удостоверяване не позволява за мобилни URI идентификатори, като ''{callback}''",
     "oauth_profile_signing_algorithm": "Алгоритъм за създаване на профили",
     "oauth_profile_signing_algorithm_description": "Алгоритъм използван за вписване на потребителски профил.",
     "oauth_scope": "Област/обхват на приложение",

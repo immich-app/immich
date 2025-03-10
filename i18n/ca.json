@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL de l'emissor",
     "oauth_mobile_redirect_uri": "URI de redirecció mòbil",
     "oauth_mobile_redirect_uri_override": "Sobreescriu l'URI de redirecció mòbil",
-    "oauth_mobile_redirect_uri_override_description": "Habilita quan el proveïdor d'OAuth no permet una URI mòbil, com ara '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Habilita quan el proveïdor d'OAuth no permet una URI mòbil, com ara ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritme de signatura del perfil",
     "oauth_profile_signing_algorithm_description": "Algoritme utilitzat per signar el perfil d’usuari.",
     "oauth_scope": "Abast",

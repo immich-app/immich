@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Väljastaja URL",
     "oauth_mobile_redirect_uri": "Mobiilne ümbersuunamise URI",
     "oauth_mobile_redirect_uri_override": "Mobiilse ümbersuunamise URI ülekirjutamine",
-    "oauth_mobile_redirect_uri_override_description": "Lülita sisse, kui OAuth pakkuja ei luba mobiilset URI-d, näiteks '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Lülita sisse, kui OAuth pakkuja ei luba mobiilset URI-d, näiteks ''{callback}''",
     "oauth_profile_signing_algorithm": "Profiili allkirjastamise algoritm",
     "oauth_profile_signing_algorithm_description": "Algoritm, mida kasutatakse kasutajaprofiili allkirjastamiseks.",
     "oauth_scope": "Skoop",

@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Yayınlayıcı URL",
     "oauth_mobile_redirect_uri": "Mobil yönlendirme URL'si",
     "oauth_mobile_redirect_uri_override": "Mobilde zorla kullanılacak Yönlendirme Adresi",
-    "oauth_mobile_redirect_uri_override_description": "Mobil URI'ye izin vermeyen OAuth sağlayıcısı olduğunda etkinleştir, örneğin '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Mobil URI'ye izin vermeyen OAuth sağlayıcısı olduğunda etkinleştir, örneğin ''{callback}''",
     "oauth_profile_signing_algorithm": "Profil imzalama algoritması",
     "oauth_profile_signing_algorithm_description": "Kullanıcının profilini imzalarken kullanılacak güvenlik algoritması.",
     "oauth_scope": "Kapsam",

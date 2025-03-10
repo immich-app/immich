@@ -187,7 +187,7 @@
     "oauth_issuer_url": "УРЛ издавача",
     "oauth_mobile_redirect_uri": "УРИ за преусмеравање мобилних уређаја",
     "oauth_mobile_redirect_uri_override": "Замена УРИ-ја мобилног преусмеравања",
-    "oauth_mobile_redirect_uri_override_description": "Омогући када ОАuth добављач (provider) не дозвољава мобилни URI, као што је '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Омогући када ОАuth добављач (provider) не дозвољава мобилни URI, као што је ''{callback}''",
     "oauth_profile_signing_algorithm": "Алгоритам за потписивање профила",
     "oauth_profile_signing_algorithm_description": "Алгоритам који се користи за потписивање корисничког профила.",
     "oauth_scope": "Обим",

@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Aussteller-URL",
     "oauth_mobile_redirect_uri": "Mobile Umleitungs-URI",
     "oauth_mobile_redirect_uri_override": "Mobile Umleitungs-URI überschreiben",
-    "oauth_mobile_redirect_uri_override_description": "Einschalten, wenn der OAuth-Anbieter keine mobile URI wie '{callback}' erlaubt",
+    "oauth_mobile_redirect_uri_override_description": "Einschalten, wenn der OAuth-Anbieter keine mobile URI wie ''{callback}'' erlaubt",
     "oauth_profile_signing_algorithm": "Algorithmus zur Profilsignierung",
     "oauth_profile_signing_algorithm_description": "Dieser Algorithmus wird für die Signatur des Benutzerprofils verwendet.",
     "oauth_scope": "Umfang",

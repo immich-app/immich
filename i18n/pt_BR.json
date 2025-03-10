@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL do emissor",
     "oauth_mobile_redirect_uri": "URI de redirecionamento móvel",
     "oauth_mobile_redirect_uri_override": "Substituição de URI de redirecionamento móvel",
-    "oauth_mobile_redirect_uri_override_description": "Ative quando o provedor do OAuth não suportar uma URI de aplicativo, por exemplo '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Ative quando o provedor do OAuth não suportar uma URI de aplicativo, por exemplo ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritmo de assinatura de perfis",
     "oauth_profile_signing_algorithm_description": "Algoritmo usado para assinar o perfil do usuário.",
     "oauth_scope": "Escopo",

@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Utfärdar-URL",
     "oauth_mobile_redirect_uri": "Telefonomdirigernings-URI",
     "oauth_mobile_redirect_uri_override": "Telefonomdirigerings-URI överrskridning",
-    "oauth_mobile_redirect_uri_override_description": "Aktivera om OAuth-leverantören inte tillåter mobila URI:er, så som '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Aktivera om OAuth-leverantören inte tillåter mobila URI:er, så som ''{callback}''",
     "oauth_profile_signing_algorithm": "Profilsigneringsalgorithm",
     "oauth_profile_signing_algorithm_description": "Algorithm som används för att signera användarprofilen.",
     "oauth_scope": "Omfattning",

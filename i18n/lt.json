@@ -182,7 +182,7 @@
     "oauth_issuer_url": "Teikėjo URL",
     "oauth_mobile_redirect_uri": "Mobiliojo peradresavimo URI",
     "oauth_mobile_redirect_uri_override": "Mobiliojo peradresavimo URI pakeitimas",
-    "oauth_mobile_redirect_uri_override_description": "Įjunkite, kai OAuth teikėjas nepalaiko mobiliojo URI, tokio kaip '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Įjunkite, kai OAuth teikėjas nepalaiko mobiliojo URI, tokio kaip ''{callback}''",
     "oauth_profile_signing_algorithm": "Profilio registracijos algoritmas",
     "oauth_profile_signing_algorithm_description": "Algoritmas naudojamas vartotojo profilio registracijai.",
     "oauth_scope": "Apimtis",

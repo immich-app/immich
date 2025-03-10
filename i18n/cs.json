@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL vydavatele",
     "oauth_mobile_redirect_uri": "Mobilní přesměrování URI",
     "oauth_mobile_redirect_uri_override": "Přepsat mobilní přesměrování URI",
-    "oauth_mobile_redirect_uri_override_description": "Povolit, pokud poskytovatel OAuth nepovoluje mobilní URI, například '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Povolit, pokud poskytovatel OAuth nepovoluje mobilní URI, například ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritmus podepisování profilu",
     "oauth_profile_signing_algorithm_description": "Algoritmus použitý k podepsání profilu uživatele.",
     "oauth_scope": "Rozsah",

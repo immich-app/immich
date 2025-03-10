@@ -187,7 +187,7 @@
     "oauth_issuer_url": "URL видачі",
     "oauth_mobile_redirect_uri": "URI мобільного перенаправлення",
     "oauth_mobile_redirect_uri_override": "Перевизначення URI мобільного перенаправлення",
-    "oauth_mobile_redirect_uri_override_description": "Увімкнути, якщо OAuth-провайдер не підтримує мобільний URI, як '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Увімкнути, якщо OAuth-провайдер не підтримує мобільний URI, як ''{callback}''",
     "oauth_profile_signing_algorithm": "Алгоритм підписання профілю",
     "oauth_profile_signing_algorithm_description": "Алгоритм, який використовується для підпису профілю користувача.",
     "oauth_scope": "Масштаб",

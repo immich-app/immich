@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Διεύθυνση URL εκδότη",
     "oauth_mobile_redirect_uri": "URI Ανακατεύθυνσης για κινητά τηλέφωνα",
     "oauth_mobile_redirect_uri_override": "Προσπέλαση URI ανακατεύθυνσης για κινητά τηλέφωνα",
-    "oauth_mobile_redirect_uri_override_description": "Ενεργοποιήστε το όταν ο πάροχος OAuth δεν επιτρέπει μια URI για κινητά, όπως το '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Ενεργοποιήστε το όταν ο πάροχος OAuth δεν επιτρέπει μια URI για κινητά, όπως το ''{callback}''",
     "oauth_profile_signing_algorithm": "Αλγόριθμος σύνδεσης προφίλ",
     "oauth_profile_signing_algorithm_description": "Αλγόριθμος που χρησιμοποιείται για την σύνδεση των χρηστών.",
     "oauth_scope": "Εύρος",
