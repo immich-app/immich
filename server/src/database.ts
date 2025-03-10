@@ -29,6 +29,15 @@ export type AuthApiKey = {
   permissions: Permission[];
 };
 
+export type ApiKey = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  permissions: Permission[];
+};
+
 export type User = {
   id: string;
   name: string;
