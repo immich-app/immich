@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { isString } from 'class-validator';
-import cookieParser from 'cookie';
+import { parse } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
 import { LOGIN_URL, MOBILE_REDIRECT, SALT_ROUNDS } from 'src/constants';
@@ -287,7 +287,7 @@ export class AuthService extends BaseService {
   }
 
   private getCookieToken(headers: IncomingHttpHeaders): string | null {
-    const cookies = cookieParser.parse(headers.cookie || '');
+    const cookies = parse(headers.cookie || '');
     return cookies[ImmichCookie.ACCESS_TOKEN] || null;
   }
 

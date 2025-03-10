@@ -48,7 +48,7 @@ PODS:
   - flutter_udid (0.0.1):
     - Flutter
     - SAMKeychain
-  - flutter_web_auth (0.6.0):
+  - flutter_web_auth_2 (3.0.0):
     - Flutter
   - fluttertoast (0.0.2):
     - Flutter
@@ -117,7 +117,7 @@ DEPENDENCIES:
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_udid (from `.symlinks/plugins/flutter_udid/ios`)
-  - flutter_web_auth (from `.symlinks/plugins/flutter_web_auth/ios`)
+  - flutter_web_auth_2 (from `.symlinks/plugins/flutter_web_auth_2/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
@@ -166,8 +166,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
   flutter_udid:
     :path: ".symlinks/plugins/flutter_udid/ios"
-  flutter_web_auth:
-    :path: ".symlinks/plugins/flutter_web_auth/ios"
+  flutter_web_auth_2:
+    :path: ".symlinks/plugins/flutter_web_auth_2/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   geolocator_apple:
@@ -220,7 +220,7 @@ SPEC CHECKSUMS:
   flutter_local_notifications: 4cde75091f6327eb8517fa068a0a5950212d2086
   flutter_native_splash: edf599c81f74d093a4daf8e17bd7a018854bc778
   flutter_udid: a2482c67a61b9c806ef59dd82ed8d007f1b7ac04
-  flutter_web_auth: acc15a8fd7bba796a933c724a6dffc3d00f07c27
+  flutter_web_auth_2: 06d500582775790a0d4c323222fcb6d7990f9603
   fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
   geolocator_apple: 6cbaf322953988e009e5ecb481f07efece75c450
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
