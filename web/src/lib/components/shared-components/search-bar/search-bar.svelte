@@ -173,12 +173,15 @@
   function getSearchTypeText(): string {
     const searchType = getSearchType();
     switch (searchType) {
-      case 'smart':
+      case 'smart': {
         return $t('context');
-      case 'metadata':
+      }
+      case 'metadata': {
         return $t('filename');
-      case 'description':
+      }
+      case 'description': {
         return $t('description');
+      }
     }
   }
 </script>
