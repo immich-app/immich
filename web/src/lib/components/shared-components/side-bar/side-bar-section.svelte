@@ -45,15 +45,16 @@
 <section
   id="sidebar"
   tabindex="-1"
-  class="immich-scrollbar group relative z-10 flex w-0 flex-col gap-1 overflow-y-auto overflow-x-hidden bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-bg pr-6"
+  class="immich-scrollbar relative z-10 flex w-0 md:w-[16rem] flex-col gap-1 overflow-y-auto overflow-x-hidden bg-immich-bg pt-8 transition-all duration-200 dark:bg-immich-dark-bg"
   class:shadow-2xl={isExpanded}
   class:dark:border-r-immich-dark-gray={isExpanded}
   class:border-r={isExpanded}
-  class:pr-6={isSidebarOpen.value}
   class:w-[min(100vw,16rem)]={isSidebarOpen.value}
   inert={isHidden}
   use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}
   use:focusTrap={{ active: isExpanded }}
 >
-  {@render children?.()}
+  <div class="pr-6">
+    {@render children?.()}
+  </div>
 </section>
