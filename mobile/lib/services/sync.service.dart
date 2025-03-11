@@ -508,7 +508,7 @@ class SyncService {
       );
     } else if (album.shared) {
       // delete assets in DB unless they belong to this user or are part of some other shared album or belong to a partner
-      final userIds = (await _getAllAccessibleUsers()).map((user) => user.id);
+      final userIds = (await _getAllAccessibleUsers()).map((user) => user.uid);
       final orphanedAssets =
           await _assetRepository.getByAlbum(album, notOwnedBy: userIds);
       deleteCandidates.addAll(orphanedAssets);
