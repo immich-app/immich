@@ -42,6 +42,23 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => ({
   ...authUser,
 });
 
+const sessionFactory = () => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUpdateId(),
+  deviceOS: 'android',
+  deviceType: 'mobile',
+  token: 'abc123',
+  userId: newUuid(),
+});
+
+const stackFactory = () => ({
+  id: newUuid(),
+  ownerId: newUuid(),
+  primaryAssetId: newUuid(),
+});
+
 const userFactory = (user: Partial<User> = {}) => ({
   id: newUuid(),
   name: 'Test User',
@@ -145,6 +162,12 @@ const memoryFactory = (memory: Partial<MemoryItem> = {}) => ({
   ...memory,
 });
 
+const versionHistoryFactory = () => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  version: '1.123.45',
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
@@ -154,5 +177,8 @@ export const factory = {
   authUser: authUserFactory,
   library: libraryFactory,
   memory: memoryFactory,
+  session: sessionFactory,
+  stack: stackFactory,
   user: userFactory,
+  versionHistory: versionHistoryFactory,
 };

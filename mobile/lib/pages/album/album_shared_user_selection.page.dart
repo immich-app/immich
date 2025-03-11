@@ -72,7 +72,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
-              backgroundColor: context.primaryColor.withOpacity(0.15),
+              backgroundColor: context.primaryColor.withValues(alpha: 0.15),
               label: Text(
                 user.email,
                 style: const TextStyle(

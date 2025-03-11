@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'activity.provider.g.dart';
 
+// ignore: unintended_html_in_doc_comment
 /// Maintains the current list of all activities for <share-album-id, asset>
 @riverpod
 class AlbumActivity extends _$AlbumActivity {

@@ -124,7 +124,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             decoration: BoxDecoration(
               color: badgeBackground,
               border: Border.all(
-                color: context.colorScheme.outline.withOpacity(.3),
+                color: context.colorScheme.outline.withValues(alpha: .3),
               ),
               borderRadius: BorderRadius.circular(widgetSize / 2),
             ),
