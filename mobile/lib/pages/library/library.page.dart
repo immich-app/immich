@@ -163,7 +163,7 @@ class QuickAccessButtons extends ConsumerWidget {
 class PartnerList extends ConsumerWidget {
   const PartnerList({super.key, required this.partners});
 
-  final List<User> partners;
+  final List<UserDto> partners;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

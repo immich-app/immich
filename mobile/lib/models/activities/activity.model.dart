@@ -8,7 +8,7 @@ class Activity {
   final String? comment;
   final DateTime createdAt;
   final ActivityType type;
-  final User user;
+  final UserDto user;
 
   const Activity({
     required this.id,
@@ -25,7 +25,7 @@ class Activity {
     String? comment,
     DateTime? createdAt,
     ActivityType? type,
-    User? user,
+    UserDto? user,
   }) {
     return Activity(
       id: id ?? this.id,

@@ -12,7 +12,7 @@ class AlbumSharedUserIcons extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsers = useRef<List<User>>(const []);
+    final sharedUsers = useRef<List<UserDto>>(const []);
     sharedUsers.value = ref.watch(
       currentAlbumProvider.select((album) {
         if (album == null) {

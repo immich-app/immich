@@ -57,7 +57,7 @@ void main() {
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
 
-    final owner = User(
+    final owner = UserDto(
       uid: "1",
       updatedAt: DateTime.now(),
       email: "a@b.c",
@@ -253,7 +253,7 @@ void main() {
 }
 
 Future<(List<Asset>?, List<String>?)> _failDiff(
-  List<User> user,
+  List<UserDto> user,
   DateTime time,
 ) =>
     Future.value((null, null));

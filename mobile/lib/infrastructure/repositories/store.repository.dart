@@ -78,7 +78,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
         const (DateTime) => entity.intValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-        const (User) => await IsarUserRepository(_db).get(entity.intValue!),
+        const (UserDto) => await IsarUserRepository(_db).get(entity.intValue!),
         _ => null,
       } as T?;
 
@@ -88,8 +88,8 @@ class IsarStoreRepository extends IsarDatabaseRepository
       const (String) => (null, value as String),
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
-      const (User) => (
-          (await IsarUserRepository(_db).update(value as User)).id,
+      const (UserDto) => (
+          (await IsarUserRepository(_db).update(value as UserDto)).id,
           null,
         ),
       _ => throw UnsupportedError(

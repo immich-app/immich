@@ -88,7 +88,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     await albumService.addUsers(album, userIds);
   }
 
-  Future<bool> removeUser(Album album, User user) async {
+  Future<bool> removeUser(Album album, UserDto user) async {
     final isRemoved = await albumService.removeUser(album, user);
 
     if (isRemoved && album.sharedUsers.isEmpty) {

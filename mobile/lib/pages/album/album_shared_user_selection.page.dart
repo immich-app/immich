@@ -21,7 +21,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersList = useState<Set<User>>({});
+    final sharedUsersList = useState<Set<UserDto>>({});
     final suggestedShareUsers = ref.watch(otherUsersProvider);
 
     createSharedAlbum() async {
@@ -48,7 +48,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
       );
     }
 
-    buildTileIcon(User user) {
+    buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: context.primaryColor,
@@ -64,7 +64,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
       }
     }
 
-    buildUserList(List<User> users) {
+    buildUserList(List<UserDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {

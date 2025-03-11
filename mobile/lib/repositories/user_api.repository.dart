@@ -21,7 +21,7 @@ class UserApiRepository extends ApiRepository implements IUserApiRepository {
   UserApiRepository(this._api);
 
   @override
-  Future<List<User>> getAll() async {
+  Future<List<UserDto>> getAll() async {
     final dto = await checkNull(_api.searchUsers());
     return dto.map(UserConverter.fromSimpleUserDto).toList();
   }

@@ -67,7 +67,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = false;
     }
 
-    void removeUserFromAlbum(User user) async {
+    void removeUserFromAlbum(UserDto user) async {
       isProcessing.value = true;
 
       try {
@@ -82,7 +82,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = false;
     }
 
-    void handleUserClick(User user) {
+    void handleUserClick(UserDto user) {
       var actions = [];
 
       if (user.uid == userId) {

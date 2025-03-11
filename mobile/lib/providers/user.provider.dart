@@ -9,7 +9,7 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 
-class CurrentUserProvider extends StateNotifier<User?> {
+class CurrentUserProvider extends StateNotifier<UserDto?> {
   CurrentUserProvider(this._apiService) : super(null) {
     state = Store.tryGet(StoreKey.currentUser);
     streamSub =
@@ -17,7 +17,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
   }
 
   final ApiService _apiService;
-  late final StreamSubscription<User?> streamSub;
+  late final StreamSubscription<UserDto?> streamSub;
 
   refresh() async {
     try {
@@ -40,7 +40,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
 }
 
 final currentUserProvider =
-    StateNotifierProvider<CurrentUserProvider, User?>((ref) {
+    StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
   return CurrentUserProvider(
     ref.watch(apiServiceProvider),
   );

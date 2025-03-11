@@ -16,7 +16,7 @@ class PartnerRepository extends DatabaseRepository
   PartnerRepository(super.db);
 
   @override
-  Future<List<User>> getSharedBy() async {
+  Future<List<UserDto>> getSharedBy() async {
     return (await db.users
             .filter()
             .isPartnerSharedByEqualTo(true)
@@ -27,7 +27,7 @@ class PartnerRepository extends DatabaseRepository
   }
 
   @override
-  Future<List<User>> getSharedWith() async {
+  Future<List<UserDto>> getSharedWith() async {
     return (await db.users
             .filter()
             .isPartnerSharedWithEqualTo(true)
@@ -38,13 +38,13 @@ class PartnerRepository extends DatabaseRepository
   }
 
   @override
-  Stream<List<User>> watchSharedBy() {
+  Stream<List<UserDto>> watchSharedBy() {
     return (db.users.filter().isPartnerSharedByEqualTo(true).sortById().watch())
         .map((users) => users.map((u) => u.toDto()).toList());
   }
 
   @override
-  Stream<List<User>> watchSharedWith() {
+  Stream<List<UserDto>> watchSharedWith() {
     return (db.users
             .filter()
             .isPartnerSharedWithEqualTo(true)

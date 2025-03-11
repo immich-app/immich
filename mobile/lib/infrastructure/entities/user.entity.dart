@@ -1,4 +1,3 @@
-import 'package:immich_mobile/domain/models/user.model.dart' as model;
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
@@ -18,7 +17,7 @@ class User {
   final bool isAdmin;
   final String profileImagePath;
   @Enumerated(EnumType.ordinal)
-  final model.AvatarColor avatarColor;
+  final AvatarColor avatarColor;
   final bool memoryEnabled;
   final bool inTimeline;
   final int quotaUsageInBytes;
@@ -33,14 +32,14 @@ class User {
     this.isPartnerSharedBy = false,
     this.isPartnerSharedWith = false,
     this.profileImagePath = '',
-    this.avatarColor = model.AvatarColor.primary,
+    this.avatarColor = AvatarColor.primary,
     this.memoryEnabled = true,
     this.inTimeline = false,
     this.quotaUsageInBytes = 0,
     this.quotaSizeInBytes = 0,
   });
 
-  static User fromDto(model.User dto) => User(
+  static User fromDto(UserDto dto) => User(
         id: dto.uid,
         updatedAt: dto.updatedAt,
         email: dto.email,
@@ -56,7 +55,7 @@ class User {
         quotaSizeInBytes: dto.quotaSizeInBytes,
       );
 
-  model.User toDto() => model.User(
+  UserDto toDto() => UserDto(
         uid: id,
         email: email,
         name: name,

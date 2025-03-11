@@ -106,7 +106,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String deviceId =
         Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
-    User? user = Store.tryGet(StoreKey.currentUser);
+    UserDto? user = Store.tryGet(StoreKey.currentUser);
 
     UserAdminResponseDto? userResponse;
     UserPreferencesResponseDto? userPreferences;

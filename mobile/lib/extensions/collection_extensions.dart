@@ -58,7 +58,7 @@ extension AssetListExtension on Iterable<Asset> {
   /// Returns the assets that are owned by the user passed to the [owner] param
   /// If [owner] is null, an empty list is returned
   Iterable<Asset> ownedOnly(
-    User? owner, {
+    UserDto? owner, {
     void Function()? errorCallback,
   }) {
     if (owner == null) return [];

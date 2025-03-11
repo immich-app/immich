@@ -5,7 +5,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 enum StoreKey<T> {
   version<int>._(0),
   assetETag<String>._(1),
-  currentUser<User>._(2),
+  currentUser<UserDto>._(2),
   deviceIdHash<int>._(3),
   deviceId<String>._(4),
   backupFailedSince<DateTime>._(5),

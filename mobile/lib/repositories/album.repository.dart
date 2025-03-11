@@ -102,7 +102,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   Future<Album?> get(int id) => db.albums.get(id);
 
   @override
-  Future<void> removeUsers(Album album, List<User> users) => txn(
+  Future<void> removeUsers(Album album, List<UserDto> users) => txn(
         () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
       );
 
@@ -124,7 +124,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
-  Future<void> addUsers(Album album, List<User> users) =>
+  Future<void> addUsers(Album album, List<UserDto> users) =>
       txn(() => album.sharedUsers.update(link: users.map(entity.User.fromDto)));
 
   @override

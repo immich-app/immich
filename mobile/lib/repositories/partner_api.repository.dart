@@ -19,7 +19,7 @@ class PartnerApiRepository extends ApiRepository
   PartnerApiRepository(this._api);
 
   @override
-  Future<List<User>> getAll(Direction direction) async {
+  Future<List<UserDto>> getAll(Direction direction) async {
     final response = await checkNull(
       _api.getPartners(
         direction == Direction.sharedByMe
@@ -31,7 +31,7 @@ class PartnerApiRepository extends ApiRepository
   }
 
   @override
-  Future<User> create(String id) async {
+  Future<UserDto> create(String id) async {
     final dto = await checkNull(_api.createPartner(id));
     return UserConverter.fromPartnerDto(dto);
   }
@@ -40,7 +40,7 @@ class PartnerApiRepository extends ApiRepository
   Future<void> delete(String id) => _api.removePartner(id);
 
   @override
-  Future<User> update(String id, {required bool inTimeline}) async {
+  Future<UserDto> update(String id, {required bool inTimeline}) async {
     final dto = await checkNull(
       _api.updatePartner(
         id,

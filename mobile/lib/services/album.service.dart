@@ -204,7 +204,7 @@ class AlbumService {
   Future<Album?> createAlbum(
     String albumName,
     Iterable<Asset> assets, [
-    Iterable<User> sharedUsers = const [],
+    Iterable<UserDto> sharedUsers = const [],
   ]) async {
     final Album album = await _albumApiRepository.create(
       albumName,
@@ -358,7 +358,7 @@ class AlbumService {
 
   Future<bool> removeUser(
     Album album,
-    User user,
+    UserDto user,
   ) async {
     try {
       await _albumApiRepository.removeUser(

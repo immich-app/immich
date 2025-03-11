@@ -25,12 +25,12 @@ class IsarUserRepository extends IsarDatabaseRepository
   }
 
   @override
-  Future<User?> get(int id) async {
+  Future<UserDto?> get(int id) async {
     return (await _db.users.get(id))?.toDto();
   }
 
   @override
-  Future<List<User>> getAll({SortUserBy? sortBy}) async {
+  Future<List<UserDto>> getAll({SortUserBy? sortBy}) async {
     return (await _db.users
             .where()
             .optional(
@@ -45,17 +45,17 @@ class IsarUserRepository extends IsarDatabaseRepository
   }
 
   @override
-  Future<User?> getByUserId(String id) async {
+  Future<UserDto?> getByUserId(String id) async {
     return (await _db.users.getById(id))?.toDto();
   }
 
   @override
-  Future<List<User?>> getByUserIds(List<String> ids) async {
+  Future<List<UserDto?>> getByUserIds(List<String> ids) async {
     return (await _db.users.getAllById(ids)).map((u) => u?.toDto()).toList();
   }
 
   @override
-  Future<bool> insert(User user) async {
+  Future<bool> insert(UserDto user) async {
     await transaction(() async {
       await _db.users.put(entity.User.fromDto(user));
     });
@@ -63,7 +63,7 @@ class IsarUserRepository extends IsarDatabaseRepository
   }
 
   @override
-  Future<User> update(User user) async {
+  Future<UserDto> update(UserDto user) async {
     await transaction(() async {
       await _db.users.put(entity.User.fromDto(user));
     });
@@ -71,7 +71,7 @@ class IsarUserRepository extends IsarDatabaseRepository
   }
 
   @override
-  Future<bool> updateAll(List<User> users) async {
+  Future<bool> updateAll(List<UserDto> users) async {
     await transaction(() async {
       await _db.users.putAll(users.map(entity.User.fromDto).toList());
     });
