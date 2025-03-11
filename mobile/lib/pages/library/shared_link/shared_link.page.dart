@@ -58,7 +58,8 @@ class SharedLinkPage extends HookConsumerWidget {
               child: Icon(
                 Icons.link_off,
                 size: 100,
-                color: context.themeData.iconTheme.color?.withOpacity(0.5),
+                color:
+                    context.themeData.iconTheme.color?.withValues(alpha: 0.5),
               ),
             ),
           ),
