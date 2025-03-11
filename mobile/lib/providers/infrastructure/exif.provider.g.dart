@@ -6,7 +6,7 @@ part of 'exif.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$exifRepositoryHash() => r'f8f94d2a43fa79b08e58d60e81d7877825f33ec0';
+String _$exifRepositoryHash() => r'f0abe778ed61fbb257001fdf2ac6e17814011fee';
 
 /// See also [exifRepository].
 @ProviderFor(exifRepository)

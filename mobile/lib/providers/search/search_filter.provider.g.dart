@@ -7,7 +7,7 @@ part of 'search_filter.provider.dart';
 // **************************************************************************
 
 String _$getSearchSuggestionsHash() =>
-    r'bc1e9a1a060868f14e6eb970d2251dbfe39c6866';
+    r'bc30a65e8fcb273cbd07bab876baf67bcc794737';
 
 /// Copied from Dart SDK
 class _SystemHash {
