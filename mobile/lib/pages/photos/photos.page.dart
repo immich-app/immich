@@ -110,7 +110,7 @@ class PhotosPage extends HookConsumerWidget {
               : const SizedBox(),
           renderListProvider: timelineUsers.length > 1
               ? multiUsersTimelineProvider(timelineUsers)
-              : singleUserTimelineProvider(currentUser?.id),
+              : singleUserTimelineProvider(currentUser?.uid),
           buildLoadingIndicator: buildLoadingIndicator,
           onRefresh: refreshAssets,
           stackEnabled: true,

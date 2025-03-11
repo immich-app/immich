@@ -30,12 +30,12 @@ class TimelineService {
 
   Future<List<String>> getTimelineUserIds() async {
     final me = _userService.getMyUser();
-    return _timelineRepository.getTimelineUserIds(me.id);
+    return _timelineRepository.getTimelineUserIds(me.uid);
   }
 
   Stream<List<String>> watchTimelineUserIds() async* {
     final me = _userService.getMyUser();
-    yield* _timelineRepository.watchTimelineUsers(me.id);
+    yield* _timelineRepository.watchTimelineUsers(me.uid);
   }
 
   Stream<RenderList> watchHomeTimeline(String userId) {
@@ -52,13 +52,13 @@ class TimelineService {
   Stream<RenderList> watchArchiveTimeline() async* {
     final user = _userService.getMyUser();
 
-    yield* _timelineRepository.watchArchiveTimeline(user.id);
+    yield* _timelineRepository.watchArchiveTimeline(user.uid);
   }
 
   Stream<RenderList> watchFavoriteTimeline() async* {
     final user = _userService.getMyUser();
 
-    yield* _timelineRepository.watchFavoriteTimeline(user.id);
+    yield* _timelineRepository.watchFavoriteTimeline(user.uid);
   }
 
   Stream<RenderList> watchAlbumTimeline(Album album) async* {
@@ -71,7 +71,7 @@ class TimelineService {
   Stream<RenderList> watchTrashTimeline() async* {
     final user = _userService.getMyUser();
 
-    yield* _timelineRepository.watchTrashTimeline(user.id);
+    yield* _timelineRepository.watchTrashTimeline(user.uid);
   }
 
   Stream<RenderList> watchAllVideosTimeline() {
@@ -98,7 +98,7 @@ class TimelineService {
   Stream<RenderList> watchAssetSelectionTimeline() async* {
     final user = _userService.getMyUser();
 
-    yield* _timelineRepository.watchAssetSelectionTimeline(user.id);
+    yield* _timelineRepository.watchAssetSelectionTimeline(user.uid);
   }
 
   GroupAssetsBy _getGroupByOption() {

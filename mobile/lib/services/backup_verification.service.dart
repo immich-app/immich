@@ -38,7 +38,7 @@ class BackupVerificationService {
 
   /// Returns at most [limit] assets that were backed up without exif
   Future<List<Asset>> findWronglyBackedUpAssets({int limit = 100}) async {
-    final owner = _userService.getMyUser().id;
+    final owner = _userService.getMyUser().uid;
     final List<Asset> onlyLocal = await _assetRepository.getAll(
       ownerId: owner,
       state: AssetState.local,
