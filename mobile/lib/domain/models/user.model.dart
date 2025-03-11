@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:immich_mobile/utils/hash.dart';
-
 enum AvatarColor {
   // do not change this order or reuse indices for other purposes, adding is OK
   primary,
@@ -50,7 +48,6 @@ class UserDto {
   final int quotaUsageInBytes;
   final int quotaSizeInBytes;
 
-  int get id => fastHash(uid);
   bool get hasQuota => quotaSizeInBytes > 0;
 
   const UserDto({
@@ -72,8 +69,7 @@ class UserDto {
   @override
   String toString() {
     return '''User: {
-id: $id,
-uid: $uid,
+id: $uid,
 email: $email,
 name: $name,
 isAdmin: $isAdmin,

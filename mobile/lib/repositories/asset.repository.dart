@@ -11,6 +11,7 @@ import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
 final assetRepositoryProvider =
@@ -22,20 +23,20 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   @override
   Future<List<Asset>> getByAlbum(
     Album album, {
-    Iterable<int> notOwnedBy = const [],
-    int? ownerId,
+    Iterable<String> notOwnedBy = const [],
+    String? ownerId,
     AssetState? state,
     AssetSort? sortBy,
   }) {
     var query = album.assets.filter();
+    final ids = notOwnedBy.map(fastHash).toList();
     if (notOwnedBy.length == 1) {
-      query = query.not().ownerIdEqualTo(notOwnedBy.first);
+      query = query.not().ownerIdEqualTo(ids.first);
     } else if (notOwnedBy.isNotEmpty) {
-      query =
-          query.not().anyOf(notOwnedBy, (q, int id) => q.ownerIdEqualTo(id));
+      query = query.not().anyOf(ids, (q, int id) => q.ownerIdEqualTo(id));
     }
     if (ownerId != null) {
-      query = query.ownerIdEqualTo(ownerId);
+      query = query.ownerIdEqualTo(fastHash(ownerId));
     }
 
     if (state != null) {
@@ -87,27 +88,28 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
 
   @override
   Future<List<Asset>> getAll({
-    required int ownerId,
+    required String ownerId,
     AssetState? state,
     AssetSort? sortBy,
     int? limit,
   }) {
     final baseQuery = db.assets.where();
+    final id = fastHash(ownerId);
     final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery =
         switch (state) {
-      null => baseQuery.ownerIdEqualToAnyChecksum(ownerId).noOp(),
+      null => baseQuery.ownerIdEqualToAnyChecksum(id).noOp(),
       AssetState.local => baseQuery
           .remoteIdIsNull()
           .filter()
           .localIdIsNotNull()
-          .ownerIdEqualTo(ownerId),
+          .ownerIdEqualTo(id),
       AssetState.remote => baseQuery
           .localIdIsNull()
           .filter()
           .remoteIdIsNotNull()
-          .ownerIdEqualTo(ownerId),
+          .ownerIdEqualTo(id),
       AssetState.merged => baseQuery
-          .ownerIdEqualToAnyChecksum(ownerId)
+          .ownerIdEqualToAnyChecksum(id)
           .filter()
           .remoteIdIsNotNull()
           .localIdIsNotNull(),
@@ -132,7 +134,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   @override
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
-    required int ownerId,
+    required String ownerId,
     AssetState? state,
     int limit = 100,
   }) {
@@ -147,7 +149,7 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
       AssetState.merged =>
         baseQuery.localIdIsNotNull().filter().remoteIdIsNotNull(),
     };
-    return _getMatchesImpl(query, ownerId, assets, limit);
+    return _getMatchesImpl(query, fastHash(ownerId), assets, limit);
   }
 
   @override
@@ -185,10 +187,10 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
 
   @override
   Future<List<Asset?>> getAllByOwnerIdChecksum(
-    List<int> ids,
+    List<int> ownerIds,
     List<String> checksums,
   ) =>
-      db.assets.getAllByOwnerIdChecksum(ids, checksums);
+      db.assets.getAllByOwnerIdChecksum(ownerIds, checksums);
 
   @override
   Future<List<Asset>> getAllLocal() =>
@@ -224,30 +226,30 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   }
 
   @override
-  Future<List<Asset>> getTrashAssets(int userId) {
+  Future<List<Asset>> getTrashAssets(String userId) {
     return db.assets
         .where()
         .remoteIdIsNotNull()
         .filter()
-        .ownerIdEqualTo(userId)
+        .ownerIdEqualTo(fastHash(userId))
         .isTrashedEqualTo(true)
         .findAll();
   }
 
   @override
-  Future<List<Asset>> getRecentlyAddedAssets(int userId) {
+  Future<List<Asset>> getRecentlyAddedAssets(String userId) {
     return db.assets
         .where()
-        .ownerIdEqualToAnyChecksum(userId)
+        .ownerIdEqualToAnyChecksum(fastHash(userId))
         .sortByFileCreatedAtDesc()
         .findAll();
   }
 
   @override
-  Future<List<Asset>> getMotionAssets(int userId) {
+  Future<List<Asset>> getMotionAssets(String userId) {
     return db.assets
         .where()
-        .ownerIdEqualToAnyChecksum(userId)
+        .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
         .livePhotoVideoIdIsNotNull()
         .findAll();

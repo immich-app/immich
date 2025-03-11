@@ -16,7 +16,7 @@ Widget userAvatar(BuildContext context, UserDto u, {double? radius}) {
     foregroundImage: CachedNetworkImageProvider(
       url,
       headers: ApiService.getRequestHeaders(),
-      cacheKey: "user-${u.id}-profile",
+      cacheKey: "user-${u.uid}-profile",
     ),
     // silence errors if user has no profile image, use initials as fallback
     onForegroundImageError: (exception, stackTrace) {},

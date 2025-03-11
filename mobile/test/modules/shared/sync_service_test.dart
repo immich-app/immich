@@ -109,7 +109,7 @@ void main() {
         userApiRepository,
       );
       when(() => userService.getMyUser()).thenReturn(owner);
-      when(() => eTagRepository.get(owner.id))
+      when(() => eTagRepository.get(owner.uid))
           .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
@@ -119,7 +119,7 @@ void main() {
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.id,
+          ownerId: owner.uid,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => initialAssets);
@@ -194,7 +194,7 @@ void main() {
       expect(c1, isTrue);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.id,
+          ownerId: owner.uid,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => remoteAssets);
@@ -207,7 +207,7 @@ void main() {
       final currentState = [...remoteAssets];
       when(
         () => assetRepository.getAll(
-          ownerId: owner.id,
+          ownerId: owner.uid,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => currentState);

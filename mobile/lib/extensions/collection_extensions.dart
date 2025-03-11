@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/utils/hash.dart';
 
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({
@@ -62,7 +63,7 @@ extension AssetListExtension on Iterable<Asset> {
     void Function()? errorCallback,
   }) {
     if (owner == null) return [];
-    final userId = owner.id;
+    final userId = fastHash(owner.uid);
     final bool onlyOwned = every((e) => e.ownerId == userId);
     if (!onlyOwned) {
       if (errorCallback != null) errorCallback();

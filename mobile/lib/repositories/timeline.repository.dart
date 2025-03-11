@@ -6,6 +6,7 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/timeline.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:isar/isar.dart';
 
@@ -17,32 +18,32 @@ class TimelineRepository extends DatabaseRepository
   TimelineRepository(super.db);
 
   @override
-  Future<List<int>> getTimelineUserIds(int id) {
+  Future<List<String>> getTimelineUserIds(String id) {
     return db.users
         .filter()
         .inTimelineEqualTo(true)
         .or()
-        .isarIdEqualTo(id)
-        .isarIdProperty()
+        .idEqualTo(id)
+        .idProperty()
         .findAll();
   }
 
   @override
-  Stream<List<int>> watchTimelineUsers(int id) {
+  Stream<List<String>> watchTimelineUsers(String id) {
     return db.users
         .filter()
         .inTimelineEqualTo(true)
         .or()
-        .isarIdEqualTo(id)
-        .isarIdProperty()
+        .idEqualTo(id)
+        .idProperty()
         .watch();
   }
 
   @override
-  Stream<RenderList> watchArchiveTimeline(int userId) {
+  Stream<RenderList> watchArchiveTimeline(String userId) {
     final query = db.assets
         .where()
-        .ownerIdEqualToAnyChecksum(userId)
+        .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
         .isArchivedEqualTo(true)
         .isTrashedEqualTo(false)
@@ -52,10 +53,10 @@ class TimelineRepository extends DatabaseRepository
   }
 
   @override
-  Stream<RenderList> watchFavoriteTimeline(int userId) {
+  Stream<RenderList> watchFavoriteTimeline(String userId) {
     final query = db.assets
         .where()
-        .ownerIdEqualToAnyChecksum(userId)
+        .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
         .isFavoriteEqualTo(true)
         .isTrashedEqualTo(false)
@@ -79,10 +80,10 @@ class TimelineRepository extends DatabaseRepository
   }
 
   @override
-  Stream<RenderList> watchTrashTimeline(int userId) {
+  Stream<RenderList> watchTrashTimeline(String userId) {
     final query = db.assets
         .filter()
-        .ownerIdEqualTo(userId)
+        .ownerIdEqualTo(fastHash(userId))
         .isTrashedEqualTo(true)
         .sortByFileCreatedAtDesc();
 
@@ -103,12 +104,12 @@ class TimelineRepository extends DatabaseRepository
 
   @override
   Stream<RenderList> watchHomeTimeline(
-    int userId,
+    String userId,
     GroupAssetsBy groupAssetByOption,
   ) {
     final query = db.assets
         .where()
-        .ownerIdEqualToAnyChecksum(userId)
+        .ownerIdEqualToAnyChecksum(fastHash(userId))
         .filter()
         .isArchivedEqualTo(false)
         .isTrashedEqualTo(false)
@@ -120,12 +121,13 @@ class TimelineRepository extends DatabaseRepository
 
   @override
   Stream<RenderList> watchMultiUsersTimeline(
-    List<int> userIds,
+    List<String> userIds,
     GroupAssetsBy groupAssetByOption,
   ) {
+    final ids = userIds.map(fastHash).toList();
     final query = db.assets
         .where()
-        .anyOf(userIds, (qb, userId) => qb.ownerIdEqualToAnyChecksum(userId))
+        .anyOf(ids, (qb, userId) => qb.ownerIdEqualToAnyChecksum(userId))
         .filter()
         .isArchivedEqualTo(false)
         .isTrashedEqualTo(false)
@@ -143,12 +145,12 @@ class TimelineRepository extends DatabaseRepository
   }
 
   @override
-  Stream<RenderList> watchAssetSelectionTimeline(int userId) {
+  Stream<RenderList> watchAssetSelectionTimeline(String userId) {
     final query = db.assets
         .where()
         .remoteIdIsNotNull()
         .filter()
-        .ownerIdEqualTo(userId)
+        .ownerIdEqualTo(fastHash(userId))
         .isTrashedEqualTo(false)
         .stackPrimaryAssetIdIsNull()
         .sortByFileCreatedAtDesc();

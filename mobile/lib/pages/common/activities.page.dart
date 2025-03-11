@@ -51,7 +51,7 @@ class ActivitiesPage extends HookConsumerWidget {
           final liked = data.firstWhereOrNull(
             (a) =>
                 a.type == ActivityType.like &&
-                a.user.id == user?.id &&
+                a.user.uid == user?.uid &&
                 a.assetId == asset?.remoteId,
           );
 
@@ -71,7 +71,7 @@ class ActivitiesPage extends HookConsumerWidget {
                     }
 
                     final activity = data[index];
-                    final canDelete = activity.user.id == user?.id ||
+                    final canDelete = activity.user.uid == user?.uid ||
                         album.ownerId == user?.uid;
 
                     return Padding(

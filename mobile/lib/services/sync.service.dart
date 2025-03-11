@@ -32,6 +32,7 @@ import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 
 final syncServiceProvider = Provider(
@@ -154,7 +155,7 @@ class SyncService {
   Future<bool> _syncUsersFromServer(List<UserDto> users) async {
     users.sortBy((u) => u.uid);
     final dbUsers = await _userRepository.getAll(sortBy: SortUserBy.id);
-    final List<int> toDelete = [];
+    final List<String> toDelete = [];
     final List<UserDto> toUpsert = [];
     final changes = diffSortedListsSync(
       users,
@@ -171,7 +172,7 @@ class SyncService {
         return false;
       },
       onlyFirst: (UserDto a) => toUpsert.add(a),
-      onlySecond: (UserDto b) => toDelete.add(b.id),
+      onlySecond: (UserDto b) => toDelete.add(b.uid),
     );
     if (changes) {
       await _userRepository.transaction(() async {
@@ -210,7 +211,7 @@ class SyncService {
   ) async {
     final currentUser = _userService.getMyUser();
     final DateTime? since =
-        (await _eTagRepository.get(currentUser.id))?.time?.toUtc();
+        (await _eTagRepository.get(currentUser.uid))?.time?.toUtc();
     if (since == null) return null;
     final DateTime now = DateTime.now();
     final (toUpsert, toDelete) = await getChangedAssets(users, since);
@@ -292,7 +293,7 @@ class SyncService {
       return false;
     }
     final List<Asset> inDb = await _assetRepository.getAll(
-      ownerId: user.id,
+      ownerId: user.uid,
       sortBy: AssetSort.checksum,
     );
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
@@ -398,15 +399,15 @@ class SyncService {
     // update shared users
     final List<UserDto> sharedUsers =
         album.sharedUsers.map((u) => u.toDto()).toList(growable: false);
-    sharedUsers.sort((a, b) => a.id.compareTo(b.id));
+    sharedUsers.sort((a, b) => a.uid.compareTo(b.uid));
     final List<UserDto> users = dto.remoteUsers.map((u) => u.toDto()).toList()
-      ..sort((a, b) => a.id.compareTo(b.id));
+      ..sort((a, b) => a.uid.compareTo(b.uid));
     final List<String> userIdsToAdd = [];
     final List<UserDto> usersToUnlink = [];
     diffSortedListsSync(
       users,
       sharedUsers,
-      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
       both: (a, b) => false,
       onlyFirst: (UserDto a) => userIdsToAdd.add(a.uid),
       onlySecond: (UserDto a) => usersToUnlink.add(a),
@@ -453,13 +454,14 @@ class SyncService {
     }
 
     if (album.shared || dto.shared) {
-      final userId = (_userService.getMyUser()).id;
+      final userId = (_userService.getMyUser()).uid;
       final foreign =
           await _assetRepository.getByAlbum(album, notOwnedBy: [userId]);
       existing.addAll(foreign);
 
       // delete assets in DB unless they belong to this user or part of some other shared album
-      deleteCandidates.addAll(toUnlink.where((a) => a.ownerId != userId));
+      deleteCandidates
+          .addAll(toUnlink.where((a) => a.ownerId != fastHash(userId)));
     }
 
     return true;
@@ -589,7 +591,7 @@ class SyncService {
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await _assetRepository.getByAlbum(
       dbAlbum,
-      ownerId: (_userService.getMyUser()).id,
+      ownerId: (_userService.getMyUser()).uid,
       sortBy: AssetSort.checksum,
     );
 

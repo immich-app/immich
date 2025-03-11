@@ -28,6 +28,7 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 
 final albumServiceProvider = Provider(
@@ -295,8 +296,8 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = _userService.getMyUser().id;
-      if (album.owner.value?.isarId == userId) {
+      final userId = _userService.getMyUser().uid;
+      if (album.owner.value?.isarId == fastHash(userId)) {
         await _albumApiRepository.delete(album.remoteId!);
       }
       if (album.shared) {
