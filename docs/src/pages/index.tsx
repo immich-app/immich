@@ -60,7 +60,11 @@ function HomepageHeader() {
         </div>
 
         <div className="my-12 flex gap-1 font-medium place-items-center place-content-center text-immich-primary dark:text-immich-dark-primary">
-          <Icon path={discordPath} size={1} viewBox={discordViewBox} /* viewBox may show an error in your IDE but it is normal. */ />
+          <Icon
+            path={discordPath}
+            viewBox={discordViewBox} /* viewBox may show an error in your IDE but it is normal. */
+            size={1}
+          />
           <Link to="https://discord.immich.app/">Join our Discord</Link>
         </div>
         <img
