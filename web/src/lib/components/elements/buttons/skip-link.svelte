@@ -30,7 +30,23 @@
     if (!breakpoint) {
       return '';
     }
-    return `hidden ${breakpoint}:block`;
+    switch (breakpoint) {
+      case 'sm': {
+        return 'hidden sm:block';
+      }
+      case 'md': {
+        return 'hidden md:block';
+      }
+      case 'lg': {
+        return 'hidden lg:block';
+      }
+      case 'xl': {
+        return 'hidden xl:block';
+      }
+      case '2xl': {
+        return 'hidden 2xl:block';
+      }
+    }
   };
 </script>
 
