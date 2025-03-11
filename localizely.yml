@@ -66,8 +66,8 @@ download:
       locale_code: es-MX
     - file: mobile/assets/i18n/sv-FI.json
       locale_code: sv-FI
-    - file: mobile/assets/i18n/ca-CA.json
-      locale_code: ca-CA
+    - file: mobile/assets/i18n/ca.json
+      locale_code: ca
     - file: mobile/assets/i18n/hu-HU.json
       locale_code: hu-HU
     - file: mobile/assets/i18n/lv-LV.json
@@ -96,9 +96,9 @@ download:
       locale_code: ro-RO
     - file: mobile/assets/i18n/id-ID.json
       locale_code: id-ID
-    - file: mobile/assets/i18n/gl.json
+    - file: mobile/assets/i18n/gl-ES.json
       locale_code: gl-ES
     - file: mobile/assets/i18n/ga.json
-      locale_code: ga-IE
+      locale_code: ga
     - file: mobile/assets/i18n/tr-TR.json
       locale_code: tr-TR

@@ -1,32 +1,32 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Inject, Module, OnModuleDestroy, OnModuleInit, ValidationPipe } from '@nestjs/common';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE, ModuleRef } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
+import postgres from 'postgres';
 import { commands } from 'src/commands';
 import { IWorker } from 'src/constants';
 import { controllers } from 'src/controllers';
-import { entities } from 'src/entities';
 import { ImmichWorker } from 'src/enum';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository } from 'src/interfaces/job.interface';
 import { AuthGuard } from 'src/middleware/auth.guard';
 import { ErrorInterceptor } from 'src/middleware/error.interceptor';
 import { FileUploadInterceptor } from 'src/middleware/file-upload.interceptor';
 import { GlobalExceptionFilter } from 'src/middleware/global-exception.filter';
 import { LoggingInterceptor } from 'src/middleware/logging.interceptor';
-import { providers, repositories } from 'src/repositories';
+import { repositories } from 'src/repositories';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { EventRepository } from 'src/repositories/event.repository';
+import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { teardownTelemetry, TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { services } from 'src/services';
+import { AuthService } from 'src/services/auth.service';
 import { CliService } from 'src/services/cli.service';
-import { DatabaseService } from 'src/services/database.service';
 
-const common = [...services, ...providers, ...repositories];
+const common = [...repositories, ...services, GlobalExceptionFilter];
 
 const middleware = [
   FileUploadInterceptor,
@@ -45,39 +45,48 @@ const imports = [
   BullModule.registerQueue(...bull.queues),
   ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
-  TypeOrmModule.forRootAsync({
-    inject: [ModuleRef],
-    useFactory: (moduleRef: ModuleRef) => {
-      return {
-        ...database.config.typeorm,
-        poolErrorHandler: (error) => {
-          moduleRef.get(DatabaseService, { strict: false }).handleConnectionError(error);
-        },
-      };
+  KyselyModule.forRoot({
+    dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
+    log(event) {
+      if (event.level === 'error') {
+        console.error('Query failed :', {
+          durationMs: event.queryDurationMillis,
+          error: event.error,
+          sql: event.query.sql,
+          params: event.query.parameters,
+        });
+      }
     },
   }),
-  TypeOrmModule.forFeature(entities),
-  KyselyModule.forRoot(database.config.kysely),
 ];
 
 class BaseModule implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject(IWorker) private worker: ImmichWorker,
     logger: LoggingRepository,
-    @Inject(IEventRepository) private eventRepository: IEventRepository,
-    @Inject(IJobRepository) private jobRepository: IJobRepository,
+    private eventRepository: EventRepository,
+    private jobRepository: JobRepository,
     private telemetryRepository: TelemetryRepository,
+    private authService: AuthService,
   ) {
     logger.setAppName(this.worker);
   }
 
   async onModuleInit() {
-    this.telemetryRepository.setup({ repositories: [...providers.map(({ useClass }) => useClass), ...repositories] });
+    this.telemetryRepository.setup({ repositories });
 
     this.jobRepository.setup({ services });
     if (this.worker === ImmichWorker.MICROSERVICES) {
       this.jobRepository.startWorkers();
     }
+
+    this.eventRepository.setAuthFn(async (client) =>
+      this.authService.authenticate({
+        headers: client.request.headers,
+        queryParams: {},
+        metadata: { adminRoute: false, sharedLinkRoute: false, uri: '/api/socket.io' },
+      }),
+    );
 
     this.eventRepository.setup({ services });
     await this.eventRepository.emit('app.bootstrap');

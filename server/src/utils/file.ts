@@ -4,8 +4,8 @@ import { access, constants } from 'node:fs/promises';
 import { basename, extname, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
-import { ImmichReadStream } from 'src/interfaces/storage.interface';
-import { ILoggingRepository } from 'src/types';
+import { LoggingRepository } from 'src/repositories/logging.repository';
+import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { isConnectionAborted } from 'src/utils/misc';
 
 export function getFileNameWithoutExtension(path: string): string {
@@ -33,27 +33,28 @@ export class ImmichFileResponse {
 type SendFile = Parameters<Response['sendFile']>;
 type SendFileOptions = SendFile[1];
 
+const cacheControlHeaders: Record<CacheControl, string | null> = {
+  [CacheControl.PRIVATE_WITH_CACHE]: 'private, max-age=86400, no-transform',
+  [CacheControl.PRIVATE_WITHOUT_CACHE]: 'private, no-cache, no-transform',
+  [CacheControl.NONE]: null, // falsy value to prevent adding Cache-Control header
+};
+
 export const sendFile = async (
   res: Response,
   next: NextFunction,
   handler: () => Promise<ImmichFileResponse>,
-  logger: ILoggingRepository,
+  logger: LoggingRepository,
 ): Promise<void> => {
+  // promisified version of 'res.sendFile' for cleaner async handling
   const _sendFile = (path: string, options: SendFileOptions) =>
     promisify<string, SendFileOptions>(res.sendFile).bind(res)(path, options);
 
   try {
     const file = await handler();
-    switch (file.cacheControl) {
-      case CacheControl.PRIVATE_WITH_CACHE: {
-        res.set('Cache-Control', 'private, max-age=86400, no-transform');
-        break;
-      }
-
-      case CacheControl.PRIVATE_WITHOUT_CACHE: {
-        res.set('Cache-Control', 'private, no-cache, no-transform');
-        break;
-      }
+    const cacheControlHeader = cacheControlHeaders[file.cacheControl];
+    if (cacheControlHeader) {
+      // set the header to Cache-Control
+      res.set('Cache-Control', cacheControlHeader);
     }
 
     res.header('Content-Type', file.contentType);
@@ -61,6 +62,7 @@ export const sendFile = async (
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
+    // configure options for serving
     const options: SendFileOptions = { dotfiles: 'allow' };
     if (!isAbsolute(file.path)) {
       options.root = process.cwd();

@@ -1,12 +1,16 @@
+@Skip('currently failing due to mock HTTP client to download ISAR binaries')
+@Tags(['pages'])
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/pages/search/search.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
-import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:isar/isar.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
@@ -25,16 +29,15 @@ void main() {
   setUpAll(() async {
     TestUtils.init();
     db = await TestUtils.initIsar();
-    Store.init(db);
+    await StoreService.init(storeRepository: IsarStoreRepository(db));
     mockApiService = MockApiService();
     mockSearchApi = MockSearchApi();
     when(() => mockApiService.searchApi).thenReturn(mockSearchApi);
     registerFallbackValue(MockSmartSearchDto());
     registerFallbackValue(MockMetadataSearchDto());
     overrides = [
-      paginatedSearchRenderListProvider
-          .overrideWithValue(AsyncValue.data(RenderList.empty())),
       dbProvider.overrideWithValue(db),
+      isarProvider.overrideWithValue(db),
       apiServiceProvider.overrideWithValue(mockApiService),
     ];
   });
@@ -118,72 +121,4 @@ void main() {
     captured = verify(() => mockSearchApi.searchAssets(captureAny())).captured;
     expect(captured.first, emptyTextSearch);
   });
-
-  // COME BACK LATER
-  // testWidgets('contextual search with text combined with media type',
-  //     (tester) async {
-  //   await tester.pumpConsumerWidget(
-  //     const SearchPage(),
-  //     overrides: overrides,
-  //   );
-
-  //   await tester.pumpAndSettle();
-
-  //   expect(
-  //     find.byIcon(Icons.abc_rounded),
-  //     findsOneWidget,
-  //     reason: 'Should have contextual search icon',
-  //   );
-
-  //   final searchField = find.byKey(const Key('search_text_field'));
-  //   expect(searchField, findsOneWidget);
-
-  //   await tester.enterText(searchField, 'test');
-  //   await tester.testTextInput.receiveAction(TextInputAction.search);
-
-  //   var captured = verify(
-  //     () => mockSearchApi.searchSmart(captureAny()),
-  //   ).captured;
-
-  //   expect(
-  //     captured.first,
-  //     isA<SmartSearchDto>().having((s) => s.query, 'query', 'test'),
-  //   );
-
-  //   await tester.dragUntilVisible(
-  //     find.byKey(const Key('media_type_chip')),
-  //     find.byKey(const Key('search_filter_chip_list')),
-  //     const Offset(-100, 0),
-  //   );
-  //   await tester.pumpAndSettle();
-
-  //   await tester.tap(find.byKey(const Key('media_type_chip')));
-  //   await tester.pumpAndSettle();
-
-  //   await tester.tap(find.byKey(const Key('search_filter_media_type_image')));
-  //   await tester.pumpAndSettle();
-
-  //   await tester.tap(find.byKey(const Key('search_filter_apply')));
-  //   await tester.pumpAndSettle();
-
-  //   captured = verify(() => mockSearchApi.searchSmart(captureAny())).captured;
-
-  //   expect(
-  //     captured.first,
-  //     isA<SmartSearchDto>()
-  //         .having((s) => s.query, 'query', 'test')
-  //         .having((s) => s.type, 'type', AssetTypeEnum.IMAGE),
-  //   );
-
-  //   await tester.enterText(searchField, '');
-  //   await tester.testTextInput.receiveAction(TextInputAction.search);
-
-  //   captured = verify(() => mockSearchApi.searchAssets(captureAny())).captured;
-  //   expect(
-  //     captured.first,
-  //     isA<MetadataSearchDto>()
-  //         .having((s) => s.originalFileName, 'originalFileName', null)
-  //         .having((s) => s.type, 'type', AssetTypeEnum.IMAGE),
-  //   );
-  // });
 }

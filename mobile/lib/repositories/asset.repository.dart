@@ -6,8 +6,8 @@ import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/device_asset.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
@@ -38,33 +38,26 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
       query = query.ownerIdEqualTo(ownerId);
     }
 
-    switch (state) {
-      case null:
-        break;
-      case AssetState.local:
-        query = query.remoteIdIsNull();
-      case AssetState.remote:
-        query = query.localIdIsNull();
-      case AssetState.merged:
-        query = query.localIdIsNotNull().remoteIdIsNotNull();
+    if (state != null) {
+      query = switch (state) {
+        AssetState.local => query.remoteIdIsNull(),
+        AssetState.remote => query.localIdIsNull(),
+        AssetState.merged => query.localIdIsNotNull().remoteIdIsNotNull(),
+      };
     }
 
-    final QueryBuilder<Asset, Asset, QAfterSortBy> sortedQuery;
-
-    switch (sortBy) {
-      case null:
-        sortedQuery = query.noOp();
-      case AssetSort.checksum:
-        sortedQuery = query.sortByChecksum();
-      case AssetSort.ownerIdChecksum:
-        sortedQuery = query.sortByOwnerId().thenByChecksum();
-    }
+    final QueryBuilder<Asset, Asset, QAfterSortBy> sortedQuery =
+        switch (sortBy) {
+      null => query.noOp(),
+      AssetSort.checksum => query.sortByChecksum(),
+      AssetSort.ownerIdChecksum => query.sortByOwnerId().thenByChecksum(),
+    };
 
     return sortedQuery.findAll();
   }
 
   @override
-  Future<void> deleteById(List<int> ids) => txn(() async {
+  Future<void> deleteByIds(List<int> ids) => txn(() async {
         await db.assets.deleteAll(ids);
         await db.exifInfos.deleteAll(ids);
       });
@@ -84,16 +77,12 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     AssetState? state,
   ) {
     final query = db.assets.remote(ids).filter();
-    switch (state) {
-      case null:
-        return query.noOp();
-      case AssetState.local:
-        return query.remoteIdIsNull();
-      case AssetState.remote:
-        return query.localIdIsNull();
-      case AssetState.merged:
-        return query.localIdIsNotEmpty().remoteIdIsNotNull();
-    }
+    return switch (state) {
+      null => query.noOp(),
+      AssetState.local => query.remoteIdIsNull(),
+      AssetState.remote => query.localIdIsNull(),
+      AssetState.merged => query.localIdIsNotEmpty().remoteIdIsNotNull(),
+    };
   }
 
   @override
@@ -104,39 +93,32 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     int? limit,
   }) {
     final baseQuery = db.assets.where();
-    final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery;
-    switch (state) {
-      case null:
-        filteredQuery = baseQuery.ownerIdEqualToAnyChecksum(ownerId).noOp();
-      case AssetState.local:
-        filteredQuery = baseQuery
-            .remoteIdIsNull()
-            .filter()
-            .localIdIsNotNull()
-            .ownerIdEqualTo(ownerId);
-      case AssetState.remote:
-        filteredQuery = baseQuery
-            .localIdIsNull()
-            .filter()
-            .remoteIdIsNotNull()
-            .ownerIdEqualTo(ownerId);
-      case AssetState.merged:
-        filteredQuery = baseQuery
-            .ownerIdEqualToAnyChecksum(ownerId)
-            .filter()
-            .remoteIdIsNotNull()
-            .localIdIsNotNull();
-    }
+    final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery =
+        switch (state) {
+      null => baseQuery.ownerIdEqualToAnyChecksum(ownerId).noOp(),
+      AssetState.local => baseQuery
+          .remoteIdIsNull()
+          .filter()
+          .localIdIsNotNull()
+          .ownerIdEqualTo(ownerId),
+      AssetState.remote => baseQuery
+          .localIdIsNull()
+          .filter()
+          .remoteIdIsNotNull()
+          .ownerIdEqualTo(ownerId),
+      AssetState.merged => baseQuery
+          .ownerIdEqualToAnyChecksum(ownerId)
+          .filter()
+          .remoteIdIsNotNull()
+          .localIdIsNotNull(),
+    };
 
-    final QueryBuilder<Asset, Asset, QAfterSortBy> query;
-    switch (sortBy) {
-      case null:
-        query = filteredQuery.noOp();
-      case AssetSort.checksum:
-        query = filteredQuery.sortByChecksum();
-      case AssetSort.ownerIdChecksum:
-        query = filteredQuery.sortByOwnerId().thenByChecksum();
-    }
+    final QueryBuilder<Asset, Asset, QAfterSortBy> query = switch (sortBy) {
+      null => filteredQuery.noOp(),
+      AssetSort.checksum => filteredQuery.sortByChecksum(),
+      AssetSort.ownerIdChecksum =>
+        filteredQuery.sortByOwnerId().thenByChecksum(),
+    };
 
     return limit == null ? query.findAll() : query.limit(limit).findAll();
   }
@@ -155,17 +137,16 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     int limit = 100,
   }) {
     final baseQuery = db.assets.where();
-    final QueryBuilder<Asset, Asset, QAfterFilterCondition> query;
-    switch (state) {
-      case null:
-        query = baseQuery.noOp();
-      case AssetState.local:
-        query = baseQuery.remoteIdIsNull().filter().localIdIsNotNull();
-      case AssetState.remote:
-        query = baseQuery.localIdIsNull().filter().remoteIdIsNotNull();
-      case AssetState.merged:
-        query = baseQuery.localIdIsNotNull().filter().remoteIdIsNotNull();
-    }
+    final QueryBuilder<Asset, Asset, QAfterFilterCondition> query =
+        switch (state) {
+      null => baseQuery.noOp(),
+      AssetState.local =>
+        baseQuery.remoteIdIsNull().filter().localIdIsNotNull(),
+      AssetState.remote =>
+        baseQuery.localIdIsNull().filter().remoteIdIsNotNull(),
+      AssetState.merged =>
+        baseQuery.localIdIsNotNull().filter().remoteIdIsNotNull(),
+    };
     return _getMatchesImpl(query, ownerId, assets, limit);
   }
 
@@ -216,6 +197,61 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
   @override
   Future<void> deleteAllByRemoteId(List<String> ids, {AssetState? state}) =>
       txn(() => _getAllByRemoteIdImpl(ids, state).deleteAll());
+
+  @override
+  Future<List<Asset>> getStackAssets(String stackId) {
+    return db.assets
+        .filter()
+        .isArchivedEqualTo(false)
+        .isTrashedEqualTo(false)
+        .stackIdEqualTo(stackId)
+        // orders primary asset first as its ID is null
+        .sortByStackPrimaryAssetId()
+        .thenByFileCreatedAtDesc()
+        .findAll();
+  }
+
+  @override
+  Future<void> clearTable() async {
+    await txn(() async {
+      await db.assets.clear();
+    });
+  }
+
+  @override
+  Stream<Asset?> watchAsset(int id, {bool fireImmediately = false}) {
+    return db.assets.watchObject(id, fireImmediately: fireImmediately);
+  }
+
+  @override
+  Future<List<Asset>> getTrashAssets(int userId) {
+    return db.assets
+        .where()
+        .remoteIdIsNotNull()
+        .filter()
+        .ownerIdEqualTo(userId)
+        .isTrashedEqualTo(true)
+        .findAll();
+  }
+
+  @override
+  Future<List<Asset>> getRecentlyAddedAssets(int userId) {
+    return db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .sortByFileCreatedAtDesc()
+        .findAll();
+  }
+
+  @override
+  Future<List<Asset>> getMotionAssets(int userId) {
+    return db.assets
+        .where()
+        .ownerIdEqualToAnyChecksum(userId)
+        .filter()
+        .livePhotoVideoIdIsNotNull()
+        .findAll();
+  }
 }
 
 Future<List<Asset>> _getMatchesImpl(

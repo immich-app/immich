@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/interfaces/auth.interface.dart';
 import 'package:immich_mobile/interfaces/auth_api.interface.dart';
@@ -74,7 +75,7 @@ class AuthService {
         isValid = true;
       }
     } catch (error) {
-      _log.severe("Error validating auxilary endpoint", error);
+      _log.severe("Error validating auxiliary endpoint", error);
     } finally {
       httpclient.close();
     }
@@ -186,7 +187,7 @@ class AuthService {
         _log.severe("Cannot resolve endpoint", error);
         continue;
       } catch (_) {
-        _log.severe("Auxilary server is not valid");
+        _log.severe("Auxiliary server is not valid");
         continue;
       }
     }

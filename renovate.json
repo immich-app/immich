@@ -4,6 +4,7 @@
     "config:recommended",
     "docker:pinDigests"
   ],
+  "recreateWhen": "never",
   "minimumReleaseAge": "5 days",
   "packageRules": [
     {

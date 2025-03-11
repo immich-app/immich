@@ -262,6 +262,11 @@ class GalleryViewerPage extends HookConsumerWidget {
 
     PhotoViewGalleryPageOptions buildAsset(BuildContext context, int index) {
       var newAsset = loadAsset(index);
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(currentAssetProvider.notifier).set(newAsset);
+      });
+
       final stackId = newAsset.stackId;
       if (stackId != null && currentIndex.value == index) {
         final stackElements =

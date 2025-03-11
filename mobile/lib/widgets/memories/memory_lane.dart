@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/memories/memory.model.dart';
 import 'package:immich_mobile/widgets/asset_grid/thumbnail_placeholder.dart';
+import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_value_provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -29,10 +31,17 @@ class MemoryLane extends HookConsumerWidget {
                     elevation: 2,
                     backgroundColor: Colors.black,
                     overlayColor: WidgetStateProperty.all(
-                      Colors.white.withOpacity(0.1),
+                      Colors.white.withValues(alpha: 0.1),
                     ),
                     onTap: (memoryIndex) {
                       ref.read(hapticFeedbackProvider.notifier).heavyImpact();
+                      if (memories[memoryIndex].assets.isNotEmpty) {
+                        final asset = memories[memoryIndex].assets[0];
+                        ref.read(currentAssetProvider.notifier).set(asset);
+                        if (asset.isVideo || asset.isMotionPhoto) {
+                          ref.read(videoPlaybackValueProvider.notifier).reset();
+                        }
+                      }
                       context.pushRoute(
                         MemoryRoute(
                           memories: memories,
@@ -75,7 +84,7 @@ class MemoryCard extends ConsumerWidget {
         children: [
           ColorFiltered(
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.2),
+              Colors.black.withValues(alpha: 0.2),
               BlendMode.darken,
             ),
             child: Hero(

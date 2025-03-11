@@ -41,7 +41,7 @@ className="border rounded-xl"
 :::info Permissions
 The **pgData** dataset must be owned by the user `netdata` (UID 999) for postgres to start. The other datasets must be owned by the user `root` (UID 0) or a group that includes the user `root` (UID 0) for immich to have the necessary permissions.
 
-If the **library** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/core/coretutorials/storage/pools/permissions/#access-control-lists) set to `Passthrough` if you plan on using a [storage template](/docs/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library**, immich performs `chmod` internally and needs to be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
+If the **library** dataset uses ACL it must have [ACL mode](https://www.truenas.com/docs/core/coretutorials/storage/pools/permissions/#access-control-lists) set to `Passthrough` if you plan on using a [storage template](/docs/administration/storage-template.mdx) and the dataset is configured for network sharing (its ACL type is set to `SMB/NFSv4`). When the template is applied and files need to be moved from **upload** to **library**, Immich performs `chmod` internally and needs to be allowed to execute the command. [More info.](https://github.com/immich-app/immich/pull/13017)
 :::
 
 ## Installing the Immich Application
@@ -160,6 +160,10 @@ The image above has example values.
 
 ### Additional Storage [(External Libraries)](/docs/features/libraries)
 
+:::danger Advanced Users Only
+This feature should only be used by advanced users. If this is your first time installing Immich, then DO NOT mount an external library until you have a working setup. Also, your mount path MUST be something unique and should NOT be your library or upload location or a Linux directory like `/lib`. The picture below shows a valid example.
+:::
+
 <img
 src={require('./img/truenas10.webp').default}
 width="40%"
@@ -168,7 +172,7 @@ className="border rounded-xl"
 />
 
 You may configure [External Libraries](/docs/features/libraries) by mounting them using **Additional Storage**.
-The **Mount Path** is the loaction you will need to copy and paste into the External Library settings within Immich.
+The **Mount Path** is the location you will need to copy and paste into the External Library settings within Immich.
 The **Host Path** is the location on the TrueNAS SCALE server where your external library is located.
 
 <!-- A section for Labels would go here but I don't know what they do. -->
@@ -194,7 +198,7 @@ The **CPU** value was specified in a different format with a default of `4000m` 
 The **Memory** value was specified in a different format with a default of `8Gi` which is 8 GiB of RAM. The value was specified in bytes or a number with a measurement suffix. Examples: `129M`, `123Mi`, `1000000000`
 :::
 
-Enable **GPU Configuration** options if you have a GPU that you will use for [Hardware Transcoding](/docs/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md). More info: [GPU Passtrough Docs for TrueNAS Apps](https://www.truenas.com/docs/truenasapps/#gpu-passthrough)
+Enable **GPU Configuration** options if you have a GPU that you will use for [Hardware Transcoding](/docs/features/hardware-transcoding) and/or [Hardware-Accelerated Machine Learning](/docs/features/ml-hardware-acceleration.md). More info: [GPU Passthrough Docs for TrueNAS Apps](https://www.truenas.com/docs/truenasapps/#gpu-passthrough)
 
 ### Install
 

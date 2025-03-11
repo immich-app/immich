@@ -6,7 +6,17 @@ import { Albums, DB } from 'src/db';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto } from 'src/dtos/album.dto';
 import { AlbumEntity } from 'src/entities/album.entity';
-import { AlbumAssetCount, AlbumInfoOptions, IAlbumRepository } from 'src/interfaces/album.interface';
+
+export interface AlbumAssetCount {
+  albumId: string;
+  assetCount: number;
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export interface AlbumInfoOptions {
+  withAssets: boolean;
+}
 
 const userColumns = [
   'id',
@@ -59,11 +69,10 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
         .selectFrom('assets')
         .selectAll('assets')
         .innerJoin('exif', 'assets.id', 'exif.assetId')
-        .select((eb) => eb.fn.toJson('exif').as('exifInfo'))
+        .select((eb) => eb.table('exif').as('exifInfo'))
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')
         .where('assets.deletedAt', 'is', null)
-        .where('assets.isArchived', '=', false)
         .orderBy('assets.fileCreatedAt', 'desc')
         .as('asset'),
     )
@@ -72,7 +81,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
 };
 
 @Injectable()
-export class AlbumRepository implements IAlbumRepository {
+export class AlbumRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID, { withAssets: true }] })
@@ -94,14 +103,19 @@ export class AlbumRepository implements IAlbumRepository {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
-      .leftJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
-      .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'albums.id')
+      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
       .where((eb) =>
         eb.or([
-          eb.and([eb('albums.ownerId', '=', ownerId), eb('album_assets.assetsId', '=', assetId)]),
-          eb.and([eb('album_users.usersId', '=', ownerId), eb('album_assets.assetsId', '=', assetId)]),
+          eb('albums.ownerId', '=', ownerId),
+          eb.exists(
+            eb
+              .selectFrom('albums_shared_users_users as album_users')
+              .whereRef('album_users.albumsId', '=', 'albums.id')
+              .where('album_users.usersId', '=', ownerId),
+          ),
         ]),
       )
+      .where('album_assets.assetsId', '=', assetId)
       .where('albums.deletedAt', 'is', null)
       .orderBy('albums.createdAt', 'desc')
       .select(withOwner)
@@ -118,24 +132,18 @@ export class AlbumRepository implements IAlbumRepository {
       return [];
     }
 
-    const metadatas = await this.db
+    return this.db
       .selectFrom('albums')
-      .leftJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
-      .leftJoin('assets', 'assets.id', 'album_assets.assetsId')
-      .select('albums.id')
-      .select((eb) => eb.fn.min('assets.fileCreatedAt').as('startDate'))
-      .select((eb) => eb.fn.max('assets.fileCreatedAt').as('endDate'))
-      .select((eb) => eb.fn.count('assets.id').as('assetCount'))
+      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
+      .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
+      .select('albums.id as albumId')
+      .select((eb) => eb.fn.min('assets.localDateTime').as('startDate'))
+      .select((eb) => eb.fn.max('assets.localDateTime').as('endDate'))
+      .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
       .where('albums.id', 'in', ids)
+      .where('assets.deletedAt', 'is', null)
       .groupBy('albums.id')
       .execute();
-
-    return metadatas.map((metadatas) => ({
-      albumId: metadatas.id,
-      assetCount: Number(metadatas.assetCount),
-      startDate: metadatas.startDate ? new Date(metadatas.startDate) : undefined,
-      endDate: metadatas.endDate ? new Date(metadatas.endDate) : undefined,
-    }));
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -160,14 +168,20 @@ export class AlbumRepository implements IAlbumRepository {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
-      .distinctOn('albums.createdAt')
-      .leftJoin('albums_shared_users_users as shared_albums', 'shared_albums.albumsId', 'albums.id')
-      .leftJoin('shared_links', 'shared_links.albumId', 'albums.id')
       .where((eb) =>
         eb.or([
-          eb('shared_albums.usersId', '=', ownerId),
-          eb('shared_links.userId', '=', ownerId),
-          eb.and([eb('albums.ownerId', '=', ownerId), eb('shared_albums.usersId', 'is not', null)]),
+          eb.exists(
+            eb
+              .selectFrom('albums_shared_users_users as album_users')
+              .whereRef('album_users.albumsId', '=', 'albums.id')
+              .where((eb) => eb.or([eb('albums.ownerId', '=', ownerId), eb('album_users.usersId', '=', ownerId)])),
+          ),
+          eb.exists(
+            eb
+              .selectFrom('shared_links')
+              .whereRef('shared_links.albumId', '=', 'albums.id')
+              .where('shared_links.userId', '=', ownerId),
+          ),
         ]),
       )
       .where('albums.deletedAt', 'is', null)
@@ -186,16 +200,21 @@ export class AlbumRepository implements IAlbumRepository {
     return this.db
       .selectFrom('albums')
       .selectAll('albums')
-      .distinctOn('albums.createdAt')
-      .leftJoin('albums_shared_users_users as shared_albums', 'shared_albums.albumsId', 'albums.id')
-      .leftJoin('shared_links', 'shared_links.albumId', 'albums.id')
       .where('albums.ownerId', '=', ownerId)
-      .where('shared_albums.usersId', 'is', null)
-      .where('shared_links.userId', 'is', null)
       .where('albums.deletedAt', 'is', null)
-      .select(withAlbumUsers)
+      .where((eb) =>
+        eb.not(
+          eb.exists(
+            eb
+              .selectFrom('albums_shared_users_users as album_users')
+              .whereRef('album_users.albumsId', '=', 'albums.id'),
+          ),
+        ),
+      )
+      .where((eb) =>
+        eb.not(eb.exists(eb.selectFrom('shared_links').whereRef('shared_links.albumId', '=', 'albums.id'))),
+      )
       .select(withOwner)
-      .select(withSharedLink)
       .orderBy('albums.createdAt', 'desc')
       .execute() as unknown as Promise<AlbumEntity[]>;
   }
@@ -282,7 +301,6 @@ export class AlbumRepository implements IAlbumRepository {
         .selectAll()
         .where('id', '=', newAlbum.id)
         .select(withOwner)
-        .select(withSharedLink)
         .select(withAssets)
         .select(withAlbumUsers)
         .executeTakeFirst() as unknown as Promise<AlbumEntity>;
@@ -292,7 +310,7 @@ export class AlbumRepository implements IAlbumRepository {
   update(id: string, album: Updateable<Albums>): Promise<AlbumEntity> {
     return this.db
       .updateTable('albums')
-      .set({ ...album, updatedAt: new Date() })
+      .set(album)
       .where('id', '=', id)
       .returningAll('albums')
       .returning(withOwner)
@@ -335,7 +353,6 @@ export class AlbumRepository implements IAlbumRepository {
           .select('album_assets.assetsId')
           .orderBy('assets.fileCreatedAt', 'desc')
           .limit(1),
-        updatedAt: new Date(),
       }))
       .where((eb) =>
         eb.or([

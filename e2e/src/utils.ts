@@ -6,6 +6,8 @@ import {
   CheckExistingAssetsDto,
   CreateAlbumDto,
   CreateLibraryDto,
+  JobCommandDto,
+  JobName,
   MetadataSearchDto,
   Permission,
   PersonCreateDto,
@@ -26,9 +28,12 @@ import {
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
+  getConfig,
   getConfigDefaults,
   login,
+  scanLibrary,
   searchAssets,
+  sendJobCommand,
   setBaseUrl,
   signUpAdmin,
   tagAssets,
@@ -117,6 +122,7 @@ const execPromise = promisify(exec);
 const onEvent = ({ event, id }: { event: EventType; id: string }) => {
   // console.log(`Received event: ${event} [id=${id}]`);
   const set = events[event];
+
   set.add(id);
 
   const idCallback = idCallbacks[id];
@@ -411,6 +417,8 @@ export const utils = {
     rmSync(path, { recursive: true });
   },
 
+  getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
+
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 
   checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
@@ -474,6 +482,9 @@ export const utils = {
 
   tagAssets: (accessToken: string, tagId: string, assetIds: string[]) =>
     tagAssets({ id: tagId, bulkIdsDto: { ids: assetIds } }, { headers: asBearerAuth(accessToken) }),
+
+  jobCommand: async (accessToken: string, jobName: JobName, jobCommandDto: JobCommandDto) =>
+    sendJobCommand({ id: jobName, jobCommandDto }, { headers: asBearerAuth(accessToken) }),
 
   setAuthCookies: async (context: BrowserContext, accessToken: string, domain = '127.0.0.1') =>
     await context.addCookies([
@@ -546,6 +557,14 @@ export const utils = {
     const key = await utils.createApiKey(accessToken, [Permission.All]);
     await immichCli(['login', app, `${key.secret}`]);
     return key.secret;
+  },
+
+  scan: async (accessToken: string, id: string) => {
+    await scanLibrary({ id }, { headers: asBearerAuth(accessToken) });
+
+    await utils.waitForQueueFinish(accessToken, 'library');
+    await utils.waitForQueueFinish(accessToken, 'sidecar');
+    await utils.waitForQueueFinish(accessToken, 'metadataExtraction');
   },
 };
 

@@ -43,10 +43,12 @@ jobs:
               - 'mobile/**'
             machine-learning:
               - 'machine-learning/**'
+            workflow:
+              - '.github/workflows/test.yml'
 
       - name: Check if we should force jobs to run
         id: should_force
-        run: echo "should_force=${{ github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
+        run: echo "should_force=${{ steps.found_paths.outputs.workflow == 'true' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
 
   server-unit-tests:
     name: Test & Lint Server
@@ -244,25 +246,30 @@ jobs:
         run: npm run check
         if: ${{ !cancelled() }}
 
-  medium-tests-server:
+  server-medium-tests:
     name: Medium Tests (Server)
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_server == 'true' }}
-    runs-on: mich
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./server
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
 
-      - name: Production build
-        if: ${{ !cancelled() }}
-        run: docker compose -f e2e/docker-compose.yml build
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './server/.nvmrc'
+
+      - name: Run npm install
+        run: npm ci
 
       - name: Run medium tests
+        run: npm run test:medium
         if: ${{ !cancelled() }}
-        run: make test-medium
 
   e2e-tests-server-cli:
     name: End-to-End Tests (Server & CLI)
@@ -373,27 +380,28 @@ jobs:
         working-directory: ./machine-learning
     steps:
       - uses: actions/checkout@v4
-      - name: Install poetry
-        run: pipx install poetry
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-          cache: 'poetry'
+        # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
+        # with:
+        #   python-version: 3.11
+        #   cache: 'uv'
       - name: Install dependencies
         run: |
-          poetry install --with dev --with cpu
+          uv sync --extra cpu
       - name: Lint with ruff
         run: |
-          poetry run ruff check --output-format=github app export
+          uv run ruff check --output-format=github app export
       - name: Check black formatting
         run: |
-          poetry run black --check app export
+          uv run black --check app export
       - name: Run mypy type checking
         run: |
-          mkdir .mypy_cache && poetry run mypy --install-types --non-interactive --strict app/
+          uv run mypy --strict app/
       - name: Run tests and coverage
         run: |
-          poetry run pytest app --cov=app --cov-report term-missing
+          uv run pytest app --cov=app --cov-report term-missing
 
   shellcheck:
     name: ShellCheck
@@ -450,7 +458,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_USER: postgres
@@ -502,6 +510,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          cat ./src/migrations/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

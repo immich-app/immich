@@ -60,7 +60,7 @@ Podeu trobar la documentació principal, incloent les guies d'instal·lació, a 
 
 Podeu accedir a la demostració web a https://demo.immich.app
 
-Per a l'aplicació mòbil, podeu utilitzar `https://demo.immich.app/api` com a "URL de punt final del servidor".
+Per a l'aplicació mòbil, podeu utilitzar `https://demo.immich.app` com a "URL de punt final del servidor".
 
 ```bash title="Credencials de la demo"
 Les credencials

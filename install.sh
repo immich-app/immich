@@ -51,9 +51,13 @@ start_docker_compose() {
 show_friendly_message() {
   local ip_address
   ip_address=$(hostname -I | awk '{print $1}')
+  # If length of ip_address is 0, then we are on a Mac
+  if [ ${#ip_address} -eq 0 ]; then
+    ip_address=$(ipconfig getifaddr en0)
+  fi
   cat <<EOF
 Successfully deployed Immich!
-You can access the website at http://$ip_address:2283 and the server URL for the mobile app is http://$ip_address:2283/api
+You can access the website or the mobile app at http://$ip_address:2283
 ---------------------------------------------------
 If you want to configure custom information of the server, including the database, Redis information, or the backup (or upload) location, etc.
 

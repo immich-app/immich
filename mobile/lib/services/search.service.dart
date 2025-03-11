@@ -84,6 +84,10 @@ class SearchService {
                     ? filter.filename
                     : null,
             country: filter.location.country,
+            description:
+                filter.description != null && filter.description!.isNotEmpty
+                    ? filter.description
+                    : null,
             state: filter.location.state,
             city: filter.location.city,
             make: filter.camera.make,
@@ -101,7 +105,7 @@ class SearchService {
         );
       }
 
-      if (response == null) {
+      if (response == null || response.assets.items.isEmpty) {
         return null;
       }
 

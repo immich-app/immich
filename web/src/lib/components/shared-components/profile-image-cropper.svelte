@@ -58,7 +58,13 @@
     }
 
     try {
-      const blob = await domtoimage.toBlob(imgElement);
+      const imgElementHeight = imgElement.offsetHeight;
+      const imgElementWidth = imgElement.offsetWidth;
+      const blob = await domtoimage.toBlob(imgElement, {
+        width: imgElementWidth,
+        height: imgElementHeight,
+      });
+
       if (await hasTransparentPixels(blob)) {
         notificationController.show({
           type: NotificationType.Error,

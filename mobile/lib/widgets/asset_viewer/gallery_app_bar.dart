@@ -5,6 +5,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/scroll_to_date_notifier.provider.dart';
+import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/show_controls.provider.dart';
@@ -49,7 +51,8 @@ class GalleryAppBar extends ConsumerWidget {
     }
 
     handleRestore(Asset asset) async {
-      final result = await ref.read(trashProvider.notifier).restoreAsset(asset);
+      final result =
+          await ref.read(trashProvider.notifier).restoreAssets([asset]);
 
       if (result && context.mounted) {
         ImmichToast.show(
@@ -94,18 +97,29 @@ class GalleryAppBar extends ConsumerWidget {
       ref.read(downloadStateProvider.notifier).downloadAsset(asset, context);
     }
 
+    handleLocateAsset() async {
+      // Go back to the gallery
+      await context.maybePop();
+      await context
+          .navigateTo(const TabControllerRoute(children: [PhotosRoute()]));
+      ref.read(tabProvider.notifier).update((state) => state = TabEnum.home);
+      // Scroll to the asset's date
+      scrollToDateNotifierProvider.scrollToDate(asset.fileCreatedAt);
+    }
+
     return IgnorePointer(
       ignoring: !showControls,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 100),
         opacity: showControls ? 1.0 : 0.0,
         child: Container(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           child: TopControlAppBar(
             isOwner: isOwner,
             isPartner: isPartner,
             asset: asset,
             onMoreInfoPressed: showInfo,
+            onLocatePressed: handleLocateAsset,
             onFavorite: toggleFavorite,
             onRestorePressed: () => handleRestore(asset),
             onUploadPressed: asset.isLocal ? () => handleUpload(asset) : null,

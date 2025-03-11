@@ -50,19 +50,18 @@ The Immich CLI is an [npm](https://www.npmjs.com/) package that lets users contr
 
 The Immich backend is divided into several services, which are run as individual docker containers.
 
-1. `immich-server` - Handle and respond to REST API requests
-1. `immich-microservices` - Execute background jobs (thumbnail generation, metadata extraction, transcoding, etc.)
+1. `immich-server` - Handle and respond to REST API requests, execute background jobs (thumbnail generation, metadata extraction, transcoding, etc.)
 1. `immich-machine-learning` - Execute machine learning models
 1. `postgres` - Persistent data storage
-1. `redis`- Queue management for `immich-microservices`
+1. `redis`- Queue management for background jobs
 
 ### Immich Server
 
-The Immich Server is a [TypeScript](https://www.typescriptlang.org/) project written for [Node.js](https://nodejs.org/). It uses the [Nest.js](https://nestjs.com) framework, with [TypeORM](https://typeorm.io/) for database management. The server codebase also loosely follows the [Hexagonal Architecture](<https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)>). Specifically, we aim to separate technology specific implementations (`infra/`) from core business logic (`domain/`).
+The Immich Server is a [TypeScript](https://www.typescriptlang.org/) project written for [Node.js](https://nodejs.org/). It uses the [Nest.js](https://nestjs.com) framework, [Express](https://expressjs.com/) server, and the query builder [Kysely](https://kysely.dev/). The server codebase also loosely follows the [Hexagonal Architecture](<https://en.wikipedia.org/wiki/Hexagonal_architecture_(software)>). Specifically, we aim to separate technology specific implementations (`src/repositories`) from core business logic (`src/services`).
 
-#### REST Endpoints
+### API Endpoints
 
-The server is a list of HTTP endpoints and associated handlers (controllers). Each controller usually implements the following CRUD operations:
+An incoming HTTP request is mapped to a controller (`src/controllers`). Controllers are collections of HTTP endpoints. Each controller usually implements the following CRUD operations for its respective resource type:
 
 - `POST` `/<type>` - **Create**
 - `GET` `/<type>` - **Read** (all)
@@ -70,13 +69,13 @@ The server is a list of HTTP endpoints and associated handlers (controllers). Ea
 - `PUT` `/<type>/:id` - **Updated** (by id)
 - `DELETE` `/<type>/:id` - **Delete** (by id)
 
-#### DTOs
+### Domain Transfer Objects (DTOs)
 
 The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](./open-api.md) schemas and control the generated code used by each client.
 
-### Microservices
+### Background Jobs
 
-The Immich Microservices image uses the same `Dockerfile` as the Immich Server, but with a different entrypoint. The Immich Microservices service mainly handles executing jobs, which include the following:
+Immich uses a [worker](https://github.com/immich-app/immich/blob/main/server/src/utils/misc.ts#L266) to run background jobs. These jobs include:
 
 - Thumbnail Generation
 - Metadata Extraction

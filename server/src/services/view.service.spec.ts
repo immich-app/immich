@@ -1,18 +1,15 @@
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { ViewService } from 'src/services/view.service';
-import { IViewRepository } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { newTestService } from 'test/utils';
-
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(ViewService.name, () => {
   let sut: ViewService;
-  let viewMock: Mocked<IViewRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, viewMock } = newTestService(ViewService));
+    ({ sut, mocks } = newTestService(ViewService));
   });
 
   it('should work', () => {
@@ -22,12 +19,12 @@ describe(ViewService.name, () => {
   describe('getUniqueOriginalPaths', () => {
     it('should return unique original paths', async () => {
       const mockPaths = ['path1', 'path2', 'path3'];
-      viewMock.getUniqueOriginalPaths.mockResolvedValue(mockPaths);
+      mocks.view.getUniqueOriginalPaths.mockResolvedValue(mockPaths);
 
       const result = await sut.getUniqueOriginalPaths(authStub.admin);
 
       expect(result).toEqual(mockPaths);
-      expect(viewMock.getUniqueOriginalPaths).toHaveBeenCalledWith(authStub.admin.user.id);
+      expect(mocks.view.getUniqueOriginalPaths).toHaveBeenCalledWith(authStub.admin.user.id);
     });
   });
 
@@ -42,11 +39,11 @@ describe(ViewService.name, () => {
 
       const mockAssetReponseDto = mockAssets.map((a) => mapAsset(a, { auth: authStub.admin }));
 
-      viewMock.getAssetsByOriginalPath.mockResolvedValue(mockAssets as any);
+      mocks.view.getAssetsByOriginalPath.mockResolvedValue(mockAssets as any);
 
       const result = await sut.getAssetsByOriginalPath(authStub.admin, path);
       expect(result).toEqual(mockAssetReponseDto);
-      await expect(viewMock.getAssetsByOriginalPath(authStub.admin.user.id, path)).resolves.toEqual(mockAssets);
+      await expect(mocks.view.getAssetsByOriginalPath(authStub.admin.user.id, path)).resolves.toEqual(mockAssets);
     });
   });
 });

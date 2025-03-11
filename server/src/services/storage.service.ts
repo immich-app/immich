@@ -3,10 +3,9 @@ import { join } from 'node:path';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import { SystemFlags } from 'src/entities/system-metadata.entity';
-import { StorageFolder, SystemMetadataKey } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { DatabaseLock, JobName, JobStatus, QueueName, StorageFolder, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { ImmichStartupError } from 'src/utils/misc';
 
 const docsMessage = `Please see https://immich.app/docs/administration/system-integrity#folder-checks for more information.`;
@@ -55,7 +54,7 @@ export class StorageService extends BaseService {
         this.logger.log('Successfully verified system mount folder checks');
       } catch (error) {
         if (envData.storage.ignoreMountCheckErrors) {
-          this.logger.error(error);
+          this.logger.error(error as Error);
           this.logger.warn('Ignoring mount folder errors');
         } else {
           throw error;

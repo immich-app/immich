@@ -47,15 +47,18 @@ with
               and "asset_files"."type" = $6
           )
           and "assets"."deletedAt" is null
+        order by
+          (assets."localDateTime" at time zone 'UTC')::date desc
         limit
           $7
       ) as "a" on true
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
 select
-  (
-    (now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date
-  ) / 365 as "yearsAgo",
+  date_part(
+    'year',
+    ("localDateTime" at time zone 'UTC')::date
+  )::int as "year",
   json_agg("res") as "assets"
 from
   "res"
@@ -94,6 +97,7 @@ select
       left join "person" on "person"."id" = "asset_faces"."personId"
     where
       "asset_faces"."assetId" = "assets"."id"
+      and "asset_faces"."deletedAt" is null
   ) as "faces",
   (
     select
@@ -157,6 +161,9 @@ where
   "ownerId" = $1::uuid
   and "deviceId" = $2
   and "isVisible" = $3
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "deletedAt" is null
 
 -- AssetRepository.getLivePhotoCount
@@ -258,6 +265,9 @@ with
     where
       "assets"."deletedAt" is null
       and "assets"."isVisible" = $2
+      and "assets"."fileCreatedAt" is not null
+      and "assets"."fileModifiedAt" is not null
+      and "assets"."localDateTime" is not null
   )
 select
   "timeBucket",
@@ -306,17 +316,27 @@ order by
 with
   "duplicates" as (
     select
-      "duplicateId",
-      jsonb_agg("assets") as "assets"
+      "assets"."duplicateId",
+      jsonb_agg("asset") as "assets"
     from
       "assets"
+      left join lateral (
+        select
+          "assets".*,
+          "exif" as "exifInfo"
+        from
+          "exif"
+        where
+          "exif"."assetId" = "assets"."id"
+      ) as "asset" on true
     where
-      "ownerId" = $1::uuid
-      and "duplicateId" is not null
-      and "deletedAt" is null
-      and "isVisible" = $2
+      "assets"."ownerId" = $1::uuid
+      and "assets"."duplicateId" is not null
+      and "assets"."deletedAt" is null
+      and "assets"."isVisible" = $2
+      and "assets"."stackId" is null
     group by
-      "duplicateId"
+      "assets"."duplicateId"
   ),
   "unique" as (
     select
@@ -400,8 +420,8 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = $1::uuid
-  and "isVisible" = $2
-  and "updatedAt" <= $3
+  and "assets"."isVisible" = $2
+  and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
   "assets"."id"
@@ -430,7 +450,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = any ($1::uuid[])
-  and "isVisible" = $2
-  and "updatedAt" > $3
+  and "assets"."isVisible" = $2
+  and "assets"."updatedAt" > $3
 limit
   $4

@@ -116,11 +116,11 @@
           {/if}
 
           <Field label={$t('email')}>
-            <Input name="email" type="email" autocomplete="email" bind:value={email} />
+            <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
           </Field>
 
           <Field label={$t('password')}>
-            <PasswordInput bind:value={password} autocomplete="current-password" />
+            <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
           </Field>
 
           <Button type="submit" size="large" shape="round" fullWidth {loading} class="mt-6">{$t('to_login')}</Button>

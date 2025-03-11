@@ -2,7 +2,7 @@ import React from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
 import { useColorMode } from '@docusaurus/theme-common';
-import { discordPath } from '@site/src/components/svg-paths';
+import { discordPath, discordViewBox } from '@site/src/components/svg-paths';
 import Icon from '@mdi/react';
 function HomepageHeader() {
   const { isDarkTheme } = useColorMode();
@@ -50,10 +50,21 @@ function HomepageHeader() {
           >
             Demo
           </Link>
+
+          <Link
+            className="flex place-items-center place-content-center py-3 px-8 border bg-immich-primary/10 dark:bg-gray-300  rounded-xl hover:no-underline text-immich-primary dark:text-immich-dark-bg font-bold uppercase"
+            to="https://immich.store"
+          >
+            Buy Merch
+          </Link>
         </div>
 
         <div className="my-12 flex gap-1 font-medium place-items-center place-content-center text-immich-primary dark:text-immich-dark-primary">
-          <Icon path={discordPath} size={1} />
+          <Icon
+            path={discordPath}
+            viewBox={discordViewBox} /* viewBox may show an error in your IDE but it is normal. */
+            size={1}
+          />
           <Link to="https://discord.immich.app/">Join our Discord</Link>
         </div>
         <img

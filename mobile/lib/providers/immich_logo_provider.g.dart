@@ -6,7 +6,7 @@ part of 'immich_logo_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$immichLogoHash() => r'040cc44fae3339e0f40a091fb3b2f2abe9f83acd';
+String _$immichLogoHash() => r'6f23d217c44279537b7edee1ca80ebf47f69a4d0';
 
 /// See also [immichLogo].
 @ProviderFor(immichLogo)
@@ -19,6 +19,8 @@ final immichLogoProvider = AutoDisposeFutureProvider<Uint8List>.internal(
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef ImmichLogoRef = AutoDisposeFutureProviderRef<Uint8List>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

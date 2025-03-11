@@ -16,7 +16,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserEntity } from 'src/entities/album-user.entity';
 import { AlbumEntity } from 'src/entities/album.entity';
 import { Permission } from 'src/enum';
-import { AlbumAssetCount, AlbumInfoOptions } from 'src/interfaces/album.interface';
+import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.repository';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 
@@ -55,13 +55,7 @@ export class AlbumService extends BaseService {
     const results = await this.albumRepository.getMetadataForIds(albums.map((album) => album.id));
     const albumMetadata: Record<string, AlbumAssetCount> = {};
     for (const metadata of results) {
-      const { albumId, assetCount, startDate, endDate } = metadata;
-      albumMetadata[albumId] = {
-        albumId,
-        assetCount,
-        startDate,
-        endDate,
-      };
+      albumMetadata[metadata.albumId] = metadata;
     }
 
     return Promise.all(
@@ -70,9 +64,9 @@ export class AlbumService extends BaseService {
         return {
           ...mapAlbumWithoutAssets(album),
           sharedLinks: undefined,
-          startDate: albumMetadata[album.id].startDate,
-          endDate: albumMetadata[album.id].endDate,
-          assetCount: albumMetadata[album.id].assetCount,
+          startDate: albumMetadata[album.id]?.startDate ?? undefined,
+          endDate: albumMetadata[album.id]?.endDate ?? undefined,
+          assetCount: albumMetadata[album.id]?.assetCount ?? 0,
           lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
         };
       }),
@@ -89,9 +83,9 @@ export class AlbumService extends BaseService {
 
     return {
       ...mapAlbum(album, withAssets, auth),
-      startDate: albumMetadataForIds.startDate,
-      endDate: albumMetadataForIds.endDate,
-      assetCount: albumMetadataForIds.assetCount,
+      startDate: albumMetadataForIds?.startDate ?? undefined,
+      endDate: albumMetadataForIds?.endDate ?? undefined,
+      assetCount: albumMetadataForIds?.assetCount ?? 0,
       lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
     };
   }

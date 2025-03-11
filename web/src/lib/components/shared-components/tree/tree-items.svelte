@@ -15,7 +15,8 @@
 </script>
 
 <ul class="list-none ml-2">
-  {#each Object.entries(items) as [path, tree]}
+  <!-- eslint-disable-next-line svelte/require-each-key -->
+  {#each Object.entries(items).sort() as [path, tree]}
     {@const value = normalizeTreePath(`${parent}/${path}`)}
     {@const key = value + getColor(value)}
     {#key key}

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { UserResponseDto } from 'src/dtos/user.dto';
-import { PartnerDirection } from 'src/interfaces/partner.interface';
+import { PartnerDirection } from 'src/repositories/partner.repository';
 
 export class UpdatePartnerDto {
   @IsNotEmpty()

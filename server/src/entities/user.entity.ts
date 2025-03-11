@@ -10,12 +10,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('users')
+@Index('IDX_users_updated_at_asc_id_asc', ['updatedAt', 'id'])
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -55,6 +57,10 @@ export class UserEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Index('IDX_users_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
 
   @OneToMany(() => TagEntity, (tag) => tag.user)
   tags!: TagEntity[];

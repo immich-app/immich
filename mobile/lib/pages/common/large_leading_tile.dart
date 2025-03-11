@@ -16,6 +16,8 @@ class LargeLeadingTile extends StatelessWidget {
     this.trailing,
     this.selected = false,
     this.disabled = false,
+    this.selectedTileColor,
+    this.tileColor,
   });
 
   final Widget leading;
@@ -27,6 +29,9 @@ class LargeLeadingTile extends StatelessWidget {
   final Widget? trailing;
   final bool selected;
   final bool disabled;
+  final Color? selectedTileColor;
+  final Color? tileColor;
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -35,8 +40,9 @@ class LargeLeadingTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: selected
-              ? Theme.of(context).primaryColor.withAlpha(30)
-              : Colors.transparent,
+              ? selectedTileColor ??
+                  Theme.of(context).primaryColor.withAlpha(30)
+              : tileColor ?? Colors.transparent,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
         child: Row(

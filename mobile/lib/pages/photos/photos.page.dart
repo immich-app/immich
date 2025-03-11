@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/multiselect.provider.dart';
+import 'package:immich_mobile/providers/timeline.provider.dart';
 import 'package:immich_mobile/widgets/memories/memory_lane.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -83,11 +84,18 @@ class PhotosPage extends HookConsumerWidget {
 
     Future<void> refreshAssets() async {
       final fullRefresh = refreshCount.value > 0;
-      await ref.read(assetProvider.notifier).getAllAsset(clear: fullRefresh);
+
       if (fullRefresh) {
+        Future.wait([
+          ref.read(assetProvider.notifier).getAllAsset(clear: true),
+          ref.read(albumProvider.notifier).refreshRemoteAlbums(),
+        ]);
+
         // refresh was forced: user requested another refresh within 2 seconds
         refreshCount.value = 0;
       } else {
+        await ref.read(assetProvider.notifier).getAllAsset(clear: false);
+
         refreshCount.value++;
         // set counter back to 0 if user does not request refresh again
         Timer(const Duration(seconds: 4), () => refreshCount.value = 0);
@@ -101,8 +109,8 @@ class PhotosPage extends HookConsumerWidget {
               ? const MemoryLane()
               : const SizedBox(),
           renderListProvider: timelineUsers.length > 1
-              ? multiUserAssetsProvider(timelineUsers)
-              : assetsProvider(currentUser?.isarId),
+              ? multiUsersTimelineProvider(timelineUsers)
+              : singleUserTimelineProvider(currentUser?.isarId),
           buildLoadingIndicator: buildLoadingIndicator,
           onRefresh: refreshAssets,
           stackEnabled: true,

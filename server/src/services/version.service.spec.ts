@@ -1,15 +1,11 @@
 import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
 import { serverVersion } from 'src/constants';
-import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
-import { IEventRepository } from 'src/interfaces/event.interface';
-import { IJobRepository, JobName, JobStatus } from 'src/interfaces/job.interface';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
-import { IConfigRepository, ILoggingRepository, IServerInfoRepository, IVersionHistoryRepository } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { factory } from 'test/small.factory';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 const mockRelease = (version: string) => ({
   id: 1,
@@ -23,18 +19,10 @@ const mockRelease = (version: string) => ({
 
 describe(VersionService.name, () => {
   let sut: VersionService;
-
-  let configMock: Mocked<IConfigRepository>;
-  let eventMock: Mocked<IEventRepository>;
-  let jobMock: Mocked<IJobRepository>;
-  let loggerMock: Mocked<ILoggingRepository>;
-  let serverInfoMock: Mocked<IServerInfoRepository>;
-  let systemMock: Mocked<ISystemMetadataRepository>;
-  let versionHistoryMock: Mocked<IVersionHistoryRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, configMock, eventMock, jobMock, loggerMock, serverInfoMock, systemMock, versionHistoryMock } =
-      newTestService(VersionService));
+    ({ sut, mocks } = newTestService(VersionService));
   });
 
   it('should work', () => {
@@ -43,18 +31,23 @@ describe(VersionService.name, () => {
 
   describe('onBootstrap', () => {
     it('should record a new version', async () => {
+      mocks.versionHistory.getAll.mockResolvedValue([]);
+      mocks.versionHistory.getLatest.mockResolvedValue(void 0);
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
+
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
-      expect(versionHistoryMock.create).toHaveBeenCalledWith({ version: expect.any(String) });
+
+      expect(mocks.versionHistory.create).toHaveBeenCalledWith({ version: expect.any(String) });
     });
 
     it('should skip a duplicate version', async () => {
-      versionHistoryMock.getLatest.mockResolvedValue({
+      mocks.versionHistory.getLatest.mockResolvedValue({
         id: 'version-1',
         createdAt: new Date(),
         version: serverVersion.toString(),
       });
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
-      expect(versionHistoryMock.create).not.toHaveBeenCalled();
+      expect(mocks.versionHistory.create).not.toHaveBeenCalled();
     });
   });
 
@@ -71,7 +64,7 @@ describe(VersionService.name, () => {
   describe('getVersionHistory', () => {
     it('should respond the server version history', async () => {
       const upgrade = { id: 'upgrade-1', createdAt: new Date(), version: '1.0.0' };
-      versionHistoryMock.getAll.mockResolvedValue([upgrade]);
+      mocks.versionHistory.getAll.mockResolvedValue([upgrade]);
       await expect(sut.getVersionHistory()).resolves.toEqual([upgrade]);
     });
   });
@@ -79,22 +72,22 @@ describe(VersionService.name, () => {
   describe('handQueueVersionCheck', () => {
     it('should queue a version check job', async () => {
       await expect(sut.handleQueueVersionCheck()).resolves.toBeUndefined();
-      expect(jobMock.queue).toHaveBeenCalledWith({ name: JobName.VERSION_CHECK, data: {} });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.VERSION_CHECK, data: {} });
     });
   });
 
   describe('handVersionCheck', () => {
     beforeEach(() => {
-      configMock.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.PRODUCTION }));
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.PRODUCTION }));
     });
 
     it('should not run in dev mode', async () => {
-      configMock.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.DEVELOPMENT }));
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.DEVELOPMENT }));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
     });
 
     it('should not run if the last check was < 60 minutes ago', async () => {
-      systemMock.get.mockResolvedValue({
+      mocks.systemMetadata.get.mockResolvedValue({
         checkedAt: DateTime.utc().minus({ minutes: 5 }).toISO(),
         releaseVersion: '1.0.0',
       });
@@ -102,53 +95,53 @@ describe(VersionService.name, () => {
     });
 
     it('should not run if version check is disabled', async () => {
-      systemMock.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
+      mocks.systemMetadata.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SKIPPED);
     });
 
     it('should run if it has been > 60 minutes', async () => {
-      serverInfoMock.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
-      systemMock.get.mockResolvedValue({
+      mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
+      mocks.systemMetadata.get.mockResolvedValue({
         checkedAt: DateTime.utc().minus({ minutes: 65 }).toISO(),
         releaseVersion: '1.0.0',
       });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SUCCESS);
-      expect(systemMock.set).toHaveBeenCalled();
-      expect(loggerMock.log).toHaveBeenCalled();
-      expect(eventMock.clientBroadcast).toHaveBeenCalled();
+      expect(mocks.systemMetadata.set).toHaveBeenCalled();
+      expect(mocks.logger.log).toHaveBeenCalled();
+      expect(mocks.event.clientBroadcast).toHaveBeenCalled();
     });
 
     it('should not notify if the version is equal', async () => {
-      serverInfoMock.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
+      mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.SUCCESS);
-      expect(systemMock.set).toHaveBeenCalledWith(SystemMetadataKey.VERSION_CHECK_STATE, {
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.VERSION_CHECK_STATE, {
         checkedAt: expect.any(String),
         releaseVersion: serverVersion.toString(),
       });
-      expect(eventMock.clientBroadcast).not.toHaveBeenCalled();
+      expect(mocks.event.clientBroadcast).not.toHaveBeenCalled();
     });
 
     it('should handle a github error', async () => {
-      serverInfoMock.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
+      mocks.serverInfo.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.FAILED);
-      expect(systemMock.set).not.toHaveBeenCalled();
-      expect(eventMock.clientBroadcast).not.toHaveBeenCalled();
-      expect(loggerMock.warn).toHaveBeenCalled();
+      expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
+      expect(mocks.event.clientBroadcast).not.toHaveBeenCalled();
+      expect(mocks.logger.warn).toHaveBeenCalled();
     });
   });
 
   describe('onWebsocketConnectionEvent', () => {
     it('should send on_server_version client event', async () => {
       await sut.onWebsocketConnection({ userId: '42' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
-      expect(eventMock.clientSend).toHaveBeenCalledTimes(1);
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(mocks.event.clientSend).toHaveBeenCalledTimes(1);
     });
 
     it('should also send a new release notification', async () => {
-      systemMock.get.mockResolvedValue({ checkedAt: '2024-01-01', releaseVersion: 'v1.42.0' });
+      mocks.systemMetadata.get.mockResolvedValue({ checkedAt: '2024-01-01', releaseVersion: 'v1.42.0' });
       await sut.onWebsocketConnection({ userId: '42' });
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
-      expect(eventMock.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(mocks.event.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
   });
 });

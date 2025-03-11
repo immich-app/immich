@@ -1,14 +1,14 @@
 import { ClsService } from 'nestjs-cls';
 import { ImmichWorker } from 'src/enum';
-import { LoggingRepository } from 'src/repositories/logging.repository';
-import { IConfigRepository } from 'src/types';
-import { mockEnvData, newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
+import { ConfigRepository } from 'src/repositories/config.repository';
+import { LoggingRepository, MyConsoleLogger } from 'src/repositories/logging.repository';
+import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { Mocked } from 'vitest';
 
 describe(LoggingRepository.name, () => {
   let sut: LoggingRepository;
 
-  let configMock: Mocked<IConfigRepository>;
+  let configMock: Mocked<ConfigRepository>;
   let clsMock: Mocked<ClsService>;
 
   beforeEach(() => {
@@ -18,23 +18,25 @@ describe(LoggingRepository.name, () => {
     } as unknown as Mocked<ClsService>;
   });
 
-  describe('formatContext', () => {
-    it('should use colors', () => {
-      configMock.getEnv.mockReturnValue(mockEnvData({ noColor: false }));
+  describe(MyConsoleLogger.name, () => {
+    describe('formatContext', () => {
+      it('should use colors', () => {
+        sut = new LoggingRepository(clsMock, configMock);
+        sut.setAppName(ImmichWorker.API);
 
-      sut = new LoggingRepository(clsMock, configMock);
-      sut.setAppName(ImmichWorker.API);
+        const logger = new MyConsoleLogger(clsMock, { color: true });
 
-      expect(sut['formatContext']('context')).toBe('\u001B[33m[Api:context]\u001B[39m ');
-    });
+        expect(logger.formatContext('context')).toBe('\u001B[33m[Api:context]\u001B[39m ');
+      });
 
-    it('should not use colors when noColor is true', () => {
-      configMock.getEnv.mockReturnValue(mockEnvData({ noColor: true }));
+      it('should not use colors when color is false', () => {
+        sut = new LoggingRepository(clsMock, configMock);
+        sut.setAppName(ImmichWorker.API);
 
-      sut = new LoggingRepository(clsMock, configMock);
-      sut.setAppName(ImmichWorker.API);
+        const logger = new MyConsoleLogger(clsMock, { color: false });
 
-      expect(sut['formatContext']('context')).toBe('[Api:context] ');
+        expect(logger.formatContext('context')).toBe('[Api:context] ');
+      });
     });
   });
 });

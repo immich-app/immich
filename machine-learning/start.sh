@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+echo "Initializing Immich ML $IMMICH_SOURCE_REF"
+
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 # mimalloc seems to increase memory usage dramatically with openvino, need to investigate
 if ! [ "$DEVICE" = "openvino" ]; then

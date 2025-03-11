@@ -90,10 +90,11 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            size="large"
+            size="giant"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
+            aria-label={$t('support_and_feedback')}
           />
         </div>
 

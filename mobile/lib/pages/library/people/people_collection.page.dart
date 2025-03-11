@@ -1,8 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -16,6 +18,8 @@ class PeopleCollectionPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final people = ref.watch(getAllPeopleProvider);
     final headers = ApiService.getRequestHeaders();
+    final formFocus = useFocusNode();
+    final ValueNotifier<String?> search = useState(null);
 
     showNameEditModel(
       String personId,
@@ -36,10 +40,70 @@ class PeopleCollectionPage extends HookConsumerWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('people'.tr()),
+            automaticallyImplyLeading: search.value == null,
+            title: search.value != null
+                ? TextField(
+                    focusNode: formFocus,
+                    onTapOutside: (_) => formFocus.unfocus(),
+                    onChanged: (value) => search.value = value,
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.only(left: 24),
+                      filled: true,
+                      fillColor: context.primaryColor.withValues(alpha: 0.1),
+                      hintStyle: context.textTheme.bodyLarge?.copyWith(
+                        color: context.themeData.colorScheme.onSurfaceSecondary,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide(
+                          color: context.colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide(
+                          color: context.colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide(
+                          color: context.colorScheme.surfaceContainerHighest,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide(
+                          color: context.colorScheme.primary.withAlpha(150),
+                        ),
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: context.colorScheme.primary,
+                      ),
+                      hintText: 'search_filter_people_hint'.tr(),
+                    ),
+                    autofocus: true,
+                  )
+                : Text('people'.tr()),
+            actions: [
+              IconButton(
+                icon: Icon(search.value != null ? Icons.close : Icons.search),
+                onPressed: () {
+                  search.value = search.value == null ? '' : null;
+                },
+              ),
+            ],
           ),
           body: people.when(
             data: (people) {
+              if (search.value != null) {
+                people = people.where((person) {
+                  return person.name
+                      .toLowerCase()
+                      .contains(search.value!.toLowerCase());
+                }).toList();
+              }
               return GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: isTablet ? 6 : 3,

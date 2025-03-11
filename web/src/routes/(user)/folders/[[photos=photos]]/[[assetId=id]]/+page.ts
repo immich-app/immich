@@ -34,7 +34,7 @@ export const load = (async ({ params, url }) => {
   return {
     asset,
     path,
-    currentFolders: Object.keys(tree || {}),
+    currentFolders: Object.keys(tree || {}).sort(),
     pathAssets,
     meta: {
       title: $t('folders'),

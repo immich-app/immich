@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
 import { IsHexColor, IsNotEmpty, IsString } from 'class-validator';
 import { TagEntity } from 'src/entities/tag.entity';
-import { Optional, ValidateUUID } from 'src/validation';
+import { TagItem } from 'src/types';
+import { Optional, ValidateHexColor, ValidateUUID } from 'src/validation';
 
 export class TagCreateDto {
   @IsString()
@@ -18,9 +18,8 @@ export class TagCreateDto {
 }
 
 export class TagUpdateDto {
-  @Optional({ nullable: true, emptyToNull: true })
-  @IsHexColor()
-  @Transform(({ value }) => (typeof value === 'string' && value[0] !== '#' ? `#${value}` : value))
+  @Optional({ emptyToNull: true, nullable: true })
+  @ValidateHexColor()
   color?: string | null;
 }
 
@@ -53,7 +52,7 @@ export class TagResponseDto {
   color?: string;
 }
 
-export function mapTag(entity: TagEntity): TagResponseDto {
+export function mapTag(entity: TagItem | TagEntity): TagResponseDto {
   return {
     id: entity.id,
     parentId: entity.parentId ?? undefined,
