@@ -44,8 +44,8 @@ class ThumbnailWithInfoContainer extends StatelessWidget {
                 colors: [
                   Colors.transparent,
                   label == ''
-                      ? Colors.black.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.5),
+                      ? Colors.black.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.5),
                 ],
                 stops: const [0.0, 1.0],
               ),

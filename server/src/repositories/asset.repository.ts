@@ -421,12 +421,11 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
-  getByLibraryIdAndSidecarPath(libraryId: string, sidecarBasePath: string): Promise<AssetEntity[]> {
+  getLikeOriginalPath(originalPath: string): Promise<AssetEntity[]> {
     return this.db
       .selectFrom('assets')
       .selectAll('assets')
-      .where('assets.libraryId', '=', asUuid(libraryId))
-      .where('originalPath', 'like', `${sidecarBasePath}%`)
+      .where('originalPath', 'like', `${originalPath}%`)
       .execute() as any as Promise<AssetEntity[]>;
   }
 

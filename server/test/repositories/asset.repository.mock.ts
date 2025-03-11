@@ -27,7 +27,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getByIds: vitest.fn().mockResolvedValue([]),
     getByIdsWithAllRelations: vitest.fn().mockResolvedValue([]),
     getByLibraryIdAndOriginalPath: vitest.fn(),
-    getByLibraryIdAndSidecarPath: vitest.fn(),
+    getLikeOriginalPath: vitest.fn(),
     getByUserId: vitest.fn(),
     getChangedDeltaSync: vitest.fn(),
     getDuplicates: vitest.fn(),

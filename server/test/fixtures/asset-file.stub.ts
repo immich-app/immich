@@ -10,7 +10,6 @@ export const assetFileStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    libraryId: 'library-id',
   }),
   sidecarWithoutExtension: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-without-extension',
@@ -20,7 +19,6 @@ export const assetFileStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    libraryId: 'library-id',
   }),
   sidecarWithoutXMP: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-without-extension',
@@ -30,7 +28,6 @@ export const assetFileStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    libraryId: 'library-id',
   }),
   sidecarUppercaseExtension: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-uppercase-extension',
@@ -40,7 +37,6 @@ export const assetFileStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    libraryId: 'library-id',
   }),
   xmpSidecarOrpahed: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-uppercase-extension',
@@ -50,7 +46,6 @@ export const assetFileStub = {
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    libraryId: 'library-id',
   }),
   previewFile: Object.freeze<AssetFileEntity>({
     id: 'file-1',

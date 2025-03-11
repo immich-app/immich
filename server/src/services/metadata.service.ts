@@ -298,8 +298,7 @@ export class MetadataService extends BaseService {
     // This job is called by the library service when a new sidecar file is found
     const sidecar = await this.assetRepository.getAssetFileById(id);
 
-    if (!sidecar || sidecar.type !== AssetFileType.SIDECAR || !sidecar.libraryId) {
-      // We currently assume that we're working with an external library sidecar, this will change in the future.
+    if (!sidecar || sidecar.type !== AssetFileType.SIDECAR) {
       return JobStatus.FAILED;
     }
 
@@ -311,7 +310,7 @@ export class MetadataService extends BaseService {
     if (!sidecar.assetId) {
       const pathWithoutExtension = sidecar.path.toLowerCase().replace(/\.xmp$/i, '');
 
-      const assets = await this.assetRepository.getByLibraryIdAndSidecarPath(sidecar.libraryId, pathWithoutExtension);
+      const assets = await this.assetRepository.getLikeOriginalPath(pathWithoutExtension);
 
       if (assets.length === 0) {
         this.logger.verbose(`No matching asset found for sidecar ${sidecar.id}: ${sidecar.path}`);
@@ -340,11 +339,6 @@ export class MetadataService extends BaseService {
     if (currentSidecarsForAsset.length === 0) {
       // No existing sidecar for this asset, store the new one
       storeSidecar = true;
-    } else if (currentSidecarsForAsset.length > 1) {
-      this.logger.error(
-        `Multiple sidecars found for asset ${sidecar.assetId}: ${currentSidecarsForAsset.map((s) => s.path).join(', ')}`,
-      );
-      return JobStatus.FAILED;
     } else {
       const currentSidecar = currentSidecarsForAsset[0];
       if (currentSidecar.id === sidecar.id) {

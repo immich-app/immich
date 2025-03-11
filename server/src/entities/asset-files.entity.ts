@@ -13,10 +13,6 @@ import {
 } from 'typeorm';
 
 @Unique('UQ_assetId_type', ['assetId', 'type'])
-@Index('UQ_libraryId_path', ['libraryId', 'path'], {
-  unique: true,
-  where: '"libraryId" IS NOT NULL',
-})
 @Entity('asset_files')
 export class AssetFileEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -29,14 +25,8 @@ export class AssetFileEntity {
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset?: AssetEntity;
 
-  @Column({ nullable: true, default: null })
-  libraryId?: string | null;
-
-  @ManyToOne(() => LibraryEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
-  library?: LibraryEntity | null;
-
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  fileCreatedAt!: Date;
+  fileCreatedAt!: Date | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;

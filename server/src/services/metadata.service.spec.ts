@@ -1269,7 +1269,7 @@ describe(MetadataService.name, () => {
 
     it('should succeed if orphaned without asset on disk', async () => {
       mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.xmpSidecarOrpahed);
-      mocks.asset.getByLibraryIdAndSidecarPath.mockResolvedValue([]);
+      mocks.asset.getLikeOriginalPath.mockResolvedValue([]);
 
       const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
 
@@ -1283,7 +1283,7 @@ describe(MetadataService.name, () => {
 
     it('should fail if multiple assets match the sidecar', async () => {
       mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.xmpSidecarOrpahed);
-      mocks.asset.getByLibraryIdAndSidecarPath.mockResolvedValue([assetStub.primaryImage, assetStub.image]);
+      mocks.asset.getLikeOriginalPath.mockResolvedValue([assetStub.primaryImage, assetStub.image]);
 
       const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
 

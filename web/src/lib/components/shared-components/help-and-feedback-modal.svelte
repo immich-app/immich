@@ -5,7 +5,7 @@
   import { t } from 'svelte-i18n';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiBugOutline, mdiFaceAgent, mdiGit, mdiGithub, mdiInformationOutline } from '@mdi/js';
-  import { discordPath } from '$lib/assets/svg-paths';
+  import { discordPath, discordViewBox } from '$lib/assets/svg-paths';
 
   interface Props {
     onClose: () => void;
@@ -45,7 +45,7 @@
 
       <div>
         <a href="https://discord.immich.app" target="_blank" rel="noreferrer">
-          <Icon path={discordPath} class="inline-block" size="1.5em" />
+          <Icon path={discordPath} viewBox={discordViewBox} class="inline-block" size="1.5em" />
           <p
             class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm underline inline-block"
             id="github-label"
