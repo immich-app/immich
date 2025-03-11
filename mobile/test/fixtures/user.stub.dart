@@ -9,7 +9,7 @@ abstract final class UserStub {
     name: "admin",
     isAdmin: true,
     updatedAt: DateTime(2021),
-    profileImagePath: '',
+    profileImagePath: null,
     avatarColor: AvatarColor.green,
   );
 
@@ -19,7 +19,7 @@ abstract final class UserStub {
     name: "user1",
     isAdmin: false,
     updatedAt: DateTime(2022),
-    profileImagePath: '',
+    profileImagePath: null,
     avatarColor: AvatarColor.red,
   );
 
@@ -29,7 +29,7 @@ abstract final class UserStub {
     name: "user2",
     isAdmin: false,
     updatedAt: DateTime(2023),
-    profileImagePath: '',
+    profileImagePath: null,
     avatarColor: AvatarColor.primary,
   );
 }
