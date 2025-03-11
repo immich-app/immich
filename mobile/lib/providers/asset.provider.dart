@@ -74,6 +74,9 @@ class AssetNotifier extends StateNotifier<bool> {
       }
 
       log.info("Load assets: ${stopwatch.elapsedMilliseconds}ms");
+    } catch (error) {
+      // If there is error in getting the remote assets, still showing the new local assets
+      await _albumService.refreshDeviceAlbums();
     } finally {
       _getAllAssetInProgress = false;
       state = false;
