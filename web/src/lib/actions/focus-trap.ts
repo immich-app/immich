@@ -5,7 +5,7 @@ interface Options {
   /**
    * Set whether the trap is active or not.
    */
-  active: boolean;
+  active?: boolean;
 }
 
 const selectors =

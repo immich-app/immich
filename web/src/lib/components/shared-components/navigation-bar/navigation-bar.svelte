@@ -73,8 +73,10 @@
             isSidebarOpen.value = !isSidebarOpen.value;
           }}
           onmousedown={(event: MouseEvent) => {
-            // stops event from reaching the default handler when clicking outside of the sidebar
-            event.stopPropagation();
+            if (isSidebarOpen.value) {
+              // stops event from reaching the default handler when clicking outside of the sidebar
+              event.stopPropagation();
+            }
           }}
           class="md:hidden"
         />
@@ -84,7 +86,7 @@
       </a>
     </div>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
-      <div class="hidden flex-1 tall:pl-0 sm:block">
+      <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
         {#if $featureFlags.search}
           <SearchBar grayTheme={true} />
         {/if}

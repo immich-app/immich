@@ -816,7 +816,7 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto outline-none pl-2 {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 mr-[60px]'}"
   tabindex="-1"
   use:resizeObserver={({ height, width }) => ((viewport.width = width), (viewport.height = height))}
   bind:this={element}

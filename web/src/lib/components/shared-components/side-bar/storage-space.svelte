@@ -46,7 +46,7 @@
 </script>
 
 <div
-  class="storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm min-w-52 overflow-hidden"
+  class="storage-status p-4 bg-gray-100 dark:bg-immich-dark-primary/10 ml-4 rounded-lg text-sm min-w-52"
   title={$t('storage_usage', {
     values: {
       used: getByteUnitString(usedBytes, $locale, 3),
@@ -54,26 +54,24 @@
     },
   })}
 >
-  <div>
-    <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
+  <p class="font-medium text-immich-dark-gray dark:text-white mb-2">{$t('storage')}</p>
 
-    {#if userInteraction.serverInfo}
-      <p class="text-gray-500 dark:text-gray-300">
-        {$t('storage_usage', {
-          values: {
-            used: getByteUnitString(usedBytes, $locale),
-            available: getByteUnitString(availableBytes, $locale),
-          },
-        })}
-      </p>
+  {#if userInteraction.serverInfo}
+    <p class="text-gray-500 dark:text-gray-300">
+      {$t('storage_usage', {
+        values: {
+          used: getByteUnitString(usedBytes, $locale),
+          available: getByteUnitString(availableBytes, $locale),
+        },
+      })}
+    </p>
 
-      <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
-        <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
-      </div>
-    {:else}
-      <div class="mt-2">
-        <LoadingSpinner />
-      </div>
-    {/if}
-  </div>
+    <div class="mt-4 h-[7px] w-full rounded-full bg-gray-200 dark:bg-gray-700">
+      <div class="h-[7px] rounded-full {usageClasses}" style="width: {usedPercentage}%"></div>
+    </div>
+  {:else}
+    <div class="mt-2">
+      <LoadingSpinner />
+    </div>
+  {/if}
 </div>
