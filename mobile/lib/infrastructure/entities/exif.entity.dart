@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
+import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:isar/isar.dart';
 
 part 'exif.entity.g.dart';
@@ -74,6 +75,7 @@ class ExifInfo {
         orientation: orientation,
         timeZone: timeZone,
         dateTimeOriginal: dateTimeOriginal,
+        isFlipped: ExifDtoConverter.isOrientationFlipped(orientation),
         latitude: lat,
         longitude: long,
         city: city,
