@@ -468,6 +468,7 @@
   "comments_are_disabled": "Komentari onemogućeni",
   "confirm": "Potvrdi",
   "confirm_admin_password": "Potvrdite lozinku administratora",
+  "confirm_delete_face": "Jeste li sigurni da želite izbrisati lice {name} iz knjižnice materijala.",
   "confirm_delete_shared_link": "Jeste li sigurni da želite izbrisati ovu zajedničku vezu?",
   "confirm_keep_this_delete_others": "Sva druga sredstva u nizu bit će izbrisana osim ovog sredstva. Jeste li sigurni da želite nastaviti?",
   "confirm_password": "Potvrdite lozinku",
