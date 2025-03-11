@@ -38,7 +38,7 @@ except ImportError:
     log.debug("RKNN is not available")
 
 
-def init_rknn(model_path: str) -> RKNNLite:
+def init_rknn(model_path: str) -> "RKNNLite":
     if not is_available:
         raise RuntimeError("rknn is not available!")
     rknn_lite = RKNNLite()
