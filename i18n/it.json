@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "B-frames Massimi",
     "transcoding_max_b_frames_description": "Valori più alti migliorano l'efficienza di compressione, ma rallentano l'encoding. Potrebbero non essere compatibili con l'accelerazione hardware su dispositivi più vecchi. 0 disabilita i B-frames, mentre -1 imposta questo valore automaticamente.",
     "transcoding_max_bitrate": "Bitrate massimo",
-    "transcoding_max_bitrate_description": "Impostare un bitrate massimo può rendere le dimensioni dei file più prevedibili a un costo minore per la qualità. A 720p, i valori tipici sono 2600k per VP9 o HEVC, o 4500k per H.264. Disabilitato se impostato su 0.",
+    "transcoding_max_bitrate_description": "Impostare un bitrate massimo può rendere le dimensioni dei file più prevedibili a un costo minore per la qualità. A 720p, i valori tipici sono 2600 kbit/s per VP9 o HEVC, o 4500 kbit/s per H.264. Disabilitato se impostato su 0.",
     "transcoding_max_keyframe_interval": "Intervallo massimo dei keyframe",
     "transcoding_max_keyframe_interval_description": "Imposta la distanza massima tra i keyframe. Valori più bassi peggiorano l'efficienza di compressione, però migliorano i tempi di ricerca e possono migliorare la qualità nelle scene con movimenti rapidi. 0 imposta questo valore automaticamente.",
     "transcoding_optimal_description": "Video con risoluzione più alta rispetto alla risoluzione desiderata o in formato non accettato",

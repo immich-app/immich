@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Maximální počet B-snímků",
     "transcoding_max_b_frames_description": "Vyšší hodnoty zvyšují účinnost komprese, ale zpomalují kódování. Nemusí být kompatibilní s hardwarovou akcelerací na starších zařízeních. Hodnota 0 zakáže B-snímky, zatímco -1 tuto hodnotu nastaví automaticky.",
     "transcoding_max_bitrate": "Maximální datový tok",
-    "transcoding_max_bitrate_description": "Nastavení maximálního datového toku může zvýšit předvídatelnost velikosti souborů za cenu menší újmy na kvalitě. Při rozlišení 720p jsou typické hodnoty 2600k pro VP9 nebo HEVC nebo 4500k pro H.264. Je zakázáno, pokud je nastavena hodnota 0.",
+    "transcoding_max_bitrate_description": "Nastavení maximálního datového toku může zvýšit předvídatelnost velikosti souborů za cenu menší újmy na kvalitě. Při rozlišení 720p jsou typické hodnoty 2600 kbit/s pro VP9 nebo HEVC nebo 4500 kbit/s pro H.264. Je zakázáno, pokud je nastavena hodnota 0.",
     "transcoding_max_keyframe_interval": "Maximální interval klíčových snímků",
     "transcoding_max_keyframe_interval_description": "Nastavuje maximální vzdálenost mezi klíčovými snímky. Nižší hodnoty zhoršují účinnost komprese, ale zlepšují rychlost při přeskakování a mohou zlepšit kvalitu ve scénách s rychlým pohybem. Hodnota 0 nastavuje tuto hodnotu automaticky.",
     "transcoding_optimal_description": "Videa s vyšším než cílovým rozlišením nebo videa, která nejsou v akceptovaném formátu",

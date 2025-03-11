@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "Nombre màxim de B-frames",
     "transcoding_max_b_frames_description": "Els valors més alts milloren l'eficiència de la compressió, però alenteixen la codificació. És possible que no sigui compatible amb l'acceleració de maquinari en dispositius antics. 0 desactiva els B-frames, mentre que -1 estableix aquest valor automàticament.",
     "transcoding_max_bitrate": "Taxa de bits màxima",
-    "transcoding_max_bitrate_description": "Establir una taxa de bits màxima pot fer que les mides dels fitxers siguin més previsibles amb un cost menor per a la qualitat. A 720p, els valors típics són 2600k per a VP9 o HEVC, o 4500k per a H.264. Desactivat si s'estableix a 0.",
+    "transcoding_max_bitrate_description": "Establir una taxa de bits màxima pot fer que les mides dels fitxers siguin més previsibles amb un cost menor per a la qualitat. A 720p, els valors típics són 2600 kbit/s per a VP9 o HEVC, o 4500 kbit/s per a H.264. Desactivat si s'estableix a 0.",
     "transcoding_max_keyframe_interval": "Interval màxim de fotogrames clau",
     "transcoding_max_keyframe_interval_description": "Estableix la distància màxima entre fotogrames clau. Els valors més baixos empitjoren l'eficiència de la compressió, però milloren els temps de cerca i poden millorar la qualitat en escenes amb moviment ràpid. 0 estableix aquest valor automàticament.",
     "transcoding_optimal_description": "Vídeos superiors a la resolució objectiu o que no tenen un format acceptat",

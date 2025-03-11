@@ -291,7 +291,7 @@
     "transcoding_max_b_frames": "최대 B 프레임",
     "transcoding_max_b_frames_description": "값이 높으면 압축 효율이 향상되지만 인코딩 속도가 저하됩니다. 오래된 기기의 하드웨어 가속과 호환되지 않을 수 있습니다. 0을 입력한 경우 B 프레임을 비활성화하며, -1을 입력한 경우 자동으로 설정합니다.",
     "transcoding_max_bitrate": "최대 비트레이트",
-    "transcoding_max_bitrate_description": "최대 비트레이트를 지정하면 품질이 일부 저하되지만 파일 크기가 예측 가능한 수준으로 일정하게 유지됩니다. 일반적으로 720p 기준 VP9 및 HEVC는 2600k, H.264는 4500k를 사용합니다. 0을 입력한 경우 비활성화됩니다.",
+    "transcoding_max_bitrate_description": "최대 비트레이트를 지정하면 품질이 일부 저하되지만 파일 크기가 예측 가능한 수준으로 일정하게 유지됩니다. 일반적으로 720p 기준 VP9 및 HEVC는 2600 kbit/s, H.264는 4500 kbit/s를 사용합니다. 0을 입력한 경우 비활성화됩니다.",
     "transcoding_max_keyframe_interval": "최대 키프레임 간격",
     "transcoding_max_keyframe_interval_description": "키프레임 사이 최대 프레임 거리를 설정합니다. 값이 낮으면 압축 효율이 저하되지만 검색 시간이 개선되고 빠른 움직임이 있는 장면에서 품질이 향상됩니다. 0을 입력한 경우 자동으로 설정합니다.",
     "transcoding_optimal_description": "목표 해상도보다 높은 동영상 또는 허용되지 않는 형식의 동영상",

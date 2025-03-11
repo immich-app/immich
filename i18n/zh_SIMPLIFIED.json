@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "最大B帧数",
     "transcoding_max_b_frames_description": "较高的值可以提高压缩效率，但会减慢编码速度。可能与旧设备上的硬件加速不兼容。0表示将禁用B帧，-1表示将自动设置此参数。",
     "transcoding_max_bitrate": "最高码率",
-    "transcoding_max_bitrate_description": "设置最大比特率可在对输出质量影响较小的情况下，使文件体积更为可控。720p 下，VP9 或 HEVC 普遍将其设为 2600K，H.264 则为 4500K。如果此项设置为 0，则不限制最大比特率。",
+    "transcoding_max_bitrate_description": "设置最大比特率可在对输出质量影响较小的情况下，使文件体积更为可控。720p 下，VP9 或 HEVC 普遍将其设为 2600 kbit/s，H.264 则为 4500 kbit/s。如果此项设置为 0，则不限制最大比特率。",
     "transcoding_max_keyframe_interval": "最大关键帧间隔",
     "transcoding_max_keyframe_interval_description": "设置关键帧之间的最大帧距离。较低的值会降低压缩效率，但可以提高搜索速度，并且可能在快速运动的场景中提高画质。0 表示将自动设置此参数。",
     "transcoding_optimal_description": "视频超过目标分辨率或格式不支持",

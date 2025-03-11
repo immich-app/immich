@@ -302,7 +302,7 @@
     "transcoding_max_b_frames": "最大 B 幀數",
     "transcoding_max_b_frames_description": "較高的數值可提升壓縮效率，但會降低編碼速度。可能與較舊設備的硬體加速不相容。設定為 0 時會停用 B-frames，而 -1 則會自動設定此數值。",
     "transcoding_max_bitrate": "最大位元速率",
-    "transcoding_max_bitrate_description": "設定最大位元速率可以使檔案大小更具可預測性，但會稍微降低品質。在 720p 解析度下，典型值為 VP9 或 HEVC 的 2600k，或 H.264 的 4500k。設置為 0 停用此功能。",
+    "transcoding_max_bitrate_description": "設定最大位元速率可以使檔案大小更具可預測性，但會稍微降低品質。在 720p 解析度下，典型值為 VP9 或 HEVC 的 2600 kbit/s，或 H.264 的 4500 kbit/s。設置為 0 停用此功能。",
     "transcoding_max_keyframe_interval": "最大關鍵幀間隔",
     "transcoding_max_keyframe_interval_description": "設置關鍵幀之間的最大幀距。較低的值會降低壓縮效率，但可以改善搜尋時間，並有可能會改善快速變動場景的品質。0 會自動設置此值。",
     "transcoding_optimal_description": "高於目標解析度或格式不被支援的影片",
