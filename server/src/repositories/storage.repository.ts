@@ -245,12 +245,7 @@ export class StorageRepository {
       return mimeTypes.getSupportedFileExtensions();
     })();
 
-    let extensions: string;
-    if (fileExtensions.length === 1) {
-      extensions = fileExtensions[0];
-    } else {
-      extensions = `{${fileExtensions.join(',')}}`;
-    }
+    const extensions = fileExtensions.length === 1 ? fileExtensions[0] : `{${fileExtensions.join(',')}}`;
 
     return `${escapedPath}/**/*${extensions}`;
   };

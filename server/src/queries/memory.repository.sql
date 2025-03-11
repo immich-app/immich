@@ -103,6 +103,30 @@ set
   "isSaved" = $2
 where
   "id" = $3
+select
+  "memories".*,
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "assets".*
+        from
+          "assets"
+          inner join "memories_assets_assets" on "assets"."id" = "memories_assets_assets"."assetsId"
+        where
+          "memories_assets_assets"."memoriesId" = "memories"."id"
+          and "assets"."deletedAt" is null
+        order by
+          "assets"."fileCreatedAt" asc
+      ) as agg
+  ) as "assets"
+from
+  "memories"
+where
+  "id" = $1
+  and "deletedAt" is null
 
 -- MemoryRepository.delete
 delete from "memories"

@@ -336,7 +336,6 @@ export class AssetMediaService extends BaseService {
       duration: dto.duration || null,
 
       livePhotoVideoId: null,
-      sidecarPath: sidecarPath || null,
     });
 
     await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
@@ -366,7 +365,6 @@ export class AssetMediaService extends BaseService {
       localDateTime: asset.localDateTime,
       fileModifiedAt: asset.fileModifiedAt,
       livePhotoVideoId: asset.livePhotoVideoId,
-      sidecarPath: asset.sidecarPath,
     });
 
     const { size } = await this.storageRepository.stat(created.originalPath);
@@ -402,7 +400,6 @@ export class AssetMediaService extends BaseService {
       isVisible: dto.isVisible ?? true,
       livePhotoVideoId: dto.livePhotoVideoId,
       originalFileName: file.originalName,
-      sidecarPath: sidecarFile?.originalPath,
     });
 
     if (sidecarFile) {

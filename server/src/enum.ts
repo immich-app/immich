@@ -476,6 +476,7 @@ export enum JobName {
   // library management
   LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
   LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
+  LIBRARY_QUEUE_SYNC_SIDECARS = 'library-queue-sync-sidecars',
   LIBRARY_SYNC_FILES = 'library-sync-files',
   LIBRARY_SYNC_SIDECARS = 'library-sync-sidecars',
   LIBRARY_SYNC_ASSETS = 'library-sync-assets',

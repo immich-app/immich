@@ -108,6 +108,7 @@ export interface AssetFiles {
   type: string;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
+  fileCreatedAt: Timestamp | null;
 }
 
 export interface AssetJobStatus {
@@ -149,7 +150,6 @@ export interface Assets {
   originalFileName: string;
   originalPath: string;
   ownerId: string;
-  sidecarPath: string | null;
   stackId: string | null;
   status: Generated<AssetsStatusEnum>;
   thumbhash: Buffer | null;

@@ -1,5 +1,4 @@
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { AssetFileType } from 'src/enum';
 import {
   Column,
@@ -20,7 +19,7 @@ export class AssetFileEntity {
 
   @Index('IDX_asset_files_assetId')
   @Column({ nullable: true, default: null })
-  assetId?: string;
+  assetId!: string;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset?: AssetEntity;

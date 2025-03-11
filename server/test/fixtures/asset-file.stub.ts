@@ -1,4 +1,4 @@
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFileEntity, SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetFileType } from 'src/enum';
 
 export const assetFileStub = {
@@ -38,15 +38,15 @@ export const assetFileStub = {
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
-  xmpSidecarOrpahed: Object.freeze<AssetFileEntity>({
+  xmpSidecarOrpahed: Object.freeze({
     id: 'xmp-sidecar-uppercase-extension',
-    assetId: undefined,
+    assetId: null,
     type: AssetFileType.SIDECAR,
     path: 'upload/library/IMG_123.jpg.xmp',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
-  }),
+  } as unknown as SidecarAssetFileEntity),
   previewFile: Object.freeze<AssetFileEntity>({
     id: 'file-1',
     assetId: 'asset-id',

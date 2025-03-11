@@ -366,6 +366,7 @@ export type JobItem =
   | { name: JobName.LIBRARY_SYNC_SIDECARS; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
+  | { name: JobName.LIBRARY_QUEUE_SYNC_SIDECARS; data: IEntityJob }
   | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }
   | { name: JobName.LIBRARY_ASSET_REMOVAL; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }

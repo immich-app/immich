@@ -1252,7 +1252,7 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarReconciliation', () => {
     it('should fail if sidecar does not exist', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(undefined);
+      mocks.asset.getAssetFileById.mockResolvedValue();
 
       const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
 

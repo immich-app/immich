@@ -94,6 +94,13 @@ begin
 delete from "tag_asset"
 where
   "assetsId" = $1
+insert into
+  "tag_asset" ("tagsId", "assetsId")
+values
+  ($1, $2)
+on conflict do nothing
+returning
+  *
 rollback
 
 -- TagRepository.deleteEmptyTags
@@ -108,4 +115,4 @@ from
   inner join "tags" on "tags"."id" = "tags_closure"."id_descendant"
 group by
   "tags"."id"
-rollback
+commit

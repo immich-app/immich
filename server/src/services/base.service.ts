@@ -11,6 +11,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -62,6 +63,7 @@ export class BaseService {
     protected albumUserRepository: AlbumUserRepository,
     protected apiKeyRepository: ApiKeyRepository,
     protected assetRepository: AssetRepository,
+    protected assetFileRepository: AssetFileRepository,
     protected auditRepository: AuditRepository,
     protected configRepository: ConfigRepository,
     protected cronRepository: CronRepository,
@@ -100,6 +102,7 @@ export class BaseService {
     this.logger.setContext(this.constructor.name);
     this.storageCore = StorageCore.create(
       assetRepository,
+      assetFileRepository,
       configRepository,
       cryptoRepository,
       moveRepository,

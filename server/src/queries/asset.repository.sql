@@ -152,14 +152,13 @@ where
 limit
   $3
 
--- AssetRepository.getByLibraryIdAndSidecarPath
+-- AssetRepository.getLikeOriginalPath
 select
   "assets".*
 from
   "assets"
 where
-  "assets"."libraryId" = $1::uuid
-  and "originalPath" like $2
+  "originalPath" like $1
 
 -- AssetRepository.getAssetFilesByAssetIdAndType
 select
@@ -259,19 +258,16 @@ select
   "assets".*
 from
   "assets"
+  left join "asset_files" on "assetId" = "assets"."id"
 where
-  (
-    "assets"."sidecarPath" = $1
-    or "assets"."sidecarPath" is null
-  )
-  and "assets"."isVisible" = $2
+  "asset_files"."type" = $1
   and "deletedAt" is null
 order by
   "createdAt"
 limit
-  $3
+  $2
 offset
-  $4
+  $3
 
 -- AssetRepository.getTimeBuckets
 with

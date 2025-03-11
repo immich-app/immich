@@ -16,7 +16,6 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
-import { SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
@@ -255,8 +254,8 @@ export class LibraryService extends BaseService {
     for (let i = 0; i < sidecarImports.length; i += 5000) {
       // Chunk the imports to avoid the postgres limit of max parameters at once
       const chunk = sidecarImports.slice(i, i + 5000);
-      await this.assetRepository
-        .upsertFiles(chunk)
+      await this.assetFileRepository
+        .createAll(chunk)
         .then((sidecars) => sidecarIds.push(...sidecars.map((sidecar) => sidecar.id)));
     }
 
@@ -265,13 +264,15 @@ export class LibraryService extends BaseService {
         ? `(${job.progressCounter} of ${job.totalCount})`
         : `(${job.progressCounter} done so far)`;
 
-    this.logger.log(`Imported ${sidecarIds.length} ${progressMessage} sidecar(s) into library ${job.libraryId}`);
-
     await this.jobRepository.queueAll(
       sidecarIds.map((sidecarId) => ({
         name: JobName.SIDECAR_RECONCILIATION,
         data: { id: sidecarId },
       })),
+    );
+
+    this.logger.log(
+      `Queued import of ${sidecarIds.length} ${progressMessage} sidecar(s) into library ${job.libraryId}`,
     );
 
     return JobStatus.SUCCESS;
@@ -676,6 +677,8 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
+    this.logger.log(`Starting sidecar crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+
     const sidecarsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
@@ -684,15 +687,13 @@ export class LibraryService extends BaseService {
       take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
-    this.logger.log(`Starting sidecar crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
-
     let sidecarImportCount = 0;
     let sidecarCrawlCount = 0;
 
     for await (const sidecarBatch of sidecarsOnDisk) {
       sidecarCrawlCount += sidecarBatch.length;
 
-      const paths = await this.assetRepository.filterNewExternalSidecarPaths(library.id, sidecarBatch);
+      const paths = await this.assetFileRepository.filterSidecarPaths(sidecarBatch);
 
       if (paths.length > 0) {
         sidecarImportCount += paths.length;
@@ -716,6 +717,8 @@ export class LibraryService extends BaseService {
       `Finished sidecar crawl, ${sidecarCrawlCount} sidecar(s) found on disk and queued ${sidecarImportCount} for import into ${library.id}`,
     );
 
+    this.logger.log(`Starting asset crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+
     const pathsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
@@ -726,8 +729,6 @@ export class LibraryService extends BaseService {
 
     let assetiImportCount = 0;
     let assetCrawlCount = 0;
-
-    this.logger.log(`Starting asset crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
     for await (const pathBatch of pathsOnDisk) {
       assetCrawlCount += pathBatch.length;
@@ -792,13 +793,25 @@ export class LibraryService extends BaseService {
       `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
-    const offlineResult = await this.assetRepository.detectOfflineExternalAssets(
+    const deletedSidecarResult = await this.assetRepository.detectOfflineExternalSidecars(
       library.id,
       library.importPaths,
       library.exclusionPatterns,
     );
 
-    const affectedAssetCount = Number(offlineResult.numUpdatedRows);
+    const deletedSidecarCount = Number(deletedSidecarResult.numDeletedRows);
+
+    this.logger.log(
+      `${deletedSidecarCount} sidecar(s) were removed due to import paths and/or exclusion pattern(s) in library ${library.id}`,
+    );
+
+    const offlineAssetsResult = await this.assetRepository.detectOfflineExternalAssets(
+      library.id,
+      library.importPaths,
+      library.exclusionPatterns,
+    );
+
+    const affectedAssetCount = Number(offlineAssetsResult.numUpdatedRows);
 
     this.logger.log(
       `${affectedAssetCount} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,

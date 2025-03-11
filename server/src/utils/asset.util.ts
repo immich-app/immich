@@ -20,6 +20,7 @@ const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType
 export const getAssetFiles = (files?: AssetFileEntity[]) => ({
   previewFile: getFileByType(files, AssetFileType.PREVIEW),
   thumbnailFile: getFileByType(files, AssetFileType.THUMBNAIL),
+  sidecarFile: getFileByType(files, AssetFileType.SIDECAR),
 });
 
 export const addAssets = async (

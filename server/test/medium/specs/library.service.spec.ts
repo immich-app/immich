@@ -1,16 +1,12 @@
-import { after } from 'lodash';
-import { mkdirSync, mkdtemp, rm, rmSync } from 'node:fs';
+import { mkdtemp, rmSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { sep } from 'node:path';
-import { AuthDto } from 'src/dtos/auth.dto';
-import { LibraryResponseDto, WalkOptionsDto } from 'src/dtos/library.dto';
-import { CrawlType, JobName, JobStatus } from 'src/enum';
+import { LibraryResponseDto } from 'src/dtos/library.dto';
+import { JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { TestContext, TestFactory } from 'test/factory';
 
-import { readdir } from 'node:fs/promises';
-import { LibraryEntity } from 'src/entities/library.entity';
 import { getKyselyDB, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
 type sidecarCrawlTests = {
@@ -34,9 +30,9 @@ describe(LibraryService.name, () => {
     if (tempDirectory) {
       try {
         rmSync(tempDirectory, { recursive: true, force: true });
-      } catch (err: any) {
-        if (err.code !== 'ENOENT') {
-          throw err;
+      } catch (error: any) {
+        if (error.code !== 'ENOENT') {
+          throw error;
         }
       }
     }
@@ -47,8 +43,11 @@ describe(LibraryService.name, () => {
 
     tempDirectory = await new Promise<string>((resolve, reject) => {
       mkdtemp(`${tmpdir()}${sep}library-service-test`, (err, directory) => {
-        if (err) reject(err);
-        else resolve(directory);
+        if (err) {
+          reject(err);
+        } else {
+          resolve(directory);
+        }
       });
     });
 
