@@ -173,6 +173,7 @@ describe(DownloadService.name, () => {
     it('should return a list of archives (assetIds)', async () => {
       const assetIds = ['asset-1', 'asset-2'];
 
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
       mocks.downloadRepository.downloadAssetIds.mockReturnValue(
         makeStream([
@@ -187,6 +188,7 @@ describe(DownloadService.name, () => {
     });
 
     it('should return a list of archives (albumId)', async () => {
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set(['album-1']));
       mocks.downloadRepository.downloadAlbumId.mockReturnValue(
         makeStream([
@@ -202,6 +204,7 @@ describe(DownloadService.name, () => {
     });
 
     it('should return a list of archives (userId)', async () => {
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.downloadRepository.downloadUserId.mockReturnValue(
         makeStream([
           { id: 'asset-1', livePhotoVideoId: null, size: 100_000 },
@@ -217,6 +220,7 @@ describe(DownloadService.name, () => {
     });
 
     it('should split archives by size', async () => {
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.downloadRepository.downloadUserId.mockReturnValue(
         makeStream([
           { id: 'asset-1', livePhotoVideoId: null, size: 5000 },
@@ -244,13 +248,13 @@ describe(DownloadService.name, () => {
       const assetIds = ['asset-1', 'asset-2'];
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.downloadRepository.downloadAssetIds.mockReturnValue(
         makeStream([
           { id: 'asset-1', livePhotoVideoId: 'asset-3', size: 5000 },
           { id: 'asset-2', livePhotoVideoId: 'asset-4', size: 100_000 },
         ]),
       );
-
       mocks.downloadRepository.downloadMotionAssetIds.mockReturnValue(
         makeStream([
           { id: 'asset-3', livePhotoVideoId: null, size: 23_456, originalPath: '/path/to/file.mp4' },
@@ -271,11 +275,10 @@ describe(DownloadService.name, () => {
       const assetIds = ['asset-1'];
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(assetIds));
-
+      mocks.user.getMetadata.mockResolvedValue([]);
       mocks.downloadRepository.downloadAssetIds.mockReturnValue(
         makeStream([{ id: 'asset-1', livePhotoVideoId: 'asset-3', size: 5000 }]),
       );
-
       mocks.downloadRepository.downloadMotionAssetIds.mockReturnValue(
         makeStream([
           { id: 'asset-2', livePhotoVideoId: null, size: 23_456, originalPath: 'upload/encoded-video/uuid-MP.mp4' },

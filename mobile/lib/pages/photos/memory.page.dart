@@ -350,7 +350,7 @@ class MemoryPage extends HookConsumerWidget {
                               );
                             },
                             shape: const CircleBorder(),
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             elevation: 0,
                             child: const Icon(
                               Icons.close_rounded,

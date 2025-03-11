@@ -43,7 +43,7 @@ class ImmichToast {
           borderRadius: BorderRadius.circular(5.0),
           color: context.colorScheme.surfaceContainer,
           border: Border.all(
-            color: context.colorScheme.outline.withOpacity(.5),
+            color: context.colorScheme.outline.withValues(alpha: .5),
             width: 1,
           ),
         ),

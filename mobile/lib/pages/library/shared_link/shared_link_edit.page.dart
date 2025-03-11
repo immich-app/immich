@@ -120,7 +120,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             fontSize: 14,
           ),
           disabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.withOpacity(0.5)),
+            borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.5)),
           ),
         ),
         onTapOutside: (_) => descriptionFocusNode.unfocus(),
@@ -146,7 +146,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
             fontSize: 14,
           ),
           disabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.withOpacity(0.5)),
+            borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.5)),
           ),
         ),
       );

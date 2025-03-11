@@ -161,7 +161,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
                   child: Icon(
                     Icons.home_outlined,
                     size: 120,
-                    color: context.primaryColor.withOpacity(0.05),
+                    color: context.primaryColor.withValues(alpha: 0.05),
                   ),
                 ),
                 ListView(

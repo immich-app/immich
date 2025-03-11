@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { Asset, AuthUser, Library, User } from 'src/database';
+import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User } from 'src/database';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { OnThisDayData } from 'src/entities/memory.entity';
-import { AssetStatus, AssetType, MemoryType } from 'src/enum';
+import { AssetStatus, AssetType, MemoryType, Permission } from 'src/enum';
 import { ActivityItem, MemoryItem } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
@@ -13,11 +14,25 @@ export const newDate = () => new Date();
 export const newUpdateId = () => 'uuid-v7';
 export const newSha1 = () => Buffer.from('this is a fake hash');
 
-const authFactory = (user: Partial<AuthUser> = {}) => ({
-  user: authUserFactory(user),
+const authFactory = ({ apiKey, ...user }: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey> } = {}) => {
+  const auth: AuthDto = {
+    user: authUserFactory(user),
+  };
+
+  if (apiKey) {
+    auth.apiKey = authApiKeyFactory(apiKey);
+  }
+
+  return auth;
+};
+
+const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
+  id: newUuid(),
+  permissions: [Permission.ALL],
+  ...apiKey,
 });
 
-const authUserFactory = (authUser: Partial<AuthUser>) => ({
+const authUserFactory = (authUser: Partial<AuthUser> = {}) => ({
   id: newUuid(),
   isAdmin: false,
   name: 'Test User',
@@ -25,6 +40,40 @@ const authUserFactory = (authUser: Partial<AuthUser>) => ({
   quotaUsageInBytes: 0,
   quotaSizeInBytes: null,
   ...authUser,
+});
+
+const partnerFactory = (partner: Partial<Partner> = {}) => {
+  const sharedBy = userFactory(partner.sharedBy || {});
+  const sharedWith = userFactory(partner.sharedWith || {});
+
+  return {
+    sharedById: sharedBy.id,
+    sharedBy,
+    sharedWithId: sharedWith.id,
+    sharedWith,
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    updateId: newUpdateId(),
+    inTimeline: true,
+    ...partner,
+  };
+};
+
+const sessionFactory = () => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUpdateId(),
+  deviceOS: 'android',
+  deviceType: 'mobile',
+  token: 'abc123',
+  userId: newUuid(),
+});
+
+const stackFactory = () => ({
+  id: newUuid(),
+  ownerId: newUuid(),
+  primaryAssetId: newUuid(),
 });
 
 const userFactory = (user: Partial<User> = {}) => ({
@@ -86,6 +135,17 @@ const activityFactory = (activity: Partial<ActivityItem> = {}) => {
   };
 };
 
+const apiKeyFactory = (apiKey: Partial<ApiKey> = {}) => ({
+  id: newUuid(),
+  userId: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUpdateId(),
+  name: 'Api Key',
+  permissions: [Permission.ALL],
+  ...apiKey,
+});
+
 const libraryFactory = (library: Partial<Library> = {}) => ({
   id: newUuid(),
   createdAt: newDate(),
@@ -119,12 +179,24 @@ const memoryFactory = (memory: Partial<MemoryItem> = {}) => ({
   ...memory,
 });
 
+const versionHistoryFactory = () => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  version: '1.123.45',
+});
+
 export const factory = {
   activity: activityFactory,
+  apiKey: apiKeyFactory,
   asset: assetFactory,
   auth: authFactory,
+  authApiKey: authApiKeyFactory,
   authUser: authUserFactory,
   library: libraryFactory,
   memory: memoryFactory,
+  partner: partnerFactory,
+  session: sessionFactory,
+  stack: stackFactory,
   user: userFactory,
+  versionHistory: versionHistoryFactory,
 };

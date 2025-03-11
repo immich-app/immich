@@ -62,6 +62,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { locale } from '$lib/stores/preferences.store';
+  import { DateTime } from 'luxon';
 
   interface Props {
     data: PageData;
@@ -539,12 +541,28 @@
                     heightStyle="3.375rem"
                   />
                   <div
-                    class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
+                    class="flex flex-col justify-center text-left px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
-                    <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                    <p class="text-sm text-gray-500 dark:text-immich-gray">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
+                    {#if person.birthDate}
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                        {$t('person_birthdate', {
+                          values: {
+                            date: DateTime.fromISO(person.birthDate).toLocaleString(
+                              {
+                                month: 'numeric',
+                                day: 'numeric',
+                                year: 'numeric',
+                              },
+                              { locale: $locale },
+                            ),
+                          },
+                        })}
+                      </p>
+                    {/if}
                   </div>
                 </button>
               </div>
