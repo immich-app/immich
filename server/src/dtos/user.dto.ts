@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
+import { User } from 'src/database';
 import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
@@ -49,6 +50,17 @@ export const mapUser = (entity: UserEntity): UserResponseDto => {
     profileImagePath: entity.profileImagePath,
     avatarColor: getPreferences(entity.email, entity.metadata || []).avatar.color,
     profileChangedAt: entity.profileChangedAt,
+  };
+};
+
+export const mapDatabaseUser = (user: User): UserResponseDto => {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    profileImagePath: user.profileImagePath,
+    avatarColor: getPreferences(user.email, []).avatar.color,
+    profileChangedAt: user.profileChangedAt,
   };
 };
 

@@ -9918,7 +9918,8 @@
           "tag-cleanup",
           "user-cleanup",
           "memory-cleanup",
-          "memory-create"
+          "memory-create",
+          "backup-database"
         ],
         "type": "string"
       },

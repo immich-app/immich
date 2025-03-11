@@ -53,7 +53,7 @@ import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'package:path_provider_ios/path_provider_ios.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final backgroundServiceProvider = Provider(
@@ -323,7 +323,7 @@ class BackgroundService {
       // NOTE: I'm not sure this is strictly necessary anymore, but
       // out of an abundance of caution, we will keep it in until someone
       // can say for sure
-      PathProviderIOS.registerWith();
+      PathProviderFoundation.registerWith();
     }
     switch (call.method) {
       case "backgroundProcessing":

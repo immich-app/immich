@@ -39,7 +39,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   path: ^1.8.3
   path_provider: ^2.1.5
-  path_provider_ios: ^2.0.11
+  path_provider_foundation: ^2.4.1
   collection: ^1.18.0
   http_parser: ^4.0.2
   flutter_web_auth_2: ^5.0.0-alpha.0

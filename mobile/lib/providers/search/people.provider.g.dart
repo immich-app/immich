@@ -6,7 +6,7 @@ part of 'people.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$getAllPeopleHash() => r'3417b7e0c211382d4480a415e352139995d57b6d';
+String _$getAllPeopleHash() => r'226947af3b09ce62224916543958dd1d5e2ba651';
 
 /// See also [getAllPeople].
 @ProviderFor(getAllPeople)
@@ -22,7 +22,7 @@ final getAllPeopleProvider = AutoDisposeFutureProvider<List<Person>>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef GetAllPeopleRef = AutoDisposeFutureProviderRef<List<Person>>;
-String _$personAssetsHash() => r'3dfecb67a54d07e4208bcb9581b2625acd2e1832';
+String _$personAssetsHash() => r'c1d35ee0e024bd6915e21bc724be4b458a14bc24';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -173,7 +173,7 @@ class _PersonAssetsProviderElement
   String get personId => (origin as PersonAssetsProvider).personId;
 }
 
-String _$updatePersonNameHash() => r'7145aaaf6fc38fdafe3a283ebf3d3f4fd0774cd2';
+String _$updatePersonNameHash() => r'45f7693172de522a227406d8198811434cf2bbbc';
 
 /// See also [updatePersonName].
 @ProviderFor(updatePersonName)

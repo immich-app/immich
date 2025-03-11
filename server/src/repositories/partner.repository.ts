@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, JoinBuilder, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
-import { DB, Partners, Users } from 'src/db';
+import { columns, Partner } from 'src/database';
+import { DB, Partners } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { PartnerEntity } from 'src/entities/partner.entity';
 
 export interface PartnerIds {
   sharedById: string;
@@ -16,23 +16,18 @@ export enum PartnerDirection {
   SharedWith = 'shared-with',
 }
 
-const columns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
-
-const onSharedBy = (join: JoinBuilder<DB & { sharedBy: Users }, 'partners' | 'sharedBy'>) =>
-  join.onRef('partners.sharedById', '=', 'sharedBy.id').on('sharedBy.deletedAt', 'is', null);
-
-const onSharedWith = (join: JoinBuilder<DB & { sharedWith: Users }, 'partners' | 'sharedWith'>) =>
-  join.onRef('partners.sharedWithId', '=', 'sharedWith.id').on('sharedWith.deletedAt', 'is', null);
-
 const withSharedBy = (eb: ExpressionBuilder<DB, 'partners'>) => {
   return jsonObjectFrom(
-    eb.selectFrom('users as sharedBy').select(columns).whereRef('sharedBy.id', '=', 'partners.sharedById'),
+    eb.selectFrom('users as sharedBy').select(columns.userDto).whereRef('sharedBy.id', '=', 'partners.sharedById'),
   ).as('sharedBy');
 };
 
 const withSharedWith = (eb: ExpressionBuilder<DB, 'partners'>) => {
   return jsonObjectFrom(
-    eb.selectFrom('users as sharedWith').select(columns).whereRef('sharedWith.id', '=', 'partners.sharedWithId'),
+    eb
+      .selectFrom('users as sharedWith')
+      .select(columns.userDto)
+      .whereRef('sharedWith.id', '=', 'partners.sharedWithId'),
   ).as('sharedWith');
 };
 
@@ -41,45 +36,33 @@ export class PartnerRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getAll(userId: string): Promise<PartnerEntity[]> {
-    return this.db
-      .selectFrom('partners')
-      .innerJoin('users as sharedBy', onSharedBy)
-      .innerJoin('users as sharedWith', onSharedWith)
-      .selectAll('partners')
-      .select(withSharedBy)
-      .select(withSharedWith)
+  getAll(userId: string) {
+    return this.builder()
       .where((eb) => eb.or([eb('sharedWithId', '=', userId), eb('sharedById', '=', userId)]))
-      .execute() as Promise<PartnerEntity[]>;
+      .execute();
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }] })
-  get({ sharedWithId, sharedById }: PartnerIds): Promise<PartnerEntity | undefined> {
-    return this.db
-      .selectFrom('partners')
-      .innerJoin('users as sharedBy', onSharedBy)
-      .innerJoin('users as sharedWith', onSharedWith)
-      .selectAll('partners')
-      .select(withSharedBy)
-      .select(withSharedWith)
+  get({ sharedWithId, sharedById }: PartnerIds) {
+    return this.builder()
       .where('sharedWithId', '=', sharedWithId)
       .where('sharedById', '=', sharedById)
-      .executeTakeFirst() as unknown as Promise<PartnerEntity | undefined>;
+      .executeTakeFirst() as Promise<Partner | undefined>;
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }] })
-  create(values: Insertable<Partners>): Promise<PartnerEntity> {
+  create(values: Insertable<Partners>) {
     return this.db
       .insertInto('partners')
       .values(values)
       .returningAll()
       .returning(withSharedBy)
       .returning(withSharedWith)
-      .executeTakeFirstOrThrow() as unknown as Promise<PartnerEntity>;
+      .executeTakeFirstOrThrow() as Promise<Partner>;
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }, { inTimeline: true }] })
-  update({ sharedWithId, sharedById }: PartnerIds, values: Updateable<Partners>): Promise<PartnerEntity> {
+  update({ sharedWithId, sharedById }: PartnerIds, values: Updateable<Partners>) {
     return this.db
       .updateTable('partners')
       .set(values)
@@ -88,15 +71,29 @@ export class PartnerRepository {
       .returningAll()
       .returning(withSharedBy)
       .returning(withSharedWith)
-      .executeTakeFirstOrThrow() as unknown as Promise<PartnerEntity>;
+      .executeTakeFirstOrThrow() as Promise<Partner>;
   }
 
   @GenerateSql({ params: [{ sharedWithId: DummyValue.UUID, sharedById: DummyValue.UUID }] })
-  async remove({ sharedWithId, sharedById }: PartnerIds): Promise<void> {
+  async remove({ sharedWithId, sharedById }: PartnerIds) {
     await this.db
       .deleteFrom('partners')
       .where('sharedWithId', '=', sharedWithId)
       .where('sharedById', '=', sharedById)
       .execute();
+  }
+
+  private builder() {
+    return this.db
+      .selectFrom('partners')
+      .innerJoin('users as sharedBy', (join) =>
+        join.onRef('partners.sharedById', '=', 'sharedBy.id').on('sharedBy.deletedAt', 'is', null),
+      )
+      .innerJoin('users as sharedWith', (join) =>
+        join.onRef('partners.sharedWithId', '=', 'sharedWith.id').on('sharedWith.deletedAt', 'is', null),
+      )
+      .selectAll('partners')
+      .select(withSharedBy)
+      .select(withSharedWith);
   }
 }
