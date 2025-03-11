@@ -51,7 +51,7 @@ class ActivitiesPage extends HookConsumerWidget {
           final liked = data.firstWhereOrNull(
             (a) =>
                 a.type == ActivityType.like &&
-                a.user.id == user?.id &&
+                a.user.uid == user?.uid &&
                 a.assetId == asset?.remoteId,
           );
 
