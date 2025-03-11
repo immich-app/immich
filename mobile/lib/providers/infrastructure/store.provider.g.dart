@@ -6,8 +6,7 @@ part of 'store.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$storeRepositoryHash() => r'9f378b96e552151fa14a8c8ce2c30a5f38f436ed';
-
+String _$storeRepositoryHash() => r'99d24875d30c5e86b1c6caa352a0026167114e62';
 
 /// See also [storeRepository].
 @ProviderFor(storeRepository)
@@ -21,8 +20,10 @@ final storeRepositoryProvider = Provider<IStoreRepository>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef StoreRepositoryRef = Ref<IStoreRepository>;
-String _$storeServiceHash() => r'a072a39c42ad1a4d1133706f408c89c2415ba35e';
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef StoreRepositoryRef = ProviderRef<IStoreRepository>;
+String _$storeServiceHash() => r'250e10497c42df360e9e1f9a618d0b19c1b5b0a0';
 
 /// See also [storeService].
 @ProviderFor(storeService)
@@ -35,6 +36,8 @@ final storeServiceProvider = Provider<StoreService>.internal(
   allTransitiveDependencies: null,
 );
 
-typedef StoreServiceRef = Ref<StoreService>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef StoreServiceRef = ProviderRef<StoreService>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -10,7 +10,7 @@ abstract final class UserStub {
     isAdmin: true,
     updatedAt: DateTime(2021),
     profileImagePath: '',
-    avatarColor: AvatarColorEnum.green,
+    avatarColor: AvatarColor.green,
   );
 
   static final user1 = User(
@@ -20,7 +20,7 @@ abstract final class UserStub {
     isAdmin: false,
     updatedAt: DateTime(2022),
     profileImagePath: '',
-    avatarColor: AvatarColorEnum.red,
+    avatarColor: AvatarColor.red,
   );
 
   static final user2 = User(
@@ -30,6 +30,6 @@ abstract final class UserStub {
     isAdmin: false,
     updatedAt: DateTime(2023),
     profileImagePath: '',
-    avatarColor: AvatarColorEnum.primary,
+    avatarColor: AvatarColor.primary,
   );
 }
