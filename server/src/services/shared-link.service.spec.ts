@@ -71,7 +71,10 @@ describe(SharedLinkService.name, () => {
 
   describe('get', () => {
     it('should throw an error for an invalid shared link', async () => {
+      mocks.sharedLink.get.mockResolvedValue(void 0);
+
       await expect(sut.get(authStub.user1, 'missing-id')).rejects.toBeInstanceOf(BadRequestException);
+
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(mocks.sharedLink.update).not.toHaveBeenCalled();
     });
@@ -194,7 +197,10 @@ describe(SharedLinkService.name, () => {
 
   describe('update', () => {
     it('should throw an error for an invalid shared link', async () => {
+      mocks.sharedLink.get.mockResolvedValue(void 0);
+
       await expect(sut.update(authStub.user1, 'missing-id', {})).rejects.toBeInstanceOf(BadRequestException);
+
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(mocks.sharedLink.update).not.toHaveBeenCalled();
     });
@@ -214,14 +220,20 @@ describe(SharedLinkService.name, () => {
 
   describe('remove', () => {
     it('should throw an error for an invalid shared link', async () => {
+      mocks.sharedLink.get.mockResolvedValue(void 0);
+
       await expect(sut.remove(authStub.user1, 'missing-id')).rejects.toBeInstanceOf(BadRequestException);
+
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, 'missing-id');
       expect(mocks.sharedLink.update).not.toHaveBeenCalled();
     });
 
     it('should remove a key', async () => {
       mocks.sharedLink.get.mockResolvedValue(sharedLinkStub.valid);
+      mocks.sharedLink.remove.mockResolvedValue();
+
       await sut.remove(authStub.user1, sharedLinkStub.valid.id);
+
       expect(mocks.sharedLink.get).toHaveBeenCalledWith(authStub.user1.user.id, sharedLinkStub.valid.id);
       expect(mocks.sharedLink.remove).toHaveBeenCalledWith(sharedLinkStub.valid);
     });
@@ -238,6 +250,7 @@ describe(SharedLinkService.name, () => {
     it('should add assets to a shared link', async () => {
       mocks.sharedLink.get.mockResolvedValue(_.cloneDeep(sharedLinkStub.individual));
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.individual);
+      mocks.sharedLink.update.mockResolvedValue(sharedLinkStub.individual);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-3']));
 
       await expect(
@@ -268,6 +281,7 @@ describe(SharedLinkService.name, () => {
     it('should remove assets from a shared link', async () => {
       mocks.sharedLink.get.mockResolvedValue(_.cloneDeep(sharedLinkStub.individual));
       mocks.sharedLink.create.mockResolvedValue(sharedLinkStub.individual);
+      mocks.sharedLink.update.mockResolvedValue(sharedLinkStub.individual);
 
       await expect(
         sut.removeAssets(authStub.admin, 'link-1', { assetIds: [assetStub.image.id, 'asset-2'] }),

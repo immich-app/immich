@@ -127,8 +127,11 @@ describe(AssetService.name, () => {
 
   describe('getRandom', () => {
     it('should get own random assets', async () => {
+      mocks.partner.getAll.mockResolvedValue([]);
       mocks.asset.getRandom.mockResolvedValue([assetStub.image]);
+
       await sut.getRandom(authStub.admin, 1);
+
       expect(mocks.asset.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
     });
 
@@ -531,6 +534,7 @@ describe(AssetService.name, () => {
     });
 
     it('should update stack primary asset if deleted asset was primary asset in a stack', async () => {
+      mocks.stack.update.mockResolvedValue(factory.stack() as unknown as any);
       mocks.asset.getById.mockResolvedValue(assetStub.primaryImage as AssetEntity);
 
       await sut.handleAssetDeletion({ id: assetStub.primaryImage.id, deleteOnDisk: true });
@@ -542,6 +546,7 @@ describe(AssetService.name, () => {
     });
 
     it('should delete the entire stack if deleted asset was the primary asset and the stack would only contain one asset afterwards', async () => {
+      mocks.stack.delete.mockResolvedValue();
       mocks.asset.getById.mockResolvedValue({
         ...assetStub.primaryImage,
         stack: { ...assetStub.primaryImage.stack, assets: assetStub.primaryImage.stack!.assets.slice(0, 2) },
