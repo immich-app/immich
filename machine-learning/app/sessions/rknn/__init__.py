@@ -6,15 +6,17 @@ from typing import Any, NamedTuple
 import numpy as np
 from numpy.typing import NDArray
 
+from app.config import log, settings
 from app.schemas import SessionNode
-from rknn.rknnpool import RknnPoolExecutor, soc_name
 
-from ..config import log, settings
+from .rknnpool import RknnPoolExecutor, is_available, soc_name
+
+is_available = is_available and settings.rknn
+model_prefix = Path("rknpu") / soc_name if is_available else None
 
 
-def runInference(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
+def run_inference(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
     outputs: list[NDArray[np.float32]] = rknn_lite.inference(inputs=input, data_format="nchw")
-
     return outputs
 
 
@@ -38,17 +40,13 @@ input_output_mapping: dict[str, dict[str, Any]] = {
 
 
 class RknnSession:
-    def __init__(self, model_path: Path | str):
-        self.model_path = Path(str(model_path).replace("model", soc_name))
-        self.model_type = "detection" if "detection" in self.model_path.as_posix() else "recognition"
+    def __init__(self, model_path: Path) -> None:
+        self.model_type = "detection" if "detection" in model_path.parts else "recognition"
         self.tpe = settings.rknn_threads
 
-        log.info(f"Loading RKNN model from {self.model_path} with {self.tpe} threads.")
-        self.rknnpool = RknnPoolExecutor(rknnModel=self.model_path.as_posix(), tpes=self.tpe, func=runInference)
-        log.info(f"Loaded RKNN model from {self.model_path} with {self.tpe} threads.")
-
-    def __del__(self) -> None:
-        self.rknnpool.release()
+        log.info(f"Loading RKNN model from {model_path} with {self.tpe} threads.")
+        self.rknnpool = RknnPoolExecutor(model_path=model_path.as_posix(), tpes=self.tpe, func=run_inference)
+        log.info(f"Loaded RKNN model from {model_path} with {self.tpe} threads.")
 
     def get_inputs(self) -> list[SessionNode]:
         return [RknnNode(name=k, shape=v) for k, v in input_output_mapping[self.model_type]["input"].items()]

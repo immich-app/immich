@@ -17,10 +17,9 @@ services:
   rknn:
     security_opt:
       - systempaths=unconfined
+      - apparmor=unconfined
     devices:
       - /dev/dri:/dev/dri
-    volumes:
-      - /sys/kernel/debug/:/sys/kernel/debug/:ro
 
   cpu: {}
 
