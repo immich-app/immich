@@ -424,7 +424,7 @@
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory()}
-                  class="text-white dark:text-white"
+                  class="text-white dark:text-white w-[48px] h-[48px]"
                 />
                 <!-- <IconButton
                   icon={mdiShareVariantOutline}
