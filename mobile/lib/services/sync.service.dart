@@ -232,25 +232,13 @@ class SyncService {
   }
 
   Future<void> _moveToTrashMatchedAssets(Iterable<String> idsToDelete) async {
-    final List<Asset> assets =
-        await _assetRepository.getAllByRemoteId(idsToDelete);
+    final List<Asset> localAssets = await _assetRepository.getAllLocal();
+    final List<Asset> matchedAssets = localAssets
+        .where((asset) => idsToDelete.contains(asset.remoteId))
+        .toList();
 
-    if (assets.isNotEmpty) {
-      final localAssets = await _assetRepository.getAllLocal();
-
-      // Find the local assets that match the remote assets by fileName
-      final matchedAssets = localAssets
-          .where(
-            (localAsset) => assets.any(
-              (remoteAsset) =>
-                  remoteAsset.fileName.contains(localAsset.fileName),
-            ),
-          )
-          .toList();
-
-      for (var asset in matchedAssets) {
-        _localFilesManager.moveToTrash(asset.fileName);
-      }
+    for (var asset in matchedAssets) {
+      _localFilesManager.moveToTrash(asset.fileName);
     }
   }
 
@@ -788,7 +776,7 @@ class SyncService {
     return (existing, toUpsert);
   }
 
-  Future<void> _moveToTrashAssets(List<Asset> assetsList) async {
+  Future<void> _toggleTrashStatusForAssets(List<Asset> assetsList) async {
     for (var asset in assetsList) {
       if (asset.isTrashed) {
         _localFilesManager.moveToTrash(asset.fileName);
@@ -806,7 +794,7 @@ class SyncService {
         _appSettingsService.getSetting<bool>(
           AppSettingsEnum.manageLocalMediaAndroid,
         )) {
-      _moveToTrashAssets(assets);
+      _toggleTrashStatusForAssets(assets);
     }
 
     final exifInfos = assets.map((e) => e.exifInfo).nonNulls.toList();
