@@ -18,8 +18,15 @@ jobs:
           filters: |
             i18n:
               - 'i18n/!(en)**\.json'
+      - name: Debug
+        run: |
+            echo "Should run: ${{ steps.found_paths.outputs.i18n == 'true' && github.head_ref != 'chore/translations'}}"
+            echo "Found i18n paths: ${{ steps.found_paths.outputs.i18n }}"
+            echo "Head ref: ${{ github.head_ref }}"
+
   enforce-lock:
     name: Check Weblate Lock
+    needs: [ pre-job ]
     runs-on: ubuntu-latest
     if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     steps:

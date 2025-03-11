@@ -45,6 +45,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/app/.cxx
 
 # Fastlane
 ios/fastlane/report.xml
@@ -56,4 +57,3 @@ libisar.so
 
 # FVM Version
 .fvm/
-app/
