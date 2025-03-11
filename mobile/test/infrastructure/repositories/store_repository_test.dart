@@ -86,7 +86,7 @@ void main() {
     });
 
     test('converts user', () async {
-      User? user = await sut.tryGet(StoreKey.currentUser);
+      UserDto? user = await sut.tryGet(StoreKey.currentUser);
       expect(user, isNull);
       await sut.insert(StoreKey.currentUser, _kTestUser);
       user = await sut.tryGet(StoreKey.currentUser);

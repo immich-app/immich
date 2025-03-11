@@ -43,21 +43,21 @@ class UserService {
     }
   }
 
-  Future<List<User>> getAll() async {
+  Future<List<UserDto>> getAll() async {
     return await _userRepository.getAll();
   }
 
-  Future<List<User>?> getUsersFromServer() async {
-    List<User>? users;
+  Future<List<UserDto>?> getUsersFromServer() async {
+    List<UserDto>? users;
     try {
       users = await _userApiRepository.getAll();
     } catch (e) {
       _log.warning("Failed to fetch users", e);
       users = null;
     }
-    final List<User> sharedBy =
+    final List<UserDto> sharedBy =
         await _partnerApiRepository.getAll(Direction.sharedByMe);
-    final List<User> sharedWith =
+    final List<UserDto> sharedWith =
         await _partnerApiRepository.getAll(Direction.sharedWithMe);
 
     if (users == null) {
@@ -69,34 +69,34 @@ class UserService {
     sharedBy.sortBy((u) => u.uid);
     sharedWith.sortBy((u) => u.uid);
 
-    final updatedSharedBy = <User>[];
+    final updatedSharedBy = <UserDto>[];
 
     diffSortedListsSync(
       users,
       sharedBy,
-      compare: (User a, User b) => a.uid.compareTo(b.uid),
-      both: (User a, User b) {
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      both: (UserDto a, UserDto b) {
         updatedSharedBy.add(a.copyWith(isPartnerSharedBy: true));
         return true;
       },
-      onlyFirst: (User a) => updatedSharedBy.add(a),
-      onlySecond: (User b) => updatedSharedBy.add(b),
+      onlyFirst: (UserDto a) => updatedSharedBy.add(a),
+      onlySecond: (UserDto b) => updatedSharedBy.add(b),
     );
 
-    final updatedSharedWith = <User>[];
+    final updatedSharedWith = <UserDto>[];
 
     diffSortedListsSync(
       updatedSharedBy,
       sharedWith,
-      compare: (User a, User b) => a.uid.compareTo(b.uid),
-      both: (User a, User b) {
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      both: (UserDto a, UserDto b) {
         updatedSharedWith.add(
           a.copyWith(inTimeline: b.inTimeline, isPartnerSharedWith: true),
         );
         return true;
       },
-      onlyFirst: (User a) => updatedSharedWith.add(a),
-      onlySecond: (User b) => updatedSharedWith.add(b),
+      onlyFirst: (UserDto a) => updatedSharedWith.add(a),
+      onlySecond: (UserDto b) => updatedSharedWith.add(b),
     );
 
     return updatedSharedWith;

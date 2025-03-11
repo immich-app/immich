@@ -30,7 +30,8 @@ enum AvatarColor {
       };
 }
 
-class User {
+// TODO: Rename to User once Isar is removed
+class UserDto {
   final String uid;
   final String email;
   final String name;
@@ -52,7 +53,7 @@ class User {
   int get id => fastHash(uid);
   bool get hasQuota => quotaSizeInBytes > 0;
 
-  const User({
+  const UserDto({
     required this.uid,
     required this.email,
     required this.name,
@@ -88,7 +89,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
 }''';
   }
 
-  User copyWith({
+  UserDto copyWith({
     String? uid,
     String? email,
     String? name,
@@ -103,7 +104,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
     int? quotaUsageInBytes,
     int? quotaSizeInBytes,
   }) =>
-      User(
+      UserDto(
         uid: uid ?? this.uid,
         email: email ?? this.email,
         name: name ?? this.name,
@@ -120,7 +121,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
       );
 
   @override
-  bool operator ==(covariant User other) {
+  bool operator ==(covariant UserDto other) {
     if (identical(this, other)) return true;
 
     return other.uid == uid &&

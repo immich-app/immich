@@ -28,23 +28,23 @@ class PartnerService {
     this._partnerRepository,
   );
 
-  Future<List<User>> getSharedWith() async {
+  Future<List<UserDto>> getSharedWith() async {
     return _partnerRepository.getSharedWith();
   }
 
-  Future<List<User>> getSharedBy() async {
+  Future<List<UserDto>> getSharedBy() async {
     return _partnerRepository.getSharedBy();
   }
 
-  Stream<List<User>> watchSharedWith() {
+  Stream<List<UserDto>> watchSharedWith() {
     return _partnerRepository.watchSharedWith();
   }
 
-  Stream<List<User>> watchSharedBy() {
+  Stream<List<UserDto>> watchSharedBy() {
     return _partnerRepository.watchSharedBy();
   }
 
-  Future<bool> removePartner(User partner) async {
+  Future<bool> removePartner(UserDto partner) async {
     try {
       await _partnerApiRepository.delete(partner.uid);
       await _userRepository.update(partner.copyWith(isPartnerSharedBy: false));
@@ -55,7 +55,7 @@ class PartnerService {
     return true;
   }
 
-  Future<bool> addPartner(User partner) async {
+  Future<bool> addPartner(UserDto partner) async {
     try {
       await _partnerApiRepository.create(partner.uid);
       await _userRepository.update(partner.copyWith(isPartnerSharedBy: true));
@@ -66,7 +66,10 @@ class PartnerService {
     return false;
   }
 
-  Future<bool> updatePartner(User partner, {required bool inTimeline}) async {
+  Future<bool> updatePartner(
+    UserDto partner, {
+    required bool inTimeline,
+  }) async {
     try {
       final dto = await _partnerApiRepository.update(
         partner.uid,

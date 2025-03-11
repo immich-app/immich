@@ -3,7 +3,7 @@ import 'package:openapi/api.dart';
 
 abstract final class UserConverter {
   /// Base user dto used where the complete user object is not required
-  static User fromSimpleUserDto(UserResponseDto dto) => User(
+  static UserDto fromSimpleUserDto(UserResponseDto dto) => UserDto(
         uid: dto.id,
         email: dto.email,
         name: dto.name,
@@ -13,11 +13,11 @@ abstract final class UserConverter {
         avatarColor: dto.avatarColor.toAvatarColor(),
       );
 
-  static User fromAdminDto(
+  static UserDto fromAdminDto(
     UserAdminResponseDto adminDto, [
     UserPreferencesResponseDto? preferenceDto,
   ]) =>
-      User(
+      UserDto(
         uid: adminDto.id,
         email: adminDto.email,
         name: adminDto.name,
@@ -33,7 +33,7 @@ abstract final class UserConverter {
         quotaSizeInBytes: adminDto.quotaSizeInBytes ?? 0,
       );
 
-  static User fromPartnerDto(PartnerResponseDto dto) => User(
+  static UserDto fromPartnerDto(PartnerResponseDto dto) => UserDto(
         uid: dto.id,
         email: dto.email,
         name: dto.name,

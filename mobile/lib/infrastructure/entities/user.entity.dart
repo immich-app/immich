@@ -40,7 +40,7 @@ class User {
     this.quotaSizeInBytes = 0,
   });
 
-  static User fromDto(model.User dto) => User(
+  static User fromDto(model.UserDto dto) => User(
         id: dto.uid,
         updatedAt: dto.updatedAt,
         email: dto.email,
@@ -56,7 +56,7 @@ class User {
         quotaSizeInBytes: dto.quotaSizeInBytes,
       );
 
-  model.User toDto() => model.User(
+  model.UserDto toDto() => model.UserDto(
         uid: id,
         email: email,
         name: name,

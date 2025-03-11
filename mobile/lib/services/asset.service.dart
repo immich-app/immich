@@ -89,7 +89,7 @@ class AssetService {
   /// required. Returns `true` if there were any changes.
   Future<bool> refreshRemoteAssets() async {
     final syncedUserIds = await _etagRepository.getAllIds();
-    final List<User> syncedUsers = syncedUserIds.isEmpty
+    final List<UserDto> syncedUsers = syncedUserIds.isEmpty
         ? []
         : (await _userRepository.getByUserIds(syncedUserIds)).nonNulls.toList();
     final Stopwatch sw = Stopwatch()..start();
@@ -105,7 +105,7 @@ class AssetService {
 
   /// Returns `(null, null)` if changes are invalid -> requires full sync
   Future<(List<Asset>? toUpsert, List<String>? toDelete)>
-      _getRemoteAssetChanges(List<User> users, DateTime since) async {
+      _getRemoteAssetChanges(List<UserDto> users, DateTime since) async {
     final dto = AssetDeltaSyncDto(
       updatedAfter: since,
       userIds: users.map((e) => e.uid).toList(),
@@ -138,7 +138,7 @@ class AssetService {
   }
 
   /// Returns `null` if the server state did not change, else list of assets
-  Future<List<Asset>?> _getRemoteAssets(User user, DateTime until) async {
+  Future<List<Asset>?> _getRemoteAssets(UserDto user, DateTime until) async {
     const int chunkSize = 10000;
     try {
       final List<Asset> allAssets = [];

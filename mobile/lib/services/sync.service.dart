@@ -77,20 +77,20 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> syncUsersFromServer(List<User> users) =>
+  Future<bool> syncUsersFromServer(List<UserDto> users) =>
       _lock.run(() => _syncUsersFromServer(users));
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
   Future<bool> syncRemoteAssetsToDb({
-    required List<User> users,
+    required List<UserDto> users,
     required Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
-      List<User> users,
+      List<UserDto> users,
       DateTime since,
     ) getChangedAssets,
-    required FutureOr<List<Asset>?> Function(User user, DateTime until)
+    required FutureOr<List<Asset>?> Function(UserDto user, DateTime until)
         loadAssets,
-    required FutureOr<List<User>?> Function() refreshUsers,
+    required FutureOr<List<UserDto>?> Function() refreshUsers,
   }) =>
       _lock.run(
         () async =>
@@ -140,16 +140,16 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> _syncUsersFromServer(List<User> users) async {
+  Future<bool> _syncUsersFromServer(List<UserDto> users) async {
     users.sortBy((u) => u.uid);
     final dbUsers = await _userRepository.getAll(sortBy: SortUserBy.id);
     final List<int> toDelete = [];
-    final List<User> toUpsert = [];
+    final List<UserDto> toUpsert = [];
     final changes = diffSortedListsSync(
       users,
       dbUsers,
-      compare: (User a, User b) => a.uid.compareTo(b.uid),
-      both: (User a, User b) {
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      both: (UserDto a, UserDto b) {
         if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
             a.isPartnerSharedBy != b.isPartnerSharedBy ||
             a.isPartnerSharedWith != b.isPartnerSharedWith ||
@@ -159,8 +159,8 @@ class SyncService {
         }
         return false;
       },
-      onlyFirst: (User a) => toUpsert.add(a),
-      onlySecond: (User b) => toDelete.add(b.id),
+      onlyFirst: (UserDto a) => toUpsert.add(a),
+      onlySecond: (UserDto b) => toDelete.add(b.id),
     );
     if (changes) {
       await _userRepository.transaction(() async {
@@ -191,9 +191,9 @@ class SyncService {
 
   /// Efficiently syncs assets via changes. Returns `null` when a full sync is required.
   Future<bool?> _syncRemoteAssetChanges(
-    List<User> users,
+    List<UserDto> users,
     Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
-      List<User> users,
+      List<UserDto> users,
       DateTime since,
     ) getChangedAssets,
   ) async {
@@ -248,8 +248,8 @@ class SyncService {
 
   /// Syncs assets by loading and comparing all assets from the server.
   Future<bool> _syncRemoteAssetsFull(
-    FutureOr<List<User>?> Function() refreshUsers,
-    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+    FutureOr<List<UserDto>?> Function() refreshUsers,
+    FutureOr<List<Asset>?> Function(UserDto user, DateTime until) loadAssets,
   ) async {
     final serverUsers = await refreshUsers();
     if (serverUsers == null) {
@@ -257,17 +257,17 @@ class SyncService {
       return false;
     }
     await _syncUsersFromServer(serverUsers);
-    final List<User> users = await _userRepository.getAll();
+    final List<UserDto> users = await _userRepository.getAll();
     bool changes = false;
-    for (User u in users) {
+    for (UserDto u in users) {
       changes |= await _syncRemoteAssetsForUser(u, loadAssets);
     }
     return changes;
   }
 
   Future<bool> _syncRemoteAssetsForUser(
-    User user,
-    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+    UserDto user,
+    FutureOr<List<Asset>?> Function(UserDto user, DateTime until) loadAssets,
   ) async {
     final DateTime now = DateTime.now().toUtc();
     final List<Asset>? remote = await loadAssets(user, now);
@@ -301,12 +301,12 @@ class SyncService {
     return true;
   }
 
-  Future<void> _updateUserAssetsETag(List<User> users, DateTime time) {
+  Future<void> _updateUserAssetsETag(List<UserDto> users, DateTime time) {
     final etags = users.map((u) => ETag(id: u.uid, time: time)).toList();
     return _eTagRepository.upsertAll(etags);
   }
 
-  Future<void> _clearUserAssetsETag(List<User> users) {
+  Future<void> _clearUserAssetsETag(List<UserDto> users) {
     final ids = users.map((u) => u.uid).toList();
     return _eTagRepository.deleteByIds(ids);
   }
@@ -379,20 +379,20 @@ class SyncService {
     );
 
     // update shared users
-    final List<User> sharedUsers =
+    final List<UserDto> sharedUsers =
         album.sharedUsers.map((u) => u.toDto()).toList(growable: false);
     sharedUsers.sort((a, b) => a.id.compareTo(b.id));
-    final List<User> users = dto.remoteUsers.map((u) => u.toDto()).toList()
+    final List<UserDto> users = dto.remoteUsers.map((u) => u.toDto()).toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     final List<String> userIdsToAdd = [];
-    final List<User> usersToUnlink = [];
+    final List<UserDto> usersToUnlink = [];
     diffSortedListsSync(
       users,
       sharedUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
+      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (a, b) => false,
-      onlyFirst: (User a) => userIdsToAdd.add(a.uid),
-      onlySecond: (User a) => usersToUnlink.add(a),
+      onlyFirst: (UserDto a) => userIdsToAdd.add(a.uid),
+      onlySecond: (UserDto a) => usersToUnlink.add(a),
     );
 
     // for shared album: put missing album assets into local DB

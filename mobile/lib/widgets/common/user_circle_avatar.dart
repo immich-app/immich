@@ -12,7 +12,7 @@ import 'package:immich_mobile/widgets/common/transparent_image.dart';
 
 // ignore: must_be_immutable
 class UserCircleAvatar extends ConsumerWidget {
-  final User user;
+  final UserDto user;
   double radius;
   double size;
 

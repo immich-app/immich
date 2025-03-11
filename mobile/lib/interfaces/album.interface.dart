@@ -31,9 +31,9 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
 
   Future<int> count({bool? local});
 
-  Future<void> addUsers(Album album, List<User> users);
+  Future<void> addUsers(Album album, List<UserDto> users);
 
-  Future<void> removeUsers(Album album, List<User> users);
+  Future<void> removeUsers(Album album, List<UserDto> users);
 
   Future<void> addAssets(Album album, List<Asset> assets);
 

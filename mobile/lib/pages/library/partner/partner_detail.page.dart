@@ -15,7 +15,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 class PartnerDetailPage extends HookConsumerWidget {
   const PartnerDetailPage({super.key, required this.partner});
 
-  final User partner;
+  final UserDto partner;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
