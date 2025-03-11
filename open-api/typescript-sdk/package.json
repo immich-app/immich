@@ -19,7 +19,7 @@
     "@oazapfts/runtime": "^1.0.2"
   },
   "devDependencies": {
-    "@types/node": "^22.13.5",
+    "@types/node": "^22.13.9",
     "typescript": "^5.3.3"
   },
   "repository": {

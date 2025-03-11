@@ -170,7 +170,7 @@ class AppBarServerInfo extends HookConsumerWidget {
                       child: Tooltip(
                         verticalOffset: 0,
                         decoration: BoxDecoration(
-                          color: context.primaryColor.withOpacity(0.9),
+                          color: context.primaryColor.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         textStyle: TextStyle(

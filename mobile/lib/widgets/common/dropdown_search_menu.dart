@@ -146,7 +146,7 @@ class DropdownSearchMenu<T> extends HookWidget {
                                 ? Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withOpacity(0.12)
+                                    .withValues(alpha: 0.12)
                                 : null,
                             padding: const EdgeInsets.all(16.0),
                             child: Text(

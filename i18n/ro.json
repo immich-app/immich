@@ -299,7 +299,7 @@
     "transcoding_max_b_frames": "Număr maxim de cadre B",
     "transcoding_max_b_frames_description": "Valorile mai mari îmbunătățesc eficiența compresiei, dar încetinesc codarea. Este posibil să nu fie compatibile cu accelerarea hardware pe dispozitivele mai vechi. 0 dezactivează cadrele B, în timp ce -1 setează această valoare automat.",
     "transcoding_max_bitrate": "Rata de biți maximă",
-    "transcoding_max_bitrate_description": "Setarea unei rate maxime de biți poate face dimensiunile fișierelor mai previzibile, cu un cost minor asupra calității. La 720p, valorile tipice sunt 2600k pentru VP9 sau HEVC, sau 4500k pentru H.264. Dezactivat dacă este setat la 0.",
+    "transcoding_max_bitrate_description": "Setarea unei rate maxime de biți poate face dimensiunile fișierelor mai previzibile, cu un cost minor asupra calității. La 720p, valorile tipice sunt 2600 kbit/s pentru VP9 sau HEVC, sau 4500 kbit/s pentru H.264. Dezactivat dacă este setat la 0.",
     "transcoding_max_keyframe_interval": "Interval maxim între cadre cheie",
     "transcoding_max_keyframe_interval_description": "Setează distanța maximă între cadrele cheie. Valorile mai mici reduc eficiența compresiei, dar îmbunătățesc timpii de căutare și pot îmbunătăți calitatea în scenele cu mișcare rapidă. 0 setează această valoare automat.",
     "transcoding_optimal_description": "Videoclipuri cu rezoluție mai mare decât cea țintă sau care nu sunt într-un format acceptat",

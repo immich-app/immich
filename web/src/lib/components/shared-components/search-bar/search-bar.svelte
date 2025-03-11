@@ -19,10 +19,9 @@
     value?: string;
     grayTheme: boolean;
     searchQuery?: MetadataSearchDto | SmartSearchDto;
-    onSearch?: () => void;
   }
 
-  let { value = $bindable(''), grayTheme, searchQuery = {}, onSearch }: Props = $props();
+  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
 
   let showClearIcon = $derived(value.length > 0);
 
@@ -44,7 +43,6 @@
     showFilter = false;
     $isSearchEnabled = false;
     await goto(`${AppRoute.SEARCH}?${params}`);
-    onSearch?.();
   };
 
   const clearSearchTerm = (searchTerm: string) => {

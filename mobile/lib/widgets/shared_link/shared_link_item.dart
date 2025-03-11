@@ -240,7 +240,7 @@ class SharedLinkItem extends ConsumerWidget {
             child: Tooltip(
               verticalOffset: 0,
               decoration: BoxDecoration(
-                color: colorScheme.primary.withOpacity(0.9),
+                color: colorScheme.primary.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(10),
               ),
               textStyle: TextStyle(
@@ -268,7 +268,7 @@ class SharedLinkItem extends ConsumerWidget {
                 child: Tooltip(
                   verticalOffset: 0,
                   decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.9),
+                    color: colorScheme.primary.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   textStyle: TextStyle(
