@@ -40,7 +40,7 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
 
   return {
     destroy() {
-      document.removeEventListener('mousedown', handleClick, true);
+      document.removeEventListener('mousedown', handleClick, false);
       node.removeEventListener('keydown', handleKey, false);
     },
   };
