@@ -26,6 +26,7 @@ jobs:
 
   enforce-lock:
     name: Check Weblate Lock
+    needs: [ pre-job ]
     runs-on: ubuntu-latest
     if: ${{ needs.pre-job.outputs.should_run == 'true' }}
     steps:
