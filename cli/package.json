@@ -21,7 +21,7 @@
     "@types/lodash-es": "^4.17.12",
     "@types/micromatch": "^4.0.9",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^22.13.5",
+    "@types/node": "^22.13.9",
     "@typescript-eslint/eslint-plugin": "^8.15.0",
     "@typescript-eslint/parser": "^8.15.0",
     "@vitest/coverage-v8": "^3.0.0",
