@@ -54,7 +54,7 @@ export default function VersionSwitcher(): JSX.Element {
           label,
           to: new URL(location.pathname + location.search + location.hash, url).href,
           target: '_self',
-          className: label === activeLabel ? 'dropdown__link--active menu__link--active' : '',
+          className: label === activeLabel ? 'dropdown__link--active menu__link--active' : '', // workaround because React Router `<NavLink>` only supports using URL path for checking if active: https://v5.reactrouter.com/web/api/NavLink/isactive-func
         }))}
       />
     )
