@@ -110,7 +110,7 @@
         <div>
           <Icon
             path={mdiInformationOutline}
-            class="flex text-immich-primary dark:text-immich-dark-primary font-medium"
+            class="hidden md:flex text-immich-primary dark:text-immich-dark-primary font-medium"
             size="18"
           />
         </div>
@@ -122,7 +122,7 @@
 <Portal target="body">
   {#if showMessage}
     <div
-      class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
+      class="hidden md:block w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
