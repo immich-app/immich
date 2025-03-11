@@ -111,7 +111,7 @@ class PartnerDetailPage extends HookConsumerWidget {
             ),
           ),
         ),
-        renderListProvider: singleUserTimelineProvider(partner.id),
+        renderListProvider: singleUserTimelineProvider(partner.uid),
         onRefresh: () => ref.read(assetProvider.notifier).getAllAsset(),
         deleteEnabled: false,
         favoriteEnabled: false,

@@ -10,6 +10,6 @@ final otherUsersProvider =
   final currentUser = ref.watch(currentUserProvider);
 
   final allUsers = await userService.getAll();
-  allUsers.removeWhere((u) => currentUser?.id == u.id);
+  allUsers.removeWhere((u) => currentUser?.uid == u.uid);
   return allUsers;
 });
