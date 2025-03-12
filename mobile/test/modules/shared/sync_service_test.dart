@@ -125,7 +125,7 @@ void main() {
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.uid,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => initialAssets);
@@ -200,7 +200,7 @@ void main() {
       expect(c1, isTrue);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.uid,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => remoteAssets);
@@ -213,7 +213,7 @@ void main() {
       final currentState = [...remoteAssets];
       when(
         () => assetRepository.getAll(
-          ownerId: owner.uid,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => currentState);
