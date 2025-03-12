@@ -3,7 +3,7 @@
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
   import { DateTime } from 'luxon';
-  import { fly } from 'svelte/transition';
+  import { fade, fly } from 'svelte/transition';
 
   interface Props {
     timelineTopOffset?: number;
@@ -13,11 +13,12 @@
     invisible?: boolean;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
-    scrubBucket?: { bucketDate: string | undefined } | undefined;
+    scrubBucket?: { bucketDate: string | undefined };
     leadout?: boolean;
-    onScrub?: ScrubberListener | undefined;
-    startScrub?: ScrubberListener | undefined;
-    stopScrub?: ScrubberListener | undefined;
+    onScrub?: ScrubberListener;
+    onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
+    startScrub?: ScrubberListener;
+    stopScrub?: ScrubberListener;
   }
 
   let {
@@ -31,6 +32,7 @@
     scrubBucket = undefined,
     leadout = false,
     onScrub = undefined,
+    onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
   }: Props = $props();
@@ -140,10 +142,21 @@
 
     return segments;
   };
-  let segments = $derived(calculateSegments(assetStore.scrubberBuckets));
   let activeSegment: HTMLElement | undefined = $state();
-  let hoverLabel = $derived(activeSegment?.dataset.label);
-  let bucketDate = $derived(activeSegment?.dataset.timeSegmentBucketDate);
+  const segments = $derived(calculateSegments(assetStore.scrubberBuckets));
+  const hoverLabel = $derived(activeSegment?.dataset.label);
+  const bucketDate = $derived(activeSegment?.dataset.timeSegmentBucketDate);
+  const scrollHoverLabel = $derived.by(() => {
+    const y = scrollY;
+    let cur = 0;
+    for (const segment of segments) {
+      if (y <= cur + segment.height + relativeTopOffset) {
+        return segment.dateFormatted;
+      }
+      cur += segment.height;
+    }
+    return '';
+  });
 
   const handleMouseEvent = (event: { clientY: number; isDragging?: boolean }) => {
     const wasDragging = isDragging;
@@ -224,6 +237,7 @@
   bind:this={scrollBar}
   onmouseenter={() => (isHover = true)}
   onmouseleave={() => (isHover = false)}
+  onkeydown={(event) => onScrubKeyDown?.(event, event.currentTarget)}
 >
   {#if hoverLabel && (isHover || isDragging)}
     <div
@@ -239,7 +253,16 @@
     <div
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
-    ></div>
+    >
+      {#if assetStore.scrolling && scrollHoverLabel}
+        <p
+          transition:fade={{ duration: 200 }}
+          class="truncate pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
+        >
+          {scrollHoverLabel}
+        </p>
+      {/if}
+    </div>
   {/if}
   <div id="lead-in" class="relative" style:height={relativeTopOffset + 'px'} data-label={segments.at(0)?.dateFormatted}>
     {#if relativeTopOffset > 6}

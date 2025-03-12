@@ -100,7 +100,7 @@
   let oldAt: AssetGridRouteSearchParams | null | undefined = $state();
 
   let backUrl: string = $state(AppRoute.ALBUMS);
-  let viewMode = $state(AlbumPageViewMode.VIEW);
+  let viewMode: AlbumPageViewMode = $state(AlbumPageViewMode.VIEW);
   let isCreatingSharedAlbum = $state(false);
   let isShowActivity = $state(false);
   let isLiked: ActivityResponseDto | null = $state(null);
@@ -203,7 +203,9 @@
 
   const handleStartSlideshow = async () => {
     const asset =
-      $slideshowNavigation === SlideshowNavigation.Shuffle ? await assetStore.getRandomAsset() : assetStore.assets[0];
+      $slideshowNavigation === SlideshowNavigation.Shuffle
+        ? await assetStore.getRandomAsset()
+        : assetStore.buckets[0]?.dateGroups[0]?.intersetingAssets[0]?.asset;
     if (asset) {
       setAsset(asset);
       $slideshowState = SlideshowState.PlaySlideshow;
@@ -211,6 +213,7 @@
   };
 
   const handleEscape = async () => {
+    assetStore.suspendTransitions = true;
     if (viewMode === AlbumPageViewMode.SELECT_USERS) {
       viewMode = AlbumPageViewMode.VIEW;
       return;
@@ -270,6 +273,7 @@
   };
 
   const setModeToView = async () => {
+    assetStore.suspendTransitions = true;
     viewMode = AlbumPageViewMode.VIEW;
     await navigate(
       { targetRoute: 'current', assetId: null, assetGridRouteSearchParams: { at: oldAt?.at } },
@@ -400,11 +404,17 @@
   });
 
   let assetStore = new AssetStore();
-  $effect(() => void assetStore.updateOptions({ albumId, order: albumOrder }));
+  $effect(() => {
+    if (viewMode === AlbumPageViewMode.VIEW) {
+      void assetStore.updateOptions({ albumId, order: albumOrder });
+    } else if (viewMode === AlbumPageViewMode.SELECT_ASSETS) {
+      void assetStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId });
+    }
+  });
   onDestroy(() => assetStore.destroy());
-  let timelineStore = new AssetStore();
-  $effect(() => void timelineStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId }));
-  onDestroy(() => timelineStore.destroy());
+  // let timelineStore = new AssetStore();
+  // $effect(() => void timelineStore.updateOptions({ isArchived: false, withPartners: true, timelineAlbumId: albumId }));
+  // onDestroy(() => timelineStore.destroy());
 
   let isOwned = $derived($user.id == album.ownerId);
 
@@ -423,6 +433,22 @@
       handlePromiseError(getNumberOfComments());
     }
   });
+  const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
+  const isSelectionMode = $derived(
+    viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+  );
+  const singleSelect = $derived(
+    viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+  );
+  const showArchiveIcon = $derived(viewMode !== AlbumPageViewMode.SELECT_ASSETS);
+  const onSelect = ({ id }: { id: string }) => {
+    if (viewMode !== AlbumPageViewMode.SELECT_ASSETS) {
+      void handleUpdateThumbnail(id);
+    }
+  };
+  const currentAssetIntersection = $derived(
+    viewMode === AlbumPageViewMode.SELECT_ASSETS ? timelineInteraction : assetInteraction,
+  );
 </script>
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: AppRoute.ALBUMS }}>
@@ -476,6 +502,7 @@
               <CircleIconButton
                 title={$t('add_photos')}
                 onclick={async () => {
+                  assetStore.suspendTransitions = true;
                   viewMode = AlbumPageViewMode.SELECT_ASSETS;
                   oldAt = { at: $gridScrollTarget?.at };
                   await navigate(
@@ -570,26 +597,19 @@
     {/if}
 
     <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
-      {#if viewMode === AlbumPageViewMode.SELECT_ASSETS}
-        <AssetGrid
-          enableRouting={false}
-          assetStore={timelineStore}
-          assetInteraction={timelineInteraction}
-          isSelectionMode={true}
-        />
-      {:else}
-        <AssetGrid
-          enableRouting={true}
-          {album}
-          {assetStore}
-          {assetInteraction}
-          isShared={album.albumUsers.length > 0}
-          isSelectionMode={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
-          singleSelect={viewMode === AlbumPageViewMode.SELECT_THUMBNAIL}
-          showArchiveIcon
-          onSelect={({ id }) => handleUpdateThumbnail(id)}
-          onEscape={handleEscape}
-        >
+      <AssetGrid
+        enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
+        {album}
+        {assetStore}
+        assetInteraction={currentAssetIntersection}
+        {isShared}
+        {isSelectionMode}
+        {singleSelect}
+        {showArchiveIcon}
+        {onSelect}
+        onEscape={handleEscape}
+      >
+        {#if viewMode !== AlbumPageViewMode.SELECT_ASSETS}
           {#if viewMode !== AlbumPageViewMode.SELECT_THUMBNAIL}
             <!-- ALBUM TITLE -->
             <section class="pt-8 md:pt-24">
@@ -674,8 +694,8 @@
               </div>
             </section>
           {/if}
-        </AssetGrid>
-      {/if}
+        {/if}
+      </AssetGrid>
 
       {#if showActivityStatus}
         <div class="absolute z-[2] bottom-0 right-0 mb-6 mr-6 justify-self-end">

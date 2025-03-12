@@ -45,7 +45,7 @@
   }
 
   let {
-    asset,
+    asset = $bindable(),
     groupIndex = 0,
     thumbnailSize = undefined,
     thumbnailWidth = undefined,
@@ -76,7 +76,7 @@
     e?.stopPropagation();
     e?.preventDefault();
     if (!disabled) {
-      onSelect?.(asset);
+      onSelect?.($state.snapshot(asset));
     }
   };
 
@@ -85,7 +85,7 @@
       onIconClickedHandler();
       return;
     }
-    onClick?.(asset);
+    onClick?.($state.snapshot(asset));
   };
   const handleClick = (e: MouseEvent) => {
     if (e.ctrlKey || e.metaKey) {

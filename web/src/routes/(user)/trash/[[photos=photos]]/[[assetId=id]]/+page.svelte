@@ -81,8 +81,8 @@
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
       // note - this is still a problem, but updateOptions with the same value will not
       // do anything, so need to flip it for it to reload/reinit
-      await assetStore.updateOptions({ deferInit: true, isTrashed: true });
-      await assetStore.updateOptions({ deferInit: false, isTrashed: true });
+      // await assetStore.updateOptions({ deferInit: true, isTrashed: true });
+      // await assetStore.updateOptions({ deferInit: false, isTrashed: true });
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_trash'));
     }

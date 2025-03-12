@@ -148,6 +148,7 @@
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Shift') {
       event.preventDefault();
+
       shiftKeyIsDown = true;
     }
   };
@@ -163,7 +164,7 @@
     if (!asset) {
       return;
     }
-    const deselect = assetInteraction.selectedAssets.has(asset);
+    const deselect = assetInteraction.hasSelectedAsset(asset.id);
 
     // Select/deselect already loaded assets
     if (deselect) {
@@ -246,7 +247,7 @@
   const toggleArchive = async () => {
     const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
     if (ids) {
-      assets.filter((asset) => !ids.includes(asset.id));
+      assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
     }
   };
@@ -299,7 +300,7 @@
     }
   };
 
-  const handleRandom = async (): Promise<AssetResponseDto | null> => {
+  const handleRandom = async (): Promise<AssetResponseDto | undefined> => {
     try {
       let asset: AssetResponseDto | undefined;
       if (onRandom) {
@@ -312,14 +313,14 @@
       }
 
       if (!asset) {
-        return null;
+        return;
       }
 
       await navigateToAsset(asset);
       return asset;
     } catch (error) {
       handleError(error, $t('errors.cannot_navigate_next_asset'));
-      return null;
+      return;
     }
   };
 
@@ -450,8 +451,8 @@
             onMouseEvent={() => assetMouseEventHandler(asset)}
             {showArchiveIcon}
             {asset}
-            selected={assetInteraction.selectedAssets.has(asset)}
-            selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
+            selected={assetInteraction.hasSelectedAsset(asset.id)}
+            selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />

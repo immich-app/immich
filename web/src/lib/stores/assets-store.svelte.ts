@@ -1,13 +1,19 @@
 import { locale } from '$lib/stores/preferences.store';
 import { getKey } from '$lib/utils';
 import { CancellableTask } from '$lib/utils/cancellable-task';
-import { emptyGeometry, getJustifiedLayoutFromAssets, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+import {
+  getJustifiedLayoutFromAssets,
+  getPosition,
+  type CommonLayoutOptions,
+  type CommonPosition,
+} from '$lib/utils/layout-utils';
 import { formatDateGroupTitle, fromLocalDateTime, groupDateFormat } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
 import { getAssetInfo, getTimeBucket, getTimeBuckets, TimeBucketSize, type AssetResponseDto } from '@immich/sdk';
-import { groupBy, isEqual, sortBy, throttle } from 'lodash-es';
+import { debounce, isEqual, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
+
 import { SvelteSet } from 'svelte/reactivity';
 import { get, writable, type Unsubscriber } from 'svelte/store';
 import { handleError } from '../utils/handle-error';
@@ -27,90 +33,143 @@ export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   deferInit?: boolean;
 };
 
-class IntersectingCalc {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function updateObject(target: any, source: any): boolean {
+  let updated = false;
+  for (const key in source) {
+    if (typeof source[key] === 'object' && source[key] !== null) {
+      updated = updated || updateObject(target[key], source[key]);
+    } else {
+      // Otherwise, directly copy the value
+      if (target[key] !== source[key]) {
+        target[key] = source[key];
+        updated = true;
+      }
+    }
+  }
+  return updated;
+}
+
+class IntersectingAsset {
   // --- public ---
   readonly #group: AssetDateGroup;
-  readonly #index: number;
-  intersecting = $derived(this.#isIntersecting());
-  position = $derived.by(() => {
-    const geo = this.#group.geometry;
-    const index = this.#index;
-    return {
-      top: geo.getTop(index),
-      left: geo.getLeft(index),
-      width: geo.getWidth(index),
-      height: geo.getHeight(index),
-    };
-  });
-  asset = $derived.by(() => this.#group.assets[this.#index]);
-  id = $derived(this.asset.id);
 
-  constructor(group: AssetDateGroup, index: number) {
-    this.#group = group;
-    this.#index = index;
-  }
+  // intersecting = $state(false);
 
-  #isIntersecting() {
+  intersecting = $derived.by(() => {
+    if (!this.position) {
+      return false;
+    }
+
     const store = this.#group.bucket.store;
     const topWindow = store.visibleWindow.top - HEADER - INTERSECTION_EXPAND_TOP;
     const bottomWindow = store.visibleWindow.bottom - HEADER + INTERSECTION_EXPAND_BOTTOM;
-    const position = this.#group.getAssetPosition(this.#index);
-    const intersecting = position.bottom > topWindow && position.top < bottomWindow;
+    const positionTop = this.#group.absoluteDateGroupTop + this.position.top;
+    const positionBottom = positionTop + this.position.height;
+    const intersecting = positionBottom > topWindow && this.position.top < bottomWindow;
     return intersecting;
+  });
+
+  position: CommonPosition | undefined = $state();
+  asset: AssetResponseDto | undefined = $state();
+  id: string = $derived.by(() => this.asset!.id);
+
+  constructor(group: AssetDateGroup, asset: AssetResponseDto) {
+    this.#group = group;
+    this.asset = asset;
+    // setInterval(() => {
+    //   const a = { ...this.position };
+    //   a.top = a.top + 1;
+    //   this.position = a;
+    // }, 2000);
   }
 }
-class AssetDateGroup {
+type AssetOperation = (asset: AssetResponseDto) => { remove: boolean };
+
+export class AssetDateGroup {
   // --- public
   readonly bucket: AssetBucket;
   readonly index: number;
   readonly date: DateTime;
-  readonly assets: AssetResponseDto[];
+  readonly dateString: string;
+  intersetingAssets: IntersectingAsset[] = $state([]);
+  dodo: IntersectingAsset[] = $state([]);
 
-  geometry: CommonJustifiedLayout = $state(emptyGeometry());
   height = $state(0);
-  intersecting = $derived.by(() => this.assetsIntersecting.some((asset) => asset.intersecting));
+  width = $state(0);
+  intersecting = $derived.by(() => this.intersetingAssets.some((asset) => asset.intersecting));
 
   // --- private
   top: number = $state(0);
   left: number = $state(0);
   row = $state(0);
   col = $state(0);
-  assetsIntersecting: IntersectingCalc[];
 
-  constructor(bucket: AssetBucket, index: number, date: DateTime, assets: AssetResponseDto[]) {
+  constructor(bucket: AssetBucket, index: number, date: DateTime, dateString: string) {
     this.index = index;
     this.bucket = bucket;
     this.date = date;
-
-    this.assets = assets;
-    this.assetsIntersecting = Array.from(this.assets, (_asset, index) => new IntersectingCalc(this, index));
+    this.dateString = dateString;
   }
 
-  getAssetPosition(index: number) {
-    const absoluteDateGroupTop = this.bucket.top + this.top;
-    const position = getPosition(this.geometry, index);
-    const top = absoluteDateGroupTop + position.top;
-    return {
-      top,
-      bottom: top + position.height,
-    };
+  sortAssets() {
+    this.intersetingAssets.sort((a, b) => {
+      const aDate = DateTime.fromISO(a.asset!.fileCreatedAt).toUTC();
+      const bDate = DateTime.fromISO(b.asset!.fileCreatedAt).toUTC();
+      return bDate.diff(aDate).milliseconds;
+    });
+  }
+
+  getRandomAsset() {
+    const random = Math.floor(Math.random() * this.intersetingAssets.length);
+    return this.intersetingAssets[random];
+  }
+
+  getAssets() {
+    return this.intersetingAssets.map((intersetingAsset) => intersetingAsset.asset!);
+  }
+
+  runAssetOp(ids: Set<string>, op: AssetOperation) {
+    if (ids.size === 0) {
+      return { processedIds: new Set<string>(), unprocessedIds: ids, changedGeometry: false };
+    }
+    const unprocessedIds = new Set<string>(ids);
+    const processedIds = new Set<string>();
+    let changedGeometry = false;
+    for (const assetId of unprocessedIds) {
+      const index = this.intersetingAssets.findIndex((ia) => ia.id == assetId);
+      if (index !== -1) {
+        const old = this.intersetingAssets[index].asset!;
+        const { remove } = op(old);
+        unprocessedIds.delete(assetId);
+        processedIds.add(assetId);
+        if (remove || this.bucket.store.isExcluded(old)) {
+          this.intersetingAssets.splice(index, 1);
+          changedGeometry = true;
+        }
+      }
+    }
+    return { processedIds, unprocessedIds, changedGeometry };
+  }
+
+  layout(options: CommonLayoutOptions) {
+    const assets = this.intersetingAssets.map((intersetingAsset) => intersetingAsset.asset!);
+    const geometry = getJustifiedLayoutFromAssets(assets, options);
+    this.width = geometry.containerWidth;
+    this.height = assets.length === 0 ? 0 : geometry.containerHeight;
+    for (let i = 0; i < this.intersetingAssets.length; i++) {
+      const position = getPosition(geometry, i);
+      this.intersetingAssets[i].position = position;
+    }
+  }
+
+  get absoluteDateGroupTop() {
+    return this.bucket.top + this.top;
   }
 
   get groupTitle() {
     return formatDateGroupTitle(this.date);
   }
-}
-
-export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | undefined): AssetDateGroup[] {
-  const grouped = groupBy(bucket.assets, (asset) =>
-    fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
-  );
-  const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
-
-  return sorted.map((group, index) => {
-    const date = fromLocalDateTime(group[0].localDateTime).startOf('day');
-    return new AssetDateGroup(bucket, index, date, group);
-  });
 }
 
 export interface Viewport {
@@ -122,25 +181,9 @@ export type ViewportXY = Viewport & {
   y: number;
 };
 
-interface AssetLookup {
-  bucket: AssetBucket;
-  bucketIndex: number;
-  assetIndex: number;
-}
-
-function getPosition(geometry: CommonJustifiedLayout, boxIdx: number) {
-  const top = geometry.getTop(boxIdx);
-  const left = geometry.getLeft(boxIdx);
-  const width = geometry.getWidth(boxIdx);
-  const height = geometry.getHeight(boxIdx);
-
-  return { top, left, width, height };
-}
-
 export class AssetBucket {
   // --- public ---
-  intersecting: boolean = $state(false);
-  assets: AssetResponseDto[] = $state([]);
+  #intersecting: boolean = $state(false);
   isLoaded: boolean = $state(false);
   dateGroups: AssetDateGroup[] = $state([]);
   readonly store: AssetStore;
@@ -157,32 +200,142 @@ export class AssetBucket {
   #initialCount: number = 0;
 
   // --- should be private, but is used by AssetStore ---
-  bucketCount: number = $derived(this.isLoaded ? this.assets?.length || 0 : this.#initialCount);
+
+  bucketCount: number = $derived(
+    this.isLoaded
+      ? this.dateGroups.reduce((accumulator, g) => accumulator + g.intersetingAssets.length, 0)
+      : this.#initialCount,
+  );
   loader: CancellableTask | undefined;
   isBucketHeightActual: boolean = $state(false);
+  readonly utcDate: DateTime;
   readonly bucketDateFormatted: string;
-  readonly index: number;
   readonly bucketDate: string;
 
-  constructor(index: number, store: AssetStore, bucketDate: string, initialCount: number) {
-    this.index = index;
+  constructor(store: AssetStore, utcDate: DateTime, bucketDate: string, initialCount: number) {
     this.store = store;
     this.#initialCount = initialCount;
+    this.utcDate = utcDate;
     this.bucketDate = bucketDate;
-    this.bucketDateFormatted = fromLocalDateTime(this.bucketDate)
-      .startOf('month')
-      .toJSDate()
-      .toLocaleString(get(locale), {
-        month: 'short',
-        year: 'numeric',
-        timeZone: 'UTC',
-      });
+    this.bucketDateFormatted = utcDate.toJSDate().toLocaleString(get(locale), {
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    });
 
     this.loader = new CancellableTask(
-      () => (this.isLoaded = true),
-      () => (this.isLoaded = false),
+      () => {
+        this.isLoaded = true;
+      },
+      () => {
+        this.isLoaded = false;
+      },
       this.handleLoadError,
     );
+  }
+  set intersecting(newValue: boolean) {
+    const old = this.#intersecting;
+    if (old !== newValue) {
+      this.#intersecting = newValue;
+      if (newValue) {
+        void this.store.loadBucket(this.bucketDate);
+      } else {
+        this.cancel();
+      }
+    }
+  }
+
+  get intersecting() {
+    return this.#intersecting;
+  }
+
+  get lastDateGroup() {
+    return this.dateGroups.at(-1);
+  }
+
+  getAssets() {
+    // eslint-disable-next-line unicorn/no-array-reduce
+    return this.dateGroups.reduce(
+      (accumulator: AssetResponseDto[], g: AssetDateGroup) => accumulator.concat(g.getAssets()),
+      [],
+    );
+  }
+
+  containsAssetId(id: string) {
+    for (const group of this.dateGroups) {
+      const index = group.intersetingAssets.findIndex((a) => a.id == id);
+      if (index !== -1) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  sortDateGroups() {
+    this.dateGroups.sort((a, b) => b.date.diff(a.date).milliseconds);
+  }
+
+  runAssetOp(ids: Set<string>, op: AssetOperation) {
+    if (ids.size === 0) {
+      return { processedIds: new Set<string>(), unprocessedIds: ids, changedGeometry: false };
+    }
+    const { dateGroups } = this;
+    let combinedChangedGeometry = false;
+    let idsToProcess = new Set(ids);
+    const idsProcessed = new Set<string>();
+    let index = dateGroups.length;
+    while (index--) {
+      if (idsToProcess.size > 0) {
+        const group = dateGroups[index];
+        const { processedIds, changedGeometry } = group.runAssetOp(ids, op);
+        idsToProcess = idsToProcess.difference(processedIds);
+        for (const id of processedIds) {
+          idsProcessed.add(id);
+        }
+        combinedChangedGeometry = combinedChangedGeometry || changedGeometry;
+        if (group.intersetingAssets.length === 0) {
+          dateGroups.splice(index, 1);
+          combinedChangedGeometry = true;
+        }
+      }
+    }
+    return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry: combinedChangedGeometry };
+  }
+
+  addAssets(assets: AssetResponseDto[], locale: string | undefined) {
+    const lookupCache: {
+      [groupDate: string]: AssetDateGroup;
+    } = {};
+
+    for (const asset of assets) {
+      const date = fromLocalDateTime(asset.localDateTime);
+      const group = date.toLocaleString(groupDateFormat, { locale });
+
+      let dateGroup: AssetDateGroup | undefined = lookupCache[group];
+      if (!dateGroup) {
+        dateGroup = this.findDateGroupByDate(group);
+        if (dateGroup) {
+          lookupCache[group] = dateGroup;
+        }
+      }
+      if (dateGroup) {
+        const intersectingAsset = new IntersectingAsset(dateGroup, asset);
+        dateGroup.intersetingAssets.push(intersectingAsset);
+      } else {
+        dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, group);
+        dateGroup.intersetingAssets.push(new IntersectingAsset(dateGroup, asset));
+        this.dateGroups.push(dateGroup);
+        lookupCache[group] = dateGroup;
+      }
+    }
+  }
+  getRandomDateGroup() {
+    const random = Math.floor(Math.random() * this.dateGroups.length);
+    return this.dateGroups[random];
+  }
+
+  getRandomAsset() {
+    return this.getRandomDateGroup()?.getRandomAsset()?.asset;
   }
 
   /** The svelte key for this view model object */
@@ -192,13 +345,14 @@ export class AssetBucket {
 
   set bucketHeight(height: number) {
     const { store } = this;
+    const index = store.buckets.indexOf(this);
     const bucketHeightDelta = height - this.#bucketHeight;
-    const prevBucket = store.buckets[this.index - 1];
+    const prevBucket = store.buckets[index - 1];
     if (prevBucket) {
       this.#top = prevBucket.#top + prevBucket.#bucketHeight;
     }
     if (bucketHeightDelta) {
-      let cursor = this.index + 1;
+      let cursor = index + 1;
       while (cursor < store.buckets.length) {
         const nextBucket = this.store.buckets[cursor];
         nextBucket.#top += bucketHeightDelta;
@@ -206,19 +360,20 @@ export class AssetBucket {
       }
     }
     this.#bucketHeight = height;
-    if (this.index !== 0 && store.topIntersectingBucket) {
+    if (store.topIntersectingBucket) {
       const currentIndex = store.buckets.indexOf(store.topIntersectingBucket);
       // if the bucket is 'before' the last intersecting bucket in the sliding window
       // then adjust the scroll position by the delta, to compensate for the bucket
       // size adjustment
+
       if (INTERSECTION_EXPAND_TOP > 0) {
         // we use < or = because the topIntersectingBucket is actually slightly expanded
         // because of INTERSECTION_EXPAND_TOP
-        if (this.index <= currentIndex) {
+        if (index <= currentIndex) {
           store.compensateScrollCallback?.(bucketHeightDelta);
         }
       } else {
-        if (this.index <= currentIndex) {
+        if (index < currentIndex) {
           store.compensateScrollCallback?.(bucketHeightDelta);
         }
       }
@@ -240,29 +395,18 @@ export class AssetBucket {
     handleError(error, _$t('errors.failed_to_load_assets'));
   }
 
-  findDateGroupByAssetId(assetId: string) {
-    for (let dateGroupIndex = 0; dateGroupIndex < this.dateGroups.length; dateGroupIndex++) {
-      const dateGroup = this.dateGroups[dateGroupIndex];
-      const assetIndex = dateGroup.assets.findIndex((asset) => asset.id === assetId);
-      if (assetIndex !== -1) {
-        const asset = dateGroup.assets[assetIndex];
-        return {
-          asset,
-          dateGroup,
-          assetIndex,
-        };
-      }
-    }
-    return;
+  findDateGroupByDate(dateString: string) {
+    return this.dateGroups.find((group) => group.dateString === dateString);
   }
 
   findAssetAbsolutePosition(assetId: string) {
-    const searchResult = this.findDateGroupByAssetId(assetId);
-    if (searchResult) {
-      const dateGroup = searchResult.dateGroup;
-      return dateGroup.getAssetPosition(searchResult.assetIndex).top + 49;
+    for (const group of this.dateGroups) {
+      const intersectingAsset = group.intersetingAssets.find((asset) => asset.id === assetId);
+      if (intersectingAsset) {
+        return this.top + group.top + intersectingAsset.position!.top + HEADER;
+      }
     }
-    return;
+    return -1;
   }
 
   cancel() {
@@ -316,7 +460,7 @@ export class AssetStore {
   timelineHeight = $derived(
     this.buckets.reduce((accumulator, b) => accumulator + b.bucketHeight, 0) + this.topSectionHeight,
   );
-  assets: AssetResponseDto[] = $derived.by(() => this.buckets.flatMap(({ assets }) => assets));
+
   // todo - name this better
   albumAssets: Set<string> = new SvelteSet();
 
@@ -327,52 +471,68 @@ export class AssetStore {
   // -- should be private, but used by AssetBucket
   compensateScrollCallback: ((delta: number) => void) | undefined;
   topIntersectingBucket: AssetBucket | undefined = $state();
-  visibleWindow = $derived.by(() => {
-    return this.#scrollTop === 0
-      ? {
-          top: 0,
-          bottom: this.viewportHeight,
-        }
-      : {
-          top: this.#scrollTop,
-          bottom: this.#scrollTop + this.viewportHeight,
-        };
-  });
+
+  visibleWindow = $derived.by(() => ({
+    top: this.#scrollTop,
+    bottom: this.#scrollTop + this.viewportHeight,
+  }));
+
   initTask = new CancellableTask(
     () => {
       this.isInitialized = true;
+      this.connect();
     },
-    () => (this.isInitialized = false),
+    () => {
+      this.disconnect();
+      this.isInitialized = false;
+    },
     () => void 0,
   );
 
   // --- private
-  // todo: this should probably be a method isteat
-  #assetToBucket: Record<string, AssetLookup> = $derived.by(() => {
-    const result: Record<string, AssetLookup> = {};
-    for (let index = 0; index < this.buckets.length; index++) {
-      const bucket = this.buckets[index];
-      for (let index_ = 0; index_ < bucket.assets.length; index_++) {
-        const asset = bucket.assets[index_];
-        result[asset.id] = { bucket, bucketIndex: index, assetIndex: index_ };
-      }
-    }
-    return result;
-  });
-
+  static #INIT_OPTIONS = {};
   #viewportHeight = $state(0);
   #viewportWidth = $state(0);
   #scrollTop = $state(0);
   #pendingChanges: PendingChange[] = [];
   #unsubscribers: Unsubscriber[] = [];
-  static #INIT_OPTIONS = {};
+
   #options: AssetStoreOptions = AssetStore.#INIT_OPTIONS;
 
+  #scrolling = $state(false);
+  #suspendTransitions = $state(false);
+  #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
+  #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
+
   constructor() {}
+
+  set scrolling(value: boolean) {
+    this.#scrolling = value;
+    if (value) {
+      this.suspendTransitions = true;
+      this.#resetScrolling();
+    }
+  }
+
+  get scrolling() {
+    return this.#scrolling;
+  }
+
+  set suspendTransitions(value: boolean) {
+    this.#suspendTransitions = value;
+    if (value) {
+      this.#resetSuspendTransitions();
+    }
+  }
+
+  get suspendTransitions() {
+    return this.#suspendTransitions;
+  }
 
   set viewportWidth(value: number) {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
+    this.suspendTransitions = true;
     // side-effect - its ok!
     void this.#updateViewportGeometry(changed);
   }
@@ -383,6 +543,7 @@ export class AssetStore {
 
   set viewportHeight(value: number) {
     this.#viewportHeight = value;
+    this.#suspendTransitions = true;
     // side-effect - its ok!
     void this.#updateViewportGeometry(false);
   }
@@ -391,29 +552,21 @@ export class AssetStore {
     return this.#viewportHeight;
   }
 
+  getAssets() {
+    return this.buckets.flatMap((bucket) => bucket.getAssets());
+  }
+
   #addPendingChanges(...changes: PendingChange[]) {
-    // prevent websocket events from happening before local client events
-    setTimeout(() => {
-      this.#pendingChanges.push(...changes);
-      this.#processPendingChanges();
-    }, 1000);
+    this.#pendingChanges.push(...changes);
+    this.#processPendingChanges();
   }
 
   connect() {
     this.#unsubscribers.push(
-      websocketEvents.on('on_upload_success', (_) => {
-        // TODO!: Temporarily disable to avoid flashing effect of the timeline
-        // this.addPendingChanges({ type: 'add', values: [asset] });
-      }),
-      websocketEvents.on('on_asset_trash', (ids) => {
-        this.#addPendingChanges({ type: 'trash', values: ids });
-      }),
-      websocketEvents.on('on_asset_update', (asset) => {
-        this.#addPendingChanges({ type: 'update', values: [asset] });
-      }),
-      websocketEvents.on('on_asset_delete', (id: string) => {
-        this.#addPendingChanges({ type: 'delete', values: [id] });
-      }),
+      websocketEvents.on('on_upload_success', (asset) => this.#addPendingChanges({ type: 'add', values: [asset] })),
+      websocketEvents.on('on_asset_trash', (ids) => this.#addPendingChanges({ type: 'trash', values: ids })),
+      websocketEvents.on('on_asset_update', (asset) => this.#addPendingChanges({ type: 'update', values: [asset] })),
+      websocketEvents.on('on_asset_delete', (id: string) => this.#addPendingChanges({ type: 'delete', values: [id] })),
     );
   }
 
@@ -425,30 +578,46 @@ export class AssetStore {
   }
 
   #getPendingChangeBatches() {
-    const batches: PendingChange[] = [];
-    let batch: PendingChange | undefined;
+    const batch: {
+      add: AssetResponseDto[];
+      update: AssetResponseDto[];
+      remove: string[];
+    } = {
+      add: [],
+      update: [],
+      remove: [],
+    };
+    for (const { type, values } of this.#pendingChanges) {
+      switch (type) {
+        case 'add': {
+          batch.add.push(...values);
 
-    for (const { type, values: _values } of this.#pendingChanges) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const values = _values as any[];
+          break;
+        }
+        case 'update': {
+          batch.update.push(...values);
 
-      if (batch && batch.type !== type) {
-        batches.push(batch);
-        batch = undefined;
-      }
+          break;
+        }
+        case 'delete':
+        case 'trash': {
+          batch.remove.push(...values);
 
-      if (batch) {
-        batch.values.push(...values);
-      } else {
-        batch = { type, values };
+          break;
+        }
+        // No default
       }
     }
+    return batch;
+  }
 
-    if (batch) {
-      batches.push(batch);
+  // todo: this should probably be a method isteat
+  #findBucketForAsset(id: string) {
+    for (const bucket of this.buckets) {
+      if (bucket.containsAssetId(id)) {
+        return bucket;
+      }
     }
-
-    return batches;
   }
 
   updateSlidingWindow(scrollTop: number) {
@@ -471,60 +640,28 @@ export class AssetStore {
   }
 
   #updateIntersection(bucket: AssetBucket) {
-    // note: maybe make bucket.intersection derived too? It would be a little
-    // weird, since if its intersecting, there is a side-effect that it should
-    // load the bucket if its not loaded.
     const bucketTop = bucket.top;
     const bucketBottom = bucketTop + bucket.bucketHeight;
     const topWindow = this.visibleWindow.top - HEADER - INTERSECTION_EXPAND_TOP;
     const bottomWindow = this.visibleWindow.bottom - HEADER + INTERSECTION_EXPAND_BOTTOM;
-    if (bucketTop < bottomWindow && bucketBottom > topWindow) {
-      bucket.intersecting = true;
-      if (!bucket.isLoaded) {
-        // no need to check for assets
-        void this.loadBucket(bucket.bucketDate);
-        return;
-      }
-    } else {
-      bucket.intersecting = false;
-      bucket.cancel();
-      // note - not going to mark every asset as not intersecting. Asset-grid will not show
-      // any buckets that are not intersecting, so its not necessary to mark every asset
-      // as not intersecting.
-    }
+    bucket.intersecting = bucketTop < bottomWindow && bucketBottom > topWindow ? true : false;
   }
 
   #processPendingChanges = throttle(() => {
-    for (const { type, values } of this.#getPendingChangeBatches()) {
-      switch (type) {
-        case 'add': {
-          this.addAssets(values);
-          break;
-        }
-
-        case 'update': {
-          this.updateAssets(values);
-          break;
-        }
-
-        case 'trash': {
-          if (!this.#options.isTrashed) {
-            this.removeAssets(values);
-          }
-          break;
-        }
-
-        case 'delete': {
-          this.removeAssets(values);
-          break;
-        }
-      }
+    const { add, update, remove } = this.#getPendingChangeBatches();
+    if (add.length > 0) {
+      this.addAssets(add);
     }
-
+    if (update.length > 0) {
+      this.updateAssets(update);
+    }
+    if (remove.length > 0) {
+      this.removeAssets(remove);
+    }
     this.#pendingChanges = [];
   }, 2500);
 
-  setCompensateScrollCallback(compensateScrollCallback: (delta: number) => void) {
+  setCompensateScrollCallback(compensateScrollCallback?: (delta: number) => void) {
     this.compensateScrollCallback = compensateScrollCallback;
   }
 
@@ -534,7 +671,11 @@ export class AssetStore {
       size: TimeBucketSize.Month,
       key: getKey(),
     });
-    this.buckets = timebuckets.map((bucket, index) => new AssetBucket(index, this, bucket.timeBucket, bucket.count));
+
+    this.buckets = timebuckets.map((bucket) => {
+      const utcDate = DateTime.fromISO(bucket.timeBucket);
+      return new AssetBucket(this, utcDate, bucket.timeBucket, bucket.count);
+    });
     this.albumAssets.clear();
     await this.#updateViewportGeometry(false);
   }
@@ -613,7 +754,7 @@ export class AssetStore {
         break;
       }
       height += bucket.bucketHeight;
-      loaders.push(this.loadBucket(bucket.bucketDate, { cancelable: false }));
+      loaders.push(this.loadBucket(bucket.bucketDate));
     }
     await Promise.all(loaders);
     this.scrubberBuckets = this.buckets.map((bucket) => ({
@@ -625,6 +766,15 @@ export class AssetStore {
     this.scrubberTimelineHieght = this.timelineHeight;
   }
 
+  createLayoutOptions() {
+    const viewportWidth = this.viewportWidth;
+    return {
+      spacing: 2,
+      heightTolerance: 0.15,
+      rowHeight: 235,
+      rowWidth: Math.floor(viewportWidth),
+    };
+  }
   #updateGeometry(bucket: AssetBucket, invalidateHeight: boolean) {
     if (invalidateHeight) {
       bucket.isBucketHeightActual = false;
@@ -642,15 +792,8 @@ export class AssetStore {
     }
     this.#layoutBucket(bucket);
   }
-  #layoutBucket(bucket: AssetBucket) {
-    const viewportWidth = this.viewportWidth;
-    const layoutOptions = {
-      spacing: 2,
-      heightTolerance: 0.15,
-      rowHeight: 235,
-      rowWidth: Math.floor(viewportWidth),
-    };
 
+  #layoutBucket(bucket: AssetBucket) {
     // these are top offsets, for each row
     let cummulativeHeight = 0;
     // these are left offsets of each group, for each row
@@ -662,10 +805,11 @@ export class AssetStore {
     let dateGroupCol = 0;
 
     const rowSpaceRemaining: number[] = Array.from({ length: bucket.dateGroups.length });
-    rowSpaceRemaining.fill(viewportWidth, 0, bucket.dateGroups.length);
+    rowSpaceRemaining.fill(this.viewportWidth, 0, bucket.dateGroups.length);
+    const options = this.createLayoutOptions();
     for (const assetGroup of bucket.dateGroups) {
-      assetGroup.geometry = getJustifiedLayoutFromAssets(assetGroup.assets, layoutOptions);
-      rowSpaceRemaining[dateGroupRow] -= assetGroup.geometry.containerWidth - 1;
+      assetGroup.layout(options);
+      rowSpaceRemaining[dateGroupRow] -= assetGroup.width - 1;
       if (dateGroupCol > 0) {
         rowSpaceRemaining[dateGroupRow] -= GAP;
       }
@@ -677,7 +821,7 @@ export class AssetStore {
 
         dateGroupCol++;
 
-        cummulativeWidth += assetGroup.geometry.containerWidth + GAP;
+        cummulativeWidth += assetGroup.width + GAP;
       } else {
         // starting a new row, we need to update the last col of the previous row
         cummulativeWidth = 0;
@@ -687,17 +831,16 @@ export class AssetStore {
         assetGroup.col = dateGroupCol;
         assetGroup.left = cummulativeWidth;
 
-        rowSpaceRemaining[dateGroupRow] -= assetGroup.geometry.containerWidth;
+        rowSpaceRemaining[dateGroupRow] -= assetGroup.width;
         dateGroupCol++;
         cummulativeHeight += lastRowHeight;
         assetGroup.top = cummulativeHeight;
-        cummulativeWidth += assetGroup.geometry.containerWidth + GAP;
+        cummulativeWidth += assetGroup.width + GAP;
         lastRow = assetGroup.row - 1;
       }
-      lastRowHeight = assetGroup.geometry.containerHeight + HEADER;
-      assetGroup.height = assetGroup.geometry.containerHeight;
+      lastRowHeight = assetGroup.height + HEADER;
     }
-    if (lastRow === 0 || lastRow !== bucket.dateGroups.at(-1)?.row) {
+    if (lastRow === 0 || lastRow !== bucket.lastDateGroup?.row) {
       cummulativeHeight += lastRowHeight;
     }
 
@@ -745,8 +888,7 @@ export class AssetStore {
         }
       }
 
-      bucket.assets = assets;
-      bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
+      bucket.addAssets(assets, get(locale));
       this.#layoutBucket(bucket);
     }, cancelable);
     if (result === 'LOADED') {
@@ -756,26 +898,16 @@ export class AssetStore {
 
   addAssets(assets: AssetResponseDto[]) {
     const assetsToUpdate: AssetResponseDto[] = [];
-    const assetsToAdd: AssetResponseDto[] = [];
 
     for (const asset of assets) {
-      if (
-        this.#assetToBucket[asset.id] ||
-        this.#options.userId ||
-        this.#options.personId ||
-        this.#options.albumId ||
-        this.#isExcluded(asset)
-      ) {
-        // If asset is already in the bucket we don't need to recalculate
-        // asset store containers
-        assetsToUpdate.push(asset);
-      } else {
-        assetsToAdd.push(asset);
+      if (this.isExcluded(asset)) {
+        continue;
       }
+      assetsToUpdate.push(asset);
     }
 
-    this.updateAssets(assetsToUpdate);
-    this.#addAssetsToBuckets(assetsToAdd);
+    const notUpdated = this.updateAssets(assetsToUpdate);
+    this.#addAssetsToBuckets(notUpdated);
   }
 
   #addAssetsToBuckets(assets: AssetResponseDto[]) {
@@ -783,34 +915,29 @@ export class AssetStore {
       return;
     }
     const updatedBuckets = new Set<AssetBucket>();
+    const updatedDateGroups = new Set<AssetDateGroup>();
 
     for (const asset of assets) {
-      const timeBucket = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month').toString();
-      let bucket = this.getBucketByDate(timeBucket);
+      const utcMonth = DateTime.fromISO(asset.localDateTime).startOf('month');
+      const bucketDate = utcMonth.toString();
+      let bucket = this.getBucketByDate(bucketDate);
 
       if (!bucket) {
-        const index = this.buckets.length;
-        bucket = new AssetBucket(index, this, timeBucket, 1);
+        bucket = new AssetBucket(this, utcMonth, bucketDate, 1);
         this.buckets.push(bucket);
       }
-
-      bucket.assets.push(asset);
+      bucket.addAssets([asset], get(locale));
+      // bucket.assets.push(asset);
       updatedBuckets.add(bucket);
     }
 
-    this.buckets = this.buckets.sort((a, b) => {
-      const aDate = DateTime.fromISO(a.bucketDate).toUTC();
-      const bDate = DateTime.fromISO(b.bucketDate).toUTC();
-      return bDate.diff(aDate).milliseconds;
-    });
+    this.buckets = this.buckets.sort((a, b) => b.utcDate.diff(a.utcDate).milliseconds);
 
+    for (const dateGroup of updatedDateGroups) {
+      dateGroup.sortAssets();
+    }
     for (const bucket of updatedBuckets) {
-      bucket.assets.sort((a, b) => {
-        const aDate = DateTime.fromISO(a.fileCreatedAt).toUTC();
-        const bDate = DateTime.fromISO(b.fileCreatedAt).toUTC();
-        return bDate.diff(aDate).milliseconds;
-      });
-      bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
+      bucket.sortDateGroups();
       this.#updateGeometry(bucket, true);
     }
     this.updateIntersections();
@@ -822,17 +949,16 @@ export class AssetStore {
 
   async findBucketForAsset(id: string) {
     await this.initTask.waitUntilCompletion();
-    const bucketInfo = this.#assetToBucket[id];
-    let bucket: AssetBucket | undefined = bucketInfo?.bucket;
+    let bucket = this.#findBucketForAsset(id);
     if (!bucket) {
       const asset = await getAssetInfo({ id });
-      if (!asset || this.#isExcluded(asset)) {
+      if (!asset || this.isExcluded(asset)) {
         return;
       }
       bucket = await this.#loadBucketAtTime(asset.localDateTime, { cancelable: false });
     }
 
-    if (bucket && bucket.assets.some((a) => a.id === id)) {
+    if (bucket && bucket?.containsAssetId(id)) {
       return bucket;
     }
   }
@@ -847,126 +973,136 @@ export class AssetStore {
   }
 
   async #getBucketInfoForAsset(asset: AssetResponseDto, options?: { cancelable: boolean }) {
-    const bucketInfo = this.#assetToBucket[asset.id];
+    const bucketInfo = this.#findBucketForAsset(asset.id);
     if (bucketInfo) {
       return bucketInfo;
     }
     await this.#loadBucketAtTime(asset.localDateTime, options);
-    return this.#assetToBucket[asset.id];
+    return this.#findBucketForAsset(asset.id);
   }
 
   getBucketIndexByAssetId(assetId: string) {
-    return this.#assetToBucket[assetId]?.bucketIndex;
+    return this.#findBucketForAsset(assetId);
   }
 
-  async getRandomAsset(): Promise<AssetResponseDto | undefined> {
-    let index = Math.floor(
-      Math.random() * this.buckets.reduce((accumulator, bucket) => accumulator + bucket.bucketCount, 0),
-    );
-    for (const bucket of this.buckets) {
-      if (index < bucket.bucketCount) {
-        await this.loadBucket(bucket.bucketDate);
-        return bucket.assets[index];
-      }
-      index -= bucket.bucketCount;
+  async getRandomBucket() {
+    const random = Math.floor(Math.random() * this.buckets.length);
+    const bucket = this.buckets[random];
+    await this.loadBucket(bucket.bucketDate, { cancelable: false });
+    return bucket;
+  }
+
+  async getRandomAsset() {
+    const bucket = await this.getRandomBucket();
+    return bucket?.getRandomAsset();
+  }
+
+  // runs op on assets, returns unprocessed
+  #runAssetOp(ids: Set<string>, op: AssetOperation) {
+    if (ids.size === 0) {
+      return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
     }
-    return;
+
+    const changedBuckets = new Set<AssetBucket>();
+    let idsToProcess = new Set(ids);
+    const idsProcessed = new Set<string>();
+    for (const bucket of this.buckets) {
+      if (idsToProcess.size > 0) {
+        const { processedIds, changedGeometry } = bucket.runAssetOp(idsToProcess, op);
+        idsToProcess = idsToProcess.difference(processedIds);
+        for (const id of processedIds) {
+          idsProcessed.add(id);
+        }
+        if (changedGeometry) {
+          changedBuckets.add(bucket);
+          break;
+        }
+      }
+    }
+    const changedGeometry = changedBuckets.size > 0;
+    for (const bucket of changedBuckets) {
+      this.#updateGeometry(bucket, true);
+    }
+    if (changedGeometry) {
+      this.updateIntersections();
+    }
+    return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
+  }
+
+  updateAssetOp(ids: string[], op: AssetOperation) {
+    this.#runAssetOp(new Set(ids), op);
   }
 
   updateAssets(assets: AssetResponseDto[]) {
-    if (assets.length === 0) {
-      return;
-    }
-    const assetsToRecalculate: AssetResponseDto[] = [];
-
-    for (const _asset of assets) {
-      const asset = this.assets.find((asset) => asset.id === _asset.id);
-      if (!asset) {
-        continue;
-      }
-
-      const recalculate = asset.localDateTime !== _asset.localDateTime;
-      Object.assign(asset, _asset);
-
-      if (recalculate) {
-        assetsToRecalculate.push(asset);
-      }
-    }
-
-    this.removeAssets(assetsToRecalculate.map((asset) => asset.id));
-    this.#addAssetsToBuckets(assetsToRecalculate);
+    const lookup = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, asset]));
+    const { unprocessedIds } = this.#runAssetOp(new Set(lookup.keys()), (asset) => {
+      updateObject(asset, lookup.get(asset.id));
+      return { remove: false };
+    });
+    return unprocessedIds.values().map((id) => lookup.get(id)!);
   }
 
   removeAssets(ids: string[]) {
-    const idSet = new Set(ids);
-
-    // Iterate in reverse to allow array splicing.
-    for (let index = this.buckets.length - 1; index >= 0; index--) {
-      const bucket = this.buckets[index];
-      let changed = false;
-      for (let index_ = bucket.assets.length - 1; index_ >= 0; index_--) {
-        const asset = bucket.assets[index_];
-        if (!idSet.has(asset.id)) {
-          continue;
-        }
-
-        bucket.assets.splice(index_, 1);
-        changed = true;
-        if (bucket.assets.length === 0) {
-          this.buckets.splice(index, 1);
-        }
-      }
-      if (changed) {
-        bucket.dateGroups = splitBucketIntoDateGroups(bucket, get(locale));
-        this.#updateGeometry(bucket, true);
-        this.updateIntersections();
-      }
-    }
+    const { unprocessedIds } = this.#runAssetOp(new Set(ids), () => {
+      return { remove: true };
+    });
+    return [...unprocessedIds];
   }
 
-  async getPreviousAsset(asset: AssetResponseDto): Promise<AssetResponseDto | undefined> {
-    const info = await this.#getBucketInfoForAsset(asset);
-    if (!info) {
+  refreshLayout() {
+    for (const bucket of this.buckets) {
+      this.#updateGeometry(bucket, true);
+    }
+    this.updateIntersections();
+  }
+
+  async getPreviousAsset(id: AssetResponseDto): Promise<AssetResponseDto | undefined> {
+    const bucket = await this.#getBucketInfoForAsset(id);
+    if (!bucket) {
       return;
     }
 
-    const { bucket, assetIndex, bucketIndex } = info;
-
-    if (assetIndex !== 0) {
-      return bucket.assets[assetIndex - 1];
+    for (const group of bucket.dateGroups) {
+      const index = group.intersetingAssets.findIndex((asset) => asset.id === asset.id);
+      if (index > 0) {
+        return group.intersetingAssets[index - 1].asset;
+      }
     }
 
+    const bucketIndex = this.buckets.indexOf(bucket);
     if (bucketIndex === 0) {
       return;
     }
 
     const previousBucket = this.buckets[bucketIndex - 1];
     await this.loadBucket(previousBucket.bucketDate);
-    return previousBucket.assets.at(-1);
+    return previousBucket.lastDateGroup?.intersetingAssets.at(-1)?.asset;
   }
 
   async getNextAsset(asset: AssetResponseDto): Promise<AssetResponseDto | undefined> {
-    const info = await this.#getBucketInfoForAsset(asset);
-    if (!info) {
+    const bucket = await this.#getBucketInfoForAsset(asset);
+    if (!bucket) {
       return;
     }
 
-    const { bucket, assetIndex, bucketIndex } = info;
-
-    if (assetIndex !== bucket.assets.length - 1) {
-      return bucket.assets[assetIndex + 1];
+    for (const group of bucket.dateGroups) {
+      const index = group.intersetingAssets.findIndex((asset) => asset.id === asset.id);
+      if (index !== -1 && index < group.intersetingAssets.length - 1) {
+        return group.intersetingAssets[index + 1].asset;
+      }
     }
 
+    const bucketIndex = this.buckets.indexOf(bucket);
     if (bucketIndex === this.buckets.length - 1) {
       return;
     }
 
     const nextBucket = this.buckets[bucketIndex + 1];
     await this.loadBucket(nextBucket.bucketDate);
-    return nextBucket.assets[0];
+    return nextBucket.dateGroups[0]?.intersetingAssets[0]?.asset;
   }
 
-  #isExcluded(asset: AssetResponseDto) {
+  isExcluded(asset: AssetResponseDto) {
     return (
       isMismatched(this.#options.isArchived ?? false, asset.isArchived) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||

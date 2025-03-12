@@ -108,3 +108,19 @@ export const emptyGeometry = () =>
     widowCount: 0,
     boxes: [],
   });
+
+export type CommonPosition = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+};
+
+export function getPosition(geometry: CommonJustifiedLayout, boxIdx: number): CommonPosition {
+  const top = geometry.getTop(boxIdx);
+  const left = geometry.getLeft(boxIdx);
+  const width = geometry.getWidth(boxIdx);
+  const height = geometry.getHeight(boxIdx);
+
+  return { top, left, width, height };
+}

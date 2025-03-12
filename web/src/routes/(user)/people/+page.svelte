@@ -486,10 +486,10 @@
 </UserPageLayout>
 
 {#if selectHidden}
-  <section
+  <dialog
+    open
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
     class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
-    role="dialog"
     aria-modal="true"
     aria-labelledby="manage-visibility-title"
     use:focusTrap
@@ -501,5 +501,5 @@
       onClose={() => (selectHidden = false)}
       {loadNextPage}
     />
-  </section>
+  </dialog>
 {/if}

@@ -5,8 +5,14 @@ import { fromStore } from 'svelte/store';
 
 export class AssetInteraction {
   readonly selectedAssets = new SvelteSet<AssetResponseDto>();
+  hasSelectedAsset(assetId: string) {
+    return this.selectedAssets.values().some((asset) => asset.id === assetId);
+  }
   readonly selectedGroup = new SvelteSet<string>();
   assetSelectionCandidates = $state(new SvelteSet<AssetResponseDto>());
+  hasSelectionCandidate(assetId: string) {
+    return this.assetSelectionCandidates.values().some((asset) => asset.id === assetId);
+  }
   assetSelectionStart = $state<AssetResponseDto | null>(null);
 
   selectionActive = $derived(this.selectedAssets.size > 0);

@@ -44,14 +44,28 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
-    <ArchiveAction unarchive onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <ArchiveAction
+      unarchive
+      onArchive={(ids, isArchived) =>
+        assetStore.updateAssetOp(ids, (asset) => {
+          asset.isArchived = isArchived;
+          return { remove: false };
+        })}
+    />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+    <FavoriteAction
+      removeFavorite={assetInteraction.isAllFavorite}
+      onFavorite={(ids, isFavorite) =>
+        assetStore.updateAssetOp(ids, (asset) => {
+          asset.isFavorite = isFavorite;
+          return { remove: false };
+        })}
+    />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />

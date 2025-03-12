@@ -350,15 +350,24 @@ export enum SettingInputFieldType {
   COLOR = 'color',
 }
 
-export enum AlbumPageViewMode {
-  LINK_SHARING = 'link-sharing',
-  SELECT_USERS = 'select-users',
-  SELECT_THUMBNAIL = 'select-thumbnail',
-  SELECT_ASSETS = 'select-assets',
-  VIEW_USERS = 'view-users',
-  VIEW = 'view',
-  OPTIONS = 'options',
-}
+export const AlbumPageViewMode = {
+  LINK_SHARING: 'link-sharing',
+  SELECT_USERS: 'select-users',
+  SELECT_THUMBNAIL: 'select-thumbnail',
+  SELECT_ASSETS: 'select-assets',
+  VIEW_USERS: 'view-users',
+  VIEW: 'view',
+  OPTIONS: 'options',
+};
+
+export type AlbumPageViewMode =
+  | typeof AlbumPageViewMode.LINK_SHARING
+  | typeof AlbumPageViewMode.SELECT_USERS
+  | typeof AlbumPageViewMode.SELECT_THUMBNAIL
+  | typeof AlbumPageViewMode.SELECT_ASSETS
+  | typeof AlbumPageViewMode.VIEW_USERS
+  | typeof AlbumPageViewMode.VIEW
+  | typeof AlbumPageViewMode.OPTIONS;
 
 export enum PersonPageViewMode {
   VIEW_ASSETS = 'view-assets',

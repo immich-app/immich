@@ -234,9 +234,6 @@
     return tagNames.join(', ');
   }
 
-  // eslint-disable-next-line no-self-assign
-  const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
-
   const onAddToAlbum = (assetIds: string[]) => {
     if (terms.isNotInAlbum.toString() == 'true') {
       const assetIdSet = new Set(assetIds);
@@ -264,13 +261,23 @@
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
-        <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+        <FavoriteAction
+          removeFavorite={assetInteraction.isAllFavorite}
+          onFavorite={(ids, isFavorite) => {
+            for (const id of ids) {
+              const asset = searchResultAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }}
+        />
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
-          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}

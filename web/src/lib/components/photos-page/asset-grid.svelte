@@ -1,18 +1,18 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, goto } from '$app/navigation';
   import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, AssetStore, splitBucketIntoDateGroups } from '$lib/stores/assets-store.svelte';
-  import { locale, showDeleteModal } from '$lib/stores/preferences.store';
+  import { AssetBucket, AssetStore } from '$lib/stores/assets-store.svelte';
+  import { showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
-  import { formatGroupTitle, type ScrubberListener } from '$lib/utils/timeline-util';
+  import { type ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
   import { throttle } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
@@ -54,7 +54,7 @@
     singleSelect = false,
     enableRouting,
     assetStore = $bindable(),
-    assetInteraction,
+    assetInteraction = $bindable(),
     removeAction = null,
     withStacked = false,
     showArchiveIcon = false,
@@ -104,7 +104,7 @@
       showSkeleton = false;
     }
   };
-
+  beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
     const { complete, type } = nav;
     if (type === 'enter') {
@@ -153,9 +153,12 @@
     }
     return () => void 0;
   };
+  const updateIsScrolling = () => (assetStore.scrolling = true);
 
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
-  const compensateScrollCallback = (delta: number) => element?.scrollBy(0, delta);
+  const compensateScrollCallback = (delta: number) => {
+    element?.scrollBy(0, delta);
+  };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
@@ -165,7 +168,7 @@
     }
     const disposeHmr = hmrSupport();
     return () => {
-      assetStore.setCompensateScrollCallback(null);
+      assetStore.setCompensateScrollCallback();
       disposeHmr();
     };
   });
@@ -317,11 +320,9 @@
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
-    if (ids) {
-      assetStore.removeAssets(ids);
-      deselectAllAssets();
-    }
+    await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
+    assetStore.updateAssets(assetInteraction.selectedAssetsArray);
+    deselectAllAssets();
   };
 
   const focusElement = () => {
@@ -471,7 +472,6 @@
     if (!asset) {
       return;
     }
-
     onSelect(asset);
 
     if (singleSelect && element) {
@@ -480,7 +480,7 @@
     }
 
     const rangeSelection = assetInteraction.assetSelectionCandidates.size > 0;
-    const deselect = assetInteraction.selectedAssets.has(asset);
+    const deselect = assetInteraction.hasSelectedAsset(asset.id);
 
     // Select/deselect already loaded assets
     if (deselect) {
@@ -498,39 +498,48 @@
     assetInteraction.clearAssetSelectionCandidates();
 
     if (assetInteraction.assetSelectionStart && rangeSelection) {
-      let startBucketIndex = assetStore.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
-      let endBucketIndex = assetStore.getBucketIndexByAssetId(asset.id);
+      let startBucket = assetStore.getBucketIndexByAssetId(assetInteraction.assetSelectionStart.id);
+      let endBucket = assetStore.getBucketIndexByAssetId(asset.id);
 
-      if (startBucketIndex === null || endBucketIndex === null) {
+      if (startBucket === null || endBucket === null) {
         return;
       }
 
-      if (endBucketIndex < startBucketIndex) {
-        [startBucketIndex, endBucketIndex] = [endBucketIndex, startBucketIndex];
-      }
-
-      // Select/deselect assets in all intermediate buckets
-      for (let bucketIndex = startBucketIndex + 1; bucketIndex < endBucketIndex; bucketIndex++) {
-        const bucket = assetStore.buckets[bucketIndex];
-        await assetStore.loadBucket(bucket.bucketDate);
-        for (const asset of bucket.assets) {
-          if (deselect) {
-            assetInteraction.removeAssetFromMultiselectGroup(asset);
-          } else {
-            handleSelectAsset(asset);
+      // Select/deselect assets in range (start,end]
+      let started = false;
+      for (const bucket of assetStore.buckets) {
+        if (bucket === startBucket) {
+          started = true;
+        }
+        if (bucket === endBucket) {
+          break;
+        }
+        if (started) {
+          await assetStore.loadBucket(bucket.bucketDate);
+          for (const asset of bucket.getAssets()) {
+            if (deselect) {
+              assetInteraction.removeAssetFromMultiselectGroup(asset);
+            } else {
+              handleSelectAsset(asset);
+            }
           }
         }
       }
 
       // Update date group selection
-      for (let bucketIndex = startBucketIndex; bucketIndex <= endBucketIndex; bucketIndex++) {
-        const bucket = assetStore.buckets[bucketIndex];
+      started = false;
+      for (const bucket of assetStore.buckets) {
+        if (bucket === startBucket) {
+          started = true;
+        }
+        if (bucket === endBucket) {
+          break;
+        }
 
         // Split bucket into date groups and check each group
-        const assetsGroupByDate = splitBucketIntoDateGroups(bucket, $locale);
-        for (const dateGroup of assetsGroupByDate) {
-          const dateGroupTitle = formatGroupTitle(dateGroup.date);
-          if (dateGroup.assets.every((a) => assetInteraction.selectedAssets.has(a))) {
+        for (const dateGroup of bucket.dateGroups) {
+          const dateGroupTitle = dateGroup.groupTitle;
+          if (dateGroup.getAssets().every((a) => assetInteraction.hasSelectedAsset(a.id))) {
             assetInteraction.addGroupToMultiselectGroup(dateGroupTitle);
           } else {
             assetInteraction.removeGroupFromMultiselectGroup(dateGroupTitle);
@@ -552,14 +561,16 @@
       return;
     }
 
-    let start = assetStore.assets.findIndex((a) => a.id === startAsset.id);
-    let end = assetStore.assets.findIndex((a) => a.id === endAsset.id);
+    const assets = assetStore.getAssets();
+
+    let start = assets.findIndex((a) => a.id === startAsset.id);
+    let end = assets.findIndex((a) => a.id === endAsset.id);
 
     if (start > end) {
       [start, end] = [end, start];
     }
 
-    assetInteraction.setAssetSelectionCandidates(assetStore.assets.slice(start, end + 1));
+    assetInteraction.setAssetSelectionCandidates(assets.slice(start, end + 1));
   };
 
   const onSelectStart = (e: Event) => {
@@ -651,6 +662,21 @@
     {scrubBucketPercent}
     {scrubBucket}
     {onScrub}
+    onScrubKeyDown={(evt) => {
+      evt.preventDefault();
+      let amount = 50;
+      if (shiftKeyIsDown) {
+        amount = 500;
+      }
+      if (evt.key === 'ArrowUp') {
+        amount = -amount;
+        if (shiftKeyIsDown) {
+          element?.scrollBy({ top: amount, behavior: 'smooth' });
+        }
+      } else if (evt.key === 'ArrowDown') {
+        element?.scrollBy({ top: amount, behavior: 'smooth' });
+      }
+    }}
   />
 {/if}
 
@@ -662,7 +688,7 @@
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
-  onscroll={() => (handleTimelineScroll(), updateSlidingWindow())}
+  onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}

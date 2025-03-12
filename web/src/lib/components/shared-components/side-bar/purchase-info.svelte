@@ -121,14 +121,14 @@
 
 <Portal target="body">
   {#if showMessage}
-    <div
+    <dialog
+      open
       class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
       onfocus={() => (hoverMessage = true)}
       onblur={() => (hoverMessage = false)}
-      role="dialog"
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
@@ -168,6 +168,12 @@
           {$t('purchase_button_reminder')}
         </Button>
       </div>
-    </div>
+    </dialog>
   {/if}
 </Portal>
+
+<style>
+  dialog {
+    margin: 0;
+  }
+</style>
