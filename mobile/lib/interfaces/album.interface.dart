@@ -1,6 +1,6 @@
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 
@@ -31,9 +31,9 @@ abstract interface class IAlbumRepository implements IDatabaseRepository {
 
   Future<int> count({bool? local});
 
-  Future<void> addUsers(Album album, List<User> users);
+  Future<void> addUsers(Album album, List<UserDto> users);
 
-  Future<void> removeUsers(Album album, List<User> users);
+  Future<void> removeUsers(Album album, List<UserDto> users);
 
   Future<void> addAssets(Album album, List<Asset> assets);
 

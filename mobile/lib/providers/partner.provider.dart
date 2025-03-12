@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/services/partner.service.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 
-class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
+class PartnerSharedWithNotifier extends StateNotifier<List<UserDto>> {
   final PartnerService _partnerService;
-  late final StreamSubscription<List<User>> streamSub;
+  late final StreamSubscription<List<UserDto>> streamSub;
 
   PartnerSharedWithNotifier(this._partnerService) : super([]) {
-    Function eq = const ListEquality<User>().equals;
+    Function eq = const ListEquality<UserDto>().equals;
     _partnerService.getSharedWith().then((partners) {
       if (!eq(state, partners)) {
         state = partners;
@@ -25,7 +25,7 @@ class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
     });
   }
 
-  Future<bool> updatePartner(User partner, {required bool inTimeline}) {
+  Future<bool> updatePartner(UserDto partner, {required bool inTimeline}) {
     return _partnerService.updatePartner(partner, inTimeline: inTimeline);
   }
 
@@ -39,18 +39,18 @@ class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
 }
 
 final partnerSharedWithProvider =
-    StateNotifierProvider<PartnerSharedWithNotifier, List<User>>((ref) {
+    StateNotifierProvider<PartnerSharedWithNotifier, List<UserDto>>((ref) {
   return PartnerSharedWithNotifier(
     ref.watch(partnerServiceProvider),
   );
 });
 
-class PartnerSharedByNotifier extends StateNotifier<List<User>> {
+class PartnerSharedByNotifier extends StateNotifier<List<UserDto>> {
   final PartnerService _partnerService;
-  late final StreamSubscription<List<User>> streamSub;
+  late final StreamSubscription<List<UserDto>> streamSub;
 
   PartnerSharedByNotifier(this._partnerService) : super([]) {
-    Function eq = const ListEquality<User>().equals;
+    Function eq = const ListEquality<UserDto>().equals;
     _partnerService.getSharedBy().then((partners) {
       if (!eq(state, partners)) {
         state = partners;
@@ -74,15 +74,15 @@ class PartnerSharedByNotifier extends StateNotifier<List<User>> {
 }
 
 final partnerSharedByProvider =
-    StateNotifierProvider<PartnerSharedByNotifier, List<User>>((ref) {
+    StateNotifierProvider<PartnerSharedByNotifier, List<UserDto>>((ref) {
   return PartnerSharedByNotifier(ref.watch(partnerServiceProvider));
 });
 
 final partnerAvailableProvider =
-    FutureProvider.autoDispose<List<User>>((ref) async {
+    FutureProvider.autoDispose<List<UserDto>>((ref) async {
   final otherUsers = await ref.watch(otherUsersProvider.future);
   final currentPartners = ref.watch(partnerSharedByProvider);
-  final available = Set<User>.of(otherUsers);
+  final available = Set<UserDto>.of(otherUsers);
   available.removeAll(currentPartners);
   return available.toList();
 });
