@@ -12,11 +12,10 @@
   import { handleLogout } from '$lib/utils/auth';
   import { getAboutInfo, logout, type ServerAboutResponseDto } from '@immich/sdk';
   import { Button, IconButton } from '@immich/ui';
-  import { mdiHelpCircleOutline, mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
+  import { mdiMagnify, mdiTrayArrowUp } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
 
@@ -104,25 +103,6 @@
           />
         {/if}
 
-        <ThemeButton padding="2" />
-
-        <div
-          use:clickOutside={{
-            onEscape: () => (shouldShowHelpPanel = false),
-          }}
-        >
-          <IconButton
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            size="large"
-            title={$t('support_and_feedback')}
-            icon={mdiHelpCircleOutline}
-            onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
-            aria-label={$t('support_and_feedback')}
-          />
-        </div>
-
         <div
           use:clickOutside={{
             onOutclick: () => (shouldShowAccountInfoPanel = false),
@@ -155,7 +135,13 @@
           {/if}
 
           {#if shouldShowAccountInfoPanel}
-            <AccountInfoPanel {onLogout} />
+            <AccountInfoPanel
+              {onLogout}
+              onHelp={() => {
+                shouldShowHelpPanel = true;
+                shouldShowAccountInfoPanel = false;
+              }}
+            />
           {/if}
         </div>
       </section>
