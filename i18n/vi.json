@@ -284,7 +284,7 @@
     "transcoding_max_b_frames": "Số B-frame tối đa",
     "transcoding_max_b_frames_description": "Giá trị cao hơn cải thiện hiệu quả nén, nhưng làm chậm mã hóa. Có thể không tương thích với tăng tốc phần cứng trên các thiết bị cũ. Giá trị 0 để tắt B-frames, trong khi giá trị -1 để tự động thiết lập giá trị này.",
     "transcoding_max_bitrate": "Bitrate tối đa",
-    "transcoding_max_bitrate_description": "Cài đặt giới hạn bitrate tối đa có thể giúp kích thước video dễ dự đoán hơn, với một chút hy sinh về chất lượng. Ở độ phân giải 720p, giá trị điển hình là 2600k cho VP9 hoặc HEVC, hoặc 4500k cho H.264. Nếu đặt thành 0, chức năng này sẽ bị vô hiệu hóa.",
+    "transcoding_max_bitrate_description": "Cài đặt giới hạn bitrate tối đa có thể giúp kích thước video dễ dự đoán hơn, với một chút hy sinh về chất lượng. Ở độ phân giải 720p, giá trị điển hình là 2600 kbit/s cho VP9 hoặc HEVC, hoặc 4500 kbit/s cho H.264. Nếu đặt thành 0, chức năng này sẽ bị vô hiệu hóa.",
     "transcoding_max_keyframe_interval": "Khoảng cách tối đa giữa các khung hình chính",
     "transcoding_max_keyframe_interval_description": "Thiết lập khoảng thời gian tối đa giữa các khung hình chính. Giá trị thấp hơn làm giảm hiệu suất nén, nhưng cải thiện thời gian tìm kiếm và có thể cải thiện chất lượng trong các cảnh có chuyển động nhanh. Giá trị 0 để tự động thiết lập giá trị này.",
     "transcoding_optimal_description": "Video có độ phân giải cao hơn mục tiêu hoặc không ở định dạng được chấp nhận",

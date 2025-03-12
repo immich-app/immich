@@ -93,7 +93,9 @@ describe(StorageTemplateService.name, () => {
   describe('handleMigrationSingle', () => {
     it('should skip when storage template is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });
+
       await expect(sut.handleMigrationSingle({ id: testAsset.id })).resolves.toBe(JobStatus.SKIPPED);
+
       expect(mocks.asset.getByIds).not.toHaveBeenCalled();
       expect(mocks.storage.checkFileExists).not.toHaveBeenCalled();
       expect(mocks.storage.rename).not.toHaveBeenCalled();

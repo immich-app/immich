@@ -2,7 +2,7 @@ import { MapService } from 'src/services/map.service';
 import { albumStub } from 'test/fixtures/album.stub';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { partnerStub } from 'test/fixtures/partner.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MapService.name, () => {
@@ -34,6 +34,9 @@ describe(MapService.name, () => {
     });
 
     it('should include partner assets', async () => {
+      const partner = factory.partner();
+      const auth = factory.auth({ id: partner.sharedWithId });
+
       const asset = assetStub.withLocation;
       const marker = {
         id: asset.id,
@@ -43,13 +46,13 @@ describe(MapService.name, () => {
         state: asset.exifInfo!.state,
         country: asset.exifInfo!.country,
       };
-      mocks.partner.getAll.mockResolvedValue([partnerStub.adminToUser1]);
+      mocks.partner.getAll.mockResolvedValue([partner]);
       mocks.map.getMapMarkers.mockResolvedValue([marker]);
 
-      const markers = await sut.getMapMarkers(authStub.user1, { withPartners: true });
+      const markers = await sut.getMapMarkers(auth, { withPartners: true });
 
       expect(mocks.map.getMapMarkers).toHaveBeenCalledWith(
-        [authStub.user1.user.id, partnerStub.adminToUser1.sharedById],
+        [auth.user.id, partner.sharedById],
         expect.arrayContaining([]),
         { withPartners: true },
       );

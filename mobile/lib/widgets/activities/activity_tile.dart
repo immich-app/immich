@@ -63,7 +63,7 @@ class _ActivityTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final textColor = context.isDarkTheme ? Colors.white : Colors.black;
     final textStyle = context.textTheme.bodyMedium
-        ?.copyWith(color: textColor.withOpacity(0.6));
+        ?.copyWith(color: textColor.withValues(alpha: 0.6));
 
     return Row(
       mainAxisAlignment:

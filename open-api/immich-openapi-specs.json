@@ -9918,7 +9918,8 @@
           "tag-cleanup",
           "user-cleanup",
           "memory-cleanup",
-          "memory-create"
+          "memory-create",
+          "backup-database"
         ],
         "type": "string"
       },
@@ -12049,12 +12050,228 @@
         ],
         "type": "object"
       },
+      "SyncAssetDeleteV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId"
+        ],
+        "type": "object"
+      },
+      "SyncAssetExifV1": {
+        "properties": {
+          "assetId": {
+            "type": "string"
+          },
+          "city": {
+            "nullable": true,
+            "type": "string"
+          },
+          "country": {
+            "nullable": true,
+            "type": "string"
+          },
+          "dateTimeOriginal": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "string"
+          },
+          "exifImageHeight": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "exifImageWidth": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "exposureTime": {
+            "nullable": true,
+            "type": "string"
+          },
+          "fNumber": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "fileSizeInByte": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "focalLength": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "fps": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "iso": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "latitude": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "lensModel": {
+            "nullable": true,
+            "type": "string"
+          },
+          "longitude": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "make": {
+            "nullable": true,
+            "type": "string"
+          },
+          "model": {
+            "nullable": true,
+            "type": "string"
+          },
+          "modifyDate": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "orientation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "profileDescription": {
+            "nullable": true,
+            "type": "string"
+          },
+          "projectionType": {
+            "nullable": true,
+            "type": "string"
+          },
+          "rating": {
+            "nullable": true,
+            "type": "integer"
+          },
+          "state": {
+            "nullable": true,
+            "type": "string"
+          },
+          "timeZone": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetId",
+          "city",
+          "country",
+          "dateTimeOriginal",
+          "description",
+          "exifImageHeight",
+          "exifImageWidth",
+          "exposureTime",
+          "fNumber",
+          "fileSizeInByte",
+          "focalLength",
+          "fps",
+          "iso",
+          "latitude",
+          "lensModel",
+          "longitude",
+          "make",
+          "model",
+          "modifyDate",
+          "orientation",
+          "profileDescription",
+          "projectionType",
+          "rating",
+          "state",
+          "timeZone"
+        ],
+        "type": "object"
+      },
+      "SyncAssetV1": {
+        "properties": {
+          "checksum": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "localDateTime": {
+            "format": "date-time",
+            "nullable": true,
+            "type": "string"
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "thumbhash": {
+            "nullable": true,
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "IMAGE",
+              "VIDEO",
+              "AUDIO",
+              "OTHER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "checksum",
+          "deletedAt",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "id",
+          "isFavorite",
+          "isVisible",
+          "localDateTime",
+          "ownerId",
+          "thumbhash",
+          "type"
+        ],
+        "type": "object"
+      },
       "SyncEntityType": {
         "enum": [
           "UserV1",
           "UserDeleteV1",
           "PartnerV1",
-          "PartnerDeleteV1"
+          "PartnerDeleteV1",
+          "AssetV1",
+          "AssetDeleteV1",
+          "AssetExifV1",
+          "PartnerAssetV1",
+          "PartnerAssetDeleteV1",
+          "PartnerAssetExifV1"
         ],
         "type": "string"
       },
@@ -12095,7 +12312,11 @@
       "SyncRequestType": {
         "enum": [
           "UsersV1",
-          "PartnersV1"
+          "PartnersV1",
+          "AssetsV1",
+          "AssetExifsV1",
+          "PartnerAssetsV1",
+          "PartnerAssetExifsV1"
         ],
         "type": "string"
       },

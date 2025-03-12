@@ -4,13 +4,13 @@ import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpda
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
-import { APIKeyService } from 'src/services/api-key.service';
+import { ApiKeyService } from 'src/services/api-key.service';
 import { UUIDParamDto } from 'src/validation';
 
 @ApiTags('API Keys')
 @Controller('api-keys')
 export class APIKeyController {
-  constructor(private service: APIKeyService) {}
+  constructor(private service: ApiKeyService) {}
 
   @Post()
   @Authenticated({ permission: Permission.API_KEY_CREATE })
