@@ -325,7 +325,7 @@
         />
 
         {#each current.memory.assets as asset, index (asset.id)}
-          <a class="relative w-full py-2" href={asHref(asset)}>
+          <a class="relative w-full py-2" href={asHref(asset)} aria-label={$t('view')}>
             <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
             <span class="absolute left-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
