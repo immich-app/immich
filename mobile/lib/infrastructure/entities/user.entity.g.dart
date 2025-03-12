@@ -155,7 +155,7 @@ User _userDeserialize(
   final object = User(
     avatarColor:
         _UseravatarColorValueEnumMap[reader.readByteOrNull(offsets[0])] ??
-            model.AvatarColor.primary,
+            AvatarColor.primary,
     email: reader.readString(offsets[1]),
     id: reader.readString(offsets[2]),
     inTimeline: reader.readBoolOrNull(offsets[3]) ?? false,
@@ -181,7 +181,7 @@ P _userDeserializeProp<P>(
   switch (propertyId) {
     case 0:
       return (_UseravatarColorValueEnumMap[reader.readByteOrNull(offset)] ??
-          model.AvatarColor.primary) as P;
+          AvatarColor.primary) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
