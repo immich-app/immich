@@ -598,7 +598,7 @@
 
   const focusPreviousAsset = async () => {
     if (assetInteraction.focussedAssetId !== null) {
-      const focussedAsset = assetStore.assets.find((asset) => asset.id === assetInteraction.focussedAssetId);
+      const focussedAsset = assetStore.getAssets().find((asset) => asset.id === assetInteraction.focussedAssetId);
       if (focussedAsset) {
         const previousAsset = await assetStore.getPreviousAsset(focussedAsset);
         if (previousAsset) {
@@ -681,6 +681,7 @@
 {#if showShortcuts}
   <ShowShortcuts onClose={() => (showShortcuts = !showShortcuts)} />
 {/if}
+
 {#if assetStore.buckets.length > 0}
   <Scrubber
     invisible={showSkeleton}

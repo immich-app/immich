@@ -44,7 +44,6 @@
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
     handleFocus?: (() => void) | undefined;
     class?: string;
-    overrideDisplayForTest?: boolean;
   }
 
   let {
@@ -66,7 +65,6 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     class: className = '',
-    overrideDisplayForTest = false,
   }: Props = $props();
 
   let {
@@ -142,6 +140,8 @@
      the navigation url on scroll. Replace this with button for now. -->
   <div
     class="group"
+    style:width="{width}px"
+    style:height="{height}px"
     class:cursor-not-allowed={disabled}
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
@@ -184,6 +184,8 @@
           class="absolute p-2 focus:outline-none"
           class:cursor-not-allowed={disabled}
           role="checkbox"
+          tabindex={-1}
+          onfocus={handleFocus}
           aria-checked={selected}
           {disabled}
         >

@@ -26,7 +26,6 @@
     timelineBottomOffset = 0,
     height = 0,
     assetStore,
-    invisible = false,
     scrubOverallPercent = 0,
     scrubBucketPercent = 0,
     scrubBucket = undefined,
@@ -225,15 +224,15 @@
   role="scrollbar"
   aria-controls="time-label"
   aria-valuenow={scrollY + HOVER_DATE_HEIGHT}
+  aria-valuemax={toScrollY(100)}
+  aria-valuemin={toScrollY(0)}
   id="immich-scrubbable-scrollbar"
   class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
   style:padding-top={HOVER_DATE_HEIGHT + 'px'}
   style:padding-bottom={HOVER_DATE_HEIGHT + 'px'}
-  class:invisible
   style:width={isDragging ? '100vw' : '60px'}
   style:height={height + 'px'}
   style:background-color={isDragging ? 'transparent' : 'transparent'}
-  draggable="false"
   bind:this={scrollBar}
   onmouseenter={() => (isHover = true)}
   onmouseleave={() => (isHover = false)}

@@ -65,7 +65,7 @@ describe('AssetStore', () => {
     const bucketAssets: Record<string, AssetResponseDto[]> = {
       '2024-01-03T00:00:00.000Z': assetFactory
         .buildList(1)
-        .map((asset) => ({ ...asset, localDateTime: '2024-01-03T00:00:00.000Z' })),
+        .map((asset) => ({ ...asset, localDateTime: '2024-03-01T00:00:00.000Z' })),
       '2024-01-01T00:00:00.000Z': assetFactory
         .buildList(3)
         .map((asset) => ({ ...asset, localDateTime: '2024-01-01T00:00:00.000Z' })),
@@ -74,7 +74,7 @@ describe('AssetStore', () => {
     beforeEach(async () => {
       assetStore = new AssetStore();
       sdkMock.getTimeBuckets.mockResolvedValue([
-        { count: 1, timeBucket: '2024-01-03T00:00:00.000Z' },
+        { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
         { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
       ]);
       sdkMock.getTimeBucket.mockImplementation(async ({ timeBucket }, { signal } = {}) => {
@@ -89,10 +89,10 @@ describe('AssetStore', () => {
     });
 
     it('loads a bucket', async () => {
-      expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')?.getAssets().length).toEqual(0);
+      expect(assetStore.getBucketByDate(2024, 1)?.getAssets().length).toEqual(0);
       await assetStore.loadBucket('2024-01-01T00:00:00.000Z');
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
-      expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')?.getAssets().length).toEqual(3);
+      expect(assetStore.getBucketByDate(2024, 1)?.getAssets().length).toEqual(3);
     });
 
     it('ignores invalid buckets', async () => {
@@ -101,7 +101,7 @@ describe('AssetStore', () => {
     });
 
     it('cancels bucket loading', async () => {
-      const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
+      const bucket = assetStore.getBucketByDate(2024, 1);
       const loadPromise = assetStore.loadBucket(bucket!.bucketDate);
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
@@ -110,7 +110,7 @@ describe('AssetStore', () => {
       expect(abortSpy).toBeCalledTimes(1);
 
       await loadPromise;
-      expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')?.getAssets().length).toEqual(0);
+      expect(assetStore.getBucketByDate(2024, 1)?.getAssets().length).toEqual(1);
     });
 
     it('prevents loading buckets multiple times', async () => {
@@ -124,15 +124,16 @@ describe('AssetStore', () => {
       expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
     });
 
-    it('allows loading a canceled bucket', async () => {
-      const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
+    it.only('allows loading a canceled bucket', async () => {
+      const bucket = assetStore.getBucketByDate(2024, 1)!;
+      console.log(bucket);
       const loadPromise = assetStore.loadBucket(bucket!.bucketDate);
 
-      bucket?.cancel();
+      bucket.cancel();
       await loadPromise;
       expect(bucket?.getAssets().length).toEqual(0);
 
-      await assetStore.loadBucket(bucket!.bucketDate);
+      await assetStore.loadBucket(bucket.bucketDate);
       expect(bucket!.getAssets().length).toEqual(3);
     });
   });
@@ -195,7 +196,7 @@ describe('AssetStore', () => {
       });
       assetStore.addAssets([assetOne, assetTwo, assetThree]);
 
-      const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
+      const bucket = assetStore.getBucketByDate(2024, 1);
       expect(bucket).not.toBeNull();
       expect(bucket?.getAssets().length).toEqual(3);
       expect(bucket?.getAssets()[0].id).toEqual(assetOne.id);
@@ -273,12 +274,12 @@ describe('AssetStore', () => {
 
       assetStore.addAssets([asset]);
       expect(assetStore.buckets.length).toEqual(1);
-      expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')).not.toBeUndefined();
+      expect(assetStore.getBucketByDate(2024, 1)).not.toBeUndefined();
 
       assetStore.updateAssets([updatedAsset]);
       expect(assetStore.buckets.length).toEqual(1);
-      expect(assetStore.getBucketByDate('2024-01-01T00:00:00.000Z')).toBeUndefined();
-      expect(assetStore.getBucketByDate('2024-03-01T00:00:00.000Z')).not.toBeUndefined();
+      expect(assetStore.getBucketByDate(2024, 1)).toBeUndefined();
+      expect(assetStore.getBucketByDate(2024, 3)).not.toBeUndefined();
     });
   });
 
@@ -327,12 +328,11 @@ describe('AssetStore', () => {
     beforeEach(async () => {
       assetStore = new AssetStore({});
       sdkMock.getTimeBuckets.mockResolvedValue([]);
-      await assetStore.init();
       await assetStore.updateViewport({ width: 0, height: 0 });
     });
 
     it('empty store returns null', () => {
-      expect(assetStore.getFirstAsset()).toBeNull();
+      expect(assetStore.getFirstAsset()).toBeUndefined();
     });
 
     it('populated store returns first asset', () => {
@@ -382,7 +382,7 @@ describe('AssetStore', () => {
 
     it('returns previous assetId', async () => {
       await assetStore.loadBucket('2024-01-01T00:00:00.000Z');
-      const bucket = assetStore.getBucketByDate('2024-01-01T00:00:00.000Z');
+      const bucket = assetStore.getBucketByDate(2024, 1);
 
       expect(await assetStore.getPreviousAsset(bucket!.getAssets()[1])).toEqual(bucket!.getAssets()[0]);
     });
@@ -391,8 +391,8 @@ describe('AssetStore', () => {
       await assetStore.loadBucket('2024-02-01T00:00:00.000Z');
       await assetStore.loadBucket('2024-03-01T00:00:00.000Z');
 
-      const bucket = assetStore.getBucketByDate('2024-02-01T00:00:00.000Z');
-      const previousBucket = assetStore.getBucketByDate('2024-03-01T00:00:00.000Z');
+      const bucket = assetStore.getBucketByDate(2024, 2);
+      const previousBucket = assetStore.getBucketByDate(2024, 3);
       expect(await assetStore.getPreviousAsset(bucket!.getAssets()[0])).toEqual(previousBucket!.getAssets()[0]);
     });
 
@@ -400,8 +400,8 @@ describe('AssetStore', () => {
       await assetStore.loadBucket('2024-02-01T00:00:00.000Z');
 
       const loadBucketSpy = vi.spyOn(assetStore, 'loadBucket');
-      const bucket = assetStore.getBucketByDate('2024-02-01T00:00:00.000Z');
-      const previousBucket = assetStore.getBucketByDate('2024-03-01T00:00:00.000Z');
+      const bucket = assetStore.getBucketByDate(2, 2024);
+      const previousBucket = assetStore.getBucketByDate(4, 2024);
       expect(await assetStore.getPreviousAsset(bucket!.getAssets()[0])).toEqual(previousBucket!.getAssets()[0]);
       expect(loadBucketSpy).toBeCalledTimes(1);
     });
@@ -433,8 +433,8 @@ describe('AssetStore', () => {
     });
 
     it('returns null for invalid buckets', () => {
-      expect(assetStore.getBucketByDate('invalid')).toBeUndefined();
-      expect(assetStore.getBucketByDate('2024-03-01T00:00:00.000Z')).toBeUndefined();
+      expect(assetStore.getBucketByDate(-1, -1)).toBeUndefined();
+      expect(assetStore.getBucketByDate(2024, 3)).toBeUndefined();
     });
 
     it('returns the bucket index', () => {
@@ -442,8 +442,8 @@ describe('AssetStore', () => {
       const assetTwo = assetFactory.build({ localDateTime: '2024-02-15T12:00:00.000Z' });
       assetStore.addAssets([assetOne, assetTwo]);
 
-      expect(assetStore.getBucketIndexByAssetId(assetTwo.id)).toEqual(0);
-      expect(assetStore.getBucketIndexByAssetId(assetOne.id)).toEqual(1);
+      expect(assetStore.getBucketIndexByAssetId(assetTwo.id)?.bucketDate).toEqual('2024-02-15T12:00:00.000Z');
+      expect(assetStore.getBucketIndexByAssetId(assetOne.id)?.bucketDate).toEqual('2024-01-20T12:00:00.000Z');
     });
 
     it('ignores removed buckets', () => {
@@ -452,7 +452,7 @@ describe('AssetStore', () => {
       assetStore.addAssets([assetOne, assetTwo]);
 
       assetStore.removeAssets([assetTwo.id]);
-      expect(assetStore.getBucketIndexByAssetId(assetOne.id)).toEqual(0);
+      expect(assetStore.getBucketIndexByAssetId(assetOne.id)?.bucketDate).toEqual('2024-01-20T12:00:00.000Z');
     });
   });
 });

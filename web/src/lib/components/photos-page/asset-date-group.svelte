@@ -2,7 +2,7 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { AssetBucket } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
+  import { getDateLocaleString } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { fly } from 'svelte/transition';
@@ -132,67 +132,45 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={dateGroup.groupTitle}>
+      <span class="w-full truncate first-letter:capitalize" title={getDateLocaleString(dateGroup.date)}>
         {dateGroup.groupTitle}
       </span>
     </div>
 
-          <!-- Image grid -->
-          <div
-            class="relative overflow-clip"
-            style:height={geometry.containerHeight + 'px'}
-            style:width={geometry.containerWidth + 'px'}
-          >
-            {#each dateGroup.assets as asset, i (asset.id)}
-              <!-- getting these together here in this order is very cache-efficient -->
-              {@const top = geometry.getTop(i)}
-              {@const left = geometry.getLeft(i)}
-              {@const width = geometry.getWidth(i)}
-              {@const height = geometry.getHeight(i)}
-              <!-- update ASSET_GRID_PADDING-->
-              <div
-                use:intersectionObserver={{
-                  onIntersect: () => onAssetInGrid?.(asset),
-                  top: `${-TITLE_HEIGHT}px`,
-                  bottom: `${-(viewport.height - TITLE_HEIGHT - 1)}px`,
-                  right: `${-(viewport.width - 1)}px`,
-                  root: assetGridElement,
-                }}
-                data-asset-id={asset.id}
-                class="absolute"
-                style:top={top + 'px'}
-                style:left={left + 'px'}
-                style:width={width + 'px'}
-                style:height={height + 'px'}
-              >
-                <Thumbnail
-                  {dateGroup}
-                  {assetStore}
-                  intersectionConfig={{
-                    root: assetGridElement,
-                    bottom: renderThumbsAtBottomMargin,
-                    top: renderThumbsAtTopMargin,
-                  }}
-                  retrieveElement={assetStore.pendingScrollAssetId === asset.id}
-                  onRetrieveElement={(element) => onRetrieveElement(dateGroup, asset, element)}
-                  showStackedIcon={withStacked}
-                  {showArchiveIcon}
-                  {asset}
-                  {groupIndex}
-                  onClick={(asset) => onClick(dateGroup.assets, dateGroup.groupTitle, asset)}
-                  onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
-                  onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
-                  selected={assetInteraction.selectedAssets.has(asset) || assetStore.albumAssets.has(asset.id)}
-                  selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
-                  handleFocus={() => assetOnFocusHandler(asset)}
-                  focussed={assetInteraction.isFocussedAsset(asset)}
-                  disabled={assetStore.albumAssets.has(asset.id)}
-                  thumbnailWidth={width}
-                  thumbnailHeight={height}
-                />
-              </div>
-            {/each}
-          </div>
+    <!-- Image grid -->
+    <div class="relative overflow-clip" style:height={dateGroup.height + 'px'} style:width={dateGroup.width + 'px'}>
+      {#each filterIntersecting(dateGroup.intersetingAssets) as intersectingAsset (intersectingAsset.id)}
+        {@const position = intersectingAsset.position!}
+        {@const asset = intersectingAsset.asset!}
+
+        <!-- {#if intersectingAsset.intersecting} -->
+        <!-- note: don't remove data-asset-id - its used by web e2e tests -->
+        <div
+          data-asset-id={asset.id}
+          class="absolute"
+          style:top={position.top + 'px'}
+          style:left={position.left + 'px'}
+          style:width={position.width + 'px'}
+          style:height={position.height + 'px'}
+          out:scale|global={{ start: 0.1, duration: transitionDuration + 100 }}
+          animate:flip={{ duration: transitionDuration }}
+        >
+          <Thumbnail
+            showStackedIcon={withStacked}
+            {showArchiveIcon}
+            {asset}
+            {groupIndex}
+            focussed={assetInteraction.isFocussedAsset(asset)}
+            onClick={(asset) => onClick(dateGroup.getAssets(), dateGroup.groupTitle, asset)}
+            onSelect={(asset) => assetSelectHandler(asset, dateGroup.getAssets(), dateGroup.groupTitle)}
+            onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, $state.snapshot(asset))}
+            selected={assetInteraction.hasSelectedAsset(asset.id) || dateGroup.bucket.store.albumAssets.has(asset.id)}
+            selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
+            handleFocus={() => assetOnFocusHandler(asset)}
+            disabled={dateGroup.bucket.store.albumAssets.has(asset.id)}
+            thumbnailWidth={position.width}
+            thumbnailHeight={position.height}
+          />
         </div>
         <!-- {/if} -->
       {/each}

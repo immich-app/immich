@@ -4,7 +4,7 @@ import { type CommonJustifiedLayout } from '$lib/utils/layout-utils';
 
 import type { AssetResponseDto } from '@immich/sdk';
 import { memoize } from 'lodash-es';
-import { DateTime } from 'luxon';
+import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
 
 export type DateGroup = {
@@ -101,5 +101,7 @@ export function formatGroupTitle(_date: DateTime): string {
 
   return getDateLocaleString(date);
 }
+export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
+  date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
 export const formatDateGroupTitle = memoize(formatGroupTitle);
