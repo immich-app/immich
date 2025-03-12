@@ -172,7 +172,7 @@ class SyncService {
         return false;
       },
       onlyFirst: (UserDto a) => toUpsert.add(a),
-      onlySecond: (UserDto b) => toDelete.add(b.uid),
+      onlySecond: (UserDto b) => toDelete.add(b.id),
     );
     if (changes) {
       await _userRepository.transaction(() async {
@@ -211,7 +211,7 @@ class SyncService {
   ) async {
     final currentUser = _userService.getMyUser();
     final DateTime? since =
-        (await _eTagRepository.get(currentUser.uid))?.time?.toUtc();
+        (await _eTagRepository.get(currentUser.id))?.time?.toUtc();
     if (since == null) return null;
     final DateTime now = DateTime.now();
     final (toUpsert, toDelete) = await getChangedAssets(users, since);
@@ -293,7 +293,7 @@ class SyncService {
       return false;
     }
     final List<Asset> inDb = await _assetRepository.getAll(
-      ownerId: user.uid,
+      ownerId: user.id,
       sortBy: AssetSort.checksum,
     );
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
@@ -399,15 +399,15 @@ class SyncService {
     // update shared users
     final List<UserDto> sharedUsers =
         album.sharedUsers.map((u) => u.toDto()).toList(growable: false);
-    sharedUsers.sort((a, b) => a.uid.compareTo(b.uid));
+    sharedUsers.sort((a, b) => a.id.compareTo(b.id));
     final List<UserDto> users = dto.remoteUsers.map((u) => u.toDto()).toList()
-      ..sort((a, b) => a.uid.compareTo(b.uid));
+      ..sort((a, b) => a.id.compareTo(b.id));
     final List<String> userIdsToAdd = [];
     final List<UserDto> usersToUnlink = [];
     diffSortedListsSync(
       users,
       sharedUsers,
-      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (a, b) => false,
       onlyFirst: (UserDto a) => userIdsToAdd.add(a.id),
       onlySecond: (UserDto a) => usersToUnlink.add(a),
@@ -508,7 +508,7 @@ class SyncService {
       );
     } else if (album.shared) {
       // delete assets in DB unless they belong to this user or are part of some other shared album or belong to a partner
-      final userIds = (await _getAllAccessibleUsers()).map((user) => user.uid);
+      final userIds = (await _getAllAccessibleUsers()).map((user) => user.id);
       final orphanedAssets =
           await _assetRepository.getByAlbum(album, notOwnedBy: userIds);
       deleteCandidates.addAll(orphanedAssets);
@@ -591,7 +591,7 @@ class SyncService {
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await _assetRepository.getByAlbum(
       dbAlbum,
-      ownerId: (_userService.getMyUser()).uid,
+      ownerId: (_userService.getMyUser()).id,
       sortBy: AssetSort.checksum,
     );
 

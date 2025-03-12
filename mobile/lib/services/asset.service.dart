@@ -315,7 +315,7 @@ class AssetService {
       await refreshRemoteAssets();
       final owner = _userService.getMyUser();
       final remoteAssets = await _assetRepository.getAll(
-        ownerId: owner.uid,
+        ownerId: owner.id,
         state: AssetState.merged,
       );
 
@@ -520,11 +520,11 @@ class AssetService {
 
   Future<List<Asset>> getRecentlyAddedAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getRecentlyAddedAssets(me.uid);
+    return _assetRepository.getRecentlyAddedAssets(me.id);
   }
 
   Future<List<Asset>> getMotionAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getMotionAssets(me.uid);
+    return _assetRepository.getMotionAssets(me.id);
   }
 }
