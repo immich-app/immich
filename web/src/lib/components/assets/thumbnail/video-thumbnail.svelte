@@ -94,10 +94,8 @@
         {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
       {:else if remainingSeconds < 3600}
         {Duration.fromObject({ seconds: remainingSeconds }).toFormat('mm:ss')}
-      {:else if remainingSeconds < 36000}
-        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('h:mm:ss')}
       {:else}
-        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('hh:mm:ss')}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('h:mm:ss')}
       {/if}
     </span>
   {/if}
