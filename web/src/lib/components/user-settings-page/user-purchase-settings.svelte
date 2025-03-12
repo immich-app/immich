@@ -15,13 +15,13 @@
   } from '@immich/sdk';
   import Icon from '$lib/components/elements/icon.svelte';
   import { mdiKey } from '@mdi/js';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { handleError } from '$lib/utils/handle-error';
   import PurchaseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
   import { t } from 'svelte-i18n';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { setSupportBadgeVisibility } from '$lib/utils/purchase-utils';
+  import { Button } from '@immich/ui';
   const { isPurchased } = purchaseStore;
 
   let isServerProduct = $state(false);
@@ -145,7 +145,9 @@
 
         {#if $user.isAdmin}
           <div class="text-right mt-4">
-            <Button size="sm" color="red" onclick={removeServerProductKey}>{$t('purchase_button_remove_key')}</Button>
+            <Button shape="round" size="small" color="danger" onclick={removeServerProductKey}
+              >{$t('purchase_button_remove_key')}</Button
+            >
           </div>
         {/if}
       {:else}
@@ -169,7 +171,9 @@
         </div>
 
         <div class="text-right mt-4">
-          <Button size="sm" color="red" onclick={removeIndividualProductKey}>{$t('purchase_button_remove_key')}</Button>
+          <Button shape="round" size="small" color="danger" onclick={removeIndividualProductKey}
+            >{$t('purchase_button_remove_key')}</Button
+          >
         </div>
       {/if}
     {:else}
