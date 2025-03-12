@@ -23,4 +23,5 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
   [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
+  [SystemMetadataKey.SECRET_KEY]: { secret?: string };
 }

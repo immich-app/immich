@@ -7,4 +7,5 @@ export interface ISystemMetadataRepository {
   set<T extends keyof SystemMetadata>(key: T, value: SystemMetadata[T]): Promise<void>;
   delete<T extends keyof SystemMetadata>(key: T): Promise<void>;
   readFile(filename: string): Promise<string>;
+  getSecretKey(): Promise<string>;
 }

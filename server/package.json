@@ -100,6 +100,7 @@
     "@nestjs/cli": "^10.1.16",
     "@nestjs/schematics": "^10.0.2",
     "@nestjs/testing": "^10.2.2",
+    "@nestjs/jwt": "^11.0.0",
     "@swc/core": "^1.4.14",
     "@testcontainers/postgresql": "^10.2.1",
     "@types/archiver": "^6.0.0",

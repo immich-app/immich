@@ -36,7 +36,7 @@ type SendFileOptions = SendFile[1];
 export const sendFile = async (
   res: Response,
   next: NextFunction,
-  handler: () => Promise<ImmichFileResponse>,
+  handler: () => Promise<ImmichFileResponse> | ImmichFileResponse,
   logger: ILoggingRepository,
 ): Promise<void> => {
   const _sendFile = (path: string, options: SendFileOptions) =>

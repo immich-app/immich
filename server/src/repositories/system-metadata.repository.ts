@@ -6,6 +6,8 @@ import { DB, SystemMetadata as DbSystemMetadata } from 'src/db';
 import { GenerateSql } from 'src/decorators';
 import { SystemMetadata } from 'src/entities/system-metadata.entity';
 import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { SystemMetadataKey } from 'src/enum';
+import { randomBytes } from 'node:crypto';
 
 type Upsert = Insertable<DbSystemMetadata>;
 
@@ -43,5 +45,15 @@ export class SystemMetadataRepository implements ISystemMetadataRepository {
 
   readFile(filename: string): Promise<string> {
     return readFile(filename, { encoding: 'utf8' });
+  }
+
+  async getSecretKey(): Promise<string> {
+    const value = await this.get(SystemMetadataKey.SECRET_KEY);
+    if (!value || !value.secret) {
+      const secret = randomBytes(16).toString('base64');
+      await this.set(SystemMetadataKey.SECRET_KEY, { secret });
+      return secret;
+    }
+    return value.secret;
   }
 }

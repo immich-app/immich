@@ -38,6 +38,7 @@ import { UserAdminService } from 'src/services/user-admin.service';
 import { UserService } from 'src/services/user.service';
 import { VersionService } from 'src/services/version.service';
 import { ViewService } from 'src/services/view.service';
+import { JwtService } from '@nestjs/jwt';
 
 export const services = [
   APIKeyService,
@@ -80,4 +81,5 @@ export const services = [
   UserService,
   VersionService,
   ViewService,
+  JwtService
 ];

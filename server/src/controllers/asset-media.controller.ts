@@ -40,6 +40,8 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { sendFile } from 'src/utils/file';
 import { FileNotEmptyValidator, UUIDParamDto } from 'src/validation';
+import { PartParamDto } from 'src/dtos/video.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('Assets')
 @Controller(RouteKey.ASSET)
@@ -47,6 +49,7 @@ export class AssetMediaController {
   constructor(
     private logger: LoggingRepository,
     private service: AssetMediaService,
+    private jwtService: JwtService,
   ) {}
 
   @Post()
@@ -140,9 +143,30 @@ export class AssetMediaController {
     const { liveFfmpeg } = await this.service.getConfig({ withCache: true });
     if (liveFfmpeg.enabled) {
       res.contentType('application/x-mpegURL');
-      return this.service.getPlaylist(auth, id);
+      res.write(await this.service.getPlaylist(auth, id));
+      res.end();
     } else {
       await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
+    }
+  }
+
+  @Get('/video/:secret/:name')
+  @FileResponse()
+  @Authenticated({ sharedLink: true })
+  async getVideoPart(
+    @Param() { secret, name }: PartParamDto,
+    @Res() res: Response,
+    @Next() next: NextFunction,
+  ) {
+    const { liveFfmpeg } = await this.service.getConfig({ withCache: true });
+    if (liveFfmpeg.enabled) {
+      const data = await this.jwtService.verifyAsync(secret);
+      if (data['id']) {
+        await sendFile(res, next, () => this.service.playbackPart(data['id'], name), this.logger);
+      }
+    } else {
+      res.statusCode = 403;
+      next();
     }
   }
 

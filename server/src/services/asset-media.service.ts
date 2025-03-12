@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { extname } from 'node:path';
+import path, { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import {
@@ -30,6 +30,7 @@ import { asRequest, getAssetFiles, onBeforeLink } from 'src/utils/asset.util';
 import { getFilenameExtension, getFileNameWithoutExtension, ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { fromChecksum } from 'src/utils/request';
+
 export interface UploadRequest {
   auth: AuthDto | null;
   fieldName: UploadFieldName;
@@ -228,6 +229,14 @@ export class AssetMediaService extends BaseService {
     });
   }
 
+  playbackPart(id: string, name: string): ImmichFileResponse {
+    return new ImmichFileResponse({
+      path: `${id}/${path.basename(name)}`,
+      contentType: 'video/mp4',
+      cacheControl: CacheControl.PRIVATE_WITH_CACHE,
+    });
+  }
+
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
     await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
 
@@ -248,7 +257,6 @@ export class AssetMediaService extends BaseService {
 
   async getPlaylist(auth: AuthDto, id: string): Promise<string> {
     await this.requireAccess({ auth, permission: Permission.ASSET_VIEW, ids: [id] });
-
     const asset = await this.findOrFail(id);
 
     if (asset.type !== AssetType.VIDEO) {
@@ -256,8 +264,8 @@ export class AssetMediaService extends BaseService {
     }
 
     const filepath = asset.originalPath;
-    await this.eventRepository.emit('media.liveTranscode', {id, path: filepath});
-    return await this.mediaRepository.getPlaylist(id);
+    await this.eventRepository.emit('media.liveTranscode', { id, path: filepath });
+    return this.mediaRepository.getPlaylist(id, await this.systemMetadataRepository.getSecretKey());
   }
 
   async checkExistingAssets(

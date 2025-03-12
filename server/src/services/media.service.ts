@@ -35,6 +35,7 @@ import { mimeTypes } from 'src/utils/mime-types';
 import { usePagination } from 'src/utils/pagination';
 import child_process from 'node:child_process';
 import { ArgOf } from 'src/interfaces/event.interface';
+import { ffprobe } from 'fluent-ffmpeg';
 
 @Injectable()
 export class MediaService extends BaseService {
