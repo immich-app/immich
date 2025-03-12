@@ -2,7 +2,8 @@ import 'dart:typed_data';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -20,9 +21,9 @@ class UserApiRepository extends ApiRepository implements IUserApiRepository {
   UserApiRepository(this._api);
 
   @override
-  Future<List<User>> getAll() async {
+  Future<List<UserDto>> getAll() async {
     final dto = await checkNull(_api.searchUsers());
-    return dto.map(User.fromSimpleUserDto).toList();
+    return dto.map(UserConverter.fromSimpleUserDto).toList();
   }
 
   @override

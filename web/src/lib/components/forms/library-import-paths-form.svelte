@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
-  import LibraryImportPathForm from './library-import-path-form.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
-  import { validate, type LibraryResponseDto } from '@immich/sdk';
-  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import type { ValidateLibraryImportPathResponseDto } from '@immich/sdk';
+  import { validate, type LibraryResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { mdiAlertOutline, mdiCheckCircleOutline, mdiPencilOutline, mdiRefresh } from '@mdi/js';
+  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { handleError } from '../../utils/handle-error';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import LibraryImportPathForm from './library-import-path-form.svelte';
 
   interface Props {
     library: LibraryResponseDto;
@@ -228,27 +228,21 @@
             {$t('admin.no_paths_added')}
           {/if}</td
         >
-        <td class="w-1/5 text-ellipsis px-4 text-sm"
-          ><Button
-            type="button"
-            size="sm"
-            onclick={() => {
-              addImportPath = true;
-            }}>{$t('add_path')}</Button
-          ></td
-        >
+        <td class="w-1/5 text-ellipsis px-4 text-sm">
+          <Button shape="round" size="small" onclick={() => (addImportPath = true)}>{$t('add_path')}</Button>
+        </td>
       </tr>
     </tbody>
   </table>
   <div class="flex justify-between w-full">
     <div class="justify-end gap-2">
-      <Button size="sm" color="gray" onclick={() => revalidate()}
-        ><Icon path={mdiRefresh} size={20} />{$t('validate')}</Button
+      <Button shape="round" leadingIcon={mdiRefresh} size="small" color="secondary" onclick={() => revalidate()}
+        >{$t('validate')}</Button
       >
     </div>
-    <div class="justify-end gap-2">
-      <Button size="sm" color="gray" onclick={onCancel}>{$t('cancel')}</Button>
-      <Button size="sm" type="submit">{$t('save')}</Button>
+    <div class="flex justify-end gap-2">
+      <Button shape="round" size="small" color="secondary" onclick={onCancel}>{$t('cancel')}</Button>
+      <Button shape="round" size="small" type="submit">{$t('save')}</Button>
     </div>
   </div>
 </form>

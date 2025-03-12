@@ -1,9 +1,11 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
+    as entity;
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
@@ -43,11 +45,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     }
     if (owner == true) {
       query = query.owner(
-        (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+        (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).id),
       );
     } else if (owner == false) {
       query = query.owner(
-        (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+        (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).id),
       );
     }
     if (remote == true) {
@@ -100,8 +102,9 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   Future<Album?> get(int id) => db.albums.get(id);
 
   @override
-  Future<void> removeUsers(Album album, List<User> users) =>
-      txn(() => album.sharedUsers.update(unlink: users));
+  Future<void> removeUsers(Album album, List<UserDto> users) => txn(
+        () => album.sharedUsers.update(unlink: users.map(entity.User.fromDto)),
+      );
 
   @override
   Future<void> addAssets(Album album, List<Asset> assets) =>
@@ -121,8 +124,8 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
   }
 
   @override
-  Future<void> addUsers(Album album, List<User> users) =>
-      txn(() => album.sharedUsers.update(link: users));
+  Future<void> addUsers(Album album, List<UserDto> users) =>
+      txn(() => album.sharedUsers.update(link: users.map(entity.User.fromDto)));
 
   @override
   Future<void> deleteAllLocal() =>
@@ -141,11 +144,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     switch (filterMode) {
       case QuickFilterMode.sharedWithMe:
         query = query.owner(
-          (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+          (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).id),
         );
       case QuickFilterMode.myAlbums:
         query = query.owner(
-          (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).isarId),
+          (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).id),
         );
       case QuickFilterMode.all:
         break;
