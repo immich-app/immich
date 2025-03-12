@@ -87,7 +87,7 @@
             onclick={onUploadClick}
             class="hidden lg:flex"
             variant="ghost"
-            size="large"
+            size="medium"
             color="secondary"
             >{$t('upload')}
           </Button>
