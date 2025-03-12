@@ -3,15 +3,14 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import Button from '../elements/buttons/button.svelte';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import { fade } from 'svelte/transition';
+  import { handleError } from '../../utils/handle-error';
 
   // Folders
   let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
@@ -140,7 +139,7 @@
         </SettingAccordion>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
+          <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>
