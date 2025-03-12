@@ -23,9 +23,11 @@ Future<void> migrateDatabaseIfNeeded(Isar db) async {
       if (id == null) {
         return;
       }
-      final user = await db.users.get(id);
-      await db.storeValues
-          .put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
+      await db.writeTxn(() async {
+        final user = await db.users.get(id);
+        await db.storeValues
+            .put(StoreValue(StoreKey.currentUser.id, strValue: user?.id));
+      });
     }
     // Do not clear other entities
     return;
