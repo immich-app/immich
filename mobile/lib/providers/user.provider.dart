@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 
-class CurrentUserProvider extends StateNotifier<User?> {
+class CurrentUserProvider extends StateNotifier<UserDto?> {
   CurrentUserProvider(this._apiService) : super(null) {
     state = Store.tryGet(StoreKey.currentUser);
     streamSub =
@@ -16,7 +17,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
   }
 
   final ApiService _apiService;
-  late final StreamSubscription<User?> streamSub;
+  late final StreamSubscription<UserDto?> streamSub;
 
   refresh() async {
     try {
@@ -25,7 +26,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
       if (user != null) {
         await Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(user, userPreferences),
+          UserConverter.fromAdminDto(user, userPreferences),
         );
       }
     } catch (_) {}
@@ -39,7 +40,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
 }
 
 final currentUserProvider =
-    StateNotifierProvider<CurrentUserProvider, User?>((ref) {
+    StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
   return CurrentUserProvider(
     ref.watch(apiServiceProvider),
   );

@@ -1,16 +1,16 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -56,12 +56,17 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
+
     final MockAppSettingService appSettingService = MockAppSettingService();
     final MockLocalFilesManagerRepository localFilesManagerRepository =
         MockLocalFilesManagerRepository();
 
     final owner = User(
       id: "1",
+    final MockPartnerRepository partnerRepository = MockPartnerRepository();
+
+    final owner = UserDto(
+      uid: "1",
       updatedAt: DateTime.now(),
       email: "a@b.c",
       name: "first last",
@@ -96,23 +101,24 @@ void main() {
         albumRepository,
         assetRepository,
         exifInfoRepository,
+        partnerRepository,
         userRepository,
+        StoreService.I,
         eTagRepository,
         appSettingService,
         localFilesManagerRepository,
       );
-      when(() => eTagRepository.get(owner.isarId))
-          .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
+      when(() => eTagRepository.get(owner.id))
+          .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
-      when(() => userRepository.me()).thenAnswer((_) async => owner);
-      when(() => userRepository.getAll(sortBy: UserSort.id))
+      when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
+      when(() => userRepository.getAll(sortBy: SortUserBy.id))
           .thenAnswer((_) async => [owner]);
-      when(() => userRepository.getAllAccessible())
-          .thenAnswer((_) async => [owner]);
+      when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.isarId,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => initialAssets);
@@ -186,7 +192,7 @@ void main() {
       expect(c1, isTrue);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.isarId,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => remoteAssets);
@@ -200,7 +206,7 @@ void main() {
       final currentState = [...remoteAssets];
       when(
         () => assetRepository.getAll(
-          ownerId: owner.isarId,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => currentState);
@@ -258,7 +264,7 @@ void main() {
 }
 
 Future<(List<Asset>?, List<String>?)> _failDiff(
-  List<User> user,
+  List<UserDto> user,
   DateTime time,
 ) =>
     Future.value((null, null));

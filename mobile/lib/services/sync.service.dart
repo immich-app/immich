@@ -4,10 +4,13 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/extensions/collection_extensions.dart';
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
@@ -17,7 +20,10 @@ import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/local_files_manager.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
@@ -26,6 +32,7 @@ import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
@@ -42,7 +49,9 @@ final syncServiceProvider = Provider(
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
     ref.watch(exifRepositoryProvider),
+    ref.watch(partnerRepositoryProvider),
     ref.watch(userRepositoryProvider),
+    ref.watch(storeServiceProvider),
     ref.watch(etagRepositoryProvider),
     ref.watch(appSettingsServiceProvider),
     ref.watch(localFilesManagerRepositoryProvider),
@@ -58,6 +67,8 @@ class SyncService {
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
+  final IPartnerRepository _partnerRepository;
+  final StoreService _storeService;
   final IETagRepository _eTagRepository;
   final AsyncMutex _lock = AsyncMutex();
   final Logger _log = Logger('SyncService');
@@ -72,7 +83,9 @@ class SyncService {
     this._albumRepository,
     this._assetRepository,
     this._exifInfoRepository,
+    this._partnerRepository,
     this._userRepository,
+    this._storeService,
     this._eTagRepository,
     this._appSettingsService,
     this._localFilesManager,
@@ -82,20 +95,20 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> syncUsersFromServer(List<User> users) =>
+  Future<bool> syncUsersFromServer(List<UserDto> users) =>
       _lock.run(() => _syncUsersFromServer(users));
 
   /// Syncs remote assets owned by the logged-in user to the DB
   /// Returns `true` if there were any changes
   Future<bool> syncRemoteAssetsToDb({
-    required List<User> users,
+    required List<UserDto> users,
     required Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
-      List<User> users,
+      List<UserDto> users,
       DateTime since,
     ) getChangedAssets,
-    required FutureOr<List<Asset>?> Function(User user, DateTime until)
+    required FutureOr<List<Asset>?> Function(UserDto user, DateTime until)
         loadAssets,
-    required FutureOr<List<User>?> Function() refreshUsers,
+    required FutureOr<List<UserDto>?> Function() refreshUsers,
   }) =>
       _lock.run(
         () async =>
@@ -145,16 +158,16 @@ class SyncService {
 
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
-  Future<bool> _syncUsersFromServer(List<User> users) async {
-    users.sortBy((u) => u.id);
-    final dbUsers = await _userRepository.getAll(sortBy: UserSort.id);
+  Future<bool> _syncUsersFromServer(List<UserDto> users) async {
+    users.sortBy((u) => u.uid);
+    final dbUsers = await _userRepository.getAll(sortBy: SortUserBy.id);
     final List<int> toDelete = [];
-    final List<User> toUpsert = [];
+    final List<UserDto> toUpsert = [];
     final changes = diffSortedListsSync(
       users,
       dbUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) {
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      both: (UserDto a, UserDto b) {
         if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
             a.isPartnerSharedBy != b.isPartnerSharedBy ||
             a.isPartnerSharedWith != b.isPartnerSharedWith ||
@@ -164,13 +177,13 @@ class SyncService {
         }
         return false;
       },
-      onlyFirst: (User a) => toUpsert.add(a),
-      onlySecond: (User b) => toDelete.add(b.isarId),
+      onlyFirst: (UserDto a) => toUpsert.add(a),
+      onlySecond: (UserDto b) => toDelete.add(b.id),
     );
     if (changes) {
       await _userRepository.transaction(() async {
-        await _userRepository.deleteById(toDelete);
-        await _userRepository.upsertAll(toUpsert);
+        await _userRepository.delete(toDelete);
+        await _userRepository.updateAll(toUpsert);
       });
     }
     return changes;
@@ -196,15 +209,15 @@ class SyncService {
 
   /// Efficiently syncs assets via changes. Returns `null` when a full sync is required.
   Future<bool?> _syncRemoteAssetChanges(
-    List<User> users,
+    List<UserDto> users,
     Future<(List<Asset>? toUpsert, List<String>? toDelete)> Function(
-      List<User> users,
+      List<UserDto> users,
       DateTime since,
     ) getChangedAssets,
   ) async {
-    final currentUser = await _userRepository.me();
+    final currentUser = _storeService.get(StoreKey.currentUser);
     final DateTime? since =
-        (await _eTagRepository.get(currentUser.isarId))?.time?.toUtc();
+        (await _eTagRepository.get(currentUser.id))?.time?.toUtc();
     if (since == null) return null;
     final DateTime now = DateTime.now();
     final (toUpsert, toDelete) = await getChangedAssets(users, since);
@@ -268,10 +281,16 @@ class SyncService {
     });
   }
 
+  Future<List<UserDto>> _getAllAccessibleUsers() async {
+    final sharedWith = (await _partnerRepository.getSharedWith()).toSet();
+    sharedWith.add(_storeService.get(StoreKey.currentUser));
+    return sharedWith.toList();
+  }
+
   /// Syncs assets by loading and comparing all assets from the server.
   Future<bool> _syncRemoteAssetsFull(
-    FutureOr<List<User>?> Function() refreshUsers,
-    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+    FutureOr<List<UserDto>?> Function() refreshUsers,
+    FutureOr<List<Asset>?> Function(UserDto user, DateTime until) loadAssets,
   ) async {
     final serverUsers = await refreshUsers();
     if (serverUsers == null) {
@@ -279,17 +298,17 @@ class SyncService {
       return false;
     }
     await _syncUsersFromServer(serverUsers);
-    final List<User> users = await _userRepository.getAllAccessible();
+    final List<UserDto> users = await _getAllAccessibleUsers();
     bool changes = false;
-    for (User u in users) {
+    for (UserDto u in users) {
       changes |= await _syncRemoteAssetsForUser(u, loadAssets);
     }
     return changes;
   }
 
   Future<bool> _syncRemoteAssetsForUser(
-    User user,
-    FutureOr<List<Asset>?> Function(User user, DateTime until) loadAssets,
+    UserDto user,
+    FutureOr<List<Asset>?> Function(UserDto user, DateTime until) loadAssets,
   ) async {
     final DateTime now = DateTime.now().toUtc();
     final List<Asset>? remote = await loadAssets(user, now);
@@ -297,7 +316,7 @@ class SyncService {
       return false;
     }
     final List<Asset> inDb = await _assetRepository.getAll(
-      ownerId: user.isarId,
+      ownerId: user.id,
       sortBy: AssetSort.checksum,
     );
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
@@ -323,13 +342,13 @@ class SyncService {
     return true;
   }
 
-  Future<void> _updateUserAssetsETag(List<User> users, DateTime time) {
-    final etags = users.map((u) => ETag(id: u.id, time: time)).toList();
+  Future<void> _updateUserAssetsETag(List<UserDto> users, DateTime time) {
+    final etags = users.map((u) => ETag(id: u.uid, time: time)).toList();
     return _eTagRepository.upsertAll(etags);
   }
 
-  Future<void> _clearUserAssetsETag(List<User> users) {
-    final ids = users.map((u) => u.id).toList();
+  Future<void> _clearUserAssetsETag(List<UserDto> users) {
+    final ids = users.map((u) => u.uid).toList();
     return _eTagRepository.deleteByIds(ids);
   }
 
@@ -401,26 +420,27 @@ class SyncService {
     );
 
     // update shared users
-    final List<User> sharedUsers = album.sharedUsers.toList(growable: false);
+    final List<UserDto> sharedUsers =
+        album.sharedUsers.map((u) => u.toDto()).toList(growable: false);
     sharedUsers.sort((a, b) => a.id.compareTo(b.id));
-    final List<User> users = dto.remoteUsers.toList()
+    final List<UserDto> users = dto.remoteUsers.map((u) => u.toDto()).toList()
       ..sort((a, b) => a.id.compareTo(b.id));
     final List<String> userIdsToAdd = [];
-    final List<User> usersToUnlink = [];
+    final List<UserDto> usersToUnlink = [];
     diffSortedListsSync(
       users,
       sharedUsers,
-      compare: (User a, User b) => a.id.compareTo(b.id),
+      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (a, b) => false,
-      onlyFirst: (User a) => userIdsToAdd.add(a.id),
-      onlySecond: (User a) => usersToUnlink.add(a),
+      onlyFirst: (UserDto a) => userIdsToAdd.add(a.uid),
+      onlySecond: (UserDto a) => usersToUnlink.add(a),
     );
 
     // for shared album: put missing album assets into local DB
     final (existingInDb, updated) = await _linkWithExistingFromDb(toAdd);
     await upsertAssetsWithExif(updated);
     final assetsToLink = existingInDb + updated;
-    final usersToLink = await _userRepository.getByIds(userIdsToAdd);
+    final usersToLink = await _userRepository.getByUserIds(userIdsToAdd);
 
     album.name = dto.name;
     album.shared = dto.shared;
@@ -444,7 +464,7 @@ class SyncService {
     try {
       await _assetRepository.transaction(() async {
         await _assetRepository.updateAll(toUpdate);
-        await _albumRepository.addUsers(album, usersToLink);
+        await _albumRepository.addUsers(album, usersToLink.nonNulls.toList());
         await _albumRepository.removeUsers(album, usersToUnlink);
         await _albumRepository.addAssets(album, assetsToLink);
         await _albumRepository.removeAssets(album, toUnlink);
@@ -457,7 +477,7 @@ class SyncService {
     }
 
     if (album.shared || dto.shared) {
-      final userId = (await _userRepository.me()).isarId;
+      final userId = (_storeService.get(StoreKey.currentUser)).id;
       final foreign =
           await _assetRepository.getByAlbum(album, notOwnedBy: [userId]);
       existing.addAll(foreign);
@@ -510,8 +530,7 @@ class SyncService {
       );
     } else if (album.shared) {
       // delete assets in DB unless they belong to this user or are part of some other shared album or belong to a partner
-      final userIds =
-          (await _userRepository.getAllAccessible()).map((user) => user.isarId);
+      final userIds = (await _getAllAccessibleUsers()).map((user) => user.id);
       final orphanedAssets =
           await _assetRepository.getByAlbum(album, notOwnedBy: userIds);
       deleteCandidates.addAll(orphanedAssets);
@@ -594,7 +613,7 @@ class SyncService {
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await _assetRepository.getByAlbum(
       dbAlbum,
-      ownerId: (await _userRepository.me()).isarId,
+      ownerId: (_storeService.get(StoreKey.currentUser)).id,
       sortBy: AssetSort.checksum,
     );
 

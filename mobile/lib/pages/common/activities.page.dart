@@ -7,12 +7,12 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
-import 'package:immich_mobile/widgets/activities/activity_text_field.dart';
-import 'package:immich_mobile/widgets/activities/activity_tile.dart';
-import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/current_asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/activities/activity_text_field.dart';
+import 'package:immich_mobile/widgets/activities/activity_tile.dart';
+import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 
 @RoutePage()
 class ActivitiesPage extends HookConsumerWidget {
@@ -72,7 +72,7 @@ class ActivitiesPage extends HookConsumerWidget {
 
                     final activity = data[index];
                     final canDelete = activity.user.id == user?.id ||
-                        album.ownerId == user?.id;
+                        album.ownerId == user?.uid;
 
                     return Padding(
                       padding: const EdgeInsets.all(5),
