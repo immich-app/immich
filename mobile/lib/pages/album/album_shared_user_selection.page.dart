@@ -118,8 +118,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
                   if (sharedUsersList.value.contains(users[index])) {
                     sharedUsersList.value = sharedUsersList.value
                         .where(
-                          (selectedUser) =>
-                              selectedUser.uid != users[index].uid,
+                          (selectedUser) => selectedUser.id != users[index].id,
                         )
                         .toSet();
                   } else {
