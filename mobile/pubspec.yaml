@@ -8,7 +8,7 @@ environment:
   sdk: '>=3.3.0 <4.0.0'
   flutter: 3.29.1
 
-isar_version: &isar_version 3.1.8 # define the version to be used
+isar_version: &isar_version 3.1.8
 
 dependencies:
   flutter:
@@ -26,7 +26,7 @@ dependencies:
   fluttertoast: ^8.2.12
   socket_io_client: ^2.0.3+1
   maplibre_gl: ^0.21.0
-  geolocator: ^11.0.0 # used to move to current location in map view
+  geolocator: ^11.0.0
   flutter_udid: ^3.0.0
   flutter_svg: ^2.0.17
   package_info_plus: ^8.3.0
@@ -43,12 +43,6 @@ dependencies:
   collection: ^1.18.0
   flutter_web_auth_2: ^5.0.0-alpha.0
   easy_image_viewer: ^1.5.1
-  isar:
-    version: *isar_version
-    hosted: https://pub.isar-community.dev/
-  isar_flutter_libs: # contains Isar Core
-    version: *isar_version
-    hosted: https://pub.isar-community.dev/
   permission_handler: ^11.4.0
   device_info_plus: ^11.3.3
   connectivity_plus: ^6.1.3
@@ -58,40 +52,32 @@ dependencies:
   octo_image: ^2.1.0
   thumbhash: 0.1.0+1
   async: ^2.11.0
-  dynamic_color: ^1.7.0 #package to apply system theme
+  dynamic_color: ^1.7.0
   background_downloader: ^8.5.5
   network_info_plus: ^6.1.3
-  native_video_player:
-    git:
-      url: https://github.com/immich-app/native_video_player
-      ref: '5459d54'
-
-  #image editing packages
-  crop_image: ^1.0.16
-
-  openapi:
-    path: openapi
-
-  # easy to remove packages:
   image_picker: ^1.1.2
   logging: ^1.3.0
   file_picker: ^8.0.0+1
   share_handler: ^0.0.22
+  crop_image: ^1.0.16
 
-# This is uncommented in F-Droid build script
-# Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
+  native_video_player:
+    git:
+      url: https://github.com/immich-app/native_video_player
+      ref: '5459d54'
+  openapi:
+    path: openapi
+  isar:
+    version: *isar_version
+    hosted: https://pub.isar-community.dev/
+  isar_flutter_libs: # contains Isar Core
+    version: *isar_version
+    hosted: https://pub.isar-community.dev/
+
 dependency_overrides:
-  # TODO: remove once Isar is updated
   analyzer: ^6.0.0
-  # TODO: remove once analyzer override is removed
   meta: ^1.11.0
-  # TODO: remove once analyzer override is removed
   analyzer_plugin: ^0.11.3
-#f  geolocator_android:
-#f    git:
-#f      url: https://github.com/Zverik/flutter-geolocator.git
-#f      ref: floss
-#f      path: geolocator_android
 
 dev_dependencies:
   flutter_test:
@@ -144,8 +130,8 @@ flutter_launcher_icons:
   adaptive_icon_background: '#ffffff'
   adaptive_icon_foreground: 'assets/immich-logo-android-adaptive-icon.png'
   image_path_ios: 'assets/immich-logo-w-bg.png'
-  android: 'ic_launcher' # can specify file name here e.g. "ic_launcher"
-  ios: false # can specify file name here e.g. "My-Launcher-Icon
+  android: 'ic_launcher'
+  ios: false
   remove_alpha_ios: true
 
 analyzer:
