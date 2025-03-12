@@ -51,7 +51,7 @@ class BottomGalleryBar extends ConsumerWidget {
       return const SizedBox();
     }
     final isOwner =
-        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.uid ?? '');
+        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
     final showControls = ref.watch(showControlsProvider);
     final stackId = asset.stackId;
 

@@ -101,7 +101,7 @@ class AssetService {
       _getRemoteAssetChanges(List<UserDto> users, DateTime since) async {
     final dto = AssetDeltaSyncDto(
       updatedAfter: since,
-      userIds: users.map((e) => e.uid).toList(),
+      userIds: users.map((e) => e.id).toList(),
     );
     final changes = await _apiService.syncApi.getDeltaSync(dto);
     return changes == null || changes.needsFullSync
@@ -142,7 +142,7 @@ class AssetService {
           limit: chunkSize,
           updatedUntil: until,
           lastId: lastId,
-          userId: user.uid,
+          userId: user.id,
         );
         log.fine("Requesting $chunkSize assets from $lastId");
         final List<AssetResponseDto>? assets =
@@ -315,7 +315,7 @@ class AssetService {
       await refreshRemoteAssets();
       final owner = _userService.getMyUser();
       final remoteAssets = await _assetRepository.getAll(
-        ownerId: owner.uid,
+        ownerId: owner.id,
         state: AssetState.merged,
       );
 
@@ -520,11 +520,11 @@ class AssetService {
 
   Future<List<Asset>> getRecentlyAddedAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getRecentlyAddedAssets(me.uid);
+    return _assetRepository.getRecentlyAddedAssets(me.id);
   }
 
   Future<List<Asset>> getMotionAssets() {
     final me = _userService.getMyUser();
-    return _assetRepository.getMotionAssets(me.uid);
+    return _assetRepository.getMotionAssets(me.id);
   }
 }

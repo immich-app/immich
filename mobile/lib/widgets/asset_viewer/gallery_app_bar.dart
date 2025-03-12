@@ -35,12 +35,12 @@ class GalleryAppBar extends ConsumerWidget {
     }
     final album = ref.watch(currentAlbumProvider);
     final isOwner =
-        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.uid ?? '');
+        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
     final showControls = ref.watch(showControlsProvider);
 
     final isPartner = ref
         .watch(partnerSharedWithProvider)
-        .map((e) => fastHash(e.uid))
+        .map((e) => fastHash(e.id))
         .contains(asset.ownerId);
 
     toggleFavorite(Asset asset) =>

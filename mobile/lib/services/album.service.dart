@@ -209,7 +209,7 @@ class AlbumService {
     final Album album = await _albumApiRepository.create(
       albumName,
       assetIds: assets.map((asset) => asset.remoteId!),
-      sharedUserIds: sharedUsers.map((user) => user.uid),
+      sharedUserIds: sharedUsers.map((user) => user.id),
     );
     await _entityService.fillAlbumWithDatabaseEntities(album);
     return _albumRepository.create(album);
@@ -296,7 +296,7 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = _userService.getMyUser().uid;
+      final userId = _userService.getMyUser().id;
       if (album.owner.value?.isarId == fastHash(userId)) {
         await _albumApiRepository.delete(album.remoteId!);
       }
@@ -363,7 +363,7 @@ class AlbumService {
     try {
       await _albumApiRepository.removeUser(
         album.remoteId!,
-        userId: user.uid,
+        userId: user.id,
       );
 
       album.sharedUsers.remove(entity.User.fromDto(user));

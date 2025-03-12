@@ -63,7 +63,7 @@ extension AssetListExtension on Iterable<Asset> {
     void Function()? errorCallback,
   }) {
     if (owner == null) return [];
-    final userId = fastHash(owner.uid);
+    final userId = fastHash(owner.id);
     final bool onlyOwned = every((e) => e.ownerId == userId);
     if (!onlyOwned) {
       if (errorCallback != null) errorCallback();

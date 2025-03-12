@@ -58,7 +58,7 @@ class AlbumThumbnailCard extends ConsumerWidget {
           // Add the owner name to the subtitle
           String? owner;
           if (showOwner) {
-            if (album.ownerId == ref.read(currentUserProvider)?.uid) {
+            if (album.ownerId == ref.read(currentUserProvider)?.id) {
               owner = 'album_thumbnail_owned'.tr();
             } else if (album.ownerName != null) {
               owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);

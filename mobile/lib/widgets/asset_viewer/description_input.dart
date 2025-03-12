@@ -82,7 +82,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
-      enabled: fastHash(owner?.uid ?? '') == asset.ownerId,
+      enabled: fastHash(owner?.id ?? '') == asset.ownerId,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {

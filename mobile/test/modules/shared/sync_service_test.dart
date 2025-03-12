@@ -66,7 +66,7 @@ void main() {
     final MockUserService userService = MockUserService();
 
     final owner = UserDto(
-      uid: "1",
+      id: "1",
       updatedAt: DateTime.now(),
       email: "a@b.c",
       name: "first last",
@@ -109,8 +109,8 @@ void main() {
         userApiRepository,
       );
       when(() => userService.getMyUser()).thenReturn(owner);
-      when(() => eTagRepository.get(owner.uid))
-          .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
+      when(() => eTagRepository.get(owner.id))
+          .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
       when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
@@ -119,7 +119,7 @@ void main() {
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.uid,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => initialAssets);
@@ -194,7 +194,7 @@ void main() {
       expect(c1, isTrue);
       when(
         () => assetRepository.getAll(
-          ownerId: owner.uid,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => remoteAssets);
@@ -207,7 +207,7 @@ void main() {
       final currentState = [...remoteAssets];
       when(
         () => assetRepository.getAll(
-          ownerId: owner.uid,
+          ownerId: owner.id,
           sortBy: AssetSort.checksum,
         ),
       ).thenAnswer((_) async => currentState);

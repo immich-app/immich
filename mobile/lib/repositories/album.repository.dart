@@ -44,7 +44,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     if (shared != null) {
       query = query.sharedEqualTo(shared);
     }
-    final userId = fastHash(Store.get(StoreKey.currentUser).uid);
+    final userId = fastHash(Store.get(StoreKey.currentUser).id);
     if (owner == true) {
       query = query.owner((q) => q.isarIdEqualTo(userId));
     } else if (owner == false) {
@@ -138,7 +138,7 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
         .filter()
         .nameContains(searchTerm, caseSensitive: false)
         .remoteIdIsNotNull();
-    final userId = fastHash(Store.get(StoreKey.currentUser).uid);
+    final userId = fastHash(Store.get(StoreKey.currentUser).id);
 
     switch (filterMode) {
       case QuickFilterMode.sharedWithMe:

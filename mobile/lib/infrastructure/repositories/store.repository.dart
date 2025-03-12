@@ -92,7 +92,7 @@ class IsarStoreRepository extends IsarDatabaseRepository
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
       const (UserDto) => (
           null,
-          (await IsarUserRepository(_db).update(value as UserDto)).uid,
+          (await IsarUserRepository(_db).update(value as UserDto)).id,
         ),
       _ => throw UnsupportedError(
           "Unsupported primitive type: ${key.type} for key: ${key.name}",

@@ -46,7 +46,7 @@ class TrashService {
 
     await _apiService.trashApi.emptyTrash();
 
-    final trashedAssets = await _assetRepository.getTrashAssets(user.uid);
+    final trashedAssets = await _assetRepository.getTrashAssets(user.id);
     final ids = trashedAssets.map((e) => e.remoteId!).toList();
 
     await _assetRepository.transaction(() async {
@@ -77,7 +77,7 @@ class TrashService {
 
     await _apiService.trashApi.restoreTrash();
 
-    final trashedAssets = await _assetRepository.getTrashAssets(user.uid);
+    final trashedAssets = await _assetRepository.getTrashAssets(user.id);
     final updatedAssets = trashedAssets.map((asset) {
       asset.isTrashed = false;
       return asset;
