@@ -20,6 +20,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
+import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -35,6 +36,7 @@ import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/network.repository.dart';
+import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
@@ -398,6 +400,7 @@ class BackgroundService {
         HashService(assetRepository, this, albumMediaRepository);
     EntityService entityService =
         EntityService(assetRepository, userRepository);
+    IPartnerRepository partnerRepository = PartnerRepository(db);
     SyncService syncSerive = SyncService(
       hashService,
       entityService,
@@ -406,6 +409,7 @@ class BackgroundService {
       albumRepository,
       assetRepository,
       exifInfoRepository,
+      partnerRepository,
       userRepository,
       StoreService.I,
       eTagRepository,

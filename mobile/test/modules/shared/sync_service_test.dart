@@ -56,6 +56,7 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
+    final MockPartnerRepository partnerRepository = MockPartnerRepository();
 
     final owner = UserDto(
       uid: "1",
@@ -93,6 +94,7 @@ void main() {
         albumRepository,
         assetRepository,
         exifInfoRepository,
+        partnerRepository,
         userRepository,
         StoreService.I,
         eTagRepository,
@@ -101,7 +103,7 @@ void main() {
           .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
-      // when(() => userRepository.me()).thenAnswer((_) async => owner);
+      when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
       when(() => userRepository.getAll(sortBy: SortUserBy.id))
           .thenAnswer((_) async => [owner]);
       when(() => userRepository.getAll()).thenAnswer((_) async => [owner]);

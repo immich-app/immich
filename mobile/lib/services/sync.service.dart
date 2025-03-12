@@ -16,6 +16,7 @@ import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
+import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -24,6 +25,7 @@ import 'package:immich_mobile/repositories/album_api.repository.dart';
 import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
+import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
@@ -40,6 +42,7 @@ final syncServiceProvider = Provider(
     ref.watch(albumRepositoryProvider),
     ref.watch(assetRepositoryProvider),
     ref.watch(exifRepositoryProvider),
+    ref.watch(partnerRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(storeServiceProvider),
     ref.watch(etagRepositoryProvider),
@@ -55,6 +58,7 @@ class SyncService {
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
+  final IPartnerRepository _partnerRepository;
   final StoreService _storeService;
   final IETagRepository _eTagRepository;
   final AsyncMutex _lock = AsyncMutex();
@@ -68,6 +72,7 @@ class SyncService {
     this._albumRepository,
     this._assetRepository,
     this._exifInfoRepository,
+    this._partnerRepository,
     this._userRepository,
     this._storeService,
     this._eTagRepository,
@@ -246,6 +251,12 @@ class SyncService {
     });
   }
 
+  Future<List<UserDto>> _getAllAccessibleUsers() async {
+    final sharedWith = (await _partnerRepository.getSharedWith()).toSet();
+    sharedWith.add(_storeService.get(StoreKey.currentUser));
+    return sharedWith.toList();
+  }
+
   /// Syncs assets by loading and comparing all assets from the server.
   Future<bool> _syncRemoteAssetsFull(
     FutureOr<List<UserDto>?> Function() refreshUsers,
@@ -257,7 +268,7 @@ class SyncService {
       return false;
     }
     await _syncUsersFromServer(serverUsers);
-    final List<UserDto> users = await _userRepository.getAll();
+    final List<UserDto> users = await _getAllAccessibleUsers();
     bool changes = false;
     for (UserDto u in users) {
       changes |= await _syncRemoteAssetsForUser(u, loadAssets);
@@ -489,7 +500,7 @@ class SyncService {
       );
     } else if (album.shared) {
       // delete assets in DB unless they belong to this user or are part of some other shared album or belong to a partner
-      final userIds = (await _userRepository.getAll()).map((user) => user.id);
+      final userIds = (await _getAllAccessibleUsers()).map((user) => user.id);
       final orphanedAssets =
           await _assetRepository.getByAlbum(album, notOwnedBy: userIds);
       deleteCandidates.addAll(orphanedAssets);
