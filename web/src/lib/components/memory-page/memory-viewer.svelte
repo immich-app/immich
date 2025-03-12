@@ -57,7 +57,7 @@
   import { DateTime } from 'luxon';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { tweened } from 'svelte/motion';
+  import { Tween } from 'svelte/motion';
   import { fade } from 'svelte/transition';
 
   let memoryGallery: HTMLElement | undefined = $state();
@@ -66,20 +66,15 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let isSaved = $derived(current?.memory.isSaved);
-  let resetPromise = $state(Promise.resolve());
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
-  let progressBarController = tweened<number>(0, {
-    duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
-  });
+  let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
 
   const loadFromParams = (page: typeof $page | NavigationTarget | null) => {
     const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
-    handlePromiseError(handleAction($isViewing ? 'pause' : 'reset'));
-
     return memoryStore.getMemoryAsset(assetId);
   };
   const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
@@ -88,7 +83,6 @@
       return asset;
     }
 
-    await handleAction('reset');
     if (!asset) {
       return;
     }
@@ -102,11 +96,11 @@
     if (asset.type === AssetTypeEnum.Video) {
       const timeParts = asset.duration.split(':').map(Number);
       const durationInMilliseconds = (timeParts[0] * 3600 + timeParts[1] * 60 + timeParts[2]) * 1000;
-      progressBarController = tweened<number>(0, {
+      progressBarController = new Tween<number>(0, {
         duration: (from: number, to: number) => (to ? durationInMilliseconds * (to - from) : 0),
       });
     } else {
-      progressBarController = tweened<number>(0, {
+      progressBarController = new Tween<number>(0, {
         duration: (from: number, to: number) => (to ? 5000 * (to - from) : 0),
       });
     }
@@ -118,6 +112,10 @@
   const handleEscape = async () => goto(AppRoute.PHOTOS);
   const handleSelectAll = () => assetInteraction.selectAssets(current?.memory.assets || []);
   const handleAction = async (action: 'reset' | 'pause' | 'play') => {
+    if (!progressBarController) {
+      return;
+    }
+
     switch (action) {
       case 'play': {
         paused = false;
@@ -129,28 +127,49 @@
       case 'pause': {
         paused = true;
         videoPlayer?.pause();
-        await progressBarController.set($progressBarController);
+        await progressBarController.set(progressBarController.current);
         break;
       }
 
       case 'reset': {
+        await progressBarController.set(0);
         paused = false;
         videoPlayer?.pause();
-        resetPromise = progressBarController.set(0);
         break;
       }
     }
   };
   const handleProgress = async (progress: number) => {
+    if (!progressBarController) {
+      return;
+    }
+
     if (progress === 0 && !paused) {
       await handleAction('play');
       return;
     }
 
-    if (progress === 1) {
-      await progressBarController.set(0);
-      await (current?.next ? handleNextAsset() : handleAction('pause'));
+    if (progress === 1 && !paused) {
+      if (current?.next) {
+        await progressBarController.set(0);
+        await handleNextAsset();
+      } else {
+        await handleAction('pause');
+      }
     }
+  };
+
+  const toProgressPercentage = (index: number) => {
+    if (!progressBarController || current?.assetIndex === undefined) {
+      return 0;
+    }
+    if (index < current?.assetIndex) {
+      return 100;
+    }
+    if (index > current?.assetIndex) {
+      return 0;
+    }
+    return progressBarController.current * 100;
   };
 
   const handleDeleteOrArchiveAssets = (ids: string[]) => {
@@ -219,14 +238,22 @@
     }
 
     current = loadFromParams(target);
+
+    if (progressBarController) {
+      handlePromiseError(handleAction('reset'));
+    }
   });
 
   $effect(() => {
-    handlePromiseError(handleProgress($progressBarController));
+    if (progressBarController) {
+      handlePromiseError(handleProgress(progressBarController.current));
+    }
   });
 
   $effect(() => {
-    handlePromiseError(handleAction(galleryInView ? 'pause' : 'play'));
+    if (progressBarController) {
+      handlePromiseError(handleAction(galleryInView || $isViewing ? 'pause' : 'play'));
+    }
   });
 
   $effect(() => {
@@ -300,15 +327,7 @@
         {#each current.memory.assets as asset, index (asset.id)}
           <a class="relative w-full py-2" href={asHref(asset)}>
             <span class="absolute left-0 h-[2px] w-full bg-gray-500"></span>
-            {#await resetPromise}
-              <span class="absolute left-0 h-[2px] bg-white" style:width={`${index < current.assetIndex ? 100 : 0}%`}
-              ></span>
-            {:then}
-              <span
-                class="absolute left-0 h-[2px] bg-white"
-                style:width={`${index < current.assetIndex ? 100 : index > current.assetIndex ? 0 : $progressBarController * 100}%`}
-              ></span>
-            {/await}
+            <span class="absolute left-0 h-[2px] bg-white" style:width={`${toProgressPercentage(index)}%`}></span>
           </a>
         {/each}
 
