@@ -63,7 +63,7 @@
 
 [이곳](https://demo.immich.app)에서 데모를 체험해보세요. 데모 서버는 2.4Ghz 쿼드 코어 ARM64 CPU 및 24GB 램으로 구성된 Oracle Free-tier VM 암스테르담 리전에서 구동됩니다.
 
-모바일 앱의 경우, `서버 엔드포인트 URL`에 `https://demo.immich.app/api`를 입력하세요.
+모바일 앱의 경우, `서버 엔드포인트 URL`에 `https://demo.immich.app`를 입력하세요.
 
 ### 로그인 정보
 

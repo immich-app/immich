@@ -7,6 +7,11 @@ import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { SharedLinkType } from 'src/enum';
 import { Optional, ValidateBoolean, ValidateDate, ValidateUUID } from 'src/validation';
 
+export class SharedLinkSearchDto {
+  @ValidateUUID({ optional: true })
+  albumId?: string;
+}
+
 export class SharedLinkCreateDto {
   @IsEnum(SharedLinkType)
   @ApiProperty({ enum: SharedLinkType, enumName: 'SharedLinkType' })

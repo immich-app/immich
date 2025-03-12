@@ -5,10 +5,8 @@ import { serverVersion } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
 import { VersionCheckMetadata } from 'src/entities/system-metadata.entity';
-import { ImmichEnvironment, SystemMetadataKey } from 'src/enum';
-import { DatabaseLock } from 'src/interfaces/database.interface';
-import { ArgOf } from 'src/interfaces/event.interface';
-import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { DatabaseLock, ImmichEnvironment, JobName, JobStatus, QueueName, SystemMetadataKey } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 
 const asNotification = ({ checkedAt, releaseVersion }: VersionCheckMetadata): ReleaseNotification => {
@@ -27,11 +25,24 @@ export class VersionService extends BaseService {
     await this.handleVersionCheck();
 
     await this.databaseRepository.withLock(DatabaseLock.VersionHistory, async () => {
-      const latest = await this.versionRepository.getLatest();
+      const previous = await this.versionRepository.getLatest();
       const current = serverVersion.toString();
-      if (!latest || latest.version !== current) {
-        this.logger.log(`Version has changed, adding ${current} to history`);
+
+      if (!previous) {
         await this.versionRepository.create({ version: current });
+        return;
+      }
+
+      if (previous.version !== current) {
+        const previousVersion = new SemVer(previous.version);
+
+        this.logger.log(`Adding ${current} to upgrade history`);
+        await this.versionRepository.create({ version: current });
+
+        const needsNewMemories = semver.lt(previousVersion, '1.129.0');
+        if (needsNewMemories) {
+          await this.jobRepository.queue({ name: JobName.MEMORIES_CREATE });
+        }
       }
     });
   }

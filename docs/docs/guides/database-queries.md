@@ -31,6 +31,10 @@ SELECT * FROM "assets" WHERE "originalPath" LIKE 'upload/library/admin/2023/%';
 SELECT * FROM "assets" WHERE "id" = '9f94e60f-65b6-47b7-ae44-a4df7b57f0e9';
 ```
 
+```sql title="Find by partial ID"
+SELECT * FROM "assets" WHERE "id"::text LIKE '%ab431d3a%';
+```
+
 :::note
 You can calculate the checksum for a particular file by using the command `sha1sum <filename>`.
 :::

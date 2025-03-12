@@ -1,5 +1,5 @@
-import 'package:analyzer/error/listener.dart';
 import 'package:analyzer/error/error.dart' show ErrorSeverity;
+import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 // ignore: depend_on_referenced_packages
 import 'package:glob/glob.dart';
@@ -65,12 +65,15 @@ class ImportRule extends DartLintRule {
   ) {
     if (_rootOffset == -1) {
       const project = "/immich/mobile/";
-      _rootOffset = resolver.path.indexOf(project) + project.length;
+      _rootOffset =
+          resolver.path.toLowerCase().indexOf(project) + project.length;
     }
     final path = resolver.path.substring(_rootOffset);
 
     if ((_allowed != null && _allowed!.matches(path)) &&
-        (_forbidden == null || !_forbidden!.matches(path))) return;
+        (_forbidden == null || !_forbidden!.matches(path))) {
+      return;
+    }
 
     context.registry.addImportDirective((node) {
       final uri = node.uri.stringValue;

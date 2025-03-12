@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
   JoinTable,
   ManyToOne,
   OneToMany,
@@ -25,7 +26,7 @@ export class LibraryEntity {
   assets!: AssetEntity[];
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  owner!: UserEntity;
+  owner?: UserEntity;
 
   @Column()
   ownerId!: string;
@@ -41,6 +42,10 @@ export class LibraryEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Index('IDX_libraries_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
 
   @DeleteDateColumn({ type: 'timestamptz' })
   deletedAt?: Date;

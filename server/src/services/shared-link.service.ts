@@ -9,6 +9,7 @@ import {
   SharedLinkEditDto,
   SharedLinkPasswordDto,
   SharedLinkResponseDto,
+  SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
 import { SharedLinkEntity } from 'src/entities/shared-link.entity';
 import { Permission, SharedLinkType } from 'src/enum';
@@ -17,8 +18,10 @@ import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
-  async getAll(auth: AuthDto): Promise<SharedLinkResponseDto[]> {
-    return this.sharedLinkRepository.getAll(auth.user.id).then((links) => links.map((link) => mapSharedLink(link)));
+  async getAll(auth: AuthDto, { albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
+    return this.sharedLinkRepository
+      .getAll({ userId: auth.user.id, albumId })
+      .then((links) => links.map((link) => mapSharedLink(link)));
   }
 
   async getMine(auth: AuthDto, dto: SharedLinkPasswordDto): Promise<SharedLinkResponseDto> {

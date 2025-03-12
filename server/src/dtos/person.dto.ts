@@ -1,13 +1,21 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { DateTime } from 'luxon';
 import { PropertyLifecycle } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
-import { IsDateStringFormat, MaxDateString, Optional, ValidateBoolean, ValidateUUID } from 'src/validation';
+import { asDateString } from 'src/utils/date';
+import {
+  IsDateStringFormat,
+  MaxDateString,
+  Optional,
+  ValidateBoolean,
+  ValidateHexColor,
+  ValidateUUID,
+} from 'src/validation';
 
 export class PersonCreateDto {
   /**
@@ -25,13 +33,20 @@ export class PersonCreateDto {
   @MaxDateString(() => DateTime.now(), { message: 'Birth date cannot be in the future' })
   @IsDateStringFormat('yyyy-MM-dd')
   @Optional({ nullable: true })
-  birthDate?: string | null;
+  birthDate?: Date | null;
 
   /**
    * Person visibility
    */
   @ValidateBoolean({ optional: true })
   isHidden?: boolean;
+
+  @ValidateBoolean({ optional: true })
+  isFavorite?: boolean;
+
+  @Optional({ emptyToNull: true, nullable: true })
+  @ValidateHexColor()
+  color?: string | null;
 }
 
 export class PersonUpdateDto extends PersonCreateDto {
@@ -97,6 +112,10 @@ export class PersonResponseDto {
   isHidden!: boolean;
   @PropertyLifecycle({ addedAt: 'v1.107.0' })
   updatedAt?: Date;
+  @PropertyLifecycle({ addedAt: 'v1.126.0' })
+  isFavorite?: boolean;
+  @PropertyLifecycle({ addedAt: 'v1.126.0' })
+  color?: string;
 }
 
 export class PersonWithFacesResponseDto extends PersonResponseDto {
@@ -146,6 +165,43 @@ export class AssetFaceUpdateItem {
   assetId!: string;
 }
 
+export class AssetFaceCreateDto extends AssetFaceUpdateItem {
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageWidth!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  imageHeight!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  x!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  y!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  width!: number;
+
+  @ApiProperty({ type: 'integer' })
+  @IsNotEmpty()
+  @IsNumber()
+  height!: number;
+}
+
+export class AssetFaceDeleteDto {
+  @IsNotEmpty()
+  force!: boolean;
+}
+
 export class PersonStatisticsResponseDto {
   @ApiProperty({ type: 'integer' })
   assets!: number;
@@ -167,9 +223,11 @@ export function mapPerson(person: PersonEntity): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: person.birthDate,
+    birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
+    isFavorite: person.isFavorite,
+    color: person.color ?? undefined,
     updatedAt: person.updatedAt,
   };
 }

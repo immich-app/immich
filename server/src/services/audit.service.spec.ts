@@ -1,28 +1,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { FileReportItemDto } from 'src/dtos/audit.dto';
-import { AssetFileType, AssetPathType, DatabaseAction, EntityType, PersonPathType, UserPathType } from 'src/enum';
-import { IAssetRepository } from 'src/interfaces/asset.interface';
-import { ICryptoRepository } from 'src/interfaces/crypto.interface';
-import { JobStatus } from 'src/interfaces/job.interface';
-import { IPersonRepository } from 'src/interfaces/person.interface';
-import { IUserRepository } from 'src/interfaces/user.interface';
+import { AssetFileType, AssetPathType, JobStatus, PersonPathType, UserPathType } from 'src/enum';
 import { AuditService } from 'src/services/audit.service';
-import { IAuditRepository } from 'src/types';
-import { auditStub } from 'test/fixtures/audit.stub';
-import { authStub } from 'test/fixtures/auth.stub';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(AuditService.name, () => {
   let sut: AuditService;
-  let auditMock: Mocked<IAuditRepository>;
-  let assetMock: Mocked<IAssetRepository>;
-  let cryptoMock: Mocked<ICryptoRepository>;
-  let personMock: Mocked<IPersonRepository>;
-  let userMock: Mocked<IUserRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, auditMock, assetMock, cryptoMock, personMock, userMock } = newTestService(AuditService));
+    ({ sut, mocks } = newTestService(AuditService));
   });
 
   it('should work', () => {
@@ -31,42 +18,11 @@ describe(AuditService.name, () => {
 
   describe('handleCleanup', () => {
     it('should delete old audit entries', async () => {
+      mocks.audit.removeBefore.mockResolvedValue();
+
       await expect(sut.handleCleanup()).resolves.toBe(JobStatus.SUCCESS);
-      expect(auditMock.removeBefore).toHaveBeenCalledWith(expect.any(Date));
-    });
-  });
 
-  describe('getDeletes', () => {
-    it('should require full sync if the request is older than 100 days', async () => {
-      auditMock.getAfter.mockResolvedValue([]);
-
-      const date = new Date(2022, 0, 1);
-      await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
-        needsFullSync: true,
-        ids: [],
-      });
-
-      expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
-        action: DatabaseAction.DELETE,
-        userIds: [authStub.admin.user.id],
-        entityType: EntityType.ASSET,
-      });
-    });
-
-    it('should get any new or updated assets and deleted ids', async () => {
-      auditMock.getAfter.mockResolvedValue([auditStub.delete.entityId]);
-
-      const date = new Date();
-      await expect(sut.getDeletes(authStub.admin, { after: date, entityType: EntityType.ASSET })).resolves.toEqual({
-        needsFullSync: false,
-        ids: ['asset-deleted'],
-      });
-
-      expect(auditMock.getAfter).toHaveBeenCalledWith(date, {
-        action: DatabaseAction.DELETE,
-        userIds: [authStub.admin.user.id],
-        entityType: EntityType.ASSET,
-      });
+      expect(mocks.audit.removeBefore).toHaveBeenCalledWith(expect.any(Date));
     });
   });
 
@@ -74,7 +30,7 @@ describe(AuditService.name, () => {
     it('should fail if the file is not in the immich path', async () => {
       await expect(sut.getChecksums({ filenames: ['foo/bar'] })).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(cryptoMock.hashFile).not.toHaveBeenCalled();
+      expect(mocks.crypto.hashFile).not.toHaveBeenCalled();
     });
 
     it('should get checksum for valid file', async () => {
@@ -82,7 +38,7 @@ describe(AuditService.name, () => {
         { filename: './upload/my-file.jpg', checksum: expect.any(String) },
       ]);
 
-      expect(cryptoMock.hashFile).toHaveBeenCalledWith('./upload/my-file.jpg');
+      expect(mocks.crypto.hashFile).toHaveBeenCalledWith('./upload/my-file.jpg');
     });
   });
 
@@ -94,10 +50,10 @@ describe(AuditService.name, () => {
         ]),
       ).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(assetMock.update).not.toHaveBeenCalled();
-      expect(assetMock.upsertFile).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update encoded video path', async () => {
@@ -109,10 +65,10 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: 'my-id', encodedVideoPath: './upload/my-video.mp4' });
-      expect(assetMock.upsertFile).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', encodedVideoPath: './upload/my-video.mp4' });
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update preview path', async () => {
@@ -124,14 +80,14 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(assetMock.upsertFile).toHaveBeenCalledWith({
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
         assetId: 'my-id',
         type: AssetFileType.PREVIEW,
         path: './upload/my-preview.png',
       });
-      expect(assetMock.update).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update thumbnail path', async () => {
@@ -143,14 +99,14 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(assetMock.upsertFile).toHaveBeenCalledWith({
+      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
         assetId: 'my-id',
         type: AssetFileType.THUMBNAIL,
         path: './upload/my-thumbnail.webp',
       });
-      expect(assetMock.update).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update original path', async () => {
@@ -162,10 +118,10 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: 'my-id', originalPath: './upload/my-original.png' });
-      expect(assetMock.upsertFile).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', originalPath: './upload/my-original.png' });
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update sidecar path', async () => {
@@ -177,10 +133,10 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(assetMock.update).toHaveBeenCalledWith({ id: 'my-id', sidecarPath: './upload/my-sidecar.xmp' });
-      expect(assetMock.upsertFile).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', sidecarPath: './upload/my-sidecar.xmp' });
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update face path', async () => {
@@ -192,10 +148,10 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(personMock.update).toHaveBeenCalledWith({ id: 'my-id', thumbnailPath: './upload/my-face.jpg' });
-      expect(assetMock.update).not.toHaveBeenCalled();
-      expect(assetMock.upsertFile).not.toHaveBeenCalled();
-      expect(userMock.update).not.toHaveBeenCalled();
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: 'my-id', thumbnailPath: './upload/my-face.jpg' });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
     it('should update profile path', async () => {
@@ -207,10 +163,10 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(userMock.update).toHaveBeenCalledWith('my-id', { profileImagePath: './upload/my-profile-pic.jpg' });
-      expect(assetMock.update).not.toHaveBeenCalled();
-      expect(assetMock.upsertFile).not.toHaveBeenCalled();
-      expect(personMock.update).not.toHaveBeenCalled();
+      expect(mocks.user.update).toHaveBeenCalledWith('my-id', { profileImagePath: './upload/my-profile-pic.jpg' });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
     });
   });
 });

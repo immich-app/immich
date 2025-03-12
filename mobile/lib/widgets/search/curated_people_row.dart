@@ -86,12 +86,22 @@ class CuratedPeopleRow extends StatelessWidget {
         ).tr(),
       );
     }
-    return Text(
-      person.label,
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
-      style: context.textTheme.labelLarge,
-      maxLines: 2,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          person.label,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.labelLarge,
+          maxLines: 2,
+        ),
+        if (person.subtitle != null)
+          Text(
+            person.subtitle!,
+            textAlign: TextAlign.center,
+          ),
+      ],
     );
   }
 }

@@ -114,6 +114,12 @@ class BaseSearchDto {
 
   @ValidateUUID({ each: true, optional: true })
   tagIds?: string[];
+
+  @Optional()
+  @IsInt()
+  @Max(5)
+  @Min(-1)
+  rating?: number;
 }
 
 export class RandomSearchDto extends BaseSearchDto {

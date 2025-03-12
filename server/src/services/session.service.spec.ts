@@ -1,21 +1,15 @@
-import { UserEntity } from 'src/entities/user.entity';
-import { JobStatus } from 'src/interfaces/job.interface';
-import { ISessionRepository } from 'src/interfaces/session.interface';
+import { JobStatus } from 'src/enum';
 import { SessionService } from 'src/services/session.service';
 import { authStub } from 'test/fixtures/auth.stub';
 import { sessionStub } from 'test/fixtures/session.stub';
-import { IAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newTestService } from 'test/utils';
-import { Mocked } from 'vitest';
+import { newTestService, ServiceMocks } from 'test/utils';
 
 describe('SessionService', () => {
   let sut: SessionService;
-
-  let accessMock: Mocked<IAccessRepositoryMock>;
-  let sessionMock: Mocked<ISessionRepository>;
+  let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, accessMock, sessionMock } = newTestService(SessionService));
+    ({ sut, mocks } = newTestService(SessionService));
   });
 
   it('should be defined', () => {
@@ -24,13 +18,13 @@ describe('SessionService', () => {
 
   describe('handleCleanup', () => {
     it('should return skipped if nothing is to be deleted', async () => {
-      sessionMock.search.mockResolvedValue([]);
+      mocks.session.search.mockResolvedValue([]);
       await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SKIPPED);
-      expect(sessionMock.search).toHaveBeenCalled();
+      expect(mocks.session.search).toHaveBeenCalled();
     });
 
     it('should delete sessions', async () => {
-      sessionMock.search.mockResolvedValue([
+      mocks.session.search.mockResolvedValue([
         {
           createdAt: new Date('1970-01-01T00:00:00.00Z'),
           updatedAt: new Date('1970-01-02T00:00:00.00Z'),
@@ -38,19 +32,20 @@ describe('SessionService', () => {
           deviceType: '',
           id: '123',
           token: '420',
-          user: {} as UserEntity,
           userId: '42',
+          updateId: 'uuid-v7',
         },
       ]);
+      mocks.session.delete.mockResolvedValue();
 
       await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SUCCESS);
-      expect(sessionMock.delete).toHaveBeenCalledWith('123');
+      expect(mocks.session.delete).toHaveBeenCalledWith('123');
     });
   });
 
   describe('getAll', () => {
     it('should get the devices', async () => {
-      sessionMock.getByUserId.mockResolvedValue([sessionStub.valid, sessionStub.inactive]);
+      mocks.session.getByUserId.mockResolvedValue([sessionStub.valid as any, sessionStub.inactive]);
       await expect(sut.getAll(authStub.user1)).resolves.toEqual([
         {
           createdAt: '2021-01-01T00:00:00.000Z',
@@ -70,30 +65,35 @@ describe('SessionService', () => {
         },
       ]);
 
-      expect(sessionMock.getByUserId).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(mocks.session.getByUserId).toHaveBeenCalledWith(authStub.user1.user.id);
     });
   });
 
   describe('logoutDevices', () => {
     it('should logout all devices', async () => {
-      sessionMock.getByUserId.mockResolvedValue([sessionStub.inactive, sessionStub.valid]);
+      mocks.session.getByUserId.mockResolvedValue([sessionStub.inactive, sessionStub.valid] as any[]);
+      mocks.session.delete.mockResolvedValue();
 
       await sut.deleteAll(authStub.user1);
 
-      expect(sessionMock.getByUserId).toHaveBeenCalledWith(authStub.user1.user.id);
-      expect(sessionMock.delete).toHaveBeenCalledWith('not_active');
-      expect(sessionMock.delete).not.toHaveBeenCalledWith('token-id');
+      expect(mocks.session.getByUserId).toHaveBeenCalledWith(authStub.user1.user.id);
+      expect(mocks.session.delete).toHaveBeenCalledWith('not_active');
+      expect(mocks.session.delete).not.toHaveBeenCalledWith('token-id');
     });
   });
 
   describe('logoutDevice', () => {
     it('should logout the device', async () => {
-      accessMock.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
+      mocks.access.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
+      mocks.session.delete.mockResolvedValue();
 
       await sut.delete(authStub.user1, 'token-1');
 
-      expect(accessMock.authDevice.checkOwnerAccess).toHaveBeenCalledWith(authStub.user1.user.id, new Set(['token-1']));
-      expect(sessionMock.delete).toHaveBeenCalledWith('token-1');
+      expect(mocks.access.authDevice.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.user1.user.id,
+        new Set(['token-1']),
+      );
+      expect(mocks.session.delete).toHaveBeenCalledWith('token-1');
     });
   });
 });

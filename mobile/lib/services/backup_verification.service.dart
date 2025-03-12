@@ -5,16 +5,19 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/file_media.interface.dart';
+import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
-import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
 
 /// Finds duplicates originating from missing EXIF information
@@ -31,7 +34,7 @@ class BackupVerificationService {
 
   /// Returns at most [limit] assets that were backed up without exif
   Future<List<Asset>> findWronglyBackedUpAssets({int limit = 100}) async {
-    final owner = Store.get(StoreKey.currentUser).isarId;
+    final owner = Store.get(StoreKey.currentUser).id;
     final List<Asset> onlyLocal = await _assetRepository.getAll(
       ownerId: owner,
       state: AssetState.local,
@@ -122,6 +125,8 @@ class BackupVerificationService {
     assert(tuple.deleteCandidates.length == tuple.originals.length);
     final List<Asset> result = [];
     BackgroundIsolateBinaryMessenger.ensureInitialized(tuple.rootIsolateToken);
+    final db = await Bootstrap.initIsar();
+    await Bootstrap.initDomain(db);
     await tuple.fileMediaRepository.enableBackgroundAccess();
     final ApiService apiService = ApiService();
     apiService.setEndpoint(tuple.endpoint);
@@ -145,11 +150,11 @@ class BackupVerificationService {
   ) async {
     if (remote.checksum == local.checksum) return false;
     ExifInfo? exif = remote.exifInfo;
-    if (exif != null && exif.lat != null) return false;
+    if (exif != null && exif.latitude != null) return false;
     if (exif == null || exif.fileSize == null) {
       final dto = await apiService.assetsApi.getAssetInfo(remote.remoteId!);
       if (dto != null && dto.exifInfo != null) {
-        exif = ExifInfo.fromDto(dto.exifInfo!);
+        exif = ExifDtoConverter.fromDto(dto.exifInfo!);
       }
     }
     final file = await local.local!.originFile;
@@ -158,7 +163,7 @@ class BackupVerificationService {
       if (exif.fileSize! == origSize || exif.fileSize! != origSize) {
         final latLng = await local.local!.latlngAsync();
 
-        if (exif.lat == null &&
+        if (exif.latitude == null &&
             latLng.latitude != null &&
             (remote.fileCreatedAt.isAtSameMomentAs(local.fileCreatedAt) ||
                 remote.fileModifiedAt.isAtSameMomentAs(local.fileModifiedAt) ||
@@ -211,6 +216,6 @@ final backupVerificationServiceProvider = Provider(
   (ref) => BackupVerificationService(
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(assetRepositoryProvider),
-    ref.watch(exifInfoRepositoryProvider),
+    ref.watch(exifRepositoryProvider),
   ),
 );

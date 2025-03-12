@@ -1,7 +1,7 @@
 import { ExpressionBuilder } from 'kysely';
 import { DB } from 'src/db';
 import { UserEntity } from 'src/entities/user.entity';
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('sessions')
 export class SessionEntity {
@@ -22,6 +22,10 @@ export class SessionEntity {
 
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
+
+  @Index('IDX_sessions_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId!: string;
 
   @Column({ default: '' })
   deviceType!: string;

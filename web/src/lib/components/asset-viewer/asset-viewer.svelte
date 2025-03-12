@@ -1,6 +1,6 @@
 <script lang="ts">
   import { focusTrap } from '$lib/actions/focus-trap';
-  import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
+  import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
   import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
@@ -43,10 +43,10 @@
   import DetailPanel from './detail-panel.svelte';
   import CropArea from './editor/crop-tool/crop-area.svelte';
   import EditorPanel from './editor/editor-panel.svelte';
+  import ImagePanoramaViewer from './image-panorama-viewer.svelte';
   import PhotoViewer from './photo-viewer.svelte';
   import SlideshowBar from './slideshow-bar.svelte';
   import VideoViewer from './video-wrapper-viewer.svelte';
-  import ImagePanoramaViewer from './image-panorama-viewer.svelte';
 
   type HasAsset = boolean;
 
@@ -58,6 +58,7 @@
     isShared?: boolean;
     album?: AlbumResponseDto | null;
     person?: PersonResponseDto | null;
+    preAction?: PreAction | undefined;
     onAction?: OnAction | undefined;
     reactions?: ActivityResponseDto[];
     onClose: (dto: { asset: AssetResponseDto }) => void;
@@ -75,6 +76,7 @@
     isShared = false,
     album = null,
     person = null,
+    preAction = undefined,
     onAction = undefined,
     reactions = $bindable([]),
     onClose,
@@ -190,7 +192,7 @@
     }
   };
 
-  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+  const onAssetUpdate = ({ asset: assetUpdate }: { event: 'upload' | 'update'; asset: AssetResponseDto }) => {
     if (assetUpdate.id === asset.id) {
       asset = assetUpdate;
     }
@@ -198,8 +200,8 @@
 
   onMount(async () => {
     unsubscribes.push(
-      websocketEvents.on('on_upload_success', onAssetUpdate),
-      websocketEvents.on('on_asset_update', onAssetUpdate),
+      websocketEvents.on('on_upload_success', (asset) => onAssetUpdate({ event: 'upload', asset })),
+      websocketEvents.on('on_asset_update', (asset) => onAssetUpdate({ event: 'update', asset })),
     );
 
     slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -366,7 +368,9 @@
   const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
     previewStackedAsset = isMouseOver ? asset : undefined;
   };
-
+  const handlePreAction = (action: Action) => {
+    preAction?.(action);
+  };
   const handleAction = async (action: Action) => {
     switch (action.type) {
       case AssetAction.ADD_TO_ALBUM: {
@@ -377,6 +381,7 @@
       case AssetAction.KEEP_THIS_DELETE_OTHERS:
       case AssetAction.UNSTACK: {
         closeViewer();
+        break;
       }
     }
 
@@ -430,6 +435,7 @@
         showSlideshow={true}
         onZoomImage={zoomToggle}
         onCopyImage={copyImage}
+        preAction={handlePreAction}
         onAction={handleAction}
         onRunJob={handleRunJob}
         onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
@@ -483,7 +489,7 @@
         {:else}
           <VideoViewer
             assetId={previewStackedAsset.id}
-            checksum={previewStackedAsset.checksum}
+            cacheKey={previewStackedAsset.thumbhash}
             projectionType={previewStackedAsset.exifInfo?.projectionType}
             loopVideo={true}
             onPreviousAsset={() => navigateAsset('previous')}
@@ -500,7 +506,7 @@
           {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
             <VideoViewer
               assetId={asset.livePhotoVideoId}
-              checksum={asset.checksum}
+              cacheKey={asset.thumbhash}
               projectionType={asset.exifInfo?.projectionType}
               loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
               onPreviousAsset={() => navigateAsset('previous')}
@@ -529,7 +535,7 @@
         {:else}
           <VideoViewer
             assetId={asset.id}
-            checksum={asset.checksum}
+            cacheKey={asset.thumbhash}
             projectionType={asset.exifInfo?.projectionType}
             loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
             onPreviousAsset={() => navigateAsset('previous')}

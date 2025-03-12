@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { getName } from 'i18n-iso-countries';
 import { Expression, Kysely, sql, SqlBool } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
@@ -8,12 +8,12 @@ import { readFile } from 'node:fs/promises';
 import readLine from 'node:readline';
 import { citiesFile } from 'src/constants';
 import { DB, GeodataPlaces, NaturalearthCountries } from 'src/db';
-import { AssetEntity, withExif } from 'src/entities/asset.entity';
+import { DummyValue, GenerateSql } from 'src/decorators';
 import { NaturalEarthCountriesTempEntity } from 'src/entities/natural-earth-countries.entity';
-import { LogLevel, SystemMetadataKey } from 'src/enum';
-import { ISystemMetadataRepository } from 'src/interfaces/system-metadata.interface';
+import { SystemMetadataKey } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 
 export interface MapMarkerSearchOptions {
   isArchived?: boolean;
@@ -48,7 +48,7 @@ interface MapDB extends DB {
 export class MapRepository {
   constructor(
     private configRepository: ConfigRepository,
-    @Inject(ISystemMetadataRepository) private metadataRepository: ISystemMetadataRepository,
+    private metadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<MapDB>,
   ) {
@@ -76,50 +76,47 @@ export class MapRepository {
     this.logger.log('Geodata import completed');
   }
 
-  async getMapMarkers(
-    ownerIds: string[],
-    albumIds: string[],
-    options: MapMarkerSearchOptions = {},
-  ): Promise<MapMarker[]> {
+  @GenerateSql({ params: [[DummyValue.UUID], [DummyValue.UUID]] })
+  getMapMarkers(ownerIds: string[], albumIds: string[], options: MapMarkerSearchOptions = {}) {
     const { isArchived, isFavorite, fileCreatedAfter, fileCreatedBefore } = options;
 
-    const assets = (await this.db
+    return this.db
       .selectFrom('assets')
-      .$call(withExif)
-      .select('id')
-      .leftJoin('albums_assets_assets', (join) => join.onRef('assets.id', '=', 'albums_assets_assets.assetsId'))
+      .innerJoin('exif', (builder) =>
+        builder
+          .onRef('assets.id', '=', 'exif.assetId')
+          .on('exif.latitude', 'is not', null)
+          .on('exif.longitude', 'is not', null),
+      )
+      .select(['id', 'exif.latitude as lat', 'exif.longitude as lon', 'exif.city', 'exif.state', 'exif.country'])
       .where('isVisible', '=', true)
       .$if(isArchived !== undefined, (q) => q.where('isArchived', '=', isArchived!))
       .$if(isFavorite !== undefined, (q) => q.where('isFavorite', '=', isFavorite!))
       .$if(fileCreatedAfter !== undefined, (q) => q.where('fileCreatedAt', '>=', fileCreatedAfter!))
       .$if(fileCreatedBefore !== undefined, (q) => q.where('fileCreatedAt', '<=', fileCreatedBefore!))
       .where('deletedAt', 'is', null)
-      .where('exif.latitude', 'is not', null)
-      .where('exif.longitude', 'is not', null)
       .where((eb) => {
-        const ors: Expression<SqlBool>[] = [];
+        const expression: Expression<SqlBool>[] = [];
 
         if (ownerIds.length > 0) {
-          ors.push(eb('ownerId', 'in', ownerIds));
+          expression.push(eb('ownerId', 'in', ownerIds));
         }
 
         if (albumIds.length > 0) {
-          ors.push(eb('albums_assets_assets.albumsId', 'in', albumIds));
+          expression.push(
+            eb.exists((eb) =>
+              eb
+                .selectFrom('albums_assets_assets')
+                .whereRef('assets.id', '=', 'albums_assets_assets.assetsId')
+                .where('albums_assets_assets.albumsId', 'in', albumIds),
+            ),
+          );
         }
 
-        return eb.or(ors);
+        return eb.or(expression);
       })
       .orderBy('fileCreatedAt', 'desc')
-      .execute()) as any as AssetEntity[];
-
-    return assets.map((asset) => ({
-      id: asset.id,
-      lat: asset.exifInfo!.latitude!,
-      lon: asset.exifInfo!.longitude!,
-      city: asset.exifInfo!.city,
-      state: asset.exifInfo!.state,
-      country: asset.exifInfo!.country,
-    }));
+      .execute() as Promise<MapMarker[]>;
   }
 
   async reverseGeocode(point: GeoPoint): Promise<ReverseGeocodeResult> {
@@ -140,9 +137,7 @@ export class MapRepository {
       .executeTakeFirst();
 
     if (response) {
-      if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
-        this.logger.verbose(`Raw: ${JSON.stringify(response, null, 2)}`);
-      }
+      this.logger.verboseFn(() => `Raw: ${JSON.stringify(response, null, 2)}`);
 
       const { countryCode, name: city, admin1Name } = response;
       const country = getName(countryCode, 'en') ?? null;
@@ -170,9 +165,8 @@ export class MapRepository {
       return { country: null, state: null, city: null };
     }
 
-    if (this.logger.isLevelEnabled(LogLevel.VERBOSE)) {
-      this.logger.verbose(`Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
-    }
+    this.logger.verboseFn(() => `Raw: ${JSON.stringify(ne_response, ['id', 'admin', 'admin_a3', 'type'], 2)}`);
+
     const { admin_a3 } = ne_response;
     const country = getName(admin_a3, 'en') ?? null;
     const state = null;

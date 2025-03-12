@@ -15,7 +15,7 @@
 </script>
 
 <Portal>
-  <FullScreenModal showLogo title={''} {onClose} width="wide">
+  <FullScreenModal showLogo title="" {onClose} width="wide">
     {#if showProductActivated}
       <PurchaseActivationSuccess onDone={onClose} />
     {:else}

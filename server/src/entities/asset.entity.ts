@@ -13,8 +13,8 @@ import { StackEntity } from 'src/entities/stack.entity';
 import { TagEntity } from 'src/entities/tag.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
-import { TimeBucketSize } from 'src/interfaces/asset.interface';
-import { AssetSearchBuilderOptions } from 'src/interfaces/search.interface';
+import { TimeBucketSize } from 'src/repositories/asset.repository';
+import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import {
   Column,
@@ -96,17 +96,21 @@ export class AssetEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @Index('IDX_assets_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
+
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt!: Date | null;
 
   @Index('idx_asset_file_created_at')
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileCreatedAt!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   localDateTime!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
   fileModifiedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
@@ -180,6 +184,12 @@ export class AssetEntity {
   duplicateId!: string | null;
 }
 
+export type AssetEntityPlaceholder = AssetEntity & {
+  fileCreatedAt: Date | null;
+  fileModifiedAt: Date | null;
+  localDateTime: Date | null;
+};
+
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
   return qb.leftJoin('exif', 'assets.id', 'exif.assetId').select((eb) => eb.fn.toJson(eb.table('exif')).as('exifInfo'));
 }
@@ -196,10 +206,14 @@ export function withSmartSearch<O>(qb: SelectQueryBuilder<DB, 'assets', O>) {
     .select((eb) => eb.fn.toJson(eb.table('smart_search')).as('smartSearch'));
 }
 
-export function withFaces(eb: ExpressionBuilder<DB, 'assets'>) {
-  return jsonArrayFrom(eb.selectFrom('asset_faces').selectAll().whereRef('asset_faces.assetId', '=', 'assets.id')).as(
-    'faces',
-  );
+export function withFaces(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_faces')
+      .selectAll()
+      .whereRef('asset_faces.assetId', '=', 'assets.id')
+      .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null)),
+  ).as('faces');
 }
 
 export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileType) {
@@ -212,11 +226,12 @@ export function withFiles(eb: ExpressionBuilder<DB, 'assets'>, type?: AssetFileT
   ).as('files');
 }
 
-export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>) {
+export function withFacesAndPeople(eb: ExpressionBuilder<DB, 'assets'>, withDeletedFace?: boolean) {
   return eb
     .selectFrom('asset_faces')
     .leftJoin('person', 'person.id', 'asset_faces.personId')
     .whereRef('asset_faces.assetId', '=', 'assets.id')
+    .$if(!withDeletedFace, (qb) => qb.where('asset_faces.deletedAt', 'is', null))
     .select((eb) =>
       eb
         .fn('jsonb_agg', [
@@ -245,6 +260,7 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
         .selectFrom('asset_faces')
         .select('assetId')
         .where('personId', '=', anyUuid(personIds!))
+        .where('deletedAt', 'is', null)
         .groupBy('assetId')
         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
         .as('has_people'),
@@ -336,7 +352,7 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
-  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
+  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')
@@ -381,6 +397,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         .innerJoin('exif', 'assets.id', 'exif.assetId')
         .where('exif.lensModel', options.lensModel === null ? 'is' : '=', options.lensModel!),
     )
+    .$if(options.rating !== undefined, (qb) =>
+      qb
+        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .where('exif.rating', options.rating === null ? 'is' : '=', options.rating!),
+    )
     .$if(!!options.checksum, (qb) => qb.where('assets.checksum', '=', options.checksum!))
     .$if(!!options.deviceAssetId, (qb) => qb.where('assets.deviceAssetId', '=', options.deviceAssetId!))
     .$if(!!options.deviceId, (qb) => qb.where('assets.deviceId', '=', options.deviceId!))
@@ -388,7 +409,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.libraryId, (qb) => qb.where('assets.libraryId', '=', asUuid(options.libraryId!)))
     .$if(!!options.userIds, (qb) => qb.where('assets.ownerId', '=', anyUuid(options.userIds!)))
     .$if(!!options.encodedVideoPath, (qb) => qb.where('assets.encodedVideoPath', '=', options.encodedVideoPath!))
-    .$if(!!options.originalPath, (qb) => qb.where('assets.originalPath', '=', options.originalPath!))
+    .$if(!!options.originalPath, (qb) =>
+      qb.where(sql`f_unaccent(assets."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+    )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
         sql`f_unaccent(assets."originalFileName")`,
@@ -419,5 +442,8 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
-    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
+    .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
+    .where('assets.fileCreatedAt', 'is not', null)
+    .where('assets.fileModifiedAt', 'is not', null)
+    .where('assets.localDateTime', 'is not', null);
 }

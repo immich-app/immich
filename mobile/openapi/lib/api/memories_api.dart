@@ -24,7 +24,7 @@ class MemoriesApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> addMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories/{id}/assets'
+    final apiPath = r'/memories/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -38,7 +38,7 @@ class MemoriesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,
@@ -77,7 +77,7 @@ class MemoriesApi {
   /// * [MemoryCreateDto] memoryCreateDto (required):
   Future<Response> createMemoryWithHttpInfo(MemoryCreateDto memoryCreateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories';
+    final apiPath = r'/memories';
 
     // ignore: prefer_final_locals
     Object? postBody = memoryCreateDto;
@@ -90,7 +90,7 @@ class MemoriesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'POST',
       queryParams,
       postBody,
@@ -124,7 +124,7 @@ class MemoriesApi {
   /// * [String] id (required):
   Future<Response> deleteMemoryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories/{id}'
+    final apiPath = r'/memories/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -138,7 +138,7 @@ class MemoriesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -164,7 +164,7 @@ class MemoriesApi {
   /// * [String] id (required):
   Future<Response> getMemoryWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories/{id}'
+    final apiPath = r'/memories/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -178,7 +178,7 @@ class MemoriesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -214,7 +214,7 @@ class MemoriesApi {
   /// * [BulkIdsDto] bulkIdsDto (required):
   Future<Response> removeMemoryAssetsWithHttpInfo(String id, BulkIdsDto bulkIdsDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories/{id}/assets'
+    final apiPath = r'/memories/{id}/assets'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -228,7 +228,7 @@ class MemoriesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -262,9 +262,18 @@ class MemoriesApi {
   }
 
   /// Performs an HTTP 'GET /memories' operation and returns the [Response].
-  Future<Response> searchMemoriesWithHttpInfo() async {
+  /// Parameters:
+  ///
+  /// * [DateTime] for_:
+  ///
+  /// * [bool] isSaved:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [MemoryType] type:
+  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories';
+    final apiPath = r'/memories';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -273,11 +282,24 @@ class MemoriesApi {
     final headerParams = <String, String>{};
     final formParams = <String, String>{};
 
+    if (for_ != null) {
+      queryParams.addAll(_queryParams('', 'for', for_));
+    }
+    if (isSaved != null) {
+      queryParams.addAll(_queryParams('', 'isSaved', isSaved));
+    }
+    if (isTrashed != null) {
+      queryParams.addAll(_queryParams('', 'isTrashed', isTrashed));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+
     const contentTypes = <String>[];
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,
@@ -287,8 +309,17 @@ class MemoriesApi {
     );
   }
 
-  Future<List<MemoryResponseDto>?> searchMemories() async {
-    final response = await searchMemoriesWithHttpInfo();
+  /// Parameters:
+  ///
+  /// * [DateTime] for_:
+  ///
+  /// * [bool] isSaved:
+  ///
+  /// * [bool] isTrashed:
+  ///
+  /// * [MemoryType] type:
+  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemoryType? type, }) async {
+    final response = await searchMemoriesWithHttpInfo( for_: for_, isSaved: isSaved, isTrashed: isTrashed, type: type, );
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -313,7 +344,7 @@ class MemoriesApi {
   /// * [MemoryUpdateDto] memoryUpdateDto (required):
   Future<Response> updateMemoryWithHttpInfo(String id, MemoryUpdateDto memoryUpdateDto,) async {
     // ignore: prefer_const_declarations
-    final path = r'/memories/{id}'
+    final apiPath = r'/memories/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -327,7 +358,7 @@ class MemoriesApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'PUT',
       queryParams,
       postBody,

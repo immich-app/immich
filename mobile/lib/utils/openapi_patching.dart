@@ -10,6 +10,7 @@ dynamic upgradeDto(dynamic value, String targetType) {
         addDefault(value, 'ratings', RatingsResponse().toJson());
         addDefault(value, 'people', PeopleResponse().toJson());
         addDefault(value, 'tags', TagsResponse().toJson());
+        addDefault(value, 'sharedLinks', SharedLinksResponse().toJson());
       }
       break;
     case 'ServerConfigDto':

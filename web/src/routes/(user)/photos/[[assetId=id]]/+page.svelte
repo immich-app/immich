@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { beforeNavigate } from '$app/navigation';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
   import ArchiveAction from '$lib/components/photos-page/actions/archive-action.svelte';
@@ -21,7 +22,8 @@
   import { AssetAction } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
   import type { OnLink, OnUnlink } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -68,6 +70,10 @@
   onDestroy(() => {
     assetStore.destroy();
   });
+
+  beforeNavigate(() => {
+    isFaceEditMode.value = false;
+  });
 </script>
 
 {#if assetInteraction.selectionActive}
@@ -82,7 +88,7 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
+    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       {#if assetInteraction.selectedAssets.size > 1 || isAssetStackSelected}

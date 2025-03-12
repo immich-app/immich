@@ -26,12 +26,14 @@
     controlable?: boolean;
     hideTextOnSmallScreen?: boolean;
     title?: string | undefined;
+    position?: 'bottom-left' | 'bottom-right';
     onSelect: (option: T) => void;
     onClickOutside?: () => void;
     render?: (item: T) => string | RenderedOption;
   }
 
   let {
+    position = 'bottom-left',
     class: className = '',
     options,
     selectedOption = $bindable(options[0]),
@@ -76,9 +78,24 @@
   };
 
   let renderedSelectedOption = $derived(renderOption(selectedOption));
+
+  const getAlignClass = (position: 'bottom-left' | 'bottom-right') => {
+    switch (position) {
+      case 'bottom-left': {
+        return 'left-0';
+      }
+      case 'bottom-right': {
+        return 'right-0';
+      }
+
+      default: {
+        return '';
+      }
+    }
+  };
 </script>
 
-<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
+<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }} class="relative">
   <!-- BUTTON TITLE -->
   <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
     {#if renderedSelectedOption?.icon}
@@ -91,7 +108,9 @@
   {#if showMenu}
     <div
       transition:fly={{ y: -30, duration: 250 }}
-      class="text-sm font-medium fixed z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
+      class="text-sm font-medium absolute z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className} {getAlignClass(
+        position,
+      )}"
     >
       {#each options as option (option)}
         {@const renderedOption = renderOption(option)}

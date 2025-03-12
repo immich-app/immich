@@ -60,7 +60,7 @@
 
 web デモは https://demo.immich.app からアクセスできます
 
-モバイルアプリの場合、`Server Endpoint URL` には `https://demo.immich.app/api` を使用することができます
+モバイルアプリの場合、`Server Endpoint URL` には `https://demo.immich.app` を使用することができます
 
 ```bash title="Demo Credential"
 The credential

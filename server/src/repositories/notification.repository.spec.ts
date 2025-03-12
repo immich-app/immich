@@ -1,17 +1,12 @@
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { EmailRenderRequest, EmailTemplate, NotificationRepository } from 'src/repositories/notification.repository';
-import { ILoggingRepository } from 'src/types';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { Mocked } from 'vitest';
+import { automock } from 'test/utils';
 
 describe(NotificationRepository.name, () => {
   let sut: NotificationRepository;
-  let loggerMock: Mocked<ILoggingRepository>;
 
   beforeEach(() => {
-    loggerMock = newLoggingRepositoryMock();
-
-    sut = new NotificationRepository(loggerMock as ILoggingRepository as LoggingRepository);
+    sut = new NotificationRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
   describe('renderEmail', () => {

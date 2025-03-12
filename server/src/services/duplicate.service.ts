@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnJob } from 'src/decorators';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DuplicateResponseDto } from 'src/dtos/duplicate.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { WithoutProperty } from 'src/interfaces/asset.interface';
-import { JOBS_ASSET_PAGINATION_SIZE, JobName, JobOf, JobStatus, QueueName } from 'src/interfaces/job.interface';
-import { AssetDuplicateResult } from 'src/interfaces/search.interface';
+import { JobName, JobStatus, QueueName } from 'src/enum';
+import { WithoutProperty } from 'src/repositories/asset.repository';
+import { AssetDuplicateResult } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
+import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isDuplicateDetectionEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
@@ -55,6 +57,11 @@ export class DuplicateService extends BaseService {
     if (!asset) {
       this.logger.error(`Asset ${id} not found`);
       return JobStatus.FAILED;
+    }
+
+    if (asset.stackId) {
+      this.logger.debug(`Asset ${id} is part of a stack, skipping`);
+      return JobStatus.SKIPPED;
     }
 
     if (!asset.isVisible) {

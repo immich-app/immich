@@ -77,3 +77,11 @@ export const getAlbumDateRange = (album: { startDate?: string; endDate?: string 
 
   return '';
 };
+
+/**
+ * Use this to convert from "5pm EST" to "5pm UTC"
+ *
+ * Useful with some APIs where you want to query by "today", but the values in the database are stored as UTC
+ */
+export const asLocalTimeISO = (date: DateTime<true>) =>
+  (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();

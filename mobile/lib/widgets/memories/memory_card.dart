@@ -75,11 +75,12 @@ class MemoryCard extends StatelessWidget {
                       key: ValueKey(asset.id),
                       asset: asset,
                       showControls: false,
+                      playbackDelayFactor: 2,
                       image: ImmichImage(
                         asset,
                         width: context.width,
                         height: context.height,
-                        fit: fit,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -125,7 +126,7 @@ class _BlurredBackdrop extends HookWidget {
           ),
         ),
         child: Container(
-          color: Colors.black.withOpacity(0.2),
+          color: Colors.black.withValues(alpha: 0.2),
         ),
       );
     } else {
@@ -146,7 +147,7 @@ class _BlurredBackdrop extends HookWidget {
             ),
           ),
           child: Container(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
           ),
         ),
       );

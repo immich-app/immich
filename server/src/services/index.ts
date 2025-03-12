@@ -1,6 +1,6 @@
 import { ActivityService } from 'src/services/activity.service';
 import { AlbumService } from 'src/services/album.service';
-import { APIKeyService } from 'src/services/api-key.service';
+import { ApiKeyService } from 'src/services/api-key.service';
 import { ApiService } from 'src/services/api.service';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { AssetService } from 'src/services/asset.service';
@@ -41,7 +41,7 @@ import { ViewService } from 'src/services/view.service';
 import { JwtService } from '@nestjs/jwt';
 
 export const services = [
-  APIKeyService,
+  ApiKeyService,
   ActivityService,
   AlbumService,
   ApiService,

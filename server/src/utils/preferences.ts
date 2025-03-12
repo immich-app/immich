@@ -1,18 +1,13 @@
 import _ from 'lodash';
 import { UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
-import { UserPreferences, getDefaultPreferences } from 'src/entities/user-metadata.entity';
-import { UserEntity } from 'src/entities/user.entity';
+import { UserMetadataItem, UserPreferences, getDefaultPreferences } from 'src/entities/user-metadata.entity';
 import { UserMetadataKey } from 'src/enum';
 import { DeepPartial } from 'src/types';
 import { getKeysDeep } from 'src/utils/misc';
 
-export const getPreferences = (user: UserEntity) => {
-  const preferences = getDefaultPreferences(user);
-  if (!user.metadata) {
-    return preferences;
-  }
-
-  const item = user.metadata.find(({ key }) => key === UserMetadataKey.PREFERENCES);
+export const getPreferences = (email: string, metadata: UserMetadataItem[]): UserPreferences => {
+  const preferences = getDefaultPreferences({ email });
+  const item = metadata.find(({ key }) => key === UserMetadataKey.PREFERENCES);
   const partial = item?.value || {};
   for (const property of getKeysDeep(partial)) {
     _.set(preferences, property, _.get(partial, property));
@@ -40,8 +35,7 @@ export const getPreferencesPartial = (user: { email: string }, newPreferences: U
   return partial;
 };
 
-export const mergePreferences = (user: UserEntity, dto: UserPreferencesUpdateDto) => {
-  const preferences = getPreferences(user);
+export const mergePreferences = (preferences: UserPreferences, dto: UserPreferencesUpdateDto) => {
   for (const key of getKeysDeep(dto)) {
     _.set(preferences, key, _.get(dto, key));
   }

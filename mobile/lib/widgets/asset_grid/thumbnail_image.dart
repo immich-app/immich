@@ -202,8 +202,15 @@ class ThumbnailImage extends ConsumerWidget {
                   bottom: 5,
                   child: Icon(
                     storageIcon(asset),
-                    color: Colors.white.withOpacity(.8),
+                    color: Colors.white.withValues(alpha: .8),
                     size: 16,
+                    shadows: [
+                      Shadow(
+                        blurRadius: 5.0,
+                        color: Colors.black.withValues(alpha: 0.6),
+                        offset: const Offset(0.0, 0.0),
+                      ),
+                    ],
                   ),
                 ),
               if (asset.isFavorite)

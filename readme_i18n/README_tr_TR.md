@@ -60,7 +60,7 @@ Kurulum dahil olmak üzere resmi belgeleri https://immich.app/ adresinde bulabil
 
 Web demo adresi: https://demo.immich.app
 
-Mobil uygulama için `Server Endpoint URL` olarak `https://demo.immich.app/api` adresini kullanabilirsiniz.
+Mobil uygulama için `Server Endpoint URL` olarak `https://demo.immich.app` adresini kullanabilirsiniz.
 
 ```bash title="Demo Bilgileri"
 Giriş bilgileri:

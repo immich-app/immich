@@ -18,6 +18,9 @@ export class ViewRepository {
       .where('isVisible', '=', true)
       .where('isArchived', '=', false)
       .where('deletedAt', 'is', null)
+      .where('fileCreatedAt', 'is not', null)
+      .where('fileModifiedAt', 'is not', null)
+      .where('localDateTime', 'is not', null)
       .execute();
 
     return results.map((row) => row.directoryPath.replaceAll(/^\/|\/$/g, ''));
@@ -35,6 +38,9 @@ export class ViewRepository {
       .where('isVisible', '=', true)
       .where('isArchived', '=', false)
       .where('deletedAt', 'is', null)
+      .where('fileCreatedAt', 'is not', null)
+      .where('fileModifiedAt', 'is not', null)
+      .where('localDateTime', 'is not', null)
       .where('originalPath', 'like', `%${normalizedPath}/%`)
       .where('originalPath', 'not like', `%${normalizedPath}/%/%`)
       .orderBy(
