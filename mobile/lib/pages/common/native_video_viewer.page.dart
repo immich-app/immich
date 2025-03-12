@@ -5,6 +5,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
@@ -27,6 +28,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class NativeVideoViewerPage extends HookConsumerWidget {
   final Asset asset;
   final bool showControls;
+  final int playbackDelayFactor;
   final Widget image;
 
   const NativeVideoViewerPage({
@@ -34,6 +36,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     required this.asset,
     required this.image,
     this.showControls = true,
+    this.playbackDelayFactor = 1,
   });
 
   @override
@@ -326,12 +329,16 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       }
 
       // Delay the video playback to avoid a stutter in the swipe animation
+      // Note, in some circumstances a longer delay is needed (eg: memories),
+      // the playbackDelayFactor can be used for this
+      // This delay seems like a hacky way to resolve underlying bugs in video
+      // playback, but other resolutions failed thus far
       Timer(
           Platform.isIOS
-              ? const Duration(milliseconds: 300)
+              ? Duration(milliseconds: 300 * playbackDelayFactor)
               : imageToVideo
-                  ? const Duration(milliseconds: 200)
-                  : const Duration(milliseconds: 400), () {
+                  ? Duration(milliseconds: 200 * playbackDelayFactor)
+                  : Duration(milliseconds: 400 * playbackDelayFactor), () {
         if (!context.mounted) {
           return;
         }

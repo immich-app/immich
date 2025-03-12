@@ -221,7 +221,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
       .setContentTitle(title)
       .setTicker(title)
       .setContentText(content)
-      .setSmallIcon(R.mipmap.ic_launcher)
+      .setSmallIcon(R.drawable.notification_icon)
       .build()
     notificationManager.notify(individualTag, NOTIFICATION_ERROR_ID, notification)
   }
@@ -260,7 +260,7 @@ class BackupWorker(ctx: Context, params: WorkerParameters) : ListenableWorker(ct
     var builder = if (isDetail) notificationDetailBuilder else notificationBuilder
     if (builder == null) {
       builder = NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.notification_icon)
         .setOnlyAlertOnce(true)
         .setOngoing(true)
       if (isDetail) {

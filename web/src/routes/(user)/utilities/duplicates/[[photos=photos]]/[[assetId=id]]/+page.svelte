@@ -186,10 +186,10 @@
         shape="round"
         variant="ghost"
         color="secondary"
-        size="large"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}
+        aria-label={$t('show_keyboard_shortcuts')}
       />
     </HStack>
   {/snippet}

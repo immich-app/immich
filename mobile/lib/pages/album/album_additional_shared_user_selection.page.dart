@@ -3,11 +3,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
@@ -21,15 +21,15 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<User>> suggestedShareUsers =
+    final AsyncValue<List<UserDto>> suggestedShareUsers =
         ref.watch(otherUsersProvider);
-    final sharedUsersList = useState<Set<User>>({});
+    final sharedUsersList = useState<Set<UserDto>>({});
 
     addNewUsersHandler() {
-      context.maybePop(sharedUsersList.value.map((e) => e.id).toList());
+      context.maybePop(sharedUsersList.value.map((e) => e.uid).toList());
     }
 
-    buildTileIcon(User user) {
+    buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: context.primaryColor,
@@ -45,7 +45,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
       }
     }
 
-    buildUserList(List<User> users) {
+    buildUserList(List<UserDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -53,7 +53,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
-              backgroundColor: context.primaryColor.withOpacity(0.15),
+              backgroundColor: context.primaryColor.withValues(alpha: 0.15),
               label: Text(
                 user.name,
                 style: const TextStyle(
@@ -151,7 +151,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
         onData: (users) {
           for (var sharedUsers in album.sharedUsers) {
             users.removeWhere(
-              (u) => u.id == sharedUsers.id || u.id == album.ownerId,
+              (u) => u.uid == sharedUsers.id || u.uid == album.ownerId,
             );
           }
 

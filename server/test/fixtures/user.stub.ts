@@ -1,10 +1,12 @@
 import { UserEntity } from 'src/entities/user.entity';
-import { UserAvatarColor, UserMetadataKey } from 'src/enum';
+import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { authStub } from 'test/fixtures/auth.stub';
 
 export const userStub = {
   admin: Object.freeze<UserEntity>({
     ...authStub.admin.user,
+    status: UserStatus.ACTIVE,
+    profileChangedAt: new Date('2021-01-01'),
     password: 'admin_password',
     name: 'admin_name',
     id: 'admin_id',
@@ -23,6 +25,8 @@ export const userStub = {
   }),
   user1: Object.freeze<UserEntity>({
     ...authStub.user1.user,
+    status: UserStatus.ACTIVE,
+    profileChangedAt: new Date('2021-01-01'),
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: null,
@@ -36,7 +40,6 @@ export const userStub = {
     assets: [],
     metadata: [
       {
-        user: authStub.user1.user,
         userId: authStub.user1.user.id,
         key: UserMetadataKey.PREFERENCES,
         value: { avatar: { color: UserAvatarColor.PRIMARY } },
@@ -47,6 +50,9 @@ export const userStub = {
   }),
   user2: Object.freeze<UserEntity>({
     ...authStub.user2.user,
+    status: UserStatus.ACTIVE,
+    profileChangedAt: new Date('2021-01-01'),
+    metadata: [],
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: null,
@@ -63,6 +69,9 @@ export const userStub = {
   }),
   storageLabel: Object.freeze<UserEntity>({
     ...authStub.user1.user,
+    status: UserStatus.ACTIVE,
+    profileChangedAt: new Date('2021-01-01'),
+    metadata: [],
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',
@@ -79,6 +88,9 @@ export const userStub = {
   }),
   profilePath: Object.freeze<UserEntity>({
     ...authStub.user1.user,
+    status: UserStatus.ACTIVE,
+    profileChangedAt: new Date('2021-01-01'),
+    metadata: [],
     password: 'immich_password',
     name: 'immich_name',
     storageLabel: 'label-1',

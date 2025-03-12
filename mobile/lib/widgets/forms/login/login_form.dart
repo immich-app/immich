@@ -10,7 +10,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -150,7 +149,7 @@ class LoginForm extends HookConsumerWidget {
 
     useEffect(
       () {
-        final serverUrl = Store.tryGet(StoreKey.serverUrl);
+        final serverUrl = getServerUrl();
         if (serverUrl != null) {
           serverEndpointController.text = serverUrl;
         }

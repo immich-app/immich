@@ -50,4 +50,7 @@ export class AssetFaceEntity {
     nullable: true,
   })
   person!: PersonEntity | null;
+
+  @Column({ type: 'timestamptz' })
+  deletedAt!: Date | null;
 }

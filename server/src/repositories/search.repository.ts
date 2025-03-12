@@ -6,26 +6,203 @@ import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { AssetType } from 'src/enum';
-import {
-  AssetDuplicateSearch,
-  AssetSearchOptions,
-  FaceEmbeddingSearch,
-  GetCameraMakesOptions,
-  GetCameraModelsOptions,
-  GetCitiesOptions,
-  GetStatesOptions,
-  ISearchRepository,
-  SearchPaginationOptions,
-  SmartSearchOptions,
-} from 'src/interfaces/search.interface';
+import { AssetStatus, AssetType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import { Paginated } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
 
+export interface SearchResult<T> {
+  /** total matches */
+  total: number;
+  /** collection size */
+  count: number;
+  /** current page */
+  page: number;
+  /** items for page */
+  items: T[];
+  /** score */
+  distances: number[];
+  facets: SearchFacet[];
+}
+
+export interface SearchFacet {
+  fieldName: string;
+  counts: Array<{
+    count: number;
+    value: string;
+  }>;
+}
+
+export type SearchExploreItemSet<T> = Array<{
+  value: string;
+  data: T;
+}>;
+
+export interface SearchExploreItem<T> {
+  fieldName: string;
+  items: SearchExploreItemSet<T>;
+}
+
+export interface SearchAssetIDOptions {
+  checksum?: Buffer;
+  deviceAssetId?: string;
+  id?: string;
+}
+
+export interface SearchUserIdOptions {
+  deviceId?: string;
+  libraryId?: string | null;
+  userIds?: string[];
+}
+
+export type SearchIdOptions = SearchAssetIDOptions & SearchUserIdOptions;
+
+export interface SearchStatusOptions {
+  isArchived?: boolean;
+  isEncoded?: boolean;
+  isFavorite?: boolean;
+  isMotion?: boolean;
+  isOffline?: boolean;
+  isVisible?: boolean;
+  isNotInAlbum?: boolean;
+  type?: AssetType;
+  status?: AssetStatus;
+  withArchived?: boolean;
+  withDeleted?: boolean;
+}
+
+export interface SearchOneToOneRelationOptions {
+  withExif?: boolean;
+  withStacked?: boolean;
+}
+
+export interface SearchRelationOptions extends SearchOneToOneRelationOptions {
+  withFaces?: boolean;
+  withPeople?: boolean;
+}
+
+export interface SearchDateOptions {
+  createdBefore?: Date;
+  createdAfter?: Date;
+  takenBefore?: Date;
+  takenAfter?: Date;
+  trashedBefore?: Date;
+  trashedAfter?: Date;
+  updatedBefore?: Date;
+  updatedAfter?: Date;
+}
+
+export interface SearchPathOptions {
+  encodedVideoPath?: string;
+  originalFileName?: string;
+  originalPath?: string;
+  previewPath?: string;
+  thumbnailPath?: string;
+}
+
+export interface SearchExifOptions {
+  city?: string | null;
+  country?: string | null;
+  lensModel?: string | null;
+  make?: string | null;
+  model?: string | null;
+  state?: string | null;
+  description?: string | null;
+  rating?: number | null;
+}
+
+export interface SearchEmbeddingOptions {
+  embedding: string;
+  userIds: string[];
+}
+
+export interface SearchPeopleOptions {
+  personIds?: string[];
+}
+
+export interface SearchTagOptions {
+  tagIds?: string[];
+}
+
+export interface SearchOrderOptions {
+  orderDirection?: 'asc' | 'desc';
+}
+
+export interface SearchPaginationOptions {
+  page: number;
+  size: number;
+}
+
+type BaseAssetSearchOptions = SearchDateOptions &
+  SearchIdOptions &
+  SearchExifOptions &
+  SearchOrderOptions &
+  SearchPathOptions &
+  SearchStatusOptions &
+  SearchUserIdOptions &
+  SearchPeopleOptions &
+  SearchTagOptions;
+
+export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
+
+export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
+
+export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
+
+export type SmartSearchOptions = SearchDateOptions &
+  SearchEmbeddingOptions &
+  SearchExifOptions &
+  SearchOneToOneRelationOptions &
+  SearchStatusOptions &
+  SearchUserIdOptions &
+  SearchPeopleOptions &
+  SearchTagOptions;
+
+export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
+  hasPerson?: boolean;
+  numResults: number;
+  maxDistance: number;
+}
+
+export interface AssetDuplicateSearch {
+  assetId: string;
+  embedding: string;
+  maxDistance: number;
+  type: AssetType;
+  userIds: string[];
+}
+
+export interface FaceSearchResult {
+  distance: number;
+  id: string;
+  personId: string | null;
+}
+
+export interface AssetDuplicateResult {
+  assetId: string;
+  duplicateId: string | null;
+  distance: number;
+}
+
+export interface GetStatesOptions {
+  country?: string;
+}
+
+export interface GetCitiesOptions extends GetStatesOptions {
+  state?: string;
+}
+
+export interface GetCameraModelsOptions {
+  make?: string;
+}
+
+export interface GetCameraMakesOptions {
+  model?: string;
+}
+
 @Injectable()
-export class SearchRepository implements ISearchRepository {
+export class SearchRepository {
   constructor(
     private logger: LoggingRepository,
     @InjectKysely() private db: Kysely<DB>,
@@ -141,6 +318,7 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.isVisible', '=', true)
           .where('assets.type', '=', type)
           .where('assets.id', '!=', asUuid(assetId))
+          .where('assets.stackId', 'is', null)
           .orderBy(sql`smart_search.embedding <=> ${embedding}`)
           .limit(64),
       )
@@ -226,7 +404,7 @@ export class SearchRepository implements ISearchRepository {
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.isVisible', '=', true)
           .where('assets.isArchived', '=', false)
-          .where('assets.type', '=', 'IMAGE')
+          .where('assets.type', '=', AssetType.IMAGE)
           .where('assets.deletedAt', 'is', null)
           .orderBy('city')
           .limit(1);
@@ -243,7 +421,7 @@ export class SearchRepository implements ISearchRepository {
                 .where('assets.ownerId', '=', anyUuid(userIds))
                 .where('assets.isVisible', '=', true)
                 .where('assets.isArchived', '=', false)
-                .where('assets.type', '=', 'IMAGE')
+                .where('assets.type', '=', AssetType.IMAGE)
                 .where('assets.deletedAt', 'is', null)
                 .whereRef('exif.city', '>', 'cte.city')
                 .orderBy('city')

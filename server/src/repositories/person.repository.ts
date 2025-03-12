@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Selectable, sql } from 'kysely';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFaces, DB, FaceSearch, Person } from 'src/db';
@@ -7,22 +7,52 @@ import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
-import {
-  AssetFaceId,
-  DeleteFacesOptions,
-  IPersonRepository,
-  PeopleStatistics,
-  PersonNameResponse,
-  PersonNameSearchOptions,
-  PersonSearchOptions,
-  PersonStatistics,
-  SelectFaceOptions,
-  UnassignFacesOptions,
-  UpdateFacesData,
-} from 'src/interfaces/person.interface';
-import { mapUpsertColumns } from 'src/utils/database';
+import { removeUndefinedKeys } from 'src/utils/database';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
 import { FindOptionsRelations } from 'typeorm';
+
+export interface PersonSearchOptions {
+  minimumFaceCount: number;
+  withHidden: boolean;
+  closestFaceAssetId?: string;
+}
+
+export interface PersonNameSearchOptions {
+  withHidden?: boolean;
+}
+
+export interface PersonNameResponse {
+  id: string;
+  name: string;
+}
+
+export interface AssetFaceId {
+  assetId: string;
+  personId: string;
+}
+
+export interface UpdateFacesData {
+  oldPersonId?: string;
+  faceIds?: string[];
+  newPersonId: string;
+}
+
+export interface PersonStatistics {
+  assets: number;
+}
+
+export interface PeopleStatistics {
+  total: number;
+  hidden: number;
+}
+
+export interface DeleteFacesOptions {
+  sourceType: SourceType;
+}
+
+export type UnassignFacesOptions = DeleteFacesOptions;
+
+export type SelectFaceOptions = (keyof Selectable<AssetFaces>)[];
 
 const withPerson = (eb: ExpressionBuilder<DB, 'asset_faces'>) => {
   return jsonObjectFrom(
@@ -43,7 +73,7 @@ const withFaceSearch = (eb: ExpressionBuilder<DB, 'asset_faces'>) => {
 };
 
 @Injectable()
-export class PersonRepository implements IPersonRepository {
+export class PersonRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ oldPersonId: DummyValue.UUID, newPersonId: DummyValue.UUID }] })
@@ -100,6 +130,7 @@ export class PersonRepository implements IPersonRepository {
       .$if(!!options.personId, (qb) => qb.where('asset_faces.personId', '=', options.personId!))
       .$if(!!options.sourceType, (qb) => qb.where('asset_faces.sourceType', '=', options.sourceType!))
       .$if(!!options.assetId, (qb) => qb.where('asset_faces.assetId', '=', options.assetId!))
+      .where('asset_faces.deletedAt', 'is', null)
       .stream() as AsyncIterableIterator<AssetFaceEntity>;
   }
 
@@ -131,7 +162,9 @@ export class PersonRepository implements IPersonRepository {
           .on('assets.deletedAt', 'is', null),
       )
       .where('person.ownerId', '=', userId)
+      .where('asset_faces.deletedAt', 'is', null)
       .orderBy('person.isHidden', 'asc')
+      .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
         eb.or([
           eb('person.name', '!=', ''),
@@ -181,6 +214,7 @@ export class PersonRepository implements IPersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .leftJoin('asset_faces', 'asset_faces.personId', 'person.id')
+      .where('asset_faces.deletedAt', 'is', null)
       .having((eb) => eb.fn.count('asset_faces.assetId'), '=', 0)
       .groupBy('person.id')
       .execute() as Promise<PersonEntity[]>;
@@ -193,6 +227,7 @@ export class PersonRepository implements IPersonRepository {
       .selectAll('asset_faces')
       .select(withPerson)
       .where('asset_faces.assetId', '=', assetId)
+      .where('asset_faces.deletedAt', 'is', null)
       .orderBy('asset_faces.boundingBoxX1', 'asc')
       .execute() as Promise<AssetFaceEntity[]>;
   }
@@ -205,6 +240,7 @@ export class PersonRepository implements IPersonRepository {
       .selectAll('asset_faces')
       .select(withPerson)
       .where('asset_faces.id', '=', id)
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirstOrThrow() as Promise<AssetFaceEntity>;
   }
 
@@ -222,6 +258,7 @@ export class PersonRepository implements IPersonRepository {
       .select(withAsset)
       .$if(!!relations?.faceSearch, (qb) => qb.select(withFaceSearch))
       .where('asset_faces.id', '=', id)
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<AssetFaceEntity | undefined>;
   }
 
@@ -283,10 +320,10 @@ export class PersonRepository implements IPersonRepository {
           .onRef('assets.id', '=', 'asset_faces.assetId')
           .on('asset_faces.personId', '=', personId)
           .on('assets.isArchived', '=', false)
-          .on('assets.deletedAt', 'is', null)
-          .on('assets.livePhotoVideoId', 'is', null),
+          .on('assets.deletedAt', 'is', null),
       )
       .select((eb) => eb.fn.count(eb.fn('distinct', ['assets.id'])).as('count'))
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirst();
 
     return {
@@ -300,6 +337,7 @@ export class PersonRepository implements IPersonRepository {
       .selectFrom('person')
       .innerJoin('asset_faces', 'asset_faces.personId', 'person.id')
       .where('person.ownerId', '=', userId)
+      .where('asset_faces.deletedAt', 'is', null)
       .innerJoin('assets', (join) =>
         join
           .onRef('assets.id', '=', 'asset_faces.assetId')
@@ -379,7 +417,22 @@ export class PersonRepository implements IPersonRepository {
     await this.db
       .insertInto('person')
       .values(people)
-      .onConflict((oc) => oc.column('id').doUpdateSet(() => mapUpsertColumns('person', people[0], ['id'])))
+      .onConflict((oc) =>
+        oc.column('id').doUpdateSet((eb) =>
+          removeUndefinedKeys(
+            {
+              name: eb.ref('excluded.name'),
+              birthDate: eb.ref('excluded.birthDate'),
+              thumbnailPath: eb.ref('excluded.thumbnailPath'),
+              faceAssetId: eb.ref('excluded.faceAssetId'),
+              isHidden: eb.ref('excluded.isHidden'),
+              isFavorite: eb.ref('excluded.isFavorite'),
+              color: eb.ref('excluded.color'),
+            },
+            people[0],
+          ),
+        ),
+      )
       .execute();
   }
 
@@ -404,6 +457,7 @@ export class PersonRepository implements IPersonRepository {
       .select(withPerson)
       .where('asset_faces.assetId', 'in', assetIds)
       .where('asset_faces.personId', 'in', personIds)
+      .where('asset_faces.deletedAt', 'is', null)
       .execute() as Promise<AssetFaceEntity[]>;
   }
 
@@ -413,6 +467,7 @@ export class PersonRepository implements IPersonRepository {
       .selectFrom('asset_faces')
       .selectAll('asset_faces')
       .where('asset_faces.personId', '=', personId)
+      .where('asset_faces.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<AssetFaceEntity | undefined>;
   }
 
@@ -424,6 +479,20 @@ export class PersonRepository implements IPersonRepository {
       .executeTakeFirst()) as { latestDate: string } | undefined;
 
     return result?.latestDate;
+  }
+
+  async createAssetFace(face: Insertable<AssetFaces>): Promise<void> {
+    await this.db.insertInto('asset_faces').values(face).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async deleteAssetFace(id: string): Promise<void> {
+    await this.db.deleteFrom('asset_faces').where('asset_faces.id', '=', id).execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async softDeleteAssetFaces(id: string): Promise<void> {
+    await this.db.updateTable('asset_faces').set({ deletedAt: new Date() }).where('asset_faces.id', '=', id).execute();
   }
 
   private async vacuum({ reindexVectors }: { reindexVectors: boolean }): Promise<void> {

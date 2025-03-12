@@ -1,4 +1,4 @@
-import { DatabaseExtension } from 'src/interfaces/database.interface';
+import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 

@@ -2,7 +2,6 @@
   import { shortcuts } from '$lib/actions/shortcut';
   import { zoomImageAction, zoomed } from '$lib/actions/zoom-image';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
-  import { photoViewer } from '$lib/stores/assets.store';
   import { boundingBoxesArray } from '$lib/stores/people.store';
   import { alwaysLoadOriginalFile } from '$lib/stores/preferences.store';
   import { SlideshowLook, SlideshowState, slideshowLookCssMapping, slideshowStore } from '$lib/stores/slideshow.store';
@@ -19,6 +18,9 @@
   import LoadingSpinner from '../shared-components/loading-spinner.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
+  import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
+  import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -70,19 +72,19 @@
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
         let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.checksum);
+        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.thumbhash);
       }
     }
   };
 
-  const getAssetUrl = (id: string, useOriginal: boolean, checksum: string) => {
+  const getAssetUrl = (id: string, useOriginal: boolean, cacheKey: string | null) => {
     if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
-      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+      return getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
     }
 
     return useOriginal
-      ? getAssetOriginalUrl({ id, checksum })
-      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, checksum });
+      ? getAssetOriginalUrl({ id, cacheKey })
+      : getAssetThumbnailUrl({ id, size: AssetMediaSize.Preview, cacheKey });
   };
 
   copyImage = async () => {
@@ -91,7 +93,7 @@
     }
 
     try {
-      await copyImageToClipboard($photoViewer ?? assetFileUrl);
+      await copyImageToClipboard($photoViewerImgElement ?? assetFileUrl);
       notificationController.show({
         type: NotificationType.Info,
         message: $t('copied_image_to_clipboard'),
@@ -105,6 +107,12 @@
   zoomToggle = () => {
     $zoomed = $zoomed ? false : true;
   };
+
+  $effect(() => {
+    if (isFaceEditMode.value && $photoZoomState.currentZoom > 1) {
+      zoomToggle();
+    }
+  });
 
   const onCopyShortcut = (event: KeyboardEvent) => {
     if (globalThis.getSelection()?.type === 'Range') {
@@ -158,7 +166,10 @@
     preload(useOriginalImage, preloadAssets);
   });
 
-  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.checksum));
+  let imageLoaderUrl = $derived(getAssetUrl(asset.id, useOriginalImage, asset.thumbhash));
+
+  let containerWidth = $state(0);
+  let containerHeight = $state(0);
 </script>
 
 <svelte:window
@@ -172,7 +183,12 @@
 {/if}
 <!-- svelte-ignore a11y_missing_attribute -->
 <img bind:this={loader} style="display:none" src={imageLoaderUrl} aria-hidden="true" />
-<div bind:this={element} class="relative h-full select-none">
+<div
+  bind:this={element}
+  class="relative h-full select-none"
+  bind:clientWidth={containerWidth}
+  bind:clientHeight={containerHeight}
+>
   <img
     style="display:none"
     src={imageLoaderUrl}
@@ -201,7 +217,7 @@
         />
       {/if}
       <img
-        bind:this={$photoViewer}
+        bind:this={$photoViewerImgElement}
         src={assetFileUrl}
         alt={$getAltText(asset)}
         class="h-full w-full {$slideshowState === SlideshowState.None
@@ -209,13 +225,18 @@
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
-      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewer) as boundingbox}
+      <!-- eslint-disable-next-line svelte/require-each-key -->
+      {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg"
           style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
         ></div>
       {/each}
     </div>
+
+    {#if isFaceEditMode.value}
+      <FaceEditor htmlElement={$photoViewerImgElement} {containerWidth} {containerHeight} assetId={asset.id} />
+    {/if}
   {/if}
 </div>
 

@@ -3,15 +3,14 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-  import { handleError } from '../../utils/handle-error';
-
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import Button from '../elements/buttons/button.svelte';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import { fade } from 'svelte/transition';
+  import { handleError } from '../../utils/handle-error';
 
   // Folders
   let foldersEnabled = $state($preferences?.folders?.enabled ?? false);
@@ -27,6 +26,10 @@
   // Ratings
   let ratingsEnabled = $state($preferences?.ratings?.enabled ?? false);
 
+  // Shared links
+  let sharedLinksEnabled = $state($preferences?.sharedLinks?.enabled ?? true);
+  let sharedLinkSidebar = $state($preferences?.sharedLinks?.sidebarWeb ?? false);
+
   // Tags
   let tagsEnabled = $state($preferences?.tags?.enabled ?? false);
   let tagsSidebar = $state($preferences?.tags?.sidebarWeb ?? false);
@@ -39,6 +42,7 @@
           memories: { enabled: memoriesEnabled },
           people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
           ratings: { enabled: ratingsEnabled },
+          sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
         },
       });
@@ -104,6 +108,21 @@
           </div>
         </SettingAccordion>
 
+        <SettingAccordion key="shared-links" title={$t('shared_links')} subtitle={$t('shared_links_description')}>
+          <div class="ml-4 mt-6">
+            <SettingSwitch title={$t('enable')} bind:checked={sharedLinksEnabled} />
+          </div>
+          {#if sharedLinksEnabled}
+            <div class="ml-4 mt-6">
+              <SettingSwitch
+                title={$t('sidebar')}
+                subtitle={$t('sidebar_display_description')}
+                bind:checked={sharedLinkSidebar}
+              />
+            </div>
+          {/if}
+        </SettingAccordion>
+
         <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
           <div class="ml-4 mt-6">
             <SettingSwitch title={$t('enable')} bind:checked={tagsEnabled} />
@@ -120,7 +139,7 @@
         </SettingAccordion>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
+          <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

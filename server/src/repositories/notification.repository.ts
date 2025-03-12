@@ -7,12 +7,7 @@ import { AlbumUpdateEmail } from 'src/emails/album-update.email';
 import { TestEmail } from 'src/emails/test.email';
 import { WelcomeEmail } from 'src/emails/welcome.email';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-
-export type EmailImageAttachment = {
-  filename: string;
-  path: string;
-  cid: string;
-};
+import { EmailImageAttachment } from 'src/types';
 
 export type SendEmailOptions = {
   from: string;

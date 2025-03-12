@@ -2,22 +2,22 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/services/partner.service.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
-import 'package:isar/isar.dart';
 
-class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
-  PartnerSharedWithNotifier(Isar db, this._ps) : super([]) {
-    Function eq = const ListEquality<User>().equals;
-    final query = db.users.filter().isPartnerSharedWithEqualTo(true).sortById();
-    query.findAll().then((partners) {
+class PartnerSharedWithNotifier extends StateNotifier<List<UserDto>> {
+  final PartnerService _partnerService;
+  late final StreamSubscription<List<UserDto>> streamSub;
+
+  PartnerSharedWithNotifier(this._partnerService) : super([]) {
+    Function eq = const ListEquality<UserDto>().equals;
+    _partnerService.getSharedWith().then((partners) {
       if (!eq(state, partners)) {
         state = partners;
       }
     }).then((_) {
-      query.watch().listen((partners) {
+      streamSub = _partnerService.watchSharedWith().listen((partners) {
         if (!eq(state, partners)) {
           state = partners;
         }
@@ -25,31 +25,38 @@ class PartnerSharedWithNotifier extends StateNotifier<List<User>> {
     });
   }
 
-  Future<bool> updatePartner(User partner, {required bool inTimeline}) {
-    return _ps.updatePartner(partner, inTimeline: inTimeline);
+  Future<bool> updatePartner(UserDto partner, {required bool inTimeline}) {
+    return _partnerService.updatePartner(partner, inTimeline: inTimeline);
   }
 
-  final PartnerService _ps;
+  @override
+  void dispose() {
+    if (mounted) {
+      streamSub.cancel();
+    }
+    super.dispose();
+  }
 }
 
 final partnerSharedWithProvider =
-    StateNotifierProvider<PartnerSharedWithNotifier, List<User>>((ref) {
+    StateNotifierProvider<PartnerSharedWithNotifier, List<UserDto>>((ref) {
   return PartnerSharedWithNotifier(
-    ref.watch(dbProvider),
     ref.watch(partnerServiceProvider),
   );
 });
 
-class PartnerSharedByNotifier extends StateNotifier<List<User>> {
-  PartnerSharedByNotifier(Isar db) : super([]) {
-    Function eq = const ListEquality<User>().equals;
-    final query = db.users.filter().isPartnerSharedByEqualTo(true).sortById();
-    query.findAll().then((partners) {
+class PartnerSharedByNotifier extends StateNotifier<List<UserDto>> {
+  final PartnerService _partnerService;
+  late final StreamSubscription<List<UserDto>> streamSub;
+
+  PartnerSharedByNotifier(this._partnerService) : super([]) {
+    Function eq = const ListEquality<UserDto>().equals;
+    _partnerService.getSharedBy().then((partners) {
       if (!eq(state, partners)) {
         state = partners;
       }
     }).then((_) {
-      streamSub = query.watch().listen((partners) {
+      streamSub = _partnerService.watchSharedBy().listen((partners) {
         if (!eq(state, partners)) {
           state = partners;
         }
@@ -57,25 +64,25 @@ class PartnerSharedByNotifier extends StateNotifier<List<User>> {
     });
   }
 
-  late final StreamSubscription<List<User>> streamSub;
-
   @override
   void dispose() {
-    streamSub.cancel();
+    if (mounted) {
+      streamSub.cancel();
+    }
     super.dispose();
   }
 }
 
 final partnerSharedByProvider =
-    StateNotifierProvider<PartnerSharedByNotifier, List<User>>((ref) {
-  return PartnerSharedByNotifier(ref.watch(dbProvider));
+    StateNotifierProvider<PartnerSharedByNotifier, List<UserDto>>((ref) {
+  return PartnerSharedByNotifier(ref.watch(partnerServiceProvider));
 });
 
 final partnerAvailableProvider =
-    FutureProvider.autoDispose<List<User>>((ref) async {
+    FutureProvider.autoDispose<List<UserDto>>((ref) async {
   final otherUsers = await ref.watch(otherUsersProvider.future);
   final currentPartners = ref.watch(partnerSharedByProvider);
-  final available = Set<User>.of(otherUsers);
+  final available = Set<UserDto>.of(otherUsers);
   available.removeAll(currentPartners);
   return available.toList();
 });

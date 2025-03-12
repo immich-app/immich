@@ -15,6 +15,7 @@
   import { NotificationType, notificationController } from '../notification/notification';
   import SettingInputField from '../settings/setting-input-field.svelte';
   import SettingSwitch from '../settings/setting-switch.svelte';
+  import QRCode from '$lib/components/shared-components/qrcode.svelte';
 
   interface Props {
     onClose: () => void;
@@ -41,6 +42,7 @@
   let password = $state('');
   let shouldChangeExpirationTime = $state(false);
   let enablePassword = $state(false);
+  let modalWidth = $state(0);
 
   const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
     [30, 'minutes'],
@@ -143,6 +145,9 @@
   };
 
   const getTitle = () => {
+    if (sharedLink) {
+      return $t('view_link');
+    }
     if (editingLink) {
       return $t('edit_link');
     }
@@ -150,110 +155,120 @@
   };
 </script>
 
-<FullScreenModal title={getTitle()} icon={mdiLink} {onClose}>
-  <section>
-    {#if shareType === SharedLinkType.Album}
-      {#if !editingLink}
-        <div>{$t('album_with_link_access')}</div>
-      {:else}
-        <div class="text-sm">
-          {$t('public_album')} |
-          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
-        </div>
-      {/if}
-    {/if}
-
-    {#if shareType === SharedLinkType.Individual}
-      {#if !editingLink}
-        <div>{$t('create_link_to_share_description')}</div>
-      {:else}
-        <div class="text-sm">
-          {$t('individual_share')} |
-          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
-        </div>
-      {/if}
-    {/if}
-
-    <div class="mb-2 mt-4">
-      <p class="text-xs">{$t('link_options').toUpperCase()}</p>
-    </div>
-    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
-      <div class="flex flex-col">
-        <div class="mb-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label={$t('description')}
-            bind:value={description}
-          />
-        </div>
-
-        <div class="mb-2">
-          <SettingInputField
-            inputType={SettingInputFieldType.TEXT}
-            label={$t('password')}
-            bind:value={password}
-            disabled={!enablePassword}
-          />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch bind:checked={enablePassword} title={$t('require_password')} />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')} />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch
-            bind:checked={allowDownload}
-            title={$t('allow_public_user_to_download')}
-            disabled={!showMetadata}
-          />
-        </div>
-
-        <div class="my-3">
-          <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
-        </div>
-
-        {#if editingLink}
-          <div class="my-3">
-            <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
+{#if !sharedLink || editingLink}
+  <FullScreenModal title={getTitle()} icon={mdiLink} {onClose}>
+    <section>
+      {#if shareType === SharedLinkType.Album}
+        {#if !editingLink}
+          <div>{$t('album_with_link_access')}</div>
+        {:else}
+          <div class="text-sm">
+            {$t('public_album')} |
+            <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
           </div>
         {/if}
-        <div class="mt-3">
-          <SettingSelect
-            bind:value={expirationOption}
-            options={expiredDateOptions}
-            label={$t('expire_after')}
-            disabled={editingLink && !shouldChangeExpirationTime}
-            number={true}
-          />
+      {/if}
+
+      {#if shareType === SharedLinkType.Individual}
+        {#if !editingLink}
+          <div>{$t('create_link_to_share_description')}</div>
+        {:else}
+          <div class="text-sm">
+            {$t('individual_share')} |
+            <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
+          </div>
+        {/if}
+      {/if}
+
+      <div class="mb-2 mt-4">
+        <p class="text-xs">{$t('link_options').toUpperCase()}</p>
+      </div>
+      <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
+        <div class="flex flex-col">
+          <div class="mb-2">
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={$t('description')}
+              bind:value={description}
+            />
+          </div>
+
+          <div class="mb-2">
+            <SettingInputField
+              inputType={SettingInputFieldType.TEXT}
+              label={$t('password')}
+              bind:value={password}
+              disabled={!enablePassword}
+            />
+          </div>
+
+          <div class="my-3">
+            <SettingSwitch bind:checked={enablePassword} title={$t('require_password')} />
+          </div>
+
+          <div class="my-3">
+            <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')} />
+          </div>
+
+          <div class="my-3">
+            <SettingSwitch
+              bind:checked={allowDownload}
+              title={$t('allow_public_user_to_download')}
+              disabled={!showMetadata}
+            />
+          </div>
+
+          <div class="my-3">
+            <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
+          </div>
+
+          {#if editingLink}
+            <div class="my-3">
+              <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
+            </div>
+          {/if}
+          <div class="mt-3">
+            <SettingSelect
+              bind:value={expirationOption}
+              options={expiredDateOptions}
+              label={$t('expire_after')}
+              disabled={editingLink && !shouldChangeExpirationTime}
+              number={true}
+            />
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  {#snippet stickyBottom()}
-    {#if !sharedLink}
+    {#snippet stickyBottom()}
       {#if editingLink}
         <Button size="sm" fullwidth onclick={handleEditLink}>{$t('confirm')}</Button>
       {:else}
         <Button size="sm" fullwidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
       {/if}
-    {:else}
-      <HStack class="w-full">
+    {/snippet}
+  </FullScreenModal>
+{:else}
+  <FullScreenModal title={getTitle()} icon={mdiLink} {onClose}>
+    <div class="w-full">
+      <div class="w-full py-2 px-10">
+        <div bind:clientWidth={modalWidth} class="w-full">
+          <QRCode value={sharedLink} width={modalWidth} />
+        </div>
+      </div>
+      <HStack class="w-full pt-3" gap={1}>
         <Input bind:value={sharedLink} disabled class="flex flex-row" />
-        <IconButton
-          variant="ghost"
-          shape="round"
-          color="secondary"
-          size="giant"
-          icon={mdiContentCopy}
-          onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
-          aria-label={$t('copy_link_to_clipboard')}
-        />
+        <div>
+          <IconButton
+            variant="ghost"
+            shape="round"
+            color="secondary"
+            icon={mdiContentCopy}
+            onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
+            aria-label={$t('copy_link_to_clipboard')}
+          />
+        </div>
       </HStack>
-    {/if}
-  {/snippet}
-</FullScreenModal>
+    </div>
+  </FullScreenModal>
+{/if}

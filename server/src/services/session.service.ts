@@ -3,8 +3,7 @@ import { DateTime } from 'luxon';
 import { OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
-import { Permission } from 'src/enum';
-import { JobName, JobStatus, QueueName } from 'src/interfaces/job.interface';
+import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 
 @Injectable()

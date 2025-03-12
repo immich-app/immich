@@ -1,16 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { Duration } from 'luxon';
 import semver from 'semver';
+import { EXTENSION_NAMES } from 'src/constants';
 import { OnEvent } from 'src/decorators';
-import {
-  DatabaseExtension,
-  DatabaseLock,
-  EXTENSION_NAMES,
-  VectorExtension,
-  VectorIndex,
-} from 'src/interfaces/database.interface';
-import { BootstrapEventPriority } from 'src/interfaces/event.interface';
+import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { VectorExtension } from 'src/types';
 
 type CreateFailedArgs = { name: string; extension: string; otherName: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -59,12 +53,8 @@ const messages = {
     If ${name} ${installedVersion} is compatible with Immich, please ensure the Postgres instance has this available.`,
 };
 
-const RETRY_DURATION = Duration.fromObject({ seconds: 5 });
-
 @Injectable()
 export class DatabaseService extends BaseService {
-  private reconnection?: NodeJS.Timeout;
-
   @OnEvent({ name: 'app.bootstrap', priority: BootstrapEventPriority.DatabaseService })
   async onBootstrap() {
     const version = await this.databaseRepository.getPostgresVersion();
@@ -113,28 +103,7 @@ export class DatabaseService extends BaseService {
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
-      this.databaseRepository.init();
     });
-  }
-
-  handleConnectionError(error: Error) {
-    if (this.reconnection) {
-      return;
-    }
-
-    this.logger.error(`Database disconnected: ${error}`);
-    this.reconnection = setInterval(() => void this.reconnect(), RETRY_DURATION.toMillis());
-  }
-
-  private async reconnect() {
-    const isConnected = await this.databaseRepository.reconnect();
-    if (isConnected) {
-      this.logger.log('Database reconnected');
-      clearInterval(this.reconnection);
-      delete this.reconnection;
-    } else {
-      this.logger.warn(`Database connection failed, retrying in ${RETRY_DURATION.toHuman()}`);
-    }
   }
 
   private async createExtension(extension: DatabaseExtension) {

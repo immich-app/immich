@@ -1,14 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
-import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/interfaces/user_api.interface.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 
@@ -17,7 +16,6 @@ final userServiceProvider = Provider(
     ref.watch(partnerApiRepositoryProvider),
     ref.watch(userApiRepositoryProvider),
     ref.watch(userRepositoryProvider),
-    ref.watch(syncServiceProvider),
   ),
 );
 
@@ -25,19 +23,13 @@ class UserService {
   final IPartnerApiRepository _partnerApiRepository;
   final IUserApiRepository _userApiRepository;
   final IUserRepository _userRepository;
-  final SyncService _syncService;
   final Logger _log = Logger("UserService");
 
   UserService(
     this._partnerApiRepository,
     this._userApiRepository,
     this._userRepository,
-    this._syncService,
   );
-
-  Future<List<User>> getUsers({bool self = false}) {
-    return _userRepository.getAll(self: self);
-  }
 
   Future<({String profileImagePath})?> uploadProfileImage(XFile image) async {
     try {
@@ -51,17 +43,21 @@ class UserService {
     }
   }
 
-  Future<List<User>?> getUsersFromServer() async {
-    List<User>? users;
+  Future<List<UserDto>> getAll() async {
+    return await _userRepository.getAll();
+  }
+
+  Future<List<UserDto>?> getUsersFromServer() async {
+    List<UserDto>? users;
     try {
       users = await _userApiRepository.getAll();
     } catch (e) {
       _log.warning("Failed to fetch users", e);
       users = null;
     }
-    final List<User> sharedBy =
+    final List<UserDto> sharedBy =
         await _partnerApiRepository.getAll(Direction.sharedByMe);
-    final List<User> sharedWith =
+    final List<UserDto> sharedWith =
         await _partnerApiRepository.getAll(Direction.sharedWithMe);
 
     if (users == null) {
@@ -69,38 +65,44 @@ class UserService {
       return null;
     }
 
-    users.sortBy((u) => u.id);
-    sharedBy.sortBy((u) => u.id);
-    sharedWith.sortBy((u) => u.id);
+    users.sortBy((u) => u.uid);
+    sharedBy.sortBy((u) => u.uid);
+    sharedWith.sortBy((u) => u.uid);
+
+    final updatedSharedBy = <UserDto>[];
 
     diffSortedListsSync(
       users,
       sharedBy,
-      compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) => a.isPartnerSharedBy = true,
-      onlyFirst: (_) {},
-      onlySecond: (_) {},
-    );
-
-    diffSortedListsSync(
-      users,
-      sharedWith,
-      compare: (User a, User b) => a.id.compareTo(b.id),
-      both: (User a, User b) {
-        a.isPartnerSharedWith = true;
-        a.inTimeline = b.inTimeline;
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      both: (UserDto a, UserDto b) {
+        updatedSharedBy.add(a.copyWith(isPartnerSharedBy: true));
         return true;
       },
-      onlyFirst: (_) {},
-      onlySecond: (_) {},
+      onlyFirst: (UserDto a) => updatedSharedBy.add(a),
+      onlySecond: (UserDto b) => updatedSharedBy.add(b),
     );
 
-    return users;
+    final updatedSharedWith = <UserDto>[];
+
+    diffSortedListsSync(
+      updatedSharedBy,
+      sharedWith,
+      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      both: (UserDto a, UserDto b) {
+        updatedSharedWith.add(
+          a.copyWith(inTimeline: b.inTimeline, isPartnerSharedWith: true),
+        );
+        return true;
+      },
+      onlyFirst: (UserDto a) => updatedSharedWith.add(a),
+      onlySecond: (UserDto b) => updatedSharedWith.add(b),
+    );
+
+    return updatedSharedWith;
   }
 
-  Future<bool> refreshUsers() async {
-    final users = await getUsersFromServer();
-    if (users == null) return false;
-    return _syncService.syncUsersFromServer(users);
+  Future<void> clearTable() {
+    return _userRepository.deleteAll();
   }
 }

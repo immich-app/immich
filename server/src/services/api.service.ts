@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
 import { readFileSync } from 'node:fs';
+import sanitizeHtml from 'sanitize-html';
 import { ONE_HOUR } from 'src/constants';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -12,21 +13,25 @@ import { VersionService } from 'src/services/version.service';
 import { OpenGraphTags } from 'src/utils/misc';
 
 const render = (index: string, meta: OpenGraphTags) => {
+  const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>
+    item ? sanitizeHtml(item, { allowedTags: [] }) : '',
+  );
+
   const tags = `
-    <meta name="description" content="${meta.description}" />
+    <meta name="description" content="${description}" />
 
     <!-- Facebook Meta Tags -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="${meta.title}" />
-    <meta property="og:description" content="${meta.description}" />
-    ${meta.imageUrl ? `<meta property="og:image" content="${meta.imageUrl}" />` : ''}
+    <meta property="og:title" content="${title}" />
+    <meta property="og:description" content="${description}" />
+    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${meta.title}" />
-    <meta name="twitter:description" content="${meta.description}" />
+    <meta name="twitter:title" content="${title}" />
+    <meta name="twitter:description" content="${description}" />
 
-    ${meta.imageUrl ? `<meta name="twitter:image" content="${meta.imageUrl}" />` : ''}`;
+    ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}" />` : ''}`;
 
   return index.replace('<!-- metadata:tags -->', tags);
 };

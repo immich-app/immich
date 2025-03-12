@@ -30,7 +30,7 @@
 </script>
 
 <div class="mb-4 w-full">
-  <div class={`flex h-[26px] place-items-center gap-1`}>
+  <div class="flex h-[26px] place-items-center gap-1">
     <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="{name}-select">
       {label}
     </label>
@@ -51,7 +51,7 @@
     </p>
   {/if}
   <div class="flex flex-col gap-2">
-    {#each options as option}
+    {#each options as option (option.value)}
       <Checkbox
         id="{option.value}-checkbox"
         label={option.text}

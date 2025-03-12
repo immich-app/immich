@@ -3,8 +3,8 @@
   import { getPartners, PartnerDirection, searchUsers, type UserResponseDto } from '@immich/sdk';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import Button from '../elements/buttons/button.svelte';
   import UserAvatar from '../shared-components/user-avatar.svelte';
+  import { Button } from '@immich/ui';
 
   interface Props {
     user: UserResponseDto;
@@ -39,7 +39,7 @@
 <FullScreenModal title={$t('add_partner')} showLogo {onClose}>
   <div class="immich-scrollbar max-h-[300px] overflow-y-auto">
     {#if availableUsers.length > 0}
-      {#each availableUsers as user}
+      {#each availableUsers as user (user.id)}
         <button
           type="button"
           onclick={() => selectUser(user)}
@@ -72,7 +72,7 @@
 
     {#if selectedUsers.length > 0}
       <div class="pt-5">
-        <Button size="sm" fullwidth onclick={() => onAddUsers(selectedUsers)}>{$t('add')}</Button>
+        <Button shape="round" fullWidth onclick={() => onAddUsers(selectedUsers)}>{$t('add')}</Button>
       </div>
     {/if}
   </div>

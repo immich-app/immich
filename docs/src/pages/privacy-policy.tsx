@@ -1,10 +1,7 @@
 import React from 'react';
 import Link from '@docusaurus/Link';
 import Layout from '@theme/Layout';
-import { useColorMode } from '@docusaurus/theme-common';
 function HomepageHeader() {
-  const { isDarkTheme } = useColorMode();
-
   return (
     <header>
       <section className="max-w-[900px] m-4 p-4 md:p-6 md:m-auto md:my-12 border border-red-400 rounded-2xl  bg-slate-200 dark:bg-immich-dark-gray">

@@ -1,8 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
 
@@ -57,7 +58,7 @@ class AlbumThumbnailCard extends StatelessWidget {
           // Add the owner name to the subtitle
           String? owner;
           if (showOwner) {
-            if (album.ownerId == Store.get(StoreKey.currentUser).id) {
+            if (album.ownerId == Store.get(StoreKey.currentUser).uid) {
               owner = 'album_thumbnail_owned'.tr();
             } else if (album.ownerName != null) {
               owner = 'album_thumbnail_shared_by'.tr(args: [album.ownerName!]);

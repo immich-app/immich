@@ -14,6 +14,10 @@ export class SystemMetadataEntity<T extends keyof SystemMetadata = SystemMetadat
 
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
+export type MemoriesState = {
+  /** memories have already been created through this date */
+  lastOnThisDayDate: string;
+};
 
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
   [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
@@ -23,5 +27,5 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
   [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
-  [SystemMetadataKey.SECRET_KEY]: { secret?: string };
+  [SystemMetadataKey.MEMORIES_STATE]: MemoriesState;
 }

@@ -102,7 +102,7 @@ const mapStack = (entity: AssetEntity) => {
 };
 
 // if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings
-const hexOrBufferToBase64 = (encoded: string | Buffer) => {
+export const hexOrBufferToBase64 = (encoded: string | Buffer) => {
   if (typeof encoded === 'string') {
     return Buffer.from(encoded.slice(2), 'hex').toString('base64');
   }
@@ -118,7 +118,7 @@ export function mapAsset(entity: AssetEntity, options: AssetMapOptions = {}): As
       id: entity.id,
       type: entity.type,
       originalMimeType: mimeTypes.lookup(entity.originalFileName),
-      thumbhash: entity.thumbhash?.toString('base64') ?? null,
+      thumbhash: entity.thumbhash ? hexOrBufferToBase64(entity.thumbhash) : null,
       localDateTime: entity.localDateTime,
       duration: entity.duration ?? '0:00:00.00000',
       livePhotoVideoId: entity.livePhotoVideoId,

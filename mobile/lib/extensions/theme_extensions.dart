@@ -10,14 +10,14 @@ extension ImmichColorSchemeExtensions on ColorScheme {
 extension ColorExtensions on Color {
   Color lighten({double amount = 0.1}) {
     return Color.alphaBlend(
-      Colors.white.withOpacity(amount),
+      Colors.white.withValues(alpha: amount),
       this,
     );
   }
 
   Color darken({double amount = 0.1}) {
     return Color.alphaBlend(
-      Colors.black.withOpacity(amount),
+      Colors.black.withValues(alpha: amount),
       this,
     );
   }

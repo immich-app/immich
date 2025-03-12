@@ -1,4 +1,5 @@
 import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 
 import 'asset.stub.dart';
 import 'user.stub.dart';
@@ -26,7 +27,7 @@ final class AlbumStub {
     shared: true,
     activityEnabled: false,
     endDate: DateTime(2020),
-  )..sharedUsers.addAll([UserStub.admin]);
+  )..sharedUsers.addAll([User.fromDto(UserStub.admin)]);
 
   static final oneAsset = Album(
     name: "album-with-single-asset",
@@ -53,7 +54,7 @@ final class AlbumStub {
   )
     ..assets.addAll([AssetStub.image1, AssetStub.image2])
     ..activityEnabled = true
-    ..owner.value = UserStub.admin;
+    ..owner.value = User.fromDto(UserStub.admin);
 
   static final create2020end2020Album = Album(
     name: "create2020update2020Album",
