@@ -38,14 +38,12 @@ type ProgressEvent = {
 
 @Injectable()
 export class MediaRepository {
-  constructor(private logger: LoggingRepository, private jwt: JwtService) {
+  constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
   }
 
-  async getPlaylist(id: string, secret: string): Promise<string> {
+  getPlaylist(id: string, secret: string): string {
     const playlist = [];
-    const jwt = await this.jwt.signAsync({id}, {secret});
-
     playlist.push(
       "#EXTM3U",
       "#EXT-X-VERSION:10",
@@ -54,7 +52,7 @@ export class MediaRepository {
       "#EXT-X-SERVER-CONTROL:CAN-BLOCK-RELOAD=YES",
       "#EXT-X-PART-INF:PART-TARGET=0.33334",
       "EXT-X-PLAYLIST-TYPE:EVENT",
-      `#EXT-X-MAP:URI=\"${jwt}/init.mp4\"`
+      `#EXT-X-MAP:URI=\"${secret}/init.mp4\"`
     );
 
     return playlist.join("\n");

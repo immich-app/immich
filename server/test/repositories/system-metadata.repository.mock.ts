@@ -10,6 +10,5 @@ export const newSystemMetadataRepositoryMock = (): Mocked<RepositoryInterface<Sy
     set: vitest.fn(),
     delete: vitest.fn(),
     readFile: vitest.fn(),
-    getSecretKey: vitest.fn()
   };
 };
