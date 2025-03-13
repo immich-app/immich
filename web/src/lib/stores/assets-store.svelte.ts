@@ -938,29 +938,30 @@ export class AssetStore {
         },
         { signal },
       );
-
-      if (this.#options.timelineAlbumId) {
-        const albumAssets = await getTimeBucket(
-          {
-            albumId: this.#options.timelineAlbumId,
-            timeBucket: bucketDate,
-            size: TimeBucketSize.Month,
-            key: getKey(),
-          },
-          { signal },
-        );
-        for (const asset of albumAssets) {
-          this.albumAssets.add(asset.id);
+      if (assets) {
+        if (this.#options.timelineAlbumId) {
+          const albumAssets = await getTimeBucket(
+            {
+              albumId: this.#options.timelineAlbumId,
+              timeBucket: bucketDate,
+              size: TimeBucketSize.Month,
+              key: getKey(),
+            },
+            { signal },
+          );
+          for (const asset of albumAssets) {
+            this.albumAssets.add(asset.id);
+          }
         }
-      }
 
-      const unprocessed = bucket.addAssets(assets);
-      if (unprocessed.length > 0) {
-        console.error(
-          `Warning: getTimeBucket API returning assets not in requested month: ${bucket.bucketDate}, ${JSON.stringify(unprocessed.map((a) => ({ id: a.id, localDateTime: a.localDateTime })))}`,
-        );
+        const unprocessed = bucket.addAssets(assets);
+        if (unprocessed.length > 0) {
+          console.error(
+            `Warning: getTimeBucket API returning assets not in requested month: ${bucket.bucketDate}, ${JSON.stringify(unprocessed.map((a) => ({ id: a.id, localDateTime: a.localDateTime })))}`,
+          );
+        }
+        this.#layoutBucket(bucket);
       }
-      this.#layoutBucket(bucket);
     }, cancelable);
     if (result === 'LOADED') {
       this.#updateIntersection(bucket);

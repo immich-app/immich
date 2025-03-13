@@ -155,7 +155,9 @@
   };
   const updateIsScrolling = () => (assetStore.scrolling = true);
 
-  const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
+  const _updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
+  const updateSlidingWindow = throttle(_updateSlidingWindow, 16, { leading: false, trailing: true });
+
   const compensateScrollCallback = (delta: number) => {
     element?.scrollBy(0, delta);
   };
