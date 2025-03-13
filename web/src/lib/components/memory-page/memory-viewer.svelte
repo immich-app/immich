@@ -106,9 +106,9 @@
   const handleSelectAll = () => assetInteraction.selectAssets(current?.memory.assets || []);
   const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
     // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
-    console.log(`handleAction[${callingContext}] called with: ${action}`);
+    // console.log(`handleAction[${callingContext}] called with: ${action}`);
     if (!progressBarController) {
-      console.log(`handleAction[${callingContext}] NOT READY!`);
+      // console.log(`handleAction[${callingContext}] NOT READY!`);
       return;
     }
 
