@@ -923,7 +923,7 @@ export class AssetStore {
     if (bucket.loader?.executed) {
       return;
     }
-
+    
     const result = await bucket.loader?.execute(async (signal: AbortSignal) => {
       const assets = await getTimeBucket(
         {

@@ -122,7 +122,6 @@ describe('AssetStore', () => {
 
     it('allows loading a canceled bucket', async () => {
       const bucket = assetStore.getBucketByDate(2024, 1)!;
-      console.log(bucket);
       const loadPromise = assetStore.loadBucket(bucket!.bucketDate);
 
       bucket.cancel();

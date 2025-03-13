@@ -54,7 +54,7 @@
     singleSelect = false,
     enableRouting,
     assetStore = $bindable(),
-    assetInteraction = $bindable(),
+    assetInteraction,
     removeAction = null,
     withStacked = false,
     showArchiveIcon = false,
