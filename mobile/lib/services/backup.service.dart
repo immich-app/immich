@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cancellation_token_http/http.dart' as http;
 import 'package:collection/collection.dart';
@@ -28,6 +29,7 @@ import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/services/background.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
@@ -43,6 +45,7 @@ final backupServiceProvider = Provider(
     ref.watch(fileMediaRepositoryProvider),
     ref.watch(assetRepositoryProvider),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(backgroundServiceProvider),
   ),
 );
 
@@ -56,6 +59,7 @@ class BackupService {
   final IFileMediaRepository _fileMediaRepository;
   final IAssetRepository _assetRepository;
   final IAssetMediaRepository _assetMediaRepository;
+  final BackgroundService _backgroundService;
 
   BackupService(
     this._apiService,
@@ -65,6 +69,7 @@ class BackupService {
     this._fileMediaRepository,
     this._assetRepository,
     this._assetMediaRepository,
+    this._backgroundService,
   );
 
   Future<List<String>?> getDeviceBackupAsset() async {
@@ -336,17 +341,89 @@ class BackupService {
             }
           }
 
-          final fileStream = file.openRead();
-          final assetRawUploadData = http.MultipartFile(
-            "assetData",
-            fileStream,
-            file.lengthSync(),
-            filename: originalFileName,
+          int size = file.lengthSync();
+
+          onCurrentAsset(
+            CurrentUploadAsset(
+              id: asset.localId!,
+              fileCreatedAt: asset.fileCreatedAt.year == 1970
+                  ? asset.fileModifiedAt
+                  : asset.fileCreatedAt,
+              fileName: originalFileName,
+              fileType: _getAssetType(asset.type),
+              fileSize: size,
+              iCloudAsset: false,
+            ),
           );
+
+          final digests = await _backgroundService.digestFiles([file.path]);
+          final sha1 = digests!.firstOrNull!
+              .map((e) => e.toRadixString(16).padLeft(2, '0'))
+              .join();
+
+          debugPrint(
+              "getting uploaded parts list for ${asset.checksum}, $asset, $sha1");
+
+          final parts = await _apiService.assetPartsApi.getParts(sha1) ?? [];
+
+          final loadedParts = {for (final i in parts) i.part_: i.size};
+
+          debugPrint("parts as a map: $loadedParts");
+
+          int offset = 0;
+          int part = 0;
+
+          while (offset < size) {
+            int chunkSize = min(
+                size - offset, 10 * 1024 * 1024); // TODO - make configurable
+
+            if (loadedParts.containsKey(part) &&
+                loadedParts[part] == chunkSize) {
+              debugPrint("Skipping $part as it is already loaded");
+
+              part++;
+              offset += chunkSize;
+              continue;
+            }
+
+            final fileStream = file.openRead(offset, offset + chunkSize);
+            final assetRawUploadData = http.MultipartFile(
+              "partData",
+              fileStream,
+              chunkSize,
+              filename: originalFileName,
+            );
+
+            final baseRequest = MultipartRequest(
+              'PUT',
+              Uri.parse('$savedEndpoint/asset-parts/$sha1/$part'),
+              onProgress: ((bytes, totalBytes) =>
+                  onProgress(chunkSize * bytes ~/ totalBytes + offset, size)),
+            );
+
+            baseRequest.headers.addAll(ApiService.getRequestHeaders());
+            baseRequest.headers["Transfer-Encoding"] = "chunked";
+            baseRequest.files.add(assetRawUploadData);
+
+            final response = await httpClient.send(
+              baseRequest,
+              cancellationToken: cancelToken,
+            );
+
+            final responseBody = await response.stream.bytesToString();
+
+            debugPrint(
+                "finished uploading part $part: ${response.statusCode} $responseBody");
+
+            // TODO - error handling
+
+            part++;
+            offset += chunkSize;
+          }
 
           final baseRequest = MultipartRequest(
             'POST',
-            Uri.parse('$savedEndpoint/assets'),
+            Uri.parse('$savedEndpoint/asset-parts/$sha1'),
             onProgress: ((bytes, totalBytes) => onProgress(bytes, totalBytes)),
           );
 
@@ -360,20 +437,8 @@ class BackupService {
               asset.fileModifiedAt.toUtc().toIso8601String();
           baseRequest.fields['isFavorite'] = asset.isFavorite.toString();
           baseRequest.fields['duration'] = asset.duration.toString();
-          baseRequest.files.add(assetRawUploadData);
-
-          onCurrentAsset(
-            CurrentUploadAsset(
-              id: asset.localId!,
-              fileCreatedAt: asset.fileCreatedAt.year == 1970
-                  ? asset.fileModifiedAt
-                  : asset.fileCreatedAt,
-              fileName: originalFileName,
-              fileType: _getAssetType(asset.type),
-              fileSize: file.lengthSync(),
-              iCloudAsset: false,
-            ),
-          );
+          baseRequest.fields['originalName'] = originalFileName;
+          baseRequest.fields['parts'] = "$part";
 
           String? livePhotoVideoId;
           if (asset.local!.isLivePhoto && livePhotoFile != null) {

@@ -362,6 +362,27 @@ export type ApiKeyCreateResponseDto = {
 export type ApiKeyUpdateDto = {
     name: string;
 };
+export type PartInfoDto = {
+    part: number;
+    size: number;
+};
+export type AssetMediaCreateFromPartsDto = {
+    assetData: Blob;
+    deviceAssetId: string;
+    deviceId: string;
+    duration?: string;
+    fileCreatedAt: string;
+    fileModifiedAt: string;
+    isArchived?: boolean;
+    isFavorite?: boolean;
+    isVisible?: boolean;
+    livePhotoVideoId?: string;
+    sidecarData?: Blob;
+};
+export type AssetMediaResponseDto = {
+    id: string;
+    status: AssetMediaStatus;
+};
 export type AssetBulkDeleteDto = {
     force?: boolean;
     ids: string[];
@@ -378,10 +399,6 @@ export type AssetMediaCreateDto = {
     isVisible?: boolean;
     livePhotoVideoId?: string;
     sidecarData?: Blob;
-};
-export type AssetMediaResponseDto = {
-    id: string;
-    status: AssetMediaStatus;
 };
 export type AssetBulkUpdateDto = {
     dateTimeOriginal?: string;
@@ -1719,6 +1736,41 @@ export function updateApiKey({ id, apiKeyUpdateDto }: {
         method: "PUT",
         body: apiKeyUpdateDto
     })));
+}
+export function getParts({ sha1 }: {
+    sha1: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PartInfoDto[];
+    }>(`/asset-parts/${encodeURIComponent(sha1)}`, {
+        ...opts
+    }));
+}
+export function createAssetFromParts({ key, sha1, assetMediaCreateFromPartsDto }: {
+    key?: string;
+    sha1: string;
+    assetMediaCreateFromPartsDto: AssetMediaCreateFromPartsDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: AssetMediaResponseDto;
+    }>(`/asset-parts/${encodeURIComponent(sha1)}${QS.query(QS.explode({
+        key
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: assetMediaCreateFromPartsDto
+    })));
+}
+export function uploadPart({ partNo, sha1 }: {
+    partNo: number;
+    sha1: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/asset-parts/${encodeURIComponent(sha1)}/${encodeURIComponent(partNo)}`, {
+        ...opts,
+        method: "PUT"
+    }));
 }
 export function deleteAssets({ assetBulkDeleteDto }: {
     assetBulkDeleteDto: AssetBulkDeleteDto;

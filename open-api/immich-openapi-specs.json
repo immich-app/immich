@@ -1295,6 +1295,150 @@
         ]
       }
     },
+    "/asset-parts/{sha1}": {
+      "get": {
+        "operationId": "getParts",
+        "parameters": [
+          {
+            "name": "sha1",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PartInfoDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      },
+      "post": {
+        "operationId": "createAssetFromParts",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sha1",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetMediaCreateFromPartsDto"
+              }
+            }
+          },
+          "description": "Asset Upload Information",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
+    "/asset-parts/{sha1}/{partNo}": {
+      "put": {
+        "operationId": "uploadPart",
+        "parameters": [
+          {
+            "name": "partNo",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "sha1",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "tags": [
+          "Asset"
+        ]
+      }
+    },
     "/assets": {
       "delete": {
         "operationId": "deleteAssets",
@@ -8605,6 +8749,56 @@
         ],
         "type": "object"
       },
+      "AssetMediaCreateFromPartsDto": {
+        "properties": {
+          "assetData": {
+            "format": "binary",
+            "type": "string"
+          },
+          "deviceAssetId": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "fileCreatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "isArchived": {
+            "type": "boolean"
+          },
+          "isFavorite": {
+            "type": "boolean"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "livePhotoVideoId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sidecarData": {
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "assetData",
+          "deviceAssetId",
+          "deviceId",
+          "fileCreatedAt",
+          "fileModifiedAt"
+        ],
+        "type": "object"
+      },
       "AssetMediaReplaceDto": {
         "properties": {
           "assetData": {
@@ -10380,6 +10574,21 @@
         },
         "required": [
           "year"
+        ],
+        "type": "object"
+      },
+      "PartInfoDto": {
+        "properties": {
+          "part": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "part",
+          "size"
         ],
         "type": "object"
       },

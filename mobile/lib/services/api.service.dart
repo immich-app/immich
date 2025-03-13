@@ -18,6 +18,7 @@ class ApiService implements Authentication {
   late AuthenticationApi authenticationApi;
   late OAuthApi oAuthApi;
   late AlbumsApi albumsApi;
+  late AssetApi assetPartsApi;
   late AssetsApi assetsApi;
   late SearchApi searchApi;
   late ServerApi serverInfoApi;
@@ -53,6 +54,7 @@ class ApiService implements Authentication {
     oAuthApi = OAuthApi(_apiClient);
     albumsApi = AlbumsApi(_apiClient);
     assetsApi = AssetsApi(_apiClient);
+    assetPartsApi = AssetApi(_apiClient);
     serverInfoApi = ServerApi(_apiClient);
     searchApi = SearchApi(_apiClient);
     mapApi = MapApi(_apiClient);

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { upload } from 'src/commands/asset';
 import { login, logout } from 'src/commands/auth';
+import { partCmd } from 'src/commands/part';
 import { serverInfo } from 'src/commands/server-info';
 import { version } from '../package.json';
 
@@ -78,5 +79,7 @@ program
   )
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => upload(paths, program.opts(), options));
+
+program.command('part').action(() => partCmd(program.opts()));
 
 program.parse(process.argv);

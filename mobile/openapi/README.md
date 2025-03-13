@@ -93,6 +93,9 @@ Class | Method | HTTP request | Description
 *AlbumsApi* | [**removeUserFromAlbum**](doc//AlbumsApi.md#removeuserfromalbum) | **DELETE** /albums/{id}/user/{userId} | 
 *AlbumsApi* | [**updateAlbumInfo**](doc//AlbumsApi.md#updatealbuminfo) | **PATCH** /albums/{id} | 
 *AlbumsApi* | [**updateAlbumUser**](doc//AlbumsApi.md#updatealbumuser) | **PUT** /albums/{id}/user/{userId} | 
+*AssetApi* | [**createAssetFromParts**](doc//AssetApi.md#createassetfromparts) | **POST** /asset-parts/{sha1} | 
+*AssetApi* | [**getParts**](doc//AssetApi.md#getparts) | **GET** /asset-parts/{sha1} | 
+*AssetApi* | [**uploadPart**](doc//AssetApi.md#uploadpart) | **PUT** /asset-parts/{sha1}/{partNo} | 
 *AssetsApi* | [**checkBulkUpload**](doc//AssetsApi.md#checkbulkupload) | **POST** /assets/bulk-upload-check | checkBulkUpload
 *AssetsApi* | [**checkExistingAssets**](doc//AssetsApi.md#checkexistingassets) | **POST** /assets/exist | checkExistingAssets
 *AssetsApi* | [**deleteAssets**](doc//AssetsApi.md#deleteassets) | **DELETE** /assets | 
@@ -365,6 +368,7 @@ Class | Method | HTTP request | Description
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
  - [OnThisDayDto](doc//OnThisDayDto.md)
+ - [PartInfoDto](doc//PartInfoDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
  - [PathEntityType](doc//PathEntityType.md)

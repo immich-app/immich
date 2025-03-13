@@ -430,6 +430,7 @@ class BackgroundService {
       fileMediaRepository,
       assetRepository,
       assetMediaRepository,
+      this,
     );
 
     AuthApiRepository authApiRepository = AuthApiRepository(apiService);
