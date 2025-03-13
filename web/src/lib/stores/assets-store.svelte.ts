@@ -40,7 +40,9 @@ function updateObject(target: any, source: any): boolean {
   }
   let updated = false;
   for (const key in source) {
-    if (typeof source[key] === 'object' && source[key] !== null) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (!source.hasOwnProperty(key)) { continue; }
+    if (typeof target[key] === 'object') {
       updated = updated || updateObject(target[key], source[key]);
     } else {
       // Otherwise, directly copy the value
@@ -562,7 +564,7 @@ export class AssetStore {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() {}
+  constructor() { }
 
   set scrolling(value: boolean) {
     this.#scrolling = value;
@@ -923,7 +925,7 @@ export class AssetStore {
     if (bucket.loader?.executed) {
       return;
     }
-    
+
     const result = await bucket.loader?.execute(async (signal: AbortSignal) => {
       const assets = await getTimeBucket(
         {
