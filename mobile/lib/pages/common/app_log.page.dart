@@ -49,9 +49,9 @@ class AppLogPage extends HookConsumerWidget {
 
     Color getTileColor(LogLevel level) => switch (level) {
           LogLevel.info => Colors.transparent,
-          LogLevel.severe => Colors.redAccent.withOpacity(0.25),
-          LogLevel.warning => Colors.orangeAccent.withOpacity(0.25),
-          _ => context.primaryColor.withOpacity(0.1),
+          LogLevel.severe => Colors.redAccent.withValues(alpha: 0.25),
+          LogLevel.warning => Colors.orangeAccent.withValues(alpha: 0.25),
+          _ => context.primaryColor.withValues(alpha: 0.1),
         };
 
     return Scaffold(

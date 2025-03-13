@@ -1,3 +1,4 @@
+import { ClassConstructor } from 'class-transformer';
 import { Kysely, sql } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { ChildProcessWithoutNullStreams } from 'node:child_process';
@@ -50,48 +51,59 @@ import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
-import { newActivityRepositoryMock } from 'test/repositories/activity.repository.mock';
-import { newAlbumUserRepositoryMock } from 'test/repositories/album-user.repository.mock';
-import { newAlbumRepositoryMock } from 'test/repositories/album.repository.mock';
-import { newKeyRepositoryMock } from 'test/repositories/api-key.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
-import { newAuditRepositoryMock } from 'test/repositories/audit.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
-import { newCronRepositoryMock } from 'test/repositories/cron.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
 import { newDatabaseRepositoryMock } from 'test/repositories/database.repository.mock';
-import { newDownloadRepositoryMock } from 'test/repositories/download.repository.mock';
-import { newEventRepositoryMock } from 'test/repositories/event.repository.mock';
 import { newJobRepositoryMock } from 'test/repositories/job.repository.mock';
-import { newLibraryRepositoryMock } from 'test/repositories/library.repository.mock';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
-import { newMachineLearningRepositoryMock } from 'test/repositories/machine-learning.repository.mock';
-import { newMapRepositoryMock } from 'test/repositories/map.repository.mock';
 import { newMediaRepositoryMock } from 'test/repositories/media.repository.mock';
-import { newMemoryRepositoryMock } from 'test/repositories/memory.repository.mock';
 import { newMetadataRepositoryMock } from 'test/repositories/metadata.repository.mock';
-import { newMoveRepositoryMock } from 'test/repositories/move.repository.mock';
-import { newNotificationRepositoryMock } from 'test/repositories/notification.repository.mock';
-import { newOAuthRepositoryMock } from 'test/repositories/oauth.repository.mock';
-import { newPartnerRepositoryMock } from 'test/repositories/partner.repository.mock';
-import { newPersonRepositoryMock } from 'test/repositories/person.repository.mock';
-import { newProcessRepositoryMock } from 'test/repositories/process.repository.mock';
-import { newSearchRepositoryMock } from 'test/repositories/search.repository.mock';
-import { newServerInfoRepositoryMock } from 'test/repositories/server-info.repository.mock';
-import { newSessionRepositoryMock } from 'test/repositories/session.repository.mock';
-import { newSharedLinkRepositoryMock } from 'test/repositories/shared-link.repository.mock';
-import { newStackRepositoryMock } from 'test/repositories/stack.repository.mock';
 import { newStorageRepositoryMock } from 'test/repositories/storage.repository.mock';
-import { newSyncRepositoryMock } from 'test/repositories/sync.repository.mock';
 import { newSystemMetadataRepositoryMock } from 'test/repositories/system-metadata.repository.mock';
-import { newTagRepositoryMock } from 'test/repositories/tag.repository.mock';
 import { ITelemetryRepositoryMock, newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
-import { newTrashRepositoryMock } from 'test/repositories/trash.repository.mock';
-import { newUserRepositoryMock } from 'test/repositories/user.repository.mock';
-import { newVersionHistoryRepositoryMock } from 'test/repositories/version-history.repository.mock';
-import { newViewRepositoryMock } from 'test/repositories/view.repository.mock';
 import { Readable } from 'typeorm/platform/PlatformTools';
-import { Mocked, vitest } from 'vitest';
+import { assert, Mocked, vitest } from 'vitest';
+
+const mockFn = (label: string, { strict }: { strict: boolean }) => {
+  const message = `Called a mock function without a mock implementation (${label})`;
+  return vitest.fn().mockImplementation(() => {
+    if (strict) {
+      assert.fail(message);
+    } else {
+      // console.warn(message);
+    }
+  });
+};
+
+export const automock = <T>(
+  Dependency: ClassConstructor<T>,
+  options?: {
+    args?: ConstructorParameters<ClassConstructor<T>>;
+    strict?: boolean;
+  },
+): Mocked<T> => {
+  const mock: Record<string, unknown> = {};
+  const strict = options?.strict ?? true;
+  const args = options?.args ?? [];
+
+  const instance = new Dependency(...args);
+  for (const property of Object.getOwnPropertyNames(Dependency.prototype)) {
+    if (property === 'constructor') {
+      continue;
+    }
+
+    const label = `${Dependency.name}.${property}`;
+    // console.log(`Automocking ${label}`);
+
+    const target = instance[property as keyof T];
+    if (typeof target === 'function') {
+      mock[property] = mockFn(label, { strict });
+      continue;
+    }
+  }
+
+  return mock as Mocked<T>;
+};
 
 export type ServiceOverrides = {
   access: AccessRepository;
@@ -153,48 +165,52 @@ export const newTestService = <T extends BaseService>(
   Service: Constructor<T, BaseServiceArgs>,
   overrides: Partial<ServiceOverrides> = {},
 ) => {
+  const loggerMock = { setContext: () => {} };
+  const configMock = { getEnv: () => ({}) };
+
   const mocks: ServiceMocks = {
     access: newAccessRepositoryMock(),
-    logger: newLoggingRepositoryMock(),
-    cron: newCronRepositoryMock(),
+    logger: automock(LoggingRepository, { args: [, configMock], strict: false }),
+    cron: automock(CronRepository, { args: [, loggerMock] }),
     crypto: newCryptoRepositoryMock(),
-    activity: newActivityRepositoryMock(),
-    audit: newAuditRepositoryMock(),
-    album: newAlbumRepositoryMock(),
-    albumUser: newAlbumUserRepositoryMock(),
+    activity: automock(ActivityRepository),
+    audit: automock(AuditRepository),
+    album: automock(AlbumRepository, { strict: false }),
+    albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
-    downloadRepository: newDownloadRepositoryMock(),
-    event: newEventRepositoryMock(),
+    downloadRepository: automock(DownloadRepository, { strict: false }),
+    event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
     job: newJobRepositoryMock(),
-    apiKey: newKeyRepositoryMock(),
-    library: newLibraryRepositoryMock(),
-    machineLearning: newMachineLearningRepositoryMock(),
-    map: newMapRepositoryMock(),
+    apiKey: automock(ApiKeyRepository),
+    library: automock(LibraryRepository, { strict: false }),
+    machineLearning: automock(MachineLearningRepository, { args: [loggerMock], strict: false }),
+    map: automock(MapRepository, { args: [undefined, undefined, { setContext: () => {} }] }),
     media: newMediaRepositoryMock(),
-    memory: newMemoryRepositoryMock(),
+    memory: automock(MemoryRepository),
     metadata: newMetadataRepositoryMock(),
-    move: newMoveRepositoryMock(),
-    notification: newNotificationRepositoryMock(),
-    oauth: newOAuthRepositoryMock(),
-    partner: newPartnerRepositoryMock(),
-    person: newPersonRepositoryMock(),
-    process: newProcessRepositoryMock(),
-    search: newSearchRepositoryMock(),
-    serverInfo: newServerInfoRepositoryMock(),
-    session: newSessionRepositoryMock(),
-    sharedLink: newSharedLinkRepositoryMock(),
-    stack: newStackRepositoryMock(),
+    move: automock(MoveRepository, { strict: false }),
+    notification: automock(NotificationRepository, { args: [loggerMock] }),
+    oauth: automock(OAuthRepository, { args: [loggerMock] }),
+    partner: automock(PartnerRepository, { strict: false }),
+    person: automock(PersonRepository, { strict: false }),
+    process: automock(ProcessRepository, { args: [loggerMock] }),
+    search: automock(SearchRepository, { args: [loggerMock], strict: false }),
+    serverInfo: automock(ServerInfoRepository, { args: [, loggerMock], strict: false }),
+    session: automock(SessionRepository),
+    sharedLink: automock(SharedLinkRepository),
+    stack: automock(StackRepository),
     storage: newStorageRepositoryMock(),
-    sync: newSyncRepositoryMock(),
+    sync: automock(SyncRepository),
     systemMetadata: newSystemMetadataRepositoryMock(),
-    tag: newTagRepositoryMock(),
+    // systemMetadata: automock(SystemMetadataRepository, { strict: false }),
+    tag: automock(TagRepository, { args: [, loggerMock], strict: false }),
     telemetry: newTelemetryRepositoryMock(),
-    trash: newTrashRepositoryMock(),
-    user: newUserRepositoryMock(),
-    versionHistory: newVersionHistoryRepositoryMock(),
-    view: newViewRepositoryMock(),
+    trash: automock(TrashRepository),
+    user: automock(UserRepository, { strict: false }),
+    versionHistory: automock(VersionHistoryRepository),
+    view: automock(ViewRepository),
   };
 
   const sut = new Service(

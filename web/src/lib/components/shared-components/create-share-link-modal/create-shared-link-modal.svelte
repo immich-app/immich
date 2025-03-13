@@ -256,14 +256,13 @@
           <QRCode value={sharedLink} width={modalWidth} />
         </div>
       </div>
-      <HStack class="w-full p-3">
+      <HStack class="w-full pt-3" gap={1}>
         <Input bind:value={sharedLink} disabled class="flex flex-row" />
         <div>
           <IconButton
             variant="ghost"
             shape="round"
             color="secondary"
-            size="large"
             icon={mdiContentCopy}
             onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
             aria-label={$t('copy_link_to_clipboard')}

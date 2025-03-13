@@ -31,7 +31,7 @@ class MemoryLane extends HookConsumerWidget {
                     elevation: 2,
                     backgroundColor: Colors.black,
                     overlayColor: WidgetStateProperty.all(
-                      Colors.white.withOpacity(0.1),
+                      Colors.white.withValues(alpha: 0.1),
                     ),
                     onTap: (memoryIndex) {
                       ref.read(hapticFeedbackProvider.notifier).heavyImpact();
@@ -84,7 +84,7 @@ class MemoryCard extends ConsumerWidget {
         children: [
           ColorFiltered(
             colorFilter: ColorFilter.mode(
-              Colors.black.withOpacity(0.2),
+              Colors.black.withValues(alpha: 0.2),
               BlendMode.darken,
             ),
             child: Hero(

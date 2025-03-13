@@ -9,7 +9,7 @@ import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/pages/common/activities.page.dart';
@@ -96,7 +96,7 @@ void main() {
     await db.writeTxn(() async {
       await db.clear();
       // Save all assets
-      await db.users.put(UserStub.admin);
+      await db.users.put(User.fromDto(UserStub.admin));
       await db.assets.putAll([AssetStub.image1, AssetStub.image2]);
       await db.albums.put(AlbumStub.twoAsset);
       await AlbumStub.twoAsset.owner.save();

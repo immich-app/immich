@@ -12,7 +12,7 @@ export class ApiKeyRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   create(dto: Insertable<ApiKeys>) {
-    return this.db.insertInto('api_keys').values(dto).returningAll().executeTakeFirstOrThrow();
+    return this.db.insertInto('api_keys').values(dto).returning(columns.apiKey).executeTakeFirstOrThrow();
   }
 
   async update(userId: string, id: string, dto: Updateable<ApiKeys>) {
@@ -21,7 +21,7 @@ export class ApiKeyRepository {
       .set(dto)
       .where('api_keys.userId', '=', userId)
       .where('id', '=', asUuid(id))
-      .returningAll()
+      .returning(columns.apiKey)
       .executeTakeFirstOrThrow();
   }
 
