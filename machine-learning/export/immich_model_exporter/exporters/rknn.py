@@ -1,6 +1,6 @@
 from pathlib import Path
 
-RKNN_SOCS = ["rk3566", "rk3576", "rk3588"]
+from .constants import RKNN_SOCS, RKNN_VISUAL_FLASH_ATTENTION_BLACKLIST
 
 
 def _export_platform(
@@ -22,11 +22,12 @@ def _export_platform(
 
     rknn = RKNN(verbose=False)
 
+    # flash_attention = model_dir.name != "visual" or model_dir.parent.name not in RKNN_VISUAL_FLASH_ATTENTION_BLACKLIST
     rknn.config(
         target_platform=target_platform,
         dynamic_input=dynamic_input,
         disable_rules=["fuse_matmul_softmax_matmul_to_sdpa"] if not fuse_matmul_softmax_matmul_to_sdpa else [],
-        enable_flash_attention=True,
+        enable_flash_attention=False,
         model_pruning=True,
     )
     ret = rknn.load_onnx(model=input_path.as_posix())
@@ -49,13 +50,13 @@ def _export_platforms(model_dir: Path, dynamic_input=None, no_cache: bool = Fals
     fuse_matmul_softmax_matmul_to_sdpa = True
     for soc in RKNN_SOCS:
         try:
-            _export_platform(model_dir, soc, dynamic_input, fuse_matmul_softmax_matmul_to_sdpa)
+            _export_platform(model_dir, soc, dynamic_input, fuse_matmul_softmax_matmul_to_sdpa, no_cache=no_cache)
         except Exception as e:
             print(f"Failed to export model for {soc}: {e}")
             if "inputs or 'outputs' must be set" in str(e):
                 print("Retrying without fuse_matmul_softmax_matmul_to_sdpa")
                 fuse_matmul_softmax_matmul_to_sdpa = False
-                _export_platform(model_dir, soc, dynamic_input, fuse_matmul_softmax_matmul_to_sdpa)
+                _export_platform(model_dir, soc, dynamic_input, fuse_matmul_softmax_matmul_to_sdpa, no_cache=no_cache)
 
 
 def export(model_dir: Path, no_cache: bool = False):

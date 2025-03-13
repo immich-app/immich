@@ -38,7 +38,9 @@ def to_onnx(
         _export_text_encoder(model, textual_path, opset_version)
     else:
         print(f"Model {textual_path} already exists, skipping")
-    visual_path, _ = openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], output_dir_visual, no_cache=no_cache)
+    visual_path, _ = openclip_to_onnx(
+        _MCLIP_TO_OPENCLIP[model_name], opset_version, output_dir_visual, no_cache=no_cache
+    )
     assert visual_path is not None, "Visual model export failed"
     return visual_path, textual_path
 

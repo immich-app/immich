@@ -13,6 +13,7 @@ dependencies = [
     "typer>=0.15.2",
     "rknn-toolkit2>=2.3.0",
     "transformers>=4.49.0",
+    "tenacity>=9.0.0",
 ]
 
 [tool.uv]

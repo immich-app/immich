@@ -105,13 +105,14 @@ def _export_image_encoder(
         assert isinstance(output, torch.Tensor)
         return output
 
+    model.forward = encode_image
+
     args = (torch.randn(1, 3, model_cfg.image_size, model_cfg.image_size),)
-    traced = torch.jit.trace(encode_image, args)  # type: ignore[no-untyped-call]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
         torch.onnx.export(
-            traced,
+            model,
             args,
             output_path.as_posix(),
             input_names=["image"],
@@ -133,13 +134,14 @@ def _export_text_encoder(
         assert isinstance(output, torch.Tensor)
         return output
 
+    model.forward = encode_text
+
     args = (torch.ones(1, model_cfg.sequence_length, dtype=torch.int32),)
-    traced = torch.jit.trace(encode_text, args)  # type: ignore[no-untyped-call]
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
         torch.onnx.export(
-            traced,
+            model,
             args,
             output_path.as_posix(),
             input_names=["text"],
