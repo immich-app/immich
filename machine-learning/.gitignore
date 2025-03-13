@@ -3,6 +3,15 @@
 *.rknn
 *.npy
 *_attr__value
+*.weight
+*.bias
+onnx__*
+*in_proj_bias
+*.proj
+*.latent
+*.pos_embed
+vocab.txt
+export/immich_model_exporter/models/**/README.md
 tokenizer.json
 tokenizer_config.json
 special_tokens_map.json

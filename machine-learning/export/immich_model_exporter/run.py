@@ -1,10 +1,15 @@
 import subprocess
 
-models = [
+from exporters.constants import ModelSource
+
+mclip = [
     "M-CLIP/LABSE-Vit-L-14",
     "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus",
     "M-CLIP/XLM-Roberta-Large-Vit-B-32",
     "M-CLIP/XLM-Roberta-Large-Vit-L-14",
+]
+
+openclip = [
     "RN101__openai",
     "RN101__yfcc15m",
     "RN50__cc12m",
@@ -60,10 +65,24 @@ models = [
     "xlm-roberta-large-ViT-H-14__frozen_laion5b_s13b_b90k",
 ]
 
-if __name__ == "__main__":
+insightface = [
+    "antelopev2",
+    "buffalo_l",
+    "buffalo_m",
+    "buffalo_s",
+]
+
+
+def export_models(models: list[str], source: ModelSource):
     for model in models:
         try:
             print(f"Exporting model {model}")
-            subprocess.check_call(["python", "export.py", model, "mclip" if "M-CLIP" in model else "openclip"])
+            subprocess.check_call(["python", "export.py", model, source])
         except Exception as e:
             print(f"Failed to export model {model}: {e}")
+
+
+if __name__ == "__main__":
+    export_models(mclip, ModelSource.MCLIP)
+    export_models(openclip, ModelSource.OPENCLIP)
+    export_models(insightface, ModelSource.INSIGHTFACE)

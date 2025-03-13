@@ -6,7 +6,8 @@ from .constants import RKNN_SOCS
 def _export_platform(
     model_dir: Path,
     target_platform: str,
-    dynamic_input=None,
+    inputs: list[str] | None = None,
+    input_size_list: list[list[int]] | None = None,
     fuse_matmul_softmax_matmul_to_sdpa: bool = True,
     no_cache: bool = False,
 ):
@@ -24,12 +25,11 @@ def _export_platform(
 
     rknn.config(
         target_platform=target_platform,
-        dynamic_input=dynamic_input,
         disable_rules=["fuse_matmul_softmax_matmul_to_sdpa"] if not fuse_matmul_softmax_matmul_to_sdpa else [],
         enable_flash_attention=False,
         model_pruning=True,
     )
-    ret = rknn.load_onnx(model=input_path.as_posix())
+    ret = rknn.load_onnx(model=input_path.as_posix(), inputs=inputs, input_size_list=input_size_list)
 
     if ret != 0:
         raise RuntimeError("Load failed!")
@@ -45,17 +45,36 @@ def _export_platform(
         raise RuntimeError("Export rknn model failed!")
 
 
-def _export_platforms(model_dir: Path, dynamic_input=None, no_cache: bool = False):
+def _export_platforms(
+    model_dir: Path,
+    inputs: list[str] | None = None,
+    input_size_list: list[list[int]] | None = None,
+    no_cache: bool = False,
+):
     fuse_matmul_softmax_matmul_to_sdpa = True
     for soc in RKNN_SOCS:
         try:
-            _export_platform(model_dir, soc, dynamic_input, fuse_matmul_softmax_matmul_to_sdpa, no_cache=no_cache)
+            _export_platform(
+                model_dir,
+                soc,
+                inputs=inputs,
+                input_size_list=input_size_list,
+                fuse_matmul_softmax_matmul_to_sdpa=fuse_matmul_softmax_matmul_to_sdpa,
+                no_cache=no_cache,
+            )
         except Exception as e:
             print(f"Failed to export model for {soc}: {e}")
             if "inputs or 'outputs' must be set" in str(e):
                 print("Retrying without fuse_matmul_softmax_matmul_to_sdpa")
                 fuse_matmul_softmax_matmul_to_sdpa = False
-                _export_platform(model_dir, soc, dynamic_input, fuse_matmul_softmax_matmul_to_sdpa, no_cache=no_cache)
+                _export_platform(
+                    model_dir,
+                    soc,
+                    inputs=inputs,
+                    input_size_list=input_size_list,
+                    fuse_matmul_softmax_matmul_to_sdpa=fuse_matmul_softmax_matmul_to_sdpa,
+                    no_cache=no_cache,
+                )
 
 
 def export(model_dir: Path, no_cache: bool = False):
@@ -71,7 +90,7 @@ def export(model_dir: Path, no_cache: bool = False):
         _export_platforms(visual, no_cache=no_cache)
 
     if detection.is_dir():
-        _export_platforms(detection, dynamic_input=[[[1, 3, 640, 640]]], no_cache=no_cache)
+        _export_platforms(detection, inputs=["input.1"], input_size_list=[[1, 3, 640, 640]], no_cache=no_cache)
 
     if recognition.is_dir():
-        _export_platforms(recognition, dynamic_input=[[[1, 3, 112, 112]]], no_cache=no_cache)
+        _export_platforms(recognition, inputs=["input.1"], input_size_list=[[1, 3, 112, 112]], no_cache=no_cache)
