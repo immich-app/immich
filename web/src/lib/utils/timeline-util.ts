@@ -99,7 +99,7 @@ export function formatGroupTitle(_date: DateTime): string {
     });
   }
 
-  return date.toLocaleString(groupDateFormat);
+  return getDateLocaleString(date);
 }
 
 export const formatDateGroupTitle = memoize(formatGroupTitle);

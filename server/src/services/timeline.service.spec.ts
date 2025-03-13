@@ -70,6 +70,7 @@ describe(TimelineService.name, () => {
 
     it('should include partner shared assets', async () => {
       mocks.asset.getTimeBucket.mockResolvedValue([assetStub.image]);
+      mocks.partner.getAll.mockResolvedValue([]);
 
       await expect(
         sut.getTimeBucket(authStub.admin, {

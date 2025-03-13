@@ -14,6 +14,7 @@ export class AssetInteraction {
     return this.assetSelectionCandidates.values().some((asset) => asset.id === assetId);
   }
   assetSelectionStart = $state<AssetResponseDto | null>(null);
+  focussedAssetId = $state<string | null>(null);
 
   selectionActive = $derived(this.selectedAssets.size > 0);
   selectedAssetsArray = $derived([...this.selectedAssets]);
@@ -68,5 +69,9 @@ export class AssetInteraction {
     // Range selection
     this.assetSelectionCandidates.clear();
     this.assetSelectionStart = null;
+  }
+
+  isFocussedAsset(asset: AssetResponseDto) {
+    return this.focussedAssetId === asset.id;
   }
 }

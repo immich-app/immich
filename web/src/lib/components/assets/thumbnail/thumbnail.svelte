@@ -31,6 +31,7 @@
     thumbnailWidth?: number | undefined;
     thumbnailHeight?: number | undefined;
     selected?: boolean;
+    focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -41,7 +42,9 @@
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
+    handleFocus?: (() => void) | undefined;
     class?: string;
+    overrideDisplayForTest?: boolean;
   }
 
   let {
@@ -51,6 +54,7 @@
     thumbnailWidth = undefined,
     thumbnailHeight = undefined,
     selected = false,
+    focussed = false,
     selectionCandidate = false,
     disabled = false,
     readonly = false,
@@ -60,15 +64,25 @@
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
+    handleFocus = undefined,
     class: className = '',
+    overrideDisplayForTest = false,
   }: Props = $props();
 
   let {
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
+  let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
+
+  $effect(() => {
+    if (focussed && document.activeElement !== focussableElement) {
+      focussableElement?.focus();
+    }
+  });
+
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
 
@@ -123,6 +137,7 @@
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
     ></canvas>
   {/if}
+
   <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
   <div
@@ -131,14 +146,20 @@
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
-    onkeypress={(evt) => {
+    onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
+      }
+      if (evt.key === 'x') {
+        onSelect?.(asset);
       }
     }}
     tabindex={0}
     onclick={handleClick}
     role="link"
+    bind:this={focussableElement}
+    onfocus={handleFocus}
+    data-testid="container-with-tabindex"
   >
     {#if mouseOver && !disableMouseOver}
       <!-- lazy show the url on mouse over-->
@@ -149,7 +170,7 @@
         style:height="{height}px"
         href={currentUrlReplaceAssetId(asset.id)}
         onclick={(evt) => evt.preventDefault()}
-        tabindex={0}
+        tabindex={-1}
         aria-label="Thumbnail URL"
       >
       </a>

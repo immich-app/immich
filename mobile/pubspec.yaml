@@ -6,7 +6,7 @@ version: 1.129.0+187
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.24.5
+  flutter: 3.29.1
 
 isar_version: &isar_version 3.1.8 # define the version to be used
 
@@ -14,19 +14,18 @@ dependencies:
   flutter:
     sdk: flutter
 
-  path_provider_ios:
   photo_manager: ^3.6.1
   photo_manager_image_provider: ^2.2.0
-  flutter_hooks: ^0.20.4
-  hooks_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
+  flutter_hooks: ^0.21.2
+  hooks_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
   cached_network_image: ^3.3.1
   flutter_cache_manager: ^3.3.1
   intl: ^0.19.0
   auto_route: ^9.2.0
   fluttertoast: ^8.2.4
   socket_io_client: ^2.0.3+1
-  maplibre_gl: 0.19.0+2
+  maplibre_gl: ^0.21.0
   geolocator: ^11.0.0 # used to move to current location in map view
   flutter_udid: ^3.0.0
   flutter_svg: ^2.0.9
@@ -39,10 +38,11 @@ dependencies:
   flutter_displaymode: ^0.6.0
   scrollable_positioned_list: ^0.3.8
   path: ^1.8.3
-  path_provider: ^2.1.2
+  path_provider: ^2.1.5
+  path_provider_foundation: ^2.4.1
   collection: ^1.18.0
   http_parser: ^4.0.2
-  flutter_web_auth: 0.6.0
+  flutter_web_auth_2: ^5.0.0-alpha.0
   easy_image_viewer: ^1.4.0
   isar:
     version: *isar_version
@@ -108,8 +108,8 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   custom_lint: ^0.6.4
-  riverpod_lint: ^2.3.7
-  riverpod_generator: ^2.3.9
+  riverpod_lint: ^2.6.1
+  riverpod_generator: ^2.6.1
   mocktail: ^1.0.3
   immich_mobile_immich_lint:
     path: './immich_lint'

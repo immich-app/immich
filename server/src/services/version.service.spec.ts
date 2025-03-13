@@ -4,6 +4,7 @@ import { serverVersion } from 'src/constants';
 import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const mockRelease = (version: string) => ({
@@ -30,7 +31,12 @@ describe(VersionService.name, () => {
 
   describe('onBootstrap', () => {
     it('should record a new version', async () => {
+      mocks.versionHistory.getAll.mockResolvedValue([]);
+      mocks.versionHistory.getLatest.mockResolvedValue(void 0);
+      mocks.versionHistory.create.mockResolvedValue(factory.versionHistory());
+
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
       expect(mocks.versionHistory.create).toHaveBeenCalledWith({ version: expect.any(String) });
     });
 

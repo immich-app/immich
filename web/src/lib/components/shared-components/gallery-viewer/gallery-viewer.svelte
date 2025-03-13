@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
@@ -252,6 +252,26 @@
     }
   };
 
+  const focusNextAsset = () => {
+    if (assetInteraction.focussedAssetId === null && assets.length > 0) {
+      assetInteraction.focussedAssetId = assets[0].id;
+    } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
+      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
+        assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
+      }
+    }
+  };
+
+  const focusPreviousAsset = () => {
+    if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
+      if (currentIndex >= 1) {
+        assetInteraction.focussedAssetId = assets[currentIndex - 1].id;
+      }
+    }
+  };
+
   let shortcutList = $derived(
     (() => {
       if ($isViewerOpen) {
@@ -262,6 +282,8 @@
         { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -380,6 +402,10 @@
     }
   };
 
+  const assetOnFocusHandler = (asset: AssetResponseDto) => {
+    assetInteraction.focussedAssetId = asset.id;
+  };
+
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
@@ -449,10 +475,12 @@
             }}
             onSelect={(asset) => handleSelectAssets(asset)}
             onMouseEvent={() => assetMouseEventHandler(asset)}
+            handleFocus={() => assetOnFocusHandler(asset)}
             {showArchiveIcon}
             {asset}
             selected={assetInteraction.hasSelectedAsset(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
+            focussed={assetInteraction.isFocussedAsset(asset)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />

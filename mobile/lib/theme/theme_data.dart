@@ -24,9 +24,8 @@ ThemeData getThemeData({
     hintColor: colorScheme.onSurfaceSecondary,
     focusColor: colorScheme.primary,
     scaffoldBackgroundColor: colorScheme.surface,
-    splashColor: colorScheme.primary.withOpacity(0.1),
-    highlightColor: colorScheme.primary.withOpacity(0.1),
-    dialogBackgroundColor: colorScheme.surfaceContainer,
+    splashColor: colorScheme.primary.withValues(alpha: 0.1),
+    highlightColor: colorScheme.primary.withValues(alpha: 0.1),
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: colorScheme.surfaceContainer,
     ),
@@ -163,6 +162,7 @@ ThemeData getThemeData({
         ),
       ),
     ),
+    dialogTheme: DialogThemeData(backgroundColor: colorScheme.surfaceContainer),
   );
 }
 

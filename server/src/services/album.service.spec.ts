@@ -347,6 +347,7 @@ describe(AlbumService.name, () => {
     it('should remove a shared user from an owned album', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithUser.id]));
       mocks.album.getById.mockResolvedValue(albumStub.sharedWithUser);
+      mocks.albumUser.delete.mockResolvedValue();
 
       await expect(
         sut.removeUser(authStub.admin, albumStub.sharedWithUser.id, userStub.user1.id),
@@ -376,6 +377,7 @@ describe(AlbumService.name, () => {
 
     it('should allow a shared user to remove themselves', async () => {
       mocks.album.getById.mockResolvedValue(albumStub.sharedWithUser);
+      mocks.albumUser.delete.mockResolvedValue();
 
       await sut.removeUser(authStub.user1, albumStub.sharedWithUser.id, authStub.user1.user.id);
 
@@ -388,6 +390,7 @@ describe(AlbumService.name, () => {
 
     it('should allow a shared user to remove themselves using "me"', async () => {
       mocks.album.getById.mockResolvedValue(albumStub.sharedWithUser);
+      mocks.albumUser.delete.mockResolvedValue();
 
       await sut.removeUser(authStub.user1, albumStub.sharedWithUser.id, 'me');
 
@@ -422,6 +425,8 @@ describe(AlbumService.name, () => {
   describe('updateUser', () => {
     it('should update user role', async () => {
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
+      mocks.albumUser.update.mockResolvedValue(null as any);
+
       await sut.updateUser(authStub.user1, albumStub.sharedWithAdmin.id, userStub.admin.id, {
         role: AlbumUserRole.EDITOR,
       });

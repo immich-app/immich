@@ -1,6 +1,6 @@
 import 'package:immich_mobile/entities/user.entity.dart';
 
-final class UserStub {
+abstract final class UserStub {
   const UserStub._();
 
   static final admin = User(
@@ -8,9 +8,9 @@ final class UserStub {
     updatedAt: DateTime(2021),
     email: "admin@test.com",
     name: "admin",
-    avatarColor: AvatarColorEnum.green,
-    profileImagePath: '',
     isAdmin: true,
+    profileImagePath: '',
+    avatarColor: AvatarColorEnum.green,
   );
 
   static final user1 = User(
@@ -18,9 +18,9 @@ final class UserStub {
     updatedAt: DateTime(2022),
     email: "user1@test.com",
     name: "user1",
-    avatarColor: AvatarColorEnum.red,
-    profileImagePath: '',
     isAdmin: false,
+    profileImagePath: '',
+    avatarColor: AvatarColorEnum.red,
   );
 
   static final user2 = User(
@@ -28,8 +28,8 @@ final class UserStub {
     updatedAt: DateTime(2023),
     email: "user2@test.com",
     name: "user2",
-    avatarColor: AvatarColorEnum.primary,
-    profileImagePath: '',
     isAdmin: false,
+    profileImagePath: '',
+    avatarColor: AvatarColorEnum.primary,
   );
 }

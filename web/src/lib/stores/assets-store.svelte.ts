@@ -112,6 +112,7 @@ export class AssetDateGroup {
     this.dateString = dateString;
   }
 
+  
   sortAssets() {
     this.intersetingAssets.sort((a, b) => {
       const aDate = DateTime.fromISO(a.asset!.fileCreatedAt).toUTC();
@@ -120,6 +121,9 @@ export class AssetDateGroup {
     });
   }
 
+  getFirstAsset() {
+    return this.intersetingAssets[0]?.asset;
+  }
   getRandomAsset() {
     const random = Math.floor(Math.random() * this.intersetingAssets.length);
     return this.intersetingAssets[random];
@@ -252,7 +256,9 @@ export class AssetBucket {
   get lastDateGroup() {
     return this.dateGroups.at(-1);
   }
-
+  getFirstAsset() {
+   return this.dateGroups[0]?.getFirstAsset();
+  }
   getAssets() {
     // eslint-disable-next-line unicorn/no-array-reduce
     return this.dateGroups.reduce(
@@ -1054,6 +1060,10 @@ export class AssetStore {
       this.#updateGeometry(bucket, true);
     }
     this.updateIntersections();
+  }
+
+  getFirstAsset(): AssetResponseDto | undefined {
+    return this.buckets[0]?.getFirstAsset();
   }
 
   async getPreviousAsset(id: AssetResponseDto): Promise<AssetResponseDto | undefined> {
