@@ -22,7 +22,6 @@ def _export_platform(
 
     rknn = RKNN(verbose=False)
 
-    # flash_attention = model_dir.name != "visual" or model_dir.parent.name not in RKNN_VISUAL_FLASH_ATTENTION_BLACKLIST
     rknn.config(
         target_platform=target_platform,
         dynamic_input=dynamic_input,

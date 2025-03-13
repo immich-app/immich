@@ -24,18 +24,6 @@ SOURCE_TO_METADATA = {
 
 RKNN_SOCS = ["rk3566", "rk3576", "rk3588"]
 
-# the builder hangs when using flash attention with these models
-RKNN_VISUAL_FLASH_ATTENTION_BLACKLIST = {
-    "ViT-H-14-378-quickgelu__dfn5b",
-    "ViT-L-16-SigLIP-384__webli",
-    "ViT-L-16-SigLIP2-384__webli",
-    "ViT-L-16-SigLIP2-512__webli",
-    "ViT-SO400M-14-SigLIP-384__webli",
-    "ViT-SO400M-14-SigLIP2-378__webli",
-    "ViT-SO400M-16-SigLIP2-378__webli",
-    "ViT-SO400M-16-SigLIP2-512__webli",
-}
-
 
 # glob to delete old UUID blobs when reuploading models
 _uuid_char = "[a-fA-F0-9]"
