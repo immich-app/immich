@@ -26,7 +26,7 @@
   });
 </script>
 
-<div class:display-none={$showAssetViewer}>
+<div>
   {@render children?.()}
 </div>
 <UploadCover />

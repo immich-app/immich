@@ -566,7 +566,7 @@ export class AssetStore {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() {}
+  constructor() { }
 
   set scrolling(value: boolean) {
     this.#scrolling = value;
@@ -1162,9 +1162,9 @@ export class AssetStore {
         return;
       }
       await this.loadBucket(bucket.bucketDate);
-      const asset = bucket.lastDateGroup?.intersetingAssets.at(-1)?.asset;
-      if (asset) {
-        return asset;
+      const previous = bucket.lastDateGroup?.intersetingAssets.at(-1)?.asset;
+      if (previous) {
+        return previous;
       }
       bucketIndex--;
     }
@@ -1183,13 +1183,13 @@ export class AssetStore {
       }
     }
 
-    let bucketIndex = this.buckets.indexOf(bucket);
+    let bucketIndex = this.buckets.indexOf(bucket) + 1;
     while (bucketIndex < this.buckets.length - 1) {
       bucket = this.buckets[bucketIndex];
       await this.loadBucket(bucket.bucketDate);
-      const asset = bucket.dateGroups[0]?.intersetingAssets[0]?.asset;
-      if (asset) {
-        return asset;
+      const next = bucket.dateGroups[0]?.intersetingAssets[0]?.asset;
+      if (next) {
+        return next;
       }
       bucketIndex++;
     }
@@ -1197,9 +1197,9 @@ export class AssetStore {
 
   isExcluded(asset: AssetResponseDto) {
     return (
-      isMismatched(this.#options.isArchived ?? false, asset.isArchived) ||
+      isMismatched(this.#options.isArchived, asset.isArchived) ||
       isMismatched(this.#options.isFavorite, asset.isFavorite) ||
-      isMismatched(this.#options.isTrashed ?? false, asset.isTrashed)
+      isMismatched(this.#options.isTrashed, asset.isTrashed)
     );
   }
 }
