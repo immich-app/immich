@@ -220,7 +220,7 @@
 
 <div
   transition:fly={{ x: 50, duration: 250 }}
-  tabindex="0"
+  tabindex="-1"
   role="scrollbar"
   aria-controls="time-label"
   aria-valuenow={scrollY + HOVER_DATE_HEIGHT}

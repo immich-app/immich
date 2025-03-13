@@ -77,6 +77,7 @@ export class CancellableTask {
   }
 
   private init() {
+    this.cancelToken = null;
     this.executed = false;
     // create a promise, and store its resolve/reject callbacks. The loadedSignal callback
     // will be incoked when a bucket is loaded, fulfilling the promise. The canceledSignal
