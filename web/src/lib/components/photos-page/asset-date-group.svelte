@@ -44,7 +44,7 @@
   let isMouseOverGroup = $state(false);
   let hoveredDateGroup = $state();
 
-  const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 5000));
+  const transitionDuration = $derived.by(() => (bucket.store.suspendTransitions && !$isUploading ? 0 : 150));
   const scaleDuration = $derived(transitionDuration === 0 ? 0 : transitionDuration + 100);
   const onClick = (assets: AssetResponseDto[], groupTitle: string, asset: AssetResponseDto) => {
     if (isSelectionMode || assetInteraction.selectionActive) {
