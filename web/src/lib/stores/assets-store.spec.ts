@@ -324,7 +324,7 @@ describe('AssetStore', () => {
     let assetStore: AssetStore;
 
     beforeEach(async () => {
-      assetStore = new AssetStore({});
+      assetStore = new AssetStore();
       sdkMock.getTimeBuckets.mockResolvedValue([]);
       await assetStore.updateViewport({ width: 0, height: 0 });
     });
