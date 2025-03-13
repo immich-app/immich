@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { intersectionObserver } from '$lib/actions/intersection-observer';
   import { resizeObserver } from '$lib/actions/resize-observer';
   import { shortcuts } from '$lib/actions/shortcut';
@@ -33,7 +33,7 @@
   import { getAssetPlaybackUrl, getAssetThumbnailUrl, handlePromiseError, memoryLaneTitle } from '$lib/utils';
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import { fromLocalDateTime } from '$lib/utils/timeline-util';
-  import { AssetMediaSize, AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+  import { AssetMediaSize, type AssetResponseDto, AssetTypeEnum } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import {
     mdiCardsOutline,
@@ -50,12 +50,11 @@
     mdiPlay,
     mdiPlus,
     mdiSelectAll,
-    mdiVolumeOff,
     mdiVolumeHigh,
+    mdiVolumeOff,
   } from '@mdi/js';
-  import type { NavigationTarget } from '@sveltejs/kit';
+  import type { NavigationTarget, Page } from '@sveltejs/kit';
   import { DateTime } from 'luxon';
-  import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { Tween } from 'svelte/motion';
   import { fade } from 'svelte/transition';
@@ -74,11 +73,6 @@
   const assetInteraction = new AssetInteraction();
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
-
-  const loadFromParams = (page: typeof $page | NavigationTarget | null) => {
-    const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
-    return memoryStore.getMemoryAsset(assetId);
-  };
   const asHref = (asset: AssetResponseDto) => `?${QueryParameter.ID}=${asset.id}`;
   const handleNavigate = async (asset?: AssetResponseDto) => {
     if ($isViewing) {
@@ -112,17 +106,25 @@
   const handleSelectAll = () => assetInteraction.selectAssets(current?.memory.assets || []);
   const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
     // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
-    // console.log(`handleAction[${callingContext}] called with: ${action}`);
+    console.log(`handleAction[${callingContext}] called with: ${action}`);
     if (!progressBarController) {
-      // console.log(`handleAction[${callingContext}] NOT READY!`);
+      console.log(`handleAction[${callingContext}] NOT READY!`);
       return;
     }
 
     switch (action) {
       case 'play': {
-        paused = false;
-        await videoPlayer?.play();
-        await progressBarController.set(1);
+        try {
+          paused = false;
+          await videoPlayer?.play();
+          await progressBarController.set(1);
+        } catch (error) {
+          // this may happen if browser blocks auto-play of the video on first page load. This can either be a setting
+          // or just defaut in certain browsers on page load without any DOM interaction by user.
+          console.error(`handleAction[${callingContext}] videoPlayer play problem: ${error}`);
+          paused = true;
+          await progressBarController.set(0);
+        }
         break;
       }
 
@@ -147,7 +149,7 @@
     }
 
     if (progress === 1 && !paused) {
-      await (current?.next ? handleNextAsset() : handleAction('handleProgressLast', 'pause'));
+      await (current?.next ? handleNextAsset() : handlePromiseError(handleAction('handleProgressLast', 'pause')));
     }
   };
 
@@ -169,7 +171,7 @@
       return;
     }
     memoryStore.hideAssetsFromMemory(ids);
-    init();
+    init(page);
   };
   const handleDeleteMemoryAsset = async () => {
     if (!current) {
@@ -177,7 +179,7 @@
     }
 
     await memoryStore.deleteAssetFromMemory(current.asset.id);
-    init();
+    init(page);
   };
   const handleDeleteMemory = async () => {
     if (!current) {
@@ -186,7 +188,7 @@
 
     await memoryStore.deleteMemory(current.memory.id);
     notificationController.show({ message: $t('removed_memory'), type: NotificationType.Info });
-    init();
+    init(page);
   };
   const handleSaveMemory = async () => {
     if (!current) {
@@ -199,7 +201,7 @@
       message: newSavedState ? $t('added_to_favorites') : $t('removed_from_favorites'),
       type: NotificationType.Info,
     });
-    init();
+    init(page);
   };
   const handleGalleryScrollsIntoView = () => {
     galleryInView = true;
@@ -215,12 +217,22 @@
     galleryFirstLoad = false;
   };
 
-  const init = () => {
+  const loadFromParams = (page: Page | NavigationTarget | null) => {
+    const assetId = page?.params?.assetId ?? page?.url.searchParams.get(QueryParameter.ID) ?? undefined;
+    return memoryStore.getMemoryAsset(assetId);
+  };
+
+  const init = (target: Page | NavigationTarget | null) => {
     if (memoryStore.memories.length === 0) {
       return handlePromiseError(goto(AppRoute.PHOTOS));
     }
 
-    current = loadFromParams($page);
+    const hadAssetLoaded = !!current;
+    current = loadFromParams(target);
+    if (hadAssetLoaded) {
+      // Means we navigated either by click or shortcuts. Player needs to be re-initalized.
+      playerInitialized = false;
+    }
 
     // Adjust the progress bar duration to the video length
     if (current) {
@@ -229,8 +241,8 @@
   };
 
   const initPlayer = () => {
-    if (!progressBarController || playerInitialized) {
-      // Either we're not ready to init yet (onMount probably hasn't run yet) or we've already initialised the player
+    const isVideoAssetButPlayerHasNotLoadedYet = current && current.asset.type === AssetTypeEnum.Video && !videoPlayer;
+    if (playerInitialized || isVideoAssetButPlayerHasNotLoadedYet) {
       return;
     }
     if ($isViewing) {
@@ -242,33 +254,30 @@
     playerInitialized = true;
   };
 
-  onMount(async () => {
-    await memoryStore.initialize();
-
-    init();
-    initPlayer();
-  });
-
-  afterNavigate(({ from, to }) => {
-    let target = null;
-    if (to?.params?.assetId) {
-      target = to;
-    } else if (from?.params?.assetId) {
-      target = from;
-    } else {
-      target = $page;
+  afterNavigate(({ from, to, type }) => {
+    if (type === 'enter') {
+      // afterNavigate triggers twice on first page load (once when mounted with 'enter' and then a second time
+      // with the actual 'goto' to URL).
+      return;
     }
+    memoryStore.initialize().then(
+      () => {
+        let target = null;
+        if (to?.params?.assetId) {
+          target = to;
+        } else if (from?.params?.assetId) {
+          target = from;
+        } else {
+          target = page;
+        }
 
-    const hadAssetLoaded = !!current;
-    current = loadFromParams(target);
-    if (current) {
-      setProgressDuration(current.asset);
-    }
-    if (hadAssetLoaded) {
-      // Means we navigated either by click or shortcuts. Player needs to be re-initalized.
-      playerInitialized = false;
-    }
-    initPlayer();
+        init(target);
+        initPlayer();
+      },
+      (error) => {
+        console.error(`Error loading memories: ${error}`);
+      },
+    );
   });
 
   $effect(() => {
@@ -280,6 +289,7 @@
   $effect(() => {
     if (videoPlayer) {
       videoPlayer.muted = $videoViewerMuted;
+      initPlayer();
     }
   });
 </script>
@@ -341,7 +351,7 @@
         <CircleIconButton
           title={paused ? $t('play_memories') : $t('pause_memories')}
           icon={paused ? mdiPlay : mdiPause}
-          onclick={() => handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause')}
+          onclick={() => handlePromiseError(handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause'))}
           class="hover:text-black"
         />
 
@@ -477,7 +487,7 @@
                   icon={mdiDotsVertical}
                   padding="3"
                   title={$t('menu')}
-                  onclick={() => handleAction('ContextMenuClick', 'pause')}
+                  onclick={() => handlePromiseError(handleAction('ContextMenuClick', 'pause'))}
                   direction="left"
                   size="20"
                   align="bottom-right"
@@ -615,8 +625,7 @@
 
 <style>
   .main-view {
-    box-shadow:
-      0 4px 4px 0 rgba(0, 0, 0, 0.3),
-      0 8px 12px 6px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.3),
+    0 8px 12px 6px rgba(0, 0, 0, 0.15);
   }
 </style>
