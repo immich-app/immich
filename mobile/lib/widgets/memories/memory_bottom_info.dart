@@ -48,7 +48,7 @@ class MemoryBottomInfo extends StatelessWidget {
                 .scrollToDate(memory.assets[0].fileCreatedAt);
           },
           shape: const CircleBorder(),
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           elevation: 0,
           child: const Icon(
             Icons.open_in_new,

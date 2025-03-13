@@ -33,6 +33,8 @@ describe(MemoryService.name, () => {
     });
 
     it('should map ', async () => {
+      mocks.memory.search.mockResolvedValue([]);
+
       await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
     });
   });
@@ -46,6 +48,7 @@ describe(MemoryService.name, () => {
       const [memoryId] = newUuids();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memoryId]));
+      mocks.memory.get.mockResolvedValue(void 0);
 
       await expect(sut.get(factory.auth(), memoryId)).rejects.toBeInstanceOf(BadRequestException);
     });
@@ -159,6 +162,7 @@ describe(MemoryService.name, () => {
       const memoryId = newUuid();
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memoryId]));
+      mocks.memory.delete.mockResolvedValue();
 
       await expect(sut.remove(factory.auth(), memoryId)).resolves.toBeUndefined();
 
@@ -183,6 +187,7 @@ describe(MemoryService.name, () => {
 
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.memory.get.mockResolvedValue(memory);
+      mocks.memory.getAssetIds.mockResolvedValue(new Set());
 
       await expect(sut.addAssets(factory.auth(), memory.id, { ids: [assetId] })).resolves.toEqual([
         { error: 'no_permission', id: assetId, success: false },
@@ -213,6 +218,9 @@ describe(MemoryService.name, () => {
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.memory.get.mockResolvedValue(memory);
+      mocks.memory.update.mockResolvedValue(memory);
+      mocks.memory.getAssetIds.mockResolvedValue(new Set());
+      mocks.memory.addAssetIds.mockResolvedValue();
 
       await expect(sut.addAssets(factory.auth(), memory.id, { ids: [assetId] })).resolves.toEqual([
         { id: assetId, success: true },
@@ -233,6 +241,7 @@ describe(MemoryService.name, () => {
 
     it('should skip assets not in the memory', async () => {
       mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
+      mocks.memory.getAssetIds.mockResolvedValue(new Set());
 
       await expect(sut.removeAssets(factory.auth(), 'memory1', { ids: ['not-found'] })).resolves.toEqual([
         { error: 'not_found', id: 'not-found', success: false },
@@ -242,15 +251,20 @@ describe(MemoryService.name, () => {
     });
 
     it('should remove assets', async () => {
-      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set(['memory1']));
-      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1']));
-      mocks.memory.getAssetIds.mockResolvedValue(new Set(['asset1']));
+      const memory = factory.memory();
+      const asset = factory.asset();
 
-      await expect(sut.removeAssets(factory.auth(), 'memory1', { ids: ['asset1'] })).resolves.toEqual([
-        { id: 'asset1', success: true },
+      mocks.access.memory.checkOwnerAccess.mockResolvedValue(new Set([memory.id]));
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.memory.getAssetIds.mockResolvedValue(new Set([asset.id]));
+      mocks.memory.removeAssetIds.mockResolvedValue();
+      mocks.memory.update.mockResolvedValue(memory);
+
+      await expect(sut.removeAssets(factory.auth(), memory.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: true },
       ]);
 
-      expect(mocks.memory.removeAssetIds).toHaveBeenCalledWith('memory1', ['asset1']);
+      expect(mocks.memory.removeAssetIds).toHaveBeenCalledWith(memory.id, [asset.id]);
     });
   });
 });

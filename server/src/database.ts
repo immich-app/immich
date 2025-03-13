@@ -29,6 +29,15 @@ export type AuthApiKey = {
   permissions: Permission[];
 };
 
+export type ApiKey = {
+  id: string;
+  name: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  permissions: Permission[];
+};
+
 export type User = {
   id: string;
   name: string;
@@ -83,6 +92,17 @@ export type AuthSession = {
   id: string;
 };
 
+export type Partner = {
+  sharedById: string;
+  sharedBy: User;
+  sharedWithId: string;
+  sharedWith: User;
+  createdAt: Date;
+  updatedAt: Date;
+  updateId: string;
+  inTimeline: boolean;
+};
+
 export const columns = {
   ackEpoch: (columnName: 'createdAt' | 'updatedAt' | 'deletedAt') =>
     sql.raw<string>(`extract(epoch from "${columnName}")::text`).as('ackEpoch'),
@@ -108,4 +128,46 @@ export const columns = {
   userDto: ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'],
   tagDto: ['id', 'value', 'createdAt', 'updatedAt', 'color', 'parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
+  syncAsset: [
+    'id',
+    'ownerId',
+    'thumbhash',
+    'checksum',
+    'fileCreatedAt',
+    'fileModifiedAt',
+    'localDateTime',
+    'type',
+    'deletedAt',
+    'isFavorite',
+    'isVisible',
+    'updateId',
+  ],
+  syncAssetExif: [
+    'exif.assetId',
+    'exif.description',
+    'exif.exifImageWidth',
+    'exif.exifImageHeight',
+    'exif.fileSizeInByte',
+    'exif.orientation',
+    'exif.dateTimeOriginal',
+    'exif.modifyDate',
+    'exif.timeZone',
+    'exif.latitude',
+    'exif.longitude',
+    'exif.projectionType',
+    'exif.city',
+    'exif.state',
+    'exif.country',
+    'exif.make',
+    'exif.model',
+    'exif.lensModel',
+    'exif.fNumber',
+    'exif.focalLength',
+    'exif.iso',
+    'exif.exposureTime',
+    'exif.profileDescription',
+    'exif.rating',
+    'exif.fps',
+    'exif.updateId',
+  ],
 } as const;

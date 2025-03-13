@@ -30,6 +30,13 @@ As mentioned above, you should make your own backup of these together with the a
 You can adjust the schedule and amount of kept backups in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
 By default, Immich will keep the last 14 backups and create a new backup every day at 2:00 AM.
 
+#### Trigger Backup
+
+You are able to trigger a backup in the [admin job status page](http://my.immich.app/admin/jobs-status).
+Visit the page, open the "Create job" modal from the top right, select "Backup Database" and click "Confirm".
+A job will run and trigger a backup, you can verify this worked correctly by checking the logs or the backup folder.
+This backup will count towards the last X backups that will be kept based on your settings.
+
 #### Restoring
 
 We hope to make restoring simpler in future versions, for now you can find the backups in the `UPLOAD_LOCATION/backups` folder on your host.  
