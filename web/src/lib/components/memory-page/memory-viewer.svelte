@@ -227,17 +227,12 @@
       return handlePromiseError(goto(AppRoute.PHOTOS));
     }
 
-    const hadAssetLoaded = !!current;
     current = loadFromParams(target);
-    if (hadAssetLoaded) {
-      // Means we navigated either by click or shortcuts. Player needs to be re-initalized.
-      playerInitialized = false;
-    }
-
     // Adjust the progress bar duration to the video length
     if (current) {
       setProgressDuration(current.asset);
     }
+    playerInitialized = false;
   };
 
   const initPlayer = () => {
