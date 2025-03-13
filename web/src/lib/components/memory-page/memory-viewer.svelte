@@ -63,6 +63,8 @@
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
   let galleryInView = $state(false);
+  let galleryFirstLoad = $state(true);
+  let playerInitialized = $state(false);
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let isSaved = $derived(current?.memory.isSaved);
@@ -87,9 +89,6 @@
       return;
     }
 
-    // Adjust the progress bar duration to the video length
-    setProgressDuration(asset);
-
     await goto(asHref(asset));
   };
   const setProgressDuration = (asset: AssetResponseDto) => {
@@ -111,8 +110,11 @@
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
   const handleEscape = async () => goto(AppRoute.PHOTOS);
   const handleSelectAll = () => assetInteraction.selectAssets(current?.memory.assets || []);
-  const handleAction = async (action: 'reset' | 'pause' | 'play') => {
+  const handleAction = async (callingContext: string, action: 'reset' | 'pause' | 'play') => {
+    // leaving these log statements here as comments. Very useful to figure out what's going on during dev!
+    // console.log(`handleAction[${callingContext}] called with: ${action}`);
     if (!progressBarController) {
+      // console.log(`handleAction[${callingContext}] NOT READY!`);
       return;
     }
 
@@ -132,9 +134,9 @@
       }
 
       case 'reset': {
-        await progressBarController.set(0);
         paused = false;
         videoPlayer?.pause();
+        await progressBarController.set(0);
         break;
       }
     }
@@ -144,18 +146,8 @@
       return;
     }
 
-    if (progress === 0 && !paused) {
-      await handleAction('play');
-      return;
-    }
-
     if (progress === 1 && !paused) {
-      if (current?.next) {
-        await progressBarController.set(0);
-        await handleNextAsset();
-      } else {
-        await handleAction('pause');
-      }
+      await (current?.next ? handleNextAsset() : handleAction('handleProgressLast', 'pause'));
     }
   };
 
@@ -209,6 +201,19 @@
     });
     init();
   };
+  const handleGalleryScrollsIntoView = () => {
+    galleryInView = true;
+    handlePromiseError(handleAction('galleryInView', 'pause'));
+  };
+  const handleGalleryScrollsOutOfView = () => {
+    galleryInView = false;
+    // only call play after the first page load. When page first loads the gallery will not be visible
+    // and calling play here will result in duplicate invocation.
+    if (!galleryFirstLoad) {
+      handlePromiseError(handleAction('galleryOutOfView', 'play'));
+    }
+    galleryFirstLoad = false;
+  };
 
   const init = () => {
     if (memoryStore.memories.length === 0) {
@@ -218,13 +223,30 @@
     current = loadFromParams($page);
 
     // Adjust the progress bar duration to the video length
-    setProgressDuration(current.asset);
+    if (current) {
+      setProgressDuration(current.asset);
+    }
+  };
+
+  const initPlayer = () => {
+    if (!progressBarController || playerInitialized) {
+      // Either we're not ready to init yet (onMount probably hasn't run yet) or we've already initialised the player
+      return;
+    }
+    if ($isViewing) {
+      handlePromiseError(handleAction('initPlayer[AssetViewOpen]', 'pause'));
+    } else {
+      handlePromiseError(handleAction('initPlayer[AssetViewClosed]', 'reset'));
+      handlePromiseError(handleAction('initPlayer[AssetViewClosed]', 'play'));
+    }
+    playerInitialized = true;
   };
 
   onMount(async () => {
     await memoryStore.initialize();
 
     init();
+    initPlayer();
   });
 
   afterNavigate(({ from, to }) => {
@@ -237,22 +259,21 @@
       target = $page;
     }
 
+    const hadAssetLoaded = !!current;
     current = loadFromParams(target);
-
-    if (progressBarController) {
-      handlePromiseError(handleAction('reset'));
+    if (current) {
+      setProgressDuration(current.asset);
     }
+    if (hadAssetLoaded) {
+      // Means we navigated either by click or shortcuts. Player needs to be re-initalized.
+      playerInitialized = false;
+    }
+    initPlayer();
   });
 
   $effect(() => {
     if (progressBarController) {
       handlePromiseError(handleProgress(progressBarController.current));
-    }
-  });
-
-  $effect(() => {
-    if (progressBarController) {
-      handlePromiseError(handleAction(galleryInView || $isViewing ? 'pause' : 'play'));
     }
   });
 
@@ -320,7 +341,7 @@
         <CircleIconButton
           title={paused ? $t('play_memories') : $t('pause_memories')}
           icon={paused ? mdiPlay : mdiPause}
-          onclick={() => handleAction(paused ? 'play' : 'pause')}
+          onclick={() => handleAction('PlayPauseButtonClick', paused ? 'play' : 'pause')}
           class="hover:text-black"
         />
 
@@ -405,7 +426,7 @@
           <div class="relative h-full w-full rounded-2xl bg-black">
             {#key current.asset.id}
               <div transition:fade class="h-full w-full">
-                {#if current.asset.type == AssetTypeEnum.Video}
+                {#if current.asset.type === AssetTypeEnum.Video}
                   <video
                     bind:this={videoPlayer}
                     autoplay
@@ -456,7 +477,7 @@
                 <ButtonContextMenu
                   icon={mdiDotsVertical}
                   title={$t('menu')}
-                  onclick={() => handleAction('pause')}
+                  onclick={() => handleAction('ContextMenuClick', 'pause')}
                   direction="left"
                   align="bottom-right"
                   class="text-white dark:text-white"
@@ -573,8 +594,8 @@
       <div
         id="gallery-memory"
         use:intersectionObserver={{
-          onIntersect: () => (galleryInView = true),
-          onSeparate: () => (galleryInView = false),
+          onIntersect: handleGalleryScrollsIntoView,
+          onSeparate: handleGalleryScrollsOutOfView,
           bottom: '-200px',
         }}
         use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
