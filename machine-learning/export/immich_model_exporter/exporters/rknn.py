@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .constants import RKNN_SOCS, RKNN_VISUAL_FLASH_ATTENTION_BLACKLIST
+from .constants import RKNN_SOCS
 
 
 def _export_platform(
