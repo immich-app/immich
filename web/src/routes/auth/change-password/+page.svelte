@@ -19,14 +19,12 @@
   const valid = $derived(password === passwordConfirm && passwordConfirm.length > 0);
   const errorMessage = $derived(passwordConfirm.length === 0 || valid ? '' : $t('password_does_not_match'));
 
-  const onSubmit = async (event: Event) => {
-    event.preventDefault();
-
+  const onSubmit = async () => {
     if (!valid) {
       return;
     }
 
-    await updateMyUser({ userUpdateMeDto: { password: String(password) } });
+    await updateMyUser({ userUpdateMeDto: { password } });
     await goto(AppRoute.AUTH_LOGIN);
     resetSavedUser();
     await logout();
@@ -34,7 +32,7 @@
 </script>
 
 <AuthPageLayout title={data.meta.title}>
-  <form onsubmit={onSubmit} method="post" class="flex flex-col gap-4">
+  <form onsubmit={onSubmit} class="flex flex-col gap-4">
     <Alert color="primary" size="small" class="mb-2">
       <Stack gap={4}>
         <Text>{$t('hi_user', { values: { name: $user.name, email: $user.email } })}</Text>

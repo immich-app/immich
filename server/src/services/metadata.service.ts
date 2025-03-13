@@ -308,6 +308,8 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
+    this.logger.debug(`Reconciling sidecar ${sidecar.id}: ${sidecar.path}`);
+
     if (!sidecar.path.toLowerCase().endsWith('.xmp')) {
       this.logger.error(`Asset file sidecar path is missing .xmp extension: ${sidecar.path}`);
       return JobStatus.FAILED;
@@ -868,10 +870,10 @@ export class MetadataService extends BaseService {
     }
 
     if (asset.isExternal) {
-      // We can take advantage of a speedup that currently only exists for external libraries but will be added to all assets later
+      // External libraries have their sidecars scanned by the library service instead of the slow method below, so we can exit here
       if (sidecar) {
         this.logger.debug(
-          `Detected external library sidecar at '${sidecar.path}' for asset ${asset.id}: ${asset.originalPath}`,
+          `Detected external library sidecar at '${sidecar.path}' for asset ${asset.id}, ${asset.originalPath}`,
         );
       }
       return JobStatus.SUCCESS;

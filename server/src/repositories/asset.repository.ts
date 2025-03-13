@@ -2,9 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { DeleteResult, Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
+import { AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import {
   AssetEntity,
   AssetEntityPlaceholder,
