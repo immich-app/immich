@@ -1,4 +1,6 @@
+import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
@@ -70,4 +72,21 @@ class User {
         quotaUsageInBytes: quotaUsageInBytes,
         quotaSizeInBytes: quotaSizeInBytes,
       );
+}
+
+class UserEntity extends Table {
+  const UserEntity();
+
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
+  TextColumn get email => text()();
+  TextColumn get profileImagePath => text().withDefault(const Constant(''))();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+  // Quota
+  IntColumn get quotaSizeInBytes => integer().nullable()();
+  IntColumn get quotaUsageInBytes => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {id};
 }
