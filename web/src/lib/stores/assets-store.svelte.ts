@@ -41,7 +41,9 @@ function updateObject(target: any, source: any): boolean {
   let updated = false;
   for (const key in source) {
     // eslint-disable-next-line no-prototype-builtins
-    if (!source.hasOwnProperty(key)) { continue; }
+    if (!source.hasOwnProperty(key)) {
+      continue;
+    }
     if (typeof target[key] === 'object') {
       updated = updated || updateObject(target[key], source[key]);
     } else {
@@ -564,7 +566,7 @@ export class AssetStore {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() { }
+  constructor() {}
 
   set scrolling(value: boolean) {
     this.#scrolling = value;
