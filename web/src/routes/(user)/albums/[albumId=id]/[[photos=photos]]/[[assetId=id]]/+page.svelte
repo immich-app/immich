@@ -470,7 +470,6 @@
             onFavorite={(ids, isFavorite) =>
               assetStore.updateAssetOp(ids, (asset) => {
                 asset.isFavorite = isFavorite;
-                debugger;
                 return { remove: false };
               })}
           ></FavoriteAction>

@@ -566,7 +566,7 @@ export class AssetStore {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() { }
+  constructor() {}
 
   set scrolling(value: boolean) {
     this.#scrolling = value;
