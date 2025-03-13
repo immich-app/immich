@@ -1,5 +1,15 @@
 *.zip
 *.onnx
+*.rknn
+*.npy
+*_attr__value
+tokenizer.json
+tokenizer_config.json
+special_tokens_map.json
+preprocess_cfg.json
+config.json
+merges.txt
+vocab.json
 upload/
 venv/
 __pycache__/

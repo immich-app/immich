@@ -1,11 +1,5 @@
-import os
-import tempfile
 import warnings
 from pathlib import Path
-
-import torch
-from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
-from transformers import AutoTokenizer
 
 from .openclip import OpenCLIPModelConfig
 from .openclip import to_onnx as openclip_to_onnx
@@ -21,25 +15,38 @@ _MCLIP_TO_OPENCLIP = {
 
 def to_onnx(
     model_name: str,
+    opset_version: int,
     output_dir_visual: Path | str,
     output_dir_textual: Path | str,
+    no_cache: bool = False,
 ) -> tuple[Path, Path]:
     textual_path = get_model_path(output_dir_textual)
-    with tempfile.TemporaryDirectory() as tmpdir:
-        model = MultilingualCLIP.from_pretrained(model_name, cache_dir=os.environ.get("CACHE_DIR", tmpdir))
+    if no_cache or not textual_path.exists():
+        import torch
+        from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
+        from transformers import AutoTokenizer
+
+        torch.backends.mha.set_fastpath_enabled(False)
+
+        model = MultilingualCLIP.from_pretrained(model_name)
         AutoTokenizer.from_pretrained(model_name).save_pretrained(output_dir_textual)
 
         model.eval()
         for param in model.parameters():
             param.requires_grad_(False)
 
-        export_text_encoder(model, textual_path)
-        visual_path, _ = openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], output_dir_visual)
-        assert visual_path is not None, "Visual model export failed"
+        _export_text_encoder(model, textual_path, opset_version)
+    else:
+        print(f"Model {textual_path} already exists, skipping")
+    visual_path, _ = openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], output_dir_visual, no_cache=no_cache)
+    assert visual_path is not None, "Visual model export failed"
     return visual_path, textual_path
 
 
-def export_text_encoder(model: MultilingualCLIP, output_path: Path | str) -> None:
+def _export_text_encoder(model: "MultilingualCLIP", output_path: Path | str, opset_version: int) -> None:
+    import torch
+    from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
+
     output_path = Path(output_path)
 
     def forward(self: MultilingualCLIP, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
@@ -61,7 +68,7 @@ def export_text_encoder(model: MultilingualCLIP, output_path: Path | str) -> Non
             output_path.as_posix(),
             input_names=["input_ids", "attention_mask"],
             output_names=["embedding"],
-            opset_version=17,
+            opset_version=opset_version,
             # dynamic_axes={
             #     "input_ids": {0: "batch_size", 1: "sequence_length"},
             #     "attention_mask": {0: "batch_size", 1: "sequence_length"},

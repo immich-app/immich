@@ -1,0 +1,47 @@
+[project]
+name = "immich_model_exporter"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10, <4.0"
+dependencies = [
+    "huggingface-hub>=0.29.3",
+    "multilingual-clip>=1.0.10",
+    "onnx>=1.14.1",
+    "onnxruntime>=1.16.0",
+    "open-clip-torch>=2.31.0",
+    "typer>=0.15.2",
+    "rknn-toolkit2>=2.3.0",
+    "transformers>=4.49.0",
+]
+
+[tool.uv]
+override-dependencies = [
+    "onnx>=1.16.0,<2",
+    "onnxruntime>=1.18.2,<2",
+    "torch>=2.4",
+    "torchvision>=0.21",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cpu" },
+]
+torchvision = [
+  { index = "pytorch-cpu" },
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["immich_model_exporter"]
+
+[tool.hatch.build.targets.wheel]
+include = ["immich_model_exporter"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

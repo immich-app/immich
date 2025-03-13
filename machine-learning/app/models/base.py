@@ -33,7 +33,6 @@ class InferenceModel(ABC):
         self.model_name = clean_name(model_name)
         self.cache_dir = Path(cache_dir) if cache_dir is not None else self._cache_dir_default
         self.model_format = model_format if model_format is not None else self._model_format_default
-        self.model_path_prefix = rknn.model_prefix if self.model_format == ModelFormat.RKNN else None
         if session is not None:
             self.session = session
 
@@ -121,15 +120,19 @@ class InferenceModel(ABC):
                 raise ValueError(f"Unsupported model file type: {model_path.suffix}")
         return session
 
+    def model_path_for_format(self, model_format: ModelFormat) -> Path:
+        model_path_prefix = rknn.model_prefix if model_format == ModelFormat.RKNN else None
+        if model_path_prefix:
+            return self.model_dir / model_path_prefix / f"model.{model_format}"
+        return self.model_dir / f"model.{model_format}"
+
     @property
     def model_dir(self) -> Path:
         return self.cache_dir / self.model_type.value
 
     @property
     def model_path(self) -> Path:
-        if self.model_path_prefix:
-            return self.model_dir / self.model_path_prefix / f"model.{self.model_format}"
-        return self.model_dir / f"model.{self.model_format}"
+        return self.model_path_for_format(self.model_format)
 
     @property
     def model_task(self) -> ModelTask:

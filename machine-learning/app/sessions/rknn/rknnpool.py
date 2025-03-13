@@ -9,16 +9,14 @@ import numpy as np
 from numpy.typing import NDArray
 
 from app.config import log
-
-supported_socs = ["rk3566", "rk3588"]
-coremask_supported_socs = ["rk3576", "rk3588"]
+from app.models.constants import RKNN_COREMASK_SUPPORTED_SOCS, RKNN_SUPPORTED_SOCS
 
 
 def get_soc(device_tree_path: Path | str) -> str | None:
     try:
         with Path(device_tree_path).open() as f:
             device_compatible_str = f.read()
-            for soc in supported_socs:
+            for soc in RKNN_SUPPORTED_SOCS:
                 if soc in device_compatible_str:
                     return soc
             log.warning("Device is not supported for RKNN")
@@ -46,7 +44,7 @@ def init_rknn(model_path: str) -> "RKNNLite":
     if ret != 0:
         raise RuntimeError("Load RKNN rknnModel failed")
 
-    if soc_name in coremask_supported_socs:
+    if soc_name in RKNN_COREMASK_SUPPORTED_SOCS:
         ret = rknn_lite.init_runtime(core_mask=RKNNLite.NPU_CORE_AUTO)
     else:
         ret = rknn_lite.init_runtime()  # Please do not set this parameter on other platforms.

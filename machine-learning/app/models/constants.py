@@ -65,6 +65,9 @@ _INSIGHTFACE_MODELS = {
 
 SUPPORTED_PROVIDERS = ["CUDAExecutionProvider", "OpenVINOExecutionProvider", "CPUExecutionProvider"]
 
+RKNN_SUPPORTED_SOCS = ["rk3566", "rk3588"]
+RKNN_COREMASK_SUPPORTED_SOCS = ["rk3576", "rk3588"]
+
 
 def get_model_source(model_name: str) -> ModelSource | None:
     cleaned_name = clean_name(model_name)
