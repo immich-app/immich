@@ -257,7 +257,7 @@
       {#if mouseOver && !disableMouseOver}
         <!-- lazy show the url on mouse over-->
         <a
-          class="absolute z-30 {className} top-[41px]"
+          class="absolute z-20 {className}"
           style:cursor="unset"
           style:width="{width}px"
           style:height="{height}px"
@@ -268,7 +268,7 @@
         >
         </a>
       {/if}
-      <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
+      <div class="absolute z-30 {className}" style:width="{width}px" style:height="{height}px">
         <!-- Select asset button  -->
         {#if !readonly && (mouseOver || selected || selectionCandidate)}
           <button
