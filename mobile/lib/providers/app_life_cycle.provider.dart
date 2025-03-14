@@ -7,6 +7,7 @@ import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
@@ -113,6 +114,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         _ref.read(backupProvider.notifier).cancelBackup();
       }
       _ref.read(websocketProvider.notifier).disconnect();
+      _ref.read(backgroundSyncProvider).stop();
     }
 
     LogService.I.flush();
