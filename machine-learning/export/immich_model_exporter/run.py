@@ -73,7 +73,7 @@ insightface = [
 ]
 
 
-def export_models(models: list[str], source: ModelSource):
+def export_models(models: list[str], source: ModelSource) -> None:
     for model in models:
         try:
             print(f"Exporting model {model}")

@@ -10,7 +10,7 @@ def _export_platform(
     input_size_list: list[list[int]] | None = None,
     fuse_matmul_softmax_matmul_to_sdpa: bool = True,
     no_cache: bool = False,
-):
+) -> None:
     from rknn.api import RKNN
 
     input_path = model_dir / "model.onnx"
@@ -50,7 +50,7 @@ def _export_platforms(
     inputs: list[str] | None = None,
     input_size_list: list[list[int]] | None = None,
     no_cache: bool = False,
-):
+) -> None:
     fuse_matmul_softmax_matmul_to_sdpa = True
     for soc in RKNN_SOCS:
         try:
@@ -77,7 +77,7 @@ def _export_platforms(
                 )
 
 
-def export(model_dir: Path, no_cache: bool = False):
+def export(model_dir: Path, no_cache: bool = False) -> None:
     textual = model_dir / "textual"
     visual = model_dir / "visual"
     detection = model_dir / "detection"

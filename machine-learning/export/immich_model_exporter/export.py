@@ -1,11 +1,12 @@
 from pathlib import Path
 
 import typer
-from exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSource
-from exporters.onnx import export as onnx_export
-from exporters.rknn import export as rknn_export
 from tenacity import retry, stop_after_attempt, wait_fixed
 from typing_extensions import Annotated
+
+from .exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSource
+from .exporters.onnx import export as onnx_export
+from .exporters.rknn import export as rknn_export
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
 
@@ -45,7 +46,7 @@ def main(
     no_cache: bool = False,
     hf_organization: str = "immich-app",
     hf_auth_token: Annotated[str | None, typer.Option(envvar="HF_AUTH_TOKEN")] = None,
-):
+) -> None:
     hf_model_name = model_name.split("/")[-1]
     hf_model_name = hf_model_name.replace("xlm-roberta-large", "XLM-Roberta-Large")
     hf_model_name = hf_model_name.replace("xlm-roberta-base", "XLM-Roberta-Base")
@@ -79,7 +80,7 @@ def main(
         repo_id = f"{hf_organization}/{hf_model_name}"
 
         @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
-        def upload_model():
+        def upload_model() -> None:
             create_repo(repo_id, exist_ok=True, token=hf_auth_token)
             upload_folder(
                 repo_id=repo_id,

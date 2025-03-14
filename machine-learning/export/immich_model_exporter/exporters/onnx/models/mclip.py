@@ -1,5 +1,6 @@
 import warnings
 from pathlib import Path
+from typing import Any
 
 from .openclip import OpenCLIPModelConfig
 from .openclip import to_onnx as openclip_to_onnx
@@ -45,7 +46,7 @@ def to_onnx(
     return visual_path, textual_path
 
 
-def _export_text_encoder(model: "MultilingualCLIP", output_path: Path | str, opset_version: int) -> None:
+def _export_text_encoder(model: Any, output_path: Path | str, opset_version: int) -> None:
     import torch
     from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
 
