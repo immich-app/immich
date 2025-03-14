@@ -4,7 +4,6 @@
 from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from queue import Queue
-from typing import Callable, TypeVar
 
 import numpy as np
 from numpy.typing import NDArray
