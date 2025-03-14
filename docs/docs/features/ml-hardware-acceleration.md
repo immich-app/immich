@@ -144,8 +144,8 @@ Note that you should increase job concurrencies to increase overall utilization 
   - Wider model support (including for search, which ARM NN does not accelerate)
   - Less heat generation
   - Very slightly lower accuracy (RKNPU always uses FP16, while ARM NN by default uses higher precision FP32 unless `MACHINE_LEARNING_ANN_FP16_TURBO` is enabled)
-  - Varying speed:
-    - If `MACHINE_LEARNING_RKNN_THREADS` is at the default of 1, RKNPU will be substantially slower than ARM NN in most cases
+  - Varying speed (tested on RK3588):
+    - If `MACHINE_LEARNING_RKNN_THREADS` is at the default of 1, RKNPU will have substantially lower throughput for ML jobs than ARM NN in most cases, but similar latency (such as when searching)
     - If `MACHINE_LEARNING_RKNN_THREADS` is set to 3, it will be somewhat faster than ARM NN at FP32, but somewhat slower than ARM NN if `MACHINE_LEARNING_ANN_FP16_TURBO` is enabled
     - When other tasks also use the GPU (like transcoding), RKNPU has a significant advantage over ARM NN as it uses the otherwise idle NPU instead of competing for GPU usage
   - Lower RAM usage if `MACHINE_LEARNING_RKNN_THREADS` is at the default of 1, but significantly higher if greater than 1 (which is necessary for it to fully utilize the NPU and hence be comparable in speed to ARM NN)
