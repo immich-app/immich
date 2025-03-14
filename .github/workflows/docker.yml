@@ -255,19 +255,20 @@ jobs:
           flavor: |
             # Disable latest tag
             latest=false
+            suffix=${{ matrix.suffix }}
           images: |
             name=${{ env.GHCR_REPO }}
             name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
-            type=ref,event=branch,suffix=${{ matrix.suffix }}
+            type=ref,event=branch
             # Tag with pr-number
-            type=ref,event=pr,suffix=${{ matrix.suffix }}
+            type=ref,event=pr
             # Tag with long commit sha hash
-            type=sha,format=long,prefix=commit-,suffix=${{ matrix.suffix }}
+            type=sha,format=long,prefix=commit-
             # Tag with git tag on release
-            type=ref,event=tag,suffix=${{ matrix.suffix }}
-            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.suffix }}
+            type=ref,event=tag
+            type=raw,value=release,enable=${{ github.event_name == 'release' }}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
@@ -408,19 +409,20 @@ jobs:
           flavor: |
             # Disable latest tag
             latest=false
+            suffix=${{ matrix.suffix }}
           images: |
             name=${{ env.GHCR_REPO }}
             name=${{ env.DOCKER_REPO }},enable=${{ github.event_name == 'release' }}
           tags: |
             # Tag with branch name
-            type=ref,event=branch,suffix=${{ matrix.suffix }}
+            type=ref,event=branch
             # Tag with pr-number
-            type=ref,event=pr,suffix=${{ matrix.suffix }}
+            type=ref,event=pr
             # Tag with long commit sha hash
-            type=sha,format=long,prefix=commit-,suffix=${{ matrix.suffix }}
+            type=sha,format=long,prefix=commit-
             # Tag with git tag on release
-            type=ref,event=tag,suffix=${{ matrix.suffix }}
-            type=raw,value=release,enable=${{ github.event_name == 'release' }},suffix=${{ matrix.suffix }}
+            type=ref,event=tag
+            type=raw,value=release,enable=${{ github.event_name == 'release' }}
 
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests

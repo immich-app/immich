@@ -1,8 +1,8 @@
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 
 abstract class IPartnerRepository {
-  Future<List<User>> getSharedWith();
-  Future<List<User>> getSharedBy();
-  Stream<List<User>> watchSharedWith();
-  Stream<List<User>> watchSharedBy();
+  Future<List<UserDto>> getSharedWith();
+  Future<List<UserDto>> getSharedBy();
+  Stream<List<UserDto>> watchSharedWith();
+  Stream<List<UserDto>> watchSharedBy();
 }

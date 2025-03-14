@@ -2,7 +2,7 @@ name: Preview label
 
 on:
   pull_request:
-    types: [labeled]
+    types: [labeled, closed]
 
 jobs:
   comment-status:

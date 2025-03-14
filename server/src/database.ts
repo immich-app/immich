@@ -92,6 +92,17 @@ export type AuthSession = {
   id: string;
 };
 
+export type Partner = {
+  sharedById: string;
+  sharedBy: User;
+  sharedWithId: string;
+  sharedWith: User;
+  createdAt: Date;
+  updatedAt: Date;
+  updateId: string;
+  inTimeline: boolean;
+};
+
 export const columns = {
   ackEpoch: (columnName: 'createdAt' | 'updatedAt' | 'deletedAt') =>
     sql.raw<string>(`extract(epoch from "${columnName}")::text`).as('ackEpoch'),

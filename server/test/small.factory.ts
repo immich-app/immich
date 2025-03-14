@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { ApiKey, Asset, AuthApiKey, AuthUser, Library, User } from 'src/database';
+import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { OnThisDayData } from 'src/entities/memory.entity';
 import { AssetStatus, AssetType, MemoryType, Permission } from 'src/enum';
@@ -40,6 +40,40 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => ({
   quotaUsageInBytes: 0,
   quotaSizeInBytes: null,
   ...authUser,
+});
+
+const partnerFactory = (partner: Partial<Partner> = {}) => {
+  const sharedBy = userFactory(partner.sharedBy || {});
+  const sharedWith = userFactory(partner.sharedWith || {});
+
+  return {
+    sharedById: sharedBy.id,
+    sharedBy,
+    sharedWithId: sharedWith.id,
+    sharedWith,
+    createdAt: newDate(),
+    updatedAt: newDate(),
+    updateId: newUpdateId(),
+    inTimeline: true,
+    ...partner,
+  };
+};
+
+const sessionFactory = () => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  updateId: newUpdateId(),
+  deviceOS: 'android',
+  deviceType: 'mobile',
+  token: 'abc123',
+  userId: newUuid(),
+});
+
+const stackFactory = () => ({
+  id: newUuid(),
+  ownerId: newUuid(),
+  primaryAssetId: newUuid(),
 });
 
 const userFactory = (user: Partial<User> = {}) => ({
@@ -145,6 +179,12 @@ const memoryFactory = (memory: Partial<MemoryItem> = {}) => ({
   ...memory,
 });
 
+const versionHistoryFactory = () => ({
+  id: newUuid(),
+  createdAt: newDate(),
+  version: '1.123.45',
+});
+
 export const factory = {
   activity: activityFactory,
   apiKey: apiKeyFactory,
@@ -154,5 +194,9 @@ export const factory = {
   authUser: authUserFactory,
   library: libraryFactory,
   memory: memoryFactory,
+  partner: partnerFactory,
+  session: sessionFactory,
+  stack: stackFactory,
   user: userFactory,
+  versionHistory: versionHistoryFactory,
 };

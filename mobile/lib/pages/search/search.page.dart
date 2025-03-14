@@ -517,8 +517,6 @@ class SearchPage extends HookConsumerWidget {
           return Icons.abc_rounded;
         case TextSearchType.description:
           return Icons.text_snippet_outlined;
-        default:
-          return Icons.search_rounded;
       }
     }
 
@@ -634,9 +632,9 @@ class SearchPage extends HookConsumerWidget {
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
               colors: [
-                context.colorScheme.primary.withOpacity(0.075),
-                context.colorScheme.primary.withOpacity(0.09),
-                context.colorScheme.primary.withOpacity(0.075),
+                context.colorScheme.primary.withValues(alpha: 0.075),
+                context.colorScheme.primary.withValues(alpha: 0.09),
+                context.colorScheme.primary.withValues(alpha: 0.075),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

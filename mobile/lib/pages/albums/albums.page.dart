@@ -33,7 +33,7 @@ class AlbumsPage extends HookConsumerWidget {
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
     final filterMode = useState(QuickFilterMode.all);
-    final userId = ref.watch(currentUserProvider)?.id;
+    final userId = ref.watch(currentUserProvider)?.uid;
     final searchFocusNode = useFocusNode();
 
     toggleViewMode() {
@@ -106,9 +106,9 @@ class AlbumsPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 gradient: LinearGradient(
                   colors: [
-                    context.colorScheme.primary.withOpacity(0.075),
-                    context.colorScheme.primary.withOpacity(0.09),
-                    context.colorScheme.primary.withOpacity(0.075),
+                    context.colorScheme.primary.withValues(alpha: 0.075),
+                    context.colorScheme.primary.withValues(alpha: 0.09),
+                    context.colorScheme.primary.withValues(alpha: 0.075),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,

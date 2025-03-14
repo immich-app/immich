@@ -1,7 +1,7 @@
 import BackgroundTasks
 import Flutter
 import network_info_plus
-import path_provider_ios
+import path_provider_foundation
 import permission_handler_apple
 import photo_manager
 import shared_preferences_foundation
@@ -24,8 +24,8 @@ import UIKit
     BackgroundServicePlugin.register(with: self.registrar(forPlugin: "BackgroundServicePlugin")!)
 
     BackgroundServicePlugin.setPluginRegistrantCallback { registry in
-      if !registry.hasPlugin("org.cocoapods.path-provider-ios") {
-        FLTPathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-ios")!)
+      if !registry.hasPlugin("org.cocoapods.path-provider-foundation") {
+        PathProviderPlugin.register(with: registry.registrar(forPlugin: "org.cocoapods.path-provider-foundation")!)
       }
 
       if !registry.hasPlugin("org.cocoapods.photo-manager") {

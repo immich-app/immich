@@ -19,16 +19,17 @@ FROM builder-${DEVICE} AS builder
 
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv
 WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:562193a4a9d398f8aedddcb223e583da394ee735de36b5815f8f1d22cb49be15 /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress
+    uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
 
 FROM python:3.11-slim-bookworm@sha256:614c8691ab74150465ec9123378cd4dde7a6e57be9e558c3108df40664667a4c AS prod-cpu
 
@@ -89,16 +90,17 @@ WORKDIR /usr/src/app
 ENV TRANSFORMERS_CACHE=/cache \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/usr/src/app/.venv/bin:$PATH" \
+    PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH=/usr/src \
-    DEVICE=${DEVICE}
+    DEVICE=${DEVICE} \
+    VIRTUAL_ENV=/opt/venv
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo "fs.suid_dumpable 0" >> /etc/sysctl.conf && \
     echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
-COPY --from=builder /usr/src/app/.venv /usr/src/app/.venv
+COPY --from=builder /opt/venv /opt/venv
 COPY ann/ann.py /usr/src/ann/ann.py
 COPY start.sh log_conf.json gunicorn_conf.py ./
 COPY app .

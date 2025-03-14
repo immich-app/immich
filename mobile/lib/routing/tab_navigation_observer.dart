@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
@@ -39,7 +39,7 @@ class TabNavigationObserver extends AutoRouterObserver {
 
         await Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(userResponseDto, userPreferences),
+          UserConverter.fromAdminDto(userResponseDto, userPreferences),
         );
         ref.read(serverInfoProvider.notifier).getServerVersion();
       } catch (e) {

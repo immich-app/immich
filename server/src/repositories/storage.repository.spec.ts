@@ -1,7 +1,8 @@
 import mockfs from 'mock-fs';
 import { CrawlOptionsDto } from 'src/dtos/library.dto';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
-import { newFakeLoggingRepository } from 'test/repositories/logger.repository.mock';
+import { automock } from 'test/utils';
 
 interface Test {
   test: string;
@@ -182,7 +183,7 @@ describe(StorageRepository.name, () => {
   let sut: StorageRepository;
 
   beforeEach(() => {
-    sut = new StorageRepository(newFakeLoggingRepository());
+    sut = new StorageRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
   afterEach(() => {
