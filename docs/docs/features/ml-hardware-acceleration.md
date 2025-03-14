@@ -58,7 +58,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 - RKNPU driver V0.9.8 or later must be available in the host server
   - You may confirm this by running `cat /sys/kernel/debug/rknpu/version` to check the version
 - Optional: Configure your `.env` file, see [environment variables](/docs/install/environment-variables) for RKNN specific settings
-  - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can *dramatically* improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
+  - In particular, setting `MACHINE_LEARNING_RKNN_THREADS` to 2 or 3 can _dramatically_ improve performance for RK3576 and RK3588 compared to the default of 1, at the expense of multiplying the amount of RAM each model uses by that amount.
 
 ## Setup
 
