@@ -36,8 +36,8 @@ RUN git clone --single-branch --branch v1.20.1 --recursive "https://github.com/M
 WORKDIR /code/onnxruntime
 # Fix for multi-threading based on comments in https://github.com/microsoft/onnxruntime/pull/19567
 # TODO: find a way to fix this without disabling algo caching
-COPY ./patches/0001-disable-rocm-conv-algo-caching.patch /tmp/
-RUN git apply /tmp/0001-disable-rocm-conv-algo-caching.patch
+COPY ./patches/* /tmp/
+RUN git apply /tmp/*.patch
 
 RUN /bin/sh ./dockerfiles/scripts/install_common_deps.sh
 # Note: the `parallel` setting uses a substantial amount of RAM
