@@ -58,9 +58,16 @@
   let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: AssetResponseDto | null = $state(null);
 
+  // loads in savedIndex from localStorage
+  const savedIndex = localStorage.getItem('galleryViewerIndex');
+  if (savedIndex) {
+    currentViewAssetIndex = parseInt(savedIndex);
+  }
+
   const viewAssetHandler = async (asset: AssetResponseDto) => {
     currentViewAssetIndex = assets.findIndex((a) => a.id == asset.id);
     setAsset(assets[currentViewAssetIndex]);
+    localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
     await navigate({ targetRoute: 'current', assetId: $viewingAsset.id });
   };
 
@@ -234,6 +241,7 @@
       } else {
         currentViewAssetIndex = currentViewAssetIndex + 1;
         asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
+        localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
       }
 
       if (!asset) {
@@ -280,6 +288,7 @@
       } else {
         currentViewAssetIndex = currentViewAssetIndex - 1;
         asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
+        localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
       }
 
       if (!asset) {
@@ -316,6 +325,7 @@
           await handlePrevious();
         } else {
           setAsset(assets[currentViewAssetIndex]);
+          localStorage.setItem('galleryViewerIndex', currentViewAssetIndex.toString());
         }
         break;
       }
