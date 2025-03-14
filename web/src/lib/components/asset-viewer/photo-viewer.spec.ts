@@ -48,7 +48,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+      cacheKey: asset.checksum,
     });
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
   });
@@ -57,8 +57,11 @@ describe('PhotoViewer component', () => {
     const asset = assetFactory.build({ originalPath: 'image.gif', originalMimeType: 'image/gif' });
     render(PhotoViewer, { asset });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      cacheKey: asset.checksum,
+      size: AssetMediaSize.Fullsize,
+    });
   });
 
   it('loads original for shared link when download permission is true and showMetadata permission is true', () => {
@@ -66,8 +69,13 @@ describe('PhotoViewer component', () => {
     const sharedLink = sharedLinkFactory.build({ allowDownload: true, showMetadata: true, assets: [asset] });
     render(PhotoViewer, { asset, sharedLink });
 
-    expect(getAssetThumbnailUrlSpy).not.toBeCalled();
-    expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
+    expect(getAssetThumbnailUrlSpy).toBeCalledWith({
+      id: asset.id,
+      size: AssetMediaSize.Fullsize,
+      cacheKey: asset.checksum,
+    });
+    // expect(getAssetThumbnailUrlSpy).not.toBeCalled();
+    // expect(getAssetOriginalUrlSpy).toBeCalledWith({ id: asset.id, cacheKey: asset.thumbhash });
   });
 
   it('not loads original image when shared link download permission is false', () => {
@@ -78,7 +86,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+      cacheKey: asset.checksum,
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
@@ -92,7 +100,7 @@ describe('PhotoViewer component', () => {
     expect(getAssetThumbnailUrlSpy).toBeCalledWith({
       id: asset.id,
       size: AssetMediaSize.Preview,
-      cacheKey: asset.thumbhash,
+      cacheKey: asset.checksum,
     });
 
     expect(getAssetOriginalUrlSpy).not.toBeCalled();
