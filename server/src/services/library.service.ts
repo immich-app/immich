@@ -17,7 +17,17 @@ import {
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { AssetStatus, AssetType, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import {
+  AssetFileType,
+  AssetStatus,
+  AssetType,
+  CrawlType,
+  DatabaseLock,
+  ImmichWorker,
+  JobName,
+  JobStatus,
+  QueueName,
+} from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AssetSyncResult } from 'src/repositories/library.repository';
 import { BaseService } from 'src/services/base.service';
@@ -221,7 +231,51 @@ export class LibraryService extends BaseService {
       importPaths: dto.importPaths ?? [],
       exclusionPatterns: dto.exclusionPatterns ?? ['**/@eaDir/**', '**/._*', '**/#recycle/**', '**/#snapshot/**'],
     });
+
     return mapLibrary(library);
+  }
+
+  @OnJob({ name: JobName.LIBRARY_SYNC_SIDECARS, queue: QueueName.LIBRARY })
+  async handleSyncSidecars(job: JobOf<JobName.LIBRARY_SYNC_SIDECARS>): Promise<JobStatus> {
+    const library = await this.libraryRepository.get(job.libraryId);
+    // We need to check if the library still exists as it could have been deleted after the scan was queued
+    if (!library) {
+      this.logger.debug(`Library ${job.libraryId} not found, skipping sidecar import`);
+      return JobStatus.FAILED;
+    } else if (library.deletedAt) {
+      this.logger.debug(`Library ${job.libraryId} is deleted, won't import sidecars into it`);
+      return JobStatus.FAILED;
+    }
+
+    const sidecarImports = job.paths.map((path) => this.processSidecar(path, library.ownerId, job.libraryId));
+
+    const sidecarIds: string[] = [];
+
+    for (let i = 0; i < sidecarImports.length; i += 5000) {
+      // Chunk the imports to avoid the postgres limit of max parameters at once
+      const chunk = sidecarImports.slice(i, i + 5000);
+      await this.assetFileRepository
+        .createAll(chunk)
+        .then((sidecars) => sidecarIds.push(...sidecars.map((sidecar) => sidecar.id)));
+    }
+
+    const progressMessage =
+      job.progressCounter && job.totalCount
+        ? `(${job.progressCounter} of ${job.totalCount})`
+        : `(${job.progressCounter} done so far)`;
+
+    await this.jobRepository.queueAll(
+      sidecarIds.map((sidecarId) => ({
+        name: JobName.SIDECAR_RECONCILIATION,
+        data: { id: sidecarId },
+      })),
+    );
+
+    this.logger.log(
+      `Queued import of ${sidecarIds.length} ${progressMessage} sidecar(s) into library ${job.libraryId}`,
+    );
+
+    return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.LIBRARY_SYNC_FILES, queue: QueueName.LIBRARY })
@@ -236,7 +290,7 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = job.paths.map((assetPath) => this.processEntity(assetPath, library.ownerId, job.libraryId));
+    const assetImports = job.paths.map((assetPath) => this.processAsset(assetPath, library.ownerId, job.libraryId));
 
     const assetIds: string[] = [];
 
@@ -247,8 +301,8 @@ export class LibraryService extends BaseService {
     }
 
     const progressMessage =
-      job.progressCounter && job.totalAssets
-        ? `(${job.progressCounter} of ${job.totalAssets})`
+      job.progressCounter && job.totalCount
+        ? `(${job.progressCounter} of ${job.totalCount})`
         : `(${job.progressCounter} done so far)`;
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
@@ -374,7 +428,7 @@ export class LibraryService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  private processEntity(filePath: string, ownerId: string, libraryId: string) {
+  private processAsset(filePath: string, ownerId: string, libraryId: string) {
     const assetPath = path.normalize(filePath);
 
     return {
@@ -393,6 +447,15 @@ export class LibraryService extends BaseService {
       originalFileName: parse(assetPath).base,
       isExternal: true,
       livePhotoVideoId: null,
+    };
+  }
+
+  private processSidecar(filePath: string, ownerId: string, libraryId: string) {
+    const sidecarPath = path.normalize(filePath);
+
+    return {
+      path: sidecarPath,
+      type: AssetFileType.SIDECAR,
     };
   }
 
@@ -589,6 +652,7 @@ export class LibraryService extends BaseService {
   @OnJob({ name: JobName.LIBRARY_QUEUE_SYNC_FILES, queue: QueueName.LIBRARY })
   async handleQueueSyncFiles(job: JobOf<JobName.LIBRARY_QUEUE_SYNC_FILES>): Promise<JobStatus> {
     const library = await this.libraryRepository.get(job.id);
+
     if (!library) {
       this.logger.debug(`Library ${job.id} not found, skipping refresh`);
       return JobStatus.SKIPPED;
@@ -613,42 +677,84 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
+    this.logger.log(`Starting sidecar crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+
+    const sidecarsOnDisk = this.storageRepository.walk({
+      pathsToCrawl: validImportPaths,
+      includeHidden: false,
+      exclusionPatterns: library.exclusionPatterns,
+      crawlType: CrawlType.SIDECARS,
+      take: JOBS_LIBRARY_PAGINATION_SIZE,
+    });
+
+    let sidecarImportCount = 0;
+    let sidecarCrawlCount = 0;
+
+    for await (const sidecarBatch of sidecarsOnDisk) {
+      sidecarCrawlCount += sidecarBatch.length;
+
+      const paths = await this.assetFileRepository.filterSidecarPaths(sidecarBatch);
+
+      if (paths.length > 0) {
+        sidecarImportCount += paths.length;
+
+        await this.jobRepository.queue({
+          name: JobName.LIBRARY_SYNC_SIDECARS,
+          data: {
+            libraryId: library.id,
+            paths,
+            progressCounter: sidecarCrawlCount,
+          },
+        });
+      }
+
+      this.logger.log(
+        `Crawled ${sidecarCrawlCount} sidecar(s) so far: ${paths.length} of current batch of ${sidecarBatch.length} will be imported to library ${library.id}...`,
+      );
+    }
+
+    this.logger.log(
+      `Finished sidecar crawl, ${sidecarCrawlCount} sidecar(s) found on disk and queued ${sidecarImportCount} for import into ${library.id}`,
+    );
+
+    this.logger.log(`Starting asset crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+
     const pathsOnDisk = this.storageRepository.walk({
       pathsToCrawl: validImportPaths,
       includeHidden: false,
       exclusionPatterns: library.exclusionPatterns,
+      crawlType: CrawlType.ASSETS,
       take: JOBS_LIBRARY_PAGINATION_SIZE,
     });
 
-    let importCount = 0;
-    let crawlCount = 0;
-
-    this.logger.log(`Starting disk crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
+    let assetiImportCount = 0;
+    let assetCrawlCount = 0;
 
     for await (const pathBatch of pathsOnDisk) {
-      crawlCount += pathBatch.length;
+      assetCrawlCount += pathBatch.length;
+
       const paths = await this.assetRepository.filterNewExternalAssetPaths(library.id, pathBatch);
 
       if (paths.length > 0) {
-        importCount += paths.length;
+        assetiImportCount += paths.length;
 
         await this.jobRepository.queue({
           name: JobName.LIBRARY_SYNC_FILES,
           data: {
             libraryId: library.id,
             paths,
-            progressCounter: crawlCount,
+            progressCounter: assetCrawlCount,
           },
         });
       }
 
       this.logger.log(
-        `Crawled ${crawlCount} file(s) so far: ${paths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
+        `Crawled ${assetCrawlCount} file(s) so far: ${paths.length} of current batch of ${pathBatch.length} will be imported to library ${library.id}...`,
       );
     }
 
     this.logger.log(
-      `Finished disk crawl, ${crawlCount} file(s) found on disk and queued ${importCount} file(s) for import into ${library.id}`,
+      `Finished disk crawl, ${assetCrawlCount} file(s) found on disk and queued ${assetiImportCount} file(s) for import into ${library.id}`,
     );
 
     await this.libraryRepository.update(job.id, { refreshedAt: new Date() });
@@ -687,13 +793,25 @@ export class LibraryService extends BaseService {
       `Checking ${assetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
-    const offlineResult = await this.assetRepository.detectOfflineExternalAssets(
+    const deletedSidecarResult = await this.assetRepository.detectOfflineExternalSidecars(
       library.id,
       library.importPaths,
       library.exclusionPatterns,
     );
 
-    const affectedAssetCount = Number(offlineResult.numUpdatedRows);
+    const deletedSidecarCount = Number(deletedSidecarResult.numDeletedRows);
+
+    this.logger.log(
+      `${deletedSidecarCount} sidecar(s) were removed due to import paths and/or exclusion pattern(s) in library ${library.id}`,
+    );
+
+    const offlineAssetsResult = await this.assetRepository.detectOfflineExternalAssets(
+      library.id,
+      library.importPaths,
+      library.exclusionPatterns,
+    );
+
+    const affectedAssetCount = Number(offlineAssetsResult.numUpdatedRows);
 
     this.logger.log(
       `${affectedAssetCount} asset(s) out of ${assetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,

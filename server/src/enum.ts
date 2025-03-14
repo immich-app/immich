@@ -35,6 +35,7 @@ export enum AssetType {
 export enum AssetFileType {
   PREVIEW = 'preview',
   THUMBNAIL = 'thumbnail',
+  SIDECAR = 'sidecar',
 }
 
 export enum AlbumUserRole {
@@ -56,6 +57,11 @@ export enum DatabaseAction {
 export enum EntityType {
   ASSET = 'ASSET',
   ALBUM = 'ALBUM',
+}
+
+export enum CrawlType {
+  ASSETS = 'ASSETS',
+  SIDECARS = 'SIDECARS',
 }
 
 export enum MemoryType {
@@ -471,6 +477,7 @@ export enum JobName {
   LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
   LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
   LIBRARY_SYNC_FILES = 'library-sync-files',
+  LIBRARY_SYNC_SIDECARS = 'library-sync-sidecars',
   LIBRARY_SYNC_ASSETS = 'library-sync-assets',
   LIBRARY_ASSET_REMOVAL = 'handle-library-file-deletion',
   LIBRARY_DELETE = 'library-delete',
@@ -499,6 +506,7 @@ export enum JobName {
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
   SIDECAR_DISCOVERY = 'sidecar-discovery',
+  SIDECAR_RECONCILIATION = 'sidecar-reconciliation',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
 

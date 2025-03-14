@@ -4,6 +4,7 @@ import { APP_MEDIA_LOCATION } from 'src/constants';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import { AssetFileType, AssetPathType, ImageFormat, PathType, PersonPathType, StorageFolder } from 'src/enum';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -34,6 +35,7 @@ let instance: StorageCore | null;
 export class StorageCore {
   private constructor(
     private assetRepository: AssetRepository,
+    private assetFileRepository: AssetFileRepository,
     private configRepository: ConfigRepository,
     private cryptoRepository: CryptoRepository,
     private moveRepository: MoveRepository,
@@ -45,6 +47,7 @@ export class StorageCore {
 
   static create(
     assetRepository: AssetRepository,
+    assetFileRepository: AssetFileRepository,
     configRepository: ConfigRepository,
     cryptoRepository: CryptoRepository,
     moveRepository: MoveRepository,
@@ -56,6 +59,7 @@ export class StorageCore {
     if (!instance) {
       instance = new StorageCore(
         assetRepository,
+        assetFileRepository,
         configRepository,
         cryptoRepository,
         moveRepository,
@@ -278,16 +282,16 @@ export class StorageCore {
         return this.assetRepository.update({ id, originalPath: newPath });
       }
       case AssetPathType.PREVIEW: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.PREVIEW, path: newPath });
+        return this.assetFileRepository.upsert({ assetId: id, type: AssetFileType.PREVIEW, path: newPath });
       }
       case AssetPathType.THUMBNAIL: {
-        return this.assetRepository.upsertFile({ assetId: id, type: AssetFileType.THUMBNAIL, path: newPath });
+        return this.assetFileRepository.upsert({ assetId: id, type: AssetFileType.THUMBNAIL, path: newPath });
       }
       case AssetPathType.ENCODED_VIDEO: {
         return this.assetRepository.update({ id, encodedVideoPath: newPath });
       }
       case AssetPathType.SIDECAR: {
-        return this.assetRepository.update({ id, sidecarPath: newPath });
+        return this.assetFileRepository.upsert({ id, type: AssetFileType.SIDECAR, path: newPath });
       }
       case PersonPathType.FACE: {
         return this.personRepository.update({ id, thumbnailPath: newPath });

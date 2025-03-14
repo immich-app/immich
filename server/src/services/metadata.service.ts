@@ -11,9 +11,11 @@ import { StorageCore } from 'src/cores/storage.core';
 import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
 import { AssetFaceEntity } from 'src/entities/asset-face.entity';
+import { AssetFileEntity, SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { PersonEntity } from 'src/entities/person.entity';
 import {
+  AssetFileType,
   AssetType,
   DatabaseLock,
   ExifOrientation,
@@ -171,6 +173,8 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
+    this.logger.debug(`Starting ${asset.originalPath}`);
+
     const exifTags = await this.getExifTags(asset);
     if (!exifTags.FileCreateDate || !exifTags.FileModifyDate || exifTags.FileSize === undefined) {
       this.logger.warn(`Missing file creation or modification date for asset ${asset.id}: ${asset.originalPath}`);
@@ -181,10 +185,13 @@ export class MetadataService extends BaseService {
     }
 
     this.logger.verbose('Exif Tags', exifTags);
+    this.logger.debug(`1 Here! ${asset.originalPath}`);
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
 
     const { width, height } = this.getImageDimensions(exifTags);
+    this.logger.debug(`2 Here! ${asset.originalPath}`);
+
     let geo: ReverseGeocodeResult, latitude: number | null, longitude: number | null;
     if (reverseGeocoding.enabled && this.hasGeo(exifTags)) {
       latitude = exifTags.GPSLatitude;
@@ -240,32 +247,54 @@ export class MetadataService extends BaseService {
       autoStackId: this.getAutoStackId(exifTags),
     };
 
-    const promises: Promise<unknown>[] = [
-      this.assetRepository.upsertExif(exifData),
-      this.assetRepository.update({
-        id: asset.id,
-        duration: exifTags.Duration?.toString() ?? null,
-        localDateTime,
-        fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
-        fileModifiedAt: exifData.modifyDate ?? undefined,
-      }),
-      this.applyTagList(asset, exifTags),
-    ];
+    this.logger.debug(`3 Here! ${asset.originalPath}`);
+
+    // const promises: Promise<unknown>[] = [
+    await this.assetRepository.upsertExif(exifData);
+    this.logger.debug(`3 1 Here! ${asset.originalPath}`);
+
+    await this.assetRepository.update({
+      id: asset.id,
+      duration: exifTags.Duration?.toString() ?? null,
+      localDateTime,
+      fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
+      fileModifiedAt: exifData.modifyDate ?? undefined,
+    });
+    this.logger.debug(`3 2 Here! ${asset.originalPath}`);
+
+    await this.applyTagList(asset, exifTags);
+    // ];
+
+    this.logger.debug(`4 Here! ${asset.originalPath}`);
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, exifData.fileSizeInByte!));
+      // promises.push(this.applyMotionPhotos(asset, exifTags, exifData.fileSizeInByte!));
+      await this.applyMotionPhotos(asset, exifTags, exifData.fileSizeInByte!);
     }
+    this.logger.debug(`5 Here! ${asset.originalPath}`);
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
-      promises.push(this.applyTaggedFaces(asset, exifTags));
+      //      promises.push(this.applyTaggedFaces(asset, exifTags));
+      await this.applyTaggedFaces(asset, exifTags);
     }
+    this.logger.debug(`6 Here! ${asset.originalPath}`);
 
-    await Promise.all(promises);
+    /* for (const promise of promises) {
+      this.logger.debug(`Awaiting promise for ${asset.originalPath}: ${JSON.stringify(promise)}`);
+      await promise;
+    } */
+    //await Promise.all(promises);
+    this.logger.debug(`7 Here! ${asset.originalPath}`);
+
     if (exifData.livePhotoCID) {
       await this.linkLivePhotos(asset, exifData);
     }
 
+    this.logger.debug(`8 Here! ${asset.originalPath}`);
+
     await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
+
+    this.logger.debug(`9 Here! ${asset.originalPath}`);
 
     return JobStatus.SUCCESS;
   }
@@ -286,6 +315,100 @@ export class MetadataService extends BaseService {
           data: { id: asset.id },
         })),
       );
+    }
+
+    this.logger.debug(`Queued sidecar ${force ? 'sync' : 'discovery'}`); // REMOVE
+
+    const sidecars = this.assetFileRepository.getAll({ type: AssetFileType.SIDECAR });
+
+    for await (const sidecar of sidecars) {
+      await this.jobRepository.queue({ name: JobName.SIDECAR_RECONCILIATION, data: { id: sidecar.id } });
+    }
+
+    this.logger.debug(`Queued sidecar reconciliation for sidecars`); // REMOVE
+
+    return JobStatus.SUCCESS;
+  }
+
+  @OnJob({ name: JobName.SIDECAR_RECONCILIATION, queue: QueueName.SIDECAR })
+  async handleSidecarReconciliation({ id }: JobOf<JobName.SIDECAR_RECONCILIATION>): Promise<JobStatus> {
+    // This job is called by the library service when a new sidecar file is found
+    const sidecar = await this.assetFileRepository.getById(id);
+
+    if (!sidecar || sidecar.type !== AssetFileType.SIDECAR) {
+      return JobStatus.FAILED;
+    }
+
+    this.logger.debug(`Reconciling sidecar ${sidecar.id}: ${sidecar.path}`);
+
+    if (!sidecar.path.toLowerCase().endsWith('.xmp')) {
+      this.logger.error(`Asset file sidecar path is missing .xmp extension: ${sidecar.path}`);
+      return JobStatus.FAILED;
+    }
+
+    if (!sidecar.assetId) {
+      const pathWithoutExtension = sidecar.path.replace(/xmp$/i, '');
+
+      const assets = await this.assetRepository.getLikeOriginalPath(pathWithoutExtension);
+
+      if (assets.length === 0) {
+        this.logger.verbose(
+          `No matching asset found for sidecar ${sidecar.id}: ${sidecar.path}, ${pathWithoutExtension}`,
+        );
+        await this.assetFileRepository.update({ ...sidecar, assetId: null });
+        return JobStatus.SUCCESS;
+      }
+
+      if (assets.length !== 1) {
+        // This is the unlikely event where we for example have an asset.xmp sidecar, but both asset.jpg and asset.png exist
+        this.logger.error(
+          `Ambiguous sidecar, ignoring ${sidecar.id}: ${sidecar.path}. Please ensure there is at most one file matching this sidecar, found ${assets.map((asset) => asset.originalPath).join(', ')}`,
+        );
+        return JobStatus.FAILED;
+      }
+
+      sidecar.assetId = assets[0].id;
+    }
+
+    let currentSidecarsForAsset: SidecarAssetFileEntity[] = [];
+
+    const sidecars = this.assetFileRepository.getAll({
+      assetId: sidecar.assetId,
+      type: AssetFileType.SIDECAR,
+    });
+
+    for await (const sidecar of sidecars) {
+      currentSidecarsForAsset.push(sidecar as SidecarAssetFileEntity);
+    }
+
+    let storeSidecar = false;
+
+    if (currentSidecarsForAsset.length === 0) {
+      // No existing sidecar for this asset, store the new one
+      storeSidecar = true;
+    } else {
+      const currentSidecar = currentSidecarsForAsset[0];
+      if (currentSidecar.id === sidecar.id) {
+        // Sidecar is already stored, do nothing
+        return JobStatus.SUCCESS;
+      }
+
+      if (sidecar.path.length > currentSidecar.path.length) {
+        this.logger.verbose(
+          `Replacing sidecar ${currentSidecar.path} with ${sidecar.path} for asset ${sidecar.assetId}`,
+        );
+        await this.assetFileRepository.update({ ...currentSidecar, assetId: null });
+        storeSidecar = true;
+      }
+    }
+
+    if (storeSidecar) {
+      await this.assetFileRepository.update(sidecar);
+
+      await this.jobRepository.queue({
+        name: JobName.METADATA_EXTRACTION,
+        data: { id: sidecar.assetId, source: 'upload' },
+      });
     }
 
     return JobStatus.SUCCESS;
@@ -321,7 +444,14 @@ export class MetadataService extends BaseService {
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    this.logger.debug(`Writing sidecar for asset ${asset.id}: ${asset.originalPath}`); // REMOVE
+
+    const sidecarStream = this.assetFileRepository.getAll({ assetId: asset.id, type: AssetFileType.SIDECAR });
+    const sidecar = (await sidecarStream.next()).value as SidecarAssetFileEntity;
+
+    this.logger.debug(`1 Sidecar ${sidecar ? 'exists' : 'does not exist'}`); // REMOVE
+
+    const sidecarPath = sidecar ? sidecar.path : `${asset.originalPath}.xmp`;
     const exif = _.omitBy(
       <Tags>{
         Description: description,
@@ -341,8 +471,8 @@ export class MetadataService extends BaseService {
 
     await this.metadataRepository.writeTags(sidecarPath, exif);
 
-    if (!asset.sidecarPath) {
-      await this.assetRepository.update({ id, sidecarPath });
+    if (!sidecar) {
+      await this.assetFileRepository.upsert({ path: sidecarPath, assetId: asset.id, type: AssetFileType.SIDECAR });
     }
 
     return JobStatus.SUCCESS;
@@ -361,18 +491,24 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private getExifTags(asset: AssetEntity): Promise<ImmichTags> {
-    if (!asset.sidecarPath && asset.type === AssetType.IMAGE) {
+  private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
+    this.logger.debug(`Getting exif tags for asset ${asset.id}: ${asset.originalPath}`); // REMOVE
+    const sidecarStream = this.assetFileRepository.getAll({ assetId: asset.id, type: AssetFileType.SIDECAR });
+    const sidecar = (await sidecarStream.next()).value as SidecarAssetFileEntity;
+
+    this.logger.debug(`2 Sidecar ${sidecar ? 'exists' : 'does not exist'}`); // REMOVE
+
+    if (!sidecar && asset.type === AssetType.IMAGE) {
       return this.metadataRepository.readTags(asset.originalPath);
     }
 
-    return this.mergeExifTags(asset);
+    return this.mergeExifTags(asset, sidecar);
   }
 
-  private async mergeExifTags(asset: AssetEntity): Promise<ImmichTags> {
+  private async mergeExifTags(asset: AssetEntity, sidecar: AssetFileEntity | null): Promise<ImmichTags> {
     const [mediaTags, sidecarTags, videoTags] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
-      asset.sidecarPath ? this.metadataRepository.readTags(asset.sidecarPath) : null,
+      sidecar ? this.metadataRepository.readTags(sidecar.path) : null,
       asset.type === AssetType.VIDEO ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
@@ -760,15 +896,32 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    if (isSync && !asset.sidecarPath) {
+    this.logger.debug(`Processing sidecar for asset ${asset.id}: ${asset.originalPath}`); // REMOVE
+
+    const sidecarStream = this.assetFileRepository.getAll({ assetId: asset.id, type: AssetFileType.SIDECAR });
+    const sidecar = (await sidecarStream.next()).value as SidecarAssetFileEntity;
+
+    this.logger.debug(`3 Sidecar ${sidecar ? 'exists' : 'does not exist'}`); // REMOVE
+    if (isSync && !sidecar) {
       return JobStatus.FAILED;
     }
 
-    if (!isSync && (!asset.isVisible || asset.sidecarPath) && !asset.isExternal) {
+    if (!isSync && (!asset.isVisible || sidecar) && !asset.isExternal) {
       return JobStatus.FAILED;
     }
 
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp
+    if (asset.isExternal) {
+      // External libraries have their sidecars scanned by the library service instead of the slow method below, so we can exit here
+      if (sidecar) {
+        this.logger.debug(
+          `Detected external library sidecar at '${sidecar.path}' for asset ${asset.id}, ${asset.originalPath}`,
+        );
+      }
+      return JobStatus.SUCCESS;
+    }
+
+    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp.
+    // Sidecar files with extensions, i.e. photo.jpg.xmp, have precedence over sidecar files without extensions, i.e. photo.xmp.
     const assetPath = path.parse(asset.originalPath);
     const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
     const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
@@ -786,16 +939,9 @@ export class MetadataService extends BaseService {
       sidecarPath = sidecarPathWithoutExt;
     }
 
-    if (asset.isExternal) {
-      if (sidecarPath !== asset.sidecarPath) {
-        await this.assetRepository.update({ id: asset.id, sidecarPath });
-      }
-      return JobStatus.SUCCESS;
-    }
-
     if (sidecarPath) {
       this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
-      await this.assetRepository.update({ id: asset.id, sidecarPath });
+      await this.assetFileRepository.upsert({ assetId: asset.id, path: sidecarPath, type: AssetFileType.SIDECAR });
       return JobStatus.SUCCESS;
     }
 
@@ -804,7 +950,6 @@ export class MetadataService extends BaseService {
     }
 
     this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
-    await this.assetRepository.update({ id: asset.id, sidecarPath: null });
 
     return JobStatus.SUCCESS;
   }

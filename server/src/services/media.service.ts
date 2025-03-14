@@ -172,7 +172,7 @@ export class MediaService extends BaseService {
     }
 
     if (toUpsert.length > 0) {
-      await this.assetRepository.upsertFiles(toUpsert);
+      await this.assetFileRepository.upsertAll(toUpsert);
     }
 
     const pathsToDelete = [];

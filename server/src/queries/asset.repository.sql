@@ -152,6 +152,23 @@ where
 limit
   $3
 
+-- AssetRepository.getLikeOriginalPath
+select
+  "assets".*
+from
+  "assets"
+where
+  "originalPath" like $1
+
+-- AssetRepository.getAssetFilesByAssetIdAndType
+select
+  "asset_files".*
+from
+  "asset_files"
+where
+  "assetId" = $1::uuid
+  and "type" = $2
+
 -- AssetRepository.getAllByDeviceId
 select
   "deviceAssetId"
@@ -241,19 +258,16 @@ select
   "assets".*
 from
   "assets"
+  left join "asset_files" on "assetId" = "assets"."id"
 where
-  (
-    "assets"."sidecarPath" = $1
-    or "assets"."sidecarPath" is null
-  )
-  and "assets"."isVisible" = $2
+  "asset_files"."type" = $1
   and "deletedAt" is null
 order by
   "createdAt"
 limit
-  $3
+  $2
 offset
-  $4
+  $3
 
 -- AssetRepository.getTimeBuckets
 with

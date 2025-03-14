@@ -12,6 +12,7 @@ import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -113,6 +114,7 @@ export type ServiceOverrides = {
   apiKey: ApiKeyRepository;
   audit: AuditRepository;
   asset: AssetRepository;
+  assetFile: AssetFileRepository;
   config: ConfigRepository;
   cron: CronRepository;
   crypto: CryptoRepository;
@@ -178,6 +180,7 @@ export const newTestService = <T extends BaseService>(
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
+    assetFile: automock(AssetFileRepository),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),
@@ -221,6 +224,7 @@ export const newTestService = <T extends BaseService>(
     overrides.albumUser || (mocks.albumUser as As<AlbumUserRepository>),
     overrides.apiKey || (mocks.apiKey as As<ApiKeyRepository>),
     overrides.asset || (mocks.asset as As<AssetRepository>),
+    overrides.assetFile || (mocks.assetFile as As<AssetFileRepository>),
     overrides.audit || (mocks.audit as As<AuditRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
     overrides.cron || (mocks.cron as As<CronRepository>),

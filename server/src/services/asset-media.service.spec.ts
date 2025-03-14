@@ -172,7 +172,6 @@ const assetEntity = Object.freeze({
     longitude: 10.703_075,
   },
   livePhotoVideoId: null,
-  sidecarPath: null,
 }) as AssetEntity;
 
 const existingAsset = Object.freeze({
@@ -541,6 +540,7 @@ describe(AssetMediaService.name, () => {
             path: '/path/to/preview',
             type: AssetFileType.THUMBNAIL,
             updatedAt: new Date(),
+            fileCreatedAt: new Date(),
           },
         ],
       });
@@ -561,6 +561,7 @@ describe(AssetMediaService.name, () => {
             path: '/path/to/preview.jpg',
             type: AssetFileType.PREVIEW,
             updatedAt: new Date(),
+            fileCreatedAt: new Date(),
           },
         ],
       });

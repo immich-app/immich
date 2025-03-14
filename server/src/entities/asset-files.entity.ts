@@ -18,11 +18,14 @@ export class AssetFileEntity {
   id!: string;
 
   @Index('IDX_asset_files_assetId')
-  @Column()
+  @Column({ nullable: true, default: null })
   assetId!: string;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset?: AssetEntity;
+
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  fileCreatedAt!: Date | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
@@ -40,3 +43,8 @@ export class AssetFileEntity {
   @Column()
   path!: string;
 }
+
+export type SidecarAssetFileEntity = AssetFileEntity & {
+  assetId: string | null;
+  asset: AssetEntity | null;
+};

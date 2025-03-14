@@ -6,7 +6,7 @@ import { DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetEntity, searchAssetBuilder } from 'src/entities/asset.entity';
 import { GeodataPlacesEntity } from 'src/entities/geodata-places.entity';
-import { AssetStatus, AssetType } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { anyUuid, asUuid } from 'src/utils/database';
 import { Paginated } from 'src/utils/pagination';
@@ -145,6 +145,12 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchTagOptions;
 
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
+
+export interface AssetFileSearchOptions {
+  assetId?: string | null;
+  type?: AssetFileType;
+  orderDirection?: 'asc' | 'desc';
+}
 
 export type AssetSearchOneToOneRelationOptions = BaseAssetSearchOptions & SearchOneToOneRelationOptions;
 

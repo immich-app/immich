@@ -3,7 +3,7 @@ import { Stats } from 'node:fs';
 import { defaults, SystemConfig } from 'src/config';
 import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
-import { AssetType, ImmichWorker, JobName, JobStatus } from 'src/enum';
+import { AssetType, CrawlType, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
 import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
@@ -164,6 +164,7 @@ describe(LibraryService.name, () => {
       mocks.storage.walk.mockImplementation(mockWalk);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
+      mocks.asset.filterSidecarPaths.mockResolvedValue([]);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
@@ -202,11 +203,20 @@ describe(LibraryService.name, () => {
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
-      expect(mocks.storage.walk).toHaveBeenCalledWith({
+      expect(mocks.storage.walk).toHaveBeenNthCalledWith(1, {
         pathsToCrawl: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
         take: JOBS_LIBRARY_PAGINATION_SIZE,
+        crawlType: CrawlType.SIDECARS,
+      });
+
+      expect(mocks.storage.walk).toHaveBeenNthCalledWith(2, {
+        pathsToCrawl: [library.importPaths[1]],
+        exclusionPatterns: [],
+        includeHidden: false,
+        take: JOBS_LIBRARY_PAGINATION_SIZE,
+        crawlType: CrawlType.ASSETS,
       });
     });
   });
@@ -219,6 +229,7 @@ describe(LibraryService.name, () => {
       mocks.storage.walk.mockImplementation(mockWalk);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
+      mocks.asset.filterSidecarPaths.mockResolvedValue([]);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
@@ -258,11 +269,20 @@ describe(LibraryService.name, () => {
 
       await sut.handleQueueSyncFiles({ id: library.id });
 
-      expect(mocks.storage.walk).toHaveBeenCalledWith({
+      expect(mocks.storage.walk).toHaveBeenNthCalledWith(1, {
         pathsToCrawl: [library.importPaths[1]],
         exclusionPatterns: [],
         includeHidden: false,
         take: JOBS_LIBRARY_PAGINATION_SIZE,
+        crawlType: CrawlType.SIDECARS,
+      });
+
+      expect(mocks.storage.walk).toHaveBeenNthCalledWith(2, {
+        pathsToCrawl: [library.importPaths[1]],
+        exclusionPatterns: [],
+        includeHidden: false,
+        take: JOBS_LIBRARY_PAGINATION_SIZE,
+        crawlType: CrawlType.ASSETS,
       });
     });
   });
