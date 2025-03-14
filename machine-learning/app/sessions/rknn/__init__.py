@@ -12,7 +12,7 @@ from app.schemas import SessionNode
 from .rknnpool import RknnPoolExecutor, is_available, soc_name
 
 is_available = is_available and settings.rknn
-model_prefix = Path("rknpu") / soc_name if is_available else None
+model_prefix = Path("rknpu") / soc_name if is_available and soc_name is not None else None
 
 
 def run_inference(rknn_lite: Any, input: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]:
@@ -62,10 +62,15 @@ class RknnSession:
     ) -> list[NDArray[np.float32]]:
         input_data: list[NDArray[np.float32]] = [np.ascontiguousarray(v) for v in input_feed.values()]
         self.rknnpool.put(input_data)
-        outputs: list[NDArray[np.float32]] = self.rknnpool.get()
-        return outputs
+        res = self.rknnpool.get()
+        if res is None:
+            raise RuntimeError("RKNN inference failed!")
+        return res
 
 
 class RknnNode(NamedTuple):
     name: str | None
     shape: tuple[int, ...]
+
+
+__all__ = ["RknnSession", "RknnNode", "is_available", "soc_name", "model_prefix"]

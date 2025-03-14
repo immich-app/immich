@@ -25,7 +25,7 @@ from app.models.facial_recognition.detection import FaceDetector
 from app.models.facial_recognition.recognition import FaceRecognizer
 from app.sessions.ann import AnnSession
 from app.sessions.ort import OrtSession
-from app.sessions.rknn import RknnSession, runInference
+from app.sessions.rknn import RknnSession, run_inference
 
 from .config import Settings, settings
 from .models.base import InferenceModel
@@ -356,11 +356,11 @@ class TestRknnSession:
         RknnSession(model_path)
 
         rknn_session.assert_called_once_with(
-            rknnModel=Path(str(model_path).replace("model", "rk3566")).as_posix(), tpes=tpe, func=runInference
+            rknnModel=Path(str(model_path).replace("model", "rk3566")).as_posix(), tpes=tpe, func=run_inference
         )
 
         info.assert_has_calls(
-            [mock.call(f"Loaded RKNN model from {str(model_path).replace('model','rk3566')} with {tpe} threads.")]
+            [mock.call(f"Loaded RKNN model from {str(model_path).replace('model', 'rk3566')} with {tpe} threads.")]
         )
 
     def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
