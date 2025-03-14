@@ -22,7 +22,7 @@ def get_soc(device_tree_path: Path | str) -> str | None:
                     return soc
             log.warning("Device is not supported for RKNN")
     except OSError as e:
-        log.warning("Could not read /proc/device-tree/compatible. Reason: %s", e)
+        log.warning(f"Could not read {device_tree_path}. Reason: %s", e)
     return None
 
 
@@ -43,7 +43,7 @@ def init_rknn(model_path: str) -> "RKNNLite":
     rknn_lite = RKNNLite()
     ret = rknn_lite.load_rknn(model_path)
     if ret != 0:
-        raise RuntimeError("Load RKNN rknnModel failed")
+        raise RuntimeError("Failed to load RKNN model")
 
     if soc_name in RKNN_COREMASK_SUPPORTED_SOCS:
         ret = rknn_lite.init_runtime(core_mask=RKNNLite.NPU_CORE_AUTO)
@@ -51,7 +51,7 @@ def init_rknn(model_path: str) -> "RKNNLite":
         ret = rknn_lite.init_runtime()  # Please do not set this parameter on other platforms.
 
     if ret != 0:
-        raise RuntimeError("Init runtime environment failed")
+        raise RuntimeError("Failed to inititalize RKNN runtime environment")
 
     return rknn_lite
 

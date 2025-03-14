@@ -70,13 +70,13 @@ class TestBase:
 
         assert encoder.model_format == ModelFormat.ARMNN
 
-    def test_sets_default_model_format_rknn(self, mocker: MockerFixture) -> None:
+    def test_sets_default_model_format_to_rknn_if_available(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "rknn", True)
-        mocker.patch("rknn.rknnpool.is_available", False)
+        mocker.patch("app.sessions.rknn.is_available", True)
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
-        assert encoder.model_format == ModelFormat.ONNX
+        assert encoder.model_format == ModelFormat.RKNN
 
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"
@@ -353,15 +353,12 @@ class TestRknnSession:
         model_path = mock.MagicMock(spec=Path)
         tpe = 1
         mocker.patch("app.sessions.rknn.soc_name", "rk3566")
+        mocker.patch("app.sessions.rknn.is_available", True)
         RknnSession(model_path)
 
-        rknn_session.assert_called_once_with(
-            rknnModel=Path(str(model_path).replace("model", "rk3566")).as_posix(), tpes=tpe, func=run_inference
-        )
+        rknn_session.assert_called_once_with(model_path=model_path.as_posix(), tpes=tpe, func=run_inference)
 
-        info.assert_has_calls(
-            [mock.call(f"Loaded RKNN model from {str(model_path).replace('model', 'rk3566')} with {tpe} threads.")]
-        )
+        info.assert_has_calls([mock.call(f"Loaded RKNN model from {model_path} with {tpe} threads.")])
 
     def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
         rknn_session.return_value.load.return_value = 123
@@ -879,9 +876,7 @@ class TestLoad:
         mock_model.clear_cache.assert_not_called()
         mock_model.load.assert_not_called()
 
-    async def test_falls_back_to_onnx_if_other_format_does_not_exist(
-        self, exception: mock.Mock, warning: mock.Mock
-    ) -> None:
+    async def test_falls_back_to_onnx_if_other_format_does_not_exist(self, warning: mock.Mock) -> None:
         mock_model = mock.Mock(spec=InferenceModel)
         mock_model.model_name = "test_model_name"
         mock_model.model_type = ModelType.VISUAL
@@ -896,8 +891,9 @@ class TestLoad:
 
         mock_model.clear_cache.assert_not_called()
         assert mock_model.load.call_count == 2
-        exception.assert_called_once_with(error)
-        warning.assert_called_once_with("ARMNN is available, but model 'test_model_name' does not support it.")
+        warning.assert_called_once_with(
+            "ARMNN is available, but model 'test_model_name' does not support it.", exc_info=error
+        )
         mock_model.model_format = ModelFormat.ONNX
 
 
