@@ -542,7 +542,24 @@ class ImmichAssetGridViewState extends ConsumerState<ImmichAssetGridView> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: !(widget.selectionActive && _selectedAssets.isNotEmpty),
-      onPopInvokedWithResult: (didPop, _) => !didPop ? _deselectAll() : null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) {
+          return;
+        } else {
+          if (widget.preselectedAssets == null) {
+            Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
+          }
+          if (_selectedAssets.length != widget.preselectedAssets!.length &&
+              !widget.preselectedAssets!.containsAll(_selectedAssets)) {
+            {
+              _deselectAll();
+              return;
+            }
+          } else {
+            Navigator.of(context).canPop() ? Navigator.of(context).pop() : null;
+          }
+        }
+      },
       child: Stack(
         children: [
           AssetDragRegion(

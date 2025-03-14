@@ -11,9 +11,11 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
 import '../../test_utils.dart';
@@ -56,13 +58,15 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
-
     final MockAppSettingService appSettingService = MockAppSettingService();
     final MockLocalFilesManagerRepository localFilesManagerRepository =
         MockLocalFilesManagerRepository();
 
     final owner = User(
       id: "1",
+    final MockPartnerApiRepository partnerApiRepository =
+        MockPartnerApiRepository();
+    final MockUserApiRepository userApiRepository = MockUserApiRepository();
     final MockPartnerRepository partnerRepository = MockPartnerRepository();
 
     final owner = UserDto(
@@ -107,6 +111,8 @@ void main() {
         eTagRepository,
         appSettingService,
         localFilesManagerRepository,
+        partnerApiRepository,
+        userApiRepository,
       );
       when(() => eTagRepository.get(owner.id))
           .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
@@ -134,6 +140,10 @@ void main() {
       when(() => assetRepository.transaction<Null>(any())).thenAnswer(
         (call) => (call.positionalArguments.first as Function).call(),
       );
+      when(() => userApiRepository.getAll()).thenAnswer((_) async => [owner]);
+      registerFallbackValue(Direction.sharedByMe);
+      when(() => partnerApiRepository.getAll(any()))
+          .thenAnswer((_) async => []);
     });
     test('test inserting existing assets', () async {
       final List<Asset> remoteAssets = [
@@ -145,7 +155,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c1, isFalse);
       verifyNever(() => assetRepository.updateAll(any()));
@@ -164,7 +173,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c1, isTrue);
       final updatedAsset = initialAssets[3].updatedCopy(remoteAssets[3]);
@@ -187,7 +195,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c1, isTrue);
       when(
@@ -200,7 +207,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c2, isFalse);
       final currentState = [...remoteAssets];
@@ -215,7 +221,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c3, isTrue);
       remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e"));
@@ -224,7 +229,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c4, isTrue);
     });
@@ -255,7 +259,6 @@ void main() {
         users: [owner],
         getChangedAssets: (user, since) async => (toUpsert, toDelete),
         loadAssets: (user, date) => throw Exception(),
-        refreshUsers: () => throw Exception(),
       );
       expect(c, isTrue);
       verify(() => assetRepository.updateAll(expected));

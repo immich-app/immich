@@ -2,14 +2,14 @@ import { AppRoute } from '$lib/constants';
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 
-export const load = (({ url }) => {
-  enum LinkTarget {
-    HOME = 'home',
-    UNSUBSCRIBE = 'unsubscribe',
-    VIEW_ASSET = 'view_asset',
-    ACTIVATE_LICENSE = 'activate_license',
-  }
+enum LinkTarget {
+  HOME = 'home',
+  UNSUBSCRIBE = 'unsubscribe',
+  VIEW_ASSET = 'view_asset',
+  ACTIVATE_LICENSE = 'activate_license',
+}
 
+export const load = (({ url }) => {
   const queryParams = url.searchParams;
   const target = queryParams.get('target') as LinkTarget;
   switch (target) {

@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../fixtures/asset.stub.dart';
 import '../fixtures/user.stub.dart';
+import '../infrastructure/repository.mock.dart';
 import '../repository.mocks.dart';
 
 void main() {
