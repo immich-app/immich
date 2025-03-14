@@ -54,7 +54,7 @@ import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
-import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
+import 'package:immich_mobile/utils/http_ssl_options.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
@@ -377,7 +377,7 @@ class BackgroundService {
     final db = await Bootstrap.initIsar();
     await Bootstrap.initDomain(db);
 
-    HttpOverrides.global = HttpSSLCertOverride();
+    HttpSSLOptions.apply();
     ApiService apiService = ApiService();
     apiService.setAccessToken(Store.get(StoreKey.accessToken));
     AppSettingsService settingsService = AppSettingsService();
