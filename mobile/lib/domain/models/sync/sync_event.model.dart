@@ -1,14 +1,13 @@
-class SyncEvent {
-  // dynamic
-  final dynamic data;
+import 'package:openapi/api.dart';
 
+class SyncEvent {
+  final SyncEntityType type;
+  // ignore: avoid-dynamic
+  final dynamic data;
   final String ack;
 
-  SyncEvent({
-    required this.data,
-    required this.ack,
-  });
+  const SyncEvent({required this.type, required this.data, required this.ack});
 
   @override
-  String toString() => 'SyncEvent(data: $data, ack: $ack)';
+  String toString() => 'SyncEvent(type: $type, data: $data, ack: $ack)';
 }
