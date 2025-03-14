@@ -4,7 +4,7 @@ import typer
 from exporters.constants import DELETE_PATTERNS, SOURCE_TO_METADATA, ModelSource
 from exporters.onnx import export as onnx_export
 from exporters.rknn import export as rknn_export
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_fixed
 from typing_extensions import Annotated
 
 app = typer.Typer(pretty_exceptions_show_locals=False)
@@ -78,7 +78,7 @@ def main(
 
         repo_id = f"{hf_organization}/{hf_model_name}"
 
-        @retry(stop=stop_after_attempt(3), wait=2)
+        @retry(stop=stop_after_attempt(5), wait=wait_fixed(5))
         def upload_model():
             create_repo(repo_id, exist_ok=True, token=hf_auth_token)
             upload_folder(
