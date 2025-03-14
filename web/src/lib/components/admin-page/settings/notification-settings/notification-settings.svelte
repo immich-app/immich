@@ -1,23 +1,23 @@
 <script lang="ts">
-  import { sendTestEmail, type SystemConfigDto } from '@immich/sdk';
-  import { isEqual } from 'lodash-es';
-  import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
-  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
-  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
-  import { t } from 'svelte-i18n';
-  import Button from '$lib/components/elements/buttons/button.svelte';
+  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     NotificationType,
     notificationController,
   } from '$lib/components/shared-components/notification/notification';
-  import { user } from '$lib/stores/user.store';
-  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
-  import { handleError } from '$lib/utils/handle-error';
+  import SettingAccordion from '$lib/components/shared-components/settings/setting-accordion.svelte';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { SettingInputFieldType } from '$lib/constants';
-  import TemplateSettings from '$lib/components/admin-page/settings/template-settings/template-settings.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { handleError } from '$lib/utils/handle-error';
+  import { sendTestEmail, type SystemConfigDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { isEqual } from 'lodash-es';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;
@@ -149,7 +149,12 @@
             />
 
             <div class="flex gap-2 place-items-center">
-              <Button size="sm" disabled={!config.notifications.smtp.enabled} onclick={handleSendTestEmail}>
+              <Button
+                size="small"
+                shape="round"
+                disabled={!config.notifications.smtp.enabled}
+                onclick={handleSendTestEmail}
+              >
                 {#if disabled}
                   {$t('admin.notification_email_test_email')}
                 {:else}
