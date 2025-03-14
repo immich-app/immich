@@ -58,6 +58,12 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
+    final MockAppSettingService appSettingService = MockAppSettingService();
+    final MockLocalFilesManagerRepository localFilesManagerRepository =
+        MockLocalFilesManagerRepository();
+
+    final owner = User(
+      id: "1",
     final MockPartnerApiRepository partnerApiRepository =
         MockPartnerApiRepository();
     final MockUserApiRepository userApiRepository = MockUserApiRepository();
@@ -103,6 +109,8 @@ void main() {
         userRepository,
         StoreService.I,
         eTagRepository,
+        appSettingService,
+        localFilesManagerRepository,
         partnerApiRepository,
         userApiRepository,
       );

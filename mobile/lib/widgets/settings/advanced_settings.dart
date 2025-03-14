@@ -25,6 +25,8 @@ class AdvancedSettings extends HookConsumerWidget {
 
     final advancedTroubleshooting =
         useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
+    final manageLocalMediaAndroid =
+        useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
     final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
     final allowSelfSignedSSLCert =
@@ -45,6 +47,13 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
+      if (Platform.isAndroid)
+        SettingsSwitchListTile(
+          enabled: true,
+          valueNotifier: manageLocalMediaAndroid,
+          title: "advanced_settings_sync_remote_deletions_title".tr(),
+          subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+        ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(args: [logLevel]),
         valueNotifier: levelId,

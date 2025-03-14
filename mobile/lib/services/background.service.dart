@@ -37,6 +37,7 @@ import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/repositories/network.repository.dart';
 import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
@@ -400,7 +401,10 @@ class BackgroundService {
         HashService(assetRepository, this, albumMediaRepository);
     EntityService entityService =
         EntityService(assetRepository, userRepository);
+    LocalFilesManagerRepository localFilesManagerRepository =
+        LocalFilesManagerRepository();
     IPartnerRepository partnerRepository = PartnerRepository(db);
+    
     SyncService syncSerive = SyncService(
       hashService,
       entityService,
@@ -413,6 +417,10 @@ class BackgroundService {
       userRepository,
       StoreService.I,
       eTagRepository,
+      settingsService,
+      localFilesManagerRepository,
+    );
+    UserService userService = UserService(
       partnerApiRepository,
       userApiRepository,
     );
