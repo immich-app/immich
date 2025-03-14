@@ -69,11 +69,11 @@ class IntersectingAsset {
     }
 
     const store = this.#group.bucket.store;
-    const topWindow = store.visibleWindow.top - HEADER - INTERSECTION_EXPAND_TOP;
-    const bottomWindow = store.visibleWindow.bottom - HEADER + INTERSECTION_EXPAND_BOTTOM;
+    const topWindow = store.visibleWindow.top + HEADER - INTERSECTION_EXPAND_TOP;
+    const bottomWindow = store.visibleWindow.bottom + HEADER + INTERSECTION_EXPAND_BOTTOM;
     const positionTop = this.#group.absoluteDateGroupTop + this.position.top;
     const positionBottom = positionTop + this.position.height;
-    const intersecting = positionBottom > topWindow && this.position.top < bottomWindow;
+    const intersecting = positionBottom > topWindow && positionTop < bottomWindow;
     return intersecting;
   });
 
@@ -566,7 +566,7 @@ export class AssetStore {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() {}
+  constructor() { }
 
   set scrolling(value: boolean) {
     this.#scrolling = value;
@@ -704,8 +704,8 @@ export class AssetStore {
   #updateIntersection(bucket: AssetBucket) {
     const bucketTop = bucket.top;
     const bucketBottom = bucketTop + bucket.bucketHeight;
-    const topWindow = this.visibleWindow.top - HEADER - INTERSECTION_EXPAND_TOP;
-    const bottomWindow = this.visibleWindow.bottom - HEADER + INTERSECTION_EXPAND_BOTTOM;
+    const topWindow = this.visibleWindow.top - INTERSECTION_EXPAND_TOP;
+    const bottomWindow = this.visibleWindow.bottom + INTERSECTION_EXPAND_BOTTOM;
     bucket.intersecting = bucketTop < bottomWindow && bucketBottom > topWindow ? true : false;
   }
 
