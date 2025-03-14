@@ -859,6 +859,7 @@
   "loop_videos": "Loop videos",
   "loop_videos_description": "Enable to automatically loop a video in the detail viewer.",
   "main_branch_warning": "You’re using a development version; we strongly recommend using a release version!",
+  "main_menu": "Main menu",
   "make": "Make",
   "manage_shared_links": "Manage shared links",
   "manage_sharing_with_partners": "Manage sharing with partners",
