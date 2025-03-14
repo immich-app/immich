@@ -13720,6 +13720,10 @@
             "format": "email",
             "type": "string"
           },
+          "isAdmin": {
+            "default": false,
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },

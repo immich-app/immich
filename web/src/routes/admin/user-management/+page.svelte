@@ -124,6 +124,7 @@
           user={selectedUser}
           bind:newPassword
           canResetPassword={selectedUser?.id !== $user.id}
+          isAdminDisabled={selectedUser?.id === $user.id}
           onEditSuccess={onEditUserSuccess}
           onResetPasswordSuccess={onEditPasswordSuccess}
           onClose={() => (shouldShowEditUserForm = false)}

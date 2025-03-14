@@ -77,6 +77,7 @@ export type UserAdminDeleteDto = {
 };
 export type UserAdminUpdateDto = {
     email?: string;
+    isAdmin?: boolean;
     name?: string;
     password?: string;
     quotaSizeInBytes?: number | null;
