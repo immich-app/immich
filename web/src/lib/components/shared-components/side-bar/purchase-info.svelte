@@ -129,6 +129,7 @@
       onfocus={() => (hoverMessage = true)}
       onblur={() => (hoverMessage = false)}
       role="dialog"
+      tabindex="0"
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">

@@ -95,15 +95,38 @@
       <section class="flex place-items-center justify-end gap-1 w-full sm:w-auto">
         {#if $featureFlags.search}
           <IconButton
-            shape="round"
             color="secondary"
+            shape="round"
             variant="ghost"
             size="large"
+            icon={mdiMagnify}
             href={AppRoute.SEARCH}
             id="search-button"
             class="sm:hidden"
             aria-label={$t('go_to_search')}
-            icon={mdiMagnify}
+          />
+        {/if}
+
+        {#if !page.url.pathname.includes('/admin') && showUploadButton}
+          <Button
+            leadingIcon={mdiTrayArrowUp}
+            onclick={onUploadClick}
+            class="hidden lg:flex"
+            variant="ghost"
+            size="medium"
+            color="secondary"
+            >{$t('upload')}
+          </Button>
+          <IconButton
+            color="secondary"
+            shape="round"
+            variant="ghost"
+            size="large"
+            onclick={onUploadClick}
+            title={$t('upload')}
+            aria-label={$t('upload')}
+            icon={mdiTrayArrowUp}
+            class="lg:hidden"
           />
         {/if}
 
@@ -122,28 +145,6 @@
             aria-label={$t('support_and_feedback')}
           />
         </div>
-
-        {#if !page.url.pathname.includes('/admin') && showUploadButton}
-          <Button
-            leadingIcon={mdiTrayArrowUp}
-            onclick={onUploadClick}
-            class="hidden lg:flex px-2"
-            variant="ghost"
-            color="secondary"
-          >
-            {$t('upload')}
-          </Button>
-          <IconButton
-            shape="round"
-            color="secondary"
-            variant="ghost"
-            size="large"
-            onclick={onUploadClick}
-            aria-label={$t('upload')}
-            icon={mdiTrayArrowUp}
-            class="lg:hidden"
-          />
-        {/if}
 
         <div
           use:clickOutside={{
