@@ -4,7 +4,7 @@ abstract final class UserStub {
   const UserStub._();
 
   static final admin = UserDto(
-    uid: "admin",
+    id: "admin",
     email: "admin@test.com",
     name: "admin",
     isAdmin: true,
@@ -14,7 +14,7 @@ abstract final class UserStub {
   );
 
   static final user1 = UserDto(
-    uid: "user1",
+    id: "user1",
     email: "user1@test.com",
     name: "user1",
     isAdmin: false,
@@ -24,7 +24,7 @@ abstract final class UserStub {
   );
 
   static final user2 = UserDto(
-    uid: "user2",
+    id: "user2",
     email: "user2@test.com",
     name: "user2",
     isAdmin: false,

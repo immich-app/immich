@@ -26,7 +26,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
     final sharedUsersList = useState<Set<UserDto>>({});
 
     addNewUsersHandler() {
-      context.maybePop(sharedUsersList.value.map((e) => e.uid).toList());
+      context.maybePop(sharedUsersList.value.map((e) => e.id).toList());
     }
 
     buildTileIcon(UserDto user) {
@@ -151,7 +151,7 @@ class AlbumAdditionalSharedUserSelectionPage extends HookConsumerWidget {
         onData: (users) {
           for (var sharedUsers in album.sharedUsers) {
             users.removeWhere(
-              (u) => u.uid == sharedUsers.id || u.uid == album.ownerId,
+              (u) => u.id == sharedUsers.id || u.id == album.ownerId,
             );
           }
 

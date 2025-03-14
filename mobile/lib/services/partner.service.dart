@@ -46,10 +46,10 @@ class PartnerService {
 
   Future<bool> removePartner(UserDto partner) async {
     try {
-      await _partnerApiRepository.delete(partner.uid);
+      await _partnerApiRepository.delete(partner.id);
       await _userRepository.update(partner.copyWith(isPartnerSharedBy: false));
     } catch (e) {
-      _log.warning("Failed to remove partner ${partner.uid}", e);
+      _log.warning("Failed to remove partner ${partner.id}", e);
       return false;
     }
     return true;
@@ -57,11 +57,11 @@ class PartnerService {
 
   Future<bool> addPartner(UserDto partner) async {
     try {
-      await _partnerApiRepository.create(partner.uid);
+      await _partnerApiRepository.create(partner.id);
       await _userRepository.update(partner.copyWith(isPartnerSharedBy: true));
       return true;
     } catch (e) {
-      _log.warning("Failed to add partner ${partner.uid}", e);
+      _log.warning("Failed to add partner ${partner.id}", e);
     }
     return false;
   }
@@ -72,14 +72,14 @@ class PartnerService {
   }) async {
     try {
       final dto = await _partnerApiRepository.update(
-        partner.uid,
+        partner.id,
         inTimeline: inTimeline,
       );
       await _userRepository
           .update(partner.copyWith(inTimeline: dto.inTimeline));
       return true;
     } catch (e) {
-      _log.warning("Failed to update partner ${partner.uid}", e);
+      _log.warning("Failed to update partner ${partner.id}", e);
     }
     return false;
   }

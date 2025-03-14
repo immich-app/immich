@@ -101,7 +101,7 @@ class AssetService {
       _getRemoteAssetChanges(List<UserDto> users, DateTime since) async {
     final dto = AssetDeltaSyncDto(
       updatedAfter: since,
-      userIds: users.map((e) => e.uid).toList(),
+      userIds: users.map((e) => e.id).toList(),
     );
     final changes = await _apiService.syncApi.getDeltaSync(dto);
     return changes == null || changes.needsFullSync
@@ -142,7 +142,7 @@ class AssetService {
           limit: chunkSize,
           updatedUntil: until,
           lastId: lastId,
-          userId: user.uid,
+          userId: user.id,
         );
         log.fine("Requesting $chunkSize assets from $lastId");
         final List<AssetResponseDto>? assets =

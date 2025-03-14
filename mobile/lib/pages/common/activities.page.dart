@@ -72,7 +72,7 @@ class ActivitiesPage extends HookConsumerWidget {
 
                     final activity = data[index];
                     final canDelete = activity.user.id == user?.id ||
-                        album.ownerId == user?.uid;
+                        album.ownerId == user?.id;
 
                     return Padding(
                       padding: const EdgeInsets.all(5),

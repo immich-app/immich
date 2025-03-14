@@ -19,7 +19,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
   );
 
   Future<List<Asset>> getAll({
-    required int ownerId,
+    required String ownerId,
     AssetState? state,
     AssetSort? sortBy,
     int? limit,
@@ -29,8 +29,8 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getByAlbum(
     Album album, {
-    Iterable<int> notOwnedBy = const [],
-    int? ownerId,
+    Iterable<String> notOwnedBy = const [],
+    String? ownerId,
     AssetState? state,
     AssetSort? sortBy,
   });
@@ -45,7 +45,7 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Future<List<Asset>> getMatches({
     required List<Asset> assets,
-    required int ownerId,
+    required String ownerId,
     AssetState? state,
     int limit = 100,
   });
@@ -64,10 +64,10 @@ abstract interface class IAssetRepository implements IDatabaseRepository {
 
   Stream<Asset?> watchAsset(int id, {bool fireImmediately = false});
 
-  Future<List<Asset>> getTrashAssets(int userId);
+  Future<List<Asset>> getTrashAssets(String userId);
 
-  Future<List<Asset>> getRecentlyAddedAssets(int userId);
-  Future<List<Asset>> getMotionAssets(int userId);
+  Future<List<Asset>> getRecentlyAddedAssets(String userId);
+  Future<List<Asset>> getMotionAssets(String userId);
 }
 
 enum AssetSort { checksum, ownerIdChecksum }

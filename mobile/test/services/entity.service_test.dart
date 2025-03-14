@@ -41,7 +41,7 @@ void main() {
           [User.fromDto(UserStub.admin), User.fromDto(UserStub.admin)],
         );
 
-      when(() => userRepository.get(any()))
+      when(() => userRepository.getByUserId(any()))
           .thenAnswer((_) async => UserStub.admin);
       when(() => userRepository.getByUserId(any()))
           .thenAnswer((_) async => UserStub.admin);

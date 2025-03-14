@@ -149,7 +149,7 @@ void main() {
         () => albumApiRepository.create(
           "name",
           assetIds: [AssetStub.image1.remoteId!],
-          sharedUserIds: [UserStub.user1.uid],
+          sharedUserIds: [UserStub.user1.id],
         ),
       ).called(1);
       verify(
@@ -217,7 +217,7 @@ void main() {
 
       final result = await sut.addUsers(
         AlbumStub.emptyAlbum,
-        [UserStub.user2.uid],
+        [UserStub.user2.id],
       );
 
       expect(result, true);
