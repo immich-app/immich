@@ -924,6 +924,7 @@ export type SmartSearchDto = {
     isNotInAlbum?: boolean;
     isOffline?: boolean;
     isVisible?: boolean;
+    language?: string;
     lensModel?: string | null;
     libraryId?: string | null;
     make?: string;
