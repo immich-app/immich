@@ -1,34 +1,24 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/timeline.service.dart';
 
 class CurrentUserProvider extends StateNotifier<UserDto?> {
-  CurrentUserProvider(this._apiService) : super(null) {
-    state = Store.tryGet(StoreKey.currentUser);
+  CurrentUserProvider(this._userService) : super(null) {
+    state = _userService.tryGetMyUser();
     streamSub =
-        Store.watch(StoreKey.currentUser).listen((user) => state = user);
+        _userService.watchMyUser().listen((user) => state = user ?? state);
   }
 
-  final ApiService _apiService;
+  final UserService _userService;
   late final StreamSubscription<UserDto?> streamSub;
 
   refresh() async {
     try {
-      final user = await _apiService.usersApi.getMyUser();
-      final userPreferences = await _apiService.usersApi.getMyPreferences();
-      if (user != null) {
-        await Store.put(
-          StoreKey.currentUser,
-          UserConverter.fromAdminDto(user, userPreferences),
-        );
-      }
+      await _userService.refreshMyUser();
     } catch (_) {}
   }
 
@@ -41,9 +31,7 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
 
 final currentUserProvider =
     StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
-  return CurrentUserProvider(
-    ref.watch(apiServiceProvider),
-  );
+  return CurrentUserProvider(ref.watch(userServiceProvider));
 });
 
 class TimelineUserIdsProvider extends StateNotifier<List<int>> {

@@ -1,10 +1,9 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:openapi/api.dart';
@@ -13,19 +12,19 @@ final trashServiceProvider = Provider<TrashService>((ref) {
   return TrashService(
     ref.watch(apiServiceProvider),
     ref.watch(assetRepositoryProvider),
-    ref.watch(storeServiceProvider),
+    ref.watch(userServiceProvider),
   );
 });
 
 class TrashService {
   final ApiService _apiService;
   final IAssetRepository _assetRepository;
-  final StoreService _storeService;
+  final UserService _userService;
 
-  TrashService(
+  const TrashService(
     this._apiService,
     this._assetRepository,
-    this._storeService,
+    this._userService,
   );
 
   Future<void> restoreAssets(Iterable<Asset> assetList) async {
@@ -43,7 +42,7 @@ class TrashService {
   }
 
   Future<void> emptyTrash() async {
-    final user = _storeService.get(StoreKey.currentUser);
+    final user = _userService.getMyUser();
 
     await _apiService.trashApi.emptyTrash();
 
@@ -74,7 +73,7 @@ class TrashService {
   }
 
   Future<void> restoreTrash() async {
-    final user = _storeService.get(StoreKey.currentUser);
+    final user = _userService.getMyUser();
 
     await _apiService.trashApi.restoreTrash();
 

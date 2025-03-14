@@ -5,9 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
@@ -20,7 +19,6 @@ import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
@@ -47,7 +45,7 @@ final syncServiceProvider = Provider(
     ref.watch(exifRepositoryProvider),
     ref.watch(partnerRepositoryProvider),
     ref.watch(userRepositoryProvider),
-    ref.watch(storeServiceProvider),
+    ref.watch(userServiceProvider),
     ref.watch(etagRepositoryProvider),
     ref.watch(partnerApiRepositoryProvider),
     ref.watch(userApiRepositoryProvider),
@@ -63,8 +61,8 @@ class SyncService {
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
+  final UserService _userService;
   final IPartnerRepository _partnerRepository;
-  final StoreService _storeService;
   final IETagRepository _eTagRepository;
   final IPartnerApiRepository _partnerApiRepository;
   final IUserApiRepository _userApiRepository;
@@ -81,7 +79,7 @@ class SyncService {
     this._exifInfoRepository,
     this._partnerRepository,
     this._userRepository,
-    this._storeService,
+    this._userService,
     this._eTagRepository,
     this._partnerApiRepository,
     this._userApiRepository,
@@ -210,7 +208,7 @@ class SyncService {
       DateTime since,
     ) getChangedAssets,
   ) async {
-    final currentUser = _storeService.get(StoreKey.currentUser);
+    final currentUser = _userService.getMyUser();
     final DateTime? since =
         (await _eTagRepository.get(currentUser.id))?.time?.toUtc();
     if (since == null) return null;
@@ -261,7 +259,7 @@ class SyncService {
 
   Future<List<UserDto>> _getAllAccessibleUsers() async {
     final sharedWith = (await _partnerRepository.getSharedWith()).toSet();
-    sharedWith.add(_storeService.get(StoreKey.currentUser));
+    sharedWith.add(_userService.getMyUser());
     return sharedWith.toList();
   }
 
@@ -455,7 +453,7 @@ class SyncService {
     }
 
     if (album.shared || dto.shared) {
-      final userId = (_storeService.get(StoreKey.currentUser)).id;
+      final userId = (_userService.getMyUser()).id;
       final foreign =
           await _assetRepository.getByAlbum(album, notOwnedBy: [userId]);
       existing.addAll(foreign);
@@ -591,7 +589,7 @@ class SyncService {
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await _assetRepository.getByAlbum(
       dbAlbum,
-      ownerId: (_storeService.get(StoreKey.currentUser)).id,
+      ownerId: (_userService.getMyUser()).id,
       sortBy: AssetSort.checksum,
     );
 

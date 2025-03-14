@@ -31,6 +31,8 @@ void main() {
     albumMediaRepository = MockAlbumMediaRepository();
     albumApiRepository = MockAlbumApiRepository();
 
+    when(() => userService.getMyUser()).thenReturn(UserStub.user1);
+
     when(() => albumRepository.transaction<void>(any())).thenAnswer(
       (call) => (call.positionalArguments.first as Function).call(),
     );
@@ -40,6 +42,7 @@ void main() {
 
     sut = AlbumService(
       syncService,
+      userService,
       entityService,
       albumRepository,
       assetRepository,
