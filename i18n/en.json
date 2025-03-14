@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Issuer URL",
     "oauth_mobile_redirect_uri": "Mobile redirect URI",
     "oauth_mobile_redirect_uri_override": "Mobile redirect URI override",
-    "oauth_mobile_redirect_uri_override_description": "Enable when OAuth provider does not allow a mobile URI, like '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Enable when OAuth provider does not allow a mobile URI, like ''{callback}''",
     "oauth_profile_signing_algorithm": "Profile signing algorithm",
     "oauth_profile_signing_algorithm_description": "Algorithm used to sign the user profile.",
     "oauth_scope": "Scope",
