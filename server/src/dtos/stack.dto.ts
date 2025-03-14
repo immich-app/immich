@@ -12,6 +12,7 @@ export class StackCreateDto {
 }
 
 export class StackSearchDto {
+  @ValidateUUID({ optional: true })
   primaryAssetId?: string;
 }
 
