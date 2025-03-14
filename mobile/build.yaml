@@ -1,0 +1,24 @@
+targets:
+   $default:
+     builders:
+       #drift @DriftDatabase()
+       drift_dev:
+         # Disable default builder to use modular builder instead
+         enabled: false
+       drift_dev:analyzer:
+         enabled: true
+         options: &drift_options
+           store_date_time_values_as_text: true
+           named_parameters: true
+           write_from_json_string_constructor: false
+           data_class_to_companions: false
+           # Required for make-migrations
+           databases:
+             main: lib/infrastructure/repositories/db.repository.dart
+         generate_for: &drift_generate_for
+           - lib/infrastructure/entities/*.dart
+           - lib/infrastructure/repositories/db.repository.dart
+       drift_dev:modular:
+         enabled: true
+         options: *drift_options
+         generate_for: *drift_generate_for
