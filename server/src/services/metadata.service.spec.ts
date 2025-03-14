@@ -2,6 +2,7 @@ import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
+import { defaults } from 'src/config';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
 import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
@@ -54,122 +55,24 @@ describe(MetadataService.name, () => {
     });
   });
 
-  describe('handleLivePhotoLinking', () => {
-    it('should handle an asset that could not be found', async () => {
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
-      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
-      expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
+  describe('onConfigInit', () => {
+    it('should update metadata processing concurrency', () => {
+      sut.onConfigInit({ newConfig: defaults });
+
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledWith(defaults.job.metadataExtraction.concurrency);
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledTimes(1);
     });
+  });
 
-    it('should handle an asset without exif info', async () => {
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.image, exifInfo: undefined }]);
+  describe('onConfigUpdate', () => {
+    it('should update metadata processing concurrency', () => {
+      const newConfig = structuredClone(defaults);
+      newConfig.job.metadataExtraction.concurrency = 10;
 
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
-      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
-      expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
-    });
+      sut.onConfigUpdate({ oldConfig: defaults, newConfig });
 
-    it('should handle livePhotoCID not set', async () => {
-      mocks.asset.getByIds.mockResolvedValue([{ ...assetStub.image }]);
-
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.image.id })).resolves.toBe(JobStatus.SKIPPED);
-      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.image.id], { exifInfo: true });
-      expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
-    });
-
-    it('should handle not finding a match', async () => {
-      mocks.asset.getByIds.mockResolvedValue([
-        {
-          ...assetStub.livePhotoMotionAsset,
-          exifInfo: { livePhotoCID: assetStub.livePhotoStillAsset.id } as ExifEntity,
-        },
-      ]);
-
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoMotionAsset.id })).resolves.toBe(
-        JobStatus.SKIPPED,
-      );
-      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id], { exifInfo: true });
-      expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
-        livePhotoCID: assetStub.livePhotoStillAsset.id,
-        ownerId: assetStub.livePhotoMotionAsset.ownerId,
-        otherAssetId: assetStub.livePhotoMotionAsset.id,
-        type: AssetType.IMAGE,
-      });
-      expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
-    });
-
-    it('should link photo and video', async () => {
-      mocks.asset.getByIds.mockResolvedValue([
-        {
-          ...assetStub.livePhotoStillAsset,
-          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as ExifEntity,
-        },
-      ]);
-      mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
-
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
-        JobStatus.SUCCESS,
-      );
-      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id], { exifInfo: true });
-      expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
-        livePhotoCID: assetStub.livePhotoMotionAsset.id,
-        ownerId: assetStub.livePhotoStillAsset.ownerId,
-        otherAssetId: assetStub.livePhotoStillAsset.id,
-        type: AssetType.VIDEO,
-      });
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.livePhotoStillAsset.id,
-        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
-      });
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
-      expect(mocks.album.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
-    });
-
-    it('should notify clients on live photo link', async () => {
-      mocks.asset.getByIds.mockResolvedValue([
-        {
-          ...assetStub.livePhotoStillAsset,
-          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as ExifEntity,
-        },
-      ]);
-      mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
-
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
-        JobStatus.SUCCESS,
-      );
-      expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
-        userId: assetStub.livePhotoMotionAsset.ownerId,
-        assetId: assetStub.livePhotoMotionAsset.id,
-      });
-    });
-
-    it('should search by libraryId', async () => {
-      mocks.asset.getByIds.mockResolvedValue([
-        {
-          ...assetStub.livePhotoStillAsset,
-          libraryId: 'library-id',
-          exifInfo: { livePhotoCID: 'CID' } as ExifEntity,
-        },
-      ]);
-
-      await expect(sut.handleLivePhotoLinking({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
-        JobStatus.SKIPPED,
-      );
-
-      expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
-        ownerId: 'user-id',
-        otherAssetId: 'live-photo-still-asset',
-        livePhotoCID: 'CID',
-        libraryId: 'library-id',
-        type: 'VIDEO',
-      });
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledWith(newConfig.job.metadataExtraction.concurrency);
+      expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -227,7 +130,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: sidecarDate,
-        fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
         localDateTime: sidecarDate,
       });
     });
@@ -247,7 +149,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: fileModifiedAt,
-        fileModifiedAt,
         localDateTime: fileModifiedAt,
       });
     });
@@ -265,7 +166,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt,
-        fileModifiedAt,
         localDateTime: fileCreatedAt,
       });
     });
@@ -300,7 +200,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: assetStub.image.fileCreatedAt,
-        fileModifiedAt: assetStub.image.fileModifiedAt,
         localDateTime: assetStub.image.fileCreatedAt,
       });
     });
@@ -323,7 +222,6 @@ describe(MetadataService.name, () => {
         id: assetStub.withLocation.id,
         duration: null,
         fileCreatedAt: assetStub.withLocation.createdAt,
-        fileModifiedAt: assetStub.withLocation.createdAt,
         localDateTime: new Date('2023-02-22T05:06:29.716Z'),
       });
     });
@@ -343,7 +241,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from TagsList', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ TagsList: ['Parent'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -353,27 +251,27 @@ describe(MetadataService.name, () => {
     it('should extract hierarchy from TagsList', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ TagsList: ['Parent/Child'] });
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parent);
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.child);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.childUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
     it('should extract tags from Keywords as a string', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: 'Parent' });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -383,7 +281,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from Keywords as a list', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: ['Parent'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -393,7 +291,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from Keywords as a list with a number', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: ['Parent', 2024] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -404,58 +302,58 @@ describe(MetadataService.name, () => {
     it('should extract hierarchal tags from Keywords', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: 'Parent/Child' });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
     it('should ignore Keywords when TagsList is present', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ Keywords: 'Child', TagsList: ['Parent/Child'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
     it('should extract hierarchy from HierarchicalSubject', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Parent|Child', 'TagA'] });
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parent);
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.child);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.childUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(3, { userId: 'user-id', value: 'TagA', parent: undefined });
     });
@@ -463,7 +361,7 @@ describe(MetadataService.name, () => {
     it('should extract tags from HierarchicalSubject as a list with a number', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Parent', 2024] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -474,7 +372,7 @@ describe(MetadataService.name, () => {
     it('should extract ignore / characters in a HierarchicalSubject tag', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Mom/Dad'] });
-      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValueOnce(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
@@ -488,19 +386,19 @@ describe(MetadataService.name, () => {
     it('should ignore HierarchicalSubject when TagsList is present', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
       mockReadTags({ HierarchicalSubject: ['Parent2|Child2'], TagsList: ['Parent/Child'] });
-      mocks.tag.upsertValue.mockResolvedValue(tagStub.parent);
+      mocks.tag.upsertValue.mockResolvedValue(tagStub.parentUpsert);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(1, {
         userId: 'user-id',
         value: 'Parent',
-        parent: undefined,
+        parentId: undefined,
       });
       expect(mocks.tag.upsertValue).toHaveBeenNthCalledWith(2, {
         userId: 'user-id',
         value: 'Parent/Child',
-        parent: tagStub.parent,
+        parentId: 'tag-parent',
       });
     });
 
@@ -510,7 +408,7 @@ describe(MetadataService.name, () => {
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
 
-      expect(mocks.tag.upsertAssetTags).toHaveBeenCalledWith({ assetId: 'asset-id', tagIds: [] });
+      expect(mocks.tag.replaceAssetTags).toHaveBeenCalledWith('asset-id', []);
     });
 
     it('should not apply motion photos if asset is video', async () => {
@@ -729,11 +627,11 @@ describe(MetadataService.name, () => {
       mocks.storage.checkFileExists.mockResolvedValue(true);
 
       await sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id });
-      expect(mocks.asset.create).toHaveBeenCalledTimes(0);
-      expect(mocks.storage.createOrOverwriteFile).toHaveBeenCalledTimes(0);
+      expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.storage.createOrOverwriteFile).not.toHaveBeenCalled();
       // The still asset gets saved by handleMetadataExtraction, but not the video
       expect(mocks.asset.update).toHaveBeenCalledTimes(1);
-      expect(mocks.job.queue).toHaveBeenCalledTimes(0);
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should link and hide motion video asset to still asset if the hash of the extracted video matches an existing asset', async () => {
@@ -845,7 +743,6 @@ describe(MetadataService.name, () => {
         id: assetStub.image.id,
         duration: null,
         fileCreatedAt: dateForTest,
-        fileModifiedAt: dateForTest,
         localDateTime: dateForTest,
       });
     });
@@ -1161,6 +1058,107 @@ describe(MetadataService.name, () => {
           rating: -1,
         }),
       );
+    });
+
+    it('should handle livePhotoCID not set', async () => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.image.id })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.image.id], { faces: { person: false } });
+      expect(mocks.asset.findLivePhotoMatch).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(expect.objectContaining({ isVisible: false }));
+      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
+    });
+
+    it('should handle not finding a match', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStreamVertical2160p);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoMotionAsset]);
+      mockReadTags({ ContentIdentifier: 'CID' });
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoMotionAsset.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.livePhotoMotionAsset.id], {
+        faces: { person: false },
+      });
+      expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
+        livePhotoCID: 'CID',
+        ownerId: assetStub.livePhotoMotionAsset.ownerId,
+        otherAssetId: assetStub.livePhotoMotionAsset.id,
+        type: AssetType.IMAGE,
+      });
+      expect(mocks.asset.update).not.toHaveBeenCalledWith(expect.objectContaining({ isVisible: false }));
+      expect(mocks.album.removeAsset).not.toHaveBeenCalled();
+    });
+
+    it('should link photo and video', async () => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.livePhotoStillAsset]);
+      mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      mockReadTags({ ContentIdentifier: 'CID' });
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.asset.getByIds).toHaveBeenCalledWith([assetStub.livePhotoStillAsset.id], {
+        faces: { person: false },
+      });
+      expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
+        livePhotoCID: 'CID',
+        ownerId: assetStub.livePhotoStillAsset.ownerId,
+        otherAssetId: assetStub.livePhotoStillAsset.id,
+        type: AssetType.VIDEO,
+      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({
+        id: assetStub.livePhotoStillAsset.id,
+        livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+      });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: false });
+      expect(mocks.album.removeAsset).toHaveBeenCalledWith(assetStub.livePhotoMotionAsset.id);
+    });
+
+    it('should notify clients on live photo link', async () => {
+      mocks.asset.getByIds.mockResolvedValue([
+        {
+          ...assetStub.livePhotoStillAsset,
+          exifInfo: { livePhotoCID: assetStub.livePhotoMotionAsset.id } as ExifEntity,
+        },
+      ]);
+      mocks.asset.findLivePhotoMatch.mockResolvedValue(assetStub.livePhotoMotionAsset);
+      mockReadTags({ ContentIdentifier: 'CID' });
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('asset.hide', {
+        userId: assetStub.livePhotoMotionAsset.ownerId,
+        assetId: assetStub.livePhotoMotionAsset.id,
+      });
+    });
+
+    it('should search by libraryId', async () => {
+      mocks.asset.getByIds.mockResolvedValue([
+        {
+          ...assetStub.livePhotoStillAsset,
+          libraryId: 'library-id',
+        },
+      ]);
+      mockReadTags({ ContentIdentifier: 'CID' });
+
+      await expect(sut.handleMetadataExtraction({ id: assetStub.livePhotoStillAsset.id })).resolves.toBe(
+        JobStatus.SUCCESS,
+      );
+
+      expect(mocks.asset.findLivePhotoMatch).toHaveBeenCalledWith({
+        ownerId: 'user-id',
+        otherAssetId: 'live-photo-still-asset',
+        livePhotoCID: 'CID',
+        libraryId: 'library-id',
+        type: 'VIDEO',
+      });
     });
   });
 

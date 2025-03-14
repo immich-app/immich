@@ -32,7 +32,7 @@
     getTagById,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -137,7 +137,7 @@
     await loadNextPage();
   }
 
-  export const loadNextPage = async () => {
+  const loadNextPage = async () => {
     if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
       return;
     }
@@ -230,6 +230,7 @@
     return tagNames.join(', ');
   }
 
+  // eslint-disable-next-line no-self-assign
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
 
   const onAddToAlbum = (assetIds: string[]) => {
@@ -261,7 +262,7 @@
         </ButtonContextMenu>
         <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
 
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />

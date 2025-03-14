@@ -1,6 +1,6 @@
 /**
  * Immich
- * 1.126.1
+ * 1.129.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -3453,7 +3453,8 @@ export enum AlbumUserRole {
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
-    Exif = "exif"
+    Exif = "exif",
+    Manual = "manual"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",
@@ -3644,10 +3645,13 @@ export enum Error2 {
 }
 export enum SyncEntityType {
     UserV1 = "UserV1",
-    UserDeleteV1 = "UserDeleteV1"
+    UserDeleteV1 = "UserDeleteV1",
+    PartnerV1 = "PartnerV1",
+    PartnerDeleteV1 = "PartnerDeleteV1"
 }
 export enum SyncRequestType {
-    UsersV1 = "UsersV1"
+    UsersV1 = "UsersV1",
+    PartnersV1 = "PartnersV1"
 }
 export enum TranscodeHWAccel {
     Nvenc = "nvenc",

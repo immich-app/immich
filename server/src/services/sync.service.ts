@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import { DateTime } from 'luxon';
 import { Writable } from 'node:stream';
@@ -25,6 +25,7 @@ const FULL_SYNC = { needsFullSync: true, deleted: [], upserted: [] };
 const SYNC_TYPES_ORDER = [
   //
   SyncRequestType.UsersV1,
+  SyncRequestType.PartnersV1,
 ];
 
 const throwSessionRequired = () => {
@@ -43,8 +44,6 @@ export class SyncService extends BaseService {
   }
 
   async setAcks(auth: AuthDto, dto: SyncAckSetDto) {
-    // TODO ack validation
-
     const sessionId = auth.session?.id;
     if (!sessionId) {
       return throwSessionRequired();
@@ -53,6 +52,10 @@ export class SyncService extends BaseService {
     const checkpoints: Insertable<SessionSyncCheckpoints>[] = [];
     for (const ack of dto.acks) {
       const { type } = fromAck(ack);
+      // TODO proper ack validation via class validator
+      if (!Object.values(SyncEntityType).includes(type)) {
+        throw new BadRequestException(`Invalid ack type: ${type}`);
+      }
       checkpoints.push({ sessionId, type, ack });
     }
 
@@ -79,19 +82,34 @@ export class SyncService extends BaseService {
       checkpoints.map(({ type, ack }) => [type, fromAck(ack)]),
     );
 
-    // TODO pre-filter/sort list based on optimal sync order
-
     for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
       switch (type) {
         case SyncRequestType.UsersV1: {
           const deletes = this.syncRepository.getUserDeletes(checkpointMap[SyncEntityType.UserDeleteV1]);
-          for await (const { ackEpoch, ...data } of deletes) {
-            response.write(serialize({ type: SyncEntityType.UserDeleteV1, ackEpoch, ids: [data.userId], data }));
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.UserDeleteV1, updateId: id, data }));
           }
 
           const upserts = this.syncRepository.getUserUpserts(checkpointMap[SyncEntityType.UserV1]);
-          for await (const { ackEpoch, ...data } of upserts) {
-            response.write(serialize({ type: SyncEntityType.UserV1, ackEpoch, ids: [data.id], data }));
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.UserV1, updateId, data }));
+          }
+
+          break;
+        }
+
+        case SyncRequestType.PartnersV1: {
+          const deletes = this.syncRepository.getPartnerDeletes(
+            auth.user.id,
+            checkpointMap[SyncEntityType.PartnerDeleteV1],
+          );
+          for await (const { id, ...data } of deletes) {
+            response.write(serialize({ type: SyncEntityType.PartnerDeleteV1, updateId: id, data }));
+          }
+
+          const upserts = this.syncRepository.getPartnerUpserts(auth.user.id, checkpointMap[SyncEntityType.PartnerV1]);
+          for await (const { updateId, ...data } of upserts) {
+            response.write(serialize({ type: SyncEntityType.PartnerV1, updateId, data }));
           }
 
           break;

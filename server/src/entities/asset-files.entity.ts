@@ -30,6 +30,10 @@ export class AssetFileEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @Index('IDX_asset_files_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
+
   @Column()
   type!: AssetFileType;
 

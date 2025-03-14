@@ -96,6 +96,10 @@ export class AssetEntity {
   @UpdateDateColumn({ type: 'timestamptz' })
   updatedAt!: Date;
 
+  @Index('IDX_assets_update_id')
+  @Column({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  updateId?: string;
+
   @DeleteDateColumn({ type: 'timestamptz', nullable: true })
   deletedAt!: Date | null;
 
@@ -256,6 +260,7 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'assets', O>, personIds:
         .selectFrom('asset_faces')
         .select('assetId')
         .where('personId', '=', anyUuid(personIds!))
+        .where('deletedAt', 'is', null)
         .groupBy('assetId')
         .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
         .as('has_people'),
@@ -347,7 +352,7 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.isArchived ??= options.withArchived ? undefined : false;
-  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore);
+  options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('assets')

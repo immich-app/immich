@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/services/login.service.dart';
 import 'package:immich_mobile/presentation/components/image/immich_logo.widget.dart';
 import 'package:immich_mobile/presentation/modules/login/states/login_page.state.dart';
 import 'package:immich_mobile/presentation/router/router.dart';
+import 'package:immich_mobile/presentation/states/gallery_permission.state.dart';
 import 'package:immich_mobile/service_locator.dart';
 import 'package:immich_mobile/utils/mixins/log.mixin.dart';
 
@@ -39,6 +40,7 @@ class _SplashScreenState extends State<SplashScreenPage>
       duration: const Duration(seconds: 30),
       vsync: this,
     )..repeat();
+    unawaited(di<GalleryPermissionProvider>().requestPermission());
   }
 
   @override

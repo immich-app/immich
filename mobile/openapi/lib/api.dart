@@ -232,6 +232,8 @@ part 'model/sync_ack_delete_dto.dart';
 part 'model/sync_ack_dto.dart';
 part 'model/sync_ack_set_dto.dart';
 part 'model/sync_entity_type.dart';
+part 'model/sync_partner_delete_v1.dart';
+part 'model/sync_partner_v1.dart';
 part 'model/sync_request_type.dart';
 part 'model/sync_stream_dto.dart';
 part 'model/sync_user_delete_v1.dart';

@@ -526,6 +526,47 @@ describe('/libraries', () => {
       utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
     });
 
+    it('should not reimport a modified file more than once', async () => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/reimport`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_000);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      cpSync(`${testAssetDir}/albums/nature/tanners_ridge.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_001);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      cpSync(`${testAssetDir}/albums/nature/el_torcal_rocks.jpg`, `${testAssetDir}/temp/reimport/asset.jpg`);
+      await utimes(`${testAssetDir}/temp/reimport/asset.jpg`, 447_775_200_001);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      const { assets } = await utils.searchAssets(admin.accessToken, {
+        libraryId: library.id,
+      });
+
+      expect(assets.count).toEqual(1);
+
+      const asset = await utils.getAssetInfo(admin.accessToken, assets.items[0].id);
+
+      expect(asset).toEqual(
+        expect.objectContaining({
+          originalFileName: 'asset.jpg',
+          exifInfo: expect.objectContaining({
+            model: 'NIKON D750',
+          }),
+        }),
+      );
+
+      utils.removeImageFile(`${testAssetDir}/temp/reimport/asset.jpg`);
+    });
+
     it('should set an asset offline if its file is missing', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,

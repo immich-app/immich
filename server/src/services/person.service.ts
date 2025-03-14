@@ -736,6 +736,7 @@ export class PersonService extends BaseService {
       boundingBoxX2: dto.x + dto.width,
       boundingBoxY1: dto.y,
       boundingBoxY2: dto.y + dto.height,
+      sourceType: SourceType.MANUAL,
     });
   }
 

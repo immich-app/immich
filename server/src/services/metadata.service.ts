@@ -89,6 +89,16 @@ export class MetadataService extends BaseService {
     await this.metadataRepository.teardown();
   }
 
+  @OnEvent({ name: 'config.init', workers: [ImmichWorker.MICROSERVICES] })
+  onConfigInit({ newConfig }: ArgOf<'config.init'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+  }
+
+  @OnEvent({ name: 'config.update', workers: [ImmichWorker.MICROSERVICES], server: true })
+  onConfigUpdate({ newConfig }: ArgOf<'config.update'>) {
+    this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+  }
+
   private async init() {
     this.logger.log('Initializing metadata service');
 
@@ -103,21 +113,14 @@ export class MetadataService extends BaseService {
     }
   }
 
-  @OnJob({ name: JobName.LINK_LIVE_PHOTOS, queue: QueueName.METADATA_EXTRACTION })
-  async handleLivePhotoLinking(job: JobOf<JobName.LINK_LIVE_PHOTOS>): Promise<JobStatus> {
-    const { id } = job;
-    const [asset] = await this.assetRepository.getByIds([id], { exifInfo: true });
-    if (!asset?.exifInfo) {
-      return JobStatus.FAILED;
-    }
-
-    if (!asset.exifInfo.livePhotoCID) {
-      return JobStatus.SKIPPED;
+  private async linkLivePhotos(asset: AssetEntity, exifInfo: Insertable<Exif>): Promise<void> {
+    if (!exifInfo.livePhotoCID) {
+      return;
     }
 
     const otherType = asset.type === AssetType.VIDEO ? AssetType.IMAGE : AssetType.VIDEO;
     const match = await this.assetRepository.findLivePhotoMatch({
-      livePhotoCID: asset.exifInfo.livePhotoCID,
+      livePhotoCID: exifInfo.livePhotoCID,
       ownerId: asset.ownerId,
       libraryId: asset.libraryId,
       otherAssetId: asset.id,
@@ -125,18 +128,17 @@ export class MetadataService extends BaseService {
     });
 
     if (!match) {
-      return JobStatus.SKIPPED;
+      return;
     }
 
     const [photoAsset, motionAsset] = asset.type === AssetType.IMAGE ? [asset, match] : [match, asset];
-
-    await this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id });
-    await this.assetRepository.update({ id: motionAsset.id, isVisible: false });
-    await this.albumRepository.removeAsset(motionAsset.id);
+    await Promise.all([
+      this.assetRepository.update({ id: photoAsset.id, livePhotoVideoId: motionAsset.id }),
+      this.assetRepository.update({ id: motionAsset.id, isVisible: false }),
+      this.albumRepository.removeAsset(motionAsset.id),
+    ]);
 
     await this.eventRepository.emit('asset.hide', { assetId: motionAsset.id, userId: motionAsset.ownerId });
-
-    return JobStatus.SUCCESS;
   }
 
   @OnJob({ name: JobName.QUEUE_METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
@@ -158,9 +160,9 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
-  async handleMetadataExtraction({ id }: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
+  async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
     const { metadata, reverseGeocoding } = await this.getConfig({ withCache: true });
-    const [asset] = await this.assetRepository.getByIds([id], { faces: { person: false } });
+    const [asset] = await this.assetRepository.getByIds([data.id], { faces: { person: false } });
     if (!asset) {
       return JobStatus.FAILED;
     }
@@ -238,17 +240,18 @@ export class MetadataService extends BaseService {
       duration: exifTags.Duration?.toString() ?? null,
       localDateTime,
       fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
-      fileModifiedAt: exifData.modifyDate ?? undefined,
+      fileModifiedAt: stats.mtime,
     });
 
-    await this.assetRepository.upsertJobStatus({
-      assetId: asset.id,
-      metadataExtractedAt: new Date(),
-    });
+    if (exifData.livePhotoCID) {
+      await this.linkLivePhotos(asset, exifData);
+    }
 
     if (isFaceImportEnabled(metadata)) {
       await this.applyTaggedFaces(asset, exifTags);
     }
+
+    await this.assetRepository.upsertJobStatus({ assetId: asset.id, metadataExtractedAt: new Date() });
 
     return JobStatus.SUCCESS;
   }
@@ -387,7 +390,10 @@ export class MetadataService extends BaseService {
     }
 
     const results = await upsertTags(this.tagRepository, { userId: asset.ownerId, tags });
-    await this.tagRepository.upsertAssetTags({ assetId: asset.id, tagIds: results.map((tag) => tag.id) });
+    await this.tagRepository.replaceAssetTags(
+      asset.id,
+      results.map((tag) => tag.id),
+    );
   }
 
   private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags) {

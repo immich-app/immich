@@ -10,7 +10,7 @@ import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
 import 'package:immich_mobile/interfaces/asset_media.interface.dart';
-import 'package:immich_mobile/interfaces/backup.interface.dart';
+import 'package:immich_mobile/interfaces/backup_album.interface.dart';
 import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/exif_info.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
@@ -39,7 +39,7 @@ final assetServiceProvider = Provider(
     ref.watch(exifInfoRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(etagRepositoryProvider),
-    ref.watch(backupRepositoryProvider),
+    ref.watch(backupAlbumRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(userServiceProvider),
@@ -55,7 +55,7 @@ class AssetService {
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
   final IETagRepository _etagRepository;
-  final IBackupRepository _backupRepository;
+  final IBackupAlbumRepository _backupRepository;
   final ApiService _apiService;
   final SyncService _syncService;
   final UserService _userService;

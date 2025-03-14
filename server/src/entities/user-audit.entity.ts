@@ -1,14 +1,14 @@
-import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, PrimaryColumn } from 'typeorm';
 
 @Entity('users_audit')
-@Index('IDX_users_audit_deleted_at_asc_user_id_asc', ['deletedAt', 'userId'])
 export class UserAuditEntity {
-  @PrimaryGeneratedColumn('increment')
-  id!: number;
+  @PrimaryColumn({ type: 'uuid', nullable: false, default: () => 'immich_uuid_v7()' })
+  id!: string;
 
   @Column({ type: 'uuid' })
   userId!: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @Index('IDX_users_audit_deleted_at')
+  @CreateDateColumn({ type: 'timestamptz', default: () => 'clock_timestamp()' })
   deletedAt!: Date;
 }

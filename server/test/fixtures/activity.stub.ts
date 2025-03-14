@@ -19,6 +19,7 @@ export const activityStub = {
     albumId: albumStub.oneAsset.id,
     createdAt: new Date(),
     updatedAt: new Date(),
+    updateId: 'uuid-v7',
   }),
   liked: Object.freeze<ActivityItem>({
     id: 'activity-2',
@@ -36,5 +37,6 @@ export const activityStub = {
     albumId: albumStub.oneAsset.id,
     createdAt: new Date(),
     updatedAt: new Date(),
+    updateId: 'uuid-v7',
   }),
 };

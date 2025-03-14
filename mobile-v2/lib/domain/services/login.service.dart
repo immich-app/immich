@@ -175,5 +175,6 @@ class LoginService with LogMixin {
     await di<IAlbumToAssetRepository>().deleteAll();
     await di<IAlbumETagRepository>().deleteAll();
     await di<IUserRepository>().deleteAll();
+    await di<IStoreRepository>().delete(StoreKey.accessToken);
   }
 }

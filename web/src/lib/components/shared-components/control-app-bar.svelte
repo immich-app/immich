@@ -5,7 +5,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
-  import { isSelectingAllAssets } from '$lib/stores/assets.store';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -75,7 +75,7 @@
   >
     <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
       {#if showBackButton}
-        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
+        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size="24" class={buttonClass} />
       {/if}
       {@render leading?.()}
     </div>

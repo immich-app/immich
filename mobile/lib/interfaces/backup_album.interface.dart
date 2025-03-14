@@ -1,7 +1,7 @@
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/interfaces/database.interface.dart';
 
-abstract interface class IBackupRepository implements IDatabaseRepository {
+abstract interface class IBackupAlbumRepository implements IDatabaseRepository {
   Future<List<BackupAlbum>> getAll({BackupAlbumSort? sort});
 
   Future<List<String>> getIdsBySelection(BackupSelection backup);

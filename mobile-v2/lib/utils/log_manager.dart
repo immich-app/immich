@@ -85,6 +85,7 @@ class LogManager {
 
   void dispose() {
     unawaited(_subscription.cancel());
+    _timer?.cancel();
   }
 
   Future<void> clearLogs() async {

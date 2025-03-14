@@ -7655,7 +7655,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.126.1",
+    "version": "1.129.0",
     "contact": {}
   },
   "tags": [],
@@ -11952,7 +11952,8 @@
       "SourceType": {
         "enum": [
           "machine-learning",
-          "exif"
+          "exif",
+          "manual"
         ],
         "type": "string"
       },
@@ -12051,13 +12052,50 @@
       "SyncEntityType": {
         "enum": [
           "UserV1",
-          "UserDeleteV1"
+          "UserDeleteV1",
+          "PartnerV1",
+          "PartnerDeleteV1"
         ],
         "type": "string"
       },
+      "SyncPartnerDeleteV1": {
+        "properties": {
+          "sharedById": {
+            "type": "string"
+          },
+          "sharedWithId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sharedById",
+          "sharedWithId"
+        ],
+        "type": "object"
+      },
+      "SyncPartnerV1": {
+        "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          },
+          "sharedById": {
+            "type": "string"
+          },
+          "sharedWithId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "inTimeline",
+          "sharedById",
+          "sharedWithId"
+        ],
+        "type": "object"
+      },
       "SyncRequestType": {
         "enum": [
-          "UsersV1"
+          "UsersV1",
+          "PartnersV1"
         ],
         "type": "string"
       },

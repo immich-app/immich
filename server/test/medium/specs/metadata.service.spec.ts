@@ -3,15 +3,12 @@ import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AssetEntity } from 'src/entities/asset.entity';
-import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
-import { ILoggingRepository, newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
+import { newFakeLoggingRepository } from 'test/repositories/logger.repository.mock';
 import { newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
-const metadataRepository = new MetadataRepository(
-  newLoggingRepositoryMock() as ILoggingRepository as LoggingRepository,
-);
+const metadataRepository = new MetadataRepository(newFakeLoggingRepository());
 
 const createTestFile = async (exifData: Record<string, any>) => {
   const data = newRandomImage();
@@ -37,7 +34,7 @@ describe(MetadataService.name, () => {
   let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, mocks } = newTestService(MetadataService, { metadataRepository }));
+    ({ sut, mocks } = newTestService(MetadataService, { metadata: metadataRepository }));
 
     mocks.storage.stat.mockResolvedValue({ size: 123_456 } as Stats);
 

@@ -1,14 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
 import 'package:immich_mobile/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/user.repository.dart';
 import 'package:immich_mobile/repositories/user_api.repository.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
-import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:logging/logging.dart';
 
@@ -17,7 +16,6 @@ final userServiceProvider = Provider(
     ref.watch(partnerApiRepositoryProvider),
     ref.watch(userApiRepositoryProvider),
     ref.watch(userRepositoryProvider),
-    ref.watch(syncServiceProvider),
   ),
 );
 
@@ -25,14 +23,12 @@ class UserService {
   final IPartnerApiRepository _partnerApiRepository;
   final IUserApiRepository _userApiRepository;
   final IUserRepository _userRepository;
-  final SyncService _syncService;
   final Logger _log = Logger("UserService");
 
   UserService(
     this._partnerApiRepository,
     this._userApiRepository,
     this._userRepository,
-    this._syncService,
   );
 
   Future<List<User>> getUsers({bool self = false}) {
@@ -96,12 +92,6 @@ class UserService {
     );
 
     return users;
-  }
-
-  Future<bool> refreshUsers() async {
-    final users = await getUsersFromServer();
-    if (users == null) return false;
-    return _syncService.syncUsersFromServer(users);
   }
 
   Future<void> clearTable() {

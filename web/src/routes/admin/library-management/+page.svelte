@@ -22,7 +22,10 @@
     getAllLibraries,
     getLibraryStatistics,
     getUserAdmin,
+    JobCommand,
+    JobName,
     scanLibrary,
+    sendJobCommand,
     updateLibrary,
     type LibraryResponseDto,
     type LibraryStatsResponseDto,
@@ -118,7 +121,7 @@
   };
 
   const handleAddImportPath = () => {
-    if (!updateLibraryIndex || !importPathToAdd) {
+    if ((updateLibraryIndex !== 0 && !updateLibraryIndex) || !importPathToAdd) {
       return;
     }
 
@@ -151,9 +154,8 @@
 
   const handleScanAll = async () => {
     try {
-      for (const library of libraries) {
-        await scanLibrary({ id: library.id });
-      }
+      await sendJobCommand({ id: JobName.Library, jobCommandDto: { command: JobCommand.Start } });
+
       notificationController.show({
         message: $t('admin.refreshing_all_libraries'),
         type: NotificationType.Info,

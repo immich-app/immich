@@ -39,7 +39,7 @@
 </script>
 
 <div class="mb-4 w-full">
-  <div class={`flex h-[26px] place-items-center gap-1`}>
+  <div class="flex h-[26px] place-items-center gap-1">
     <label class="font-medium text-immich-primary dark:text-immich-dark-primary text-sm" for="{name}-select"
       >{label}</label
     >
@@ -63,7 +63,7 @@
   <div class="grid">
     <Icon
       path={mdiChevronDown}
-      size={'1.2em'}
+      size="1.2em"
       ariaHidden={true}
       class="pointer-events-none right-1 relative col-start-1 row-start-1 self-center justify-self-end {disabled
         ? 'text-immich-bg'
@@ -78,7 +78,7 @@
       bind:value
       onchange={handleChange}
     >
-      {#each options as option}
+      {#each options as option (option.value)}
         <option value={option.value}>{option.text}</option>
       {/each}
     </select>

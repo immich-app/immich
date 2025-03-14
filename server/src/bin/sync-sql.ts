@@ -6,6 +6,7 @@ import { Test } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClassConstructor } from 'class-transformer';
 import { PostgresJSDialect } from 'kysely-postgres-js';
+import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
 import { mkdir, rm, writeFile } from 'node:fs/promises';
@@ -77,7 +78,7 @@ class SqlGenerator {
     await mkdir(this.options.targetDir);
 
     process.env.DB_HOSTNAME = 'localhost';
-    const { database, otel } = new ConfigRepository().getEnv();
+    const { database, cls, otel } = new ConfigRepository().getEnv();
 
     const moduleFixture = await Test.createTestingModule({
       imports: [
@@ -92,6 +93,7 @@ class SqlGenerator {
             }
           },
         }),
+        ClsModule.forRoot(cls.config),
         TypeOrmModule.forRoot({
           ...database.config.typeorm,
           entities,

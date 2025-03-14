@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { columns } from 'src/database';
 import { DB, SessionSyncCheckpoints } from 'src/db';
 import { SyncEntityType } from 'src/enum';
 import { SyncAck } from 'src/types';
@@ -41,40 +40,42 @@ export class SyncRepository {
   getUserUpserts(ack?: SyncAck) {
     return this.db
       .selectFrom('users')
-      .select(['id', 'name', 'email', 'deletedAt'])
-      .select(columns.ackEpoch('updatedAt'))
-      .$if(!!ack, (qb) =>
-        qb.where((eb) =>
-          eb.or([
-            eb(eb.fn<Date>('to_timestamp', [sql.val(ack!.ackEpoch)]), '<', eb.ref('updatedAt')),
-            eb.and([
-              eb(eb.fn<Date>('to_timestamp', [sql.val(ack!.ackEpoch)]), '<=', eb.ref('updatedAt')),
-              eb('id', '>', ack!.ids[0]),
-            ]),
-          ]),
-        ),
-      )
-      .orderBy(['updatedAt asc', 'id asc'])
+      .select(['id', 'name', 'email', 'deletedAt', 'updateId'])
+      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['updateId asc'])
       .stream();
   }
 
   getUserDeletes(ack?: SyncAck) {
     return this.db
       .selectFrom('users_audit')
-      .select(['userId'])
-      .select(columns.ackEpoch('deletedAt'))
-      .$if(!!ack, (qb) =>
-        qb.where((eb) =>
-          eb.or([
-            eb(eb.fn<Date>('to_timestamp', [sql.val(ack!.ackEpoch)]), '<', eb.ref('deletedAt')),
-            eb.and([
-              eb(eb.fn<Date>('to_timestamp', [sql.val(ack!.ackEpoch)]), '<=', eb.ref('deletedAt')),
-              eb('userId', '>', ack!.ids[0]),
-            ]),
-          ]),
-        ),
-      )
-      .orderBy(['deletedAt asc', 'userId asc'])
+      .select(['id', 'userId'])
+      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
+      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['id asc'])
+      .stream();
+  }
+
+  getPartnerUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('partners')
+      .select(['sharedById', 'sharedWithId', 'inTimeline', 'updateId'])
+      .$if(!!ack, (qb) => qb.where('updateId', '>', ack!.updateId))
+      .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
+      .where('updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['updateId asc'])
+      .stream();
+  }
+
+  getPartnerDeletes(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('partners_audit')
+      .select(['id', 'sharedById', 'sharedWithId'])
+      .$if(!!ack, (qb) => qb.where('id', '>', ack!.updateId))
+      .where((eb) => eb.or([eb('sharedById', '=', userId), eb('sharedWithId', '=', userId)]))
+      .where('deletedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .orderBy(['id asc'])
       .stream();
   }
 }

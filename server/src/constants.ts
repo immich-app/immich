@@ -38,6 +38,11 @@ export const ONE_HOUR = Duration.fromObject({ hours: 1 });
 
 export const APP_MEDIA_LOCATION = process.env.IMMICH_MEDIA_LOCATION || './upload';
 
+export const MACHINE_LEARNING_PING_TIMEOUT = Number(process.env.MACHINE_LEARNING_PING_TIMEOUT || 2000);
+export const MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME = Number(
+  process.env.MACHINE_LEARNING_AVAILABILITY_BACKOFF_TIME || 30_000,
+);
+
 export const citiesFile = 'cities500.txt';
 
 export const MOBILE_REDIRECT = 'app.immich:///oauth-callback';

@@ -228,6 +228,7 @@ export enum AssetStatus {
 export enum SourceType {
   MACHINE_LEARNING = 'machine-learning',
   EXIF = 'exif',
+  MANUAL = 'manual',
 }
 
 export enum ManualJobName {
@@ -436,7 +437,6 @@ export enum JobName {
   // metadata
   QUEUE_METADATA_EXTRACTION = 'queue-metadata-extraction',
   METADATA_EXTRACTION = 'metadata-extraction',
-  LINK_LIVE_PHOTOS = 'link-live-photos',
 
   // user
   USER_DELETION = 'user-deletion',
@@ -472,7 +472,7 @@ export enum JobName {
   LIBRARY_SYNC_FILE = 'library-sync-file',
   LIBRARY_SYNC_ASSET = 'library-sync-asset',
   LIBRARY_DELETE = 'library-delete',
-  LIBRARY_QUEUE_SYNC_ALL = 'library-queue-sync-all',
+  LIBRARY_QUEUE_SCAN_ALL = 'library-queue-scan-all',
   LIBRARY_QUEUE_CLEANUP = 'library-queue-cleanup',
 
   // cleanup
@@ -547,9 +547,12 @@ export enum DatabaseLock {
 
 export enum SyncRequestType {
   UsersV1 = 'UsersV1',
+  PartnersV1 = 'PartnersV1',
 }
 
 export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
+  PartnerV1 = 'PartnerV1',
+  PartnerDeleteV1 = 'PartnerDeleteV1',
 }

@@ -1,15 +1,16 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/user.interface.dart';
-import 'package:immich_mobile/services/immich_logger.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -70,7 +71,10 @@ void main() {
       db.writeTxnSync(() => db.clearSync());
       await StoreService.init(storeRepository: IsarStoreRepository(db));
       await Store.put(StoreKey.currentUser, owner);
-      ImmichLogger();
+      await LogService.init(
+        logRepository: IsarLogRepository(db),
+        storeRepository: IsarStoreRepository(db),
+      );
     });
     final List<Asset> initialAssets = [
       makeAsset(checksum: "a", remoteId: "0-1"),
