@@ -10,6 +10,20 @@
 name: immich-prod
 
 services:
+  immich-caddy:
+    container_name: immich_caddy
+    image: caddy:2.9.1-alpine
+    restart: unless-stopped
+    ports:
+      - "3443:3443"
+      - "3443:3443/udp"
+    environment:
+      IMMICH_HOST: immich-dev
+      IMMICH_INTERNAL_URL: http://immich-server:2283
+    volumes:
+      - ./caddy:/etc/caddy
+      - ./caddy/certs:/data/caddy/pki/authorities/local
+    command: ["/bin/sh", "-c", "chown 0:0 /data/caddy/pki/authorities/local/*; chmod 600 /data/caddy/pki/authorities/local/*; caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
   immich-server:
     container_name: immich_server
     image: immich-server:latest

@@ -1,0 +1,24 @@
+{
+    # debug
+    local_certs
+    log {
+		format console
+    }
+    pki {
+		ca local {
+           name "Immich Local CA - TESTING ONLY"
+           intermediate_lifetime 3599d
+		}
+	}
+    grace_period 0
+    shutdown_delay 0
+    skip_install_trust
+    auto_https disable_redirects
+}
+
+{$IMMICH_HOST}:3443 {
+    tls internal {
+        on_demand
+    }
+    reverse_proxy {$IMMICH_INTERNAL_URL}
+}

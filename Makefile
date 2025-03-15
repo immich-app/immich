@@ -17,6 +17,9 @@ e2e:
 prod:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --remove-orphans
 
+prod-down:
+	docker compose -f ./docker/docker-compose.prod.yml down --remove-orphans
+
 prod-scale:
 	docker compose -f ./docker/docker-compose.prod.yml up --build -V --scale immich-server=3 --scale immich-microservices=3 --remove-orphans
 
