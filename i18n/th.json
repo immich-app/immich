@@ -96,7 +96,7 @@
     "library_scanning_enable_description": "เปิดการสแกนคลังภาพเป็นระยะ",
     "library_settings": "คลังภาพภายนอก",
     "library_settings_description": "จัดการการตั้งค่าคลังภาพภายนอก",
-    "library_tasks_description": "ทำงานคลังภาพ",
+    "library_tasks_description": "สแกนคลังภาพภายนอกสำหรับทรัพยากรใหม่และ/หรือที่เปลี่ยนแปลง",
     "library_watching_enable_description": "ดูคลังภาพภายนอกสำหรับการเปลี่ยนแปลงของไฟล์",
     "library_watching_settings": "การดูคลังภาพภายนอก (ฟีเจอร์ทดลอง)",
     "library_watching_settings_description": "หาไฟล์ที่เปลี่ยนแปลงโดยอัตโนมัติ",
