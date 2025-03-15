@@ -2,6 +2,7 @@
 # Following Apache License 2.0
 
 from concurrent.futures import Future, ThreadPoolExecutor
+import logging
 from pathlib import Path
 from queue import Queue
 from typing import Callable
@@ -41,6 +42,7 @@ def init_rknn(model_path: str) -> "RKNNLite":
     if not is_available:
         raise RuntimeError("rknn is not available!")
     rknn_lite = RKNNLite()
+    rknn_lite.rknn_log.logger.setLevel(logging.ERROR)
     ret = rknn_lite.load_rknn(model_path)
     if ret != 0:
         raise RuntimeError("Failed to load RKNN model")
