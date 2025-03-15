@@ -155,7 +155,7 @@
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
           onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
-          confirmColor="green"
+          confirmColor="success"
         >
           {#snippet promptSnippet()}
             <div class="flex flex-col gap-4">
@@ -222,7 +222,7 @@
                   {#if !immichUser.deletedAt}
                     <IconButton
                       shape="round"
-                      size="large"
+                      size="small"
                       icon={mdiPencilOutline}
                       title={$t('edit_user')}
                       onclick={() => editUserHandler(immichUser)}
@@ -231,7 +231,7 @@
                     {#if immichUser.id !== $user.id}
                       <IconButton
                         shape="round"
-                        size="large"
+                        size="small"
                         icon={mdiTrashCanOutline}
                         title={$t('delete_user')}
                         onclick={() => deleteUserHandler(immichUser)}
@@ -242,7 +242,7 @@
                   {#if immichUser.deletedAt && immichUser.status === UserStatus.Deleted}
                     <IconButton
                       shape="round"
-                      size="large"
+                      size="small"
                       icon={mdiDeleteRestore}
                       title={$t('admin.user_restore_scheduled_removal', {
                         values: { date: getDeleteDate(immichUser.deletedAt) },

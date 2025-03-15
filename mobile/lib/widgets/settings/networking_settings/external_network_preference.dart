@@ -72,7 +72,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
         builder: (BuildContext context, Widget? child) {
           return Material(
             color: context.colorScheme.surfaceContainerHighest,
-            shadowColor: context.colorScheme.primary.withOpacity(0.2),
+            shadowColor: context.colorScheme.primary.withValues(alpha: 0.2),
             child: child,
           );
         },
@@ -116,7 +116,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
               child: Icon(
                 Icons.dns_rounded,
                 size: 120,
-                color: context.primaryColor.withOpacity(0.05),
+                color: context.primaryColor.withValues(alpha: 0.05),
               ),
             ),
             ListView(

@@ -299,7 +299,7 @@
     "transcoding_max_b_frames": "Bingkai-B maksimum",
     "transcoding_max_b_frames_description": "Nilai yang lebih tinggi meningkatkan kecekapan mampatan, tetapi memperlahankan pengekodan. Mungkin tidak serasi dengan pecutan perkakasan pada peranti lama. 0 melumpuhkan bingkai B, manakala -1 menetapkan nilai ini secara automatik.",
     "transcoding_max_bitrate": "Kadar bit maksimum",
-    "transcoding_max_bitrate_description": "Menetapkan kadar bit maksima boleh menjadikan saiz fail lebih boleh diramal dengan kekurangan yang kecil kepada kualiti. Pada 720p, nilai biasa ialah 2600k untuk VP9 atau HEVC, atau 4500k untuk H.264. Dilumpuhkan jika ditetapkan kepada 0.",
+    "transcoding_max_bitrate_description": "Menetapkan kadar bit maksima boleh menjadikan saiz fail lebih boleh diramal dengan kekurangan yang kecil kepada kualiti. Pada 720p, nilai biasa ialah 2600 kbit/s untuk VP9 atau HEVC, atau 4500 kbit/s untuk H.264. Dilumpuhkan jika ditetapkan kepada 0.",
     "transcoding_max_keyframe_interval": "Selangan keyframe maksimum",
     "transcoding_max_keyframe_interval_description": "Menetapkan jarak bingkai maksimum antara keyframes. Nilai yang lebih rendah memburukkan kecekapan mampatan, tetapi menambah baik masa carian dan mungkin meningkatkan kualiti dalam adegan dengan pergerakan pantas. 0 menetapkan nilai ini secara automatik.",
     "transcoding_optimal_description": "Video yang lebih tinggi daripada resolusi sasaran atau tidak dalam format yang diterima",

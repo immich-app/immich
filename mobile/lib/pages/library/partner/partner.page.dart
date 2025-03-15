@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/partner.provider.dart';
 import 'package:immich_mobile/services/partner.service.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/user_avatar.dart';
@@ -16,7 +16,7 @@ class PartnerPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<User> partners = ref.watch(partnerSharedByProvider);
+    final List<UserDto> partners = ref.watch(partnerSharedByProvider);
     final availableUsers = ref.watch(partnerAvailableProvider);
 
     addNewUsersHandler() async {
@@ -29,13 +29,13 @@ class PartnerPage extends HookConsumerWidget {
         return;
       }
 
-      final selectedUser = await showDialog<User>(
+      final selectedUser = await showDialog<UserDto>(
         context: context,
         builder: (context) {
           return SimpleDialog(
             title: const Text("partner_page_select_partner").tr(),
             children: [
-              for (User u in users)
+              for (UserDto u in users)
                 SimpleDialogOption(
                   onPressed: () => context.pop(u),
                   child: Row(
@@ -67,7 +67,7 @@ class PartnerPage extends HookConsumerWidget {
       }
     }
 
-    onDeleteUser(User u) {
+    onDeleteUser(UserDto u) {
       return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -80,7 +80,7 @@ class PartnerPage extends HookConsumerWidget {
       );
     }
 
-    buildUserList(List<User> users) {
+    buildUserList(List<UserDto> users) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

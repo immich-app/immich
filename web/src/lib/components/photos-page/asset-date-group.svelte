@@ -4,7 +4,12 @@
   import Skeleton from '$lib/components/photos-page/skeleton.svelte';
   import { AssetBucket, type AssetStore, type Viewport } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
-  import { findTotalOffset, type DateGroup, type ScrollTargetListener } from '$lib/utils/timeline-util';
+  import {
+    findTotalOffset,
+    type DateGroup,
+    type ScrollTargetListener,
+    getDateLocaleString,
+  } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
   import { mdiCheckCircle, mdiCircleOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
@@ -88,6 +93,10 @@
     }
   };
 
+  const assetOnFocusHandler = (asset: AssetResponseDto) => {
+    assetInteraction.focussedAssetId = asset.id;
+  };
+
   onDestroy(() => {
     assetStore.taskManager.removeAllTasksForComponent(componentId);
   });
@@ -167,7 +176,7 @@
               </div>
             {/if}
 
-            <span class="w-full truncate first-letter:capitalize" title={dateGroup.groupTitle}>
+            <span class="w-full truncate first-letter:capitalize" title={getDateLocaleString(dateGroup.date)}>
               {dateGroup.groupTitle}
             </span>
           </div>
@@ -218,6 +227,8 @@
                   onSelect={(asset) => assetSelectHandler(asset, dateGroup.assets, dateGroup.groupTitle)}
                   onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, asset)}
                   selected={assetInteraction.selectedAssets.has(asset) || assetStore.albumAssets.has(asset.id)}
+                  handleFocus={() => assetOnFocusHandler(asset)}
+                  focussed={assetInteraction.isFocussedAsset(asset)}
                   selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
                   disabled={assetStore.albumAssets.has(asset.id)}
                   thumbnailWidth={width}

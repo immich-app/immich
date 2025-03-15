@@ -1,9 +1,9 @@
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 
 abstract interface class IPartnerApiRepository {
-  Future<List<User>> getAll(Direction direction);
-  Future<User> create(String id);
-  Future<User> update(String id, {required bool inTimeline});
+  Future<List<UserDto>> getAll(Direction direction);
+  Future<UserDto> create(String id);
+  Future<UserDto> update(String id, {required bool inTimeline});
   Future<void> delete(String id);
 }
 

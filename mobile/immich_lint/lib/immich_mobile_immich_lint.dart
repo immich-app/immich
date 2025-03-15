@@ -71,7 +71,9 @@ class ImportRule extends DartLintRule {
     final path = resolver.path.substring(_rootOffset);
 
     if ((_allowed != null && _allowed!.matches(path)) &&
-        (_forbidden == null || !_forbidden!.matches(path))) return;
+        (_forbidden == null || !_forbidden!.matches(path))) {
+      return;
+    }
 
     context.registry.addImportDirective((node) {
       final uri = node.uri.stringValue;

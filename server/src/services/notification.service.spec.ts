@@ -260,6 +260,7 @@ describe(NotificationService.name, () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
       mocks.notification.verifySmtp.mockResolvedValue(true);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.notification.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
       expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
@@ -279,6 +280,7 @@ describe(NotificationService.name, () => {
       mocks.notification.verifySmtp.mockResolvedValue(true);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
       mocks.systemMetadata.get.mockResolvedValue({ server: { externalDomain: 'https://demo.immich.app' } });
+      mocks.notification.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(sut.sendTestEmail('', configs.smtpTransport.notifications.smtp)).resolves.not.toThrow();
       expect(mocks.notification.renderEmail).toHaveBeenCalledWith({
@@ -297,6 +299,7 @@ describe(NotificationService.name, () => {
       mocks.user.get.mockResolvedValue(userStub.admin);
       mocks.notification.verifySmtp.mockResolvedValue(true);
       mocks.notification.renderEmail.mockResolvedValue({ html: '', text: '' });
+      mocks.notification.sendEmail.mockResolvedValue({ messageId: 'message-1', response: '' });
 
       await expect(
         sut.sendTestEmail('', { ...configs.smtpTransport.notifications.smtp, replyTo: 'demo@immich.app' }),

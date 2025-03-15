@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -22,14 +22,14 @@
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shortcut } from '$lib/actions/shortcut';
   import {
+    type AlbumResponseDto,
     type AssetResponseDto,
+    getPerson,
+    getTagById,
+    type MetadataSearchDto,
     searchAssets,
     searchSmart,
-    getPerson,
     type SmartSearchDto,
-    type MetadataSearchDto,
-    type AlbumResponseDto,
-    getTagById,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
@@ -42,7 +42,7 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
-  import { onMount, tick } from 'svelte';
+  import { tick } from 'svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import { preferences } from '$lib/stores/user.store';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
@@ -57,7 +57,7 @@
   // manually and navigate back to that.
   let previousRoute = $state(AppRoute.EXPLORE as string);
 
-  let nextPage: number | null = 1;
+  let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
   let searchResultAssets: AssetResponseDto[] = $state([]);
   let isLoading = $state(true);
@@ -67,15 +67,17 @@
   const assetInteraction = new AssetInteraction();
 
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
-  let searchQuery = $derived($page.url.searchParams.get(QueryParameter.QUERY));
-
-  onMount(() => {
-    if (terms && $featureFlags.loaded) {
-      handlePromiseError(onSearchQueryUpdate());
-    }
-  });
-
+  let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
+  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    terms;
+    setTimeout(() => {
+      handlePromiseError(onSearchQueryUpdate());
+    });
+  });
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -100,7 +102,7 @@
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
     }
     const route = from?.route?.id;
@@ -152,14 +154,14 @@
 
     try {
       const { albums, assets } =
-        'query' in searchDto && $featureFlags.smartSearch
+        'query' in searchDto && smartSearchEnabled
           ? await searchSmart({ smartSearchDto: searchDto })
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
 
-      nextPage = assets.nextPage ? Number(assets.nextPage) : null;
+      nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
       handleError(error, $t('loading_search_results_failed'));
     } finally {
@@ -280,12 +282,7 @@
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
         <div class="w-full flex-1 pl-4">
-          <SearchBar
-            grayTheme={false}
-            value={terms?.query ?? ''}
-            searchQuery={terms}
-            onSearch={() => handlePromiseError(onSearchQueryUpdate())}
-          />
+          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>

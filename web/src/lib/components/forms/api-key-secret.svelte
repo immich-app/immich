@@ -1,9 +1,9 @@
 <script lang="ts">
   import { copyToClipboard } from '$lib/utils';
+  import { Button } from '@immich/ui';
   import { mdiKeyVariant } from '@mdi/js';
-  import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { t } from 'svelte-i18n';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   interface Props {
     secret?: string;
@@ -26,7 +26,7 @@
   </div>
 
   {#snippet stickyBottom()}
-    <Button onclick={() => copyToClipboard(secret)} fullwidth>{$t('copy_to_clipboard')}</Button>
-    <Button onclick={onDone} fullwidth>{$t('done')}</Button>
+    <Button shape="round" onclick={() => copyToClipboard(secret)} fullWidth>{$t('copy_to_clipboard')}</Button>
+    <Button shape="round" onclick={onDone} fullWidth>{$t('done')}</Button>
   {/snippet}
 </FullScreenModal>

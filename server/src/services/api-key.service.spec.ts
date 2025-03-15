@@ -67,6 +67,8 @@ describe(ApiKeyService.name, () => {
       const id = newUuid();
       const auth = factory.auth();
 
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
       await expect(sut.update(auth, id, { name: 'New Name' })).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.apiKey.update).not.toHaveBeenCalledWith(id);
@@ -91,6 +93,8 @@ describe(ApiKeyService.name, () => {
       const auth = factory.auth();
       const id = newUuid();
 
+      mocks.apiKey.getById.mockResolvedValue(void 0);
+
       await expect(sut.delete(auth, id)).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.apiKey.delete).not.toHaveBeenCalledWith(id);
@@ -101,6 +105,7 @@ describe(ApiKeyService.name, () => {
       const apiKey = factory.apiKey({ userId: auth.user.id });
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
+      mocks.apiKey.delete.mockResolvedValue();
 
       await sut.delete(auth, apiKey.id);
 
@@ -112,6 +117,8 @@ describe(ApiKeyService.name, () => {
     it('should throw an error if the key is not found', async () => {
       const auth = factory.auth();
       const id = newUuid();
+
+      mocks.apiKey.getById.mockResolvedValue(void 0);
 
       await expect(sut.getById(auth, id)).rejects.toBeInstanceOf(BadRequestException);
 

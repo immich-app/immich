@@ -24,7 +24,7 @@ class AssetMediaRepository implements IAssetMediaRepository {
     final Asset asset = Asset(
       checksum: "",
       localId: local.id,
-      ownerId: Store.get(StoreKey.currentUser).isarId,
+      ownerId: Store.get(StoreKey.currentUser).id,
       fileCreatedAt: local.createDateTime,
       fileModifiedAt: local.modifiedDateTime,
       updatedAt: local.modifiedDateTime,
