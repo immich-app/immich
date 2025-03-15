@@ -236,7 +236,7 @@
   const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
 
   const onAddToAlbum = (assetIds: string[]) => {
-    cancelMultiselect(assetInteraction)
+    cancelMultiselect(assetInteraction);
 
     if (terms.isNotInAlbum.toString() == 'true') {
       const assetIdSet = new Set(assetIds);
