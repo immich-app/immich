@@ -1,5 +1,5 @@
 {
-  "about": "Verfris",
+  "about": "Oor",
   "account": "Rekening",
   "account_settings": "Rekeninginstellings",
   "acknowledge": "Erken",
@@ -56,7 +56,7 @@
     "duplicate_detection_job_description": "Begin masjienleer op bates om soortgelyke beelde op te spoor. Maak staat op Smart Search",
     "exclusion_pattern_description": "Met uitsluitingspatrone kan jy lêers en vouers ignoreer wanneer jy jou biblioteek skandeer. Dit is nuttig as jy vouers het wat lêers bevat wat jy nie wil invoer nie, soos RAW-lêers.",
     "external_library_created_at": "Eksterne biblioteek (geskep op {date})",
-    "external_library_management": "Eksterne Biblioteek-opsies",
+    "external_library_management": "Eksterne Biblioteekbestuur",
     "face_detection": "Gesig deteksie",
     "failed_job_command": "Opdrag {command} het misluk vir werk: {job}",
     "force_delete_user_warning": "WAARSKUWING: Dit sal onmiddellik die gebruiker en alle bates verwyder. Dit kan nie ontdoen word nie en die lêers kan nie herstel word nie.",
@@ -64,7 +64,8 @@
     "image_format": "Formaat",
     "image_format_description": "WebP produseer kleiner lêers as JPEG, maar is stadiger om te enkodeer.",
     "image_prefer_embedded_preview": "Verkies ingebedde voorskou",
-    "image_prefer_wide_gamut": "Verkies wye spektrum",
+    "image_prefer_wide_gamut": "Verkies wide gamut",
+    "image_prefer_wide_gamut_setting_description": "Gebruik Display P3 vir kleinkiekies. Dit behou die lewendheid van beelde met wye kleurruimtes beter, maar beelde kan anders verskyn op ou apparate met 'n ou blaaierweergawe. sRGB-beelde gebruik steeds sRGB om kleurverskuiwings te voorkom.",
     "image_preview_description": "Mediumgrootte prent met gestroopte metadata, wat gebruik word wanneer 'n enkele bate bekyk word en vir masjienleer",
     "image_preview_quality_description": "Voorskou kwaliteit van 1-100. Hoër is beter, maar produseer groter lêers en kan app-reaksie verminder. Die stel van 'n lae waarde kan masjienleerkwaliteit beïnvloed.",
     "image_preview_title": "Voorskou Instellings",
@@ -72,7 +73,14 @@
     "image_resolution": "Resolusie",
     "image_resolution_description": "Hoër resolusies kan meer detail bewaar, maar neem langer om te enkodeer, het groter lêergroottes en kan app-reaksie verminder.",
     "image_settings": "Prent Instellings",
-    "image_settings_description": "Bestuur die kwaliteit en resolusie van gegenereerde beelde"
+    "image_settings_description": "Bestuur die kwaliteit en resolusie van gegenereerde beelde",
+    "image_thumbnail_description": "Klein kleinkiekies sonder metadata, gebruik om groepe foto's soos die tydlyn te bekyk",
+    "image_thumbnail_quality_description": "Kleinkiekiekwaliteit van 1-100. Hoër is beter, maar produseer groter lêers en kan die toepassing vertraag.",
+    "image_thumbnail_title": "Kleinkiekie-instellings",
+    "job_concurrency": "{job} gelyktydigheid",
+    "job_created": "Taak gemaak",
+    "job_not_concurrency_safe": "Hierdie taak kan nie gelyktydig uitgevoer word nie.",
+    "job_settings": "Agtergrondtaakinstellings"
   },
   "search_by_description": "Soek by beskrywing",
   "search_by_description_example": "Stapdag in Sapa"
