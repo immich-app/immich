@@ -85,6 +85,7 @@
         ".github/**"
       ],
       "groupName": "github-actions",
+      "pinDigests": true,
       "schedule": "on tuesday"
     },
     {
