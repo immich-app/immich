@@ -1,8 +1,8 @@
 # This code is from leafqycc/rknn-multi-threaded
 # Following Apache License 2.0
 
-from concurrent.futures import Future, ThreadPoolExecutor
 import logging
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from queue import Queue
 from typing import Callable
