@@ -1,14 +1,14 @@
 <script lang="ts">
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import { AppRoute } from '$lib/constants';
   import { userInteraction } from '$lib/stores/user.svelte';
+  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
   import { updateUserAdmin, type UserAdminResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
-  import Button from '../elements/buttons/button.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
-  import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
 
   interface Props {
     user: UserAdminResponseDto;
@@ -151,8 +151,10 @@
 
   {#snippet stickyBottom()}
     {#if canResetPassword}
-      <Button color="light-red" fullwidth onclick={resetPassword}>{$t('reset_password')}</Button>
+      <Button shape="round" color="warning" variant="filled" fullWidth onclick={resetPassword}
+        >{$t('reset_password')}</Button
+      >
     {/if}
-    <Button type="submit" fullwidth form="edit-user-form">{$t('confirm')}</Button>
+    <Button type="submit" shape="round" fullWidth form="edit-user-form">{$t('confirm')}</Button>
   {/snippet}
 </FullScreenModal>

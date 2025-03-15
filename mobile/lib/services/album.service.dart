@@ -28,12 +28,10 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:logging/logging.dart';
 
 final albumServiceProvider = Provider(
   (ref) => AlbumService(
-    ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(entityServiceProvider),
     ref.watch(albumRepositoryProvider),
@@ -45,7 +43,6 @@ final albumServiceProvider = Provider(
 );
 
 class AlbumService {
-  final UserService _userService;
   final SyncService _syncService;
   final EntityService _entityService;
   final IAlbumRepository _albumRepository;
@@ -58,7 +55,6 @@ class AlbumService {
   Completer<bool> _remoteCompleter = Completer()..complete(false);
 
   AlbumService(
-    this._userService,
     this._syncService,
     this._entityService,
     this._albumRepository,
@@ -171,7 +167,7 @@ class AlbumService {
     final Stopwatch sw = Stopwatch()..start();
     bool changes = false;
     try {
-      final users = await _userService.getUsersFromServer();
+      final users = await _syncService.getUsersFromServer();
       if (users != null) {
         await _syncService.syncUsersFromServer(users);
       }

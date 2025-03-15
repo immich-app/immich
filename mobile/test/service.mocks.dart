@@ -3,13 +3,10 @@ import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
 class MockApiService extends Mock implements ApiService {}
-
-class MockUserService extends Mock implements UserService {}
 
 class MockSyncService extends Mock implements SyncService {}
 
