@@ -33,7 +33,7 @@
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -62,6 +62,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { locale } from '$lib/stores/preferences.store';
+  import { DateTime } from 'luxon';
 
   interface Props {
     data: PageData;
@@ -77,12 +79,8 @@
 
   $effect(() => {
     // Check to trigger rebuild the timeline when navigating between people from the info panel
-    const change = assetStoreOptions.personId !== data.person.id;
     assetStoreOptions.personId = data.person.id;
     handlePromiseError(assetStore.updateOptions(assetStoreOptions));
-    if (change) {
-      assetStore.triggerUpdate();
-    }
   });
 
   const assetInteraction = new AssetInteraction();
@@ -156,7 +154,7 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -358,7 +356,7 @@
   };
 
   const handleDeleteAssets = async (assetIds: string[]) => {
-    $assetStore.removeAssets(assetIds);
+    assetStore.removeAssets(assetIds);
     await updateAssetCount();
   };
 
@@ -420,8 +418,8 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}
@@ -433,7 +431,7 @@
         <ArchiveAction
           menuItem
           unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => $assetStore.removeAssets(assetIds)}
+          onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
         />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
@@ -543,12 +541,28 @@
                     heightStyle="3.375rem"
                   />
                   <div
-                    class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
+                    class="flex flex-col justify-center text-left px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
-                    <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                    <p class="text-sm text-gray-500 dark:text-immich-gray">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
+                    {#if person.birthDate}
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                        {$t('person_birthdate', {
+                          values: {
+                            date: DateTime.fromISO(person.birthDate).toLocaleString(
+                              {
+                                month: 'numeric',
+                                day: 'numeric',
+                                year: 'numeric',
+                              },
+                              { locale: $locale },
+                            ),
+                          },
+                        })}
+                      </p>
+                    {/if}
                   </div>
                 </button>
               </div>

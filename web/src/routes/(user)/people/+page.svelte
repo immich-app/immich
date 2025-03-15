@@ -11,7 +11,6 @@
   import SearchPeople from '$lib/components/faces-page/people-search.svelte';
   import SetBirthDateModal from '$lib/components/faces-page/set-birth-date-modal.svelte';
   import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import {
     notificationController,
     NotificationType,
@@ -46,10 +45,9 @@
 
   let selectHidden = $state(false);
   let searchName = $state('');
-  let showChangeNameModal = $state(false);
   let showSetBirthDateModal = $state(false);
   let showMergeModal = $state(false);
-  let personName = $state('');
+  let newName = $state('');
   let currentPage = $state(1);
   let nextPage = $state(data.people.hasNextPage ? 2 : null);
   let personMerge1 = $state<PersonResponseDto>();
@@ -57,10 +55,9 @@
   let potentialMergePeople: PersonResponseDto[] = $state([]);
   let edittingPerson: PersonResponseDto | null = $state(null);
   let searchedPeopleLocal: PersonResponseDto[] = $state([]);
-  // let handleSearchPeople: (force?: boolean, name?: string) => Promise<void> = $state();
-  let changeNameInputEl = $state<HTMLInputElement>();
   let innerHeight = $state(0);
   let searchPeopleElement = $state<ReturnType<typeof SearchPeople>>();
+
   onMount(() => {
     const getSearchedPeople = $page.url.searchParams.get(QueryParameter.SEARCHED_PEOPLE);
     if (getSearchedPeople) {
@@ -158,7 +155,7 @@
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
     }
-    if (personToBeMergedIn.name !== personName && edittingPerson.id === personToBeMergedIn.id) {
+    if (personToBeMergedIn.name !== newName && edittingPerson.id === personToBeMergedIn.id) {
       /*
        *
        * If the user merges one of the suggested people into the person he's editing it, it's merging the suggested person AND renames
@@ -166,11 +163,11 @@
        *
        */
       try {
-        await updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: personName } });
+        await updatePerson({ id: personToBeMergedIn.id, personUpdateDto: { name: newName } });
 
         for (const person of people) {
           if (person.id === personToBeMergedIn.id) {
-            person.name = personName;
+            person.name = newName;
             break;
           }
         }
@@ -182,15 +179,6 @@
         handleError(error, $t('errors.unable_to_save_name'));
       }
     }
-  };
-
-  const handleChangeName = (detail: PersonResponseDto) => {
-    showChangeNameModal = true;
-    personName = detail.name;
-    personMerge1 = detail;
-    edittingPerson = detail;
-
-    setTimeout(() => changeNameInputEl?.focus(), 100);
   };
 
   const handleSetBirthDate = (detail: PersonResponseDto) => {
@@ -212,7 +200,6 @@
         return person;
       });
 
-      showChangeNameModal = false;
       notificationController.show({
         message: $t('changed_visibility_successfully'),
         type: NotificationType.Info,
@@ -247,46 +234,6 @@
     );
   };
 
-  const submitNameChange = async (event: Event) => {
-    event.preventDefault();
-
-    potentialMergePeople = [];
-    showChangeNameModal = false;
-    if (!edittingPerson || personName === edittingPerson.name) {
-      return;
-    }
-    if (personName === '') {
-      await changeName();
-      return;
-    }
-    const data = await searchPerson({ name: personName, withHidden: true });
-
-    // We check if another person has the same name as the name entered by the user
-
-    const existingPerson = data.find(
-      (person: PersonResponseDto) =>
-        person.name.toLowerCase() === personName.toLowerCase() &&
-        edittingPerson &&
-        person.id !== edittingPerson.id &&
-        person.name,
-    );
-    if (existingPerson) {
-      personMerge2 = existingPerson;
-      showMergeModal = true;
-      potentialMergePeople = people
-        .filter(
-          (person: PersonResponseDto) =>
-            personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
-            person.id !== personMerge2.id &&
-            person.id !== personMerge1?.id &&
-            !person.isHidden,
-        )
-        .slice(0, 3);
-      return;
-    }
-    await changeName();
-  };
-
   const submitBirthDateChange = async (value: string) => {
     showSetBirthDateModal = false;
     if (!edittingPerson || value === edittingPerson.birthDate) {
@@ -314,33 +261,6 @@
     }
   };
 
-  const changeName = async () => {
-    showMergeModal = false;
-    showChangeNameModal = false;
-
-    if (!edittingPerson) {
-      return;
-    }
-    try {
-      const updatedPerson = await updatePerson({
-        id: edittingPerson.id,
-        personUpdateDto: { name: personName },
-      });
-      people = people.map((person: PersonResponseDto) => {
-        if (person.id === updatedPerson.id) {
-          return updatedPerson;
-        }
-        return person;
-      });
-      notificationController.show({
-        message: $t('change_name_successfully'),
-        type: NotificationType.Info,
-      });
-    } catch (error) {
-      handleError(error, $t('errors.unable_to_save_name'));
-    }
-  };
-
   const onResetSearchBar = async () => {
     await clearQueryParam(QueryParameter.SEARCHED_PEOPLE, $page.url);
   };
@@ -353,12 +273,74 @@
   let countVisiblePeople = $derived(searchName ? searchedPeopleLocal.length : data.people.total - data.people.hidden);
   let showPeople = $derived(searchName ? searchedPeopleLocal : visiblePeople);
 
-  // const submitNameChange = (event: Event) => {
-  //   event.preventDefault();
-  //   if (searchPeopleElement) {
-  //     handlePromiseError(searchPeopleElement.searchPeople(true, searchName));
-  //   }
-  // };
+  const onNameChangeInputFocus = (person: PersonResponseDto) => {
+    edittingPerson = person;
+    newName = person.name;
+  };
+
+  const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
+    try {
+      if (name == targetPerson.name || showMergeModal) {
+        return;
+      }
+
+      if (name === '') {
+        await updateName(targetPerson.id, '');
+        return;
+      }
+
+      const personWithSimilarName = await findPeopleWithSimilarName(name, targetPerson.id);
+      if (personWithSimilarName) {
+        personMerge1 = targetPerson;
+        personMerge2 = personWithSimilarName;
+        potentialMergePeople = people
+          .filter(
+            (person: PersonResponseDto) =>
+              personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
+              person.id !== personMerge2.id &&
+              person.id !== personMerge1?.id &&
+              !person.isHidden,
+          )
+          .slice(0, 3);
+        showMergeModal = true;
+        return;
+      }
+      await updateName(targetPerson.id, name);
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_save_name'));
+    }
+  };
+
+  const onNameChangeInputUpdate = (event: Event) => {
+    if (event.target) {
+      newName = (event.target as HTMLInputElement).value;
+    }
+  };
+
+  const updateName = async (id: string, name: string) => {
+    await updatePerson({
+      id,
+      personUpdateDto: { name },
+    });
+
+    newName = '';
+  };
+
+  const findPeopleWithSimilarName = async (name: string, personId: string) => {
+    const searchResult = await searchPerson({ name, withHidden: true });
+    return searchResult.find(
+      (person) => person.name.toLowerCase() === name.toLowerCase() && person.id !== personId && person.name,
+    );
+  };
+
+  const handleMergeCancel = async () => {
+    if (!personMerge1) {
+      return;
+    }
+
+    await updateName(personMerge1.id, newName);
+    showMergeModal = false;
+  };
 </script>
 
 <svelte:window bind:innerHeight />
@@ -368,8 +350,10 @@
     {personMerge1}
     {personMerge2}
     {potentialMergePeople}
-    onClose={() => (showMergeModal = false)}
-    onReject={changeName}
+    onClose={() => {
+      showMergeModal = false;
+    }}
+    onReject={() => handleMergeCancel()}
     onConfirm={handleMergeSamePerson}
   />
 {/if}
@@ -425,15 +409,30 @@
   {#if countVisiblePeople > 0 && (!searchName || searchedPeopleLocal.length > 0)}
     <PeopleInfiniteScroll people={showPeople} hasNextPage={!!nextPage && !searchName} {loadNextPage}>
       {#snippet children({ person, index })}
-        <PeopleCard
-          {person}
-          preload={index < 20}
-          onChangeName={() => handleChangeName(person)}
-          onSetBirthDate={() => handleSetBirthDate(person)}
-          onMergePeople={() => handleMergePeople(person)}
-          onHidePerson={() => handleHidePerson(person)}
-          onToggleFavorite={() => handleToggleFavorite(person)}
-        />
+        <div
+          class="p-2 rounded-xl hover:bg-gray-200 border-2 hover:border-immich-primary/50 hover:shadow-sm dark:hover:bg-immich-dark-primary/20 hover:dark:border-immich-dark-primary/25 border-transparent transition-all"
+        >
+          <PeopleCard
+            {person}
+            preload={index < 20}
+            onSetBirthDate={() => handleSetBirthDate(person)}
+            onMergePeople={() => handleMergePeople(person)}
+            onHidePerson={() => handleHidePerson(person)}
+            onToggleFavorite={() => handleToggleFavorite(person)}
+          />
+
+          <form onsubmit={() => onNameChangeSubmit(newName, person)}>
+            <input
+              type="text"
+              class=" bg-white dark:bg-immich-dark-gray border-gray-100 placeholder-gray-400 text-center dark:border-gray-900 w-full rounded-2xl mt-2 py-2 text-sm text-immich-primary dark:text-immich-dark-primary"
+              value={person.name}
+              placeholder={$t('add_a_name')}
+              onfocusin={() => onNameChangeInputFocus(person)}
+              onfocusout={() => onNameChangeSubmit(newName, person)}
+              oninput={(event) => onNameChangeInputUpdate(event)}
+            />
+          </form>
+        </div>
       {/snippet}
     </PeopleInfiniteScroll>
   {:else}
@@ -447,35 +446,6 @@
     </div>
   {/if}
 
-  {#if showChangeNameModal}
-    <FullScreenModal title={$t('change_name')} onClose={() => (showChangeNameModal = false)}>
-      <form onsubmit={submitNameChange} autocomplete="off" id="change-name-form">
-        <div class="flex flex-col gap-2">
-          <label class="immich-form-label" for="name">{$t('name')}</label>
-          <input
-            class="immich-form-input"
-            id="name"
-            name="name"
-            type="text"
-            bind:value={personName}
-            bind:this={changeNameInputEl}
-          />
-        </div>
-      </form>
-
-      {#snippet stickyBottom()}
-        <Button
-          color="secondary"
-          fullWidth
-          onclick={() => {
-            showChangeNameModal = false;
-          }}>{$t('cancel')}</Button
-        >
-        <Button type="submit" fullWidth form="change-name-form">{$t('ok')}</Button>
-      {/snippet}
-    </FullScreenModal>
-  {/if}
-
   {#if showSetBirthDateModal}
     <SetBirthDateModal
       birthDate={edittingPerson?.birthDate ?? ''}
@@ -486,7 +456,7 @@
 </UserPageLayout>
 
 {#if selectHidden}
-  <section
+  <div
     transition:fly={{ y: innerHeight, duration: 150, easing: quintOut, opacity: 0 }}
     class="absolute left-0 top-0 z-[9999] h-full w-full bg-immich-bg dark:bg-immich-dark-bg"
     role="dialog"
@@ -501,5 +471,5 @@
       onClose={() => (selectHidden = false)}
       {loadNextPage}
     />
-  </section>
+  </div>
 {/if}

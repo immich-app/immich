@@ -17,6 +17,9 @@ function getFloat(string: string | null, fallback: number) {
   return Number.parseFloat(string);
 }
 export const TUNABLES = {
+  LAYOUT: {
+    WASM: getBoolean(localStorage.getItem('LAYOUT.WASM'), false),
+  },
   SCROLL_TASK_QUEUE: {
     TRICKLE_BONUS_FACTOR: getNumber(localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_BONUS_FACTOR'), 25),
     TRICKLE_ACCELERATION_FACTOR: getFloat(localStorage.getItem('SCROLL_TASK_QUEUE.TRICKLE_ACCELERATION_FACTOR'), 1.5),

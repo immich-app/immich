@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
+import 'package:immich_mobile/services/timeline.service.dart';
 
-class CurrentUserProvider extends StateNotifier<User?> {
+class CurrentUserProvider extends StateNotifier<UserDto?> {
   CurrentUserProvider(this._apiService) : super(null) {
     state = Store.tryGet(StoreKey.currentUser);
     streamSub =
@@ -16,7 +17,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
   }
 
   final ApiService _apiService;
-  late final StreamSubscription<User?> streamSub;
+  late final StreamSubscription<UserDto?> streamSub;
 
   refresh() async {
     try {
@@ -25,7 +26,7 @@ class CurrentUserProvider extends StateNotifier<User?> {
       if (user != null) {
         await Store.put(
           StoreKey.currentUser,
-          User.fromUserDto(user, userPreferences),
+          UserConverter.fromAdminDto(user, userPreferences),
         );
       }
     } catch (_) {}
@@ -39,21 +40,22 @@ class CurrentUserProvider extends StateNotifier<User?> {
 }
 
 final currentUserProvider =
-    StateNotifierProvider<CurrentUserProvider, User?>((ref) {
+    StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
   return CurrentUserProvider(
     ref.watch(apiServiceProvider),
   );
 });
 
 class TimelineUserIdsProvider extends StateNotifier<List<int>> {
-  TimelineUserIdsProvider(this._userService) : super([]) {
-    _userService.getTimelineUserIds().then((users) => state = users);
-    streamSub =
-        _userService.watchTimelineUserIds().listen((users) => state = users);
+  TimelineUserIdsProvider(this._timelineService) : super([]) {
+    _timelineService.getTimelineUserIds().then((users) => state = users);
+    streamSub = _timelineService
+        .watchTimelineUserIds()
+        .listen((users) => state = users);
   }
 
   late final StreamSubscription<List<int>> streamSub;
-  final UserService _userService;
+  final TimelineService _timelineService;
 
   @override
   void dispose() {
@@ -64,5 +66,5 @@ class TimelineUserIdsProvider extends StateNotifier<List<int>> {
 
 final timelineUsersIdsProvider =
     StateNotifierProvider<TimelineUserIdsProvider, List<int>>((ref) {
-  return TimelineUserIdsProvider(ref.watch(userServiceProvider));
+  return TimelineUserIdsProvider(ref.watch(timelineServiceProvider));
 });

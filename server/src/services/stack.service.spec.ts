@@ -155,6 +155,7 @@ describe(StackService.name, () => {
 
     it('should delete stack', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.delete.mockResolvedValue();
 
       await sut.delete(authStub.admin, 'stack-id');
 
@@ -176,6 +177,7 @@ describe(StackService.name, () => {
 
     it('should delete all stacks', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.deleteAll.mockResolvedValue();
 
       await sut.deleteAll(authStub.admin, { ids: ['stack-id'] });
 

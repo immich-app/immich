@@ -50,6 +50,26 @@ jobs:
         run: dart pub get
         working-directory: ./mobile
 
+      - name: Run Build Runner
+        run: make build
+        working-directory: ./mobile
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@v20
+        id: verify-changed-files
+        with:
+          files: |
+            mobile/**/*.g.dart
+            mobile/**/*.gr.dart
+            mobile/**/*.drift.dart
+
+      - name: Verify files have not changed
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
+
       - name: Run dart analyze
         run: dart analyze --fatal-infos
         working-directory: ./mobile
@@ -61,8 +81,3 @@ jobs:
       - name: Run dart custom_lint
         run: dart run custom_lint
         working-directory: ./mobile
-
-      # Enable after riverpod generator migration is completed
-      # - name: Run dart custom lint
-      #   run: dart run custom_lint
-      #   working-directory: ./mobile

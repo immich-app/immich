@@ -3,14 +3,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/album_title.provider.dart';
 import 'package:immich_mobile/providers/album/suggested_shared_users.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 @RoutePage()
@@ -21,7 +21,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedUsersList = useState<Set<User>>({});
+    final sharedUsersList = useState<Set<UserDto>>({});
     final suggestedShareUsers = ref.watch(otherUsersProvider);
 
     createSharedAlbum() async {
@@ -48,7 +48,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
       );
     }
 
-    buildTileIcon(User user) {
+    buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(
           backgroundColor: context.primaryColor,
@@ -64,7 +64,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
       }
     }
 
-    buildUserList(List<User> users) {
+    buildUserList(List<UserDto> users) {
       List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
@@ -72,7 +72,7 @@ class AlbumSharedUserSelectionPage extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: Chip(
-              backgroundColor: context.primaryColor.withOpacity(0.15),
+              backgroundColor: context.primaryColor.withValues(alpha: 0.15),
               label: Text(
                 user.email,
                 style: const TextStyle(

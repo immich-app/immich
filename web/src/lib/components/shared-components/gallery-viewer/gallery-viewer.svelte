@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
+  import { type ShortcutOptions, shortcuts } from '$lib/actions/shortcut';
   import { goto } from '$app/navigation';
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import Thumbnail from '$lib/components/assets/thumbnail/thumbnail.svelte';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { deleteAssets } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, getAssetRatio } from '$lib/utils/asset-utils';
@@ -178,6 +178,26 @@
     }
   };
 
+  const focusNextAsset = () => {
+    if (assetInteraction.focussedAssetId === null && assets.length > 0) {
+      assetInteraction.focussedAssetId = assets[0].id;
+    } else if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
+      if (currentIndex !== -1 && currentIndex + 1 < assets.length) {
+        assetInteraction.focussedAssetId = assets[currentIndex + 1].id;
+      }
+    }
+  };
+
+  const focusPreviousAsset = () => {
+    if (assetInteraction.focussedAssetId !== null && assets.length > 0) {
+      const currentIndex = assets.findIndex((a) => a.id === assetInteraction.focussedAssetId);
+      if (currentIndex >= 1) {
+        assetInteraction.focussedAssetId = assets[currentIndex - 1].id;
+      }
+    }
+  };
+
   let shortcutList = $derived(
     (() => {
       if ($isViewerOpen) {
@@ -188,6 +208,8 @@
         { shortcut: { key: '?', shift: true }, onShortcut: () => (showShortcuts = !showShortcuts) },
         { shortcut: { key: '/' }, onShortcut: () => goto(AppRoute.EXPLORE) },
         { shortcut: { key: 'A', ctrl: true }, onShortcut: () => selectAllAssets() },
+        { shortcut: { key: 'ArrowRight' }, preventDefault: false, onShortcut: focusNextAsset },
+        { shortcut: { key: 'ArrowLeft' }, preventDefault: false, onShortcut: focusPreviousAsset },
       ];
 
       if (assetInteraction.selectionActive) {
@@ -306,6 +328,10 @@
     }
   };
 
+  const assetOnFocusHandler = (asset: AssetResponseDto) => {
+    assetInteraction.focussedAssetId = asset.id;
+  };
+
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
 
@@ -382,10 +408,12 @@
           }}
           onSelect={(asset) => handleSelectAssets(asset)}
           onMouseEvent={() => assetMouseEventHandler(asset)}
+          handleFocus={() => assetOnFocusHandler(asset)}
           onIntersected={() => (i === Math.max(1, assets.length - 7) ? onIntersected?.() : void 0)}
           {showArchiveIcon}
           {asset}
           selected={assetInteraction.selectedAssets.has(asset)}
+          focussed={assetInteraction.isFocussedAsset(asset)}
           selectionCandidate={assetInteraction.assetSelectionCandidates.has(asset)}
           thumbnailWidth={geometry.boxes[i].width}
           thumbnailHeight={geometry.boxes[i].height}

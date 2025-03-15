@@ -55,9 +55,10 @@ with
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
 select
-  (
-    (now() at time zone 'UTC')::date - ("localDateTime" at time zone 'UTC')::date
-  ) / 365 as "yearsAgo",
+  date_part(
+    'year',
+    ("localDateTime" at time zone 'UTC')::date
+  )::int as "year",
   json_agg("res") as "assets"
 from
   "res"
@@ -419,8 +420,8 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = $1::uuid
-  and "isVisible" = $2
-  and "updatedAt" <= $3
+  and "assets"."isVisible" = $2
+  and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
   "assets"."id"
@@ -449,7 +450,7 @@ from
   ) as "stacked_assets" on "asset_stack"."id" is not null
 where
   "assets"."ownerId" = any ($1::uuid[])
-  and "isVisible" = $2
-  and "updatedAt" > $3
+  and "assets"."isVisible" = $2
+  and "assets"."updatedAt" > $3
 limit
   $4

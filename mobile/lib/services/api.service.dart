@@ -31,6 +31,7 @@ class ApiService implements Authentication {
   late DownloadApi downloadApi;
   late TrashApi trashApi;
   late StacksApi stacksApi;
+  late ViewApi viewApi;
   late MemoriesApi memoriesApi;
 
   ApiService() {
@@ -64,6 +65,7 @@ class ApiService implements Authentication {
     downloadApi = DownloadApi(_apiClient);
     trashApi = TrashApi(_apiClient);
     stacksApi = StacksApi(_apiClient);
+    viewApi = ViewApi(_apiClient);
     memoriesApi = MemoriesApi(_apiClient);
   }
 
@@ -84,15 +86,17 @@ class ApiService implements Authentication {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
-    final url = sanitizeUrl(serverUrl);
-
-    if (!await _isEndpointAvailable(serverUrl)) {
-      throw ApiException(503, "Server is not reachable");
-    }
+    String url = sanitizeUrl(serverUrl);
 
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
-    if (wellKnownEndpoint.isNotEmpty) return wellKnownEndpoint;
+    if (wellKnownEndpoint.isNotEmpty) {
+      url = sanitizeUrl(wellKnownEndpoint);
+    }
+
+    if (!await _isEndpointAvailable(url)) {
+      throw ApiException(503, "Server is not reachable");
+    }
 
     // Otherwise, assume the URL provided is the api endpoint
     return url;
@@ -128,10 +132,12 @@ class ApiService implements Authentication {
       var headers = {"Accept": "application/json"};
       headers.addAll(getRequestHeaders());
 
-      final res = await client.get(
-        Uri.parse("$baseUrl/.well-known/immich"),
-        headers: headers,
-      );
+      final res = await client
+          .get(
+            Uri.parse("$baseUrl/.well-known/immich"),
+            headers: headers,
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);

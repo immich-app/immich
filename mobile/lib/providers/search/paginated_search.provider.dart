@@ -45,7 +45,7 @@ class PaginatedSearchNotifier extends StateNotifier<SearchResult> {
 
 @riverpod
 Future<RenderList> paginatedSearchRenderList(
-  PaginatedSearchRenderListRef ref,
+  Ref ref,
 ) {
   final result = ref.watch(paginatedSearchProvider);
   final timelineService = ref.watch(timelineServiceProvider);

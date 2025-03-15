@@ -29,19 +29,19 @@
   <FullScreenModal title={$t('map_settings')} {onClose}>
     <Stack gap={4}>
       <Field label={$t('allow_dark_mode')}>
-        <Switch bind:checked={settings.allowDarkMode} class="flex justify-between items-center text-sm" />
+        <Switch bind:checked={settings.allowDarkMode} />
       </Field>
       <Field label={$t('only_favorites')}>
-        <Switch bind:checked={settings.onlyFavorites} class="flex justify-between items-center text-sm" />
+        <Switch bind:checked={settings.onlyFavorites} />
       </Field>
       <Field label={$t('include_archived')}>
-        <Switch bind:checked={settings.includeArchived} class="flex justify-between items-center text-sm" />
+        <Switch bind:checked={settings.includeArchived} />
       </Field>
       <Field label={$t('include_shared_partner_assets')}>
-        <Switch bind:checked={settings.withPartners} class="flex justify-between items-center text-sm" />
+        <Switch bind:checked={settings.withPartners} />
       </Field>
       <Field label={$t('include_shared_albums')}>
-        <Switch bind:checked={settings.withSharedAlbums} class="flex justify-between items-center text-sm" />
+        <Switch bind:checked={settings.withSharedAlbums} />
       </Field>
 
       {#if customDateRange}

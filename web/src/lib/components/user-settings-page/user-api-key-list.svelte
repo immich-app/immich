@@ -1,4 +1,6 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { locale } from '$lib/stores/preferences.store';
   import {
     createApiKey,
@@ -8,16 +10,14 @@
     updateApiKey,
     type ApiKeyResponseDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
   import APIKeyForm from '../forms/api-key-form.svelte';
   import APIKeySecret from '../forms/api-key-secret.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   interface Props {
     keys: ApiKeyResponseDto[];
@@ -122,7 +122,7 @@
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button size="sm" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
+      <Button shape="round" size="small" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
     </div>
 
     {#if keys.length > 0}
@@ -137,37 +137,35 @@
           </tr>
         </thead>
         <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
-          {#each keys as key, index}
-            {#key key.id}
-              <tr
-                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
-                  index % 2 == 0
-                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
-                }`}
-              >
-                <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
-                <td class="w-1/3 text-ellipsis px-4 text-sm"
-                  >{new Date(key.createdAt).toLocaleDateString($locale, format)}
-                </td>
-                <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
-                  <CircleIconButton
-                    color="primary"
-                    icon={mdiPencilOutline}
-                    title={$t('edit_key')}
-                    size="16"
-                    onclick={() => (editKey = key)}
-                  />
-                  <CircleIconButton
-                    color="primary"
-                    icon={mdiTrashCanOutline}
-                    title={$t('delete_key')}
-                    size="16"
-                    onclick={() => handleDelete(key)}
-                  />
-                </td>
-              </tr>
-            {/key}
+          {#each keys as key, index (key.id)}
+            <tr
+              class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                index % 2 == 0
+                  ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                  : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+              }`}
+            >
+              <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
+              <td class="w-1/3 text-ellipsis px-4 text-sm"
+                >{new Date(key.createdAt).toLocaleDateString($locale, format)}
+              </td>
+              <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
+                <CircleIconButton
+                  color="primary"
+                  icon={mdiPencilOutline}
+                  title={$t('edit_key')}
+                  size="16"
+                  onclick={() => (editKey = key)}
+                />
+                <CircleIconButton
+                  color="primary"
+                  icon={mdiTrashCanOutline}
+                  title={$t('delete_key')}
+                  size="16"
+                  onclick={() => handleDelete(key)}
+                />
+              </td>
+            </tr>
           {/each}
         </tbody>
       </table>

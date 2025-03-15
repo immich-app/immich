@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { JsonObject } from 'src/db';
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -30,35 +29,33 @@ export class MemoryService extends BaseService {
     const start = DateTime.utc().startOf('day').minus({ days: DAYS });
 
     const state = await this.systemMetadataRepository.get(SystemMetadataKey.MEMORIES_STATE);
-    let lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state?.lastOnThisDayDate) : start;
+    const lastOnThisDayDate = state?.lastOnThisDayDate ? DateTime.fromISO(state.lastOnThisDayDate) : start;
 
     // generate a memory +/- X days from today
-    for (let i = 0; i <= DAYS * 2 + 1; i++) {
+    for (let i = 0; i <= DAYS * 2; i++) {
       const target = start.plus({ days: i });
-      if (lastOnThisDayDate > target) {
+      if (lastOnThisDayDate >= target) {
         continue;
       }
 
       const showAt = target.startOf('day').toISO();
       const hideAt = target.endOf('day').toISO();
 
-      this.logger.log(`Creating memories for month=${target.month}, day=${target.day}`);
-
       for (const [userId, userIds] of Object.entries(userMap)) {
         const memories = await this.assetRepository.getByDayOfYear(userIds, target);
 
-        for (const memory of memories) {
-          const data: OnThisDayData = { year: target.year - memory.yearsAgo };
+        for (const { year, assets } of memories) {
+          const data: OnThisDayData = { year };
           await this.memoryRepository.create(
             {
               ownerId: userId,
               type: MemoryType.ON_THIS_DAY,
               data,
-              memoryAt: target.minus({ years: memory.yearsAgo }).toISO(),
+              memoryAt: target.set({ year }).toISO(),
               showAt,
               hideAt,
             },
-            new Set(memory.assets.map(({ id }) => id)),
+            new Set(assets.map(({ id }) => id)),
           );
         }
       }
@@ -67,8 +64,6 @@ export class MemoryService extends BaseService {
         ...state,
         lastOnThisDayDate: target.toISO(),
       });
-
-      lastOnThisDayDate = target;
     }
   }
 
@@ -101,7 +96,7 @@ export class MemoryService extends BaseService {
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data: dto.data as unknown as JsonObject,
+        data: dto.data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         seenAt: dto.seenAt,

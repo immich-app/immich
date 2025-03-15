@@ -1,3 +1,4 @@
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
 import 'package:immich_mobile/interfaces/asset_api.interface.dart';
@@ -11,7 +12,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'person.service.g.dart';
 
 @riverpod
-PersonService personService(PersonServiceRef ref) => PersonService(
+PersonService personService(Ref ref) => PersonService(
       ref.watch(personApiRepositoryProvider),
       ref.watch(assetApiRepositoryProvider),
       ref.read(assetRepositoryProvider),

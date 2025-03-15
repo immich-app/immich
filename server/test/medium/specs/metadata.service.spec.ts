@@ -3,12 +3,14 @@ import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
-import { newFakeLoggingRepository } from 'test/repositories/logger.repository.mock';
-import { newRandomImage, newTestService, ServiceMocks } from 'test/utils';
+import { automock, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
-const metadataRepository = new MetadataRepository(newFakeLoggingRepository());
+const metadataRepository = new MetadataRepository(
+  automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
+);
 
 const createTestFile = async (exifData: Record<string, any>) => {
   const data = newRandomImage();
@@ -34,9 +36,9 @@ describe(MetadataService.name, () => {
   let mocks: ServiceMocks;
 
   beforeEach(() => {
-    ({ sut, mocks } = newTestService(MetadataService, { metadataRepository }));
+    ({ sut, mocks } = newTestService(MetadataService, { metadata: metadataRepository }));
 
-    mocks.storage.stat.mockResolvedValue({ size: 123_456 } as Stats);
+    mocks.storage.stat.mockResolvedValue({ size: 123_456, ctime: new Date(), mtime: new Date() } as Stats);
 
     delete process.env.TZ;
   });
@@ -51,6 +53,8 @@ describe(MetadataService.name, () => {
         description: 'should handle no time zone information',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
+          FileCreateDate: '2022:01:01 00:00:00',
+          FileModifyDate: '2022:01:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -63,6 +67,8 @@ describe(MetadataService.name, () => {
         serverTimeZone: 'America/Los_Angeles',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
+          FileCreateDate: '2022:01:01 00:00:00',
+          FileModifyDate: '2022:01:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -75,6 +81,8 @@ describe(MetadataService.name, () => {
         serverTimeZone: 'Europe/Brussels',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00',
+          FileCreateDate: '2022:01:01 00:00:00',
+          FileModifyDate: '2022:01:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',
@@ -87,6 +95,8 @@ describe(MetadataService.name, () => {
         serverTimeZone: 'Europe/Brussels',
         exifData: {
           DateTimeOriginal: '2022:06:01 00:00:00',
+          FileCreateDate: '2022:06:01 00:00:00',
+          FileModifyDate: '2022:06:01 00:00:00',
         },
         expected: {
           localDateTime: '2022-06-01T00:00:00.000Z',
@@ -98,6 +108,8 @@ describe(MetadataService.name, () => {
         description: 'should handle a +13:00 time zone',
         exifData: {
           DateTimeOriginal: '2022:01:01 00:00:00+13:00',
+          FileCreateDate: '2022:01:01 00:00:00+13:00',
+          FileModifyDate: '2022:01:01 00:00:00+13:00',
         },
         expected: {
           localDateTime: '2022-01-01T00:00:00.000Z',

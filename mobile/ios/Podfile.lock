@@ -3,7 +3,6 @@ PODS:
     - Flutter
   - connectivity_plus (0.0.1):
     - Flutter
-    - FlutterMacOS
   - device_info_plus (0.0.1):
     - Flutter
   - DKImagePickerController/Core (4.3.9):
@@ -43,16 +42,15 @@ PODS:
   - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
-  - flutter_native_splash (0.0.1):
+  - flutter_native_splash (2.4.3):
     - Flutter
   - flutter_udid (0.0.1):
     - Flutter
     - SAMKeychain
-  - flutter_web_auth (0.6.0):
+  - flutter_web_auth_2 (3.0.0):
     - Flutter
   - fluttertoast (0.0.2):
     - Flutter
-    - Toast
   - geolocator_apple (1.2.0):
     - Flutter
   - image_picker_ios (0.0.1):
@@ -61,10 +59,10 @@ PODS:
     - Flutter
   - isar_flutter_libs (1.0.0):
     - Flutter
-  - MapLibre (5.14.0-pre3)
+  - MapLibre (6.5.0)
   - maplibre_gl (0.0.1):
     - Flutter
-    - MapLibre (= 5.14.0-pre3)
+    - MapLibre (= 6.5.0)
   - native_video_player (1.0.0):
     - Flutter
   - network_info_plus (0.0.1):
@@ -74,17 +72,15 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - path_provider_ios (0.0.1):
-    - Flutter
   - permission_handler_apple (9.3.0):
     - Flutter
   - photo_manager (2.0.0):
     - Flutter
     - FlutterMacOS
   - SAMKeychain (1.5.3)
-  - SDWebImage (5.20.0):
-    - SDWebImage/Core (= 5.20.0)
-  - SDWebImage/Core (5.20.0)
+  - SDWebImage (5.21.0):
+    - SDWebImage/Core (= 5.21.0)
+  - SDWebImage/Core (5.21.0)
   - share_handler_ios (0.0.14):
     - Flutter
     - share_handler_ios/share_handler_ios_models (= 0.0.14)
@@ -98,11 +94,10 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - sqflite (0.0.3):
+  - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
   - SwiftyGif (5.4.5)
-  - Toast (4.1.1)
   - url_launcher_ios (0.0.1):
     - Flutter
   - wakelock_plus (0.0.1):
@@ -110,14 +105,14 @@ PODS:
 
 DEPENDENCIES:
   - background_downloader (from `.symlinks/plugins/background_downloader/ios`)
-  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/darwin`)
+  - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
   - flutter_udid (from `.symlinks/plugins/flutter_udid/ios`)
-  - flutter_web_auth (from `.symlinks/plugins/flutter_web_auth/ios`)
+  - flutter_web_auth_2 (from `.symlinks/plugins/flutter_web_auth_2/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
@@ -128,14 +123,13 @@ DEPENDENCIES:
   - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - photo_manager (from `.symlinks/plugins/photo_manager/ios`)
   - share_handler_ios (from `.symlinks/plugins/share_handler_ios/ios`)
   - share_handler_ios_models (from `.symlinks/plugins/share_handler_ios/ios/Models`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
-  - sqflite (from `.symlinks/plugins/sqflite/darwin`)
+  - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)
 
@@ -147,13 +141,12 @@ SPEC REPOS:
     - SAMKeychain
     - SDWebImage
     - SwiftyGif
-    - Toast
 
 EXTERNAL SOURCES:
   background_downloader:
     :path: ".symlinks/plugins/background_downloader/ios"
   connectivity_plus:
-    :path: ".symlinks/plugins/connectivity_plus/darwin"
+    :path: ".symlinks/plugins/connectivity_plus/ios"
   device_info_plus:
     :path: ".symlinks/plugins/device_info_plus/ios"
   file_picker:
@@ -166,8 +159,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_native_splash/ios"
   flutter_udid:
     :path: ".symlinks/plugins/flutter_udid/ios"
-  flutter_web_auth:
-    :path: ".symlinks/plugins/flutter_web_auth/ios"
+  flutter_web_auth_2:
+    :path: ".symlinks/plugins/flutter_web_auth_2/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   geolocator_apple:
@@ -188,8 +181,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  path_provider_ios:
-    :path: ".symlinks/plugins/path_provider_ios/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
   photo_manager:
@@ -202,50 +193,48 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
-  sqflite:
-    :path: ".symlinks/plugins/sqflite/darwin"
+  sqflite_darwin:
+    :path: ".symlinks/plugins/sqflite_darwin/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   wakelock_plus:
     :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
-  background_downloader: 9f788ffc5de45acf87d6380e91ca0841066c18cf
-  connectivity_plus: ddd7f30999e1faaef5967c23d5b6d503d10434db
+  background_downloader: 3ca0e156ad83a9fc1c8300f5f7c38e94e2d0bf51
+  connectivity_plus: 2a701ffec2c0ae28a48cf7540e279787e77c447d
   device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
-  file_picker: 09aa5ec1ab24135ccd7a1621c46c84134bfd6655
+  file_picker: b159e0c068aef54932bb15dc9fd1571818edaf49
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_local_notifications: 4cde75091f6327eb8517fa068a0a5950212d2086
-  flutter_native_splash: edf599c81f74d093a4daf8e17bd7a018854bc778
-  flutter_udid: a2482c67a61b9c806ef59dd82ed8d007f1b7ac04
-  flutter_web_auth: acc15a8fd7bba796a933c724a6dffc3d00f07c27
-  fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
-  geolocator_apple: 6cbaf322953988e009e5ecb481f07efece75c450
+  flutter_native_splash: df59bb2e1421aa0282cb2e95618af4dcb0c56c29
+  flutter_udid: b2417673f287ee62817a1de3d1643f47b9f508ab
+  flutter_web_auth_2: 06d500582775790a0d4c323222fcb6d7990f9603
+  fluttertoast: 21eecd6935e7064cc1fcb733a4c5a428f3f24f0f
+  geolocator_apple: 9bcea1918ff7f0062d98345d238ae12718acfbc1
   image_picker_ios: c560581cceedb403a6ff17f2f816d7fea1421fc1
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
   isar_flutter_libs: fdf730ca925d05687f36d7f1d355e482529ed097
-  MapLibre: 620fc933c1d6029b33738c905c1490d024e5d4ef
-  maplibre_gl: a2efec727dd340e4c65e26d2b03b584f14881fd9
+  MapLibre: 0ebfa9329d313cec8bf0a5ba5a336a1dc903785e
+  maplibre_gl: be7b98f1c3ed75bf77f321eec04df359d0ff6f62
   native_video_player: d12af78a1a4a8cf09775a5177d5b392def6fd23c
   network_info_plus: 6613d9d7cdeb0e6f366ed4dbe4b3c51c52d567a9
   package_info_plus: c0502532a26c7662a62a356cebe2692ec5fe4ec4
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
   photo_manager: ff695c7a1dd5bc379974953a2b5c0a293f7c4c8a
   SAMKeychain: 483e1c9f32984d50ca961e26818a534283b4cd5c
-  SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8
+  SDWebImage: f84b0feeb08d2d11e6a9b843cb06d75ebf5b8868
   share_handler_ios: 6dd3a4ac5ca0d955274aec712ba0ecdcaf583e7c
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
   share_plus: 8b6f8b3447e494cca5317c8c3073de39b3600d1f
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
-  sqflite: 673a0e54cc04b7d6dba8d24fb8095b31c3a99eec
+  sqflite_darwin: 5a7236e3b501866c1c9befc6771dfd73ffb8702d
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
-  Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
-  wakelock_plus: 78ec7c5b202cab7761af8e2b2b3d0671be6c4ae1
+  wakelock_plus: 373cfe59b235a6dd5837d0fb88791d2f13a90d56
 
 PODFILE CHECKSUM: 03b7eead4ee77b9e778179eeb0f3b5513617451c
 

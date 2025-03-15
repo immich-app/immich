@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/log.interface.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
@@ -39,29 +40,29 @@ class LogService {
   }
 
   static Future<LogService> init({
-    required ILogRepository logRepo,
-    required IStoreRepository storeRepo,
+    required ILogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
     if (_instance != null) {
       return _instance!;
     }
     _instance = await create(
-      logRepo: logRepo,
-      storeRepo: storeRepo,
+      logRepository: logRepository,
+      storeRepository: storeRepository,
       shouldBuffer: shouldBuffer,
     );
     return _instance!;
   }
 
   static Future<LogService> create({
-    required ILogRepository logRepo,
-    required IStoreRepository storeRepo,
+    required ILogRepository logRepository,
+    required IStoreRepository storeRepository,
     bool shouldBuffer = true,
   }) async {
-    final instance = LogService._(logRepo, storeRepo, shouldBuffer);
+    final instance = LogService._(logRepository, storeRepository, shouldBuffer);
     // Truncate logs to 250
-    await logRepo.truncate(limit: kLogTruncateLimit);
+    await logRepository.truncate(limit: kLogTruncateLimit);
     // Get log level from store
     final level = await instance._storeRepository.tryGet(StoreKey.logLevel);
     if (level != null) {
@@ -91,12 +92,13 @@ class LogService {
   }
 
   /// Flush pending log messages to persistent storage
-  Future<void> flush() async {
+  void flush() {
     if (_flushTimer == null) {
       return;
     }
     _flushTimer!.cancel();
-    await _flushBufferToDatabase();
+    // TODO: Rename enable this after moving to sqlite - #16504
+    // await _flushBufferToDatabase();
   }
 
   Future<void> dispose() {
@@ -106,6 +108,10 @@ class LogService {
   }
 
   void _writeLogToDatabase(LogRecord r) {
+    if (kDebugMode) {
+      debugPrint('[${r.level.name}] [${r.time}] ${r.message}');
+    }
+
     final record = LogMessage(
       message: r.message,
       level: r.level.toLogLevel(),
@@ -145,7 +151,7 @@ class LoggerUnInitializedException implements Exception {
 extension LevelDomainToInfraExtension on Level {
   LogLevel toLogLevel() =>
       LogLevel.values.elementAtOrNull(Level.LEVELS.indexOf(this)) ??
-      LogLevel.INFO;
+      LogLevel.info;
 }
 
 extension on LogLevel {

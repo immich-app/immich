@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../domain/service.mock.dart';
 import '../fixtures/album.stub.dart';
 import '../fixtures/asset.stub.dart';
 import '../fixtures/user.stub.dart';
@@ -37,7 +39,6 @@ void main() {
     );
 
     sut = AlbumService(
-      userService,
       syncService,
       entityService,
       albumRepository,
@@ -83,7 +84,9 @@ void main() {
 
   group('refreshRemoteAlbums', () {
     test('is working', () async {
-      when(() => userService.refreshUsers()).thenAnswer((_) async => true);
+      when(() => syncService.getUsersFromServer()).thenAnswer((_) async => []);
+      when(() => syncService.syncUsersFromServer(any()))
+          .thenAnswer((_) async => true);
       when(() => albumApiRepository.getAll(shared: true))
           .thenAnswer((_) async => [AlbumStub.sharedWithUser]);
 
@@ -99,7 +102,8 @@ void main() {
       ).thenAnswer((_) async => true);
       final result = await sut.refreshRemoteAlbums();
       expect(result, true);
-      verify(() => userService.refreshUsers()).called(1);
+      verify(() => syncService.getUsersFromServer()).called(1);
+      verify(() => syncService.syncUsersFromServer([])).called(1);
       verify(() => albumApiRepository.getAll(shared: true)).called(1);
       verify(() => albumApiRepository.getAll(shared: null)).called(1);
       verify(
@@ -142,7 +146,7 @@ void main() {
         () => albumApiRepository.create(
           "name",
           assetIds: [AssetStub.image1.remoteId!],
-          sharedUserIds: [UserStub.user1.id],
+          sharedUserIds: [UserStub.user1.uid],
         ),
       ).called(1);
       verify(
@@ -200,7 +204,7 @@ void main() {
       when(
         () => albumRepository.addUsers(
           AlbumStub.emptyAlbum,
-          AlbumStub.emptyAlbum.sharedUsers.toList(),
+          AlbumStub.emptyAlbum.sharedUsers.map((u) => u.toDto()).toList(),
         ),
       ).thenAnswer((_) async => AlbumStub.emptyAlbum);
 
@@ -210,7 +214,7 @@ void main() {
 
       final result = await sut.addUsers(
         AlbumStub.emptyAlbum,
-        [UserStub.user2.id],
+        [UserStub.user2.uid],
       );
 
       expect(result, true);

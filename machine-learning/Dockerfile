@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:14b4620f59a90f163dfa6bd252b68743f9a41d494a9fde935f9d7669d98094bb AS builder-cpu
+FROM python:3.11-bookworm@sha256:68a8863d0625f42d47e0684f33ca02f19d6094ef859a8af237aaf645195ed477 AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -20,21 +20,18 @@ FROM builder-${DEVICE} AS builder
 ARG DEVICE
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=true \
-    VIRTUAL_ENV="/opt/venv" \
-    PATH="/opt/venv/bin:${PATH}"
+    VIRTUAL_ENV=/opt/venv
+WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-RUN pip install --upgrade pip && pip install poetry
-RUN poetry config installer.max-workers 10 && \
-    poetry config virtualenvs.create false
-RUN python3 -m venv /opt/venv
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:562193a4a9d398f8aedddcb223e583da394ee735de36b5815f8f1d22cb49be15 /uv /uvx /bin/
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
 
-COPY poetry.lock pyproject.toml ./
-RUN poetry install --sync --no-interaction --no-ansi --no-root --with ${DEVICE} --without dev
-
-FROM python:3.11-slim-bookworm@sha256:42420f737ba91d509fc60d5ed65ed0492678a90c561e1fa08786ae8ba8b52eda AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:614c8691ab74150465ec9123378cd4dde7a6e57be9e558c3108df40664667a4c AS prod-cpu
 
 FROM prod-cpu AS prod-openvino
 
@@ -95,7 +92,8 @@ ENV TRANSFORMERS_CACHE=/cache \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
     PYTHONPATH=/usr/src \
-    DEVICE=${DEVICE}
+    DEVICE=${DEVICE} \
+    VIRTUAL_ENV=/opt/venv
 
 # prevent core dumps
 RUN echo "hard core 0" >> /etc/security/limits.conf && \

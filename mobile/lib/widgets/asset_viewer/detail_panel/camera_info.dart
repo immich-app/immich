@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 
 class CameraInfo extends StatelessWidget {

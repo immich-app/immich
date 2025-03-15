@@ -6,7 +6,7 @@ part of 'asset_stack.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$assetStackIndexHash() => r'0f2df55e929767c8c698bd432b5e6e351d000a16';
+String _$assetStackIndexHash() => r'38b4b0116e3e4592620b118ae01cf89b77da9cfe';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -142,6 +142,8 @@ class AssetStackIndexProvider extends AutoDisposeProvider<int> {
   }
 }
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 mixin AssetStackIndexRef on AutoDisposeProviderRef<int> {
   /// The parameter `asset` of this provider.
   Asset get asset;
@@ -155,4 +157,4 @@ class _AssetStackIndexProviderElement extends AutoDisposeProviderElement<int>
   Asset get asset => (origin as AssetStackIndexProvider).asset;
 }
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -2,9 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
-import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -81,7 +81,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
-      enabled: owner?.isarId == asset.ownerId,
+      enabled: owner?.id == asset.ownerId,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {

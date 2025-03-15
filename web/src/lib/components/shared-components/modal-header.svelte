@@ -37,5 +37,5 @@
     </h1>
   </div>
 
-  <CircleIconButton onclick={onClose} icon={mdiClose} size={'20'} title={$t('close')} />
+  <CircleIconButton onclick={onClose} icon={mdiClose} size="20" title={$t('close')} />
 </div>

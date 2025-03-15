@@ -19,7 +19,7 @@
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
   import { handleError } from '$lib/utils/handle-error';
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
-  import { photoViewerImgElement } from '$lib/stores/assets.store';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
 
   interface Props {
@@ -225,6 +225,7 @@
           : slideshowLookCssMapping[$slideshowLook]}"
         draggable="false"
       />
+      <!-- eslint-disable-next-line svelte/require-each-key -->
       {#each getBoundingBox($boundingBoxesArray, $photoZoomState, $photoViewerImgElement) as boundingbox}
         <div
           class="absolute border-solid border-white border-[3px] rounded-lg"

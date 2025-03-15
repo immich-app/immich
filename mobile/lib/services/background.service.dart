@@ -11,10 +11,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
+import 'package:immich_mobile/domain/interfaces/user.interface.dart';
+import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
+import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
@@ -28,13 +36,11 @@ import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/etag.repository.dart';
-import 'package:immich_mobile/repositories/exif_info.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
 import 'package:immich_mobile/repositories/network.repository.dart';
+import 'package:immich_mobile/repositories/partner.repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
-import 'package:immich_mobile/repositories/user_api.repository.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
@@ -45,13 +51,12 @@ import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'package:path_provider_ios/path_provider_ios.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
 final backgroundServiceProvider = Provider(
@@ -321,7 +326,7 @@ class BackgroundService {
       // NOTE: I'm not sure this is strictly necessary anymore, but
       // out of an abundance of caution, we will keep it in until someone
       // can say for sure
-      PathProviderIOS.registerWith();
+      PathProviderFoundation.registerWith();
     }
     switch (call.method) {
       case "backgroundProcessing":
@@ -329,7 +334,7 @@ class BackgroundService {
         try {
           _clearErrorNotifications();
 
-          // iOS should time out after some threshhold so it doesn't wait
+          // iOS should time out after some threshold so it doesn't wait
           // indefinitely and can run later
           // Android is fine to wait here until the lock releases
           final waitForLock = Platform.isIOS
@@ -379,13 +384,13 @@ class BackgroundService {
     AlbumRepository albumRepository = AlbumRepository(db);
     AssetRepository assetRepository = AssetRepository(db);
     BackupAlbumRepository backupRepository = BackupAlbumRepository(db);
-    ExifInfoRepository exifInfoRepository = ExifInfoRepository(db);
+    IExifInfoRepository exifInfoRepository = IsarExifRepository(db);
     ETagRepository eTagRepository = ETagRepository(db);
     AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
     FileMediaRepository fileMediaRepository = FileMediaRepository();
     AssetMediaRepository assetMediaRepository = AssetMediaRepository();
-    UserRepository userRepository = UserRepository(db);
-    UserApiRepository userApiRepository =
+    IUserRepository userRepository = IsarUserRepository(db);
+    IUserApiRepository userApiRepository =
         UserApiRepository(apiService.usersApi);
     AlbumApiRepository albumApiRepository =
         AlbumApiRepository(apiService.albumsApi);
@@ -395,6 +400,7 @@ class BackgroundService {
         HashService(assetRepository, this, albumMediaRepository);
     EntityService entityService =
         EntityService(assetRepository, userRepository);
+    IPartnerRepository partnerRepository = PartnerRepository(db);
     SyncService syncSerive = SyncService(
       hashService,
       entityService,
@@ -403,17 +409,14 @@ class BackgroundService {
       albumRepository,
       assetRepository,
       exifInfoRepository,
+      partnerRepository,
       userRepository,
+      StoreService.I,
       eTagRepository,
-    );
-    UserService userService = UserService(
       partnerApiRepository,
       userApiRepository,
-      userRepository,
-      syncSerive,
     );
     AlbumService albumService = AlbumService(
-      userService,
       syncSerive,
       entityService,
       albumRepository,
@@ -720,7 +723,6 @@ enum IosBackgroundTask { fetch, processing }
 /// entry point called by Kotlin/Java code; needs to be a top-level function
 @pragma('vm:entry-point')
 void _nativeEntry() {
-  HttpOverrides.global = HttpSSLCertOverride();
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
   BackgroundService backgroundService = BackgroundService();

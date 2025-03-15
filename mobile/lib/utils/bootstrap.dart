@@ -9,11 +9,11 @@ import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/duplicated_asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
-import 'package:immich_mobile/entities/exif_info.entity.dart';
 import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:isar/isar.dart';
@@ -49,8 +49,8 @@ abstract final class Bootstrap {
   static Future<void> initDomain(Isar db) async {
     await StoreService.init(storeRepository: IsarStoreRepository(db));
     await LogService.init(
-      logRepo: IsarLogRepository(db),
-      storeRepo: IsarStoreRepository(db),
+      logRepository: IsarLogRepository(db),
+      storeRepository: IsarStoreRepository(db),
     );
   }
 }

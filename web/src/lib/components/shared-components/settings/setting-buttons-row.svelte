@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import type { ResetOptions } from '$lib/utils/dipatch';
+  import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -26,8 +26,10 @@
     {/if}
   </div>
 
-  <div class="right">
-    <Button {disabled} size="sm" color="gray" onclick={() => onReset({ default: false })}>{$t('reset')}</Button>
-    <Button type="submit" {disabled} size="sm" onclick={() => onSave()}>{$t('save')}</Button>
+  <div class="flex gap-1">
+    <Button shape="round" {disabled} size="small" color="secondary" onclick={() => onReset({ default: false })}
+      >{$t('reset')}</Button
+    >
+    <Button shape="round" type="submit" {disabled} size="small" onclick={() => onSave()}>{$t('save')}</Button>
   </div>
 </div>
