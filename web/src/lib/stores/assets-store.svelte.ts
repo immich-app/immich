@@ -61,8 +61,6 @@ class IntersectingAsset {
   // --- public ---
   readonly #group: AssetDateGroup;
 
-  // intersecting = $state(false);
-
   intersecting = $derived.by(() => {
     if (!this.position) {
       return false;
@@ -73,7 +71,11 @@ class IntersectingAsset {
     const bottomWindow = store.visibleWindow.bottom + HEADER + INTERSECTION_EXPAND_BOTTOM;
     const positionTop = this.#group.absoluteDateGroupTop + this.position.top;
     const positionBottom = positionTop + this.position.height;
-    const intersecting = positionBottom > topWindow && positionTop < bottomWindow;
+
+    const intersecting =
+      (positionTop >= topWindow && positionTop < bottomWindow) ||
+      (positionBottom >= topWindow && positionBottom < bottomWindow) ||
+      (positionTop < topWindow && positionBottom >= bottomWindow);
     return intersecting;
   });
 
@@ -84,11 +86,6 @@ class IntersectingAsset {
   constructor(group: AssetDateGroup, asset: AssetResponseDto) {
     this.#group = group;
     this.asset = asset;
-    // setInterval(() => {
-    //   const a = { ...this.position };
-    //   a.top = a.top + 1;
-    //   this.position = a;
-    // }, 2000);
   }
 }
 type AssetOperation = (asset: AssetResponseDto) => { remove: boolean };
@@ -566,7 +563,7 @@ export class AssetStore {
   #resetScrolling = debounce(() => (this.#scrolling = false), 1000);
   #resetSuspendTransitions = debounce(() => (this.suspendTransitions = false), 1000);
 
-  constructor() { }
+  constructor() {}
 
   set scrolling(value: boolean) {
     this.#scrolling = value;
@@ -706,7 +703,15 @@ export class AssetStore {
     const bucketBottom = bucketTop + bucket.bucketHeight;
     const topWindow = this.visibleWindow.top - INTERSECTION_EXPAND_TOP;
     const bottomWindow = this.visibleWindow.bottom + INTERSECTION_EXPAND_BOTTOM;
-    bucket.intersecting = bucketTop < bottomWindow && bucketBottom > topWindow ? true : false;
+
+    // a bucket intersections if
+    // 1) bucket's bottom is in the visible range -or-
+    // 2) bucket's bottom is in the visible range -or-
+    // 3) bucket's top is above visible range and bottom is below visible range
+    bucket.intersecting =
+      (bucketTop >= topWindow && bucketTop < bottomWindow) ||
+      (bucketBottom >= topWindow && bucketBottom < bottomWindow) ||
+      (bucketTop < topWindow && bucketBottom >= bottomWindow);
   }
 
   #processPendingChanges = throttle(() => {
