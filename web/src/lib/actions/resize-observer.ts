@@ -1,4 +1,4 @@
-type OnResizeCallback = (resizeEvent: { target: HTMLElement; width: number; height: number }) => void;
+export type OnResizeCallback = (resizeEvent: { target: HTMLElement; width: number; height: number }) => void;
 
 let observer: ResizeObserver;
 let callbacks: WeakMap<HTMLElement, OnResizeCallback>;

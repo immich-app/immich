@@ -33,7 +33,10 @@
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ albumId: album.id, order: album.order });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ albumId: album.id, order: album.order }));
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   dragAndDropFilesStore.subscribe((value) => {
@@ -41,9 +44,6 @@
       handlePromiseError(fileUploadHandler(value.files, album.id));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
-  });
-  onDestroy(() => {
-    assetStore.destroy();
   });
 </script>
 
