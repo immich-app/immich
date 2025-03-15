@@ -26,6 +26,13 @@ services:
               capabilities:
                 - gpu
 
+  rocm:
+    group_add:
+      - video
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/kfd:/dev/kfd
+
   openvino:
     device_cgroup_rules:
       - 'c 189:* rmw'
