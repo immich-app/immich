@@ -19,7 +19,6 @@ test.describe('Photo Viewer', () => {
   test.beforeEach(async ({ context, page }) => {
     // before each test, login as user
     await utils.setAuthCookies(context, admin.accessToken);
-    await page.goto('/photos');
     await page.waitForLoadState('networkidle');
   });
 
