@@ -77,7 +77,7 @@ def export_models(models: list[str], source: ModelSource) -> None:
     for model in models:
         try:
             print(f"Exporting model {model}")
-            subprocess.check_call(["python", "export.py", model, source])
+            subprocess.check_call(["python", "-m", "immich_model_exporter.export", model, source])
         except Exception as e:
             print(f"Failed to export model {model}: {e}")
 

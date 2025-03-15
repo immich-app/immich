@@ -22,7 +22,7 @@ SOURCE_TO_METADATA = {
     ),
 }
 
-RKNN_SOCS = ["rk3566", "rk3576", "rk3588"]
+RKNN_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
 
 
 # glob to delete old UUID blobs when reuploading models
