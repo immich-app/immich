@@ -2,9 +2,10 @@
   import { thumbhash } from '$lib/actions/thumbhash';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -63,6 +64,9 @@
     if (img?.complete) {
       setLoaded();
     }
+  });
+  onDestroy(() => {
+    cancelImageUrl(url);
   });
 
   let optionalClasses = $derived(

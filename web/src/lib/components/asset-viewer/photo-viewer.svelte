@@ -21,6 +21,7 @@
   import FaceEditor from '$lib/components/asset-viewer/face-editor/face-editor.svelte';
   import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
+  import { cancelImageUrl, preloadImageUrl } from '$lib/utils/sw-messaging';
 
   interface Props {
     asset: AssetResponseDto;
@@ -71,8 +72,7 @@
   const preload = (useOriginal: boolean, preloadAssets?: AssetResponseDto[]) => {
     for (const preloadAsset of preloadAssets || []) {
       if (preloadAsset.type === AssetTypeEnum.Image) {
-        let img = new Image();
-        img.src = getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.thumbhash);
+        preloadImageUrl(getAssetUrl(preloadAsset.id, useOriginal, preloadAsset.thumbhash));
       }
     }
   };
@@ -150,6 +150,7 @@
     return () => {
       loader?.removeEventListener('load', onload);
       loader?.removeEventListener('error', onerror);
+      cancelImageUrl(imageLoaderUrl);
     };
   });
   let isWebCompatible = $derived(isWebCompatibleImage(asset));

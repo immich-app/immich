@@ -64,6 +64,8 @@ export default [
       },
     },
 
+    ignores: ['**/service-worker/**'],
+
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'warn',
