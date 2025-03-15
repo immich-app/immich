@@ -52,7 +52,7 @@ You do not need to redo any machine learning jobs after enabling hardware accele
 
 #### RKNN
 
-- You must have a supported Rockchip SoC: only RK3566, RK3576 and RK3588 are supported at this moment.
+- You must have a supported Rockchip SoC: only RK3566, RK3568, RK3576 and RK3588 are supported at this moment.
 - Make sure you have the appropriate linux kernel driver installed
   - This is usually pre-installed on the device vendor's Linux images
 - RKNPU driver V0.9.8 or later must be available in the host server
