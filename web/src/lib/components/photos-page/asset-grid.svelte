@@ -14,7 +14,6 @@
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
   import type { AlbumResponseDto, AssetResponseDto, PersonResponseDto } from '@immich/sdk';
-  import { throttle } from 'lodash-es';
   import { onMount, type Snippet } from 'svelte';
   import Portal from '../shared-components/portal/portal.svelte';
   import Scrubber from '../shared-components/scrubber/scrubber.svelte';
@@ -713,7 +712,7 @@
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
   bind:this={element}
-  onscroll={(a) => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
+  onscroll={() => (handleTimelineScroll(), updateSlidingWindow(), updateIsScrolling())}
 >
   <section
     bind:this={timelineElement}
