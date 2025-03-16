@@ -38,7 +38,10 @@ export class AssetInteraction {
   }
 
   removeAssetFromMultiselectGroup(asset: AssetResponseDto) {
-    this.selectedAssets.delete(asset);
+    const selectedAsset = [...this.selectedAssets.values()].find((a) => a.id === asset.id);
+    if (selectedAsset) {
+      this.selectedAssets.delete(selectedAsset);
+    }
   }
 
   addGroupToMultiselectGroup(group: string) {
