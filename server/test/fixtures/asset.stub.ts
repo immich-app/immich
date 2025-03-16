@@ -88,6 +88,7 @@ export const assetStub = {
     isExternal: false,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   noWebpPath: Object.freeze<AssetEntity>({
@@ -126,6 +127,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   noThumbhash: Object.freeze<AssetEntity>({
@@ -161,6 +163,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   primaryImage: Object.freeze<AssetEntity>({
@@ -207,6 +210,7 @@ export const assetStub = {
     ]),
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   image: Object.freeze<AssetEntity>({
@@ -247,6 +251,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   trashed: Object.freeze<AssetEntity>({
@@ -287,6 +292,7 @@ export const assetStub = {
     duplicateId: null,
     isOffline: false,
     status: AssetStatus.TRASHED,
+    isDirty: false,
   }),
 
   trashedOffline: Object.freeze<AssetEntity>({
@@ -328,6 +334,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: true,
+    isDirty: false,
   }),
   archived: Object.freeze<AssetEntity>({
     id: 'asset-id',
@@ -367,6 +374,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   external: Object.freeze<AssetEntity>({
@@ -406,6 +414,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   image1: Object.freeze<AssetEntity>({
@@ -444,6 +453,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   imageFrom2015: Object.freeze<AssetEntity>({
@@ -482,6 +492,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   video: Object.freeze<AssetEntity>({
@@ -522,6 +533,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   livePhotoMotionAsset: Object.freeze({
@@ -613,6 +625,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   sidecar: Object.freeze<AssetEntity>({
@@ -648,6 +661,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   sidecarWithoutExt: Object.freeze<AssetEntity>({
@@ -683,6 +697,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   hasEncodedVideo: Object.freeze<AssetEntity>({
@@ -721,6 +736,7 @@ export const assetStub = {
     deletedAt: null,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   hasFileExtension: Object.freeze<AssetEntity>({
@@ -760,6 +776,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   imageDng: Object.freeze<AssetEntity>({
@@ -800,6 +817,7 @@ export const assetStub = {
     } as ExifEntity,
     duplicateId: null,
     isOffline: false,
+    isDirty: false,
   }),
 
   hasEmbedding: Object.freeze<AssetEntity>({
@@ -842,6 +860,7 @@ export const assetStub = {
       embedding: '[1, 2, 3, 4]',
     },
     isOffline: false,
+    isDirty: false,
   }),
 
   hasDupe: Object.freeze<AssetEntity>({
@@ -884,5 +903,6 @@ export const assetStub = {
       embedding: '[1, 2, 3, 4]',
     },
     isOffline: false,
+    isDirty: false,
   }),
 };

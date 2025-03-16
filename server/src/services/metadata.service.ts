@@ -29,6 +29,7 @@ import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
+import { getSidecarPath } from 'src/utils/asset.util';
 import { isFaceImportEnabled } from 'src/utils/misc';
 import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
@@ -162,13 +163,27 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.METADATA_EXTRACTION, queue: QueueName.METADATA_EXTRACTION })
   async handleMetadataExtraction(data: JobOf<JobName.METADATA_EXTRACTION>): Promise<JobStatus> {
-    const [{ metadata, reverseGeocoding }, [asset]] = await Promise.all([
+    const [{ metadata, reverseGeocoding }, asset] = await Promise.all([
       this.getConfig({ withCache: true }),
-      this.assetRepository.getByIds([data.id], { faces: { person: false } }),
+      this.assetRepository.getById(data.id, { faces: { person: false } }),
     ]);
 
     if (!asset) {
       return JobStatus.FAILED;
+    }
+
+    if (asset.isDirty) {
+      const { exifInfo } = (await this.assetRepository.getById(asset.id, { exifInfo: true })) || {};
+      await this.handleSidecarWrite({
+        id: asset.id,
+        description: exifInfo?.description,
+        dateTimeOriginal: exifInfo?.dateTimeOriginal?.toISOString(),
+        latitude: exifInfo?.latitude ?? undefined,
+        longitude: exifInfo?.longitude ?? undefined,
+        rating: exifInfo?.rating ?? undefined,
+        tags: true,
+      });
+      asset.sidecarPath = asset.sidecarPath || getSidecarPath(asset);
     }
 
     const exifTags = await this.getExifTags(asset);
@@ -314,14 +329,14 @@ export class MetadataService extends BaseService {
   @OnJob({ name: JobName.SIDECAR_WRITE, queue: QueueName.SIDECAR })
   async handleSidecarWrite(job: JobOf<JobName.SIDECAR_WRITE>): Promise<JobStatus> {
     const { id, description, dateTimeOriginal, latitude, longitude, rating, tags } = job;
-    const [asset] = await this.assetRepository.getByIds([id], { tags: true });
+    const asset = await this.assetRepository.getById(id, { tags: true });
     if (!asset) {
       return JobStatus.FAILED;
     }
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const sidecarPath = asset.sidecarPath || `${asset.originalPath}.xmp`;
+    const sidecarPath = asset.sidecarPath || getSidecarPath(asset);
     const exif = _.omitBy(
       <Tags>{
         Description: description,
@@ -342,7 +357,7 @@ export class MetadataService extends BaseService {
     await this.metadataRepository.writeTags(sidecarPath, exif);
 
     if (!asset.sidecarPath) {
-      await this.assetRepository.update({ id, sidecarPath });
+      await this.assetRepository.update({ id, sidecarPath, isDirty: false });
     }
 
     return JobStatus.SUCCESS;
@@ -754,7 +769,7 @@ export class MetadataService extends BaseService {
   }
 
   private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
+    const asset = await this.assetRepository.getById(id);
 
     if (!asset) {
       return JobStatus.FAILED;
