@@ -36,6 +36,12 @@ sw.addEventListener('fetch', (event) => {
     event.respondWith(appResources(url, event));
   } else if (/^\/api\/assets\/[a-f0-9-]+\/(original|thumbnail)/.test(url.pathname)) {
     event.respondWith(immichAsset(url));
+  } else if (
+    /^(\/(link|auth|admin|albums|archive|buy|explore|favorites|folders|maps|memory|partners|people|photos|places|search|share|shared-links|sharing|tags|trash|user-settings|utilities))(\/.*)?$/.test(
+      url.pathname,
+    )
+  ) {
+    event.respondWith(ssr(new URL(event.request.url).origin));
   }
 });
 
@@ -50,31 +56,49 @@ async function addFilesToCache() {
   await cache.addAll(APP_RESOURCES);
 }
 
+async function ssr(origin: string) {
+  const cache = await caches.open(CACHE);
+  const url = new URL('/', origin);
+  let response = useCache ? await cache.match(url) : undefined;
+  if (response) {
+    return response;
+  }
+  response = await fetch(url);
+  if (!(response instanceof Response)) {
+    throw new TypeError('invalid response from fetch');
+  }
+  if (response.status === 200) {
+    cache.put(url, response.clone());
+  }
+  return response;
+}
+
 async function immichAsset(url: URL) {
   const cache = await caches.open(CACHE);
   let response = useCache ? await cache.match(url) : undefined;
-  if (!response) {
-    try {
-      const cancelToken = new AbortController();
-      const request = fetch(url, {
-        signal: cancelToken.signal,
-      });
-      pendingLoads.set(url.toString(), cancelToken);
-      response = await request;
-      if (!(response instanceof Response)) {
-        throw new TypeError('invalid response from fetch');
-      }
-      if (response.status === 200) {
-        cache.put(url, response.clone());
-      }
-    } catch (error) {
-      // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-      if ((error as any).name !== 'AbortError') {
-        throw error;
-      }
-    } finally {
-      pendingLoads.delete(url.toString());
+  if (response) {
+    return response;
+  }
+  try {
+    const cancelToken = new AbortController();
+    const request = fetch(url, {
+      signal: cancelToken.signal,
+    });
+    pendingLoads.set(url.toString(), cancelToken);
+    response = await request;
+    if (!(response instanceof Response)) {
+      throw new TypeError('invalid response from fetch');
     }
+    if (response.status === 200) {
+      cache.put(url, response.clone());
+    }
+  } catch (error) {
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
+    if ((error as any).name !== 'AbortError') {
+      throw error;
+    }
+  } finally {
+    pendingLoads.delete(url.toString());
   }
   return response as Response;
 }
