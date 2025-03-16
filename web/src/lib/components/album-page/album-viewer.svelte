@@ -100,7 +100,9 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+>
   <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->
