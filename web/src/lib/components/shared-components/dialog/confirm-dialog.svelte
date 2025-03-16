@@ -1,9 +1,8 @@
 <script lang="ts">
   import FullScreenModal from '../full-screen-modal.svelte';
-  import Button from '../../elements/buttons/button.svelte';
-  import type { Color } from '$lib/components/elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
   import type { Snippet } from 'svelte';
+  import { Button, type Color } from '@immich/ui';
 
   interface Props {
     title?: string;
@@ -24,7 +23,7 @@
     title = $t('confirm'),
     prompt = $t('are_you_sure_to_do_this'),
     confirmText = $t('confirm'),
-    confirmColor = 'red',
+    confirmColor = 'danger',
     cancelText = $t('cancel'),
     cancelColor = 'secondary',
     hideCancelButton = false,
@@ -49,11 +48,11 @@
 
   {#snippet stickyBottom()}
     {#if !hideCancelButton}
-      <Button color={cancelColor} fullwidth onclick={onCancel}>
+      <Button shape="round" color={cancelColor} fullWidth onclick={onCancel}>
         {cancelText}
       </Button>
     {/if}
-    <Button color={confirmColor} fullwidth onclick={handleConfirm} {disabled}>
+    <Button shape="round" color={confirmColor} fullWidth onclick={handleConfirm} {disabled}>
       {confirmText}
     </Button>
   {/snippet}

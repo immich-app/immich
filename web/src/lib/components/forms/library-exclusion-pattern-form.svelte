@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import { Button } from '@immich/ui';
   import { mdiFolderRemove } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   interface Props {
     exclusionPattern: string;
@@ -67,10 +67,12 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
+    <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{$t('cancel')}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
+      <Button shape="round" color="danger" fullWidth onclick={onDelete}>{$t('delete')}</Button>
     {/if}
-    <Button type="submit" disabled={!canSubmit} fullwidth form="add-exclusion-pattern-form">{submitText}</Button>
+    <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="add-exclusion-pattern-form"
+      >{submitText}</Button
+    >
   {/snippet}
 </FullScreenModal>

@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
-  import { handleError } from '$lib/utils/handle-error';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import AlbumCover from '$lib/components/album-page/album-cover.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import { handleError } from '$lib/utils/handle-error';
+  import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { mdiRenameOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -46,7 +47,7 @@
   };
 </script>
 
-<FullScreenModal title={$t('edit_album')} width="wide" {onClose}>
+<FullScreenModal icon={mdiRenameOutline} title={$t('edit_album')} width="wide" {onClose}>
   <form {onsubmit} autocomplete="off" id="edit-album-form">
     <div class="flex items-center">
       <div class="hidden sm:flex">
@@ -68,7 +69,7 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button color="gray" fullwidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
-    <Button type="submit" fullwidth disabled={isSubmitting} form="edit-album-form">{$t('ok')}</Button>
+    <Button shape="round" color="secondary" fullWidth onclick={() => onCancel?.()}>{$t('cancel')}</Button>
+    <Button shape="round" type="submit" fullWidth disabled={isSubmitting} form="edit-album-form">{$t('save')}</Button>
   {/snippet}
 </FullScreenModal>

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Button, { type Color } from '$lib/components/elements/buttons/button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import type { CropAspectRatio } from '$lib/stores/asset-editor.store';
+  import { Button, type Color } from '@immich/ui';
 
   interface Props {
     size: {
@@ -18,7 +18,7 @@
   let { size, selectedSize, rotateHorizontal, selectType }: Props = $props();
 
   let isSelected = $derived(selectedSize === size.name);
-  let buttonColor = $derived((isSelected ? 'primary' : 'transparent-gray') as Color);
+  let buttonColor = $derived<Color>(isSelected ? 'primary' : 'secondary');
 
   let rotatedTitle = $derived((title: string, toRotate: boolean) => {
     let sides = title.split(':');
@@ -37,7 +37,7 @@
 </script>
 
 <li>
-  <Button color={buttonColor} class="flex-col gap-1" size="sm" rounded="lg" onclick={() => selectType(size.name)}>
+  <Button shape="round" color={buttonColor} class="flex-col gap-1" size="small" onclick={() => selectType(size.name)}>
     <Icon size="1.75em" path={size.icon} viewBox={size.viewBox} class={toRotate(size.rotate) ? 'rotate-90' : ''} />
     <span>{rotatedTitle(size.name, rotateHorizontal)}</span>
   </Button>

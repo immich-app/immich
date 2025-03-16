@@ -503,12 +503,11 @@
               class:opacity-0={galleryInView}
               class:opacity-100={!galleryInView}
             >
-              <div class="flex">
+              <div class="flex items-center">
                 <IconButton
                   icon={isSaved ? mdiHeart : mdiHeartOutline}
                   shape="round"
                   variant="ghost"
-                  size="giant"
                   color="secondary"
                   aria-label={isSaved ? $t('unfavorite') : $t('favorite')}
                   onclick={() => handleSaveMemory(current)}
@@ -524,9 +523,11 @@
                 /> -->
                 <ButtonContextMenu
                   icon={mdiDotsVertical}
+                  padding="3"
                   title={$t('menu')}
                   onclick={() => handleAction('pause')}
                   direction="left"
+                  size="20"
                   align="bottom-right"
                   class="text-white dark:text-white"
                 >
@@ -548,7 +549,6 @@
                   color="secondary"
                   variant="ghost"
                   shape="round"
-                  size="giant"
                   class="text-white dark:text-white"
                 />
               </div>

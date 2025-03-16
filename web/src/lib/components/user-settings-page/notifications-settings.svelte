@@ -9,8 +9,8 @@
 
   import SettingSwitch from '$lib/components/shared-components/settings/setting-switch.svelte';
   import { preferences } from '$lib/stores/user.store';
-  import Button from '../elements/buttons/button.svelte';
   import { t } from 'svelte-i18n';
+  import { Button } from '@immich/ui';
 
   let emailNotificationsEnabled = $state($preferences?.emailNotifications?.enabled ?? true);
   let albumInviteNotificationEnabled = $state($preferences?.emailNotifications?.albumInvite ?? true);
@@ -71,7 +71,7 @@
         </div>
 
         <div class="flex justify-end">
-          <Button type="submit" size="sm" onclick={() => handleSave()}>{$t('save')}</Button>
+          <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>
     </form>

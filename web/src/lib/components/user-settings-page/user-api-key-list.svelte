@@ -1,4 +1,6 @@
 <script lang="ts">
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { locale } from '$lib/stores/preferences.store';
   import {
     createApiKey,
@@ -8,16 +10,14 @@
     updateApiKey,
     type ApiKeyResponseDto,
   } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
   import APIKeyForm from '../forms/api-key-form.svelte';
   import APIKeySecret from '../forms/api-key-secret.svelte';
-  import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
-  import { t } from 'svelte-i18n';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
 
   interface Props {
     keys: ApiKeyResponseDto[];
@@ -122,7 +122,7 @@
 <section class="my-4">
   <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
-      <Button size="sm" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
+      <Button shape="round" size="small" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
     </div>
 
     {#if keys.length > 0}

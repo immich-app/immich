@@ -90,7 +90,13 @@
 <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
   {#if showTime}
     <span class="pt-2">
-      {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
+      {#if remainingSeconds < 60}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
+      {:else if remainingSeconds < 3600}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('mm:ss')}
+      {:else}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('h:mm:ss')}
+      {/if}
     </span>
   {/if}
 

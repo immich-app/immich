@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/entities/album.entity.dart';
+import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
 
 final isRefreshingRemoteAlbumProvider = StateProvider<bool>((ref) => false);
 
@@ -88,7 +88,7 @@ class AlbumNotifier extends StateNotifier<List<Album>> {
     await albumService.addUsers(album, userIds);
   }
 
-  Future<bool> removeUser(Album album, User user) async {
+  Future<bool> removeUser(Album album, UserDto user) async {
     final isRemoved = await albumService.removeUser(album, user);
 
     if (isRemoved && album.sharedUsers.isEmpty) {

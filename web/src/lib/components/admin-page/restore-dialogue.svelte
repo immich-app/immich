@@ -32,7 +32,7 @@
 <ConfirmDialog
   title={$t('restore_user')}
   confirmText={$t('continue')}
-  confirmColor="green"
+  confirmColor="success"
   onConfirm={handleRestoreUser}
   {onCancel}
 >

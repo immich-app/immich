@@ -81,7 +81,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
-      enabled: owner?.isarId == asset.ownerId,
+      enabled: owner?.id == asset.ownerId,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {

@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
+    as entity;
 import 'package:immich_mobile/providers/album/album.provider.dart';
 import 'package:immich_mobile/providers/album/current_album.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/utils/immich_loading_overlay.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -26,7 +28,8 @@ class AlbumOptionsPage extends HookConsumerWidget {
       return const SizedBox();
     }
 
-    final sharedUsers = useState(album.sharedUsers.toList());
+    final sharedUsers =
+        useState(album.sharedUsers.map((u) => u.toDto()).toList());
     final owner = album.owner.value;
     final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.activityEnabled);
@@ -64,13 +67,13 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = false;
     }
 
-    void removeUserFromAlbum(User user) async {
+    void removeUserFromAlbum(UserDto user) async {
       isProcessing.value = true;
 
       try {
         await ref.read(albumProvider.notifier).removeUser(album, user);
-        album.sharedUsers.remove(user);
-        sharedUsers.value = album.sharedUsers.toList();
+        album.sharedUsers.remove(entity.User.fromDto(user));
+        sharedUsers.value = album.sharedUsers.map((u) => u.toDto()).toList();
       } catch (error) {
         showErrorMessage();
       }
@@ -79,10 +82,10 @@ class AlbumOptionsPage extends HookConsumerWidget {
       isProcessing.value = false;
     }
 
-    void handleUserClick(User user) {
+    void handleUserClick(UserDto user) {
       var actions = [];
 
-      if (user.id == userId) {
+      if (user.uid == userId) {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
@@ -123,8 +126,9 @@ class AlbumOptionsPage extends HookConsumerWidget {
 
     buildOwnerInfo() {
       return ListTile(
-        leading:
-            owner != null ? UserCircleAvatar(user: owner) : const SizedBox(),
+        leading: owner != null
+            ? UserCircleAvatar(user: owner.toDto())
+            : const SizedBox(),
         title: Text(
           album.owner.value?.name ?? "",
           style: const TextStyle(
@@ -166,10 +170,10 @@ class AlbumOptionsPage extends HookConsumerWidget {
                 color: context.colorScheme.onSurfaceSecondary,
               ),
             ),
-            trailing: userId == user.id || isOwner
+            trailing: userId == user.uid || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
                 : const SizedBox(),
-            onTap: userId == user.id || isOwner
+            onTap: userId == user.uid || isOwner
                 ? () => handleUserClick(user)
                 : null,
           );

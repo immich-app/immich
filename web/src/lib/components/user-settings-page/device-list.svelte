@@ -1,11 +1,11 @@
 <script lang="ts">
   import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
   import { handleError } from '../../utils/handle-error';
-  import Button from '../elements/buttons/button.svelte';
   import { notificationController, NotificationType } from '../shared-components/notification/notification';
   import DeviceCard from './device-card.svelte';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { t } from 'svelte-i18n';
+  import { Button } from '@immich/ui';
 
   interface Props {
     devices: SessionResponseDto[];
@@ -82,7 +82,7 @@
       {$t('log_out_all_devices').toUpperCase()}
     </h3>
     <div class="flex justify-end">
-      <Button color="red" size="sm" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
+      <Button shape="round" color="danger" size="small" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
     </div>
   {/if}
 </section>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Button from '../elements/buttons/button.svelte';
+  import { Button } from '@immich/ui';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
@@ -63,10 +63,12 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button color="gray" fullwidth onclick={onCancel}>{cancelText}</Button>
+    <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{cancelText}</Button>
     {#if isEditing}
-      <Button color="red" fullwidth onclick={onDelete}>{$t('delete')}</Button>
+      <Button shape="round" color="danger" fullWidth onclick={onDelete}>{$t('delete')}</Button>
     {/if}
-    <Button type="submit" disabled={!canSubmit} fullwidth form="library-import-path-form">{submitText}</Button>
+    <Button shape="round" type="submit" disabled={!canSubmit} fullWidth form="library-import-path-form"
+      >{submitText}</Button
+    >
   {/snippet}
 </FullScreenModal>

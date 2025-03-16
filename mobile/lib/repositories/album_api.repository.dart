@@ -2,7 +2,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
+    as entity;
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
@@ -164,11 +166,12 @@ class AlbumApiRepository extends ApiRepository implements IAlbumApiRepository {
       sortOrder: dto.order == AssetOrder.asc ? SortOrder.asc : SortOrder.desc,
     );
     album.remoteAssetCount = dto.assetCount;
-    album.owner.value = User.fromSimpleUserDto(dto.owner);
+    album.owner.value =
+        entity.User.fromDto(UserConverter.fromSimpleUserDto(dto.owner));
     album.remoteThumbnailAssetId = dto.albumThumbnailAssetId;
     final users = dto.albumUsers
-        .map((albumUser) => User.fromSimpleUserDto(albumUser.user));
-    album.sharedUsers.addAll(users);
+        .map((albumUser) => UserConverter.fromSimpleUserDto(albumUser.user));
+    album.sharedUsers.addAll(users.map(entity.User.fromDto));
     final assets = dto.assets.map(Asset.remote).toList();
     album.assets.addAll(assets);
     return album;

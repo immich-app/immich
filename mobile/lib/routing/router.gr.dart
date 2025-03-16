@@ -1162,7 +1162,7 @@ class NativeVideoViewerRouteArgs {
 class PartnerDetailRoute extends PageRouteInfo<PartnerDetailRouteArgs> {
   PartnerDetailRoute({
     Key? key,
-    required User partner,
+    required UserDto partner,
     List<PageRouteInfo>? children,
   }) : super(
           PartnerDetailRoute.name,
@@ -1195,7 +1195,7 @@ class PartnerDetailRouteArgs {
 
   final Key? key;
 
-  final User partner;
+  final UserDto partner;
 
   @override
   String toString() {

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { mdiKeyVariant } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import Button from '../elements/buttons/button.svelte';
   import FullScreenModal from '../shared-components/full-screen-modal.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import { Button } from '@immich/ui';
 
   interface Props {
     apiKey: { name: string };
@@ -49,7 +49,7 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button color="gray" fullwidth onclick={() => onCancel()}>{cancelText}</Button>
-    <Button type="submit" fullwidth form="api-key-form">{submitText}</Button>
+    <Button shape="round" color="secondary" fullWidth onclick={() => onCancel()}>{cancelText}</Button>
+    <Button shape="round" type="submit" fullWidth form="api-key-form">{submitText}</Button>
   {/snippet}
 </FullScreenModal>

@@ -3,14 +3,13 @@
     notificationController,
     NotificationType,
   } from '$lib/components/shared-components/notification/notification';
-  import { changePassword } from '@immich/sdk';
-  import { fade } from 'svelte/transition';
-
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import type { HttpError } from '@sveltejs/kit';
   import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
-  import { t } from 'svelte-i18n';
   import { SettingInputFieldType } from '$lib/constants';
+  import { changePassword } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import type { HttpError } from '@sveltejs/kit';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   let password = $state('');
   let newPassword = $state('');
@@ -72,8 +71,9 @@
 
         <div class="flex justify-end">
           <Button
+            shape="round"
             type="submit"
-            size="sm"
+            size="small"
             disabled={!(password && newPassword && newPassword === confirmPassword)}
             onclick={() => handleChangePassword()}>{$t('save')}</Button
           >

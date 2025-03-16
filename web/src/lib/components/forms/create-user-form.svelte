@@ -91,7 +91,7 @@
 
       {#if $featureFlags.email}
         <Field label={$t('admin.send_welcome_email')}>
-          <Switch id="send-welcome-email" bind:checked={notify} class="flex justify-between text-sm" />
+          <Switch id="send-welcome-email" bind:checked={notify} class="text-sm" />
         </Field>
       {/if}
 
@@ -105,7 +105,7 @@
       </Field>
 
       <Field label={$t('admin.require_password_change_on_login')}>
-        <Switch id="require-password-change" bind:checked={shouldChangePassword} class="flex justify-between text-sm" />
+        <Switch id="require-password-change" bind:checked={shouldChangePassword} class="text-sm" />
       </Field>
 
       <Field label={$t('name')} required>

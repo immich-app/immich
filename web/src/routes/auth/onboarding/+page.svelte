@@ -5,7 +5,7 @@
   import { page } from '$app/stores';
   import OnboardingHello from '$lib/components/onboarding-page/onboarding-hello.svelte';
   import OnboardingPrivacy from '$lib/components/onboarding-page/onboarding-privacy.svelte';
-  import OnboadingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
+  import OnboardingStorageTemplate from '$lib/components/onboarding-page/onboarding-storage-template.svelte';
   import OnboardingTheme from '$lib/components/onboarding-page/onboarding-theme.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
   import { retrieveServerConfig } from '$lib/stores/server-config.store';
@@ -18,7 +18,7 @@
     component:
       | typeof OnboardingHello
       | typeof OnboardingTheme
-      | typeof OnboadingStorageTemplate
+      | typeof OnboardingStorageTemplate
       | typeof OnboardingPrivacy;
   }
 
@@ -26,7 +26,7 @@
     { name: 'hello', component: OnboardingHello },
     { name: 'theme', component: OnboardingTheme },
     { name: 'privacy', component: OnboardingPrivacy },
-    { name: 'storage', component: OnboadingStorageTemplate },
+    { name: 'storage', component: OnboardingStorageTemplate },
   ];
 
   run(() => {

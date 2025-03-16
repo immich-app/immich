@@ -7,11 +7,13 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/user.entity.dart'
+    as entity;
 import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/interfaces/album_api.interface.dart';
 import 'package:immich_mobile/interfaces/album_media.interface.dart';
@@ -26,12 +28,10 @@ import 'package:immich_mobile/repositories/asset.repository.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/services/entity.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:logging/logging.dart';
 
 final albumServiceProvider = Provider(
   (ref) => AlbumService(
-    ref.watch(userServiceProvider),
     ref.watch(syncServiceProvider),
     ref.watch(entityServiceProvider),
     ref.watch(albumRepositoryProvider),
@@ -43,7 +43,6 @@ final albumServiceProvider = Provider(
 );
 
 class AlbumService {
-  final UserService _userService;
   final SyncService _syncService;
   final EntityService _entityService;
   final IAlbumRepository _albumRepository;
@@ -56,7 +55,6 @@ class AlbumService {
   Completer<bool> _remoteCompleter = Completer()..complete(false);
 
   AlbumService(
-    this._userService,
     this._syncService,
     this._entityService,
     this._albumRepository,
@@ -169,7 +167,7 @@ class AlbumService {
     final Stopwatch sw = Stopwatch()..start();
     bool changes = false;
     try {
-      final users = await _userService.getUsersFromServer();
+      final users = await _syncService.getUsersFromServer();
       if (users != null) {
         await _syncService.syncUsersFromServer(users);
       }
@@ -202,12 +200,12 @@ class AlbumService {
   Future<Album?> createAlbum(
     String albumName,
     Iterable<Asset> assets, [
-    Iterable<User> sharedUsers = const [],
+    Iterable<UserDto> sharedUsers = const [],
   ]) async {
     final Album album = await _albumApiRepository.create(
       albumName,
       assetIds: assets.map((asset) => asset.remoteId!),
-      sharedUserIds: sharedUsers.map((user) => user.id),
+      sharedUserIds: sharedUsers.map((user) => user.uid),
     );
     await _entityService.fillAlbumWithDatabaseEntities(album);
     return _albumRepository.create(album);
@@ -294,7 +292,7 @@ class AlbumService {
 
   Future<bool> deleteAlbum(Album album) async {
     try {
-      final userId = Store.get(StoreKey.currentUser).isarId;
+      final userId = Store.get(StoreKey.currentUser).id;
       if (album.owner.value?.isarId == userId) {
         await _albumApiRepository.delete(album.remoteId!);
       }
@@ -356,15 +354,15 @@ class AlbumService {
 
   Future<bool> removeUser(
     Album album,
-    User user,
+    UserDto user,
   ) async {
     try {
       await _albumApiRepository.removeUser(
         album.remoteId!,
-        userId: user.id,
+        userId: user.uid,
       );
 
-      album.sharedUsers.remove(user);
+      album.sharedUsers.remove(entity.User.fromDto(user));
       await _albumRepository.removeUsers(album, [user]);
       final a = await _albumRepository.get(album.id);
       // trigger watcher
@@ -388,7 +386,10 @@ class AlbumService {
       album.sharedUsers.addAll(updatedAlbum.remoteUsers);
       album.shared = true;
 
-      await _albumRepository.addUsers(album, album.sharedUsers.toList());
+      await _albumRepository.addUsers(
+        album,
+        album.sharedUsers.map((u) => u.toDto()).toList(),
+      );
       await _albumRepository.update(album);
 
       return true;

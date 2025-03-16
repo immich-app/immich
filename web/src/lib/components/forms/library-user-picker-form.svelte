@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Button from '../elements/buttons/button.svelte';
-  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { user } from '$lib/stores/user.store';
+  import { searchUsersAdmin } from '@immich/sdk';
+  import { Button } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { onMount } from 'svelte';
-  import { searchUsersAdmin } from '@immich/sdk';
-  import { user } from '$lib/stores/user.store';
-  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { t } from 'svelte-i18n';
+  import FullScreenModal from '../shared-components/full-screen-modal.svelte';
 
   interface Props {
     onCancel: () => void;
@@ -38,7 +38,7 @@
   </form>
 
   {#snippet stickyBottom()}
-    <Button color="gray" fullwidth onclick={onCancel}>{$t('cancel')}</Button>
-    <Button type="submit" fullwidth form="select-library-owner-form">{$t('create')}</Button>
+    <Button shape="round" color="secondary" fullWidth onclick={onCancel}>{$t('cancel')}</Button>
+    <Button shape="round" type="submit" fullWidth form="select-library-owner-form">{$t('create')}</Button>
   {/snippet}
 </FullScreenModal>
