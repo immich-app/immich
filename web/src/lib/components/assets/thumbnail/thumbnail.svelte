@@ -23,6 +23,7 @@
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -71,6 +72,7 @@
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
+  let isTouchDevice = $derived(mobileDevice.hoverNone);
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
@@ -83,6 +85,42 @@
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
+
+  function longPress(element: HTMLElement, { onLongPress, onTap }: { onLongPress: () => any; onTap: () => any }) {
+    let timer: ReturnType<typeof setTimeout>;
+    let didLongPress = false;
+    let startElement: EventTarget | null;
+    let didMove = false;
+    const start = (event: TouchEvent) => {
+      startElement = event.target;
+      timer = setTimeout(() => {
+        didLongPress = true;
+        onLongPress();
+      }, 400);
+    };
+    const move = () => {
+      didMove = true;
+    };
+    const end = (event: TouchEvent) => {
+      if (!didLongPress && !didMove && event.target === startElement) {
+        startElement = null;
+        onTap();
+      }
+      didLongPress = false;
+      clearTimeout(timer);
+    };
+    element.addEventListener('touchmove', move);
+    element.addEventListener('touchstart', start);
+    element.addEventListener('touchend', end);
+
+    return {
+      destroy: () => {
+        element.removeEventListener('touchmove', move);
+        element.removeEventListener('touchstart', start);
+        element.removeEventListener('touchend', end);
+      },
+    };
+  }
 
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
@@ -100,6 +138,9 @@
     onClick?.($state.snapshot(asset));
   };
   const handleClick = (e: MouseEvent) => {
+    if (isTouchDevice) {
+      return;
+    }
     if (e.ctrlKey || e.metaKey) {
       return;
     }
@@ -109,6 +150,9 @@
   };
 
   const onMouseEnter = () => {
+    if (isTouchDevice) {
+      return;
+    }
     mouseOver = true;
     onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
   };
@@ -146,6 +190,7 @@
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
+    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)), onTap: callClickHandlers }}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
@@ -161,7 +206,7 @@
     onfocus={handleFocus}
     data-testid="container-with-tabindex"
   >
-    {#if mouseOver && !disableMouseOver}
+    {#if !isTouchDevice && mouseOver && !disableMouseOver}
       <!-- lazy show the url on mouse over-->
       <a
         class="absolute z-30 {className} top-[41px]"
@@ -208,11 +253,12 @@
       class:rounded-xl={selected}
     >
       <!-- Gradient overlay on hover -->
-      <div
-        class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
-        class:rounded-xl={selected}
-      ></div>
-
+      {#if !isTouchDevice}
+        <div
+          class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
+          class:rounded-xl={selected}
+        ></div>
+      {/if}
       <!-- Outline on focus -->
       <div
         class="absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary"
