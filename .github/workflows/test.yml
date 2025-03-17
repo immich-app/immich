@@ -407,7 +407,7 @@ jobs:
           uv run pytest app --cov=app --cov-report term-missing
 
   github-files-formatting:
-    name: .github Files Checks
+    name: .github Files Formatting
     needs: pre-job
     if: ${{ needs.pre-job.outputs['should_run_.github'] == 'true' }}
     runs-on: ubuntu-latest
