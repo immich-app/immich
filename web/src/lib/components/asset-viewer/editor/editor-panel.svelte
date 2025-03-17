@@ -69,7 +69,7 @@
     prompt={$t('editor_close_without_save_prompt')}
     cancelText={$t('no')}
     cancelColor="secondary"
-    confirmColor="red"
+    confirmColor="danger"
     confirmText={$t('close')}
     onCancel={() => {
       $showCancelConfirmDialog = false;

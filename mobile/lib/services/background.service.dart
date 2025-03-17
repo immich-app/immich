@@ -11,58 +11,34 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/exif.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/interfaces/backup_album.interface.dart';
-import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/models/backup/backup_candidate.model.dart';
 import 'package:immich_mobile/models/backup/current_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/error_upload_asset.model.dart';
 import 'package:immich_mobile/models/backup/success_upload_asset.model.dart';
-import 'package:immich_mobile/repositories/album.repository.dart';
-import 'package:immich_mobile/repositories/album_api.repository.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
-import 'package:immich_mobile/repositories/asset.repository.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/auth.repository.dart';
-import 'package:immich_mobile/repositories/auth_api.repository.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
-import 'package:immich_mobile/repositories/etag.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/repositories/network.repository.dart';
-import 'package:immich_mobile/repositories/partner.repository.dart';
-import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
-import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
-import 'package:immich_mobile/services/entity.service.dart';
-import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
-import 'package:immich_mobile/services/network.service.dart';
-import 'package:immich_mobile/services/sync.service.dart';
 import 'package:immich_mobile/utils/backup_progress.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
-import 'package:network_info_plus/network_info_plus.dart';
 import 'package:path_provider_foundation/path_provider_foundation.dart';
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
-final backgroundServiceProvider = Provider(
-  (ref) => BackgroundService(),
-);
+final backgroundServiceProvider = Provider((ref) => BackgroundService());
 
 /// Background backup service
 class BackgroundService {
@@ -378,102 +354,40 @@ class BackgroundService {
     final db = await Bootstrap.initIsar();
     await Bootstrap.initDomain(db);
 
+    final ref = ProviderContainer(
+      overrides: [
+        dbProvider.overrideWithValue(db),
+        isarProvider.overrideWithValue(db),
+      ],
+    );
+
     HttpOverrides.global = HttpSSLCertOverride();
-    ApiService apiService = ApiService();
-    apiService.setAccessToken(Store.get(StoreKey.accessToken));
-    AppSettingsService settingsService = AppSettingsService();
-    AlbumRepository albumRepository = AlbumRepository(db);
-    AssetRepository assetRepository = AssetRepository(db);
-    BackupAlbumRepository backupRepository = BackupAlbumRepository(db);
-    IExifInfoRepository exifInfoRepository = IsarExifRepository(db);
-    ETagRepository eTagRepository = ETagRepository(db);
-    AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
-    FileMediaRepository fileMediaRepository = FileMediaRepository();
-    AssetMediaRepository assetMediaRepository = AssetMediaRepository();
-    IUserRepository userRepository = IsarUserRepository(db);
-    IUserApiRepository userApiRepository =
-        UserApiRepository(apiService.usersApi);
-    AlbumApiRepository albumApiRepository =
-        AlbumApiRepository(apiService.albumsApi);
-    PartnerApiRepository partnerApiRepository =
-        PartnerApiRepository(apiService.partnersApi);
-    HashService hashService =
-        HashService(assetRepository, this, albumMediaRepository);
-    EntityService entityService =
-        EntityService(assetRepository, userRepository);
-    UserService userService = UserService(
-      userRepository: userRepository,
-      userApiRepository: userApiRepository,
-      storeService: StoreService.I,
-    );
-    IPartnerRepository partnerRepository = PartnerRepository(db);
-    SyncService syncService = SyncService(
-      hashService,
-      entityService,
-      albumMediaRepository,
-      albumApiRepository,
-      albumRepository,
-      assetRepository,
-      exifInfoRepository,
-      partnerRepository,
-      userRepository,
-      userService,
-      eTagRepository,
-      partnerApiRepository,
-      userApiRepository,
-    );
-    AlbumService albumService = AlbumService(
-      syncService,
-      userService,
-      entityService,
-      albumRepository,
-      assetRepository,
-      backupRepository,
-      albumMediaRepository,
-      albumApiRepository,
-    );
-    BackupService backupService = BackupService(
-      apiService,
-      settingsService,
-      albumService,
-      albumMediaRepository,
-      fileMediaRepository,
-      assetRepository,
-      assetMediaRepository,
-    );
-
-    AuthApiRepository authApiRepository = AuthApiRepository(apiService);
-    AuthRepository authRepository = AuthRepository(db);
-    NetworkRepository networkRepository = NetworkRepository(NetworkInfo());
-    PermissionRepository permissionRepository = PermissionRepository();
-    NetworkService networkService =
-        NetworkService(networkRepository, permissionRepository);
-    AuthService authService = AuthService(
-      authApiRepository,
-      authRepository,
-      apiService,
-      networkService,
-    );
-
-    final endpoint = await authService.setOpenApiServiceEndpoint();
+    ref
+        .read(apiServiceProvider)
+        .setAccessToken(Store.get(StoreKey.accessToken));
+    await ref.read(authServiceProvider).setOpenApiServiceEndpoint();
     if (kDebugMode) {
-      debugPrint("[BG UPLOAD] Using endpoint: $endpoint");
+      debugPrint(
+        "[BG UPLOAD] Using endpoint: ${ref.read(apiServiceProvider).apiClient.basePath}",
+      );
     }
 
-    final selectedAlbums =
-        await backupRepository.getAllBySelection(BackupSelection.select);
-    final excludedAlbums =
-        await backupRepository.getAllBySelection(BackupSelection.exclude);
+    final selectedAlbums = await ref
+        .read(backupAlbumRepositoryProvider)
+        .getAllBySelection(BackupSelection.select);
+    final excludedAlbums = await ref
+        .read(backupAlbumRepositoryProvider)
+        .getAllBySelection(BackupSelection.exclude);
     if (selectedAlbums.isEmpty) {
       return true;
     }
 
-    await fileMediaRepository.enableBackgroundAccess();
+    await ref.read(fileMediaRepositoryProvider).enableBackgroundAccess();
 
     do {
       final bool backupOk = await _runBackup(
-        backupService,
-        settingsService,
+        ref.read(backupServiceProvider),
+        ref.read(appSettingsServiceProvider),
         selectedAlbums,
         excludedAlbums,
       );
@@ -482,8 +396,9 @@ class BackgroundService {
         final backupAlbums = [...selectedAlbums, ...excludedAlbums];
         backupAlbums.sortBy((e) => e.id);
 
-        final dbAlbums =
-            await backupRepository.getAll(sort: BackupAlbumSort.id);
+        final dbAlbums = await ref
+            .read(backupAlbumRepositoryProvider)
+            .getAll(sort: BackupAlbumSort.id);
         final List<int> toDelete = [];
         final List<BackupAlbum> toUpsert = [];
         // stores the most recent `lastBackup` per album but always keeps the `selection` from the most recent DB state
@@ -501,8 +416,8 @@ class BackgroundService {
           onlyFirst: (BackupAlbum a) => toUpsert.add(a),
           onlySecond: (BackupAlbum b) => toDelete.add(b.isarId),
         );
-        await backupRepository.deleteAll(toDelete);
-        await backupRepository.updateAll(toUpsert);
+        await ref.read(backupAlbumRepositoryProvider).deleteAll(toDelete);
+        await ref.read(backupAlbumRepositoryProvider).updateAll(toUpsert);
       } else if (Store.tryGet(StoreKey.backupFailedSince) == null) {
         Store.put(StoreKey.backupFailedSince, DateTime.now());
         return false;
