@@ -409,7 +409,7 @@ jobs:
   dot_github-unit-tests:
     name: Check .github Files
     needs: pre-job
-    if: ${{ needs.pre-job.outputs.should_run_.github == 'true' }}
+    if: ${{ needs.pre-job.outputs['should_run_.github'] == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
