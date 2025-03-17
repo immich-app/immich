@@ -130,7 +130,7 @@ jobs:
             device: armnn
             suffix: -armnn
             
-          - platforms: linux/arm64
+          - platform: linux/arm64
             runner: ubuntu-24.04-arm
             device: rknn
             suffix: -rknn
