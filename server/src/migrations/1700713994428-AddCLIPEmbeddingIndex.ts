@@ -1,5 +1,6 @@
 import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { createVectorIndex } from 'src/repositories/database.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
@@ -13,10 +14,7 @@ export class AddCLIPEmbeddingIndex1700713994428 implements MigrationInterface {
     }
     await queryRunner.query(`SET search_path TO "$user", public, vectors`);
 
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS clip_index ON smart_search
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
+    await queryRunner.query(createVectorIndex(vectorExtension, 'smart_search', 'clip_index'));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

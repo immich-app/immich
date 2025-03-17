@@ -6,7 +6,13 @@ import { existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import semver from 'semver';
-import { EXTENSION_NAMES, POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
+import {
+  EXTENSION_NAMES,
+  POSTGRES_VERSION_RANGE,
+  VECTOR_VERSION_RANGE,
+  VECTORCHORD_VERSION_RANGE,
+  VECTORS_VERSION_RANGE,
+} from 'src/constants';
 import { DB } from 'src/db';
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
@@ -15,6 +21,33 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { isValidInteger } from 'src/validation';
 import { DataSource } from 'typeorm';
+
+export function createVectorIndex(vectorExtension: VectorExtension, tableName: string, indexName: string): string {
+  switch (vectorExtension) {
+    case DatabaseExtension.VECTORCHORD:
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName} USING vchordrq (embedding vector_cosine_ops) WITH (options = $$
+        residual_quantization = false
+        [build.internal]
+        lists = [1000]
+        spherical_centroids = true
+        $$)`;
+    case DatabaseExtension.VECTORS:
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName} USING vectors (embedding vector_cos_ops) WITH (options = $$
+        [indexing.hnsw]
+        m = 16
+        ef_construction = 300
+        $$)`;
+    case DatabaseExtension.VECTOR:
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName}
+        ON ${tableName}
+        USING hnsw (embedding vector_cosine_ops)`;
+    default:
+      throw new Error(`Unsupported vector extension: '${vectorExtension}'`);
+  }
+}
 
 @Injectable()
 export class DatabaseRepository {
@@ -45,7 +78,16 @@ export class DatabaseRepository {
   }
 
   getExtensionVersionRange(extension: VectorExtension): string {
-    return extension === DatabaseExtension.VECTORS ? VECTORS_VERSION_RANGE : VECTOR_VERSION_RANGE;
+    switch (extension) {
+      case DatabaseExtension.VECTORCHORD:
+        return VECTORCHORD_VERSION_RANGE;
+      case DatabaseExtension.VECTORS:
+        return VECTORS_VERSION_RANGE;
+      case DatabaseExtension.VECTOR:
+        return VECTOR_VERSION_RANGE;
+      default:
+        throw new Error(`Unsupported vector extension: '${extension}'`);
+    }
   }
 
   @GenerateSql()
@@ -59,7 +101,7 @@ export class DatabaseRepository {
   }
 
   async createExtension(extension: DatabaseExtension): Promise<void> {
-    await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)}`.execute(this.db);
+    await sql`CREATE EXTENSION IF NOT EXISTS ${sql.raw(extension)} CASCADE`.execute(this.db);
   }
 
   async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
@@ -78,15 +120,6 @@ export class DatabaseRepository {
     await this.db.transaction().execute(async (tx) => {
       await this.setSearchPath(tx);
 
-      if (isVectors && installedVersion === '0.1.1') {
-        await this.setExtVersion(tx, DatabaseExtension.VECTORS, '0.1.11');
-      }
-
-      const isSchemaUpgrade = semver.satisfies(installedVersion, '0.1.1 || 0.1.11');
-      if (isSchemaUpgrade && isVectors) {
-        await this.updateVectorsSchema(tx);
-      }
-
       await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
 
       const diff = semver.diff(installedVersion, targetVersion);
@@ -94,8 +127,7 @@ export class DatabaseRepository {
         await sql`SELECT pgvectors_upgrade()`.execute(tx);
         restartRequired = true;
       } else {
-        await this.reindex(VectorIndex.CLIP);
-        await this.reindex(VectorIndex.FACE);
+        await Promise.all([this.reindex(VectorIndex.CLIP), this.reindex(VectorIndex.FACE)]);
       }
     });
 
@@ -103,80 +135,65 @@ export class DatabaseRepository {
   }
 
   async reindex(index: VectorIndex): Promise<void> {
-    try {
-      await sql`REINDEX INDEX ${sql.raw(index)}`.execute(this.db);
-    } catch (error) {
-      if (this.vectorExtension !== DatabaseExtension.VECTORS) {
-        throw error;
-      }
-      this.logger.warn(`Could not reindex index ${index}. Attempting to auto-fix.`);
-
-      const table = await this.getIndexTable(index);
-      const dimSize = await this.getDimSize(table);
-      await this.db.transaction().execute(async (tx) => {
-        await this.setSearchPath(tx);
-        await sql`DROP INDEX IF EXISTS ${sql.raw(index)}`.execute(tx);
-        await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
-        await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE vector(${sql.raw(String(dimSize))})`.execute(
-          tx,
-        );
-        await sql`SET vectors.pgvector_compatibility=on`.execute(tx);
-        await sql`
-          CREATE INDEX IF NOT EXISTS ${sql.raw(index)} ON ${sql.raw(table)}
-          USING hnsw (embedding vector_cosine_ops)
-          WITH (ef_construction = 300, m = 16)
-        `.execute(tx);
-      });
+    this.logger.log(`Reindexing ${index}`);
+    const table = await this.getIndexTable(index);
+    if (!table) {
+      this.logger.warn(`Could not find table for index ${index}`);
+      return;
     }
+    const dimSize = await this.getDimSize(table);
+    await this.db.transaction().execute(async (tx) => {
+      await sql`DROP INDEX IF EXISTS ${sql.raw(index)}`.execute(this.db);
+      await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
+      const schema = this.vectorExtension === DatabaseExtension.VECTORS ? 'vectors.' : '';
+      await sql`
+        ALTER TABLE ${sql.raw(table)}
+        ALTER COLUMN embedding
+        SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
+      await sql.raw(createVectorIndex(this.vectorExtension, table, index)).execute(tx);
+    });
   }
 
   @GenerateSql({ params: [VectorIndex.CLIP] })
-  async shouldReindex(name: VectorIndex): Promise<boolean> {
-    if (this.vectorExtension !== DatabaseExtension.VECTORS) {
-      return false;
+  async shouldReindex(names: VectorIndex[]): Promise<boolean[]> {
+    const { rows } = await sql<{
+      indexdef: string;
+      indexname: string;
+    }>`SELECT indexdef, indexname FROM pg_indexes WHERE indexname = ANY(ARRAY[${names}])`.execute(this.db);
+
+    let keyword: string;
+    switch (this.vectorExtension) {
+      case DatabaseExtension.VECTOR:
+        keyword = 'using hnsw';
+        break;
+      case DatabaseExtension.VECTORCHORD:
+        keyword = 'using vchordrq';
+        break;
+      case DatabaseExtension.VECTORS:
+        keyword = 'using vectors';
+        break;
+      default:
+        throw new Error(`Unsupported vector extension: '${this.vectorExtension}'`);
     }
 
-    try {
-      const { rows } = await sql<{
-        idx_status: string;
-      }>`SELECT idx_status FROM pg_vector_index_stat WHERE indexname = ${name}`.execute(this.db);
-      return rows[0]?.idx_status === 'UPGRADE';
-    } catch (error) {
-      const message: string = (error as any).message;
-      if (message.includes('index is not existing')) {
-        return true;
-      } else if (message.includes('relation "pg_vector_index_stat" does not exist')) {
-        return false;
-      }
-      throw error;
-    }
+    return names.map(
+      (name) =>
+        !rows
+          .find((index) => index.indexname === name)
+          ?.indexdef.toLowerCase()
+          .includes(keyword),
+    );
   }
 
   private async setSearchPath(tx: Transaction<DB>): Promise<void> {
     await sql`SET search_path TO "$user", public, vectors`.execute(tx);
   }
 
-  private async setExtVersion(tx: Transaction<DB>, extName: DatabaseExtension, version: string): Promise<void> {
-    await sql`UPDATE pg_catalog.pg_extension SET extversion = ${version} WHERE extname = ${extName}`.execute(tx);
-  }
-
-  private async getIndexTable(index: VectorIndex): Promise<string> {
+  private async getIndexTable(index: VectorIndex): Promise<string | null> {
     const { rows } = await sql<{
       relname: string | null;
     }>`SELECT relname FROM pg_stat_all_indexes WHERE indexrelname = ${index}`.execute(this.db);
-    const table = rows[0]?.relname;
-    if (!table) {
-      throw new Error(`Could not find table for index ${index}`);
-    }
-    return table;
-  }
-
-  private async updateVectorsSchema(tx: Transaction<DB>): Promise<void> {
-    const extension = DatabaseExtension.VECTORS;
-    await sql`CREATE SCHEMA IF NOT EXISTS ${extension}`.execute(tx);
-    await sql`UPDATE pg_catalog.pg_extension SET extrelocatable = true WHERE extname = ${extension}`.execute(tx);
-    await sql`ALTER EXTENSION vectors SET SCHEMA vectors`.execute(tx);
-    await sql`UPDATE pg_catalog.pg_extension SET extrelocatable = false WHERE extname = ${extension}`.execute(tx);
+    return rows[0]?.relname;
   }
 
   private async getDimSize(table: string, column = 'embedding'): Promise<number> {
@@ -186,8 +203,8 @@ export class DatabaseRepository {
         JOIN pg_class c ON c.oid = f.attrelid
       WHERE c.relkind = 'r'::char
         AND f.attnum > 0
-        AND c.relname = ${table}
-        AND f.attname = '${column}'
+        AND c.relname = ${table}::text
+        AND f.attname = ${column}::text
     `.execute(this.db);
 
     const dimSize = rows[0]?.dimsize;

@@ -1,5 +1,6 @@
 import { DatabaseExtension } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { createVectorIndex } from 'src/repositories/database.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
@@ -47,15 +48,8 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE real[]`);
     await queryRunner.query(`ALTER TABLE face_search ALTER COLUMN embedding SET DATA TYPE vector(512)`);
 
-    await queryRunner.query(`
-      CREATE INDEX IF NOT EXISTS clip_index ON smart_search
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
-
-    await queryRunner.query(`
-      CREATE INDEX face_index ON face_search
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
+    await queryRunner.query(createVectorIndex(vectorExtension, 'smart_search', 'clip_index'));
+    await queryRunner.query(createVectorIndex(vectorExtension, 'face_search', 'face_index'));
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -74,9 +68,6 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
       WHERE id = fs."faceId"`);
     await queryRunner.query(`DROP TABLE face_search`);
 
-    await queryRunner.query(`
-      CREATE INDEX face_index ON asset_faces
-      USING hnsw (embedding vector_cosine_ops)
-      WITH (ef_construction = 300, m = 16)`);
+    await queryRunner.query(createVectorIndex(vectorExtension, 'asset_faces', 'face_index'));
   }
 }

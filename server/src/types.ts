@@ -393,7 +393,7 @@ export type JobItem =
   | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
   | { name: JobName.MEMORIES_CREATE; data?: IBaseJob };
 
-export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
+export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS | DatabaseExtension.VECTORCHORD;
 
 export type DatabaseConnectionURL = {
   connectionType: 'url';

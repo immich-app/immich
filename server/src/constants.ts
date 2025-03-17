@@ -4,6 +4,7 @@ import { SemVer } from 'semver';
 import { DatabaseExtension, ExifOrientation } from 'src/enum';
 
 export const POSTGRES_VERSION_RANGE = '>=14.0.0';
+export const VECTORCHORD_VERSION_RANGE = '>=0.2 <0.3';
 export const VECTORS_VERSION_RANGE = '>=0.2 <0.4';
 export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 
@@ -20,6 +21,7 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   earthdistance: 'earthdistance',
   vector: 'pgvector',
   vectors: 'pgvecto.rs',
+  vchord: 'VectorChord',
 } as const;
 
 export const SALT_ROUNDS = 10;

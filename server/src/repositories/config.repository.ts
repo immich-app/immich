@@ -260,6 +260,21 @@ const getEnv = (): EnvData => {
     },
   };
 
+  let vectorExtension: VectorExtension;
+  switch (dto.DB_VECTOR_EXTENSION) {
+    case 'pgvector':
+      vectorExtension = DatabaseExtension.VECTOR;
+      break;
+    case 'pgvecto.rs':
+      vectorExtension = DatabaseExtension.VECTORS;
+      break;
+    case 'vectorchord':
+      vectorExtension = DatabaseExtension.VECTORCHORD;
+      break;
+    default:
+      vectorExtension = DatabaseExtension.VECTORCHORD;
+  }
+
   return {
     host: dto.IMMICH_HOST,
     port: dto.IMMICH_PORT || 2283,
@@ -329,7 +344,7 @@ const getEnv = (): EnvData => {
       },
 
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
-      vectorExtension: dto.DB_VECTOR_EXTENSION === 'pgvector' ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS,
+      vectorExtension,
     },
 
     licensePublicKey: isProd ? productionKeys : stagingKeys,
