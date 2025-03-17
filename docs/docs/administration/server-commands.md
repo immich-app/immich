@@ -11,6 +11,7 @@ The `immich-server` docker image comes preinstalled with an administrative CLI (
 | `enable-oauth-login`     | Enable OAuth login                    |
 | `disable-oauth-login`    | Disable OAuth login                   |
 | `list-users`             | List Immich users                     |
+| `version`                | Print Immich version                  |
 
 ## How to run a command
 
@@ -80,3 +81,11 @@ immich-admin list-users
   }
 ]
 ```
+
+Print Immich Version
+
+```
+immich-admin version
+v1.129.0
+```
+
