@@ -278,7 +278,6 @@ export class AssetRepository {
                 )
                 .where('assets.deletedAt', 'is', null)
                 .orderBy(sql`(assets."localDateTime" at time zone 'UTC')::date`, 'desc')
-                .limit(20)
                 .as('a'),
             (join) => join.onTrue(),
           )
@@ -291,7 +290,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
-      .limit(10)
       .execute();
   }
 
