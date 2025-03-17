@@ -36,7 +36,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       [],
     );
 
-    var filteredAlbums = albums.where((album) {
+    final filteredAlbums = albums.where((album) {
       return album.name.toLowerCase().contains(searchQuery.value.toLowerCase());
     }).toList();
 
