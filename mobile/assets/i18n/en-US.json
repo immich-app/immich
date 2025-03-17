@@ -75,7 +75,6 @@
   "backup_album_selection_page_albums_device": "Albums on device ({})",
   "backup_album_selection_page_albums_tap": "Tap to include, double tap to exclude",
   "backup_album_selection_page_assets_scatter": "Assets can scatter across multiple albums. Thus, albums can be included or excluded during the backup process.",
-  "backup_album_selection_page_search_hint": "Filter albums",
   "backup_album_selection_page_select_albums": "Select albums",
   "backup_album_selection_page_selection_info": "Selection Info",
   "backup_album_selection_page_total_assets": "Total unique assets",

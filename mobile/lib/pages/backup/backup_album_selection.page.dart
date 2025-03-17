@@ -290,7 +290,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 4),
               child: TextField(
                 focusNode: formFocus,
                 onChanged: (value) => searchQuery.value = value,
@@ -330,7 +330,7 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     Icons.search_rounded,
                     color: context.colorScheme.primary,
                   ),
-                  hintText: 'backup_album_selection_page_search_hint'.tr(),
+                  hintText: 'search_albums'.tr(),
                 ),
               ),
             ),
