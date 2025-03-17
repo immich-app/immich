@@ -64,7 +64,8 @@ class SyncStreamService {
 
   Future<void> syncUsers() async {
     _logger.info("Syncing User Changes");
-    _userSyncSubscription = _syncApiRepository.watchUserSyncEvent().listen(
+    _userSyncSubscription =
+        _syncApiRepository.getSyncEvents([SyncRequestType.usersV1]).listen(
       _handleSyncEvents,
       onDone: () {
         _userSyncCompleter.complete();
@@ -77,7 +78,7 @@ class SyncStreamService {
   Future<void> syncPartners() async {
     _logger.info("Syncing Partner Changes");
     _partnerSyncSubscription =
-        _syncApiRepository.watchPartnerSyncEvent().listen(
+        _syncApiRepository.getSyncEvents([SyncRequestType.partnersV1]).listen(
       _handleSyncEvents,
       onDone: () {
         _partnerSyncCompleter.complete();

@@ -94,6 +94,7 @@ custom_lint:
         - lib/repositories/*_api.repository.dart
         - lib/domain/models/sync/sync_event.model.dart
         - lib/{domain,infrastructure}/**/sync_stream.*
+        - lib/{domain,infrastructure}/**/sync_api.*
         - lib/infrastructure/repositories/*_api.repository.dart
         - lib/infrastructure/utils/*.converter.dart
         # acceptable exceptions for the time being

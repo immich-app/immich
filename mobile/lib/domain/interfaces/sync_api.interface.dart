@@ -1,9 +1,8 @@
 import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
+import 'package:openapi/api.dart';
 
 abstract interface class ISyncApiRepository {
   Future<void> ack(List<String> data);
 
-  Stream<List<SyncEvent>> watchUserSyncEvent();
-
-  Stream<List<SyncEvent>> watchPartnerSyncEvent();
+  Stream<List<SyncEvent>> getSyncEvents(List<SyncRequestType> type);
 }

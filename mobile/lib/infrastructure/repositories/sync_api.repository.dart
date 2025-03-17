@@ -14,13 +14,8 @@ class SyncApiRepository implements ISyncApiRepository {
   SyncApiRepository(this._api);
 
   @override
-  Stream<List<SyncEvent>> watchUserSyncEvent() {
-    return _getSyncStream(SyncStreamDto(types: [SyncRequestType.usersV1]));
-  }
-
-  @override
-  Stream<List<SyncEvent>> watchPartnerSyncEvent() {
-    return _getSyncStream(SyncStreamDto(types: [SyncRequestType.partnersV1]));
+  Stream<List<SyncEvent>> getSyncEvents(List<SyncRequestType> type) {
+    return _getSyncStream(SyncStreamDto(types: type));
   }
 
   @override
