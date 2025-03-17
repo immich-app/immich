@@ -36,6 +36,10 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
       [],
     );
 
+    var filteredAlbums = albums.where((album) {
+      return album.name.toLowerCase().contains(searchQuery.value.toLowerCase());
+    }).toList();
+
     buildAlbumSelectionList() {
       if (albums.isEmpty) {
         return const SliverToBoxAdapter(
@@ -44,12 +48,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
         );
       }
-
-      var filteredAlbums = albums.where((album) {
-        return album.name
-            .toLowerCase()
-            .contains(searchQuery.value.toLowerCase());
-      }).toList();
 
       return SliverPadding(
         padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -74,12 +72,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
           ),
         );
       }
-
-      var filteredAlbums = albums.where((album) {
-        return album.name
-            .toLowerCase()
-            .contains(searchQuery.value.toLowerCase());
-      }).toList();
 
       return SliverPadding(
         padding: const EdgeInsets.all(12.0),
@@ -262,8 +254,9 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(10)),
                             ),
                             elevation: 5,
                             title: Text(
@@ -292,8 +285,6 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     },
                   ),
                 ),
-
-                // buildSearchBar(),
               ],
             ),
           ),
@@ -312,25 +303,25 @@ class BackupAlbumSelectionPage extends HookConsumerWidget {
                     color: context.themeData.colorScheme.onSurfaceSecondary,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
                     borderSide: BorderSide(
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
                     borderSide: BorderSide(
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                   ),
                   disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
                     borderSide: BorderSide(
                       color: context.colorScheme.surfaceContainerHighest,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
+                    borderRadius: const BorderRadius.all(Radius.circular(25)),
                     borderSide: BorderSide(
                       color: context.colorScheme.primary.withAlpha(150),
                     ),
