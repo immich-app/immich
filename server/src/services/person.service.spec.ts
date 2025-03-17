@@ -896,6 +896,67 @@ describe(PersonService.name, () => {
       });
     });
 
+    it('should match existing person if their birth date is unknown', async () => {
+      if (!faceStub.primaryFace1.person) {
+        throw new Error('faceStub.primaryFace1.person is null');
+      }
+
+      const faces = [
+        { ...faceStub.noPerson1, distance: 0 },
+        { ...faceStub.primaryFace1, distance: 0.2 },
+        { ...faceStub.withBirthDate, distance: 0.3 },
+      ] as FaceSearchResult[];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue(faces);
+      mocks.person.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
+      mocks.person.create.mockResolvedValue(faceStub.primaryFace1.person);
+
+      await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
+
+      expect(mocks.person.create).not.toHaveBeenCalled();
+      expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: expect.arrayContaining([faceStub.noPerson1.id]),
+        newPersonId: faceStub.primaryFace1.person.id,
+      });
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: expect.not.arrayContaining([faceStub.face1.id]),
+        newPersonId: faceStub.primaryFace1.person.id,
+      });
+    });
+
+    it('should match existing person if their birth date is before file creation', async () => {
+      if (!faceStub.primaryFace1.person) {
+        throw new Error('faceStub.primaryFace1.person is null');
+      }
+
+      const faces = [
+        { ...faceStub.noPerson1, distance: 0 },
+        { ...faceStub.withBirthDate, distance: 0.2 },
+        { ...faceStub.primaryFace1, distance: 0.3 },
+      ] as FaceSearchResult[];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue(faces);
+      mocks.person.getFaceByIdWithAssets.mockResolvedValue(faceStub.noPerson1);
+      mocks.person.create.mockResolvedValue(faceStub.primaryFace1.person);
+
+      await sut.handleRecognizeFaces({ id: faceStub.noPerson1.id });
+
+      expect(mocks.person.create).not.toHaveBeenCalled();
+      expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: expect.arrayContaining([faceStub.noPerson1.id]),
+        newPersonId: faceStub.withBirthDate.person.id,
+      });
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: expect.not.arrayContaining([faceStub.face1.id]),
+        newPersonId: faceStub.withBirthDate.person.id,
+      });
+    });
+
+
     it('should create a new person if the face is a core point with no person', async () => {
       const faces = [
         { ...faceStub.noPerson1, distance: 0 },
