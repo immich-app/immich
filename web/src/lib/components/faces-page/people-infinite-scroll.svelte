@@ -27,14 +27,16 @@
   });
 </script>
 
-<div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 2xl:grid-cols-10 gap-1">
+<div class="w-full flex flex-wrap justify-evenly gap-2">
   {#each people as person, index (person.id)}
     {#if hasNextPage && index === people.length - 1}
-      <div bind:this={lastPersonContainer}>
+      <div class="flex-none max-md:w-[100px] w-[122px]" bind:this={lastPersonContainer}>
         {@render children?.({ person, index })}
       </div>
     {:else}
-      {@render children?.({ person, index })}
+      <div class="flex-none max-md:w-[100px] w-[122px]">
+        {@render children?.({ person, index })}
+      </div>
     {/if}
   {/each}
 </div>
