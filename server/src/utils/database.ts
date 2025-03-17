@@ -383,10 +383,22 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null));
 }
 
-type VectorIndexOptions = { vectorExtension: VectorExtension; table: string; indexName: string };
+export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
 
-export function vectorIndexQuery({ vectorExtension, table, indexName }: VectorIndexOptions): string {
+type VectorIndexQueryOptions = { table: string; vectorExtension: VectorExtension } & ReindexVectorIndexOptions;
+
+export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: VectorIndexQueryOptions): string {
   switch (vectorExtension) {
+    case DatabaseExtension.VECTORCHORD: {
+      return `
+        CREATE INDEX IF NOT EXISTS ${indexName} ON ${table} USING vchordrq (embedding vector_cosine_ops) WITH (options = $$
+        residual_quantization = false
+        [build.internal]
+        lists = [${lists ?? 1}]
+        spherical_centroids = true
+        build_threads = 4
+        $$)`;
+    }
     case DatabaseExtension.VECTORS: {
       return `
         CREATE INDEX IF NOT EXISTS ${indexName} ON ${table}

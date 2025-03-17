@@ -1,10 +1,9 @@
 import { Kysely, sql } from 'kysely';
 import { DatabaseExtension } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
+import { getVectorExtension } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { vectorIndexQuery } from 'src/utils/database';
 
-const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
 const lastMigrationSql = sql<{ name: string }>`SELECT "name" FROM "migrations" ORDER BY "timestamp" DESC LIMIT 1;`;
 const tableExists = sql<{ result: string | null }>`select to_regclass('migrations') as "result"`;
 const logger = LoggingRepository.create();
@@ -24,6 +23,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     logger.log('Database has up to date TypeORM migrations, skipping initial Kysely migration');
     return;
   }
+
+  const vectorExtension = await getVectorExtension(db);
 
   await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`.execute(db);
   await sql`CREATE EXTENSION IF NOT EXISTS "unaccent";`.execute(db);
