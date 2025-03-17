@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        suffix: ["", "-cuda", "-openvino", "-armnn"]
+        suffix: ["", "-cuda", "-openvino", "-armnn","-rknn"]
     steps:
         - name: Login to GitHub Container Registry
           uses: docker/login-action@v3
@@ -129,6 +129,9 @@ jobs:
             runner: ubuntu-24.04-arm
             device: armnn
             suffix: -armnn
+          - platforms: linux/arm64
+            device: rknn
+            suffix: -rknn
 
     steps:
       - name: Prepare

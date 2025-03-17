@@ -1,7 +1,15 @@
-from app.config import clean_name
-from app.schemas import ModelSource
+import subprocess
 
-_OPENCLIP_MODELS = {
+from exporters.constants import ModelSource
+
+mclip = [
+    "M-CLIP/LABSE-Vit-L-14",
+    "M-CLIP/XLM-Roberta-Large-Vit-B-16Plus",
+    "M-CLIP/XLM-Roberta-Large-Vit-B-32",
+    "M-CLIP/XLM-Roberta-Large-Vit-L-14",
+]
+
+openclip = [
     "RN101__openai",
     "RN101__yfcc15m",
     "RN50__cc12m",
@@ -14,12 +22,14 @@ _OPENCLIP_MODELS = {
     "ViT-B-16-SigLIP-384__webli",
     "ViT-B-16-SigLIP-512__webli",
     "ViT-B-16-SigLIP-i18n-256__webli",
+    "ViT-B-16-SigLIP2__webli",
     "ViT-B-16-SigLIP__webli",
     "ViT-B-16-plus-240__laion400m_e31",
     "ViT-B-16-plus-240__laion400m_e32",
     "ViT-B-16__laion400m_e31",
     "ViT-B-16__laion400m_e32",
     "ViT-B-16__openai",
+    "ViT-B-32-SigLIP2-256__webli",
     "ViT-B-32__laion2b-s34b-b79k",
     "ViT-B-32__laion2b_e16",
     "ViT-B-32__laion400m_e31",
@@ -36,19 +46,10 @@ _OPENCLIP_MODELS = {
     "ViT-L-14__openai",
     "ViT-L-16-SigLIP-256__webli",
     "ViT-L-16-SigLIP-384__webli",
-    "ViT-SO400M-14-SigLIP-384__webli",
-    "ViT-g-14__laion2b-s12b-b42k",
-    "XLM-Roberta-Base-ViT-B-32__laion5b_s13b_b90k",
-    "XLM-Roberta-Large-ViT-H-14__frozen_laion5b_s13b_b90k",
-    "nllb-clip-base-siglip__mrl",
-    "nllb-clip-base-siglip__v1",
-    "nllb-clip-large-siglip__mrl",
-    "nllb-clip-large-siglip__v1",
-    "ViT-B-16-SigLIP2__webli",
-    "ViT-B-32-SigLIP2-256__webli",
     "ViT-L-16-SigLIP2-256__webli",
     "ViT-L-16-SigLIP2-384__webli",
     "ViT-L-16-SigLIP2-512__webli",
+    "ViT-SO400M-14-SigLIP-384__webli",
     "ViT-SO400M-14-SigLIP2-378__webli",
     "ViT-SO400M-14-SigLIP2__webli",
     "ViT-SO400M-16-SigLIP2-256__webli",
@@ -56,41 +57,32 @@ _OPENCLIP_MODELS = {
     "ViT-SO400M-16-SigLIP2-512__webli",
     "ViT-gopt-16-SigLIP2-256__webli",
     "ViT-gopt-16-SigLIP2-384__webli",
-}
+    "nllb-clip-base-siglip__mrl",
+    "nllb-clip-base-siglip__v1",
+    "nllb-clip-large-siglip__mrl",
+    "nllb-clip-large-siglip__v1",
+    "xlm-roberta-base-ViT-B-32__laion5b_s13b_b90k",
+    "xlm-roberta-large-ViT-H-14__frozen_laion5b_s13b_b90k",
+]
 
-
-_MCLIP_MODELS = {
-    "LABSE-Vit-L-14",
-    "XLM-Roberta-Large-Vit-B-16Plus",
-    "XLM-Roberta-Large-Vit-B-32",
-    "XLM-Roberta-Large-Vit-L-14",
-}
-
-
-_INSIGHTFACE_MODELS = {
+insightface = [
     "antelopev2",
-    "buffalo_s",
-    "buffalo_m",
     "buffalo_l",
-}
+    "buffalo_m",
+    "buffalo_s",
+]
 
 
-SUPPORTED_PROVIDERS = ["CUDAExecutionProvider", "OpenVINOExecutionProvider", "CPUExecutionProvider"]
+def export_models(models: list[str], source: ModelSource) -> None:
+    for model in models:
+        try:
+            print(f"Exporting model {model}")
+            subprocess.check_call(["python", "-m", "immich_model_exporter.export", model, source])
+        except Exception as e:
+            print(f"Failed to export model {model}: {e}")
 
-RKNN_SUPPORTED_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
-RKNN_COREMASK_SUPPORTED_SOCS = ["rk3576", "rk3588"]
 
-
-def get_model_source(model_name: str) -> ModelSource | None:
-    cleaned_name = clean_name(model_name)
-
-    if cleaned_name in _INSIGHTFACE_MODELS:
-        return ModelSource.INSIGHTFACE
-
-    if cleaned_name in _MCLIP_MODELS:
-        return ModelSource.MCLIP
-
-    if cleaned_name in _OPENCLIP_MODELS:
-        return ModelSource.OPENCLIP
-
-    return None
+if __name__ == "__main__":
+    export_models(mclip, ModelSource.MCLIP)
+    export_models(openclip, ModelSource.OPENCLIP)
+    export_models(insightface, ModelSource.INSIGHTFACE)
