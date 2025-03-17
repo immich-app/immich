@@ -1180,7 +1180,7 @@ requires-dist = [
     { name = "tokenizers", specifier = ">=0.15.0,<1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.22.0,<1.0" },
 ]
-provides-extras = ["cpu", "cuda", "openvino", "armnn", "rknn"]
+provides-extras = ["cpu", "cuda", "openvino", "armnn", "rknn", "rocm"]
 
 [package.metadata.requires-dev]
 dev = [

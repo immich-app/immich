@@ -180,6 +180,7 @@ class TestOrtSession:
     OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
+    ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
     def test_sets_cpu_provider(self, providers: list[str]) -> None:
@@ -219,6 +220,12 @@ class TestOrtSession:
 
         assert session.providers == self.CUDA_EP
 
+    @pytest.mark.providers(ROCM_EP)
+    def test_uses_rocm(self, providers: list[str]) -> None:
+        session = OrtSession("ViT-B-32__openai")
+
+        assert session.providers == self.ROCM_EP
+
     def test_sets_provider_kwarg(self) -> None:
         providers = ["CUDAExecutionProvider"]
         session = OrtSession("ViT-B-32__openai", providers=providers)
@@ -235,19 +242,33 @@ class TestOrtSession:
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
-    def test_sets_device_id_for_openvino(self) -> None:
+    def test_sets_provider_options_for_openvino(self) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
-        session = OrtSession("ViT-B-32__openai", providers=["OpenVINOExecutionProvider"])
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
 
-        assert session.provider_options[0]["device_type"] == "GPU.1"
+        assert session.provider_options == [
+            {
+                "device_type": "GPU.1",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
 
-    def test_sets_device_id_for_cuda(self) -> None:
+    def test_sets_provider_options_for_cuda(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
 
-        assert session.provider_options[0]["device_id"] == "1"
+        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+
+    def test_sets_provider_options_for_rocm(self) -> None:
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        session = OrtSession("ViT-B-32__openai", providers=["ROCMExecutionProvider"])
+
+        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
