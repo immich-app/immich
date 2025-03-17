@@ -6,7 +6,7 @@ import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } 
 import { BaseService } from 'src/services/base.service';
 import { VectorExtension } from 'src/types';
 
-type CreateFailedArgs = { name: string; extension: string; otherName: string };
+type CreateFailedArgs = { name: string; extension: string; otherExtensions: string[] };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
 type RestartRequiredArgs = { name: string; availableVersion: string };
 type NightlyVersionArgs = { name: string; extension: string; version: string };
@@ -25,7 +25,7 @@ const messages = {
   outOfRange: ({ name, version, range }: OutOfRangeArgs) =>
     `The ${name} extension version is ${version}, but Immich only supports ${range}.
     Please change ${name} to a compatible version in the Postgres instance.`,
-  createFailed: ({ name, extension, otherName }: CreateFailedArgs) =>
+  createFailed: ({ name, extension, otherExtensions }: CreateFailedArgs) =>
     `Failed to activate ${name} extension.
     Please ensure the Postgres instance has ${name} installed.
 
@@ -33,7 +33,7 @@ const messages = {
     In this case, please run 'CREATE EXTENSION IF NOT EXISTS ${extension}' manually as a superuser.
     See https://immich.app/docs/guides/database-queries for how to query the database.
 
-    Alternatively, if your Postgres instance has ${otherName}, you may use this instead by setting the environment variable 'DB_VECTOR_EXTENSION=${otherName}'.
+    Alternatively, if your Postgres instance has any of ${otherExtensions.join(', ')}, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'.
     Note that switching between the two extensions after a successful startup is not supported.
     The exception is if your version of Immich prior to upgrading was 1.90.2 or earlier.
     In this case, you may set either extension now, but you will not be able to switch to the other extension following a successful startup.`,
@@ -67,8 +67,7 @@ export class DatabaseService extends BaseService {
     }
 
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      const envData = this.configRepository.getEnv();
-      const extension = envData.database.vectorExtension;
+      const extension = await this.databaseRepository.getVectorExtension();
       const name = EXTENSION_NAMES[extension];
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 
@@ -97,12 +96,20 @@ export class DatabaseService extends BaseService {
         throw new Error(messages.invalidDowngrade({ name, extension, availableVersion, installedVersion }));
       }
 
-      await this.checkReindexing();
+      try {
+        await this.databaseRepository.reindexVectorsIfNeeded([VectorIndex.CLIP, VectorIndex.FACE]);
+      } catch (error) {
+        this.logger.warn(
+          'Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance.',
+        );
+        throw error;
+      }
 
       const { database } = this.configRepository.getEnv();
       if (!database.skipMigrations) {
         await this.databaseRepository.runMigrations();
       }
+      await this.databaseRepository.prewarm(VectorIndex.CLIP);
     });
   }
 
@@ -110,10 +117,13 @@ export class DatabaseService extends BaseService {
     try {
       await this.databaseRepository.createExtension(extension);
     } catch (error) {
-      const otherExtension =
-        extension === DatabaseExtension.VECTORS ? DatabaseExtension.VECTOR : DatabaseExtension.VECTORS;
+      const otherExtensions = [
+        DatabaseExtension.VECTOR,
+        DatabaseExtension.VECTORS,
+        DatabaseExtension.VECTORCHORD,
+      ].filter((ext) => ext !== extension);
       const name = EXTENSION_NAMES[extension];
-      this.logger.fatal(messages.createFailed({ name, extension, otherName: EXTENSION_NAMES[otherExtension] }));
+      this.logger.fatal(messages.createFailed({ name, extension, otherExtensions }));
       throw error;
     }
   }
@@ -127,23 +137,6 @@ export class DatabaseService extends BaseService {
       }
     } catch (error) {
       this.logger.warn(messages.updateFailed({ name: EXTENSION_NAMES[extension], extension, availableVersion }));
-      throw error;
-    }
-  }
-
-  private async checkReindexing() {
-    try {
-      if (await this.databaseRepository.shouldReindex(VectorIndex.CLIP)) {
-        await this.databaseRepository.reindex(VectorIndex.CLIP);
-      }
-
-      if (await this.databaseRepository.shouldReindex(VectorIndex.FACE)) {
-        await this.databaseRepository.reindex(VectorIndex.FACE);
-      }
-    } catch (error) {
-      this.logger.warn(
-        'Could not run vector reindexing checks. If the extension was updated, please restart the Postgres instance.',
-      );
       throw error;
     }
   }

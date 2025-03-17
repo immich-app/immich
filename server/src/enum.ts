@@ -412,6 +412,7 @@ export enum DatabaseExtension {
   EARTH_DISTANCE = 'earthdistance',
   VECTOR = 'vector',
   VECTORS = 'vectors',
+  VECTORCHORD = 'vchord',
 }
 
 export enum BootstrapEventPriority {
