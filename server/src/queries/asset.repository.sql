@@ -49,8 +49,6 @@ with
           and "assets"."deletedAt" is null
         order by
           (assets."localDateTime" at time zone 'UTC')::date desc
-        limit
-          $7
       ) as "a" on true
       inner join "exif" on "a"."id" = "exif"."assetId"
   )
@@ -66,8 +64,6 @@ group by
   ("localDateTime" at time zone 'UTC')::date
 order by
   ("localDateTime" at time zone 'UTC')::date desc
-limit
-  $8
 
 -- AssetRepository.getByIds
 select
