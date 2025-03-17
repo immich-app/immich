@@ -90,6 +90,8 @@ COPY --from=builder-cuda /usr/local/bin/python3 /usr/local/bin/python3
 COPY --from=builder-cuda /usr/local/lib/python3.11 /usr/local/lib/python3.11
 COPY --from=builder-cuda /usr/local/lib/libpython3.11.so /usr/local/lib/libpython3.11.so
 
+FROM rocm/dev-ubuntu-22.04:6.3.4-complete AS prod-rocm
+
 FROM prod-cpu AS prod-armnn
 
 ENV LD_LIBRARY_PATH=/opt/armnn
@@ -110,7 +112,7 @@ COPY --from=builder-armnn \
     /opt/ann/build.sh \
     /opt/armnn/
 
-FROM rocm/dev-ubuntu-22.04:6.3.4-complete AS prod-rocm
+FROM prod-cpu AS prod-rknn
 
 FROM prod-${DEVICE} AS prod
 
