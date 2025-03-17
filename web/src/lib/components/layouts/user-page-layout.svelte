@@ -62,7 +62,7 @@
   <section class="relative">
     {#if title || buttons}
       <div
-        class=" flex h-16 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
+        class="flex h-16 gap-2 w-full place-items-center justify-between border-b p-4 dark:border-immich-dark-gray dark:text-immich-dark-fg"
       >
         <div class="flex gap-2 items-center">
           {#if title}
