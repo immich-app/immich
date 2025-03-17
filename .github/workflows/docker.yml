@@ -224,6 +224,8 @@ jobs:
             suffix: -openvino
           - device: armnn
             suffix: -armnn
+          - device: rknn
+            suffix: -rknn
     needs:
       - build_and_push_ml
     steps:
