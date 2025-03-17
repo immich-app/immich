@@ -406,7 +406,7 @@ jobs:
         run: |
           uv run pytest app --cov=app --cov-report term-missing
 
-  .github-unit-tests:
+  dot_github-unit-tests:
     name: Check .github Files
     needs: pre-job
     if: ${{ needs.pre-job.outputs.should_run_.github == 'true' }}
