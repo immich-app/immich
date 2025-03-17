@@ -5,8 +5,8 @@ import { randomUUID } from 'node:crypto';
 import { DB, Exif } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { AssetStatus, AssetType, AssetVisibility } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
+import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
+import { getVectorExtension } from 'src/repositories/database.repository';
 import { anyUuid, asUuid, searchAssetBuilder, vectorIndexQuery } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
 import { isValidInteger } from 'src/validation';
@@ -168,10 +168,7 @@ export interface GetCameraMakesOptions {
 
 @Injectable()
 export class SearchRepository {
-  constructor(
-    @InjectKysely() private db: Kysely<DB>,
-    private configRepository: ConfigRepository,
-  ) {}
+  constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({
     params: [
@@ -448,14 +445,16 @@ export class SearchRepository {
       );
     });
 
-    const vectorExtension = this.configRepository.getEnv().database.vectorExtension;
+    const vectorExtension = await getVectorExtension(this.db);
     await this.db.transaction().execute(async (trx) => {
       await sql`drop index if exists clip_index`.execute(trx);
       await trx.schema
         .alterTable('smart_search')
         .alterColumn('embedding', (col) => col.setDataType(sql.raw(`vector(${dimSize})`)))
         .execute();
-      await sql.raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: 'clip_index' })).execute(trx);
+      await sql
+        .raw(vectorIndexQuery({ vectorExtension, table: 'smart_search', indexName: VectorIndex.CLIP }))
+        .execute(trx);
       await trx.schema.alterTable('smart_search').dropConstraint('dim_size_constraint').ifExists().execute();
     });
 

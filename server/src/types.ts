@@ -1,7 +1,7 @@
 import { SystemConfig } from 'src/config';
+import { VECTOR_EXTENSIONS } from 'src/constants';
 import {
   AssetType,
-  DatabaseExtension,
   DatabaseSslMode,
   ExifOrientation,
   ImageFormat,
@@ -363,7 +363,7 @@ export type JobItem =
   // Version check
   | { name: JobName.VERSION_CHECK; data: IBaseJob };
 
-export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS;
+export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
 export type DatabaseConnectionURL = {
   connectionType: 'url';

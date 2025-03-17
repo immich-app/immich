@@ -1,5 +1,5 @@
 import { EXTENSION_NAMES } from 'src/constants';
-import { DatabaseExtension } from 'src/enum';
+import { DatabaseExtension, VectorIndex } from 'src/enum';
 import { DatabaseService } from 'src/services/database.service';
 import { VectorExtension } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
@@ -49,6 +49,7 @@ describe(DatabaseService.name, () => {
       { extension: DatabaseExtension.VECTORS, extensionName: EXTENSION_NAMES[DatabaseExtension.VECTORS] },
     ])('should work with $extensionName', ({ extension, extensionName }) => {
       beforeEach(() => {
+        mocks.database.getVectorExtension.mockResolvedValue(extension);
         mocks.config.getEnv.mockReturnValue(
           mockEnvData({
             database: {
@@ -240,40 +241,31 @@ describe(DatabaseService.name, () => {
       });
 
       it(`should reindex ${extension} indices if needed`, async () => {
-        mocks.database.shouldReindex.mockResolvedValue(true);
-
         await expect(sut.onBootstrap()).resolves.toBeUndefined();
 
-        expect(mocks.database.shouldReindex).toHaveBeenCalledTimes(2);
-        expect(mocks.database.reindex).toHaveBeenCalledTimes(2);
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledExactlyOnceWith([
+          VectorIndex.CLIP,
+          VectorIndex.FACE,
+        ]);
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledTimes(1);
         expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
       });
 
       it(`should throw an error if reindexing fails`, async () => {
-        mocks.database.shouldReindex.mockResolvedValue(true);
-        mocks.database.reindex.mockRejectedValue(new Error('Error reindexing'));
+        mocks.database.reindexVectorsIfNeeded.mockRejectedValue(new Error('Error reindexing'));
 
         await expect(sut.onBootstrap()).rejects.toBeDefined();
 
-        expect(mocks.database.shouldReindex).toHaveBeenCalledTimes(1);
-        expect(mocks.database.reindex).toHaveBeenCalledTimes(1);
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledExactlyOnceWith([
+          VectorIndex.CLIP,
+          VectorIndex.FACE,
+        ]);
         expect(mocks.database.runMigrations).not.toHaveBeenCalled();
         expect(mocks.logger.fatal).not.toHaveBeenCalled();
         expect(mocks.logger.warn).toHaveBeenCalledWith(
           expect.stringContaining('Could not run vector reindexing checks.'),
         );
-      });
-
-      it(`should not reindex ${extension} indices if not needed`, async () => {
-        mocks.database.shouldReindex.mockResolvedValue(false);
-
-        await expect(sut.onBootstrap()).resolves.toBeUndefined();
-
-        expect(mocks.database.shouldReindex).toHaveBeenCalledTimes(2);
-        expect(mocks.database.reindex).toHaveBeenCalledTimes(0);
-        expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
-        expect(mocks.logger.fatal).not.toHaveBeenCalled();
       });
     });
 
@@ -328,7 +320,7 @@ describe(DatabaseService.name, () => {
 
       expect(mocks.logger.fatal).toHaveBeenCalledTimes(1);
       expect(mocks.logger.fatal.mock.calls[0][0]).toContain(
-        `Alternatively, if your Postgres instance has pgvecto.rs, you may use this instead`,
+        `Alternatively, if your Postgres instance has any of vector, vectors, vchord, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'`,
       );
       expect(mocks.database.createExtension).toHaveBeenCalledTimes(1);
       expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();
@@ -347,7 +339,7 @@ describe(DatabaseService.name, () => {
 
       expect(mocks.logger.fatal).toHaveBeenCalledTimes(1);
       expect(mocks.logger.fatal.mock.calls[0][0]).toContain(
-        `Alternatively, if your Postgres instance has pgvector, you may use this instead`,
+        `Alternatively, if your Postgres instance has any of vector, vectors, vchord, you may use one of them instead by setting the environment variable 'DB_VECTOR_EXTENSION=<extension name>'`,
       );
       expect(mocks.database.createExtension).toHaveBeenCalledTimes(1);
       expect(mocks.database.updateVectorExtension).not.toHaveBeenCalled();
