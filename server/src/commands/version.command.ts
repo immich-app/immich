@@ -10,13 +10,15 @@ export class VersionCommand extends CommandRunner {
     super();
   }
 
-  async run(): Promise<void> {
+  run(): Promise<void> {
     try {
-      const version = await this.service.getVersion();
+      const version = this.service.getVersion();
       console.log(`v${version.major}.${version.minor}.${version.patch}`);
     } catch (error) {
       console.error(error);
       console.error('Unable to get version');
     }
+
+    return Promise.resolve();
   }
 }

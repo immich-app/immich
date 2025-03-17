@@ -4,7 +4,6 @@ import { DisablePasswordLoginCommand, EnablePasswordLoginCommand } from 'src/com
 import { PromptPasswordQuestions, ResetAdminPasswordCommand } from 'src/commands/reset-admin-password.command';
 import { VersionCommand } from 'src/commands/version.command';
 
-
 export const commands = [
   ResetAdminPasswordCommand,
   PromptPasswordQuestions,

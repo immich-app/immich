@@ -88,4 +88,3 @@ Print Immich Version
 immich-admin version
 v1.129.0
 ```
-
