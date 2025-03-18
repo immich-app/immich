@@ -6,7 +6,7 @@ version: 1.129.0+187
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.29.1
+  flutter: 3.29.2
 
 isar_version: &isar_version 3.1.8
 
