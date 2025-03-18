@@ -132,7 +132,7 @@
         </div>
       {/if}
 
-      <span class="w-full truncate first-letter:capitalize" title={getDateLocaleString(dateGroup.date)}>
+      <span class="w-full truncate first-letter:capitalize ml-2.5" title={getDateLocaleString(dateGroup.date)}>
         {dateGroup.groupTitle}
       </span>
     </div>
