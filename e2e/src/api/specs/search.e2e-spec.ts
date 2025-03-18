@@ -187,6 +187,10 @@ describe('/search', () => {
         dto: { [value]: 'immich' },
         expected: [`${value} must be a boolean value`],
       })),
+      {
+        should: 'should reject albumIds invalid format',
+        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: null }),
+      },
     ];
 
     for (const { should, dto, expected } of badTests) {
@@ -433,6 +437,10 @@ describe('/search', () => {
           dto: { libraryId: null, size: 1 },
           assets: [assetLast],
         }),
+      },
+      {
+        should: 'should get my assets with empty albumIds',
+        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: [] }),
       },
     ];
 
