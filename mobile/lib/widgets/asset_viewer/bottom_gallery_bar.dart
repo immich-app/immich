@@ -140,6 +140,16 @@ class BottomGalleryBar extends ConsumerWidget {
           .deleteStack(asset.stackId!, stackItems);
     }
 
+    keepThisDeleteOthers() async {
+      if (asset.stackId == null) {
+        return;
+      }
+
+      await ref
+        .read(stackServiceProvider)
+        .keepThisDeleteOthers(asset, asset.stackId!, stackItems);
+    }
+
     void showStackActionItems() {
       showModalBottomSheet<void>(
         context: context,
@@ -163,6 +173,21 @@ class BottomGalleryBar extends ConsumerWidget {
                     },
                     title: const Text(
                       "viewer_unstack",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ).tr(),
+                  ),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.push_pin_outlined,
+                      size: 18,
+                    ),
+                    onTap: () async {
+                      await keepThisDeleteOthers();
+                      ctx.pop();
+                      context.maybePop();
+                    },
+                    title: const Text(
+                      "keep_this_delete_others",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ).tr(),
                   ),
