@@ -74,7 +74,7 @@ class StoreService {
     return value;
   }
 
-  /// Asynchronously stores the value in the DB and synchronously in the cache
+  /// Asynchronously stores the value in the Store
   Future<void> put<U extends StoreKey<T>, T>(U key, T value) async {
     if (_cache[key.id] == value) return;
     await _storeRepository.insert(key, value);
@@ -84,7 +84,7 @@ class StoreService {
   /// Watches a specific key for changes
   Stream<T?> watch<T>(StoreKey<T> key) => _storeRepository.watch(key);
 
-  /// Removes the value asynchronously from the DB and synchronously from the cache
+  /// Removes the value asynchronously from the Store
   Future<void> delete<T>(StoreKey<T> key) async {
     await _storeRepository.delete(key);
     _cache.remove(key.id);

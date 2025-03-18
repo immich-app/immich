@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-
-import 'package:immich_mobile/services/user.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 
 enum UploadProfileStatus {
   idle,
@@ -72,7 +72,7 @@ class UploadProfileImageState {
 
 class UploadProfileImageNotifier
     extends StateNotifier<UploadProfileImageState> {
-  UploadProfileImageNotifier(this._userSErvice)
+  UploadProfileImageNotifier(this._userService)
       : super(
           UploadProfileImageState(
             profileImagePath: '',
@@ -80,18 +80,21 @@ class UploadProfileImageNotifier
           ),
         );
 
-  final UserService _userSErvice;
+  final UserService _userService;
 
   Future<bool> upload(XFile file) async {
     state = state.copyWith(status: UploadProfileStatus.loading);
 
-    var res = await _userSErvice.uploadProfileImage(file);
+    var profileImagePath = await _userService.createProfileImage(
+      file.name,
+      await file.readAsBytes(),
+    );
 
-    if (res != null) {
+    if (profileImagePath != null) {
       debugPrint("Successfully upload profile image");
       state = state.copyWith(
         status: UploadProfileStatus.success,
-        profileImagePath: res.profileImagePath,
+        profileImagePath: profileImagePath,
       );
       return true;
     }
