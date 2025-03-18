@@ -237,7 +237,7 @@ jobs:
       - build_and_push_ml
     steps:
       - name: Download digests
-        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
+        uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4
         with:
           path: ${{ runner.temp }}/digests
           pattern: ml-digests-${{ matrix.device }}-*
@@ -391,7 +391,7 @@ jobs:
       - build_and_push_server
     steps:
       - name: Download digests
-        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
+        uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4
         with:
           path: ${{ runner.temp }}/digests
           pattern: server-digests-*
