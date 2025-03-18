@@ -7,7 +7,7 @@
 
 This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/), so be sure to install it first.
 Running `uv sync --extra cpu` will install everything you need in an isolated virtual environment.
-CUDA and OpenVINO are supported as acceleration APIs. To use them, you can replace `--group cpu` with either of `--group cuda` or `--group openvino`. In the case of CUDA, a [compute capability](https://developer.nvidia.com/cuda-gpus) of 5.2 or higher is required.
+CUDA, ROCM and OpenVINO are supported as acceleration APIs. To use them, you can replace `--extra cpu` with either of `--extra cuda`, `--extra rocm` or `--extra openvino`. In the case of CUDA, a [compute capability](https://developer.nvidia.com/cuda-gpus) of 5.2 or higher is required.
 
 To add or remove dependencies, you can use the commands `uv add $PACKAGE_NAME` and `uv remove $PACKAGE_NAME`, respectively.
 Be sure to commit the `uv.lock` and `pyproject.toml` files with `uv lock` to reflect any changes in dependencies.
