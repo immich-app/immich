@@ -141,6 +141,9 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.GENERATE_THUMBNAILS, queue: QueueName.THUMBNAIL_GENERATION })
   async handleGenerateThumbnails({ id }: JobOf<JobName.GENERATE_THUMBNAILS>): Promise<JobStatus> {
     const asset = await this.assetRepository.getById(id, { exifInfo: true, files: true });
+    
+    this.logger.verbose(`Thumbnail generation started for asset ${id} with path ${asset?.originalPath}`);
+
     if (!asset) {
       this.logger.warn(`Thumbnail generation failed for asset ${id}: not found`);
       return JobStatus.FAILED;
