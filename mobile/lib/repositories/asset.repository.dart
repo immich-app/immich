@@ -29,11 +29,12 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     AssetSort? sortBy,
   }) {
     var query = album.assets.filter();
-    final ids = notOwnedBy.map(fastHash).toList();
+    final isarUserIds = notOwnedBy.map(fastHash).toList();
     if (notOwnedBy.length == 1) {
-      query = query.not().ownerIdEqualTo(ids.first);
+      query = query.not().ownerIdEqualTo(isarUserIds.first);
     } else if (notOwnedBy.isNotEmpty) {
-      query = query.not().anyOf(ids, (q, int id) => q.ownerIdEqualTo(id));
+      query =
+          query.not().anyOf(isarUserIds, (q, int id) => q.ownerIdEqualTo(id));
     }
     if (ownerId != null) {
       query = query.ownerIdEqualTo(fastHash(ownerId));
@@ -94,22 +95,22 @@ class AssetRepository extends DatabaseRepository implements IAssetRepository {
     int? limit,
   }) {
     final baseQuery = db.assets.where();
-    final id = fastHash(ownerId);
+    final isarUserIds = fastHash(ownerId);
     final QueryBuilder<Asset, Asset, QAfterFilterCondition> filteredQuery =
         switch (state) {
-      null => baseQuery.ownerIdEqualToAnyChecksum(id).noOp(),
+      null => baseQuery.ownerIdEqualToAnyChecksum(isarUserIds).noOp(),
       AssetState.local => baseQuery
           .remoteIdIsNull()
           .filter()
           .localIdIsNotNull()
-          .ownerIdEqualTo(id),
+          .ownerIdEqualTo(isarUserIds),
       AssetState.remote => baseQuery
           .localIdIsNull()
           .filter()
           .remoteIdIsNotNull()
-          .ownerIdEqualTo(id),
+          .ownerIdEqualTo(isarUserIds),
       AssetState.merged => baseQuery
-          .ownerIdEqualToAnyChecksum(id)
+          .ownerIdEqualToAnyChecksum(isarUserIds)
           .filter()
           .remoteIdIsNotNull()
           .localIdIsNotNull(),

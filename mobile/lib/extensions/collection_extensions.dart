@@ -63,11 +63,11 @@ extension AssetListExtension on Iterable<Asset> {
     void Function()? errorCallback,
   }) {
     if (owner == null) return [];
-    final userId = fastHash(owner.id);
-    final bool onlyOwned = every((e) => e.ownerId == userId);
+    final isarUserId = fastHash(owner.id);
+    final bool onlyOwned = every((e) => e.ownerId == isarUserId);
     if (!onlyOwned) {
       if (errorCallback != null) errorCallback();
-      return where((a) => a.ownerId == userId);
+      return where((a) => a.ownerId == isarUserId);
     }
     return this;
   }

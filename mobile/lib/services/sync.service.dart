@@ -460,8 +460,8 @@ class SyncService {
       existing.addAll(foreign);
 
       // delete assets in DB unless they belong to this user or part of some other shared album
-      deleteCandidates
-          .addAll(toUnlink.where((a) => a.ownerId != fastHash(userId)));
+      final isarUserId = fastHash(userId);
+      deleteCandidates.addAll(toUnlink.where((a) => a.ownerId != isarUserId));
     }
 
     return true;

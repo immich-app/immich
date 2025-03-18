@@ -124,10 +124,10 @@ class TimelineRepository extends DatabaseRepository
     List<String> userIds,
     GroupAssetsBy groupAssetByOption,
   ) {
-    final ids = userIds.map(fastHash).toList();
+    final isarUserIds = userIds.map(fastHash).toList();
     final query = db.assets
         .where()
-        .anyOf(ids, (qb, userId) => qb.ownerIdEqualToAnyChecksum(userId))
+        .anyOf(isarUserIds, (qb, id) => qb.ownerIdEqualToAnyChecksum(id))
         .filter()
         .isArchivedEqualTo(false)
         .isTrashedEqualTo(false)
