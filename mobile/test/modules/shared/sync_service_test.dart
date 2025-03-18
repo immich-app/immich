@@ -62,9 +62,6 @@ void main() {
     final MockAppSettingService appSettingService = MockAppSettingService();
     final MockLocalFilesManagerRepository localFilesManagerRepository =
         MockLocalFilesManagerRepository();
-
-    final owner = User(
-      id: "1",
     final MockPartnerApiRepository partnerApiRepository =
         MockPartnerApiRepository();
     final MockUserApiRepository userApiRepository = MockUserApiRepository();

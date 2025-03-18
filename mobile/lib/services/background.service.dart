@@ -25,13 +25,6 @@ import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/repositories/backup.repository.dart';
 import 'package:immich_mobile/repositories/file_media.repository.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
-import 'package:immich_mobile/repositories/network.repository.dart';
-import 'package:immich_mobile/repositories/partner.repository.dart';
-import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
-import 'package:immich_mobile/services/album.service.dart';
-import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/backup.service.dart';
@@ -359,82 +352,6 @@ class BackgroundService {
     final db = await Bootstrap.initIsar();
     await Bootstrap.initDomain(db);
 
-    HttpOverrides.global = HttpSSLCertOverride();
-    ApiService apiService = ApiService();
-    apiService.setAccessToken(Store.get(StoreKey.accessToken));
-    AppSettingsService settingsService = AppSettingsService();
-    AlbumRepository albumRepository = AlbumRepository(db);
-    AssetRepository assetRepository = AssetRepository(db);
-    BackupAlbumRepository backupRepository = BackupAlbumRepository(db);
-    IExifInfoRepository exifInfoRepository = IsarExifRepository(db);
-    ETagRepository eTagRepository = ETagRepository(db);
-    AlbumMediaRepository albumMediaRepository = AlbumMediaRepository();
-    FileMediaRepository fileMediaRepository = FileMediaRepository();
-    AssetMediaRepository assetMediaRepository = AssetMediaRepository();
-    IUserRepository userRepository = IsarUserRepository(db);
-    IUserApiRepository userApiRepository =
-        UserApiRepository(apiService.usersApi);
-    AlbumApiRepository albumApiRepository =
-        AlbumApiRepository(apiService.albumsApi);
-    PartnerApiRepository partnerApiRepository =
-        PartnerApiRepository(apiService.partnersApi);
-    HashService hashService =
-        HashService(assetRepository, this, albumMediaRepository);
-    EntityService entityService =
-        EntityService(assetRepository, userRepository);
-    LocalFilesManagerRepository localFilesManagerRepository =
-        LocalFilesManagerRepository();
-    IPartnerRepository partnerRepository = PartnerRepository(db);
-    
-    SyncService syncSerive = SyncService(
-      hashService,
-      entityService,
-      albumMediaRepository,
-      albumApiRepository,
-      albumRepository,
-      assetRepository,
-      exifInfoRepository,
-      partnerRepository,
-      userRepository,
-      StoreService.I,
-      eTagRepository,
-      settingsService,
-      localFilesManagerRepository,
-    );
-    UserService userService = UserService(
-      partnerApiRepository,
-      userApiRepository,
-    );
-    AlbumService albumService = AlbumService(
-      syncSerive,
-      entityService,
-      albumRepository,
-      assetRepository,
-      backupRepository,
-      albumMediaRepository,
-      albumApiRepository,
-    );
-    BackupService backupService = BackupService(
-      apiService,
-      settingsService,
-      albumService,
-      albumMediaRepository,
-      fileMediaRepository,
-      assetRepository,
-      assetMediaRepository,
-    );
-
-    AuthApiRepository authApiRepository = AuthApiRepository(apiService);
-    AuthRepository authRepository = AuthRepository(db);
-    NetworkRepository networkRepository = NetworkRepository(NetworkInfo());
-    PermissionRepository permissionRepository = PermissionRepository();
-    NetworkService networkService =
-        NetworkService(networkRepository, permissionRepository);
-    AuthService authService = AuthService(
-      authApiRepository,
-      authRepository,
-      apiService,
-      networkService,
     final ref = ProviderContainer(
       overrides: [
         dbProvider.overrideWithValue(db),
