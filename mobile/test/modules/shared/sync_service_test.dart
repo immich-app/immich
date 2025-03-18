@@ -11,9 +11,12 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/interfaces/asset.interface.dart';
+import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../domain/service.mock.dart';
+import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
 import '../../test_utils.dart';
@@ -56,10 +59,14 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
+    final MockPartnerApiRepository partnerApiRepository =
+        MockPartnerApiRepository();
+    final MockUserApiRepository userApiRepository = MockUserApiRepository();
     final MockPartnerRepository partnerRepository = MockPartnerRepository();
+    final MockUserService userService = MockUserService();
 
     final owner = UserDto(
-      uid: "1",
+      id: "1",
       updatedAt: DateTime.now(),
       email: "a@b.c",
       name: "first last",
@@ -96,11 +103,14 @@ void main() {
         exifInfoRepository,
         partnerRepository,
         userRepository,
-        StoreService.I,
+        userService,
         eTagRepository,
+        partnerApiRepository,
+        userApiRepository,
       );
+      when(() => userService.getMyUser()).thenReturn(owner);
       when(() => eTagRepository.get(owner.id))
-          .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
+          .thenAnswer((_) async => ETag(id: owner.id, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
       when(() => eTagRepository.upsertAll(any())).thenAnswer((_) async {});
       when(() => partnerRepository.getSharedWith()).thenAnswer((_) async => []);
@@ -125,6 +135,10 @@ void main() {
       when(() => assetRepository.transaction<Null>(any())).thenAnswer(
         (call) => (call.positionalArguments.first as Function).call(),
       );
+      when(() => userApiRepository.getAll()).thenAnswer((_) async => [owner]);
+      registerFallbackValue(Direction.sharedByMe);
+      when(() => partnerApiRepository.getAll(any()))
+          .thenAnswer((_) async => []);
     });
     test('test inserting existing assets', () async {
       final List<Asset> remoteAssets = [
@@ -136,7 +150,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c1, isFalse);
       verifyNever(() => assetRepository.updateAll(any()));
@@ -155,7 +168,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c1, isTrue);
       final updatedAsset = initialAssets[3].updatedCopy(remoteAssets[3]);
@@ -178,7 +190,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c1, isTrue);
       when(
@@ -191,7 +202,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c2, isFalse);
       final currentState = [...remoteAssets];
@@ -206,7 +216,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c3, isTrue);
       remoteAssets.add(makeAsset(checksum: "k", remoteId: "2-1e"));
@@ -215,7 +224,6 @@ void main() {
         users: [owner],
         getChangedAssets: _failDiff,
         loadAssets: (u, d) => remoteAssets,
-        refreshUsers: () => [owner],
       );
       expect(c4, isTrue);
     });
@@ -246,7 +254,6 @@ void main() {
         users: [owner],
         getChangedAssets: (user, since) async => (toUpsert, toDelete),
         loadAssets: (user, date) => throw Exception(),
-        refreshUsers: () => throw Exception(),
       );
       expect(c, isTrue);
       verify(() => assetRepository.updateAll(expected));
