@@ -40,7 +40,7 @@ class User {
   });
 
   static User fromDto(UserDto dto) => User(
-        id: dto.uid,
+        id: dto.id,
         updatedAt: dto.updatedAt,
         email: dto.email,
         name: dto.name,
@@ -56,7 +56,7 @@ class User {
       );
 
   UserDto toDto() => UserDto(
-        uid: id,
+        id: id,
         email: email,
         name: name,
         isAdmin: isAdmin,

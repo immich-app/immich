@@ -136,11 +136,15 @@
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
-    await loadNextPage();
+    await loadNextPage(true);
   }
 
-  const loadNextPage = async () => {
+  // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
+  export const loadNextPage = async (force?: boolean) => {
     if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
+      return;
+    }
+    if (isLoading && !force) {
       return;
     }
     isLoading = true;
@@ -232,9 +236,6 @@
     return tagNames.join(', ');
   }
 
-  // eslint-disable-next-line no-self-assign
-  const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
-
   const onAddToAlbum = (assetIds: string[]) => {
     cancelMultiselect(assetInteraction);
 
@@ -264,13 +265,23 @@
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
-        <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+        <FavoriteAction
+          removeFavorite={assetInteraction.isAllFavorite}
+          onFavorite={(ids, isFavorite) => {
+            for (const id of ids) {
+              const asset = searchResultAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }}
+        />
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
-          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
@@ -283,6 +294,10 @@
   {:else}
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+        <div
+          class="-z-[1] bg-immich-bg dark:bg-immich-dark-bg"
+          style="position:absolute;top:0;left:0;right:0;bottom:0;"
+        ></div>
         <div class="w-full flex-1 pl-4">
           <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
@@ -331,45 +346,43 @@
 {/if}
 
 <section
-  class="relative mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
+  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >
-  <section class="immich-scrollbar relative overflow-y-auto">
-    {#if searchResultAlbums.length > 0}
-      <section>
-        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
-        <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
+  {#if searchResultAlbums.length > 0}
+    <section>
+      <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
+      <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-          {$t('photos_and_videos').toUpperCase()}
-        </div>
-      </section>
-    {/if}
-    <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if searchResultAssets.length > 0}
-        <GalleryViewer
-          assets={searchResultAssets}
-          {assetInteraction}
-          onIntersected={loadNextPage}
-          showArchiveIcon={true}
-          {viewport}
-        />
-      {:else if !isLoading}
-        <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
-          <div class="flex flex-col content-center items-center text-center">
-            <Icon path={mdiImageOffOutline} size="3.5em" />
-            <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
-            <p class="text-base font-normal">{$t('no_results_description')}</p>
-          </div>
-        </div>
-      {/if}
-
-      {#if isLoading}
-        <div class="flex justify-center py-16 items-center">
-          <LoadingSpinner size="48" />
-        </div>
-      {/if}
+      <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+        {$t('photos_and_videos').toUpperCase()}
+      </div>
     </section>
+  {/if}
+  <section id="search-content">
+    {#if searchResultAssets.length > 0}
+      <GalleryViewer
+        assets={searchResultAssets}
+        {assetInteraction}
+        onIntersected={loadNextPage}
+        showArchiveIcon={true}
+        {viewport}
+      />
+    {:else if !isLoading}
+      <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
+        <div class="flex flex-col content-center items-center text-center">
+          <Icon path={mdiImageOffOutline} size="3.5em" />
+          <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
+          <p class="text-base font-normal">{$t('no_results_description')}</p>
+        </div>
+      </div>
+    {/if}
+
+    {#if isLoading}
+      <div class="flex justify-center py-16 items-center">
+        <LoadingSpinner size="48" />
+      </div>
+    {/if}
   </section>
 </section>
