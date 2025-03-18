@@ -15,6 +15,7 @@ import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/services/sync.service.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../domain/service.mock.dart';
 import '../../infrastructure/repository.mock.dart';
 import '../../repository.mocks.dart';
 import '../../service.mocks.dart';
@@ -68,6 +69,7 @@ void main() {
         MockPartnerApiRepository();
     final MockUserApiRepository userApiRepository = MockUserApiRepository();
     final MockPartnerRepository partnerRepository = MockPartnerRepository();
+    final MockUserService userService = MockUserService();
 
     final owner = UserDto(
       uid: "1",
@@ -107,13 +109,14 @@ void main() {
         exifInfoRepository,
         partnerRepository,
         userRepository,
-        StoreService.I,
+        userService,
         eTagRepository,
         appSettingService,
         localFilesManagerRepository,
         partnerApiRepository,
         userApiRepository,
       );
+      when(() => userService.getMyUser()).thenReturn(owner);
       when(() => eTagRepository.get(owner.id))
           .thenAnswer((_) async => ETag(id: owner.uid, time: DateTime.now()));
       when(() => eTagRepository.deleteByIds(["1"])).thenAnswer((_) async {});
