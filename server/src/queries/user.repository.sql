@@ -3,20 +3,21 @@
 -- UserRepository.get
 select
   "id",
-  "email",
-  "createdAt",
-  "profileImagePath",
-  "isAdmin",
-  "shouldChangePassword",
-  "deletedAt",
-  "oauthId",
-  "updatedAt",
-  "storageLabel",
   "name",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
+  "status",
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
   "quotaSizeInBytes",
   "quotaUsageInBytes",
-  "status",
-  "profileChangedAt",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -39,20 +40,21 @@ where
 -- UserRepository.getAdmin
 select
   "id",
-  "email",
-  "createdAt",
-  "profileImagePath",
-  "isAdmin",
-  "shouldChangePassword",
-  "deletedAt",
-  "oauthId",
-  "updatedAt",
-  "storageLabel",
   "name",
-  "quotaSizeInBytes",
-  "quotaUsageInBytes",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
   "status",
-  "profileChangedAt"
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes"
 from
   "users"
 where
@@ -71,20 +73,21 @@ where
 -- UserRepository.getByEmail
 select
   "id",
-  "email",
-  "createdAt",
-  "profileImagePath",
-  "isAdmin",
-  "shouldChangePassword",
-  "deletedAt",
-  "oauthId",
-  "updatedAt",
-  "storageLabel",
   "name",
-  "quotaSizeInBytes",
-  "quotaUsageInBytes",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
   "status",
-  "profileChangedAt"
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes"
 from
   "users"
 where
@@ -94,20 +97,21 @@ where
 -- UserRepository.getByStorageLabel
 select
   "id",
-  "email",
-  "createdAt",
-  "profileImagePath",
-  "isAdmin",
-  "shouldChangePassword",
-  "deletedAt",
-  "oauthId",
-  "updatedAt",
-  "storageLabel",
   "name",
-  "quotaSizeInBytes",
-  "quotaUsageInBytes",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
   "status",
-  "profileChangedAt"
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes"
 from
   "users"
 where
@@ -117,25 +121,108 @@ where
 -- UserRepository.getByOAuthId
 select
   "id",
-  "email",
-  "createdAt",
-  "profileImagePath",
-  "isAdmin",
-  "shouldChangePassword",
-  "deletedAt",
-  "oauthId",
-  "updatedAt",
-  "storageLabel",
   "name",
-  "quotaSizeInBytes",
-  "quotaUsageInBytes",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
   "status",
-  "profileChangedAt"
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes"
 from
   "users"
 where
   "users"."oauthId" = $1
   and "users"."deletedAt" is null
+
+-- UserRepository.getDeletedAfter
+select
+  "id"
+from
+  "users"
+where
+  "users"."deletedAt" < $1
+
+-- UserRepository.getList (with deleted)
+select
+  "id",
+  "name",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
+  "status",
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata".*
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
+from
+  "users"
+order by
+  "createdAt" desc
+
+-- UserRepository.getList (without deleted)
+select
+  "id",
+  "name",
+  "email",
+  "profileImagePath",
+  "profileChangedAt",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "isAdmin",
+  "status",
+  "oauthId",
+  "profileImagePath",
+  "shouldChangePassword",
+  "storageLabel",
+  "quotaSizeInBytes",
+  "quotaUsageInBytes",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "user_metadata".*
+        from
+          "user_metadata"
+        where
+          "users"."id" = "user_metadata"."userId"
+      ) as agg
+  ) as "metadata"
+from
+  "users"
+where
+  "users"."deletedAt" is null
+order by
+  "createdAt" desc
 
 -- UserRepository.getUserStats
 select
