@@ -209,6 +209,12 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
+export interface ISidecarDiscoveryJob extends IBaseJob {
+  paths: string[];
+  libraryId?: string;
+  exclusionPatterns?: string[];
+}
+
 export interface ILibraryFileJob {
   libraryId: string;
   paths: string[];
@@ -321,8 +327,7 @@ export type JobItem =
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
-  | { name: JobName.SIDECAR_RECONCILIATION; data: IEntityJob }
-  | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
+  | { name: JobName.SIDECAR_DISCOVERY; data: ISidecarDiscoveryJob }
   | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
@@ -453,6 +458,5 @@ export type StorageAsset = {
   fileCreatedAt: Date;
   originalPath: string;
   originalFileName: string;
-  sidecarPath: string | null;
   fileSizeInByte: number | null;
 };

@@ -6,6 +6,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../fixtures/asset.stub.dart';
 import '../fixtures/user.stub.dart';
+import '../infrastructure/repository.mock.dart';
 import '../repository.mocks.dart';
 
 void main() {
@@ -40,7 +41,7 @@ void main() {
           [User.fromDto(UserStub.admin), User.fromDto(UserStub.admin)],
         );
 
-      when(() => userRepository.get(any()))
+      when(() => userRepository.getByUserId(any()))
           .thenAnswer((_) async => UserStub.admin);
       when(() => userRepository.getByUserId(any()))
           .thenAnswer((_) async => UserStub.admin);

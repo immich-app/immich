@@ -4,10 +4,11 @@ import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, DB } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetFileEntity, searchAssetFileBuilder } from 'src/entities/asset-files.entity';
 import { AssetFileType } from 'src/enum';
 import { AssetFileSearchOptions } from 'src/repositories/search.repository';
 import { asUuid, unnest } from 'src/utils/database';
+import { Paginated, paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface UpsertFileOptions {
   assetId: string;
@@ -25,14 +26,16 @@ export class AssetFileRepository {
     >;
   }
 
-  getAll({ orderDirection, ...options }: AssetFileSearchOptions = {}) {
-    return this.db
-      .selectFrom('asset_files')
-      .selectAll('asset_files')
-      .$if(!!options.assetId, (qb) => qb.where('asset_files.assetId', '=', asUuid(options.assetId!)))
-      .$if(!!options.type, (qb) => qb.where('asset_files.type', '=', options.type!))
+  async getAll(
+    pagination: PaginationOptions,
+    { orderDirection, ...options }: AssetFileSearchOptions = {},
+  ): Paginated<AssetFileEntity> {
+    const builder = searchAssetFileBuilder(this.db, options)
       .orderBy('asset_files.createdAt', orderDirection ?? 'asc')
-      .stream();
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0);
+    const items = await builder.execute();
+    return paginationHelper(items as any as AssetFileEntity[], pagination.take);
   }
 
   getById(id: string): Promise<AssetFileEntity | undefined> {
@@ -102,15 +105,6 @@ export class AssetFileRepository {
       )
       .returningAll()
       .execute()) as any as Promise<AssetFileEntity[]>;
-  }
-
-  async getAssetFileById(assetFileId: string): Promise<AssetFileEntity | undefined> {
-    return this.db
-      .selectFrom('asset_files')
-      .selectAll('asset_files')
-      .where('asset_files.id', '=', asUuid(assetFileId))
-      .limit(1)
-      .executeTakeFirst() as any as Promise<AssetFileEntity | undefined>;
   }
 
   async getAssetSidecarsByPath(assetPath: string): Promise<AssetFileEntity | undefined> {

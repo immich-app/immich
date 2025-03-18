@@ -2,9 +2,10 @@ import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { randomBytes } from 'node:crypto';
 import { constants } from 'node:fs/promises';
 import { defaults } from 'src/config';
+import { SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { ExifEntity } from 'src/entities/exif.entity';
-import { AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
+import { AssetFileType, AssetType, ExifOrientation, ImmichWorker, JobName, JobStatus, SourceType } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
@@ -15,7 +16,7 @@ import { probeStub } from 'test/fixtures/media.stub';
 import { metadataStub } from 'test/fixtures/metadata.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { tagStub } from 'test/fixtures/tag.stub';
-import { newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, newTestService, ServiceMocks, ServiceMocks } from 'test/utils';
 
 describe(MetadataService.name, () => {
   let sut: MetadataService;
@@ -1222,7 +1223,7 @@ describe(MetadataService.name, () => {
     it('should queue assets with sidecar files', async () => {
       mocks.asset.getAll.mockResolvedValue({ items: [assetStub.sidecar], hasNextPage: false });
 
-      await sut.handleQueueSidecar({ force: true });
+      await sut.handleQueueSidecarSync({ force: true });
 
       expect(mocks.asset.getAll).toHaveBeenCalledWith({ take: 1000, skip: 0 });
       expect(mocks.asset.getWithout).not.toHaveBeenCalled();
@@ -1237,7 +1238,7 @@ describe(MetadataService.name, () => {
     it('should queue assets without sidecar files', async () => {
       mocks.asset.getWithout.mockResolvedValue({ items: [assetStub.image], hasNextPage: false });
 
-      await sut.handleQueueSidecar({ force: false });
+      await sut.handleQueueSidecarSync({ force: false });
 
       expect(mocks.asset.getWithout).toHaveBeenCalledWith({ take: 1000, skip: 0 }, WithoutProperty.SIDECAR);
       expect(mocks.asset.getAll).not.toHaveBeenCalled();
@@ -1252,55 +1253,55 @@ describe(MetadataService.name, () => {
 
   describe('handleSidecarReconciliation', () => {
     it('should fail if sidecar does not exist', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue();
+      mocks.assetFile.getById.mockResolvedValue(undefined);
 
-      const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
+      const response = await sut.handleSidecarSync({ id: assetFileStub.sidecarWithExtension.id });
 
       expect(response).toBe(JobStatus.FAILED);
     });
 
     it('should fail if sidecar is missing xmp extension', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.sidecarWithoutXMP);
+      mocks.assetFile.getById.mockResolvedValue(assetFileStub.sidecarWithoutXMP);
 
-      const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithoutXMP.id });
+      const response = await sut.handleSidecarSync({ id: assetFileStub.sidecarWithoutXMP.id });
 
       expect(response).toBe(JobStatus.FAILED);
     });
 
     it('should succeed if orphaned without asset on disk', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.xmpSidecarOrpahed);
+      mocks.assetFile.getById.mockResolvedValue(assetFileStub.xmpSidecarOrpahed);
       mocks.asset.getLikeOriginalPath.mockResolvedValue([]);
 
-      const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
+      const response = await sut.handleSidecarSync({ id: assetFileStub.sidecarWithExtension.id });
 
       expect(response).toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(assetFileStub.xmpSidecarOrpahed);
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith(assetFileStub.xmpSidecarOrpahed);
 
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
     it('should fail if multiple assets match the sidecar', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.xmpSidecarOrpahed);
+      mocks.assetFile.getById.mockResolvedValue(assetFileStub.xmpSidecarOrpahed);
       mocks.asset.getLikeOriginalPath.mockResolvedValue([assetStub.primaryImage, assetStub.image]);
 
-      const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
+      const response = await sut.handleSidecarSync({ id: assetFileStub.sidecarWithExtension.id });
 
       expect(response).toBe(JobStatus.FAILED);
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
-      expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsertAll).not.toHaveBeenCalled();
     });
 
     it('should set the new sidecar when no existing sidecar exists', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.sidecarWithExtension);
-      mocks.asset.getAssetFilesByAssetIdAndType.mockResolvedValue([]);
+      mocks.assetFile.getById.mockResolvedValue(assetFileStub.sidecarWithExtension);
+      mocks.assetFile.getAll.mockResolvedValue(undefined);
 
-      const response = await sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id });
+      const response = await sut.handleSidecarSync({ id: assetFileStub.sidecarWithExtension.id });
 
       expect(response).toBe(JobStatus.SUCCESS);
 
-      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(assetFileStub.sidecarWithExtension);
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith(assetFileStub.sidecarWithExtension);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetFileStub.sidecarWithExtension.assetId,
         sidecarPath: assetFileStub.sidecarWithExtension.path,
@@ -1312,14 +1313,14 @@ describe(MetadataService.name, () => {
     });
 
     it('should replace a sidecar without extension with a sidecar with extension', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.sidecarWithExtension);
-      mocks.asset.getAssetFilesByAssetIdAndType.mockResolvedValue([assetFileStub.sidecarWithoutExtension]);
+      mocks.assetFile.getById.mockResolvedValue(assetFileStub.sidecarWithExtension);
+      mocks.assetFile.getAll.mockResolvedValue(makeStream([assetFileStub.sidecarWithoutExtension]));
 
-      await expect(sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithExtension.id })).resolves.toBe(
+      await expect(sut.handleSidecarSync({ id: assetFileStub.sidecarWithExtension.id })).resolves.toBe(
         JobStatus.SUCCESS,
       );
 
-      expect(mocks.asset.upsertFile).toHaveBeenCalledWith(assetFileStub.sidecarWithExtension);
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith(assetFileStub.sidecarWithExtension);
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetFileStub.sidecarWithExtension.assetId,
         sidecarPath: assetFileStub.sidecarWithExtension.path,
@@ -1331,10 +1332,10 @@ describe(MetadataService.name, () => {
     });
 
     it('should keep a sidecar with extension when called with sidecar without extension', async () => {
-      mocks.asset.getAssetFileById.mockResolvedValue(assetFileStub.sidecarWithoutExtension);
-      mocks.asset.getAssetFilesByAssetIdAndType.mockResolvedValue([assetFileStub.sidecarWithExtension]);
+      mocks.assetFile.getById.mockResolvedValue(assetFileStub.sidecarWithoutExtension);
+      mocks.assetFile.getAll.mockResolvedValue([assetFileStub.sidecarWithExtension]);
 
-      await expect(sut.handleSidecarReconciliation({ id: assetFileStub.sidecarWithoutExtension.id })).resolves.toBe(
+      await expect(sut.handleSidecarSync({ id: assetFileStub.sidecarWithoutExtension.id })).resolves.toBe(
         JobStatus.SUCCESS,
       );
 
@@ -1352,60 +1353,79 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it('should do nothing if asset has no sidecar path', async () => {
+    it('should fail if no corresponding sidecar asset file exists', async () => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mocks.assetFile.getAll.mockResolvedValue({ items: [], hasNextPage: false });
+
       await expect(sut.handleSidecarSync({ id: assetStub.image.id })).resolves.toBe(JobStatus.FAILED);
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it('should set sidecar path if exists (sidecar named photo.ext.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
-      mocks.storage.checkFileExists.mockResolvedValue(true);
+    it('should sync orphaned sidecar if it exists (file.jpg.xmp)', async () => {
+      const orphanSidecar = { ...assetFileStub.sidecarWithExtension, assetId: null };
 
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.SUCCESS);
+      mocks.asset.getByIds.mockResolvedValue([assetStub.noResizePath]);
+      mocks.assetFile.getAll.mockResolvedValue({
+        items: [orphanSidecar as unknown as SidecarAssetFileEntity],
+        hasNextPage: false,
+      });
+
+      await expect(sut.handleSidecarSync({ id: assetStub.noResizePath.id })).resolves.toBe(JobStatus.SUCCESS);
       expect(mocks.storage.checkFileExists).toHaveBeenCalledWith(
-        `${assetStub.sidecar.originalPath}.xmp`,
+        `${assetStub.noResizePath.originalPath}.xmp`,
         constants.R_OK,
       );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecar.id,
-        sidecarPath: assetStub.sidecar.sidecarPath,
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith({
+        assetId: assetStub.noResizePath.id,
+        path: orphanSidecar.path,
+        type: AssetFileType.SIDECAR,
       });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it('should set sidecar path if exists (sidecar named photo.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecarWithoutExt]);
+    it('should create sidecar asset file if sidecar exists on disk (sidecar named photo.xmp)', async () => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.noResizePath]);
+      mocks.assetFile.getAll.mockResolvedValue({ items: [assetFileStub.sidecarWithoutExtension], hasNextPage: false });
+
       mocks.storage.checkFileExists.mockResolvedValueOnce(false);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecarWithoutExt.id })).resolves.toBe(JobStatus.SUCCESS);
+      await expect(sut.handleSidecarSync({ id: assetStub.noResizePath.id })).resolves.toBe(JobStatus.SUCCESS);
       expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
         2,
-        assetStub.sidecarWithoutExt.sidecarPath,
+        assetFileStub.sidecarWithoutExtension.path,
         constants.R_OK,
       );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecarWithoutExt.id,
-        sidecarPath: assetStub.sidecarWithoutExt.sidecarPath,
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith({
+        assetId: assetStub.noResizePath.id,
+        path: assetFileStub.sidecarWithoutExtension.path,
+        type: AssetFileType.SIDECAR,
       });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
-    it('should set sidecar path if exists (two sidecars named photo.ext.xmp and photo.xmp, should pick photo.ext.xmp)', async () => {
-      mocks.asset.getByIds.mockResolvedValue([assetStub.sidecar]);
+    it('should create sidecar asset file if sidecar exists on disk (two sidecars named photo.ext.xmp and photo.xmp, should pick photo.ext.xmp)', async () => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.noResizePath]);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
       mocks.storage.checkFileExists.mockResolvedValueOnce(true);
 
-      await expect(sut.handleSidecarSync({ id: assetStub.sidecar.id })).resolves.toBe(JobStatus.SUCCESS);
-      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(1, assetStub.sidecar.sidecarPath, constants.R_OK);
+      await expect(sut.handleSidecarSync({ id: assetStub.noResizePath.id })).resolves.toBe(JobStatus.SUCCESS);
       expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
-        2,
-        assetStub.sidecarWithoutExt.sidecarPath,
+        1,
+        assetFileStub.sidecarWithExtension.path,
         constants.R_OK,
       );
-      expect(mocks.asset.update).toHaveBeenCalledWith({
-        id: assetStub.sidecar.id,
-        sidecarPath: assetStub.sidecar.sidecarPath,
+      expect(mocks.storage.checkFileExists).toHaveBeenNthCalledWith(
+        2,
+        assetFileStub.sidecarWithoutExtension.path,
+        constants.R_OK,
+      );
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith({
+        assetId: assetStub.noResizePath.id,
+        path: assetFileStub.sidecarWithExtension.path,
+        type: AssetFileType.SIDECAR,
       });
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should unset sidecar path if file does not exist anymore', async () => {

@@ -320,6 +320,9 @@ export class AssetMediaService extends BaseService {
     file: UploadFile,
     sidecarPath?: string,
   ): Promise<void> {
+    // TODO for PR 16827: handle sidecar changes
+    // *********************
+
     await this.assetRepository.update({
       id: assetId,
 

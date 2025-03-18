@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Job } from 'bullmq';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
@@ -6,7 +7,7 @@ import _ from 'lodash';
 import { Duration } from 'luxon';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { JOBS_ASSET_PAGINATION_SIZE, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { Exif } from 'src/db';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -17,6 +18,7 @@ import { PersonEntity } from 'src/entities/person.entity';
 import {
   AssetFileType,
   AssetType,
+  CrawlType,
   DatabaseLock,
   ExifOrientation,
   ImmichWorker,
@@ -24,6 +26,7 @@ import {
   JobStatus,
   QueueName,
   SourceType,
+  StorageFolder,
 } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
@@ -273,35 +276,100 @@ export class MetadataService extends BaseService {
   }
 
   @OnJob({ name: JobName.QUEUE_SIDECAR, queue: QueueName.SIDECAR })
-  async handleQueueSidecar(job: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
+  async handleQueueSidecarSync(job: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
     const { force } = job;
-    const assetPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (pagination) => {
-      return force
-        ? this.assetRepository.getAll(pagination)
-        : this.assetRepository.getWithout(pagination, WithoutProperty.SIDECAR);
+
+    // Search the library folder for sidecar files
+    // NOTE: External library sidecars are taken care of by the library service, not here
+    await this.jobRepository.queue({
+      name: JobName.SIDECAR_DISCOVERY,
+      data: { paths: [StorageCore.getBaseFolder(StorageFolder.LIBRARY)] },
     });
 
-    for await (const assets of assetPagination) {
-      await this.jobRepository.queueAll(
-        assets.map((asset) => ({
-          name: force ? JobName.SIDECAR_SYNC : JobName.SIDECAR_DISCOVERY,
-          data: { id: asset.id },
-        })),
-      );
+    if (!force) {
+      return JobStatus.SUCCESS;
     }
 
-    const sidecars = this.assetFileRepository.getAll({ type: AssetFileType.SIDECAR });
+    // Re-read all existing sidecar files
+    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
+      this.assetFileRepository.getAll(options, { type: AssetFileType.SIDECAR }),
+    );
 
-    for await (const sidecar of sidecars) {
-      await this.jobRepository.queue({ name: JobName.SIDECAR_RECONCILIATION, data: { id: sidecar.id } });
+    for await (const assetFiles of sidecarPagination) {
+      await this.jobRepository.queueAll(
+        assetFiles.map((sidecar) => ({ name: JobName.SIDECAR_SYNC, data: { id: sidecar.id } })),
+      );
     }
 
     return JobStatus.SUCCESS;
   }
 
-  @OnJob({ name: JobName.SIDECAR_RECONCILIATION, queue: QueueName.SIDECAR })
-  async handleSidecarReconciliation({ id }: JobOf<JobName.SIDECAR_RECONCILIATION>): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_DISCOVERY, queue: QueueName.SIDECAR })
+  async handleSidecarDiscovery(job: JobOf<JobName.SIDECAR_DISCOVERY>): Promise<JobStatus> {
+    const sidecarsOnDisk = this.storageRepository.walk({
+      pathsToCrawl: job.paths,
+      includeHidden: false,
+      crawlType: CrawlType.SIDECARS,
+      exclusionPatterns: job.exclusionPatterns,
+      take: JOBS_LIBRARY_PAGINATION_SIZE,
+    });
+
+    let sidecarImportCount = 0;
+    let sidecarCrawlCount = 0;
+
+    for await (const sidecarBatch of sidecarsOnDisk) {
+      this.logger.debug(`Crawling sidecar batch: ${sidecarBatch.length} sidecar(s)`);
+      sidecarCrawlCount += sidecarBatch.length;
+
+      const paths = await this.assetFileRepository.filterSidecarPaths(sidecarBatch);
+
+      if (paths.length > 0) {
+        sidecarImportCount += paths.length;
+
+        const sidecarImports = paths.map((path) => ({
+          path: path.normalize(path),
+          type: AssetFileType.SIDECAR,
+        }));
+
+        const sidecarIds: string[] = [];
+
+        for (let i = 0; i < sidecarImports.length; i += 5000) {
+          // Chunk the imports to avoid the postgres limit of max parameters at once
+          const chunk = sidecarImports.slice(i, i + 5000);
+          await this.assetFileRepository
+            .createAll(chunk)
+            .then((sidecars) => sidecarIds.push(...sidecars.map((sidecar) => sidecar.id)));
+        }
+
+        const progressMessage = `(${sidecarCrawlCount} done so far)`;
+
+        await this.jobRepository.queueAll(
+          sidecarIds.map((sidecarId) => ({
+            name: JobName.SIDECAR_SYNC,
+            data: { id: sidecarId },
+          })),
+        );
+
+        this.logger.log(`Crawled ${sidecarIds.length} ${progressMessage} sidecar(s)`);
+      }
+
+      this.logger.log(
+        `Crawled ${sidecarCrawlCount} sidecar(s) so far: ${paths.length} of current batch of ${sidecarBatch.length} will be imported...`,
+      );
+    }
+
+    this.logger.log(
+      `Finished sidecar crawl, ${sidecarCrawlCount} sidecar(s) found on disk and queued ${sidecarImportCount} for import`,
+    );
+
+    return JobStatus.SUCCESS;
+  }
+
+  @OnJob({ name: JobName.SIDECAR_SYNC, queue: QueueName.SIDECAR })
+  async handleSidecarSync({ id }: JobOf<JobName.SIDECAR_SYNC>): Promise<JobStatus> {
     // This job is called by the library service when a new sidecar file is found
+    // Here, we are working from the perspective of a sidecar, not an asset. A sidecar can be orphaned, or linked to an asset
+
     const sidecar = await this.assetFileRepository.getById(id);
 
     if (!sidecar || sidecar.type !== AssetFileType.SIDECAR) {
@@ -339,15 +407,14 @@ export class MetadataService extends BaseService {
       sidecar.assetId = assets[0].id;
     }
 
-    let currentSidecarsForAsset: SidecarAssetFileEntity[] = [];
+    const currentSidecarsForAsset: SidecarAssetFileEntity[] = [];
 
-    const sidecars = this.assetFileRepository.getAll({
-      assetId: sidecar.assetId,
-      type: AssetFileType.SIDECAR,
-    });
+    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
+      this.assetFileRepository.getAll(options, { assetId: sidecar.assetId, type: AssetFileType.SIDECAR }),
+    );
 
-    for await (const sidecar of sidecars) {
-      currentSidecarsForAsset.push(sidecar as SidecarAssetFileEntity);
+    for await (const sidecar of sidecarPagination) {
+      currentSidecarsForAsset.concat(...(sidecar as SidecarAssetFileEntity[]));
     }
 
     let storeSidecar = false;
@@ -383,16 +450,6 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  @OnJob({ name: JobName.SIDECAR_SYNC, queue: QueueName.SIDECAR })
-  handleSidecarSync({ id }: JobOf<JobName.SIDECAR_SYNC>): Promise<JobStatus> {
-    return this.processSidecar(id, true);
-  }
-
-  @OnJob({ name: JobName.SIDECAR_DISCOVERY, queue: QueueName.SIDECAR })
-  handleSidecarDiscovery({ id }: JobOf<JobName.SIDECAR_DISCOVERY>): Promise<JobStatus> {
-    return this.processSidecar(id, false);
-  }
-
   @OnEvent({ name: 'asset.tag' })
   async handleTagAsset({ assetId }: ArgOf<'asset.tag'>) {
     await this.jobRepository.queue({ name: JobName.SIDECAR_WRITE, data: { id: assetId, tags: true } });
@@ -413,8 +470,22 @@ export class MetadataService extends BaseService {
 
     const tagsList = (asset.tags || []).map((tag) => tag.value);
 
-    const sidecarStream = this.assetFileRepository.getAll({ assetId: asset.id, type: AssetFileType.SIDECAR });
-    const sidecar = (await sidecarStream.next()).value as SidecarAssetFileEntity;
+    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
+      this.assetFileRepository.getAll(options, { assetId: asset.id, type: AssetFileType.SIDECAR }),
+    );
+
+    let sidecars: SidecarAssetFileEntity[] = [];
+
+    for await (const sidecar of sidecarPagination) {
+      sidecars.concat(...(sidecar as SidecarAssetFileEntity[]));
+    }
+
+    if (sidecars.length > 1) {
+      this.logger.error(`Multiple sidecars found for asset ${asset.id}: ${asset.originalPath}`);
+      return JobStatus.FAILED;
+    }
+
+    const sidecar = sidecars[0];
 
     const sidecarPath = sidecar ? sidecar.path : `${asset.originalPath}.xmp`;
     const exif = _.omitBy(
@@ -457,8 +528,21 @@ export class MetadataService extends BaseService {
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
-    const sidecarStream = this.assetFileRepository.getAll({ assetId: asset.id, type: AssetFileType.SIDECAR });
-    const sidecar = (await sidecarStream.next()).value as SidecarAssetFileEntity;
+    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
+      this.assetFileRepository.getAll(options, { assetId: asset.id, type: AssetFileType.SIDECAR }),
+    );
+
+    let sidecars: SidecarAssetFileEntity[] = [];
+
+    for await (const sidecar of sidecarPagination) {
+      sidecars.concat(...(sidecar as SidecarAssetFileEntity[]));
+    }
+
+    if (sidecars.length > 1) {
+      throw new Error(`Multiple sidecars found for asset ${asset.id}: ${asset.originalPath}`);
+    }
+
+    const sidecar = sidecars[0];
 
     if (!sidecar && asset.type === AssetType.IMAGE) {
       return this.metadataRepository.readTags(asset.originalPath);
@@ -849,67 +933,5 @@ export class MetadataService extends BaseService {
     }
 
     return tags;
-  }
-
-  private async processSidecar(id: string, isSync: boolean): Promise<JobStatus> {
-    const [asset] = await this.assetRepository.getByIds([id]);
-
-    if (!asset) {
-      return JobStatus.FAILED;
-    }
-
-    const sidecarStream = this.assetFileRepository.getAll({ assetId: asset.id, type: AssetFileType.SIDECAR });
-    const sidecar = (await sidecarStream.next()).value as SidecarAssetFileEntity;
-
-    if (isSync && !sidecar) {
-      return JobStatus.FAILED;
-    }
-
-    if (!isSync && (!asset.isVisible || sidecar) && !asset.isExternal) {
-      return JobStatus.FAILED;
-    }
-
-    if (asset.isExternal) {
-      // External libraries have their sidecars scanned by the library service instead of the slow method below, so we can exit here
-      if (sidecar) {
-        this.logger.debug(
-          `Detected external library sidecar at '${sidecar.path}' for asset ${asset.id}, ${asset.originalPath}`,
-        );
-      }
-      return JobStatus.SUCCESS;
-    }
-
-    // XMP sidecars can come in two filename formats. For a photo named photo.ext, the filenames are photo.ext.xmp and photo.xmp.
-    // Sidecar files with extensions, i.e. photo.jpg.xmp, have precedence over sidecar files without extensions, i.e. photo.xmp.
-    const assetPath = path.parse(asset.originalPath);
-    const assetPathWithoutExt = path.join(assetPath.dir, assetPath.name);
-    const sidecarPathWithoutExt = `${assetPathWithoutExt}.xmp`;
-    const sidecarPathWithExt = `${asset.originalPath}.xmp`;
-
-    const [sidecarPathWithExtExists, sidecarPathWithoutExtExists] = await Promise.all([
-      this.storageRepository.checkFileExists(sidecarPathWithExt, constants.R_OK),
-      this.storageRepository.checkFileExists(sidecarPathWithoutExt, constants.R_OK),
-    ]);
-
-    let sidecarPath = null;
-    if (sidecarPathWithExtExists) {
-      sidecarPath = sidecarPathWithExt;
-    } else if (sidecarPathWithoutExtExists) {
-      sidecarPath = sidecarPathWithoutExt;
-    }
-
-    if (sidecarPath) {
-      this.logger.debug(`Detected sidecar at '${sidecarPath}' for asset ${asset.id}: ${asset.originalPath}`);
-      await this.assetFileRepository.upsert({ assetId: asset.id, path: sidecarPath, type: AssetFileType.SIDECAR });
-      return JobStatus.SUCCESS;
-    }
-
-    if (!isSync) {
-      return JobStatus.FAILED;
-    }
-
-    this.logger.debug(`No sidecar found for asset ${asset.id}: ${asset.originalPath}`);
-
-    return JobStatus.SUCCESS;
   }
 }

@@ -8,6 +8,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -29,6 +30,7 @@ import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -203,6 +205,7 @@ export class TestContext {
   album: AlbumRepository;
   apiKey: ApiKeyRepository;
   asset: AssetRepository;
+  assetFile: AssetFileRepository;
   audit: AuditRepository;
   config: ConfigRepository;
   library: LibraryRepository;
@@ -221,6 +224,7 @@ export class TestContext {
   sharedLink: SharedLinkRepository;
   stack: StackRepository;
   storage: StorageRepository;
+  systemMetadata: SystemMetadataRepository;
   sync: SyncRepository;
   telemetry: TelemetryRepository;
   trash: TrashRepository;
@@ -238,6 +242,7 @@ export class TestContext {
     this.album = new AlbumRepository(this.db);
     this.apiKey = new ApiKeyRepository(this.db);
     this.asset = new AssetRepository(this.db);
+    this.assetFile = new AssetFileRepository(this.db);
     this.audit = new AuditRepository(this.db);
     this.config = config;
     this.library = new LibraryRepository(this.db);
@@ -257,6 +262,7 @@ export class TestContext {
     this.stack = new StackRepository(this.db);
     this.storage = new StorageRepository(logger);
     this.sync = new SyncRepository(this.db);
+    this.systemMetadata = new SystemMetadataRepository(this.db);
     this.telemetry = newTelemetryRepositoryMock() as unknown as TelemetryRepository;
     this.trash = new TrashRepository(this.db);
     this.user = new UserRepository(this.db);

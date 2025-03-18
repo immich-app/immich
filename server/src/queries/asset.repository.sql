@@ -160,15 +160,6 @@ from
 where
   "originalPath" like $1
 
--- AssetRepository.getAssetFilesByAssetIdAndType
-select
-  "asset_files".*
-from
-  "asset_files"
-where
-  "assetId" = $1::uuid
-  and "type" = $2
-
 -- AssetRepository.getAllByDeviceId
 select
   "deviceAssetId"

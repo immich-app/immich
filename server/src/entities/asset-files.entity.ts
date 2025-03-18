@@ -1,5 +1,9 @@
+import { Kysely, sql } from 'kysely';
+import { DB } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType } from 'src/enum';
+import { AssetFileSearchOptions } from 'src/repositories/search.repository';
+import { asUuid } from 'src/utils/database';
 import {
   Column,
   CreateDateColumn,
@@ -48,3 +52,15 @@ export type SidecarAssetFileEntity = AssetFileEntity & {
   assetId: string | null;
   asset: AssetEntity | null;
 };
+
+export function searchAssetFileBuilder(kysely: Kysely<DB>, options: AssetFileSearchOptions) {
+  return kysely
+    .selectFrom('asset_files')
+    .selectAll('asset_files')
+    .$if(!!options.id, (qb) => qb.where('asset_files.id', '=', asUuid(options.id!)))
+    .$if(!!options.path, (qb) =>
+      qb.where(sql`f_unaccent(asset_files."path")`, 'ilike', sql`'%' || f_unaccent(${options.path}) || '%'`),
+    )
+    .$if(!!options.type, (qb) => qb.where('asset_files.type', '=', options.type!))
+    .where('asset_files.fileCreatedAt', 'is not', null);
+}

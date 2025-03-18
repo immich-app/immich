@@ -147,6 +147,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
 export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
 
 export interface AssetFileSearchOptions {
+  id?: string;
+  path?: string;
   assetId?: string | null;
   type?: AssetFileType;
   orderDirection?: 'asc' | 'desc';

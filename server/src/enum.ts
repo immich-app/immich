@@ -506,7 +506,6 @@ export enum JobName {
   // XMP sidecars
   QUEUE_SIDECAR = 'queue-sidecar',
   SIDECAR_DISCOVERY = 'sidecar-discovery',
-  SIDECAR_RECONCILIATION = 'sidecar-reconciliation',
   SIDECAR_SYNC = 'sidecar-sync',
   SIDECAR_WRITE = 'sidecar-write',
 

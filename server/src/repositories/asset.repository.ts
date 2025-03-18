@@ -717,6 +717,7 @@ export class AssetRepository {
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.SIDECAR, (qb) =>
+        // TODO: is this the right join?
         qb.leftJoin('asset_files', 'assetId', 'assets.id').where('asset_files.type', '=', AssetFileType.SIDECAR),
       )
       .$if(property === WithoutProperty.SMART_SEARCH, (qb) =>

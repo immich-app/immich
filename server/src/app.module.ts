@@ -46,9 +46,8 @@ const imports = [
   ClsModule.forRoot(cls.config),
   OpenTelemetryModule.forRoot(otel),
   KyselyModule.forRoot({
-    log: ['query', 'error'],
     dialect: new PostgresJSDialect({ postgres: postgres(database.config.kysely) }),
-    /* log(event) {
+    log(event) {
       if (event.level === 'error') {
         console.error('Query failed :', {
           durationMs: event.queryDurationMillis,
@@ -57,7 +56,7 @@ const imports = [
           params: event.query.parameters,
         });
       }
-    },*/
+    },
   }),
 ];
 

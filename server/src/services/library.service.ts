@@ -247,7 +247,10 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const sidecarImports = job.paths.map((path) => this.processSidecar(path, library.ownerId, job.libraryId));
+    const sidecarImports = job.paths.map((path) => ({
+      path: path.normalize(path),
+      type: AssetFileType.SIDECAR,
+    }));
 
     const sidecarIds: string[] = [];
 
@@ -266,7 +269,7 @@ export class LibraryService extends BaseService {
 
     await this.jobRepository.queueAll(
       sidecarIds.map((sidecarId) => ({
-        name: JobName.SIDECAR_RECONCILIATION,
+        name: JobName.SIDECAR_SYNC,
         data: { id: sidecarId },
       })),
     );
@@ -290,13 +293,13 @@ export class LibraryService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    const assetImports = job.paths.map((assetPath) => this.processAsset(assetPath, library.ownerId, job.libraryId));
+    const assets = job.paths.map((assetPath) => this.processAsset(assetPath, library.ownerId, job.libraryId));
 
     const assetIds: string[] = [];
 
-    for (let i = 0; i < assetImports.length; i += 5000) {
+    for (let i = 0; i < assets.length; i += 5000) {
       // Chunk the imports to avoid the postgres limit of max parameters at once
-      const chunk = assetImports.slice(i, i + 5000);
+      const chunk = assets.slice(i, i + 5000);
       await this.assetRepository.createAll(chunk).then((assets) => assetIds.push(...assets.map((asset) => asset.id)));
     }
 
@@ -307,7 +310,7 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
-    await this.queuePostSyncJobs(assetIds);
+    await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.METADATA_EXTRACTION, data: { id } })));
 
     return JobStatus.SUCCESS;
   }
@@ -450,27 +453,6 @@ export class LibraryService extends BaseService {
     };
   }
 
-  private processSidecar(filePath: string, ownerId: string, libraryId: string) {
-    const sidecarPath = path.normalize(filePath);
-
-    return {
-      path: sidecarPath,
-      type: AssetFileType.SIDECAR,
-    };
-  }
-
-  async queuePostSyncJobs(assetIds: string[]) {
-    this.logger.debug(`Queuing sidecar discovery for ${assetIds.length} asset(s)`);
-
-    // We queue a sidecar discovery which, in turn, queues metadata extraction
-    await this.jobRepository.queueAll(
-      assetIds.map((assetId) => ({
-        name: JobName.SIDECAR_DISCOVERY,
-        data: { id: assetId, source: 'upload' },
-      })),
-    );
-  }
-
   async queueScan(id: string) {
     await this.findOrFail(id);
 
@@ -600,7 +582,11 @@ export class LibraryService extends BaseService {
     }
 
     if (assetIdsToUpdate.length > 0) {
-      promises.push(this.queuePostSyncJobs(assetIdsToUpdate));
+      promises.push(
+        this.jobRepository.queueAll(
+          assetIdsToUpdate.map((id) => ({ name: JobName.METADATA_EXTRACTION, data: { id } })),
+        ),
+      );
     }
 
     await Promise.all(promises);
@@ -679,43 +665,10 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Starting sidecar crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 
-    const sidecarsOnDisk = this.storageRepository.walk({
-      pathsToCrawl: validImportPaths,
-      includeHidden: false,
-      exclusionPatterns: library.exclusionPatterns,
-      crawlType: CrawlType.SIDECARS,
-      take: JOBS_LIBRARY_PAGINATION_SIZE,
+    await this.jobRepository.queue({
+      name: JobName.SIDECAR_DISCOVERY,
+      data: { paths: validImportPaths, exclusionPatterns: library.exclusionPatterns, libraryId: library.id },
     });
-
-    let sidecarImportCount = 0;
-    let sidecarCrawlCount = 0;
-
-    for await (const sidecarBatch of sidecarsOnDisk) {
-      sidecarCrawlCount += sidecarBatch.length;
-
-      const paths = await this.assetFileRepository.filterSidecarPaths(sidecarBatch);
-
-      if (paths.length > 0) {
-        sidecarImportCount += paths.length;
-
-        await this.jobRepository.queue({
-          name: JobName.LIBRARY_SYNC_SIDECARS,
-          data: {
-            libraryId: library.id,
-            paths,
-            progressCounter: sidecarCrawlCount,
-          },
-        });
-      }
-
-      this.logger.log(
-        `Crawled ${sidecarCrawlCount} sidecar(s) so far: ${paths.length} of current batch of ${sidecarBatch.length} will be imported to library ${library.id}...`,
-      );
-    }
-
-    this.logger.log(
-      `Finished sidecar crawl, ${sidecarCrawlCount} sidecar(s) found on disk and queued ${sidecarImportCount} for import into ${library.id}`,
-    );
 
     this.logger.log(`Starting asset crawl of ${validImportPaths.length} import path(s) for library ${library.id}...`);
 

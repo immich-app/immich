@@ -341,7 +341,7 @@ describe(MediaService.name, () => {
         raw: rawInfo,
       });
 
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+      expect(mocks.assetFile.upsertAll).toHaveBeenCalledWith([
         {
           assetId: 'asset-id',
           type: AssetFileType.PREVIEW,
@@ -377,7 +377,7 @@ describe(MediaService.name, () => {
           twoPass: false,
         }),
       );
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+      expect(mocks.assetFile.upsertAll).toHaveBeenCalledWith([
         {
           assetId: 'asset-id',
           type: AssetFileType.PREVIEW,
@@ -412,7 +412,7 @@ describe(MediaService.name, () => {
           twoPass: false,
         }),
       );
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+      expect(mocks.assetFile.upsertAll).toHaveBeenCalledWith([
         {
           assetId: 'asset-id',
           type: AssetFileType.PREVIEW,
@@ -1608,7 +1608,7 @@ describe(MediaService.name, () => {
         'upload/encoded-video/user-id/as/se/asset-id.mp4',
         expect.objectContaining({
           inputOptions: expect.arrayContaining(['-hwaccel cuda', '-hwaccel_output_format cuda']),
-          outputOptions: expect.arrayContaining([expect.stringContaining('format=nv12')]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_cuda=-2:720:format=nv12')]),
           twoPass: false,
         }),
       );
@@ -1766,9 +1766,7 @@ describe(MediaService.name, () => {
             '-threads 1',
             '-qsv_device /dev/dri/renderD128',
           ]),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq:format=nv12'),
-          ]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_qsv=-1:720:async_depth=4:mode=hq')]),
           twoPass: false,
         }),
       );
@@ -2010,9 +2008,7 @@ describe(MediaService.name, () => {
             '-threads 1',
             '-hwaccel_device /dev/dri/renderD128',
           ]),
-          outputOptions: expect.arrayContaining([
-            expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc:format=nv12'),
-          ]),
+          outputOptions: expect.arrayContaining([expect.stringContaining('scale_vaapi=-2:720:mode=hq:out_range=pc')]),
           twoPass: false,
         }),
       );
@@ -2363,6 +2359,22 @@ describe(MediaService.name, () => {
         expect.objectContaining({
           inputOptions: expect.any(Array),
           outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf format=yuv420p']),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should convert to yuv420p when scaling without tone-mapping', async () => {
+      mocks.media.probe.mockResolvedValue(probeStub.videoStream4K10Bit);
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.REQUIRED } });
+      mocks.asset.getByIds.mockResolvedValue([assetStub.video]);
+      await sut.handleVideoConversion({ id: assetStub.video.id });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        'upload/encoded-video/user-id/as/se/asset-id.mp4',
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v h264', '-c:a copy', '-vf scale=-2:720,format=yuv420p']),
           twoPass: false,
         }),
       );

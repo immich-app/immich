@@ -51,7 +51,7 @@ describe(AuditService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.user.update).not.toHaveBeenCalled();
     });
@@ -66,7 +66,7 @@ describe(AuditService.name, () => {
       ]);
 
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', encodedVideoPath: './upload/my-video.mp4' });
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.user.update).not.toHaveBeenCalled();
     });
@@ -80,7 +80,7 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith({
         assetId: 'my-id',
         type: AssetFileType.PREVIEW,
         path: './upload/my-preview.png',
@@ -99,7 +99,7 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(mocks.asset.upsertFile).toHaveBeenCalledWith({
+      expect(mocks.assetFile.upsert).toHaveBeenCalledWith({
         assetId: 'my-id',
         type: AssetFileType.THUMBNAIL,
         path: './upload/my-thumbnail.webp',
@@ -119,7 +119,7 @@ describe(AuditService.name, () => {
       ]);
 
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', originalPath: './upload/my-original.png' });
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.user.update).not.toHaveBeenCalled();
     });
@@ -134,7 +134,7 @@ describe(AuditService.name, () => {
       ]);
 
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', sidecarPath: './upload/my-sidecar.xmp' });
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.user.update).not.toHaveBeenCalled();
     });
@@ -150,7 +150,7 @@ describe(AuditService.name, () => {
 
       expect(mocks.person.update).toHaveBeenCalledWith({ id: 'my-id', thumbnailPath: './upload/my-face.jpg' });
       expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.user.update).not.toHaveBeenCalled();
     });
 
@@ -165,7 +165,7 @@ describe(AuditService.name, () => {
 
       expect(mocks.user.update).toHaveBeenCalledWith('my-id', { profileImagePath: './upload/my-profile-pic.jpg' });
       expect(mocks.asset.update).not.toHaveBeenCalled();
-      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.person.update).not.toHaveBeenCalled();
     });
   });

@@ -155,7 +155,7 @@
           onConfirm={() => (shouldShowPasswordResetSuccess = false)}
           onCancel={() => (shouldShowPasswordResetSuccess = false)}
           hideCancelButton={true}
-          confirmColor="green"
+          confirmColor="success"
         >
           {#snippet promptSnippet()}
             <div class="flex flex-col gap-4">

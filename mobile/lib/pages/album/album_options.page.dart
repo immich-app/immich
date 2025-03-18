@@ -85,7 +85,7 @@ class AlbumOptionsPage extends HookConsumerWidget {
     void handleUserClick(UserDto user) {
       var actions = [];
 
-      if (user.uid == userId) {
+      if (user.id == userId) {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
@@ -170,10 +170,10 @@ class AlbumOptionsPage extends HookConsumerWidget {
                 color: context.colorScheme.onSurfaceSecondary,
               ),
             ),
-            trailing: userId == user.uid || isOwner
+            trailing: userId == user.id || isOwner
                 ? const Icon(Icons.more_horiz_rounded)
                 : const SizedBox(),
-            onTap: userId == user.uid || isOwner
+            onTap: userId == user.id || isOwner
                 ? () => handleUserClick(user)
                 : null,
           );

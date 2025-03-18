@@ -224,7 +224,7 @@ describe(LibraryService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith(
         sidecars.map(() =>
           expect.objectContaining({
-            name: JobName.SIDECAR_RECONCILIATION,
+            name: JobName.SIDECAR_SYNC,
             data: expect.objectContaining({
               id: expect.any(String),
             }),

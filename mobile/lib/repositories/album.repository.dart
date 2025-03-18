@@ -10,6 +10,7 @@ import 'package:immich_mobile/interfaces/album.interface.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/repositories/database.repository.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
 final albumRepositoryProvider =
@@ -43,14 +44,11 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
     if (shared != null) {
       query = query.sharedEqualTo(shared);
     }
+    final isarUserId = fastHash(Store.get(StoreKey.currentUser).id);
     if (owner == true) {
-      query = query.owner(
-        (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).id),
-      );
+      query = query.owner((q) => q.isarIdEqualTo(isarUserId));
     } else if (owner == false) {
-      query = query.owner(
-        (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).id),
-      );
+      query = query.owner((q) => q.not().isarIdEqualTo(isarUserId));
     }
     if (remote == true) {
       query = query.localIdIsNull();
@@ -140,16 +138,13 @@ class AlbumRepository extends DatabaseRepository implements IAlbumRepository {
         .filter()
         .nameContains(searchTerm, caseSensitive: false)
         .remoteIdIsNotNull();
+    final isarUserId = fastHash(Store.get(StoreKey.currentUser).id);
 
     switch (filterMode) {
       case QuickFilterMode.sharedWithMe:
-        query = query.owner(
-          (q) => q.not().isarIdEqualTo(Store.get(StoreKey.currentUser).id),
-        );
+        query = query.owner((q) => q.not().isarIdEqualTo(isarUserId));
       case QuickFilterMode.myAlbums:
-        query = query.owner(
-          (q) => q.isarIdEqualTo(Store.get(StoreKey.currentUser).id),
-        );
+        query = query.owner((q) => q.isarIdEqualTo(isarUserId));
       case QuickFilterMode.all:
         break;
     }
