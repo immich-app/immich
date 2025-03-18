@@ -29,6 +29,7 @@ import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
@@ -205,6 +206,7 @@ export class TestContext {
   sharedLink: SharedLinkRepository;
   stack: StackRepository;
   storage: StorageRepository;
+  systemMetadata: SystemMetadataRepository;
   sync: SyncRepository;
   telemetry: TelemetryRepository;
   trash: TrashRepository;
@@ -241,6 +243,7 @@ export class TestContext {
     this.stack = new StackRepository(this.db);
     this.storage = new StorageRepository(logger);
     this.sync = new SyncRepository(this.db);
+    this.systemMetadata = new SystemMetadataRepository(this.db);
     this.telemetry = newTelemetryRepositoryMock() as unknown as TelemetryRepository;
     this.trash = new TrashRepository(this.db);
     this.user = new UserRepository(this.db);
