@@ -36,7 +36,7 @@ class ImStaticGrid extends StatelessWidget {
             ),
             itemBuilder: (_, i) {
               if (isDragging) {
-                return const ImImagePlaceholder();
+                return const ImImagePlaceholder(width: 200, height: 200);
               }
 
               final asset = assetsSnap.isWaiting || assets == null
@@ -46,7 +46,7 @@ class ImStaticGrid extends StatelessWidget {
                 dimension: 200,
                 // Show Placeholder when drag scrolled
                 child: asset == null
-                    ? const ImImagePlaceholder()
+                    ? const ImImagePlaceholder(width: 200, height: 200)
                     : ImThumbnail(asset),
               );
             },

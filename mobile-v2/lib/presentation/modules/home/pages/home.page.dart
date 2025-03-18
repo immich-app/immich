@@ -26,19 +26,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final gridHasPadding = !context.isTablet && _showAppBar.value;
-
     return Scaffold(
       body: BlocProvider(
         create: (_) => AssetGridCubit(
           renderListProvider: RenderListProvider.mainTimeline(),
         ),
         child: Stack(children: [
-          ImAssetGrid(
-            topPadding: gridHasPadding
-                ? kToolbarHeight + context.mediaQueryPadding.top - 8
-                : null,
-          ),
+          ImmichAssetGridView(),
           if (!context.isTablet)
             ValueListenableBuilder(
               valueListenable: _showAppBar,

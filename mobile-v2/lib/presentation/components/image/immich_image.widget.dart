@@ -7,14 +7,23 @@ import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 import 'package:octo_image/octo_image.dart';
 
 class ImImagePlaceholder extends StatelessWidget {
-  const ImImagePlaceholder({super.key});
+  final double width;
+  final double height;
+  final double? margin;
+  const ImImagePlaceholder({
+    super.key,
+    required this.width,
+    required this.height,
+    this.margin,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: context.colorScheme.surfaceContainerHighest,
-      width: 200,
-      height: 200,
+      width: width,
+      height: height,
+      margin: EdgeInsets.all(margin ?? 0),
     );
   }
 }
@@ -30,7 +39,7 @@ class ImImage extends StatefulWidget {
     this.asset, {
     this.width,
     this.height,
-    this.placeholder = const ImImagePlaceholder(),
+    this.placeholder = const ImImagePlaceholder(width: 200, height: 200),
     super.key,
   });
 
