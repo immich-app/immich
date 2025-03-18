@@ -11,9 +11,9 @@ class IsarUserRepository extends IsarDatabaseRepository
   const IsarUserRepository(super.db) : _db = db;
 
   @override
-  Future<void> delete(List<int> ids) async {
+  Future<void> delete(List<String> ids) async {
     await transaction(() async {
-      await _db.users.deleteAll(ids);
+      await _db.users.deleteAllById(ids);
     });
   }
 
@@ -22,11 +22,6 @@ class IsarUserRepository extends IsarDatabaseRepository
     await transaction(() async {
       await _db.users.clear();
     });
-  }
-
-  @override
-  Future<UserDto?> get(int id) async {
-    return (await _db.users.get(id))?.toDto();
   }
 
   @override
