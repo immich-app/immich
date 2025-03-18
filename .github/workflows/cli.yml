@@ -6,7 +6,6 @@ on:
       - 'cli/**'
       - '.github/workflows/cli.yml'
   pull_request:
-    branches: [main]
     paths:
       - 'cli/**'
       - '.github/workflows/cli.yml'
