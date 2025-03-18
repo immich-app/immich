@@ -4,20 +4,47 @@
   import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { type AssetResponseDto, getAllAlbums } from '@immich/sdk';
-  import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus } from '@mdi/js';
+  import { mdiHeart, mdiImageMultipleOutline, mdiMagnifyPlus, mdiArchiveArrowDownOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import type { SelectedSyncData } from '$lib/components/utilities-page/duplicates/duplicates-compare-control.svelte';
 
   interface Props {
     asset: AssetResponseDto;
     isSelected: boolean;
+    isSynchronizeAlbumsActive: boolean;
+    isSynchronizeFavoritesActive: boolean;
+    isSynchronizeArchivesActive: boolean;
+    selectedSyncData: SelectedSyncData;
     onSelectAsset: (asset: AssetResponseDto) => void;
     onViewAsset: (asset: AssetResponseDto) => void;
   }
 
-  let { asset, isSelected, onSelectAsset, onViewAsset }: Props = $props();
+  let {
+    asset,
+    isSelected,
+    isSynchronizeAlbumsActive,
+    isSynchronizeFavoritesActive,
+    isSynchronizeArchivesActive,
+    selectedSyncData = $bindable(),
+    onSelectAsset,
+    onViewAsset,
+  }: Props = $props();
 
   let isFromExternalLibrary = $derived(!!asset.libraryId);
   let assetData = $derived(JSON.stringify(asset, null, 2));
+
+  selectedSyncData.isFavorite = selectedSyncData.isFavorite || asset.isFavorite;
+  selectedSyncData.isArchived = selectedSyncData.isArchived || asset.isArchived;
+  let displayedFavorite = $derived(
+    isSelected && isSynchronizeFavoritesActive && selectedSyncData?.isFavorite
+      ? selectedSyncData.isFavorite
+      : asset.isFavorite,
+  );
+  let displayedArchived = $derived(
+    isSelected && isSynchronizeArchivesActive && selectedSyncData?.isArchived
+      ? selectedSyncData.isArchived
+      : asset.isArchived,
+  );
 </script>
 
 <div
@@ -43,11 +70,22 @@
       />
 
       <!-- FAVORITE ICON -->
-      {#if asset.isFavorite}
-        <div class="absolute bottom-2 left-2">
-          <Icon path={mdiHeart} size="24" class="text-white" />
-        </div>
-      {/if}
+      <div class="absolute bottom-2 left-2">
+        {#if displayedFavorite}
+          {#if asset.isFavorite}
+            <Icon path={mdiHeart} size="24" class="text-white inline-block" />
+          {:else}
+            <Icon path={mdiHeart} size="24" color="red" class="text-white inline-block" />
+          {/if}
+        {/if}
+        {#if displayedArchived}
+          {#if asset.isArchived}
+            <Icon path={mdiArchiveArrowDownOutline} size="24" class="text-white inline-block" />
+          {:else}
+            <Icon path={mdiArchiveArrowDownOutline} size="24" color="red" class="text-white inline-block" />
+          {/if}
+        {/if}
+      </div>
 
       <!-- OVERLAY CHIP -->
       <div
