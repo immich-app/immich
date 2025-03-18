@@ -44,8 +44,8 @@ class SyncApiRepository implements ISyncApiRepository {
   }
 
   @override
-  Future<void> ack(String data) {
-    return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: [data]));
+  Future<void> ack(List<String> data) {
+    return _api.syncApi.sendSyncAck(SyncAckSetDto(acks: data));
   }
 
   Stream<List<SyncEvent>> _getSyncStream(

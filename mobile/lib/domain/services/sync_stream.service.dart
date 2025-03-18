@@ -40,9 +40,7 @@ class SyncStreamService {
           }
         }
 
-        for (final ack in acks.values) {
-          await _syncApiRepository.ack(ack);
-        }
+        await _syncApiRepository.ack(acks.values.toList());
       },
       onDone: () {
         _isUserSyncing = false;
@@ -78,9 +76,7 @@ class SyncStreamService {
           }
         }
 
-        for (final ack in acks.values) {
-          await _syncApiRepository.ack(ack);
-        }
+        await _syncApiRepository.ack(acks.values.toList());
       },
       onDone: () {
         _isAssetSyncing = false;
@@ -113,9 +109,7 @@ class SyncStreamService {
           }
         }
 
-        for (final ack in acks.values) {
-          await _syncApiRepository.ack(ack);
-        }
+        await _syncApiRepository.ack(acks.values.toList());
       },
       onDone: () {
         _isExifSyncing = false;
