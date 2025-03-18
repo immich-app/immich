@@ -27,12 +27,12 @@ class BackgroundSyncManager {
   }
 
   void start() {
-    _logger.info('Background sync enabled');
+    _logger.info('Starting Background sync');
     _timer ??= _createTimer();
   }
 
   void stop() {
-    _logger.info('Background sync disabled');
+    _logger.info('Stopping Background sync');
     _timer?.cancel();
     _timer = null;
   }

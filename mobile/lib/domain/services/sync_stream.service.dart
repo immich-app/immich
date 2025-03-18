@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
-import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -13,12 +12,6 @@ class SyncStreamService {
 
   final ISyncApiRepository _syncApiRepository;
   final ISyncStreamRepository _syncStreamRepository;
-
-  StreamSubscription? _userSyncSubscription;
-  Completer<void> _userSyncCompleter = Completer<void>();
-
-  StreamSubscription? _partnerSyncSubscription;
-  Completer<void> _partnerSyncCompleter = Completer<void>();
 
   SyncStreamService({
     required ISyncApiRepository syncApiRepository,
@@ -51,47 +44,46 @@ class SyncStreamService {
     return false;
   }
 
-  Future<void> _handleSyncEvents(List<SyncEvent> events) async {
-    Map<SyncEntityType, String> acks = {};
-    for (final event in events) {
-      if (await _handleSyncData(event.data)) {
-        // Only retain the latest ack from each type
-        acks[event.type] = event.ack;
-      }
+  Future<void> _syncEvent(List<SyncRequestType> types) async {
+    _logger.info("Syncing Events: $types");
+    final streamCompleter = Completer();
+    bool shouldSkipOnDone = false;
+    final subscription = _syncApiRepository.getSyncEvents(types).listen(
+      (events) async {
+        try {
+          Map<SyncEntityType, String> acks = {};
+          for (final event in events) {
+            // the onDone callback might fire before the events are processed
+            // the following flag ensures that the onDone callback is not called
+            // before the events are processed
+            shouldSkipOnDone = true;
+            if (await _handleSyncData(event.data)) {
+              // Only retain the latest ack from each type
+              acks[event.type] = event.ack;
+            }
+          }
+          await _syncApiRepository.ack(acks.values.toList());
+        } catch (error, stack) {
+          _logger.warning("Error handling sync events", error, stack);
+        }
+        streamCompleter.completeOnce();
+      },
+      onError: (_) => streamCompleter.completeOnce(),
+      // onDone is required to be called in cases where the stream is empty
+      onDone: () => shouldSkipOnDone ? null : streamCompleter.completeOnce,
+    );
+    streamCompleter.future.whenComplete(subscription.cancel);
+    return await streamCompleter.future;
+  }
+
+  Future<void> syncUsers() => _syncEvent([SyncRequestType.usersV1]);
+  Future<void> syncPartners() => _syncEvent([SyncRequestType.partnersV1]);
+}
+
+extension on Completer {
+  void completeOnce() {
+    if (!isCompleted) {
+      complete();
     }
-    await _syncApiRepository.ack(acks.values.toList());
-  }
-
-  Future<void> syncUsers() async {
-    _logger.info("Syncing User Changes");
-    _userSyncSubscription =
-        _syncApiRepository.getSyncEvents([SyncRequestType.usersV1]).listen(
-      _handleSyncEvents,
-      onDone: () {
-        _userSyncCompleter.complete();
-        _userSyncCompleter = Completer<void>();
-      },
-    );
-    return await _userSyncCompleter.future;
-  }
-
-  Future<void> syncPartners() async {
-    _logger.info("Syncing Partner Changes");
-    _partnerSyncSubscription =
-        _syncApiRepository.getSyncEvents([SyncRequestType.partnersV1]).listen(
-      _handleSyncEvents,
-      onDone: () {
-        _partnerSyncCompleter.complete();
-        _partnerSyncCompleter = Completer<void>();
-      },
-    );
-    return await _partnerSyncCompleter.future;
-  }
-
-  Future<void> dispose() async {
-    await _userSyncSubscription?.cancel();
-    _userSyncCompleter.complete();
-    await _partnerSyncSubscription?.cancel();
-    _partnerSyncCompleter.complete();
   }
 }
