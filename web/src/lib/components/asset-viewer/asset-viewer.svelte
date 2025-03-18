@@ -64,7 +64,7 @@
     onClose: (dto: { asset: AssetResponseDto }) => void;
     onNext: () => Promise<HasAsset>;
     onPrevious: () => Promise<HasAsset>;
-    onRandom: () => Promise<AssetResponseDto | null>;
+    onRandom: () => Promise<AssetResponseDto | undefined>;
     copyImage?: () => Promise<void>;
   }
 
