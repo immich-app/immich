@@ -16,8 +16,8 @@ const int kGridThumbnailSize = 200;
 const int kGridThumbnailQuality = 80;
 
 /// RenderList constants
-const int kRenderListBatchSize = 512;
-const int kRenderListOppositeBatchSize = 128;
+const int kRenderListBatchSize = 256;
+const int kRenderListOppositeBatchSize = 64;
 
 /// Sync constants
 const int kFullSyncChunkSize = 10000;

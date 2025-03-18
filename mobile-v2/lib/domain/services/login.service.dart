@@ -131,6 +131,10 @@ class LoginService with LogMixin {
     }
 
     ServiceLocator.registerCurrentUser(user);
+    await di.unregister<ServerInfoProvider>();
+    di.registerLazySingleton<ServerInfoProvider>(
+      () => ServerInfoProvider(serverApiRepo: di()),
+    );
     await di<ServerInfoProvider>().fetchServerDisk();
 
     // sync assets in background

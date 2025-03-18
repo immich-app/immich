@@ -18,11 +18,10 @@ class DeviceAssetToHashRepository
   @override
   Future<bool> upsertAll(Iterable<DeviceAssetToHash> assetHash) async {
     try {
-      await _db.txn(() async =>
-          await _db.batch((batch) => batch.insertAllOnConflictUpdate(
-                _db.deviceAssetToHash,
-                assetHash.map(_toEntity),
-              )));
+      await _db.batch((batch) => batch.insertAllOnConflictUpdate(
+            _db.deviceAssetToHash,
+            assetHash.map(_toEntity),
+          ));
 
       return true;
     } catch (e, s) {

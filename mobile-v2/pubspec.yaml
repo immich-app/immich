@@ -55,6 +55,7 @@ dependencies:
   material_symbols_icons: ^4.2789.0
   flutter_adaptive_scaffold: ^0.3.1
   flutter_list_view: ^1.1.28
+  scrollable_positioned_list: ^0.3.8
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
   skeletonizer: ^1.4.2

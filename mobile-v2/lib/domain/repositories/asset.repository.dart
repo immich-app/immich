@@ -16,16 +16,16 @@ class AssetRepository with LogMixin implements IAssetRepository {
   @override
   Future<bool> upsertAll(Iterable<Asset> assets) async {
     try {
-      await _db.txn(() async => await _db.batch((batch) {
-            final rows = assets.map(_toEntity);
-            for (final row in rows) {
-              batch.insert(
-                _db.asset,
-                row,
-                onConflict: DoUpdate((_) => row, target: [_db.asset.hash]),
-              );
-            }
-          }));
+      await _db.batch((batch) {
+        final rows = assets.map(_toEntity);
+        for (final row in rows) {
+          batch.insert(
+            _db.asset,
+            row,
+            onConflict: DoUpdate((_) => row, target: [_db.asset.hash]),
+          );
+        }
+      });
 
       return true;
     } catch (e, s) {

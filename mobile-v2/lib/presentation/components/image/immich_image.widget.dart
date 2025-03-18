@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/asset.model.dart';
 import 'package:immich_mobile/presentation/components/image/provider/immich_local_image_provider.dart';
-import 'package:immich_mobile/presentation/components/image/provider/immich_remote_image_provider.dart';
+import 'package:immich_mobile/presentation/components/image/provider/immich_remote_thumbnail_provider.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 import 'package:octo_image/octo_image.dart';
 
@@ -20,7 +20,7 @@ class ImImagePlaceholder extends StatelessWidget {
 }
 
 // ignore: prefer-single-widget-per-file
-class ImImage extends StatelessWidget {
+class ImImage extends StatefulWidget {
   final Asset asset;
   final double? width;
   final double? height;
@@ -47,7 +47,7 @@ class ImImage extends StatelessWidget {
     }
 
     if (asset == null) {
-      return ImRemoteImageProvider(assetId: assetId!);
+      return ImmichRemoteThumbnailProvider(assetId: assetId!);
     }
 
     // Whether to use the local asset image provider or a remote one
@@ -57,23 +57,45 @@ class ImImage extends StatelessWidget {
       return ImLocalImageProvider(asset: asset);
     }
 
-    return ImRemoteImageProvider(assetId: asset.remoteId!);
+    return ImmichRemoteThumbnailProvider(assetId: asset.remoteId!);
+  }
+
+  @override
+  State createState() => _ImImageState();
+}
+
+class _ImImageState extends State<ImImage> {
+  late DisposableBuildContext _context;
+
+  @override
+  void initState() {
+    super.initState();
+    _context = DisposableBuildContext(this);
+  }
+
+  @override
+  void dispose() {
+    _context.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return OctoImage(
-      image: ImImage.imageProvider(asset: asset),
-      placeholderBuilder: (_) => placeholder,
+      image: ScrollAwareImageProvider(
+        context: _context,
+        imageProvider: ImImage.imageProvider(asset: widget.asset),
+      ),
+      placeholderBuilder: (_) => widget.placeholder,
       errorBuilder: (_, error, stackTrace) {
         if (error is PlatformException &&
             error.code == "The asset not found!") {
           debugPrint(
-            "Asset ${asset.localId ?? asset.id ?? "-"} does not exist anymore on device!",
+            "Asset ${widget.asset.localId ?? widget.asset.id ?? "-"} does not exist anymore on device!",
           );
         } else {
           debugPrint(
-            "Error getting thumb for assetId=${asset.localId ?? asset.id ?? "-"}: $error",
+            "Error getting thumb for assetId=${widget.asset.localId ?? widget.asset.id ?? "-"}: $error",
           );
         }
         return Icon(
@@ -83,8 +105,8 @@ class ImImage extends StatelessWidget {
       },
       fadeOutDuration: Durations.short4,
       fadeInDuration: Duration.zero,
-      width: width,
-      height: height,
+      width: widget.width,
+      height: widget.height,
       fit: BoxFit.cover,
     );
   }

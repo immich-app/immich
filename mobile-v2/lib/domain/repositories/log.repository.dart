@@ -46,9 +46,9 @@ class LogRepository implements ILogRepository {
   @override
   Future<bool> createAll(Iterable<LogMessage> logs) async {
     try {
-      await _db.txn(() async => await _db.batch((b) {
-            b.insertAll(_db.logs, logs.map(_toEntity));
-          }));
+      await _db.batch((b) {
+        b.insertAll(_db.logs, logs.map(_toEntity));
+      });
       return true;
     } catch (e) {
       debugPrint("Error while adding a log to the DB - $e");
