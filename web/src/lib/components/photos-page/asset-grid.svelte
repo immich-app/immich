@@ -745,7 +745,7 @@
           style:transform={`translate3d(0,${absoluteHeight}px,0)`}
           style:width="100%"
         >
-          <Skeleton height={bucket.bucketHeight} />
+          <Skeleton height={bucket.bucketHeight} title={bucket.bucketDateFormatted} />
         </div>
       {:else if display}
         <div

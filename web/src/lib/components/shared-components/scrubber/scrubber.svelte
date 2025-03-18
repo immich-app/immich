@@ -84,7 +84,7 @@
     }
   };
   let scrollY = $derived(toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent));
-  let timelineFullHeight = $derived(assetStore.scrubberTimelineHieght + timelineTopOffset + timelineBottomOffset);
+  let timelineFullHeight = $derived(assetStore.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
 

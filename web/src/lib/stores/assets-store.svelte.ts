@@ -137,7 +137,7 @@ export class AssetDateGroup {
     return this.intersetingAssets.map((intersetingAsset) => intersetingAsset.asset!);
   }
 
-  runAssetOp(ids: Set<string>, op: AssetOperation) {
+  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
@@ -155,7 +155,7 @@ export class AssetDateGroup {
       if (index !== -1) {
         const asset = this.intersetingAssets[index].asset!;
         const oldTime = asset.localDateTime;
-        let { remove } = op(asset);
+        let { remove } = operation(asset);
         const newTime = asset.localDateTime;
         if (oldTime !== newTime) {
           const utc = DateTime.fromISO(asset.localDateTime).toUTC().startOf('month');
@@ -309,7 +309,7 @@ export class AssetBucket {
     this.dateGroups.sort((a, b) => b.date.diff(a.date).milliseconds);
   }
 
-  runAssetOp(ids: Set<string>, op: AssetOperation) {
+  runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     if (ids.size === 0) {
       return {
         moveAssets: [] as MoveAsset[],
@@ -327,7 +327,7 @@ export class AssetBucket {
     while (index--) {
       if (idsToProcess.size > 0) {
         const group = dateGroups[index];
-        const { moveAssets, processedIds, changedGeometry } = group.runAssetOp(ids, op);
+        const { moveAssets, processedIds, changedGeometry } = group.runAssetOperation(ids, operation);
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(moveAssets);
         }
@@ -433,7 +433,7 @@ export class AssetBucket {
       // if the bucket is 'before' the last intersecting bucket in the sliding window
       // then adjust the scroll position by the delta, to compensate for the bucket
       // size adjustment
-      if (index < currentIndex) {
+      if (currentIndex > 0 && index <= currentIndex) {
         store.compensateScrollCallback?.(bucketHeightDelta);
       }
     }
@@ -525,7 +525,7 @@ export class AssetStore {
 
   // -- for scrubber only
   scrubberBuckets: LiteBucket[] = $state([]);
-  scrubberTimelineHieght: number = $state(0);
+  scrubberTimelineHeight: number = $state(0);
 
   // -- should be private, but used by AssetBucket
   compensateScrollCallback: ((delta: number) => void) | undefined;
@@ -695,7 +695,9 @@ export class AssetStore {
         topIntersectingBucket = bucket;
       }
     }
-    this.topIntersectingBucket = topIntersectingBucket;
+    if (this.topIntersectingBucket !== topIntersectingBucket) {
+      this.topIntersectingBucket = topIntersectingBucket;
+    }
   }
 
   #updateIntersection(bucket: AssetBucket) {
@@ -744,9 +746,15 @@ export class AssetStore {
       return new AssetBucket(this, utcDate, bucket.count);
     });
     this.albumAssets.clear();
-    await this.#updateViewportGeometry(false);
+    this.#updateViewportGeometry(false);
   }
 
+  /**
+   * If the timeline query options change (i.e. albumId, isArchived, isFavorite, etc)
+   * call this method to recreate all buckets based on the new options.
+   *
+   * @param options The query options for time bucket queries.
+   */
   async updateOptions(options: AssetStoreOptions) {
     if (options.deferInit) {
       return;
@@ -756,7 +764,7 @@ export class AssetStore {
     }
     await this.initTask.reset();
     await this.#init(options);
-    await this.#updateViewportGeometry(false);
+    this.#updateViewportGeometry(false);
   }
 
   async #init(options: AssetStoreOptions) {
@@ -799,10 +807,10 @@ export class AssetStore {
     const changedWidth = viewport.width !== this.viewportWidth;
     this.viewportHeight = viewport.height;
     this.viewportWidth = viewport.width;
-    await this.#updateViewportGeometry(changedWidth);
+    this.#updateViewportGeometry(changedWidth);
   }
 
-  async #updateViewportGeometry(changedWidth: boolean) {
+  #updateViewportGeometry(changedWidth: boolean) {
     if (!this.isInitialized) {
       return;
     }
@@ -813,24 +821,17 @@ export class AssetStore {
       this.#updateGeometry(bucket, changedWidth);
     }
     this.updateIntersections();
+    this.#createScrubBuckets();
+  }
 
-    const loaders = [];
-    let height = 0;
-    for (const bucket of this.buckets) {
-      if (height >= this.viewportHeight) {
-        break;
-      }
-      height += bucket.bucketHeight;
-      loaders.push(this.loadBucket(bucket.bucketDate));
-    }
-    await Promise.all(loaders);
+  #createScrubBuckets() {
     this.scrubberBuckets = this.buckets.map((bucket) => ({
       assetCount: bucket.bucketCount,
       bucketDate: bucket.bucketDate,
       bucketDateFormattted: bucket.bucketDateFormatted,
       bucketHeight: bucket.bucketHeight,
     }));
-    this.scrubberTimelineHieght = this.timelineHeight;
+    this.scrubberTimelineHeight = this.timelineHeight;
   }
 
   createLayoutOptions() {
@@ -1079,7 +1080,7 @@ export class AssetStore {
   }
 
   // runs op on assets, returns unprocessed
-  #runAssetOp(ids: Set<string>, op: AssetOperation) {
+  #runAssetOperation(ids: Set<string>, operation: AssetOperation) {
     if (ids.size === 0) {
       return { processedIds: new Set(), unprocessedIds: ids, changedGeometry: false };
     }
@@ -1090,7 +1091,7 @@ export class AssetStore {
     const combinedMoveAssets: { asset: AssetResponseDto; year: number; month: number }[][] = [];
     for (const bucket of this.buckets) {
       if (idsToProcess.size > 0) {
-        const { moveAssets, processedIds, changedGeometry } = bucket.runAssetOp(idsToProcess, op);
+        const { moveAssets, processedIds, changedGeometry } = bucket.runAssetOperation(idsToProcess, operation);
         if (moveAssets.length > 0) {
           combinedMoveAssets.push(moveAssets);
         }
@@ -1117,13 +1118,23 @@ export class AssetStore {
     return { unprocessedIds: idsToProcess, processedIds: idsProcessed, changedGeometry };
   }
 
-  updateAssetOp(ids: string[], op: AssetOperation) {
-    this.#runAssetOp(new Set(ids), op);
+  /**
+   * Runs a callback on a list of asset ids. The assets in the AssetStore are reactive -
+   * any change to the asset (i.e. changing isFavorite, isArchived, etc) will automatically
+   * cause the UI to update with no further actions needed. Changing the date of an asset
+   * will automatically move it to another bucket if needed. Removing the asset will remove
+   * it from any view that is showing it.
+   *
+   * @param ids to run the operation on
+   * @param operation callback to update the specified asset ids
+   */
+  updateAssetOperation(ids: string[], operation: AssetOperation) {
+    this.#runAssetOperation(new Set(ids), operation);
   }
 
   updateAssets(assets: AssetResponseDto[]) {
     const lookup = new Map<string, AssetResponseDto>(assets.map((asset) => [asset.id, asset]));
-    const { unprocessedIds } = this.#runAssetOp(new Set(lookup.keys()), (asset) => {
+    const { unprocessedIds } = this.#runAssetOperation(new Set(lookup.keys()), (asset) => {
       updateObject(asset, lookup.get(asset.id));
       return { remove: false };
     });
@@ -1131,7 +1142,7 @@ export class AssetStore {
   }
 
   removeAssets(ids: string[]) {
-    const { unprocessedIds } = this.#runAssetOp(new Set(ids), () => {
+    const { unprocessedIds } = this.#runAssetOperation(new Set(ids), () => {
       return { remove: true };
     });
     return [...unprocessedIds];

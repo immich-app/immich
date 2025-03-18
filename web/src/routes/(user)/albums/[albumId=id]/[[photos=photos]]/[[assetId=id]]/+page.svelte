@@ -468,7 +468,7 @@
           <FavoriteAction
             removeFavorite={assetInteraction.isAllFavorite}
             onFavorite={(ids, isFavorite) =>
-              assetStore.updateAssetOp(ids, (asset) => {
+              assetStore.updateAssetOperation(ids, (asset) => {
                 asset.isFavorite = isFavorite;
                 return { remove: false };
               })}

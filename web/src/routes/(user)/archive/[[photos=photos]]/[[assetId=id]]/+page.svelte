@@ -47,7 +47,7 @@
     <ArchiveAction
       unarchive
       onArchive={(ids, isArchived) =>
-        assetStore.updateAssetOp(ids, (asset) => {
+        assetStore.updateAssetOperation(ids, (asset) => {
           asset.isArchived = isArchived;
           return { remove: false };
         })}
@@ -61,7 +61,7 @@
     <FavoriteAction
       removeFavorite={assetInteraction.isAllFavorite}
       onFavorite={(ids, isFavorite) =>
-        assetStore.updateAssetOp(ids, (asset) => {
+        assetStore.updateAssetOperation(ids, (asset) => {
           asset.isFavorite = isFavorite;
           return { remove: false };
         })}

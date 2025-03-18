@@ -1,22 +1,28 @@
 <script lang="ts">
   interface Props {
     height: number;
+    title: string;
   }
 
-  let { height = 0 }: Props = $props();
+  let { height = 0, title }: Props = $props();
 </script>
 
-<div data-skeleton="true" class="overflow-clip" style={`height: ${height + 49}px`}>
-  <div id="skeleton" style={`height: ${height + 49}px`}></div>
+<div class="overflow-clip" style:height={height + 'px'}>
+  <div
+    class="flex z-[100] pt-[calc(1.75rem+1px)] pb-5 h-6 place-items-center text-xs font-medium text-immich-fg bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg md:text-sm"
+  >
+    {title}
+  </div>
+  <div class="animate-pulse absolute w-full h-full" data-skeleton="true"></div>
 </div>
 
 <style>
-  #skeleton {
+  [data-skeleton] {
     background-image: url('/light_skeleton.png');
     background-repeat: repeat;
     background-size: 235px, 235px;
   }
-  :global(.dark) #skeleton {
+  :global(.dark) [data-skeleton] {
     background-image: url('/dark_skeleton.png');
   }
   @keyframes delayedVisibility {
@@ -24,8 +30,10 @@
       visibility: visible;
     }
   }
-  #skeleton {
+  [data-skeleton] {
     visibility: hidden;
-    animation: 0s linear 0.1s forwards delayedVisibility;
+    animation:
+      0s linear 0.1s forwards delayedVisibility,
+      pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 </style>
