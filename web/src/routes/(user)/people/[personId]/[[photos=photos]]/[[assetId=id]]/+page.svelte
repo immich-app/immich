@@ -74,14 +74,9 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStoreOptions = { isArchived: false, personId: data.person.id };
-  const assetStore = new AssetStore(assetStoreOptions);
-
-  $effect(() => {
-    // Check to trigger rebuild the timeline when navigating between people from the info panel
-    assetStoreOptions.personId = data.person.id;
-    handlePromiseError(assetStore.updateOptions(assetStoreOptions));
-  });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
+  onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -360,9 +355,6 @@
     await updateAssetCount();
   };
 
-  onDestroy(() => {
-    assetStore.destroy();
-  });
   let person = $derived(data.person);
 
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
@@ -418,7 +410,14 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) =>
+          assetStore.updateAssetOperation(ids, (asset) => {
+            asset.isFavorite = isFavorite;
+            return { remove: false };
+          })}
+      />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption

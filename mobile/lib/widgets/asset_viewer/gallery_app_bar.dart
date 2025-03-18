@@ -16,6 +16,7 @@ import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/trash.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/album/add_to_album_bottom_sheet.dart';
 import 'package:immich_mobile/widgets/asset_grid/upload_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/top_control_app_bar.dart';
@@ -33,12 +34,13 @@ class GalleryAppBar extends ConsumerWidget {
       return const SizedBox();
     }
     final album = ref.watch(currentAlbumProvider);
-    final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.id;
+    final isOwner =
+        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
     final showControls = ref.watch(showControlsProvider);
 
     final isPartner = ref
         .watch(partnerSharedWithProvider)
-        .map((e) => e.id)
+        .map((e) => fastHash(e.id))
         .contains(asset.ownerId);
 
     toggleFavorite(Asset asset) =>

@@ -476,7 +476,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
       if (!get(isSelectingAllAssets)) {
         break; // Cancelled
       }
-      assetInteraction.selectAssets(bucket.assets);
+      assetInteraction.selectAssets(bucket.getAssets().map((a) => $state.snapshot(a)));
 
       // We use setTimeout to allow the UI to update. Otherwise, this may
       // cause a long delay between the start of 'select all' and the
