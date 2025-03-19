@@ -707,9 +707,7 @@
   />
 {/if}
 
-<!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar 
-   class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
-   -->
+<!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
   class={[
