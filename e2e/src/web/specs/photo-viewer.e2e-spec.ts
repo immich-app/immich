@@ -23,8 +23,8 @@ test.describe('Photo Viewer', () => {
   });
 
   test('initially shows a loading spinner', async ({ page }) => {
-    await page.route(`/api/assets/${asset.id}/thumbnail**`, async (route) => {
-      // slow down the request for thumbnail, so spinner has chance to show up
+    await page.route(`/api/**`, async (route) => {
+      // slow down all requests, so spinner has chance to show up
       await new Promise((f) => setTimeout(f, 2000));
       await route.continue();
     });
