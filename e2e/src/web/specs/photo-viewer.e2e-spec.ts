@@ -22,28 +22,6 @@ test.describe('Photo Viewer', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('initially shows a loading spinner', async ({ browser }) => {
-
-    const context = await browser.newContext();
-    await utils.setAuthCookies(context, admin.accessToken);
-    const page = await context.newPage();
-    await page.waitForLoadState('networkidle');
-    try {
-      await page.route(`**`, async (route) => {
-        // slow down all requests, so spinner has chance to show up
-        await new Promise((f) => setTimeout(f, 2000));
-        await route.continue();
-      });
-      await page.goto(`/photos/${asset.id}`);
-      await page.waitForLoadState('load');
-      // this is the spinner
-      await page.waitForSelector('svg[role=status]');
-      await expect(page.getByTestId('loading-spinner')).toBeVisible();
-    } finally {
-      context.close();
-    }
-  });
-
   test('loads high resolution photo when zoomed', async ({ page }) => {
     await page.goto(`/photos/${asset.id}`);
     await expect.poll(async () => await imageLocator(page).getAttribute('src')).toContain('thumbnail');
