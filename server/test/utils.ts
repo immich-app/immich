@@ -52,6 +52,7 @@ import { ViewRepository } from 'src/repositories/view-repository';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
+import { newAssetFileRepositoryMock } from 'test/repositories/asset.file.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
 import { newCryptoRepositoryMock } from 'test/repositories/crypto.repository.mock';
@@ -180,7 +181,7 @@ export const newTestService = <T extends BaseService>(
     album: automock(AlbumRepository, { strict: false }),
     albumUser: automock(AlbumUserRepository),
     asset: newAssetRepositoryMock(),
-    assetFile: automock(AssetFileRepository),
+    assetFile: newAssetFileRepositoryMock(),
     config: newConfigRepositoryMock(),
     database: newDatabaseRepositoryMock(),
     downloadRepository: automock(DownloadRepository, { strict: false }),

@@ -392,7 +392,7 @@ export class MetadataService extends BaseService {
         this.logger.verbose(
           `No matching asset found for sidecar ${sidecar.id}: ${sidecar.path}, ${pathWithoutExtension}`,
         );
-        await this.assetFileRepository.update({ ...sidecar, assetId: null });
+        await this.assetFileRepository.upsert({ ...sidecar, assetId: null });
         return JobStatus.SUCCESS;
       }
 
@@ -414,7 +414,7 @@ export class MetadataService extends BaseService {
     );
 
     for await (const sidecar of sidecarPagination) {
-      currentSidecarsForAsset.concat(...(sidecar as SidecarAssetFileEntity[]));
+      currentSidecarsForAsset.push(...(sidecar as SidecarAssetFileEntity[]));
     }
 
     let storeSidecar = false;
@@ -439,12 +439,14 @@ export class MetadataService extends BaseService {
     }
 
     if (storeSidecar) {
-      await this.assetFileRepository.update(sidecar);
+      await this.assetFileRepository.upsert(sidecar);
 
       await this.jobRepository.queue({
         name: JobName.METADATA_EXTRACTION,
         data: { id: sidecar.assetId, source: 'upload' },
       });
+
+      // throw new Error(JSON.stringify(sidecar));
     }
 
     return JobStatus.SUCCESS;

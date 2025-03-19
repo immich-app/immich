@@ -133,7 +133,7 @@ describe(AuditService.name, () => {
         } as FileReportItemDto,
       ]);
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'my-id', sidecarPath: './upload/my-sidecar.xmp' });
+      expect(mocks.assetFile.update).toHaveBeenCalledWith({ id: 'my-id', path: './upload/my-sidecar.xmp' });
       expect(mocks.assetFile.upsert).not.toHaveBeenCalled();
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.user.update).not.toHaveBeenCalled();

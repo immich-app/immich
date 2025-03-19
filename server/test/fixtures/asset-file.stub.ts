@@ -38,7 +38,7 @@ export const assetFileStub = {
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
     fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
-  xmpSidecarOrpahed: Object.freeze({
+  xmpSidecarOrphaned: Object.freeze({
     id: 'xmp-sidecar-uppercase-extension',
     assetId: null,
     type: AssetFileType.SIDECAR,
