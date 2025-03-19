@@ -29,7 +29,7 @@ test.describe('Photo Viewer', () => {
     const page = await context.newPage();
     await page.waitForLoadState('networkidle');
     try {
-      await page.route(`/api/**`, async (route) => {
+      await page.route(`**`, async (route) => {
         // slow down all requests, so spinner has chance to show up
         await new Promise((f) => setTimeout(f, 2000));
         await route.continue();
