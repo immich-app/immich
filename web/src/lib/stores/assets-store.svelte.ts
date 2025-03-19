@@ -33,8 +33,8 @@ export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   deferInit?: boolean;
 };
 export type AssetStoreLayoutOptions = {
-  rowHeight: number
-}
+  rowHeight: number;
+};
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateObject(target: any, source: any): boolean {
   if (!target) {
@@ -595,11 +595,7 @@ export class AssetStore {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    if (value < 850) {
-      this.#rowHeight=100;
-    } else {
-      this.#rowHeight=235;
-    }
+    this.#rowHeight = value < 850 ? 100 : 235;
     // side-effect - its ok!
     void this.#updateViewportGeometry(changed);
   }
@@ -775,7 +771,7 @@ export class AssetStore {
     this.#updateViewportGeometry(false);
   }
 
-  async updateLayoutOptions(options: AssetStoreLayoutOptions) {
+  updateLayoutOptions(options: AssetStoreLayoutOptions) {
     this.#rowHeight = options.rowHeight;
     this.refreshLayout();
   }
@@ -849,7 +845,7 @@ export class AssetStore {
 
   createLayoutOptions() {
     const viewportWidth = this.viewportWidth;
-    
+
     return {
       spacing: 2,
       heightTolerance: 0.15,
