@@ -181,7 +181,7 @@
           {#if asset.type === AssetTypeEnum.Image}
             <SetProfilePictureAction {asset} />
           {/if}
-          <ArchiveAction {asset} {onAction} />
+          <ArchiveAction {asset} {onAction} {preAction} />
           <MenuOption
             icon={mdiUpload}
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
