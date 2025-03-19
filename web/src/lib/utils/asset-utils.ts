@@ -5,7 +5,7 @@ import { NotificationType, notificationController } from '$lib/components/shared
 import { AppRoute } from '$lib/constants';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
+import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
@@ -367,7 +367,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
+export const getSelectedAssets = (assets: AssetResponseDto[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
@@ -474,15 +474,10 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
       await assetStore.loadBucket(bucket.bucketDate);
 
       if (!get(isSelectingAllAssets)) {
+        assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(bucket.getAssets().map((a) => $state.snapshot(a)));
-
-      // We use setTimeout to allow the UI to update. Otherwise, this may
-      // cause a long delay between the start of 'select all' and the
-      // effective update of the UI, depending on the number of assets
-      // to select
-      await delay(0);
+      assetInteraction.selectAssets(assetsSnapshot(bucket.getAssets()));
     }
   } catch (error) {
     const $t = get(t);
