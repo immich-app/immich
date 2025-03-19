@@ -318,7 +318,7 @@
   {#if usingMobileDevice && ((assetStore.scrolling && scrollHoverLabel) || isHover || isDragging)}
     <div
       id="time-label"
-      class="rounded-l-full w-[32px] pl-2 text-white bg-gray-400 dark:bg-gray-500 hover:cursor-pointer select-none"
+      class="rounded-l-full w-[32px] pl-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
       style:top="{scrollY + HOVER_DATE_HEIGHT - 25}px"
       style:height="50px"
       style:right="0"
@@ -326,15 +326,15 @@
       in:fade={{ duration: 200 }}
       out:fade={{ duration: 200 }}
     >
-      <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px]" />
-      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px]" />
+      <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -right-[2px]" />
+      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px] -right-[2px]" />
       {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
         <p
           transition:fade={{ duration: 200 }}
-          style:bottom={50 / 2 - 24 / 2 + 'px'}
+          style:bottom={50 / 2 - 30 / 2 + 'px'}
           style:right="36px"
           style:width="fit-content"
-          class="truncate pointer-events-none absolute rounded-full w-[32px] px-2 text-white bg-gray-400 dark:bg-gray-500 hover:cursor-pointer select-none"
+          class="truncate pointer-events-none absolute text-sm rounded-full w-[32px] py-2 px-4 text-white bg-immich-primary/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
         >
           {scrollHoverLabel}
         </p>
