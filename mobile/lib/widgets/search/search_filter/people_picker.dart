@@ -31,7 +31,6 @@ class PeoplePicker extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.all(8),
           child: SearchField(
-            context: context,
             focusNode: formFocus,
             onChanged: (value) => searchQuery.value = value,
             onTapOutside: (_) => formFocus.unfocus(),

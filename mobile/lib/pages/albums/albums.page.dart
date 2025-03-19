@@ -117,7 +117,6 @@ class AlbumsPage extends HookConsumerWidget {
                 ),
               ),
               child: SearchField(
-                context: context,
                 autofocus: false,
                 contentPadding: const EdgeInsets.all(16),
                 hintText: 'search_albums'.tr(),

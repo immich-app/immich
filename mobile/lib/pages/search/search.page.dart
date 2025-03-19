@@ -641,7 +641,6 @@ class SearchPage extends HookConsumerWidget {
             ),
           ),
           child: SearchField(
-            context: context,
             hintText: searchHintText.value,
             key: const Key('search_text_field'),
             controller: textSearchController,

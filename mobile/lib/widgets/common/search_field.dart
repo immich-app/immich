@@ -5,7 +5,6 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 class SearchField extends StatelessWidget {
   const SearchField({
     super.key,
-    required this.context,
     required this.hintText,
     this.autofocus = false,
     this.controller,
@@ -22,7 +21,6 @@ class SearchField extends StatelessWidget {
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
   final void Function(PointerDownEvent)? onTapOutside;
-  final BuildContext context;
   final TextEditingController? controller;
   final String hintText;
   final EdgeInsetsGeometry contentPadding;
