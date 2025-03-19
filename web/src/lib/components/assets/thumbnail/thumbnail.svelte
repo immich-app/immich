@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { press, tap } from 'svelte-gestures';
+
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
@@ -86,42 +88,6 @@
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
 
-  function longPress(element: HTMLElement, { onLongPress, onTap }: { onLongPress: () => any; onTap: () => any }) {
-    let timer: ReturnType<typeof setTimeout>;
-    let didLongPress = false;
-    let startElement: EventTarget | null;
-    let didMove = false;
-    const start = (event: TouchEvent) => {
-      startElement = event.target;
-      timer = setTimeout(() => {
-        didLongPress = true;
-        onLongPress();
-      }, 400);
-    };
-    const move = () => {
-      didMove = true;
-    };
-    const end = (event: TouchEvent) => {
-      if (!didLongPress && !didMove && event.target === startElement) {
-        startElement = null;
-        onTap();
-      }
-      didLongPress = false;
-      clearTimeout(timer);
-    };
-    element.addEventListener('touchmove', move);
-    element.addEventListener('touchstart', start);
-    element.addEventListener('touchend', end);
-
-    return {
-      destroy: () => {
-        element.removeEventListener('touchmove', move);
-        element.removeEventListener('touchstart', start);
-        element.removeEventListener('touchend', end);
-      },
-    };
-  }
-
   const onIconClickedHandler = (e?: MouseEvent) => {
     e?.stopPropagation();
     e?.preventDefault();
@@ -182,6 +148,13 @@
 
   <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
+
+  <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web. 
+      The defaults are as follows: 
+      fast: 200ms
+      default: 500ms
+      slow: ??ms
+      -->
   <div
     class="group"
     style:width="{width}px"
@@ -190,7 +163,10 @@
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
-    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)), onTap: callClickHandlers }}
+    use:press={() => ({ timeframe: 350, triggerBeforeFinished: true })}
+    use:tap={() => ({ timeframe: 350 })}
+    onpress={() => onSelect?.($state.snapshot(asset))}
+    ontap={callClickHandlers}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
