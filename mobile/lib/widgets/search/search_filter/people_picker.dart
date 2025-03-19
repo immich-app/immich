@@ -4,12 +4,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class PeoplePicker extends HookConsumerWidget {
   const PeoplePicker({super.key, required this.onSelect, this.filter});
@@ -30,47 +30,12 @@ class PeoplePicker extends HookConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(8),
-          child: TextField(
+          child: SearchField(
+            context: context,
             focusNode: formFocus,
             onChanged: (value) => searchQuery.value = value,
             onTapOutside: (_) => formFocus.unfocus(),
-            decoration: InputDecoration(
-              contentPadding: const EdgeInsets.only(left: 24),
-              filled: true,
-              fillColor: context.primaryColor.withValues(alpha: 0.1),
-              hintStyle: context.textTheme.bodyLarge?.copyWith(
-                color: context.themeData.colorScheme.onSurfaceSecondary,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceContainerHighest,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceContainerHighest,
-                ),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceContainerHighest,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.primary.withAlpha(150),
-                ),
-              ),
-              prefixIcon: Icon(
-                Icons.search_rounded,
-                color: context.colorScheme.primary,
-              ),
-              hintText: 'search_filter_people_hint'.tr(),
-            ),
+            hintText: 'search_filter_people_hint'.tr(),
           ),
         ),
         Padding(
