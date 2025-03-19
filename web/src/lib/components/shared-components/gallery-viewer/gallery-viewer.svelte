@@ -59,11 +59,14 @@
     const _assets = assets;
     updateSlidingWindow();
 
+    const rowWidth = Math.floor(viewport.width);
+    const rowHeight = rowWidth < 850 ? 100 : 235;
+
     geometry = getJustifiedLayoutFromAssets(_assets, {
       spacing: 2,
       heightTolerance: 0.15,
-      rowHeight: 235,
-      rowWidth: Math.floor(viewport.width),
+      rowHeight,
+      rowWidth,
     });
   });
 
