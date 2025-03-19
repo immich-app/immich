@@ -30,7 +30,7 @@
 
   setContext({
     getAssets: () => assets,
-    getOwnedAssets: () => (ownerId === undefined ? assets : [...assets].filter((asset) => asset.ownerId === ownerId)),
+    getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
     clearSelect,
   });
 </script>
