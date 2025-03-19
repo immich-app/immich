@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:immich_mobile/domain/interfaces/sync_api.interface.dart';
-import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
+import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';

@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/models/sync/sync_event.model.dart';
+import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:openapi/api.dart';
 
 abstract interface class ISyncApiRepository {
