@@ -35,12 +35,12 @@ export function clickOutside(node: HTMLElement, options: Options = {}): ActionRe
     }
   };
 
-  document.addEventListener('mousedown', handleClick, true);
+  document.addEventListener('pointerdown', handleClick, true);
   node.addEventListener('keydown', handleKey, false);
 
   return {
     destroy() {
-      document.removeEventListener('mousedown', handleClick, true);
+      document.removeEventListener('pointerdown', handleClick, true);
       node.removeEventListener('keydown', handleKey, false);
     },
   };

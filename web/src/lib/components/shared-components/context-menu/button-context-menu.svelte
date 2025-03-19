@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { clickOutside } from '$lib/actions/click-outside';
   import { contextMenuNavigation } from '$lib/actions/context-menu-navigation';
   import { shortcuts } from '$lib/actions/shortcut';
   import CircleIconButton, {
@@ -104,19 +105,6 @@
     closeDropdown();
   };
 
-  const handleDocumentClick = (event: MouseEvent) => {
-    if (!isOpen) {
-      return;
-    }
-
-    const target = event.target as Node | null;
-    if (buttonContainer?.contains(target)) {
-      return;
-    }
-
-    closeDropdown();
-  };
-
   const focusButton = () => {
     const button = buttonContainer?.querySelector(`#${buttonId}`) as HTMLButtonElement | null;
     button?.focus();
@@ -130,7 +118,6 @@
 </script>
 
 <svelte:window onresize={onResize} />
-<svelte:document onclick={handleDocumentClick} />
 
 <div
   use:contextMenuNavigation={{
@@ -142,6 +129,7 @@
     selectedId: $selectedIdStore,
     selectionChanged: (id) => ($selectedIdStore = id),
   }}
+  use:clickOutside={{ onOutclick: closeDropdown }}
   onresize={onResize}
   {...restProps}
 >
