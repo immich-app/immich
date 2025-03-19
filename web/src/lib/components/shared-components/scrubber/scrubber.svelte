@@ -263,9 +263,9 @@
     const opts = {
       passive: false,
     };
-    window.addEventListener('touchmove', onTouchMove, opts);
+    globalThis.addEventListener('touchmove', onTouchMove, opts);
     return () => {
-      window.removeEventListener('touchmove', onTouchMove);
+      globalThis.removeEventListener('touchmove', onTouchMove);
     };
   });
   const usingMobileDevice = $derived(mobileDevice.hoverNone);
