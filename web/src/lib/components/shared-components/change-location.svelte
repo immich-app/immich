@@ -15,7 +15,6 @@
   import CoordinatesInput from '$lib/components/shared-components/coordinates-input.svelte';
   import Map from '$lib/components/shared-components/map/map.svelte';
   import { get } from 'svelte/store';
-
   interface Point {
     lng: number;
     lat: number;

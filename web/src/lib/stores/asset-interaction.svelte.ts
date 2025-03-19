@@ -6,7 +6,7 @@ import { fromStore } from 'svelte/store';
 export class AssetInteraction {
   readonly selectedAssets = new SvelteSet<AssetResponseDto>();
   hasSelectedAsset(assetId: string) {
-    return [...this.selectedAssets.values()].some((asset) => asset.id === assetId);
+    return this.selectedAssetsArray.some((asset) => asset.id === assetId);
   }
   readonly selectedGroup = new SvelteSet<string>();
   assetSelectionCandidates = $state(new SvelteSet<AssetResponseDto>());
@@ -37,8 +37,8 @@ export class AssetInteraction {
     }
   }
 
-  removeAssetFromMultiselectGroup(asset: AssetResponseDto) {
-    const selectedAsset = [...this.selectedAssets.values()].find((a) => a.id === asset.id);
+  removeAssetFromMultiselectGroup(assetId: string) {
+    const selectedAsset = [...this.selectedAssets.values()].find((a) => a.id === assetId);
     if (selectedAsset) {
       this.selectedAssets.delete(selectedAsset);
     }
@@ -74,7 +74,7 @@ export class AssetInteraction {
     this.assetSelectionStart = null;
   }
 
-  isFocussedAsset(asset: AssetResponseDto) {
-    return this.focussedAssetId === asset.id;
+  isFocussedAsset(assetId: string) {
+    return this.focussedAssetId === assetId;
   }
 }

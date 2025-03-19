@@ -450,7 +450,7 @@
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
-        assetInteraction.removeAssetFromMultiselectGroup(asset);
+        assetInteraction.removeAssetFromMultiselectGroup(asset.id);
       }
     } else {
       assetInteraction.addGroupToMultiselectGroup(group);
@@ -477,9 +477,9 @@
     // Select/deselect already loaded assets
     if (deselect) {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate);
+        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
-      assetInteraction.removeAssetFromMultiselectGroup(asset);
+      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
         handleSelectAsset(candidate);
@@ -510,7 +510,7 @@
           await assetStore.loadBucket(bucket.bucketDate);
           for (const asset of bucket.getAssets()) {
             if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset);
+              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
               handleSelectAsset(asset);
             }
