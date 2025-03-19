@@ -117,11 +117,10 @@ const buildConfig = async (repos: RepoDeps) => {
 
   if (config.server.externalDomain.length > 0) {
     const domain = new URL(config.server.externalDomain);
-    if (domain.password && domain.username){
-      config.server.externalDomain = `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`
-    }
-    else{
-      config.server.externalDomain = domain.origin
+    if (domain.password && domain.username) {
+      config.server.externalDomain = `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`;
+    } else {
+      config.server.externalDomain = domain.origin;
     }
   }
 
