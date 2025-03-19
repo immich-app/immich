@@ -367,7 +367,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
+export const getSelectedAssets = (assets: AssetResponseDto[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
@@ -474,6 +474,7 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
       await assetStore.loadBucket(bucket.bucketDate);
 
       if (!get(isSelectingAllAssets)) {
+        assetInteraction.clearMultiselect();
         break; // Cancelled
       }
       assetInteraction.selectAssets(assetsSnapshot(bucket.getAssets()));

@@ -217,7 +217,7 @@
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssetsArray.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
 
     if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
@@ -245,7 +245,7 @@
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
+    const ids = await archiveAssets(assetInteraction.selectedAssets, !assetInteraction.isAllArchived);
     if (ids) {
       assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
@@ -407,7 +407,7 @@
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
+  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
@@ -438,7 +438,7 @@
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
-    size={assetInteraction.selectedAssets.size}
+    size={assetInteraction.selectedAssets.length}
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
   />

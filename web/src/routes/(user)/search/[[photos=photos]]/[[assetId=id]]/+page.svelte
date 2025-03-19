@@ -85,7 +85,7 @@
     }
 
     if (assetInteraction.selectionActive) {
-      assetInteraction.selectedAssets.clear();
+      assetInteraction.selectedAssets = [];
       return;
     }
     if (!$preventRaceConditionSearchBar) {
