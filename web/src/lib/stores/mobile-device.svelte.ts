@@ -5,5 +5,5 @@ const hoverNone = new MediaQuery('hover: none');
 export const mobileDevice = {
   get hoverNone() {
     return hoverNone.current;
-  }
+  },
 };
