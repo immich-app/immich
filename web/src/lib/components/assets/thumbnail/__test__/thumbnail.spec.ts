@@ -4,7 +4,7 @@ import { assetFactory } from '@test-data/factories/asset-factory';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 
 vi.hoisted(() => {
-  Object.defineProperty(window, 'matchMedia', {
+  Object.defineProperty(globalThis, 'matchMedia', {
     writable: true,
     enumerable: true,
     value: vi.fn().mockImplementation((query) => ({
