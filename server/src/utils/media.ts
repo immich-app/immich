@@ -159,9 +159,11 @@ export class BaseConfig implements VideoCodecSWConfig {
       options.push(`scale=${this.getScaling(videoStream)}`);
     }
 
-    options.push(...this.getToneMapping(videoStream));
-    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
-      options.push(`format=yuv420p`);
+    const tonemapOptions = this.getToneMapping(videoStream);
+    if (tonemapOptions.length > 0) {
+      options.push(...tonemapOptions);
+    } else if (!videoStream.pixelFormat.endsWith('420p')) {
+      options.push('format=yuv420p');
     }
 
     return options;
@@ -606,14 +608,13 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
 
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
-    if (this.shouldScale(videoStream)) {
+    const tonemapOptions = this.getToneMapping(videoStream);
+    if (this.shouldScale(videoStream) || (tonemapOptions.length === 0 && !videoStream.pixelFormat.endsWith('420p'))) {
       options.push(`scale_cuda=${this.getScaling(videoStream)}`);
     }
-    options.push(...this.getToneMapping(videoStream));
+    options.push(...tonemapOptions);
     if (options.length > 0) {
       options[options.length - 1] += ':format=nv12';
-    } else if (!videoStream.pixelFormat.endsWith('420p')) {
-      options.push('format=nv12');
     }
     return options;
   }
@@ -732,17 +733,12 @@ export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
-    if (this.shouldScale(videoStream) || tonemapOptions.length === 0) {
-      let scaling = `scale_qsv=${this.getScaling(videoStream)}:async_depth=4:mode=hq`;
-      if (tonemapOptions.length === 0) {
-        scaling += ':format=nv12';
-      }
-      options.push(scaling);
+    if (tonemapOptions.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
+      options.push(`scale_qsv=${this.getScaling(videoStream)}:async_depth=4:mode=hq:format=nv12`);
+    } else if (this.shouldScale(videoStream)) {
+      options.push(`scale_qsv=${this.getScaling(videoStream)}:async_depth=4:mode=hq`);
     }
     options.push(...tonemapOptions);
-    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
-      options.push('format=nv12');
-    }
     return options;
   }
 
@@ -848,17 +844,12 @@ export class VaapiHwDecodeConfig extends VaapiSwDecodeConfig {
   getFilterOptions(videoStream: VideoStreamInfo) {
     const options = [];
     const tonemapOptions = this.getToneMapping(videoStream);
-    if (this.shouldScale(videoStream) || tonemapOptions.length === 0) {
-      let scaling = `scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`;
-      if (tonemapOptions.length === 0) {
-        scaling += ':format=nv12';
-      }
-      options.push(scaling);
+    if (tonemapOptions.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
+    } else if (this.shouldScale(videoStream)) {
+      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc`);
     }
     options.push(...tonemapOptions);
-    if (options.length === 0 && !videoStream.pixelFormat.endsWith('420p')) {
-      options.push('format=nv12');
-    }
     return options;
   }
 

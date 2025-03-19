@@ -31,6 +31,8 @@ void main() {
     albumMediaRepository = MockAlbumMediaRepository();
     albumApiRepository = MockAlbumApiRepository();
 
+    when(() => userService.getMyUser()).thenReturn(UserStub.user1);
+
     when(() => albumRepository.transaction<void>(any())).thenAnswer(
       (call) => (call.positionalArguments.first as Function).call(),
     );
@@ -40,6 +42,7 @@ void main() {
 
     sut = AlbumService(
       syncService,
+      userService,
       entityService,
       albumRepository,
       assetRepository,
@@ -146,7 +149,7 @@ void main() {
         () => albumApiRepository.create(
           "name",
           assetIds: [AssetStub.image1.remoteId!],
-          sharedUserIds: [UserStub.user1.uid],
+          sharedUserIds: [UserStub.user1.id],
         ),
       ).called(1);
       verify(
@@ -214,7 +217,7 @@ void main() {
 
       final result = await sut.addUsers(
         AlbumStub.emptyAlbum,
-        [UserStub.user2.uid],
+        [UserStub.user2.id],
       );
 
       expect(result, true);

@@ -62,7 +62,7 @@
 
   const onRandom = () => {
     if (assets.length <= 0) {
-      return Promise.resolve(null);
+      return Promise.resolve(undefined);
     }
     const index = Math.floor(Math.random() * assets.length);
     const asset = assets[index];

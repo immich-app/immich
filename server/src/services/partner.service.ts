@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Partner } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PartnerResponseDto, PartnerSearchDto, UpdatePartnerDto } from 'src/dtos/partner.dto';
-import { mapDatabaseUser } from 'src/dtos/user.dto';
+import { mapUser } from 'src/dtos/user.dto';
 import { Permission } from 'src/enum';
 import { PartnerDirection, PartnerIds } from 'src/repositories/partner.repository';
 import { BaseService } from 'src/services/base.service';
@@ -49,7 +49,7 @@ export class PartnerService extends BaseService {
 
   private mapPartner(partner: Partner, direction: PartnerDirection): PartnerResponseDto {
     // this is opposite to return the non-me user of the "partner"
-    const user = mapDatabaseUser(
+    const user = mapUser(
       direction === PartnerDirection.SharedBy ? partner.sharedWith : partner.sharedBy,
     ) as PartnerResponseDto;
 

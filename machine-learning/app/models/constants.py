@@ -44,6 +44,18 @@ _OPENCLIP_MODELS = {
     "nllb-clip-base-siglip__v1",
     "nllb-clip-large-siglip__mrl",
     "nllb-clip-large-siglip__v1",
+    "ViT-B-16-SigLIP2__webli",
+    "ViT-B-32-SigLIP2-256__webli",
+    "ViT-L-16-SigLIP2-256__webli",
+    "ViT-L-16-SigLIP2-384__webli",
+    "ViT-L-16-SigLIP2-512__webli",
+    "ViT-SO400M-14-SigLIP2-378__webli",
+    "ViT-SO400M-14-SigLIP2__webli",
+    "ViT-SO400M-16-SigLIP2-256__webli",
+    "ViT-SO400M-16-SigLIP2-384__webli",
+    "ViT-SO400M-16-SigLIP2-512__webli",
+    "ViT-gopt-16-SigLIP2-256__webli",
+    "ViT-gopt-16-SigLIP2-384__webli",
 }
 
 
@@ -63,7 +75,15 @@ _INSIGHTFACE_MODELS = {
 }
 
 
-SUPPORTED_PROVIDERS = ["CUDAExecutionProvider", "OpenVINOExecutionProvider", "CPUExecutionProvider"]
+SUPPORTED_PROVIDERS = [
+    "CUDAExecutionProvider",
+    "ROCMExecutionProvider",
+    "OpenVINOExecutionProvider",
+    "CPUExecutionProvider",
+]
+
+RKNN_SUPPORTED_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
+RKNN_COREMASK_SUPPORTED_SOCS = ["rk3576", "rk3588"]
 
 
 def get_model_source(model_name: str) -> ModelSource | None:

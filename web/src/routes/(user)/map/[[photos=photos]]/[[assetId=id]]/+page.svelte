@@ -123,7 +123,7 @@
 
   async function navigateRandom() {
     if (viewingAssets.length <= 0) {
-      return null;
+      return undefined;
     }
     const index = Math.floor(Math.random() * viewingAssets.length);
     const asset = await setAssetId(viewingAssets[index]);

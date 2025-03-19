@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User } from 'src/database';
+import { ApiKey, Asset, AuthApiKey, AuthUser, Library, Partner, User, UserAdmin } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { OnThisDayData } from 'src/entities/memory.entity';
-import { AssetStatus, AssetType, MemoryType, Permission } from 'src/enum';
+import { AssetStatus, AssetType, MemoryType, Permission, UserStatus } from 'src/enum';
 import { ActivityItem, MemoryItem } from 'src/types';
 
 export const newUuid = () => randomUUID() as string;
@@ -82,6 +82,26 @@ const userFactory = (user: Partial<User> = {}) => ({
   email: 'test@immich.cloud',
   profileImagePath: '',
   profileChangedAt: newDate(),
+  ...user,
+});
+
+const userAdminFactory = (user: Partial<UserAdmin> = {}) => ({
+  id: newUuid(),
+  name: 'Test User',
+  email: 'test@immich.cloud',
+  profileImagePath: '',
+  profileChangedAt: newDate(),
+  storageLabel: null,
+  shouldChangePassword: false,
+  isAdmin: false,
+  createdAt: newDate(),
+  updatedAt: newDate(),
+  deletedAt: null,
+  oauthId: '',
+  quotaSizeInBytes: null,
+  quotaUsageInBytes: 0,
+  status: UserStatus.ACTIVE,
+  metadata: [],
   ...user,
 });
 
@@ -198,5 +218,6 @@ export const factory = {
   session: sessionFactory,
   stack: stackFactory,
   user: userFactory,
+  userAdmin: userAdminFactory,
   versionHistory: versionHistoryFactory,
 };

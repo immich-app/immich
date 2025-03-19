@@ -47,11 +47,6 @@ export const systemConfigStub = {
       defaultStorageQuota: 1,
     },
   },
-  deleteDelay30: {
-    user: {
-      deleteDelay: 30,
-    },
-  },
   libraryWatchEnabled: {
     library: {
       scan: {

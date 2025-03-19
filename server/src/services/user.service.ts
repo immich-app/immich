@@ -188,15 +188,9 @@ export class UserService extends BaseService {
 
   @OnJob({ name: JobName.USER_DELETE_CHECK, queue: QueueName.BACKGROUND_TASK })
   async handleUserDeleteCheck(): Promise<JobStatus> {
-    const users = await this.userRepository.getDeletedUsers();
     const config = await this.getConfig({ withCache: false });
-    await this.jobRepository.queueAll(
-      users.flatMap((user) =>
-        this.isReadyForDeletion(user, config.user.deleteDelay)
-          ? [{ name: JobName.USER_DELETION, data: { id: user.id } }]
-          : [],
-      ),
-    );
+    const users = await this.userRepository.getDeletedAfter(DateTime.now().minus({ days: config.user.deleteDelay }));
+    await this.jobRepository.queueAll(users.map((user) => ({ name: JobName.USER_DELETION, data: { id: user.id } })));
     return JobStatus.SUCCESS;
   }
 

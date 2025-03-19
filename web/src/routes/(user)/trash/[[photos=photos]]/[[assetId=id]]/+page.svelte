@@ -36,8 +36,10 @@
     handlePromiseError(goto(AppRoute.PHOTOS));
   }
 
-  const options = { isTrashed: true };
-  const assetStore = new AssetStore(options);
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ isTrashed: true });
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   const handleEmptyTrash = async () => {
@@ -56,9 +58,6 @@
         message: $t('assets_permanently_deleted_count', { values: { count } }),
         type: NotificationType.Info,
       });
-
-      // reset asset grid (TODO fix in asset store that it should reset when it is empty)
-      await assetStore.updateOptions(options);
     } catch (error) {
       handleError(error, $t('errors.unable_to_empty_trash'));
     }
@@ -80,7 +79,10 @@
       });
 
       // reset asset grid (TODO fix in asset store that it should reset when it is empty)
-      await assetStore.updateOptions(options);
+      // note - this is still a problem, but updateOptions with the same value will not
+      // do anything, so need to flip it for it to reload/reinit
+      // await assetStore.updateOptions({ deferInit: true, isTrashed: true });
+      // await assetStore.updateOptions({ deferInit: false, isTrashed: true });
     } catch (error) {
       handleError(error, $t('errors.unable_to_restore_trash'));
     }
@@ -92,10 +94,6 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
 {#if assetInteraction.selectionActive}

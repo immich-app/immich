@@ -5,9 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/etag.entity.dart';
@@ -20,7 +19,6 @@ import 'package:immich_mobile/interfaces/etag.interface.dart';
 import 'package:immich_mobile/interfaces/partner.interface.dart';
 import 'package:immich_mobile/interfaces/partner_api.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/exif.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/repositories/album.repository.dart';
 import 'package:immich_mobile/repositories/album_api.repository.dart';
@@ -34,6 +32,7 @@ import 'package:immich_mobile/services/hash.service.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
 import 'package:immich_mobile/utils/datetime_comparison.dart';
 import 'package:immich_mobile/utils/diff.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 
 final syncServiceProvider = Provider(
@@ -47,7 +46,7 @@ final syncServiceProvider = Provider(
     ref.watch(exifRepositoryProvider),
     ref.watch(partnerRepositoryProvider),
     ref.watch(userRepositoryProvider),
-    ref.watch(storeServiceProvider),
+    ref.watch(userServiceProvider),
     ref.watch(etagRepositoryProvider),
     ref.watch(partnerApiRepositoryProvider),
     ref.watch(userApiRepositoryProvider),
@@ -63,8 +62,8 @@ class SyncService {
   final IAssetRepository _assetRepository;
   final IExifInfoRepository _exifInfoRepository;
   final IUserRepository _userRepository;
+  final UserService _userService;
   final IPartnerRepository _partnerRepository;
-  final StoreService _storeService;
   final IETagRepository _eTagRepository;
   final IPartnerApiRepository _partnerApiRepository;
   final IUserApiRepository _userApiRepository;
@@ -81,7 +80,7 @@ class SyncService {
     this._exifInfoRepository,
     this._partnerRepository,
     this._userRepository,
-    this._storeService,
+    this._userService,
     this._eTagRepository,
     this._partnerApiRepository,
     this._userApiRepository,
@@ -154,14 +153,14 @@ class SyncService {
   /// Syncs users from the server to the local database
   /// Returns `true`if there were any changes
   Future<bool> _syncUsersFromServer(List<UserDto> users) async {
-    users.sortBy((u) => u.uid);
+    users.sortBy((u) => u.id);
     final dbUsers = await _userRepository.getAll(sortBy: SortUserBy.id);
-    final List<int> toDelete = [];
+    final List<String> toDelete = [];
     final List<UserDto> toUpsert = [];
     final changes = diffSortedListsSync(
       users,
       dbUsers,
-      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (UserDto a, UserDto b) {
         if (!a.updatedAt.isAtSameMomentAs(b.updatedAt) ||
             a.isPartnerSharedBy != b.isPartnerSharedBy ||
@@ -210,7 +209,7 @@ class SyncService {
       DateTime since,
     ) getChangedAssets,
   ) async {
-    final currentUser = _storeService.get(StoreKey.currentUser);
+    final currentUser = _userService.getMyUser();
     final DateTime? since =
         (await _eTagRepository.get(currentUser.id))?.time?.toUtc();
     if (since == null) return null;
@@ -261,7 +260,7 @@ class SyncService {
 
   Future<List<UserDto>> _getAllAccessibleUsers() async {
     final sharedWith = (await _partnerRepository.getSharedWith()).toSet();
-    sharedWith.add(_storeService.get(StoreKey.currentUser));
+    sharedWith.add(_userService.getMyUser());
     return sharedWith.toList();
   }
 
@@ -321,12 +320,12 @@ class SyncService {
   }
 
   Future<void> _updateUserAssetsETag(List<UserDto> users, DateTime time) {
-    final etags = users.map((u) => ETag(id: u.uid, time: time)).toList();
+    final etags = users.map((u) => ETag(id: u.id, time: time)).toList();
     return _eTagRepository.upsertAll(etags);
   }
 
   Future<void> _clearUserAssetsETag(List<UserDto> users) {
-    final ids = users.map((u) => u.uid).toList();
+    final ids = users.map((u) => u.id).toList();
     return _eTagRepository.deleteByIds(ids);
   }
 
@@ -410,7 +409,7 @@ class SyncService {
       sharedUsers,
       compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (a, b) => false,
-      onlyFirst: (UserDto a) => userIdsToAdd.add(a.uid),
+      onlyFirst: (UserDto a) => userIdsToAdd.add(a.id),
       onlySecond: (UserDto a) => usersToUnlink.add(a),
     );
 
@@ -455,13 +454,14 @@ class SyncService {
     }
 
     if (album.shared || dto.shared) {
-      final userId = (_storeService.get(StoreKey.currentUser)).id;
+      final userId = (_userService.getMyUser()).id;
       final foreign =
           await _assetRepository.getByAlbum(album, notOwnedBy: [userId]);
       existing.addAll(foreign);
 
       // delete assets in DB unless they belong to this user or part of some other shared album
-      deleteCandidates.addAll(toUnlink.where((a) => a.ownerId != userId));
+      final isarUserId = fastHash(userId);
+      deleteCandidates.addAll(toUnlink.where((a) => a.ownerId != isarUserId));
     }
 
     return true;
@@ -591,7 +591,7 @@ class SyncService {
     // general case, e.g. some assets have been deleted or there are excluded albums on iOS
     final inDb = await _assetRepository.getByAlbum(
       dbAlbum,
-      ownerId: (_storeService.get(StoreKey.currentUser)).id,
+      ownerId: (_userService.getMyUser()).id,
       sortBy: AssetSort.checksum,
     );
 
@@ -880,16 +880,16 @@ class SyncService {
       return null;
     }
 
-    users.sortBy((u) => u.uid);
-    sharedBy.sortBy((u) => u.uid);
-    sharedWith.sortBy((u) => u.uid);
+    users.sortBy((u) => u.id);
+    sharedBy.sortBy((u) => u.id);
+    sharedWith.sortBy((u) => u.id);
 
     final updatedSharedBy = <UserDto>[];
 
     diffSortedListsSync(
       users,
       sharedBy,
-      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (UserDto a, UserDto b) {
         updatedSharedBy.add(a.copyWith(isPartnerSharedBy: true));
         return true;
@@ -903,7 +903,7 @@ class SyncService {
     diffSortedListsSync(
       updatedSharedBy,
       sharedWith,
-      compare: (UserDto a, UserDto b) => a.uid.compareTo(b.uid),
+      compare: (UserDto a, UserDto b) => a.id.compareTo(b.id),
       both: (UserDto a, UserDto b) {
         updatedSharedWith.add(
           a.copyWith(inTimeline: b.inTimeline, isPartnerSharedWith: true),

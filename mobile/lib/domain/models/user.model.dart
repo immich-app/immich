@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:immich_mobile/utils/hash.dart';
-
 enum AvatarColor {
   // do not change this order or reuse indices for other purposes, adding is OK
   primary,
@@ -32,7 +30,7 @@ enum AvatarColor {
 
 // TODO: Rename to User once Isar is removed
 class UserDto {
-  final String uid;
+  final String id;
   final String email;
   final String name;
   final bool isAdmin;
@@ -50,11 +48,10 @@ class UserDto {
   final int quotaUsageInBytes;
   final int quotaSizeInBytes;
 
-  int get id => fastHash(uid);
   bool get hasQuota => quotaSizeInBytes > 0;
 
   const UserDto({
-    required this.uid,
+    required this.id,
     required this.email,
     required this.name,
     required this.isAdmin,
@@ -73,7 +70,6 @@ class UserDto {
   String toString() {
     return '''User: {
 id: $id,
-uid: $uid,
 email: $email,
 name: $name,
 isAdmin: $isAdmin,
@@ -90,7 +86,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
   }
 
   UserDto copyWith({
-    String? uid,
+    String? id,
     String? email,
     String? name,
     bool? isAdmin,
@@ -105,7 +101,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
     int? quotaSizeInBytes,
   }) =>
       UserDto(
-        uid: uid ?? this.uid,
+        id: id ?? this.id,
         email: email ?? this.email,
         name: name ?? this.name,
         isAdmin: isAdmin ?? this.isAdmin,
@@ -124,7 +120,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
   bool operator ==(covariant UserDto other) {
     if (identical(this, other)) return true;
 
-    return other.uid == uid &&
+    return other.id == id &&
         other.updatedAt.isAtSameMomentAs(updatedAt) &&
         other.avatarColor == avatarColor &&
         other.email == email &&
@@ -141,7 +137,7 @@ quotaSizeInBytes: $quotaSizeInBytes,
 
   @override
   int get hashCode =>
-      uid.hashCode ^
+      id.hashCode ^
       name.hashCode ^
       email.hashCode ^
       updatedAt.hashCode ^

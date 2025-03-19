@@ -9,10 +9,11 @@
 
   interface Props {
     data: PageData;
-    isShowKeyboardShortcut?: boolean;
   }
 
-  let { data, isShowKeyboardShortcut = $bindable(false) }: Props = $props();
+  let { data }: Props = $props();
+
+  let isShowKeyboardShortcut = $state(false);
 </script>
 
 <UserPageLayout title={data.meta.title}>

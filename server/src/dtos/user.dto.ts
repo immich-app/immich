@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEmail, IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
-import { User } from 'src/database';
-import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
+import { User, UserAdmin } from 'src/database';
+import { UserMetadataEntity, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity } from 'src/entities/user.entity';
 import { UserAvatarColor, UserMetadataKey, UserStatus } from 'src/enum';
 import { getPreferences } from 'src/utils/preferences';
@@ -42,25 +42,14 @@ export class UserLicense {
   activatedAt!: Date;
 }
 
-export const mapUser = (entity: UserEntity): UserResponseDto => {
+export const mapUser = (entity: UserEntity | User): UserResponseDto => {
   return {
     id: entity.id,
     email: entity.email,
     name: entity.name,
     profileImagePath: entity.profileImagePath,
-    avatarColor: getPreferences(entity.email, entity.metadata || []).avatar.color,
+    avatarColor: getPreferences(entity.email, (entity as UserEntity).metadata || []).avatar.color,
     profileChangedAt: entity.profileChangedAt,
-  };
-};
-
-export const mapDatabaseUser = (user: User): UserResponseDto => {
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    profileImagePath: user.profileImagePath,
-    avatarColor: getPreferences(user.email, []).avatar.color,
-    profileChangedAt: user.profileChangedAt,
   };
 };
 
@@ -153,8 +142,8 @@ export class UserAdminResponseDto extends UserResponseDto {
   license!: UserLicense | null;
 }
 
-export function mapUserAdmin(entity: UserEntity): UserAdminResponseDto {
-  const license = entity.metadata?.find(
+export function mapUserAdmin(entity: UserEntity | UserAdmin): UserAdminResponseDto {
+  const license = (entity.metadata as UserMetadataItem[])?.find(
     (item): item is UserMetadataEntity<UserMetadataKey.LICENSE> => item.key === UserMetadataKey.LICENSE,
   )?.value;
   return {

@@ -1,0 +1,13 @@
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index d90a2a355..bb1a7de12 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -295,7 +295,7 @@ if (onnxruntime_USE_ROCM)
+   endif()
+
+   if (NOT CMAKE_HIP_ARCHITECTURES)
+-    set(CMAKE_HIP_ARCHITECTURES "gfx908;gfx90a;gfx1030;gfx1100;gfx1101;gfx940;gfx941;gfx942;gfx1200;gfx1201")
++    set(CMAKE_HIP_ARCHITECTURES "gfx900;gfx908;gfx90a;gfx1030;gfx1100;gfx1101;gfx1102;gfx940;gfx941;gfx942;gfx1200;gfx1201")
+   endif()
+
+   file(GLOB rocm_cmake_components ${onnxruntime_ROCM_HOME}/lib/cmake/*)

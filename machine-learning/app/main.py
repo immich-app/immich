@@ -226,9 +226,9 @@ async def load(model: InferenceModel) -> InferenceModel:
             except FileNotFoundError as e:
                 if model.model_format == ModelFormat.ONNX:
                     raise e
-                log.exception(e)
                 log.warning(
-                    f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it."
+                    f"{model.model_format.upper()} is available, but model '{model.model_name}' does not support it.",
+                    exc_info=e,
                 )
                 model.model_format = ModelFormat.ONNX
                 model.load()

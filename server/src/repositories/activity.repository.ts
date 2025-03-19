@@ -18,7 +18,7 @@ const withUser = (eb: ExpressionBuilder<DB, 'activity'>) => {
   return jsonObjectFrom(
     eb
       .selectFrom('users')
-      .select(columns.userDto)
+      .select(columns.user)
       .whereRef('users.id', '=', 'activity.userId')
       .where('users.deletedAt', 'is', null),
   ).as('user');

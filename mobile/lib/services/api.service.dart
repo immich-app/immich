@@ -35,6 +35,9 @@ class ApiService implements Authentication {
   late MemoriesApi memoriesApi;
 
   ApiService() {
+    // The below line ensures that the api clients are initialized when the service is instantiated
+    // This is required to avoid late initialization errors when the clients are access before the endpoint is resolved
+    setEndpoint('');
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     if (endpoint != null && endpoint.isNotEmpty) {
       setEndpoint(endpoint);

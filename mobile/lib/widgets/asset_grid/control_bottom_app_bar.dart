@@ -127,12 +127,12 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ControlBoxButton(
             iconData: Icons.share_rounded,
             label: "control_bottom_app_bar_share".tr(),
-            onPressed: enabled ? () => onShare(false) : null,
+            onPressed: enabled ? () => onShare(true) : null,
           ),
         ControlBoxButton(
-          iconData: Icons.ios_share_rounded,
-          label: "control_bottom_app_bar_share_to".tr(),
-          onPressed: enabled ? () => onShare(true) : null,
+          iconData: Icons.link_rounded,
+          label: "control_bottom_app_bar_share_link".tr(),
+          onPressed: enabled ? () => onShare(false) : null,
         ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(

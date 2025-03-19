@@ -33,7 +33,10 @@
   import { t } from 'svelte-i18n';
 
   let { isViewing: showAssetViewer } = assetViewingStore;
-  const assetStore = new AssetStore({ isArchived: false, withStacked: true, withPartners: true });
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ isArchived: false, withStacked: true, withPartners: true });
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   let selectedAssets = $derived(assetInteraction.selectedAssetsArray);
@@ -67,10 +70,6 @@
     assetStore.updateAssets([still]);
   };
 
-  onDestroy(() => {
-    assetStore.destroy();
-  });
-
   beforeNavigate(() => {
     isFaceEditMode.value = false;
   });
@@ -88,7 +87,14 @@
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+    <FavoriteAction
+      removeFavorite={assetInteraction.isAllFavorite}
+      onFavorite={(ids, isFavorite) =>
+        assetStore.updateAssetOperation(ids, (asset) => {
+          asset.isFavorite = isFavorite;
+          return { remove: false };
+        })}
+    ></FavoriteAction>
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       {#if assetInteraction.selectedAssets.size > 1 || isAssetStackSelected}

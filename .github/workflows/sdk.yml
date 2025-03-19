@@ -15,9 +15,9 @@ jobs:
       run:
         working-directory: ./open-api/typescript-sdk
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       # Setup .npmrc file to publish to npm
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version-file: './open-api/typescript-sdk/.nvmrc'
           registry-url: 'https://registry.npmjs.org'

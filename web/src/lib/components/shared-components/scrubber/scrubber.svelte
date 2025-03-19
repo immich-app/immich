@@ -1,10 +1,8 @@
 <script lang="ts">
-  import type { AssetStore, AssetBucket, BucketListener } from '$lib/stores/assets-store.svelte';
-  import { DateTime } from 'luxon';
+  import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
   import { clamp } from 'lodash-es';
-  import { onMount } from 'svelte';
-  import { isTimelineScrolling } from '$lib/stores/timeline.store';
+  import { DateTime } from 'luxon';
   import { fade, fly } from 'svelte/transition';
 
   interface Props {
@@ -15,11 +13,12 @@
     invisible?: boolean;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
-    scrubBucket?: { bucketDate: string | undefined } | undefined;
+    scrubBucket?: { bucketDate: string | undefined };
     leadout?: boolean;
-    onScrub?: ScrubberListener | undefined;
-    startScrub?: ScrubberListener | undefined;
-    stopScrub?: ScrubberListener | undefined;
+    onScrub?: ScrubberListener;
+    onScrubKeyDown?: (event: KeyboardEvent, element: HTMLElement) => void;
+    startScrub?: ScrubberListener;
+    stopScrub?: ScrubberListener;
   }
 
   let {
@@ -27,25 +26,22 @@
     timelineBottomOffset = 0,
     height = 0,
     assetStore,
-    invisible = false,
     scrubOverallPercent = 0,
     scrubBucketPercent = 0,
     scrubBucket = undefined,
     leadout = false,
     onScrub = undefined,
+    onScrubKeyDown = undefined,
     startScrub = undefined,
     stopScrub = undefined,
   }: Props = $props();
 
   let isHover = $state(false);
   let isDragging = $state(false);
-  let hoverLabel: string | undefined = $state();
-  let bucketDate: string | undefined;
   let hoverY = $state(0);
   let clientY = 0;
   let windowHeight = $state(0);
   let scrollBar: HTMLElement | undefined = $state();
-  let segments: Segment[] = $state([]);
 
   const toScrollY = (percent: number) => percent * (height - HOVER_DATE_HEIGHT * 2);
   const toTimelineY = (scrollY: number) => scrollY / (height - HOVER_DATE_HEIGHT * 2);
@@ -87,27 +83,10 @@
       return scrubOverallPercent * (height - HOVER_DATE_HEIGHT * 2) - 2;
     }
   };
-  let scrollY = $state(0);
-  $effect(() => {
-    scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
-  });
-
-  let timelineFullHeight = $derived(assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
+  let scrollY = $derived(toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent));
+  let timelineFullHeight = $derived(assetStore.scrubberTimelineHeight + timelineTopOffset + timelineBottomOffset);
   let relativeTopOffset = $derived(toScrollY(timelineTopOffset / timelineFullHeight));
   let relativeBottomOffset = $derived(toScrollY(timelineBottomOffset / timelineFullHeight));
-
-  const listener: BucketListener = (event) => {
-    const { type } = event;
-    if (type === 'viewport') {
-      segments = calculateSegments(assetStore.buckets);
-      scrollY = toScrollFromBucketPercentage(scrubBucket, scrubBucketPercent, scrubOverallPercent);
-    }
-  };
-
-  onMount(() => {
-    assetStore.addListener(listener);
-    return () => assetStore.removeListener(listener);
-  });
 
   type Segment = {
     count: number;
@@ -119,7 +98,7 @@
     hasDot: boolean;
   };
 
-  const calculateSegments = (buckets: AssetBucket[]) => {
+  const calculateSegments = (buckets: LiteBucket[]) => {
     let height = 0;
     let dotHeight = 0;
 
@@ -127,11 +106,10 @@
     let previousLabeledSegment: Segment | undefined;
 
     for (const [i, bucket] of buckets.entries()) {
-      const scrollBarPercentage =
-        bucket.bucketHeight / (assetStore.timelineHeight + timelineTopOffset + timelineBottomOffset);
+      const scrollBarPercentage = bucket.bucketHeight / timelineFullHeight;
 
       const segment = {
-        count: bucket.assets.length,
+        count: bucket.assetCount,
         height: toScrollY(scrollBarPercentage),
         bucketDate: bucket.bucketDate,
         date: fromLocalDateTime(bucket.bucketDate),
@@ -161,14 +139,23 @@
       segments.push(segment);
     }
 
-    hoverLabel = segments[0]?.dateFormatted;
     return segments;
   };
-
-  const updateLabel = (segment: HTMLElement) => {
-    hoverLabel = segment.dataset.label;
-    bucketDate = segment.dataset.timeSegmentBucketDate;
-  };
+  let activeSegment: HTMLElement | undefined = $state();
+  const segments = $derived(calculateSegments(assetStore.scrubberBuckets));
+  const hoverLabel = $derived(activeSegment?.dataset.label);
+  const bucketDate = $derived(activeSegment?.dataset.timeSegmentBucketDate);
+  const scrollHoverLabel = $derived.by(() => {
+    const y = scrollY;
+    let cur = 0;
+    for (const segment of segments) {
+      if (y <= cur + segment.height + relativeTopOffset) {
+        return segment.dateFormatted;
+      }
+      cur += segment.height;
+    }
+    return '';
+  });
 
   const handleMouseEvent = (event: { clientY: number; isDragging?: boolean }) => {
     const wasDragging = isDragging;
@@ -189,7 +176,8 @@
     const segment = elems.find(({ id }) => id === 'time-segment');
     let bucketPercentY = 0;
     if (segment) {
-      updateLabel(segment as HTMLElement);
+      activeSegment = segment as HTMLElement;
+
       const sr = segment.getBoundingClientRect();
       const sy = sr.y;
       const relativeY = clientY - sy;
@@ -197,9 +185,9 @@
     } else {
       const leadin = elems.find(({ id }) => id === 'lead-in');
       if (leadin) {
-        updateLabel(leadin as HTMLElement);
+        activeSegment = leadin as HTMLElement;
       } else {
-        bucketDate = undefined;
+        activeSegment = undefined;
         bucketPercentY = 0;
       }
     }
@@ -230,27 +218,34 @@
   onmouseup={({ clientY }) => handleMouseEvent({ clientY, isDragging: false })}
 />
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-
 <div
   transition:fly={{ x: 50, duration: 250 }}
+  tabindex="-1"
+  role="scrollbar"
+  aria-controls="time-label"
+  aria-valuenow={scrollY + HOVER_DATE_HEIGHT}
+  aria-valuemax={toScrollY(100)}
+  aria-valuemin={toScrollY(0)}
   id="immich-scrubbable-scrollbar"
   class="absolute right-0 z-[1] select-none bg-immich-bg hover:cursor-row-resize"
   style:padding-top={HOVER_DATE_HEIGHT + 'px'}
   style:padding-bottom={HOVER_DATE_HEIGHT + 'px'}
-  class:invisible
   style:width={isDragging ? '100vw' : '60px'}
   style:height={height + 'px'}
   style:background-color={isDragging ? 'transparent' : 'transparent'}
-  draggable="false"
   bind:this={scrollBar}
   onmouseenter={() => (isHover = true)}
   onmouseleave={() => (isHover = false)}
+  onkeydown={(event) => onScrubKeyDown?.(event, event.currentTarget)}
 >
   {#if hoverLabel && (isHover || isDragging)}
     <div
       id="time-label"
-      class="truncate opacity-85 pointer-events-none absolute right-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg"
+      class={[
+        { 'border-b-2': isDragging },
+        { 'rounded-bl-md': !isDragging },
+        'truncate opacity-85 pointer-events-none absolute right-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md  border-immich-primary bg-immich-bg py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray dark:text-immich-dark-fg',
+      ]}
       style:top="{hoverY + 2}px"
     >
       {hoverLabel}
@@ -262,12 +257,12 @@
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
     >
-      {#if $isTimelineScrolling && scrubBucket?.bucketDate}
+      {#if assetStore.scrolling && scrollHoverLabel}
         <p
           transition:fade={{ duration: 200 }}
           class="truncate pointer-events-none absolute right-0 bottom-0 z-[100] min-w-20 max-w-64 w-fit rounded-tl-md border-b-2 border-immich-primary bg-immich-bg/80 py-1 px-1 text-sm font-medium shadow-[0_0_8px_rgba(0,0,0,0.25)] dark:border-immich-dark-primary dark:bg-immich-dark-gray/80 dark:text-immich-dark-fg"
         >
-          {assetStore.getBucketByDate(scrubBucket.bucketDate)?.bucketDateFormattted}
+          {scrollHoverLabel}
         </p>
       {/if}
     </div>
