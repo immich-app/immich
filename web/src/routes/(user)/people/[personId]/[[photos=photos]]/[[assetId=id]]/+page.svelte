@@ -149,7 +149,7 @@
   });
 
   const handleUnmerge = () => {
-    assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetStore.removeAssets(assetInteraction.selectedAssets.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -368,7 +368,7 @@
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={assetInteraction.selectedAssetsArray.map((a) => a.id)}
+    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}
