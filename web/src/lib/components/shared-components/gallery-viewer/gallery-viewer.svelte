@@ -111,8 +111,8 @@
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
-    const top = (document.scrollingElement?.scrollTop || 0) + slidingWindowOffset;
-    const bottom = top + v.height - slidingWindowOffset;
+    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
+    const bottom = top + v.height + slidingWindowOffset;
     const w = {
       top,
       bottom,

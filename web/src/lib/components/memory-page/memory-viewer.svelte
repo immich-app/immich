@@ -613,7 +613,7 @@
           assets={current.memory.assets}
           {viewport}
           {assetInteraction}
-          slidingWindowOffset={-1 * viewerHeight}
+          slidingWindowOffset={viewerHeight}
         />
       </div>
     </section>
