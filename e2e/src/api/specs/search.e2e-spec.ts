@@ -188,8 +188,12 @@ describe('/search', () => {
         expected: [`${value} must be a boolean value`],
       })),
       {
-        should: 'should reject albumIds invalid format',
+        should: 'should reject albumIds null',
         deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: null }),
+      },
+      {
+        should: 'should reject albumIds invalid format',
+        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: ['invalid_uuid'] }),
       },
     ];
 
@@ -441,6 +445,10 @@ describe('/search', () => {
       {
         should: 'should get my assets with empty albumIds',
         deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: [] }),
+      },
+      {
+        should: 'should get my assets with a valued albumIds',
+        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: ['84010428-5106-42e1-be4d-e66d88fb59c2'] }),
       },
     ];
 
