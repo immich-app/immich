@@ -49,4 +49,3 @@ jobs:
               repo: context.repo.repo,
               name: 'fix:formatting'
             })
-
