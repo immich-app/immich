@@ -67,6 +67,7 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let isSaved = $derived(current?.memory.isSaved);
+  let viewerHeight = $state(0);
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
@@ -386,7 +387,7 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="overflow-hidden pt-32 md:pt-20">
+    <section class="overflow-hidden pt-32 md:pt-20" bind:clientHeight={viewerHeight}>
       <div
         class="ml-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
@@ -612,6 +613,7 @@
           assets={current.memory.assets}
           {viewport}
           {assetInteraction}
+          slidingWindowOffset={-1 * viewerHeight}
         />
       </div>
     </section>

@@ -35,6 +35,7 @@
     onPrevious?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onNext?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onRandom?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+    slidingWindowOffset?: number;
   }
 
   let {
@@ -49,6 +50,7 @@
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
+    slidingWindowOffset = 0,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -109,7 +111,7 @@
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
-    const top = document.scrollingElement?.scrollTop || 0;
+    const top = (document.scrollingElement?.scrollTop || 0) + slidingWindowOffset;
     const bottom = top + v.height;
     const w = {
       top,
