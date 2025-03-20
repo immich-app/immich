@@ -82,6 +82,11 @@
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
+  const scrollToTop = () => {
+    element?.scrollTo({ top: 0 });
+    showSkeleton = false;
+  };
+
   const completeNav = async () => {
     if ($gridScrollTarget?.at) {
       try {
@@ -89,18 +94,17 @@
         if (bucket) {
           const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
           if (height) {
-            element?.scrollTo({ top: height });
-            showSkeleton = false;
+            scrollToTop();
             assetStore.updateIntersections();
           }
+        } else {
+          scrollToTop();
         }
       } catch {
-        element?.scrollTo({ top: 0 });
-        showSkeleton = false;
+        scrollToTop();
       }
     } else {
-      element?.scrollTo({ top: 0 });
-      showSkeleton = false;
+      scrollToTop();
     }
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
