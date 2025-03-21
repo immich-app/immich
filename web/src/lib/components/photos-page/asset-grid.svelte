@@ -9,7 +9,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
@@ -25,6 +25,7 @@
   import { page } from '$app/stores';
   import type { UpdatePayload } from 'vite';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -82,26 +83,35 @@
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
+  const usingMobileDevice = $derived(mobileDevice.hoverNone);
+
+  const scrollTo = (top: number) => {
+    element?.scrollTo({ top });
+    showSkeleton = false;
+  };
+
+  const scrollToTop = () => {
+    scrollTo(0);
+  };
+
   const completeNav = async () => {
-    if ($gridScrollTarget?.at) {
+    const scrollTarget = $gridScrollTarget?.at;
+    if (scrollTarget) {
       try {
-        const bucket = await assetStore.findBucketForAsset($gridScrollTarget.at);
+        const bucket = await assetStore.findBucketForAsset(scrollTarget);
         if (bucket) {
-          const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
+          const height = bucket.findAssetAbsolutePosition(scrollTarget);
           if (height) {
-            element?.scrollTo({ top: height });
-            showSkeleton = false;
+            scrollTo(height);
             assetStore.updateIntersections();
+            return;
           }
         }
       } catch {
-        element?.scrollTo({ top: 0 });
-        showSkeleton = false;
+        // ignore errors - asset may not be in the store
       }
-    } else {
-      element?.scrollTo({ top: 0 });
-      showSkeleton = false;
     }
+    scrollToTop();
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
@@ -134,8 +144,7 @@
                 { replaceState: true, forceNavigate: true },
               );
             } else {
-              element?.scrollTo({ top: 0 });
-              showSkeleton = false;
+              scrollToTop();
             }
           }, 500);
         }
@@ -304,11 +313,11 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssets(assetInteraction.selectedAssets);
-    if (ids) {
-      assetStore.removeAssets(ids);
-      onEscape();
-    }
+    const result = await stackAssets(assetInteraction.selectedAssets);
+
+    updateStackedAssetInTimeline(assetStore, result);
+
+    onEscape();
   };
 
   const toggleArchive = async () => {
@@ -405,7 +414,7 @@
       }
 
       case AssetAction.UNSTACK: {
-        assetStore.addAssets(action.assets);
+        updateUnstackedAssetInTimeline(assetStore, action.assets);
       }
     }
   };
@@ -708,7 +717,12 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class={[
+    'scrollbar-hidden h-full overflow-y-auto outline-none',
+    { 'm-0': isEmpty },
+    { 'ml-4 tall:ml-0': !isEmpty },
+    { 'mr-[60px]': !isEmpty && !usingMobileDevice },
+  ]}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
