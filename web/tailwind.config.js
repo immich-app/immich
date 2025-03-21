@@ -58,7 +58,7 @@ export default {
       },
     },
   },
-  plugins: [ 
+  plugins: [
     plugin(({ matchUtilities, theme }) => {
       matchUtilities(
         {

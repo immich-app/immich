@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { intersectionObserver } from '$lib/actions/intersection-observer';
   import type { PersonResponseDto } from '@immich/sdk';
 
   interface Props {
@@ -9,28 +10,17 @@
   }
 
   let { people, hasNextPage = undefined, loadNextPage, children }: Props = $props();
-
-  let lastPersonContainer: HTMLElement | undefined = $state();
-
-  const intersectionObserver = new IntersectionObserver((entries) => {
-    const entry = entries.find((entry) => entry.target === lastPersonContainer);
-    if (entry?.isIntersecting) {
-      loadNextPage();
-    }
-  });
-
-  $effect(() => {
-    if (lastPersonContainer) {
-      intersectionObserver.disconnect();
-      intersectionObserver.observe(lastPersonContainer);
-    }
-  });
 </script>
 
-<div class="w-full flex flex-wrap justify-evenly gap-2">
+<section class="w-full flex flex-wrap gap-2">
   {#each people as person, index (person.id)}
     {#if hasNextPage && index === people.length - 1}
-      <div class="flex-none max-md:w-[100px] w-[122px]" bind:this={lastPersonContainer}>
+      <div
+        class="flex-none max-md:w-[100px] w-[122px]"
+        use:intersectionObserver={{
+          onIntersect: loadNextPage,
+        }}
+      >
         {@render children?.({ person, index })}
       </div>
     {:else}
@@ -39,4 +29,13 @@
       </div>
     {/if}
   {/each}
-</div>
+</section>
+
+<style>
+  section::after {
+    content: '';
+    flex: auto;
+    flex-basis: 122px;
+    flex-grow: 0;
+  }
+</style>
