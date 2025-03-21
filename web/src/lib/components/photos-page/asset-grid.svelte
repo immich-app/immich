@@ -4,7 +4,7 @@
   import type { Action } from '$lib/components/asset-viewer/actions/action';
   import { AppRoute, AssetAction } from '$lib/constants';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetBucket, AssetStore } from '$lib/stores/assets-store.svelte';
+  import { AssetBucket, assetsSnapshot, AssetStore } from '$lib/stores/assets-store.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
@@ -286,7 +286,7 @@
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssetsArray.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
 
     if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
@@ -304,7 +304,7 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssets(assetInteraction.selectedAssetsArray);
+    const ids = await stackAssets(assetInteraction.selectedAssets);
     if (ids) {
       assetStore.removeAssets(ids);
       onEscape();
@@ -312,8 +312,8 @@
   };
 
   const toggleArchive = async () => {
-    await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
-    assetStore.updateAssets(assetInteraction.selectedAssetsArray);
+    await archiveAssets(assetInteraction.selectedAssets, !assetInteraction.isAllArchived);
+    assetStore.updateAssets(assetInteraction.selectedAssets);
     deselectAllAssets();
   };
 
@@ -377,7 +377,8 @@
       case removeAction:
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
-      case AssetAction.DELETE: {
+      case AssetAction.DELETE:
+      case AssetAction.ARCHIVE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
@@ -450,7 +451,7 @@
     if (assetInteraction.selectedGroup.has(group)) {
       assetInteraction.removeGroupFromMultiselectGroup(group);
       for (const asset of assets) {
-        assetInteraction.removeAssetFromMultiselectGroup(asset);
+        assetInteraction.removeAssetFromMultiselectGroup(asset.id);
       }
     } else {
       assetInteraction.addGroupToMultiselectGroup(group);
@@ -471,15 +472,15 @@
       return;
     }
 
-    const rangeSelection = assetInteraction.assetSelectionCandidates.size > 0;
+    const rangeSelection = assetInteraction.assetSelectionCandidates.length > 0;
     const deselect = assetInteraction.hasSelectedAsset(asset.id);
 
     // Select/deselect already loaded assets
     if (deselect) {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate);
+        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
-      assetInteraction.removeAssetFromMultiselectGroup(asset);
+      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
         handleSelectAsset(candidate);
@@ -510,7 +511,7 @@
           await assetStore.loadBucket(bucket.bucketDate);
           for (const asset of bucket.getAssets()) {
             if (deselect) {
-              assetInteraction.removeAssetFromMultiselectGroup(asset);
+              assetInteraction.removeAssetFromMultiselectGroup(asset.id);
             } else {
               handleSelectAsset(asset);
             }
@@ -553,7 +554,7 @@
       return;
     }
 
-    const assets = assetStore.getAssets();
+    const assets = assetsSnapshot(assetStore.getAssets());
 
     let start = assets.findIndex((a) => a.id === startAsset.id);
     let end = assets.findIndex((a) => a.id === endAsset.id);
@@ -602,7 +603,7 @@
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
   let isEmpty = $derived(assetStore.isInitialized && assetStore.buckets.length === 0);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
+  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
 
   $effect(() => {
     if (isEmpty) {

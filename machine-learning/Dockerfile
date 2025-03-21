@@ -1,6 +1,6 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:5d9d65de9be5d46b388cfa8a25141b169e0333e48bd53c3e02879fa761d6f7a8 AS builder-cpu
+FROM python:3.11-bookworm@sha256:d270285656e8f061ae0004297df62ac4b26d5cef9408b9cc9a5bf08c2cd8d60c AS builder-cpu
 
 FROM builder-cpu AS builder-openvino
 
@@ -55,7 +55,7 @@ WORKDIR /usr/src/app
 
 RUN apt-get update && apt-get install -y --no-install-recommends g++
 
-COPY --from=ghcr.io/astral-sh/uv:latest@sha256:d25a9b42ecc3aac0d63782654dcb2ab4b304f86357794b05a5c39b17f4777339 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest@sha256:cb641b1979723dc5ab87d61f079000009edc107d30ae7cbb6e7419fdac044e9f /uv /uvx /bin/
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
