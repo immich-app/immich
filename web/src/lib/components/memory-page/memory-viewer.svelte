@@ -67,9 +67,12 @@
   let paused = $state(false);
   let current = $state<MemoryAsset | undefined>(undefined);
   let isSaved = $derived(current?.memory.isSaved);
+  let viewerHeight = $state(0);
 
   const { isViewing } = assetViewingStore;
   const viewport: Viewport = $state({ width: 0, height: 0 });
+  // need to include padding in the viewport for gallery
+  const galleryViewport: Viewport = $derived({ height: viewport.height, width: viewport.width - 32 });
   const assetInteraction = new AssetInteraction();
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
@@ -331,7 +334,12 @@
   </div>
 {/if}
 
-<section id="memory-viewer" class="w-full bg-immich-dark-gray" bind:this={memoryWrapper}>
+<section
+  id="memory-viewer"
+  class="w-full bg-immich-dark-gray"
+  bind:this={memoryWrapper}
+  use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
+>
   {#if current}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} forceDark multiRow>
       {#snippet leading()}
@@ -386,7 +394,7 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="overflow-hidden pt-32 md:pt-20">
+    <section class="overflow-hidden pt-32 md:pt-20" bind:clientHeight={viewerHeight}>
       <div
         class="ml-[-100%] box-border flex h-[calc(100vh_-_224px)] md:h-[calc(100vh_-_180px)] w-[300%] items-center justify-center gap-10 overflow-hidden"
       >
@@ -580,43 +588,44 @@
         </div>
       </div>
     </section>
-
-    <!-- GALLERY VIEWER -->
-    <section class="bg-immich-dark-gray p-4">
-      <div
-        class="sticky mb-10 flex place-content-center place-items-center transition-all"
-        class:opacity-0={galleryInView}
-        class:opacity-100={!galleryInView}
-      >
-        <CircleIconButton
-          title={$t('show_gallery')}
-          icon={mdiChevronDown}
-          color="light"
-          onclick={() => memoryGallery?.scrollIntoView({ behavior: 'smooth' })}
-        />
-      </div>
-
-      <div
-        id="gallery-memory"
-        use:intersectionObserver={{
-          onIntersect: handleGalleryScrollsIntoView,
-          onSeparate: handleGalleryScrollsOutOfView,
-          bottom: '-200px',
-        }}
-        use:resizeObserver={({ height, width }) => ((viewport.height = height), (viewport.width = width))}
-        bind:this={memoryGallery}
-      >
-        <GalleryViewer
-          onNext={handleNextAsset}
-          onPrevious={handlePreviousAsset}
-          assets={current.memory.assets}
-          {viewport}
-          {assetInteraction}
-        />
-      </div>
-    </section>
   {/if}
 </section>
+{#if current}
+  <!-- GALLERY VIEWER -->
+  <section class="bg-immich-dark-gray p-4">
+    <div
+      class="sticky mb-10 flex place-content-center place-items-center transition-all"
+      class:opacity-0={galleryInView}
+      class:opacity-100={!galleryInView}
+    >
+      <CircleIconButton
+        title={$t('show_gallery')}
+        icon={mdiChevronDown}
+        color="light"
+        onclick={() => memoryGallery?.scrollIntoView({ behavior: 'smooth' })}
+      />
+    </div>
+
+    <div
+      id="gallery-memory"
+      use:intersectionObserver={{
+        onIntersect: handleGalleryScrollsIntoView,
+        onSeparate: handleGalleryScrollsOutOfView,
+        bottom: '-200px',
+      }}
+      bind:this={memoryGallery}
+    >
+      <GalleryViewer
+        onNext={handleNextAsset}
+        onPrevious={handlePreviousAsset}
+        assets={current.memory.assets}
+        viewport={galleryViewport}
+        {assetInteraction}
+        slidingWindowOffset={viewerHeight}
+      />
+    </div>
+  </section>
+{/if}
 
 <style>
   .main-view {
