@@ -67,6 +67,21 @@ class StackService {
       debugPrint("Error while deleting stack: $error");
     }
   }
+
+  Future<void> keepThisDeleteOthers(Asset keepAsset, String stackId, List<Asset> assets) async {
+    try {
+      final ids = assets
+          .where((e) => e.remoteId != keepAsset.remoteId)
+          .map((e) => e.remoteId!)
+          .toList();
+      final assetBulkDeleteDto = AssetBulkDeleteDto(ids: ids);
+
+      await _api.assetsApi.deleteAssets(assetBulkDeleteDto);
+      await _api.stacksApi.deleteStack(stackId);
+    } catch (error) {
+      debugPrint("Error while keeping this and deleting others: $error");
+    }
+  }
 }
 
 final stackServiceProvider = Provider(
