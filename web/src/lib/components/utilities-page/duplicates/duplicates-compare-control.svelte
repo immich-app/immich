@@ -27,6 +27,15 @@
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
+  const uniqueDateTimes = new Set(
+    assets.map((asset) => {
+      const date = new Date(asset.fileCreatedAt);
+      return date.toISOString().slice(0, 16).replace('T', ' '); // Format: YYYY-MM-DD HH:MM
+    }),
+  );
+
+  const showDateConditionally = uniqueDateTimes.size > 1;
+
   onMount(() => {
     const suggestedAsset = suggestDuplicate(assets);
 
@@ -118,6 +127,7 @@
       <DuplicateAsset
         {asset}
         {onSelectAsset}
+        showDate={showDateConditionally}
         isSelected={selectedAssetIds.has(asset.id)}
         onViewAsset={(asset) => setAsset(asset)}
       />
