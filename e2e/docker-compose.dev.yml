@@ -1,0 +1,61 @@
+name: immich-e2e
+
+services:
+  immich-dev:
+    image: immich-dev:latest
+    command: ['/app/scripts/dev.sh']
+    build:
+      context: ../
+      dockerfile: server/Dockerfile
+      target: dev
+    volumes:
+      - ../docker/scripts:/app/scripts
+      - ../server:/app/server
+      - ../web:/app/web
+      - ../i18n:/app/i18n
+      - ../open-api:/app/open-api
+      - ./test-assets:/test-assets
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - IMMICH_SERVER_URL=http://immich-dev:2283/
+      - DB_HOSTNAME=database
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE_NAME=immich
+      - IMMICH_MACHINE_LEARNING_ENABLED=false
+      - IMMICH_TELEMETRY_INCLUDE=all
+      - IMMICH_ENV=testing
+      - DEV_PORT=2285
+      - IMMICH_IGNORE_MOUNT_CHECK_ERRORS=true
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
+    ports:
+      - 2285:2285
+    depends_on:
+      - redis
+      - database
+    healthcheck:
+      disable: false
+    restart: unless-stopped
+
+  redis:
+    image: redis:6.2-alpine@sha256:148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8
+
+  database:
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+    command: >-
+      postgres
+      -c shared_preload_libraries=vectors.so
+      -c 'search_path="$$user", public, vectors'
+      -c logging_collector=on
+      -c max_wal_size=2GB
+      -c shared_buffers=512MB
+      -c wal_compression=on
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+    ports:
+      - 5435:5432

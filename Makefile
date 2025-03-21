@@ -4,6 +4,12 @@ dev:
 dev-down:
 	docker compose -f ./docker/docker-compose.dev.yml down --remove-orphans
 
+dev-combined:
+	docker compose -f ./docker/docker-compose.combined.yml up --remove-orphans || make dev-combined-down
+
+dev-combined-down:
+	docker compose -f ./docker/docker-compose.combined.yml down --remove-orphans
+
 dev-update:
 	docker compose -f ./docker/docker-compose.dev.yml up --build -V --remove-orphans
 
@@ -64,6 +70,13 @@ test-e2e:
 	docker compose -f ./e2e/docker-compose.yml build
 	npm --prefix e2e run test
 	npm --prefix e2e run test:web
+test-e2e-web:
+	docker compose -f ./e2e/docker-compose.yml build
+	npm --prefix e2e run test:web
+test-e2e-dev:
+	docker compose -f ./e2e/docker-compose.dev.yml up --renew-anon-volumes --force-recreate --remove-orphans || make test-e2e-dev-down
+test-e2e-dev-down:
+	docker compose -f ./e2e/docker-compose.dev.yml down --remove-orphans
 test-medium:
 	docker run \
     --rm \
