@@ -25,6 +25,7 @@
   import { page } from '$app/stores';
   import type { UpdatePayload } from 'vite';
   import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     isSelectionMode?: boolean;
@@ -81,6 +82,8 @@
   // 60 is the bottom spacer element at 60px
   let bottomSectionHeight = 60;
   let leadout = $state(false);
+
+  const usingMobileDevice = $derived(mobileDevice.hoverNone);
 
   const scrollTo = (top: number) => {
     element?.scrollTo({ top });
@@ -714,7 +717,12 @@
 <!-- Right margin MUST be equal to the width of immich-scrubbable-scrollbar -->
 <section
   id="asset-grid"
-  class="scrollbar-hidden h-full overflow-y-auto outline-none {isEmpty ? 'm-0' : 'ml-4 tall:ml-0 mr-[60px]'}"
+  class={[
+    'scrollbar-hidden h-full overflow-y-auto outline-none',
+    { 'm-0': isEmpty },
+    { 'ml-4 tall:ml-0': !isEmpty },
+    { 'mr-[60px]': !isEmpty && !usingMobileDevice },
+  ]}
   tabindex="-1"
   bind:clientHeight={assetStore.viewportHeight}
   bind:clientWidth={null, (v) => ((assetStore.viewportWidth = v), updateSlidingWindow())}
