@@ -440,6 +440,16 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         eb.not(eb.exists((eb) => eb.selectFrom('albums_assets_assets').whereRef('assetsId', '=', 'assets.id'))),
       ),
     )
+    .$if(!!options.albumIds && options.albumIds.length > 0, (qb) =>
+      qb.where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('albums_assets_assets')
+            .whereRef('albums_assets_assets.assetsId', '=', 'assets.id')
+            .where('albums_assets_assets.albumsId', 'in', options.albumIds!),
+        ),
+      ),
+    )
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople || options.personIds), (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('assets.deletedAt', 'is', null))
