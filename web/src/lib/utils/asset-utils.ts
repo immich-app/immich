@@ -381,9 +381,14 @@ export const getSelectedAssets = (assets: AssetResponseDto[], user: UserResponse
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], showNotification = true) => {
+export type StackResponse = {
+  stack?: StackResponseDto;
+  toDeleteIds: string[];
+};
+
+export const stackAssets = async (assets: AssetResponseDto[], showNotification = true): Promise<StackResponse> => {
   if (assets.length < 2) {
-    return false;
+    return { stack: undefined, toDeleteIds: [] };
   }
 
   const $t = get(t);
@@ -405,10 +410,13 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
       asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
     }
 
-    return assets.slice(1).map((asset) => asset.id);
+    return {
+      stack,
+      toDeleteIds: assets.slice(1).map((asset) => asset.id),
+    };
   } catch (error) {
     handleError(error, $t('errors.failed_to_stack_assets'));
-    return false;
+    return { stack: undefined, toDeleteIds: [] };
   }
 };
 
