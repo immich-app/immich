@@ -19,6 +19,7 @@
   import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     showUploadButton?: boolean;
@@ -42,6 +43,8 @@
   onMount(async () => {
     info = userInteraction.aboutInfo ?? (await getAboutInfo());
   });
+  const iconSize = $derived(mobileDevice.maxMd ? 'small' : 'large');
+  const avatarSize = $derived(mobileDevice.maxMd ? 'sm' : 'md');
 </script>
 
 <svelte:window bind:innerWidth />
@@ -50,7 +53,10 @@
   <HelpAndFeedbackModal onClose={() => (shouldShowHelpPanel = false)} {info} />
 {/if}
 
-<section id="dashboard-navbar" class="fixed z-[900] h-[var(--navbar-height)] w-screen text-sm">
+<section
+  id="dashboard-navbar"
+  class="fixed z-[900] max-md:h-[var(--navbar-height-md)] h-[var(--navbar-height)] w-screen text-sm"
+>
   <SkipLink text={$t('skip_to_content')} />
   <div
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
@@ -71,7 +77,7 @@
             color="secondary"
             shape="round"
             variant="ghost"
-            size="large"
+            size={iconSize}
             icon={mdiMagnify}
             href={AppRoute.SEARCH}
             id="search-button"
@@ -87,7 +93,7 @@
             onclick={onUploadClick}
             class="hidden lg:flex"
             variant="ghost"
-            size="medium"
+            size={iconSize}
             color="secondary"
             >{$t('upload')}
           </Button>
@@ -95,7 +101,7 @@
             color="secondary"
             shape="round"
             variant="ghost"
-            size="large"
+            size={iconSize}
             onclick={onUploadClick}
             title={$t('upload')}
             aria-label={$t('upload')}
@@ -115,7 +121,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            size="large"
+            size={iconSize}
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
@@ -139,7 +145,7 @@
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
-              <UserAvatar user={$user} size="md" showTitle={false} interactive />
+              <UserAvatar user={$user} size={avatarSize} showTitle={false} interactive />
             {/key}
           </button>
 
