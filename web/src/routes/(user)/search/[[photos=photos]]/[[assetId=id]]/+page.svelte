@@ -33,7 +33,7 @@
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
   import type { Viewport } from '$lib/stores/assets-store.svelte';
-  import { locale } from '$lib/stores/preferences.store';
+  import { lang, locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
@@ -153,6 +153,7 @@
       page: nextPage,
       withExif: true,
       isVisible: true,
+      language: $lang,
       ...terms,
     };
 
