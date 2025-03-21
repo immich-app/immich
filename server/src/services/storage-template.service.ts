@@ -185,7 +185,8 @@ export class StorageTemplateService extends BaseService {
     }
 
     return this.databaseRepository.withLock(DatabaseLock.StorageTemplateMigration, async () => {
-      const { id, sidecarPath, originalPath, checksum, fileSizeInByte } = asset;
+      // TODO: sidecar handling
+      const { id, originalPath, checksum, fileSizeInByte } = asset;
       const oldPath = originalPath;
       const newPath = await this.getTemplatePath(asset, metadata);
 
@@ -202,14 +203,14 @@ export class StorageTemplateService extends BaseService {
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
         });
-        if (sidecarPath) {
+       /* if (sidecarPath) {
           await this.storageCore.moveFile({
             entityId: id,
             pathType: AssetPathType.SIDECAR,
             oldPath: sidecarPath,
             newPath: `${newPath}.xmp`,
-          });
-        }
+          }); 
+        }*/
       } catch (error: any) {
         this.logger.error(`Problem applying storage template`, error?.stack, { id, oldPath, newPath });
       }

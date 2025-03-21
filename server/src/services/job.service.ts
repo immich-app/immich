@@ -238,8 +238,7 @@ export class JobService extends BaseService {
    */
   private async onDone(item: JobItem) {
     switch (item.name) {
-      case JobName.SIDECAR_SYNC:
-      case JobName.SIDECAR_DISCOVERY: {
+      case JobName.SIDECAR_SYNC: {
         await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
         break;
       }
