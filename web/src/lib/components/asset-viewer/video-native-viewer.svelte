@@ -119,6 +119,9 @@
         $videoViewerMuted = e.currentTarget.muted;
       }
     }}
+    onplaying={(e) => {
+      e.currentTarget.focus();
+    }}
     onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
