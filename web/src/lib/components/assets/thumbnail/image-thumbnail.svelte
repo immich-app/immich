@@ -2,8 +2,10 @@
   import { thumbhash } from '$lib/actions/thumbhash';
   import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
+  import { cancelImageUrl } from '$lib/utils/sw-messaging';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
+  import type { ActionReturn } from 'svelte/action';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -56,11 +58,14 @@
     onComplete?.();
   };
 
-  function mount(elem: HTMLImageElement) {
+  function mount(elem: HTMLImageElement): ActionReturn {
     if (elem.complete) {
       loaded = true;
       onComplete?.();
     }
+    return {
+      destroy: () => cancelImageUrl(url),
+    };
   }
 
   let optionalClasses = $derived(
