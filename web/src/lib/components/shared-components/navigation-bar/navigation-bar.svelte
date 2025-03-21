@@ -20,6 +20,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
+  import ThemeButton from '../theme-button.svelte';
   import UserAvatar from '../user-avatar.svelte';
   import AccountInfoPanel from './account-info-panel.svelte';
   import { isSidebarOpen } from '$lib/stores/side-bar.svelte';
@@ -92,7 +93,7 @@
         {/if}
       </div>
 
-      <section class="flex place-items-center justify-end gap-1 w-full sm:w-auto">
+      <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
         {#if $featureFlags.search}
           <IconButton
             color="secondary"
@@ -129,6 +130,8 @@
             class="lg:hidden"
           />
         {/if}
+
+        <ThemeButton padding="2" />
 
         <div
           use:clickOutside={{
