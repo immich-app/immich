@@ -13,7 +13,6 @@ describe('Thumbnail component', () => {
     render(Thumbnail, {
       asset,
       focussed: false,
-      overrideDisplayForTest: true,
       selected: true,
     });
 
@@ -38,7 +37,6 @@ describe('Thumbnail component', () => {
     const handleFocusSpy = vi.fn();
     render(Thumbnail, {
       asset,
-      overrideDisplayForTest: true,
       handleFocus: handleFocusSpy,
     });
 
@@ -53,7 +51,6 @@ describe('Thumbnail component', () => {
     const handleFocusSpy = vi.fn();
     render(Thumbnail, {
       asset,
-      overrideDisplayForTest: true,
       focussed: true,
       handleFocus: handleFocusSpy,
     });

@@ -37,7 +37,6 @@
     readonly?: boolean;
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
-    disableMouseOver?: boolean;
 
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
@@ -59,7 +58,6 @@
     readonly = false,
     showArchiveIcon = false,
     showStackedIcon = true,
-    disableMouseOver = false,
     onClick = undefined,
     onSelect = undefined,
     onMouseEvent = undefined,
@@ -136,14 +134,13 @@
     ></canvas>
   {/if}
 
-  <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
-     the navigation url on scroll. Replace this with button for now. -->
-  <div
+  <a
     class="group"
     style:width="{width}px"
     style:height="{height}px"
     class:cursor-not-allowed={disabled}
     class:cursor-pointer={!disabled}
+    href={currentUrlReplaceAssetId(asset.id)}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
     onkeydown={(evt) => {
@@ -156,26 +153,11 @@
     }}
     tabindex={0}
     onclick={handleClick}
-    role="link"
     bind:this={focussableElement}
     onfocus={handleFocus}
     data-testid="container-with-tabindex"
   >
-    {#if mouseOver && !disableMouseOver}
-      <!-- lazy show the url on mouse over-->
-      <a
-        class="absolute z-20 {className}"
-        style:cursor="unset"
-        style:width="{width}px"
-        style:height="{height}px"
-        href={currentUrlReplaceAssetId(asset.id)}
-        onclick={(evt) => evt.preventDefault()}
-        tabindex={-1}
-        aria-label="Thumbnail URL"
-      >
-      </a>
-    {/if}
-    <div class="absolute z-30 {className}" style:width="{width}px" style:height="{height}px">
+    <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
       <!-- Select asset button  -->
       {#if !readonly && (mouseOver || selected || selectionCandidate)}
         <button
@@ -295,5 +277,5 @@
         out:fade={{ duration: 100 }}
       ></div>
     {/if}
-  </div>
+  </a>
 </div>
