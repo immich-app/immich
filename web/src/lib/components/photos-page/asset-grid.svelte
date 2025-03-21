@@ -377,7 +377,8 @@
       case removeAction:
       case AssetAction.TRASH:
       case AssetAction.RESTORE:
-      case AssetAction.DELETE: {
+      case AssetAction.DELETE:
+      case AssetAction.ARCHIVE: {
         // find the next asset to show or close the viewer
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         (await handleNext()) || (await handlePrevious()) || (await handleClose({ asset: action.asset }));
