@@ -264,7 +264,7 @@ describe(AssetService.name, () => {
 
       await sut.update(authStub.admin, 'asset-1', { isFavorite: true });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'asset-1', isFavorite: true });
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: 'asset-1', isFavorite: true, isDirty: true });
     });
 
     it('should update the exif description', async () => {
@@ -371,6 +371,7 @@ describe(AssetService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: assetStub.livePhotoMotionAsset.id,
+        isDirty: true,
       });
     });
 
@@ -392,6 +393,7 @@ describe(AssetService.name, () => {
       expect(mocks.asset.update).toHaveBeenCalledWith({
         id: assetStub.livePhotoStillAsset.id,
         livePhotoVideoId: null,
+        isDirty: true,
       });
       expect(mocks.asset.update).toHaveBeenCalledWith({ id: assetStub.livePhotoMotionAsset.id, isVisible: true });
       expect(mocks.event.emit).toHaveBeenCalledWith('asset.show', {
@@ -429,7 +431,7 @@ describe(AssetService.name, () => {
 
       await sut.updateAll(authStub.admin, { ids: ['asset-1', 'asset-2'], isArchived: true });
 
-      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true });
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith(['asset-1', 'asset-2'], { isArchived: true, isDirty: true });
     });
 
     it('should not update Assets table if no relevant fields are provided', async () => {

@@ -117,7 +117,7 @@ export class AssetService extends BaseService {
 
     await this.updateMetadata({ id, description, dateTimeOriginal, latitude, longitude, rating });
 
-    const asset = await this.assetRepository.update({ id, ...rest });
+    const asset = await this.assetRepository.update({ id, isDirty: true, ...rest });
 
     if (previousMotion) {
       await onAfterUnlink(repos, { userId: auth.user.id, livePhotoVideoId: previousMotion.id });
@@ -144,7 +144,7 @@ export class AssetService extends BaseService {
       options.duplicateId != undefined ||
       options.rating != undefined
     ) {
-      await this.assetRepository.updateAll(ids, options);
+      await this.assetRepository.updateAll(ids, { isDirty: true, ...options });
     }
   }
 

@@ -143,6 +143,7 @@ export interface Assets {
   isFavorite: Generated<boolean>;
   isOffline: Generated<boolean>;
   isVisible: Generated<boolean>;
+  isDirty: Generated<boolean>;
   libraryId: string | null;
   livePhotoVideoId: string | null;
   localDateTime: Timestamp | null;
