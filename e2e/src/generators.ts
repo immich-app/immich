@@ -1,11 +1,21 @@
 import { PNG } from 'pngjs';
 
+
 const createPNG = (r: number, g: number, b: number) => {
-  const image = new PNG({ width: 1, height: 1 });
-  image.data[0] = r;
-  image.data[1] = g;
-  image.data[2] = b;
-  image.data[3] = 255;
+  console.log('create')
+  const image = new PNG({ width: 255, height: 255 });
+
+  for (let y = 0; y < image.height; y++) {
+    for (let x = 0; x < image.width; x++) {
+
+      const idx = (image.width * y + x) << 2;
+      image.data[idx] = ((r + y) % 255); // red
+      image.data[idx + 1] = ((g + y) % 255);// green
+      image.data[idx + 2] = ((b + y) % 255); // blue
+      image.data[idx + 3] = 255;
+    }
+  }
+
   return PNG.sync.write(image);
 };
 

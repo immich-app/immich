@@ -149,8 +149,8 @@
   <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
 
-  <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web. 
-      The defaults are as follows: 
+  <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web.
+      The defaults are as follows:
       fast: 200ms
       default: 500ms
       slow: ??ms
@@ -165,8 +165,8 @@
     onmouseleave={onMouseLeave}
     use:press={() => ({ timeframe: 350, triggerBeforeFinished: true })}
     use:tap={() => ({ timeframe: 350 })}
-    onpress={() => onSelect?.($state.snapshot(asset))}
-    ontap={callClickHandlers}
+    onpress={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : onSelect?.($state.snapshot(asset)))}
+    ontap={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : callClickHandlers)}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
