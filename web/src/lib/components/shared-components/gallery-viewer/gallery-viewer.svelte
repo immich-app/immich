@@ -35,6 +35,7 @@
     onPrevious?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onNext?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onRandom?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+    pageHeaderOffset?: number;
     slidingWindowOffset?: number;
   }
 
@@ -51,6 +52,7 @@
     onNext = undefined,
     onRandom = undefined,
     slidingWindowOffset = 0,
+    pageHeaderOffset = 0,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -88,7 +90,7 @@
           height: geometry.getHeight(i),
         };
         // 54 is the content height of the asset-selection-app-bar
-        const layoutTopWithOffset = layout.top + 54;
+        const layoutTopWithOffset = layout.top + pageHeaderOffset;
         const layoutBottom = layoutTopWithOffset + layout.height;
 
         const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
@@ -112,7 +114,7 @@
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
     const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
-    const bottom = top + v.height + slidingWindowOffset;
+    const bottom = top + v.height;
     const w = {
       top,
       bottom,
