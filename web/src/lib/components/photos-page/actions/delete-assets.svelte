@@ -52,7 +52,7 @@
 
 {#if isShowConfirmation}
   <DeleteAssetDialog
-    size={getOwnedAssets().size}
+    size={getOwnedAssets().length}
     onConfirm={handleDelete}
     onCancel={() => (isShowConfirmation = false)}
   />
