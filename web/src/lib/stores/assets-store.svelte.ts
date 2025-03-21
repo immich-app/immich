@@ -59,6 +59,13 @@ function updateObject(target: any, source: any): boolean {
   return updated;
 }
 
+export function assetSnapshot(asset: AssetResponseDto) {
+  return $state.snapshot(asset);
+}
+
+export function assetsSnapshot(assets: AssetResponseDto[]) {
+  return assets.map((a) => $state.snapshot(a));
+}
 class IntersectingAsset {
   // --- public ---
   readonly #group: AssetDateGroup;
@@ -286,9 +293,11 @@ export class AssetBucket {
   get lastDateGroup() {
     return this.dateGroups.at(-1);
   }
+
   getFirstAsset() {
     return this.dateGroups[0]?.getFirstAsset();
   }
+
   getAssets() {
     // eslint-disable-next-line unicorn/no-array-reduce
     return this.dateGroups.reduce(

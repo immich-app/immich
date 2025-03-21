@@ -39,7 +39,7 @@
 
   const assetInteraction = new AssetInteraction();
 
-  let selectedAssets = $derived(assetInteraction.selectedAssetsArray);
+  let selectedAssets = $derived(assetInteraction.selectedAssets);
   let isAssetStackSelected = $derived(selectedAssets.length === 1 && !!selectedAssets[0].stack);
   let isLinkActionAvailable = $derived.by(() => {
     const isLivePhoto = selectedAssets.length === 1 && !!selectedAssets[0].livePhotoVideoId;
@@ -97,7 +97,7 @@
     ></FavoriteAction>
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
-      {#if assetInteraction.selectedAssets.size > 1 || isAssetStackSelected}
+      {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
         <StackAction
           unstack={isAssetStackSelected}
           onStack={(assetIds) => assetStore.removeAssets(assetIds)}
@@ -107,7 +107,7 @@
       {#if isLinkActionAvailable}
         <LinkLivePhotoAction
           menuItem
-          unlink={assetInteraction.selectedAssets.size === 1}
+          unlink={assetInteraction.selectedAssets.length === 1}
           onLink={handleLink}
           onUnlink={handleUnlink}
         />
