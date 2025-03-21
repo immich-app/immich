@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AssetBucket } from '$lib/stores/assets-store.svelte';
+  import { AssetBucket, assetSnapshot, assetsSnapshot } from '$lib/stores/assets-store.svelte';
   import { navigate } from '$lib/utils/navigation';
   import { getDateLocaleString } from '$lib/utils/timeline-util';
   import type { AssetResponseDto } from '@immich/sdk';
@@ -71,9 +71,7 @@
       assetInteraction.removeGroupFromMultiselectGroup(groupTitle);
     }
   };
-  const snapshotAssetArray = (assets: AssetResponseDto[]) => {
-    return assets.map((a) => $state.snapshot(a));
-  };
+
   const assetMouseEventHandler = (groupTitle: string, asset: AssetResponseDto | null) => {
     // Show multi select icon on hover on date group
     hoveredDateGroup = groupTitle;
@@ -121,8 +119,8 @@
         <div
           transition:fly={{ x: -24, duration: 200, opacity: 0.5 }}
           class="inline-block px-2 hover:cursor-pointer"
-          onclick={() => handleSelectGroup(dateGroup.groupTitle, snapshotAssetArray(dateGroup.getAssets()))}
-          onkeydown={() => handleSelectGroup(dateGroup.groupTitle, snapshotAssetArray(dateGroup.getAssets()))}
+          onclick={() => handleSelectGroup(dateGroup.groupTitle, assetsSnapshot(dateGroup.getAssets()))}
+          onkeydown={() => handleSelectGroup(dateGroup.groupTitle, assetsSnapshot(dateGroup.getAssets()))}
         >
           {#if assetInteraction.selectedGroup.has(dateGroup.groupTitle)}
             <Icon path={mdiCheckCircle} size="24" color="#4250af" />
@@ -165,10 +163,10 @@
             {showArchiveIcon}
             {asset}
             {groupIndex}
-            focussed={assetInteraction.isFocussedAsset(asset)}
+            focussed={assetInteraction.isFocussedAsset(asset.id)}
             onClick={(asset) => onClick(dateGroup.getAssets(), dateGroup.groupTitle, asset)}
             onSelect={(asset) => assetSelectHandler(asset, dateGroup.getAssets(), dateGroup.groupTitle)}
-            onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, $state.snapshot(asset))}
+            onMouseEvent={() => assetMouseEventHandler(dateGroup.groupTitle, assetSnapshot(asset))}
             selected={assetInteraction.hasSelectedAsset(asset.id) || dateGroup.bucket.store.albumAssets.has(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
             handleFocus={() => assetOnFocusHandler(asset)}

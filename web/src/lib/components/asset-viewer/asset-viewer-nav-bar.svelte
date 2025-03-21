@@ -190,7 +190,7 @@
           {#if !asset.isArchived && !asset.isTrashed}
             <MenuOption
               icon={mdiImageSearch}
-              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
               text={$t('view_in_timeline')}
             />
           {/if}
