@@ -92,24 +92,21 @@
   };
 
   const completeNav = async () => {
-    if ($gridScrollTarget?.at) {
+    const scrollTarget = $gridScrollTarget?.at;
+    if (scrollTarget) {
       try {
-        const bucket = await assetStore.findBucketForAsset($gridScrollTarget.at);
+        const bucket = await assetStore.findBucketForAsset(scrollTarget);
         if (bucket) {
-          const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
+          const height = bucket.findAssetAbsolutePosition(scrollTarget);
           if (height) {
             scrollTo(height);
             assetStore.updateIntersections();
+            return;
           }
-        } else {
-          scrollToTop();
         }
-      } catch {
-        scrollToTop();
-      }
-    } else {
-      scrollToTop();
+      } catch {}
     }
+    scrollToTop();
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
