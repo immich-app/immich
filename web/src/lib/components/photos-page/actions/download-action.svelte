@@ -28,7 +28,7 @@
     await downloadArchive(filename, { assetIds: assets.map((asset) => asset.id) });
   };
 
-  let menuItemIcon = $derived(getAssets().size === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline);
+  let menuItemIcon = $derived(getAssets().length === 1 ? mdiFileDownloadOutline : mdiFolderDownloadOutline);
 </script>
 
 <svelte:window use:shortcut={{ shortcut: { key: 'd', shift: true }, onShortcut: handleDownloadFiles }} />
