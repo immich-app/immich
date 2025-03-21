@@ -82,26 +82,33 @@
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
+  const scrollTo = (top: number) => {
+    element?.scrollTo({ top });
+    showSkeleton = false;
+  };
+
+  const scrollToTop = () => {
+    scrollTo(0);
+  };
+
   const completeNav = async () => {
-    if ($gridScrollTarget?.at) {
+    const scrollTarget = $gridScrollTarget?.at;
+    if (scrollTarget) {
       try {
-        const bucket = await assetStore.findBucketForAsset($gridScrollTarget.at);
+        const bucket = await assetStore.findBucketForAsset(scrollTarget);
         if (bucket) {
-          const height = bucket.findAssetAbsolutePosition($gridScrollTarget.at);
+          const height = bucket.findAssetAbsolutePosition(scrollTarget);
           if (height) {
-            element?.scrollTo({ top: height });
-            showSkeleton = false;
+            scrollTo(height);
             assetStore.updateIntersections();
+            return;
           }
         }
       } catch {
-        element?.scrollTo({ top: 0 });
-        showSkeleton = false;
+        // ignore errors - asset may not be in the store
       }
-    } else {
-      element?.scrollTo({ top: 0 });
-      showSkeleton = false;
     }
+    scrollToTop();
   };
   beforeNavigate(() => (assetStore.suspendTransitions = true));
   afterNavigate((nav) => {
@@ -134,8 +141,7 @@
                 { replaceState: true, forceNavigate: true },
               );
             } else {
-              element?.scrollTo({ top: 0 });
-              showSkeleton = false;
+              scrollToTop();
             }
           }, 500);
         }
