@@ -39,6 +39,7 @@
   ],
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
-    "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
+    "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
+    "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart"
   }
 }
