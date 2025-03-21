@@ -9,12 +9,19 @@ import android.content.ContentResolver
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
+import android.os.Build
+import android.os.Environment
+import android.provider.Settings
+import android.content.Intent
+import android.content.Context
 import androidx.annotation.NonNull
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "file_trash"
+    private val REQUEST_MANAGE_STORAGE = 1001
+    private val REQUEST_TRASH_FILE = 1002
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -25,8 +32,13 @@ class MainActivity : FlutterActivity() {
                 "moveToTrash" -> {
                     val fileName = call.argument<String>("fileName")
                     if (fileName != null) {
-                        val success = moveToTrash(fileName)
-                        result.success(success)
+                        if (hasManageStoragePermission()) {
+                            val success = moveToTrash(fileName)
+                            result.success(success)
+                        } else {
+                            requestManageStoragePermission()
+                            result.error("PERMISSION_DENIED", "Storage permission required", null)
+                        }
                     } else {
                         result.error("INVALID_NAME", "The file name is not specified.", null)
                     }
@@ -34,15 +46,35 @@ class MainActivity : FlutterActivity() {
                 "restoreFromTrash" -> {
                     val fileName = call.argument<String>("fileName")
                     if (fileName != null) {
-                        val success = untrashImage(fileName)
-                        result.success(success)
+                        if (hasManageStoragePermission()) {
+                            val success = untrashImage(fileName)
+                            result.success(success)
+                        } else {
+                            requestManageStoragePermission()
+                            result.error("PERMISSION_DENIED", "Storage permission required", null)
+                        }
                     } else {
                         result.error("INVALID_NAME", "The file name is not specified.", null)
                     }
                 }
-
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun hasManageStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            true
+        }
+    }
+
+    private fun requestManageStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+            intent.data = Uri.parse("package:$packageName")
+            startActivity(intent)
         }
     }
 
@@ -56,19 +88,19 @@ class MainActivity : FlutterActivity() {
 
     private fun moveToTrash(contentUri: Uri): Boolean {
         return try {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.IS_TRASHED, 1) // Move to trash
-            }
+                            val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_TRASHED, 1) // Move to trash
+                }
 
-            val updated = contentResolver.update(contentUri, values, null, null)
-            updated > 0
-        } catch (e: Exception) {
+                val updated = contentResolver.update(contentUri, values, null, null)
+                updated > 0
+                    } catch (e: Exception) {
             Log.e("TrashError", "Error moving to trash", e)
             false
         }
     }
 
-    private fun getFileUri(fileName: String): Uri? {
+        private fun getFileUri(fileName: String): Uri? {
         val contentUri = MediaStore.Files.getContentUri("external")
         val projection = arrayOf(MediaStore.Images.Media._ID)
         val selection = "${MediaStore.Images.Media.DISPLAY_NAME} = ?"
@@ -95,14 +127,14 @@ class MainActivity : FlutterActivity() {
 
     private fun untrashImage(contentUri: Uri): Boolean {
         return try {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.IS_TRASHED, 0) // Restore file
-            }
+                            val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.IS_TRASHED, 0) // Restore file
+                }
 
-            val updated = contentResolver.update(contentUri, values, null, null)
-            updated > 0
-        } catch (e: Exception) {
-            Log.e("ANDROID_TEST", "Error restoring file", e)
+                val updated = contentResolver.update(contentUri, values, null, null)
+                updated > 0
+                    } catch (e: Exception) {
+            Log.e("TrashError", "Error restoring file", e)
             false
         }
     }
