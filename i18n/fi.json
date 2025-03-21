@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Toimitsijan URL",
     "oauth_mobile_redirect_uri": "Mobiilin uudellenohjaus-URI",
     "oauth_mobile_redirect_uri_override": "Ohita mobiilin uudelleenohjaus-URI",
-    "oauth_mobile_redirect_uri_override_description": "Ota käyttöön kun OAuth tarjoaja ei salli mobiili URI:a, kuten '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Ota käyttöön kun OAuth tarjoaja ei salli mobiili URI:a, kuten ''{callback}''",
     "oauth_profile_signing_algorithm": "Profiilin allekirjoitusalgoritmi",
     "oauth_profile_signing_algorithm_description": "Algoritmi, jota käytetään käyttäjäprofiilin allekirjoittamiseen.",
     "oauth_scope": "Skooppi (Scope)",

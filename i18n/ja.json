@@ -162,7 +162,7 @@
     "oauth_issuer_url": "発行元URL",
     "oauth_mobile_redirect_uri": "モバイル用リダイレクトURI",
     "oauth_mobile_redirect_uri_override": "モバイル用リダイレクトURI（上書き）",
-    "oauth_mobile_redirect_uri_override_description": "'{callback}'など、モバイルURIがOAuthプロバイダーによって許可されていない場合に有効にしてください",
+    "oauth_mobile_redirect_uri_override_description": "''{callback}''など、モバイルURIがOAuthプロバイダーによって許可されていない場合に有効にしてください",
     "oauth_profile_signing_algorithm": "プロファイルの署名アルゴリズム",
     "oauth_profile_signing_algorithm_description": "ユーザープロファイルを署名するのに使用するアルゴリズム。",
     "oauth_scope": "スコープ",
