@@ -4,7 +4,6 @@ import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { assetViewingStore } from '$lib/stores/asset-viewing.store';
 import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
@@ -12,6 +11,7 @@ import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
+import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
@@ -401,7 +401,7 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
         type: NotificationType.Info,
         button: {
           text: $t('view_stack'),
-          onClick: () => assetViewingStore.setAssetId(stack.primaryAssetId),
+          onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
         },
       });
     }
