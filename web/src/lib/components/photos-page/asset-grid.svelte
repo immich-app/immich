@@ -9,7 +9,7 @@
   import { isSearchEnabled } from '$lib/stores/search.store';
   import { featureFlags } from '$lib/stores/server-config.store';
   import { handlePromiseError } from '$lib/utils';
-  import { deleteAssets } from '$lib/utils/actions';
+  import { deleteAssets, updateStackedAssetInTimeline, updateUnstackedAssetInTimeline } from '$lib/utils/actions';
   import { archiveAssets, cancelMultiselect, selectAllAssets, stackAssets } from '$lib/utils/asset-utils';
   import { navigate } from '$lib/utils/navigation';
   import { type ScrubberListener } from '$lib/utils/timeline-util';
@@ -310,11 +310,11 @@
   };
 
   const onStackAssets = async () => {
-    const ids = await stackAssets(assetInteraction.selectedAssets);
-    if (ids) {
-      assetStore.removeAssets(ids);
-      onEscape();
-    }
+    const result = await stackAssets(assetInteraction.selectedAssets);
+
+    updateStackedAssetInTimeline(assetStore, result);
+
+    onEscape();
   };
 
   const toggleArchive = async () => {
@@ -411,7 +411,7 @@
       }
 
       case AssetAction.UNSTACK: {
-        assetStore.addAssets(action.assets);
+        updateUnstackedAssetInTimeline(assetStore, action.assets);
       }
     }
   };
