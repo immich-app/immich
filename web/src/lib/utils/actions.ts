@@ -56,6 +56,14 @@ export function updateStackedAssetInTimeline(assetStore: AssetStore, { stack, to
   }
 }
 
+/**
+ * Update the asset store to reflect the unstacked state of assets.
+ * This function updates the stack property of each asset to undefined, effectively unstacking them.
+ * It also adds the unstacked assets back to the asset store.
+ *
+ * @param assetStore - The asset store to update.
+ * @param assets - The array of asset response DTOs to update in the asset store.
+ */
 export function updateUnstackedAssetInTimeline(assetStore: AssetStore, assets: AssetResponseDto[]) {
   assetStore.updateAssetOperation(
     assets.map((asset) => asset.id),
