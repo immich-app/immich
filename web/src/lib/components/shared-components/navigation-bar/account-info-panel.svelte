@@ -1,14 +1,14 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import Icon from '$lib/components/elements/icon.svelte';
+  import ThemeButton from '$lib/components/shared-components/theme-button.svelte';
   import { AppRoute } from '$lib/constants';
   import { preferences, user } from '$lib/stores/user.store';
   import { handleError } from '$lib/utils/handle-error';
   import { deleteProfileImage, updateMyPreferences, type UserAvatarColor } from '@immich/sdk';
-  import { mdiCog, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
+  import { Button, IconButton } from '@immich/ui';
+  import { mdiCog, mdiHelpCircleOutline, mdiLogout, mdiPencil, mdiWrench } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import { NotificationType, notificationController } from '../notification/notification';
@@ -17,10 +17,10 @@
 
   interface Props {
     onLogout: () => void;
-    onClose?: () => void;
+    onHelp: () => void;
   }
 
-  let { onLogout, onClose = () => {} }: Props = $props();
+  let { onLogout, onHelp }: Props = $props();
 
   let isShowSelectAvatar = $state(false);
 
@@ -48,12 +48,10 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute right-[25px] top-[75px] z-[100] w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:bg-immich-dark-gray"
   use:focusTrap
 >
-  <div
-    class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-white p-4 dark:bg-immich-dark-primary/10"
-  >
+  <div class="mx-4 mt-4 flex flex-col items-center justify-center gap-4 rounded-3xl bg-light dark:bg-light/50 p-4">
     <div class="relative">
       <UserAvatar user={$user} size="xl" />
       <div class="absolute z-10 bottom-0 right-0 rounded-full w-6 h-6">
@@ -76,40 +74,49 @@
     </div>
 
     <div class="flex flex-col gap-1">
-      <Button href={AppRoute.USER_SETTINGS} onclick={onClose} color="dark-gray" size="sm" shadow={false} border>
-        <div class="flex place-content-center place-items-center text-center gap-2 px-2">
-          <Icon path={mdiCog} size="18" ariaHidden />
-          {$t('account_settings')}
-        </div>
+      <Button
+        href={AppRoute.USER_SETTINGS}
+        shape="round"
+        color="secondary"
+        size="small"
+        variant="outline"
+        leadingIcon={mdiCog}
+      >
+        {$t('account_settings')}
       </Button>
       {#if $user.isAdmin}
         <Button
           href={AppRoute.ADMIN_USER_MANAGEMENT}
-          onclick={onClose}
-          color="dark-gray"
-          size="sm"
-          shadow={false}
-          border
+          leadingIcon={mdiWrench}
+          shape="round"
+          variant="ghost"
+          color="secondary"
+          size="small"
           aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
         >
-          <div class="flex place-content-center place-items-center text-center gap-2 px-2">
-            <Icon path={mdiWrench} size="18" ariaHidden />
-            {$t('administration')}
-          </div>
+          {$t('administration')}
         </Button>
       {/if}
     </div>
+
+    <div class="flex justify-between px-2">
+      <IconButton
+        shape="round"
+        color="secondary"
+        variant="ghost"
+        title={$t('support_and_feedback')}
+        onclick={onHelp}
+        icon={mdiHelpCircleOutline}
+        aria-label={$t('support_and_feedback')}
+      />
+      <ThemeButton padding="2" />
+    </div>
   </div>
 
-  <div class="mb-4 flex flex-col">
-    <button
-      type="button"
-      class="flex w-full place-content-center place-items-center gap-2 py-3 font-medium text-gray-500 hover:bg-immich-primary/10 dark:text-gray-300"
-      onclick={onLogout}
-    >
-      <Icon path={mdiLogout} size={24} />
-      {$t('sign_out')}</button
-    >
+  <div class="flex flex-col mb-4">
+    <Button leadingIcon={mdiLogout} variant="ghost" color="secondary" shape="rectangle" class="py-3" onclick={onLogout}>
+      {$t('sign_out')}
+    </Button>
   </div>
 </div>
 
