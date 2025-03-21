@@ -104,7 +104,9 @@
             return;
           }
         }
-      } catch {}
+      } catch {
+        // ignore errors - asset may not be in the store
+      }
     }
     scrollToTop();
   };
