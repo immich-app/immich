@@ -6,6 +6,9 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 describe('Thumbnail component', () => {
   beforeAll(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
+    vi.mock('$lib/utils/navigation', () => ({
+      currentUrlReplaceAssetId: vi.fn(),
+    }));
   });
 
   it('should only contain a single tabbable element (the container)', () => {
