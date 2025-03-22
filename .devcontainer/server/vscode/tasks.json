@@ -1,0 +1,53 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Immich API (Server)",
+      "type": "shell",
+      "command": "node ./node_modules/.bin/nest start --debug \"0.0.0.0:9230\" --watch",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": true
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/server"
+      },
+      "runOptions": {
+        "runOn": "default"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Immich Web",
+      "type": "shell",
+      "command": "node ./node_modules/.bin/vite dev --host 0.0.0.0 --port 3000",
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": true
+      },
+      "runOptions": {
+        "runOn": "default"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Immich Server and Web",
+      "dependsOn": ["Immich Web", "Immich API (Server)"],
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

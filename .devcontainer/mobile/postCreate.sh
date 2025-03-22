@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Enable multiarch for arm64 if necessary
+if [ "$(dpkg --print-architecture)" = "arm64" ]; then
+    sudo dpkg --add-architecture amd64 &&
+        sudo apt-get update &&
+        sudo apt-get install -y --no-install-recommends \
+            qemu-user-static \
+            libc6:amd64 \
+            libstdc++6:amd64 \
+            libgcc1:amd64
+fi
+
+# Install DCM
+wget -qO- https://dcm.dev/pgp-key.public | sudo gpg --dearmor -o /usr/share/keyrings/dcm.gpg
+sudo echo 'deb [signed-by=/usr/share/keyrings/dcm.gpg arch=amd64] https://dcm.dev/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list
+
+sudo apt-get update
+sudo apt-get install dcm
+
+dart --disable-analytics
+
+export IMMICH_PORT="${DEV_SERVER_PORT:-2283}"
+export DEV_PORT="${DEV_PORT:-3000}"
+
+sudo chown node -R /workspaces/immich/.vscode \
+    /workspaces/immich/cli/node_modules \
+    /workspaces/immich/e2e/node_modules \
+    /workspaces/immich/open-api/typescript-sdk/node_modules \
+    /workspaces/immich/server/node_modules \
+    /workspaces/immich/web/node_modules \
+    /workspaces/immich/server/upload
+
+echo "Installing dependencies (server)"
+npm --prefix /workspaces/immich/server install
+
+echo "Installing dependencies (web)"
+npm --prefix /workspaces/immich/open-api/typescript-sdk install
+npm --prefix /workspaces/immich/open-api/typescript-sdk run build
+npm --prefix /workspaces/immich/web install
