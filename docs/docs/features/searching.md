@@ -68,7 +68,7 @@ Once you've chosen a model, follow these steps:
 6. Click "All" next to "Smart Search" to begin re-processing your assets with the new model
 7. (Optional) Confirm that the logs for the server and machine learning service don't have relevant errors
 
-In rare instances, changing the model might leave bits of the old model's incompatible data in the database, causing errors when processing Smart Search jobs. If you notice errors like this in the logs, you can change the model back to the previous one and save, then back again to the new model.
+In rare instances, changing the model might leave bits of the old model's incompatible data in the database, causing errors when processing Smart Search jobs. If you notice errors like this in the logs, you can change the model back to the previous one and save, then repeat steps 3-7.
 
 Please note that memory and execution time values are only _estimates_: actual usage will be different depending on many factors. As such, it's mainly intended as a way to compare the relative tradeoffs of each model.
 
