@@ -15,4 +15,9 @@ class LocalFilesManagerRepository implements ILocalFilesManager {
   Future<bool> restoreFromTrash(String fileName) async {
     return await LocalFilesManager.restoreFromTrash(fileName);
   }
+
+  @override
+  Future<bool> requestManageStoragePermission() async {
+    return await LocalFilesManager.requestManageStoragePermission();
+  }
 }

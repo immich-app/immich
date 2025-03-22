@@ -10,7 +10,7 @@ class LocalFilesManager {
           await _channel.invokeMethod('moveToTrash', {'fileName': fileName});
       return success;
     } on PlatformException catch (e) {
-      debugPrint("Error moving to trash: ${e.message}");
+      debugPrint('Error moving to trash: ${e.message}');
       return false;
     }
   }
@@ -21,7 +21,18 @@ class LocalFilesManager {
           .invokeMethod('restoreFromTrash', {'fileName': fileName});
       return success;
     } on PlatformException catch (e) {
-      debugPrint("Error restoring file: ${e.message}");
+      debugPrint('Error restoring file: ${e.message}');
+      return false;
+    }
+  }
+
+  static Future<bool> requestManageStoragePermission() async {
+    try {
+      final bool success =
+          await _channel.invokeMethod('requestManageStoragePermission');
+      return success;
+    } on PlatformException catch (e) {
+      debugPrint('Error requesting permission: ${e.message}');
       return false;
     }
   }

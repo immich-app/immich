@@ -57,6 +57,10 @@ class MainActivity : FlutterActivity() {
                         result.error("INVALID_NAME", "The file name is not specified.", null)
                     }
                 }
+                "requestManageStoragePermission" -> {
+                    requestManageStoragePermission()
+                    result.success(true)
+                }
                 else -> result.notImplemented()
             }
         }

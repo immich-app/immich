@@ -6,6 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/utils/http_ssl_cert_override.dart';
@@ -53,6 +54,13 @@ class AdvancedSettings extends HookConsumerWidget {
           valueNotifier: manageLocalMediaAndroid,
           title: "advanced_settings_sync_remote_deletions_title".tr(),
           subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+          onChanged: (value) {
+            if (value == true) {
+              ref
+                  .read(localFilesManagerRepositoryProvider)
+                  .requestManageStoragePermission();
+            }
+          },
         ),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(args: [logLevel]),
