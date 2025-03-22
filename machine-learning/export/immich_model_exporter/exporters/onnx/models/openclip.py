@@ -37,7 +37,7 @@ def to_onnx(
     opset_version: int,
     output_dir_visual: Path | str | None = None,
     output_dir_textual: Path | str | None = None,
-    no_cache: bool = False,
+    cache: bool = True,
 ) -> tuple[Path | None, Path | None]:
     visual_path = None
     textual_path = None
@@ -49,9 +49,7 @@ def to_onnx(
         output_dir_textual = Path(output_dir_textual)
         textual_path = get_model_path(output_dir_textual)
 
-    if not no_cache and (
-        (textual_path is None or textual_path.exists()) and (visual_path is None or visual_path.exists())
-    ):
+    if cache and ((textual_path is None or textual_path.exists()) and (visual_path is None or visual_path.exists())):
         print(f"Models {textual_path} and {visual_path} already exist, skipping")
         return visual_path, textual_path
 
@@ -75,7 +73,7 @@ def to_onnx(
         param.requires_grad_(False)
 
     if visual_path is not None and output_dir_visual is not None:
-        if no_cache or not visual_path.exists():
+        if not cache or not visual_path.exists():
             save_config(
                 open_clip.get_model_preprocess_cfg(model),
                 output_dir_visual / "preprocess_cfg.json",
@@ -86,7 +84,7 @@ def to_onnx(
             print(f"Model {visual_path} already exists, skipping")
 
     if textual_path is not None and output_dir_textual is not None:
-        if no_cache or not textual_path.exists():
+        if not cache or not textual_path.exists():
             tokenizer_name = text_vision_cfg["text_cfg"].get("hf_tokenizer_name", "openai/clip-vit-base-patch32")
             AutoTokenizer.from_pretrained(tokenizer_name).save_pretrained(output_dir_textual)
             _export_text_encoder(model, model_cfg, textual_path, opset_version)

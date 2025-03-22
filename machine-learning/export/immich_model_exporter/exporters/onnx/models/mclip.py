@@ -19,10 +19,10 @@ def to_onnx(
     opset_version: int,
     output_dir_visual: Path | str,
     output_dir_textual: Path | str,
-    no_cache: bool = False,
+    cache: bool = True,
 ) -> tuple[Path, Path]:
     textual_path = get_model_path(output_dir_textual)
-    if no_cache or not textual_path.exists():
+    if not cache or not textual_path.exists():
         import torch
         from multilingual_clip.pt_multilingual_clip import MultilingualCLIP
         from transformers import AutoTokenizer
@@ -39,9 +39,7 @@ def to_onnx(
         _export_text_encoder(model, textual_path, opset_version)
     else:
         print(f"Model {textual_path} already exists, skipping")
-    visual_path, _ = openclip_to_onnx(
-        _MCLIP_TO_OPENCLIP[model_name], opset_version, output_dir_visual, no_cache=no_cache
-    )
+    visual_path, _ = openclip_to_onnx(_MCLIP_TO_OPENCLIP[model_name], opset_version, output_dir_visual, cache=cache)
     assert visual_path is not None, "Visual model export failed"
     return visual_path, textual_path
 
