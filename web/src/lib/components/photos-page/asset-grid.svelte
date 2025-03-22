@@ -720,7 +720,7 @@
   class={[
     'scrollbar-hidden h-full overflow-y-auto outline-none',
     { 'm-0': isEmpty },
-    { 'ml-4': !isEmpty },
+    { 'ml-0': !isEmpty },
     { 'mr-[60px]': !isEmpty && !usingMobileDevice },
   ]}
   tabindex="-1"
