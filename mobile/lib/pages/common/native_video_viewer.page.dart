@@ -18,6 +18,7 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
+import 'package:immich_mobile/utils/lifecycle_handler.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -43,6 +44,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
+
+    // Used to track whether the video should play when the app
+    // is brought back to the foreground
+    final shouldPlayOnForeground = useRef(true);
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
@@ -366,6 +371,30 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         };
       },
       const [],
+    );
+
+    useEffect(
+      () {
+        final observer = LifecycleEventHandler(
+          onResume: () async {
+            if (shouldPlayOnForeground.value) {
+              controller.value?.play();
+            }
+          },
+          onPause: () async {
+            final videoPlaying = await controller.value?.isPlaying();
+            if (videoPlaying ?? true) {
+              shouldPlayOnForeground.value = true;
+              controller.value?.pause();
+            } else {
+              shouldPlayOnForeground.value = false;
+            }
+          },
+        );
+        WidgetsBinding.instance.addObserver(observer);
+        return () => WidgetsBinding.instance.removeObserver(observer);
+      },
+      [],
     );
 
     return Stack(
