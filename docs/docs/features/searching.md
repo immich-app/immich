@@ -58,6 +58,18 @@ Navigating to `Administration > Settings > Machine Learning Settings > Smart Sea
 
 More powerful models can be used for more accurate search results, but are slower and can require more server resources. Check the dropdowns below to see how they compare in memory usage, speed and quality by language.
 
+Once you've chosen a model, follow these steps:
+
+1. Copy the name of the model (e.g. `ViT-B-16-SigLIP__webli`)
+2. Go to the [Smart Search settings][smart-search-settings]
+3. Paste the model name into the Model Name section
+4. Save the settings
+5. Go to the [Job Status page][job-status-page]
+6. Click "All" next to "Smart Search" to begin re-processing your assets with the new model
+7. (Optional) Confirm that the logs for the server and machine learning service don't have relevant errors
+
+In rare instances, changing the model might leave bits of the old model's incompatible data in the database, causing errors when processing Smart Search jobs. If you notice errors like this in the logs, you can change the model back to the previous one and save, then back again to the new model.
+
 Please note that memory and execution time values are only _estimates_: actual usage will be different depending on many factors. As such, it's mainly intended as a way to compare the relative tradeoffs of each model.
 
 <details>
@@ -1178,11 +1190,11 @@ Memory and execution time estimates were obtained without acceleration on a 7800
 | ViT-B-16-SigLIP-i18n-256__webli                      | 3029         | 6.87                | 73.05      | ✅             |
 </details>
 
-Once you've chosen a model, change this setting to the name of the model you chose. Be sure to re-run Smart Search on all assets after this change.
-
 :::note
 Feel free to make a feature request if there's a model you want to use that we don't currently support.
 :::
 
 [huggingface-clip]: https://huggingface.co/collections/immich-app/clip-654eaefb077425890874cd07
 [huggingface-multilingual-clip]: https://huggingface.co/collections/immich-app/multilingual-clip-654eb08c2382f591eeb8c2a7
+[smart-search-settings]: https://my.immich.app/admin/system-settings?isOpen=machine-learning+smart-search
+[job-status-page]: https://my.immich.app/admin/jobs-status
