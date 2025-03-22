@@ -1,0 +1,53 @@
+services:
+  immich-server:
+    build:
+      dockerfile: Dockerfile
+    hostname: immich
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    environment:
+      - IMMICH_SERVER_URL=http://127.0.0.1:2283/
+    volumes:
+      - ../..:/immich
+      - cli_node_modules:/immich/cli/node_modules
+      - e2e_node_modules:/immich/e2e/node_modules
+      - open_api_node_modules:/immich/open-api/typescript-sdk/node_modules
+      - server_node_modules:/immich/server/node_modules
+      - web_node_modules:/immich/web/node_modules
+      # - immich:/immich
+      - ${UPLOAD_LOCATION}:/immich/server/upload
+
+  redis:
+    image: redis:6.2-alpine@sha256:148bb5411c184abd288d9aaed139c98123eeb8824c5d3fce03cf721db58066d8
+    healthcheck:
+      test: redis-cli ping || exit 1
+
+  database:
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    volumes:
+      - ${DB_DATA_LOCATION}:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: >-
+        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1; Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
+      interval: 5m
+      start_interval: 30s
+      start_period: 5m
+    command: >-
+      postgres -c shared_preload_libraries=vectors.so -c 'search_path="$$user", public, vectors' -c logging_collector=on -c max_wal_size=2GB -c shared_buffers=512MB -c wal_compression=on
+
+volumes:
+  cli_node_modules:
+  e2e_node_modules:
+  open_api_node_modules:
+  server_node_modules:
+  web_node_modules:
+  immich:

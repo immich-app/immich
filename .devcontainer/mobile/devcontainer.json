@@ -1,0 +1,19 @@
+{
+  "name": "Immich - Mobile",
+  "service": "immich-mobile",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.dart-code",
+        "Dart-Code.flutter",
+        "dcmdev.dcm-vscode-extension",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [],
+  "overrideCommand": true,
+  "workspaceFolder": "/immich",
+  "remoteUser": "node"
+}

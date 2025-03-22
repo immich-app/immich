@@ -1,8 +1,9 @@
 services:
-  immich-devcontainer:
+  immich-mobile:
     build:
       dockerfile: Dockerfile
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
-      - ..:/immich:cached
+      - ../..:/immich
+      - open_api_node_modules:/immich/open-api/typescript-sdk/node_modules
