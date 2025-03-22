@@ -154,7 +154,13 @@
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer assets={data.pathAssets} {assetInteraction} {viewport} showAssetName={true} />
+        <GalleryViewer
+          assets={data.pathAssets}
+          {assetInteraction}
+          {viewport}
+          showAssetName={true}
+          pageHeaderOffset={54}
+        />
       </div>
     {/if}
   </section>

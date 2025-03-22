@@ -368,6 +368,7 @@
         onIntersected={loadNextPage}
         showArchiveIcon={true}
         {viewport}
+        pageHeaderOffset={54}
       />
     {:else if !isLoading}
       <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
