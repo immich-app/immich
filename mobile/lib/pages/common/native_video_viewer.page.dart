@@ -44,7 +44,10 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
-    final appLifecycleState = useState(AppLifecycleState.resumed);
+
+    // Used to track whether the video should play when the app
+    // is brought back to the foreground
+    final shouldPlayOnForeground = useState(true);
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
@@ -374,12 +377,18 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       () {
         final observer = LifecycleEventHandler(
           onResume: () async {
-            appLifecycleState.value = AppLifecycleState.resumed;
-            controller.value?.play();
+            if (shouldPlayOnForeground.value) {
+              controller.value?.play();
+            }
           },
           onPause: () async {
-            appLifecycleState.value = AppLifecycleState.paused;
-            controller.value?.pause();
+            final videoPlaying = await controller.value?.isPlaying();
+            if (videoPlaying ?? true) {
+              shouldPlayOnForeground.value = true;
+              controller.value?.pause();
+            } else {
+              shouldPlayOnForeground.value = false;
+            }
           },
         );
         WidgetsBinding.instance.addObserver(observer);
