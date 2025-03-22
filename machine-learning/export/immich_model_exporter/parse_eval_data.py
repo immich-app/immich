@@ -10,7 +10,7 @@ def collapsed_table(language: str, df: pl.DataFrame) -> str:
         tbl_rows=1000,
         tbl_width_chars=1000,
     ):
-        return f"<details><summary>{language}</summary>\n{str(df)}\n</details>"
+        return f"<details>\n<summary>{language}</summary>\n{str(df)}\n</details>"
 
 
 languages = {
