@@ -109,6 +109,7 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
             def predict() -> None:
                 textual.run(None, tokens)
                 visual.run(None, image)
+
         case ModelTask.FACIAL_RECOGNITION:
             detection = ort.InferenceSession(
                 model_dir / "detection" / "model.onnx",
@@ -129,6 +130,7 @@ def profile(model_dir: Path, model_task: ModelTask, output_path: Path) -> None:
             def predict() -> None:
                 detection.run(None, image)
                 recognition.run(None, face)
+
         case _:
             raise ValueError(f"Unsupported model task {model_task}")
     predict()
