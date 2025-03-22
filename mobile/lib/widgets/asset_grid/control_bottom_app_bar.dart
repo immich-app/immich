@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -125,7 +127,9 @@ class ControlBottomAppBar extends HookConsumerWidget {
       return [
         if (hasRemote)
           ControlBoxButton(
-            iconData: Icons.share_rounded,
+            iconData: Platform.isAndroid
+                ? Icons.share_rounded
+                : Icons.ios_share_rounded,
             label: "control_bottom_app_bar_share".tr(),
             onPressed: enabled ? () => onShare(true) : null,
           ),
