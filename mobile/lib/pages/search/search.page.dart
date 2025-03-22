@@ -719,7 +719,7 @@ class SearchPage extends HookConsumerWidget {
                     currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.date_range_rounded,
+                    icon: Icons.date_range_outlined,
                     onTap: showDatePicker,
                     label: 'search_filter_date'.tr(),
                     currentFilter: dateRangeCurrentFilterWidget.value,
