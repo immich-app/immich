@@ -131,6 +131,7 @@ class TabControllerPage extends HookConsumerWidget {
               (e) => NavigationRailDestination(
                 icon: e.icon,
                 label: Text(e.label),
+                selectedIcon: e.selectedIcon,
               ),
             )
             .toList(),
