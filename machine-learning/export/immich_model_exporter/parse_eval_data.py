@@ -52,8 +52,7 @@ languages = {
     "vi": "Vietnamese",
 }
 
-# profile_df = pl.scan_ndjson("profiling/*.json").select("pretrained_model", "peak_rss", "exec_time_ms")
-profile_df = pl.scan_csv("profiling.tsv", separator="\t").select("pretrained_model", "peak_rss", "exec_time_ms")
+profile_df = pl.scan_ndjson("profiling/*.json").select("pretrained_model", "peak_rss", "exec_time_ms")
 eval_df = pl.scan_ndjson("results/*.json").select("model", "pretrained", "language", "metrics")
 
 eval_df = eval_df.with_columns(

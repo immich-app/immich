@@ -60,7 +60,7 @@ More powerful models can be used for more accurate search results, but are slowe
 
 <detail><summary>Model Estimates</summary>
 
-This section lists how models perform on various languages. Please note that memory and execution time values are only _estimates_: actual usage will be different depending on many factors. As such, it's mainly intended as a way to compare the relative tradeoffs of each model
+This section lists how models perform on various languages. Please note that memory and execution time values are only _estimates_: actual usage will be different depending on many factors. As such, it's mainly intended as a way to compare the relative tradeoffs of each model.
 
   <details><summary>Reference</summary>
 

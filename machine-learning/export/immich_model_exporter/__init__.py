@@ -1,7 +1,6 @@
 import json
 import resource
 from pathlib import Path
-from time import time
 
 import typer
 from tenacity import retry, stop_after_attempt, wait_fixed
