@@ -66,8 +66,6 @@ group by
   ("localDateTime" at time zone 'UTC')::date
 order by
   ("localDateTime" at time zone 'UTC')::date desc
-limit
-  $8
 
 -- AssetRepository.getByIds
 select

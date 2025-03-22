@@ -2,10 +2,13 @@ import { Stats } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { AssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
+import { JobStatus } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { MetadataService } from 'src/services/metadata.service';
+import { assetFileStub } from 'test/fixtures/asset-file.stub';
 import { automock, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
 const metadataRepository = new MetadataRepository(
@@ -18,6 +21,12 @@ const createTestFile = async (exifData: Record<string, any>) => {
   await writeFile(filePath, data);
   await metadataRepository.writeTags(filePath, exifData);
   return { filePath };
+};
+
+const createTestSidecar = async (exifData: Record<string, any>) => {
+  const sidecarPath = join(tmpdir(), 'test.xmp');
+  await metadataRepository.writeTags(sidecarPath, exifData);
+  return { sidecarPath };
 };
 
 type TimeZoneTest = {
@@ -125,7 +134,7 @@ describe(MetadataService.name, () => {
       const { filePath } = await createTestFile(exifData);
       mocks.asset.getByIds.mockResolvedValue([{ id: 'asset-1', originalPath: filePath } as AssetEntity]);
 
-      await sut.handleMetadataExtraction({ id: 'asset-1' });
+      await expect(sut.handleMetadataExtraction({ id: 'asset-1' })).resolves.toBe(JobStatus.SUCCESS);
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -139,6 +148,24 @@ describe(MetadataService.name, () => {
           localDateTime: new Date(expected.localDateTime),
         }),
       );
+    });
+
+    it('should remove sidecar if file no longer exists', async () => {
+      const { filePath } = await createTestFile({});
+      const { sidecarPath } = await createTestSidecar({});
+
+      const sidecarStub = {
+        ...assetFileStub.sidecarWithExtension,
+        path: sidecarPath,
+      };
+
+      mocks.assetFile.getAll.mockResolvedValue({ items: [sidecarStub], hasNextPage: false });
+      mocks.asset.getByIds.mockResolvedValue([{ id: 'asset-1', originalPath: filePath } as AssetEntity]);
+      mocks.assetFile.getById.mockResolvedValue(sidecarStub);
+
+      await expect(sut.handleMetadataExtraction({ id: 'asset-1' })).resolves.toBe(JobStatus.SUCCESS);
+
+      expect(mocks.assetFile.remove).toHaveBeenCalledWith(sidecarStub);
     });
   });
 });

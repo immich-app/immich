@@ -158,7 +158,7 @@ export class JobService extends BaseService {
       }
 
       case QueueName.SIDECAR: {
-        return this.jobRepository.queue({ name: JobName.QUEUE_SIDECAR, data: { force } });
+        return this.jobRepository.queue({ name: JobName.SIDECAR_QUEUE_SCAN });
       }
 
       case QueueName.THUMBNAIL_GENERATION: {
@@ -238,11 +238,6 @@ export class JobService extends BaseService {
    */
   private async onDone(item: JobItem) {
     switch (item.name) {
-      case JobName.SIDECAR_SYNC: {
-        await this.jobRepository.queue({ name: JobName.METADATA_EXTRACTION, data: item.data });
-        break;
-      }
-
       case JobName.SIDECAR_WRITE: {
         await this.jobRepository.queue({
           name: JobName.METADATA_EXTRACTION,

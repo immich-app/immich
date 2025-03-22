@@ -291,7 +291,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
-      .limit(10)
       .execute();
   }
 
@@ -424,7 +423,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('assets')
       .selectAll('assets')
-      .where('originalPath', 'like', `${originalPath}%`)
+      .where('originalPath', 'like', `${originalPath}.__`)
       .execute() as any as Promise<AssetEntity[]>;
   }
 
@@ -1074,6 +1073,7 @@ export class AssetRepository {
       .deleteFrom('asset_files')
       .using('assets')
       .whereRef('asset_files.assetId', '=', 'assets.id')
+      .where('asset_files.type', '=', AssetFileType.SIDECAR)
       .where('assets.isExternal', '=', true)
       .where('assets.libraryId', '=', asUuid(libraryId))
       .where((eb) =>

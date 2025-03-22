@@ -209,26 +209,34 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
-export interface ISidecarDiscoveryJob extends IBaseJob {
+export interface ISidecarSyncJob extends IBatchJob {
   paths: string[];
-  libraryId?: string;
   exclusionPatterns?: string[];
 }
 
-export interface ILibraryFileJob {
-  libraryId: string;
-  paths: string[];
-  progressCounter?: number;
+export interface IBatchJob {
+  progressCount?: number;
   totalCount?: number;
 }
 
-export interface ILibraryBulkIdsJob {
+export interface IPathBatchJob extends IBatchJob {
+  paths: string[];
+}
+
+export interface ILibraryFileJob extends IBatchJob {
+  libraryId: string;
+  paths: string[];
+}
+
+export interface IBatchEntityJob extends IBatchJob {
+  ids: string[];
+}
+
+export interface ILibraryBulkIdsJob extends IBatchJob {
   libraryId: string;
   importPaths: string[];
   exclusionPatterns: string[];
   assetIds: string[];
-  progressCounter: number;
-  totalAssets: number;
 }
 
 export interface IBulkEntityJob {
@@ -325,10 +333,14 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
-  // Sidecar Scanning
-  | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
-  | { name: JobName.SIDECAR_DISCOVERY; data: ISidecarDiscoveryJob }
-  | { name: JobName.SIDECAR_SYNC; data: IEntityJob }
+
+  // Sidecars
+  | { name: JobName.SIDECAR_QUEUE_SCAN; data?: IBaseJob }
+  | { name: JobName.SIDECAR_QUEUE_SYNC_FILES; data: ISidecarSyncJob }
+  | { name: JobName.SIDECAR_QUEUE_SYNC_ASSETS; data?: IBaseJob }
+  | { name: JobName.SIDECAR_SYNC_FILES; data: IPathBatchJob }
+  | { name: JobName.SIDECAR_SYNC_ASSETS; data: IBatchEntityJob }
+  | { name: JobName.SIDECAR_MAPPING; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
   // Facial Recognition
@@ -368,7 +380,6 @@ export type JobItem =
 
   // Library Management
   | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
-  | { name: JobName.LIBRARY_SYNC_SIDECARS; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
   | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }

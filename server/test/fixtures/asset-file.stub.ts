@@ -9,7 +9,7 @@ export const assetFileStub = {
     path: 'upload/library/IMG_123.jpg.xmp',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
   sidecarWithoutExtension: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-without-extension',
@@ -18,7 +18,7 @@ export const assetFileStub = {
     path: 'upload/library/IMG_123.xmp',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
   sidecarWithoutXMP: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-without-extension',
@@ -27,7 +27,7 @@ export const assetFileStub = {
     path: 'upload/library/IMG_123.jpg',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
   sidecarUppercaseExtension: Object.freeze<AssetFileEntity>({
     id: 'xmp-sidecar-uppercase-extension',
@@ -36,7 +36,7 @@ export const assetFileStub = {
     path: 'upload/library/IMG_123.jpg.XMP',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
   xmpSidecarOrphaned: Object.freeze({
     id: 'xmp-sidecar-uppercase-extension',
@@ -54,7 +54,7 @@ export const assetFileStub = {
     path: '/uploads/user-id/thumbs/path.jpg',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
   thumbnailFile: Object.freeze<AssetFileEntity>({
     id: 'file-2',
@@ -63,6 +63,6 @@ export const assetFileStub = {
     path: '/uploads/user-id/webp/path.ext',
     createdAt: new Date('2023-02-23T05:06:29.716Z'),
     updatedAt: new Date('2023-02-23T05:06:29.716Z'),
-    fileCreatedAt: new Date('2023-02-23T05:06:29.716Z'),
+    fileModifiedAt: new Date('2023-02-23T05:06:29.716Z'),
   }),
 };

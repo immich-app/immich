@@ -108,7 +108,7 @@ export interface AssetFiles {
   type: string;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
-  fileCreatedAt: Timestamp | null;
+  fileModifiedAt: Timestamp | null;
 }
 
 export interface AssetJobStatus {

@@ -540,7 +540,7 @@ describe(AssetMediaService.name, () => {
             path: '/path/to/preview',
             type: AssetFileType.THUMBNAIL,
             updatedAt: new Date(),
-            fileCreatedAt: new Date(),
+            fileModifiedAt: new Date(),
           },
         ],
       });
@@ -561,7 +561,7 @@ describe(AssetMediaService.name, () => {
             path: '/path/to/preview.jpg',
             type: AssetFileType.PREVIEW,
             updatedAt: new Date(),
-            fileCreatedAt: new Date(),
+            fileModifiedAt: new Date(),
           },
         ],
       });

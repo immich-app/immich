@@ -3,11 +3,11 @@ import { Insertable, Kysely, Updateable } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, DB } from 'src/db';
-import { DummyValue, GenerateSql } from 'src/decorators';
+import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AssetFileEntity, searchAssetFileBuilder } from 'src/entities/asset-files.entity';
 import { AssetFileType } from 'src/enum';
 import { AssetFileSearchOptions } from 'src/repositories/search.repository';
-import { asUuid, unnest } from 'src/utils/database';
+import { anyUuid, asUuid, unnest } from 'src/utils/database';
 import { Paginated, paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface UpsertFileOptions {
@@ -45,6 +45,18 @@ export class AssetFileRepository {
       .where('asset_files.id', '=', asUuid(id))
       .limit(1)
       .executeTakeFirst() as any as Promise<AssetFileEntity | undefined>;
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedArray()
+  async getByIds(ids: string[]): Promise<AssetFileEntity[]> {
+    const res = await this.db
+      .selectFrom('asset_files')
+      .selectAll('asset_files')
+      .where('asset_files.id', '=', anyUuid(ids))
+      .execute();
+
+    return res as any as AssetFileEntity[];
   }
 
   async update(assetFile: Updateable<AssetFiles> & { id: string }): Promise<AssetFileEntity> {
@@ -107,7 +119,7 @@ export class AssetFileRepository {
       .execute()) as any as Promise<AssetFileEntity[]>;
   }
 
-  async getAssetSidecarsByPath(assetPath: string): Promise<AssetFileEntity | undefined> {
+  async getSidecarsLikePath(assetPath: string): Promise<AssetFileEntity | undefined> {
     const assetPathWithoutExtension = assetPath.replace(/[^.]+$/, '');
     return this.db
       .selectFrom('asset_files')
@@ -121,7 +133,7 @@ export class AssetFileRepository {
   @GenerateSql({
     params: [{ paths: [DummyValue.STRING] }],
   })
-  async filterSidecarPaths(paths: string[]): Promise<string[]> {
+  async filterNewSidecarPaths(paths: string[]): Promise<string[]> {
     const result = await this.db
       .selectFrom(unnest(paths).as('path'))
       .select('path')
@@ -133,5 +145,27 @@ export class AssetFileRepository {
       .execute();
 
     return result.map((row) => row.path as string);
+  }
+
+  async remove(assetFile: { id: string }): Promise<void> {
+    await this.db.deleteFrom('asset_files').where('id', '=', asUuid(assetFile.id)).execute();
+  }
+
+  async removeAll(ids: string[]): Promise<void> {
+    await this.db.deleteFrom('asset_files').where('id', 'in', anyUuid(ids)).execute();
+  }
+
+  streamSidecarIds() {
+    return this.db.selectFrom('asset_files').select(['id']).where('type', '=', AssetFileType.SIDECAR).stream();
+  }
+
+  async getSidecarCount(): Promise<number> {
+    const { count } = await this.db
+      .selectFrom('asset_files')
+      .select((eb) => eb.fn.countAll().as('count'))
+      .where('type', '=', AssetFileType.SIDECAR)
+      .executeTakeFirstOrThrow();
+
+    return Number(count);
   }
 }

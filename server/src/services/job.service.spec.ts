@@ -168,7 +168,7 @@ describe(JobService.name, () => {
 
       await sut.handleCommand(QueueName.SIDECAR, { command: JobCommand.START, force: false });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_SIDECAR, data: { force: false } });
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.SIDECAR_QUEUE_SYNC_FILES, data: { force: false } });
     });
 
     it('should handle a start thumbnail generation command', async () => {
@@ -232,11 +232,11 @@ describe(JobService.name, () => {
 
     const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
       {
-        item: { name: JobName.SIDECAR_SYNC, data: { id: 'asset-1' } },
+        item: { name: JobName.SIDECAR_SYNC_ASSETS, data: { ids: ['asset-1'] } },
         jobs: [JobName.METADATA_EXTRACTION],
       },
       {
-        item: { name: JobName.SIDECAR_DISCOVERY, data: { id: 'asset-1' } },
+        item: { name: JobName.SIDECAR_SYNC_FILES, data: { paths: ['path1'] } },
         jobs: [JobName.METADATA_EXTRACTION],
       },
       {

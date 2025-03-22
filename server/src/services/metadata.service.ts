@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
+import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
@@ -30,13 +31,15 @@ import {
 } from 'src/enum';
 import { WithoutProperty } from 'src/repositories/asset.repository';
 import { ArgOf } from 'src/repositories/event.repository';
+import { AssetSyncResult } from 'src/repositories/library.repository';
 import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
-import { usePagination } from 'src/utils/pagination';
+import { paginationHelper, usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
+import { assetStub } from 'test/fixtures/asset.stub';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -185,7 +188,7 @@ export class MetadataService extends BaseService {
       exifTags.FileSize = stat.size.toString();
     }
 
-    this.logger.verbose('Exif Tags', exifTags);
+    // this.logger.verbose('Exif Tags', exifTags);
 
     const { dateTimeOriginal, localDateTime, timeZone, modifyDate } = this.getDates(asset, exifTags);
 
@@ -275,124 +278,290 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  @OnJob({ name: JobName.QUEUE_SIDECAR, queue: QueueName.SIDECAR })
-  async handleQueueSidecarSync(job: JobOf<JobName.QUEUE_SIDECAR>): Promise<JobStatus> {
-    const { force } = job;
-
-    // Search the library folder for sidecar files
-    // NOTE: External library sidecars are taken care of by the library service, not here
-    await this.jobRepository.queue({
-      name: JobName.SIDECAR_DISCOVERY,
-      data: { paths: [StorageCore.getBaseFolder(StorageFolder.LIBRARY)] },
-    });
-
-    if (!force) {
-      return JobStatus.SUCCESS;
-    }
-
-    // Re-read all existing sidecar files
-    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
-      this.assetFileRepository.getAll(options, { type: AssetFileType.SIDECAR }),
-    );
-
-    for await (const assetFiles of sidecarPagination) {
-      await this.jobRepository.queueAll(
-        assetFiles.map((sidecar) => ({ name: JobName.SIDECAR_SYNC, data: { id: sidecar.id } })),
-      );
-    }
-
-    return JobStatus.SUCCESS;
-  }
-
-  @OnJob({ name: JobName.SIDECAR_DISCOVERY, queue: QueueName.SIDECAR })
-  async handleSidecarDiscovery(job: JobOf<JobName.SIDECAR_DISCOVERY>): Promise<JobStatus> {
-    const sidecarsOnDisk = this.storageRepository.walk({
+  @OnJob({ name: JobName.SIDECAR_QUEUE_SYNC_FILES, queue: QueueName.SIDECAR })
+  async handleQueueSidecarSyncFiles(job: JobOf<JobName.SIDECAR_QUEUE_SYNC_FILES>): Promise<JobStatus> {
+    this.logger.debug(`Starting sidebar file sync for ${job}`);
+    const sidecarPaths = this.storageRepository.walk({
       pathsToCrawl: job.paths,
       includeHidden: false,
       crawlType: CrawlType.SIDECARS,
-      exclusionPatterns: job.exclusionPatterns,
       take: JOBS_LIBRARY_PAGINATION_SIZE,
+      exclusionPatterns: job.exclusionPatterns,
     });
 
     let sidecarImportCount = 0;
-    let sidecarCrawlCount = 0;
+    let sidecarCount = 0;
 
-    for await (const sidecarBatch of sidecarsOnDisk) {
-      this.logger.debug(`Crawling sidecar batch: ${sidecarBatch.length} sidecar(s)`);
-      sidecarCrawlCount += sidecarBatch.length;
+    for await (const chunk of sidecarPaths) {
+      this.logger.debug(`Crawling sidecar batch: ${chunk.length} sidecar(s)`);
+      sidecarCount += chunk.length;
 
-      const paths = await this.assetFileRepository.filterSidecarPaths(sidecarBatch);
+      const paths = await this.assetFileRepository.filterNewSidecarPaths(chunk);
 
       if (paths.length > 0) {
         sidecarImportCount += paths.length;
 
-        const sidecarImports = paths.map((path) => ({
-          path: path.normalize(path),
-          type: AssetFileType.SIDECAR,
-        }));
+        await this.jobRepository.queue({
+          name: JobName.SIDECAR_SYNC_FILES,
+          data: {
+            paths,
+            progressCount: sidecarCount,
+          },
+        });
 
-        const sidecarIds: string[] = [];
-
-        for (let i = 0; i < sidecarImports.length; i += 5000) {
-          // Chunk the imports to avoid the postgres limit of max parameters at once
-          const chunk = sidecarImports.slice(i, i + 5000);
-          await this.assetFileRepository
-            .createAll(chunk)
-            .then((sidecars) => sidecarIds.push(...sidecars.map((sidecar) => sidecar.id)));
-        }
-
-        const progressMessage = `(${sidecarCrawlCount} done so far)`;
-
-        await this.jobRepository.queueAll(
-          sidecarIds.map((sidecarId) => ({
-            name: JobName.SIDECAR_SYNC,
-            data: { id: sidecarId },
-          })),
+        this.logger.log(
+          `Crawled ${sidecarCount} sidecar(s) so far: ${paths.length} of current batch of ${chunk.length} will be imported...`,
         );
-
-        this.logger.log(`Crawled ${sidecarIds.length} ${progressMessage} sidecar(s)`);
       }
-
-      this.logger.log(
-        `Crawled ${sidecarCrawlCount} sidecar(s) so far: ${paths.length} of current batch of ${sidecarBatch.length} will be imported...`,
-      );
     }
-
     this.logger.log(
-      `Finished sidecar crawl, ${sidecarCrawlCount} sidecar(s) found on disk and queued ${sidecarImportCount} for import`,
+      `Finished sidebar crawl, ${sidecarCount} file(s) found on disk and queued ${sidecarImportCount} file(s) for import`,
     );
 
     return JobStatus.SUCCESS;
   }
 
-  @OnJob({ name: JobName.SIDECAR_SYNC, queue: QueueName.SIDECAR })
-  async handleSidecarSync({ id }: JobOf<JobName.SIDECAR_SYNC>): Promise<JobStatus> {
-    // This job is called by the library service when a new sidecar file is found
-    // Here, we are working from the perspective of a sidecar, not an asset. A sidecar can be orphaned, or linked to an asset
+  @OnJob({ name: JobName.SIDECAR_SYNC_FILES, queue: QueueName.SIDECAR })
+  async handleSidecarSyncFiles(job: JobOf<JobName.SIDECAR_SYNC_FILES>): Promise<JobStatus> {
+    const sidecarImports = job.paths.map((sidecarPath) => ({
+      path: path.normalize(sidecarPath),
+      type: AssetFileType.SIDECAR,
+    }));
 
-    const sidecar = await this.assetFileRepository.getById(id);
+    const sidecarIds: string[] = [];
+
+    for (let i = 0; i < sidecarImports.length; i += 5000) {
+      // Chunk the imports to avoid the postgres limit of max parameters at once
+      const chunk = sidecarImports.slice(i, i + 5000);
+      await this.assetFileRepository
+        .createAll(chunk)
+        .then((sidecars) => sidecarIds.push(...sidecars.map((sidecar) => sidecar.id)));
+    }
+
+    const progressMessage =
+      job.progressCount && job.totalCount
+        ? `(${job.progressCount} of ${job.totalCount})`
+        : `(${job.progressCount} done so far)`;
+
+    this.logger.log(`Imported ${sidecarIds.length} ${progressMessage} sidecar(s), queueing sidecar mapping`);
+
+    await this.jobRepository.queueAll(sidecarIds.map((id) => ({ name: JobName.SIDECAR_MAPPING, data: { id } })));
+
+    return JobStatus.SUCCESS;
+  }
+
+  @OnJob({ name: JobName.SIDECAR_QUEUE_SYNC_ASSETS, queue: QueueName.SIDECAR })
+  async handleQueueSyncSidecarAssets(): Promise<JobStatus> {
+    const totalCount = await this.assetFileRepository.getSidecarCount();
+    if (!totalCount) {
+      this.logger.log(`No known sidecars, no need to check`);
+      return JobStatus.SUCCESS;
+    }
+
+    let chunk: string[] = [];
+    let progressCount = 0;
+
+    const queueChunk = async () => {
+      if (chunk.length > 0) {
+        progressCount += chunk.length;
+
+        await this.jobRepository.queue({
+          name: JobName.SIDECAR_SYNC_ASSETS,
+          data: {
+            ids: chunk.map((id) => id),
+            progressCount,
+            totalCount,
+          },
+        });
+        chunk = [];
+
+        const completePercentage = ((100 * progressCount) / totalCount).toFixed(1);
+
+        this.logger.log(
+          `Queued check of ${progressCount} of ${totalCount} (${completePercentage} %) existing sidecar(s) so far`,
+        );
+      }
+    };
+
+    this.logger.log(`Scanning for sidecars missing from disk...`);
+    const existingSidecars = this.assetFileRepository.streamSidecarIds();
+
+    for await (const asset of existingSidecars) {
+      chunk.push(asset.id);
+      if (chunk.length === JOBS_LIBRARY_PAGINATION_SIZE) {
+        await queueChunk();
+      }
+    }
+
+    await queueChunk();
+
+    this.logger.log(`Finished queuing ${progressCount} sidecar check(s)`);
+
+    return JobStatus.SUCCESS;
+  }
+
+  @OnJob({ name: JobName.SIDECAR_QUEUE_SCAN, queue: QueueName.SIDECAR })
+  async queueSidecarScan() {
+    this.logger.log(`Starting to scan sidecars`);
+
+    const paths = [StorageCore.getBaseFolder(StorageFolder.UPLOAD), StorageCore.getBaseFolder(StorageFolder.LIBRARY)];
+
+    await this.jobRepository.queue({
+      name: JobName.SIDECAR_QUEUE_SYNC_FILES,
+      data: { paths },
+    });
+
+    await this.jobRepository.queue({ name: JobName.SIDECAR_QUEUE_SYNC_ASSETS, data: {} });
+  }
+
+  @OnJob({ name: JobName.SIDECAR_SYNC_ASSETS, queue: QueueName.SIDECAR })
+  async handleSidecarSyncAssets(job: JobOf<JobName.SIDECAR_SYNC_ASSETS>): Promise<JobStatus> {
+    const sidecars = await this.assetFileRepository.getByIds(job.ids);
+
+    const sidecarIdsToRemove: string[] = [];
+    const sidecarIdsToRemap: string[] = [];
+    const assetsToUpdate: string[] = [];
+
+    this.logger.debug(`Checking batch of ${sidecars.length} existing sidecar(s)`);
+
+    const stats = await Promise.all(sidecars.map((asset) => this.storageRepository.stat(asset.path).catch(() => null)));
+
+    for (let i = 0; i < sidecars.length; i++) {
+      const sidecar = sidecars[i] as SidecarAssetFileEntity;
+      const stat = stats[i];
+      const action = this.checkExistingSidecar(sidecar, stat);
+      switch (action) {
+        case AssetSyncResult.OFFLINE: {
+          this.logger.debug(`Will remove sidecar ${sidecar.path}`);
+          sidecarIdsToRemove.push(sidecar.id);
+          break;
+        }
+        case AssetSyncResult.UPDATE: {
+          this.logger.debug(`Sidecar ${sidecar.path} has been updated, checking...`);
+          if (sidecar.assetId) {
+            this.logger.verbose(
+              `Sidecar ${sidecar.path} has been updated, queuing metadata extraction. Asset id: ${sidecar.assetId}`,
+            );
+            assetsToUpdate.push(sidecar.assetId);
+          } else {
+            this.logger.verbose(`Sidecar ${sidecar.path} has no asset id, queuing sidecar mapping`);
+            sidecarIdsToRemap.push(sidecar.id);
+          }
+          break;
+        }
+        /*default: {
+          this.logger.error(`Unknown sidecar asset sync result ${action} for sidecar ${sidecar.id}: ${sidecar.path}`);
+          return JobStatus.FAILED;
+        }*/
+      }
+      this.logger.debug(`Sidecar ${sidecar.path} has been checked: ${i}`);
+    }
+
+    this.logger.debug(`Now checking batch of ${sidecars.length} existing sidecar(s)`);
+
+    const promises = [];
+    if (sidecarIdsToRemove.length > 0) {
+      // FIXME: how do we handle the removal in case of two sidecars?
+      promises.push(this.assetFileRepository.removeAll(sidecarIdsToRemove));
+    }
+
+    if (assetsToUpdate.length > 0) {
+      promises.push(
+        this.jobRepository.queueAll(assetsToUpdate.map((id) => ({ name: JobName.METADATA_EXTRACTION, data: { id } }))),
+      );
+    }
+
+    if (sidecarIdsToRemap.length > 0) {
+      promises.push(
+        this.jobRepository.queueAll(sidecarIdsToRemap.map((id) => ({ name: JobName.SIDECAR_MAPPING, data: { id } }))),
+      );
+    }
+
+    await Promise.all(promises);
+
+    this.logger.debug(`Finished checking batch of ${sidecars.length} existing sidecar(s)`);
+
+    const remainingCount =
+      sidecars.length - sidecarIdsToRemove.length - assetsToUpdate.length - sidecarIdsToRemap.length;
+
+    let progress = '';
+    if (job.progressCount && job.totalCount) {
+      const cumulativePercentage = ((100 * job.progressCount) / job.totalCount).toFixed(1);
+      progress = `(Total progress: ${job.progressCount} of ${job.totalCount}, ${cumulativePercentage} %) `;
+    }
+
+    this.logger.log(
+      `Checked existing sidecar(s): ${sidecarIdsToRemove.length} removed, ${assetsToUpdate.length} updated, ${sidecarIdsToRemap.length} remapped, ${remainingCount} unchanged of current batch of ${sidecars.length} ${progress}.`,
+    );
+
+    return JobStatus.SUCCESS;
+  }
+
+  private checkExistingSidecar(sidecar: SidecarAssetFileEntity, stat: Stats | null): AssetSyncResult {
+    if (!stat) {
+      // File not found on disk or permission error
+
+      this.logger.debug(
+        `Asset ${sidecar.path} is no longer on disk or is inaccessible because of permissions, marking removing`,
+      );
+      return AssetSyncResult.OFFLINE;
+    }
+
+    if (!sidecar.fileModifiedAt || stat.mtime.valueOf() !== sidecar.fileModifiedAt.valueOf()) {
+      this.logger.verbose(
+        `Sidecar ${sidecar.path} has new mtime: ${sidecar.fileModifiedAt} does not equal ${stat.mtime}`,
+      );
+
+      if (sidecar.fileModifiedAt) {
+        const diff = Math.abs(stat.mtime.valueOf() - sidecar.fileModifiedAt.valueOf());
+        this.logger.debug(`Modification time difference for sidecar ${sidecar.path}: ${diff}ms`);
+      }
+
+      return AssetSyncResult.UPDATE;
+    }
+
+    return AssetSyncResult.DO_NOTHING;
+  }
+
+  @OnJob({ name: JobName.SIDECAR_MAPPING, queue: QueueName.SIDECAR })
+  async handleSidecarMapping(job: JobOf<JobName.SIDECAR_MAPPING>): Promise<JobStatus> {
+    const sidecar = await this.assetFileRepository.getById(job.id);
 
     if (!sidecar || sidecar.type !== AssetFileType.SIDECAR) {
       return JobStatus.FAILED;
     }
 
-    this.logger.debug(`Reconciling sidecar ${sidecar.id}: ${sidecar.path}`);
+    this.logger.debug(`Mapping sidecar ${sidecar.id}: ${sidecar.path}`);
 
     if (!sidecar.path.toLowerCase().endsWith('.xmp')) {
       this.logger.error(`Asset file sidecar path is missing .xmp extension: ${sidecar.path}`);
       return JobStatus.FAILED;
     }
 
+    let storeSidecar = false;
+
     if (!sidecar.assetId) {
-      const pathWithoutExtension = sidecar.path.replace(/xmp$/i, '');
+      const filePath = path.parse(sidecar.path);
+      const pathWithoutExtension = filePath.dir + '/' + filePath.name;
 
       const assets = await this.assetRepository.getLikeOriginalPath(pathWithoutExtension);
+      const allAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
+        this.assetRepository.getAll(options, {}),
+      );
+
+      for await (const assets of allAssets) {
+        for (const asset of assets) {
+          this.logger.debug(`Asset: ${asset.originalPath}`);
+        }
+      }
+
+      this.logger.verbose(`Found ${assets.length} matching asset(s) for sidecar ${sidecar.id}: ${sidecar.path}`);
 
       if (assets.length === 0) {
         this.logger.verbose(
           `No matching asset found for sidecar ${sidecar.id}: ${sidecar.path}, ${pathWithoutExtension}`,
         );
-        await this.assetFileRepository.upsert({ ...sidecar, assetId: null });
+        await this.assetFileRepository.update({ ...sidecar, assetId: null });
         return JobStatus.SUCCESS;
       }
 
@@ -404,7 +573,12 @@ export class MetadataService extends BaseService {
         return JobStatus.FAILED;
       }
 
-      sidecar.assetId = assets[0].id;
+      const asset = assets[0];
+
+      this.logger.verbose(`Mapping sidecar ${sidecar.id}: ${sidecar.path} to asset ${asset.id}: ${asset.originalPath}`);
+
+      storeSidecar = true;
+      sidecar.assetId = asset.id;
     }
 
     const currentSidecarsForAsset: SidecarAssetFileEntity[] = [];
@@ -416,8 +590,6 @@ export class MetadataService extends BaseService {
     for await (const sidecar of sidecarPagination) {
       currentSidecarsForAsset.push(...(sidecar as SidecarAssetFileEntity[]));
     }
-
-    let storeSidecar = false;
 
     if (currentSidecarsForAsset.length === 0) {
       // No existing sidecar for this asset, store the new one
@@ -439,14 +611,12 @@ export class MetadataService extends BaseService {
     }
 
     if (storeSidecar) {
-      await this.assetFileRepository.upsert(sidecar);
+      await this.assetFileRepository.update(sidecar);
 
       await this.jobRepository.queue({
         name: JobName.METADATA_EXTRACTION,
         data: { id: sidecar.assetId, source: 'upload' },
       });
-
-      // throw new Error(JSON.stringify(sidecar));
     }
 
     return JobStatus.SUCCESS;
@@ -530,6 +700,7 @@ export class MetadataService extends BaseService {
   }
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
+    this.logger.verbose(`Getting exif tags for asset ${asset.id}: ${asset.originalPath}`);
     const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
       this.assetFileRepository.getAll(options, { assetId: asset.id, type: AssetFileType.SIDECAR }),
     );
@@ -537,8 +708,11 @@ export class MetadataService extends BaseService {
     let sidecars: SidecarAssetFileEntity[] = [];
 
     for await (const sidecar of sidecarPagination) {
-      sidecars.concat(...(sidecar as SidecarAssetFileEntity[]));
+      this.logger.verbose(`Found sidecar(s) for asset ${asset.id}: ${sidecar}`);
+      sidecars.push(...(sidecar as SidecarAssetFileEntity[]));
     }
+
+    this.logger.debug(`Found ${sidecars.length} sidecar(s) for asset ${asset.originalPath}: ${sidecars}`);
 
     if (sidecars.length > 1) {
       throw new Error(`Multiple sidecars found for asset ${asset.id}: ${asset.originalPath}`);
@@ -547,25 +721,54 @@ export class MetadataService extends BaseService {
     const sidecar = sidecars[0];
 
     if (!sidecar && asset.type === AssetType.IMAGE) {
-      return this.metadataRepository.readTags(asset.originalPath);
+      const tagResult = await this.metadataRepository.readTags(asset.originalPath);
+      if (tagResult.success) {
+        return tagResult.tags;
+      }
+      return {};
     }
 
     return this.mergeExifTags(asset, sidecar);
   }
 
   private async mergeExifTags(asset: AssetEntity, sidecar: AssetFileEntity | null): Promise<ImmichTags> {
-    const [mediaTags, sidecarTags, videoTags] = await Promise.all([
+    this.logger.verbose(`Merging exif tags for asset ${asset.id}: ${asset.originalPath} and sidecar ${sidecar?.path}`);
+    const [mediaTagResult, sidecarTagResult, sidecarStat, videoTags] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
       sidecar ? this.metadataRepository.readTags(sidecar.path) : null,
+      sidecar ? this.storageRepository.stat(sidecar.path) : null,
       asset.type === AssetType.VIDEO ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
-    // prefer dates from sidecar tags
-    if (sidecarTags) {
-      const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
-      if (sidecarDate) {
-        for (const tag of EXIF_DATE_TAGS) {
-          delete mediaTags[tag];
+    const mediaTags = mediaTagResult.success ? mediaTagResult.tags : {};
+
+    const sidecarTags = sidecarTagResult?.success ? sidecarTagResult.tags : {};
+
+    if (sidecar && !sidecarStat) {
+      // Sidecar not found on disk, delete sidecar asset file from db
+      // FIXME: deletion logic with muliple sidecars
+      await this.assetFileRepository.remove(sidecar);
+    }
+
+    if (sidecar && sidecarStat) {
+      this.logger.verbose(`Sidecar is ${sidecar.path}. About to check sidecar dates for ${sidecar?.path}`);
+
+      this.logger.debug(`Sidecar mtime is ${sidecarStat.mtime}, equals ${sidecarStat.mtime === sidecarStat.mtime}`);
+
+      if (sidecar.fileModifiedAt !== sidecarStat.mtime) {
+        this.logger.debug(
+          `Updating sidecar fileModifiedAt for sidecar ${sidecar.path}: ${sidecar.fileModifiedAt} becomes ${sidecarStat.mtime}`,
+        );
+        this.assetFileRepository.update({ ...sidecar, fileModifiedAt: sidecarStat.mtime });
+      }
+
+      if (sidecarTags) {
+        // prefer dates from sidecar tags
+        const sidecarDate = firstDateTime(sidecarTags as Tags, EXIF_DATE_TAGS);
+        if (sidecarDate) {
+          for (const tag of EXIF_DATE_TAGS) {
+            delete mediaTags[tag];
+          }
         }
       }
     }

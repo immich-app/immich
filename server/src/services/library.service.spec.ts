@@ -5,7 +5,7 @@ import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { mapLibrary } from 'src/dtos/library.dto';
 import { AssetType, CrawlType, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { LibraryService } from 'src/services/library.service';
-import { ILibraryBulkIdsJob, ILibraryFileJob } from 'src/types';
+import { ILibraryBulkIdsJob, IPathBatchJob } from 'src/types';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
@@ -164,7 +164,7 @@ describe(LibraryService.name, () => {
       mocks.storage.walk.mockImplementation(mockWalk);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
-      mocks.assetFile.filterSidecarPaths.mockResolvedValue([]);
+      mocks.assetFile.filterNewSidecarPaths.mockResolvedValue([]);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
@@ -229,7 +229,7 @@ describe(LibraryService.name, () => {
       mocks.storage.walk.mockImplementation(mockWalk);
       mocks.storage.stat.mockResolvedValue({ isDirectory: () => true } as Stats);
       mocks.storage.checkFileExists.mockResolvedValue(true);
-      mocks.assetFile.filterSidecarPaths.mockResolvedValue([]);
+      mocks.assetFile.filterNewSidecarPaths.mockResolvedValue([]);
       mocks.asset.filterNewExternalAssetPaths.mockResolvedValue(['/data/user1/photo.jpg']);
 
       await sut.handleQueueSyncFiles({ id: library.id });
@@ -367,7 +367,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
@@ -388,7 +388,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/data/user2'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
@@ -409,7 +409,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/data/user2'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -427,7 +427,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/original/'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -448,7 +448,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/original/'],
         exclusionPatterns: ['**/path.jpg'],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -468,7 +468,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/import/'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -488,7 +488,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.external]);
@@ -506,7 +506,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       mocks.asset.getByIds.mockResolvedValue([assetStub.trashedOffline]);
@@ -529,7 +529,7 @@ describe(LibraryService.name, () => {
         importPaths: ['/'],
         exclusionPatterns: [],
         totalAssets: 1,
-        progressCounter: 0,
+        progressCount: 0,
       };
 
       if (assetStub.external.fileModifiedAt == null) {
@@ -545,7 +545,7 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SIDECAR_DISCOVERY,
+          name: JobName.SIDECAR_SYNC_FILES,
           data: {
             id: assetStub.external.id,
             source: 'upload',
@@ -567,7 +567,7 @@ describe(LibraryService.name, () => {
     it('should import a new asset', async () => {
       const library = factory.library();
 
-      const mockLibraryJob: ILibraryFileJob = {
+      const mockLibraryJob: IPathBatchJob = {
         libraryId: library.id,
         paths: ['/data/user1/photo.jpg'],
       };
@@ -591,7 +591,7 @@ describe(LibraryService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
-          name: JobName.SIDECAR_DISCOVERY,
+          name: JobName.SIDECAR_SYNC_FILES,
           data: {
             id: assetStub.image.id,
             source: 'upload',
@@ -603,7 +603,7 @@ describe(LibraryService.name, () => {
     it('should not import an asset to a soft deleted library', async () => {
       const library = factory.library({ deletedAt: new Date() });
 
-      const mockLibraryJob: ILibraryFileJob = {
+      const mockLibraryJob: IPathBatchJob = {
         libraryId: library.id,
         paths: ['/data/user1/photo.jpg'],
       };

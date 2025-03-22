@@ -10,7 +10,12 @@ export const newAssetFileRepositoryMock = (): Mocked<RepositoryInterface<AssetFi
     update: vitest.fn(),
     upsert: vitest.fn(),
     upsertAll: vitest.fn(),
-    getAssetSidecarsByPath: vitest.fn(),
-    filterSidecarPaths: vitest.fn(),
+    getSidecarsLikePath: vitest.fn(),
+    filterNewSidecarPaths: vitest.fn(),
+    remove: vitest.fn(),
+    getByIds: vitest.fn(),
+    removeAll: vitest.fn(),
+    streamSidecarIds: vitest.fn(),
+    getSidecarCount: vitest.fn(),
   };
 };

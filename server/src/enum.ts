@@ -477,7 +477,6 @@ export enum JobName {
   LIBRARY_QUEUE_SYNC_FILES = 'library-queue-sync-files',
   LIBRARY_QUEUE_SYNC_ASSETS = 'library-queue-sync-assets',
   LIBRARY_SYNC_FILES = 'library-sync-files',
-  LIBRARY_SYNC_SIDECARS = 'library-sync-sidecars',
   LIBRARY_SYNC_ASSETS = 'library-sync-assets',
   LIBRARY_ASSET_REMOVAL = 'handle-library-file-deletion',
   LIBRARY_DELETE = 'library-delete',
@@ -504,9 +503,12 @@ export enum JobName {
   DUPLICATE_DETECTION = 'duplicate-detection',
 
   // XMP sidecars
-  QUEUE_SIDECAR = 'queue-sidecar',
-  SIDECAR_DISCOVERY = 'sidecar-discovery',
-  SIDECAR_SYNC = 'sidecar-sync',
+  SIDECAR_QUEUE_SCAN = 'sidecar-queue-scan',
+  SIDECAR_QUEUE_SYNC_FILES = 'sidecar-queue-sync-files',
+  SIDECAR_QUEUE_SYNC_ASSETS = 'sidecar-queue-sync-assets',
+  SIDECAR_SYNC_FILES = 'sidecar-sync-files',
+  SIDECAR_SYNC_ASSETS = 'sidecar-sync-assets',
+  SIDECAR_MAPPING = 'sidecar-mapping',
   SIDECAR_WRITE = 'sidecar-write',
 
   // Notification
