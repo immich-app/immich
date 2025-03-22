@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -43,6 +44,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     final controller = useState<NativeVideoPlayerController?>(null);
     final lastVideoPosition = useRef(-1);
     final isBuffering = useRef(false);
+    final appLifecycleState = useState(AppLifecycleState.resumed);
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
@@ -368,6 +370,24 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       const [],
     );
 
+    useEffect(
+      () {
+        final observer = LifecycleEventHandler(
+          onResume: () async {
+            appLifecycleState.value = AppLifecycleState.resumed;
+            controller.value?.play();
+          },
+          onPause: () async {
+            appLifecycleState.value = AppLifecycleState.paused;
+            controller.value?.pause();
+          },
+        );
+        WidgetsBinding.instance.addObserver(observer);
+        return () => WidgetsBinding.instance.removeObserver(observer);
+      },
+      [],
+    );
+
     return Stack(
       children: [
         // This remains under the video to avoid flickering
@@ -394,5 +414,30 @@ class NativeVideoViewerPage extends HookConsumerWidget {
         if (showControls) const Center(child: CustomVideoPlayerControls()),
       ],
     );
+  }
+}
+
+class LifecycleEventHandler extends WidgetsBindingObserver {
+  final AsyncCallback? onResume;
+  final AsyncCallback? onPause;
+
+  LifecycleEventHandler({this.onResume, this.onPause});
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (onResume != null) {
+          onResume!();
+        }
+        break;
+      case AppLifecycleState.paused:
+        if (onPause != null) {
+          onPause!();
+        }
+        break;
+      default:
+        break;
+    }
   }
 }
