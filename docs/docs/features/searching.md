@@ -62,11 +62,15 @@ Please note that memory and execution time values are only _estimates_: actual u
 
 <details>
 <summary>Reference</summary>
+
 Memory and execution time estimates were obtained without acceleration on a 7800x3D processor running bare metal Linux. All testing and evaluation was done at f32 precision (the default in Immich).
 
 Execution Time (ms): After warming up the model with one pass, the mean execution time of 100 passes with the same input.
+
 Memory (MiB): The peak RSS usage of the process afer performing the above timing benchmark. Does not include image decoding, concurrent processing, the web server, etc., which are relatively constant factors.
+
 Recall (%): Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval.
+
 Pareto Optimal: Whether the model is not completely outclassed by another model. Specifically, whether there's a model that's better for a given language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way. Avoid models that are not optimal.
 
 </details>
