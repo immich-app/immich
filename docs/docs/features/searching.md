@@ -71,7 +71,7 @@ Memory (MiB): The peak RSS usage of the process afer performing the above timing
 
 Recall (%): Evaluated on Crossmodal-3600, the average of the recall@1, recall@5 and recall@10 results for zeroshot image retrieval.
 
-Pareto Optimal: Whether the model is not completely outclassed by another model. Try to use models that are optimal for the languages relevant to you. Specifically, for a given model and language, if there's another model that's better for that language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way, then the model is not optimal.
+Pareto Optimal: Whether the model is not completely outclassed by another model. Try to use models that are optimal for the languages relevant to you. Specifically, for a given model and language, if there's another model that's better for that language in at least one respect (memory usage, execution time, recall) while being at least as good for that language in every other way, then the model is not optimal for that language.
 
 </details>
 
