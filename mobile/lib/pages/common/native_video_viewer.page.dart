@@ -47,7 +47,7 @@ class NativeVideoViewerPage extends HookConsumerWidget {
 
     // Used to track whether the video should play when the app
     // is brought back to the foreground
-    final shouldPlayOnForeground = useState(true);
+    final shouldPlayOnForeground = useRef(true);
 
     // When a video is opened through the timeline, `isCurrent` will immediately be true.
     // When swiping from video A to video B, `isCurrent` will initially be true for video A and false for video B.
