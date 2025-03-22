@@ -205,7 +205,7 @@ jobs:
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ml-digests-${{ matrix.device }}-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
@@ -237,7 +237,7 @@ jobs:
       - build_and_push_ml
     steps:
       - name: Download digests
-        uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
         with:
           path: ${{ runner.temp }}/digests
           pattern: ml-digests-${{ matrix.device }}-*
@@ -373,7 +373,7 @@ jobs:
           touch "${{ runner.temp }}/digests/${digest#sha256:}"
 
       - name: Upload digest
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: server-digests-${{ env.PLATFORM_PAIR }}
           path: ${{ runner.temp }}/digests/*
@@ -391,7 +391,7 @@ jobs:
       - build_and_push_server
     steps:
       - name: Download digests
-        uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4
         with:
           path: ${{ runner.temp }}/digests
           pattern: server-digests-*
