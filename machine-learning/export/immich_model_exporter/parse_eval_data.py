@@ -110,7 +110,7 @@ eval_df = eval_df.select(
     pl.col("exec_time_ms").round(2).alias("Execution Time (ms)"),
     pl.col("language").alias("Language"),
     pl.col("recall").round(2).alias("Recall (%)"),
-    pl.col("is_pareto").alias("Pareto Optimal"),
+    pl.when(pl.col("is_pareto")).then(pl.lit("✅")).otherwise(pl.lit("❌")).alias("Pareto Optimal"),
 )
 
 
