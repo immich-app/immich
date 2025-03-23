@@ -7,3 +7,6 @@ services:
     volumes:
       - ../..:/immich
       - open_api_node_modules:/immich/open-api/typescript-sdk/node_modules
+
+volumes:
+  open_api_node_modules:
