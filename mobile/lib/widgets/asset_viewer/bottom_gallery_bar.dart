@@ -19,6 +19,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/stack.service.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/asset_grid/asset_grid_data_structure.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
@@ -49,7 +50,8 @@ class BottomGalleryBar extends ConsumerWidget {
     if (asset == null) {
       return const SizedBox();
     }
-    final isOwner = asset.ownerId == ref.watch(currentUserProvider)?.id;
+    final isOwner =
+        asset.ownerId == fastHash(ref.watch(currentUserProvider)?.id ?? '');
     final showControls = ref.watch(showControlsProvider);
     final stackId = asset.stackId;
 

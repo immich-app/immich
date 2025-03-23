@@ -4,35 +4,44 @@ import { SvelteSet } from 'svelte/reactivity';
 import { fromStore } from 'svelte/store';
 
 export class AssetInteraction {
-  readonly selectedAssets = new SvelteSet<AssetResponseDto>();
-  readonly selectedGroup = new SvelteSet<string>();
-  assetSelectionCandidates = $state(new SvelteSet<AssetResponseDto>());
+  selectedAssets = $state<AssetResponseDto[]>([]);
+  hasSelectedAsset(assetId: string) {
+    return this.selectedAssets.some((asset) => asset.id === assetId);
+  }
+  selectedGroup = new SvelteSet<string>();
+  assetSelectionCandidates = $state<AssetResponseDto[]>([]);
+  hasSelectionCandidate(assetId: string) {
+    return this.assetSelectionCandidates.some((asset) => asset.id === assetId);
+  }
   assetSelectionStart = $state<AssetResponseDto | null>(null);
   focussedAssetId = $state<string | null>(null);
-
-  selectionActive = $derived(this.selectedAssets.size > 0);
-  selectedAssetsArray = $derived([...this.selectedAssets]);
+  selectionActive = $derived(this.selectedAssets.length > 0);
 
   private user = fromStore<UserAdminResponseDto | undefined>(user);
   private userId = $derived(this.user.current?.id);
 
-  isAllTrashed = $derived(this.selectedAssetsArray.every((asset) => asset.isTrashed));
-  isAllArchived = $derived(this.selectedAssetsArray.every((asset) => asset.isArchived));
-  isAllFavorite = $derived(this.selectedAssetsArray.every((asset) => asset.isFavorite));
-  isAllUserOwned = $derived(this.selectedAssetsArray.every((asset) => asset.ownerId === this.userId));
+  isAllTrashed = $derived(this.selectedAssets.every((asset) => asset.isTrashed));
+  isAllArchived = $derived(this.selectedAssets.every((asset) => asset.isArchived));
+  isAllFavorite = $derived(this.selectedAssets.every((asset) => asset.isFavorite));
+  isAllUserOwned = $derived(this.selectedAssets.every((asset) => asset.ownerId === this.userId));
 
   selectAsset(asset: AssetResponseDto) {
-    this.selectedAssets.add(asset);
+    if (!this.hasSelectedAsset(asset.id)) {
+      this.selectedAssets.push(asset);
+    }
   }
 
   selectAssets(assets: AssetResponseDto[]) {
     for (const asset of assets) {
-      this.selectedAssets.add(asset);
+      this.selectAsset(asset);
     }
   }
 
-  removeAssetFromMultiselectGroup(asset: AssetResponseDto) {
-    this.selectedAssets.delete(asset);
+  removeAssetFromMultiselectGroup(assetId: string) {
+    const index = this.selectedAssets.findIndex((a) => a.id == assetId);
+    if (index !== -1) {
+      this.selectedAssets.splice(index, 1);
+    }
   }
 
   addGroupToMultiselectGroup(group: string) {
@@ -48,24 +57,24 @@ export class AssetInteraction {
   }
 
   setAssetSelectionCandidates(assets: AssetResponseDto[]) {
-    this.assetSelectionCandidates = new SvelteSet(assets);
+    this.assetSelectionCandidates = assets;
   }
 
   clearAssetSelectionCandidates() {
-    this.assetSelectionCandidates.clear();
+    this.assetSelectionCandidates = [];
   }
 
   clearMultiselect() {
     // Multi-selection
-    this.selectedAssets.clear();
+    this.selectedAssets = [];
     this.selectedGroup.clear();
 
     // Range selection
-    this.assetSelectionCandidates.clear();
+    this.assetSelectionCandidates = [];
     this.assetSelectionStart = null;
   }
 
-  isFocussedAsset(asset: AssetResponseDto) {
-    return this.focussedAssetId === asset.id;
+  isFocussedAsset(assetId: string) {
+    return this.focussedAssetId === assetId;
   }
 }
