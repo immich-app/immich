@@ -189,11 +189,18 @@ describe('/search', () => {
       })),
       {
         should: 'should reject albumIds null',
-        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: null }),
+        dto: { size: 1, albumIds: null },
+        expected: [
+          "each value in albumIds must be a UUID",
+          "albumIds must be an array"
+        ],
       },
       {
         should: 'should reject albumIds invalid format',
-        deferred: () => ({ dto: { size: 1 }, assets: [assetLast], albumIds: ['invalid_uuid'] }),
+        dto: { size: 1, albumIds: ['invalid_uuid'] },
+        expected: [
+          "each value in albumIds must be a UUID"
+        ],
       },
     ];
 
