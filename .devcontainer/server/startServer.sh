@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck source=common.sh
-source /workspaces/common.sh
+source /immich-devcontainer/common.sh
 
 until curl --output /dev/null --silent --head --fail "http://127.0.0.1:${IMMICH_PORT}/api/server/config"; do
     echo 'waiting for api server...'

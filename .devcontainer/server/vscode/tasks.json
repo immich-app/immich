@@ -4,7 +4,7 @@
     {
       "label": "Immich API (Server)",
       "type": "shell",
-      "command": "/workspaces/startServer.sh",
+      "command": "/immich-devcontainer/startServer.sh",
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -21,7 +21,7 @@
     {
       "label": "Immich Web",
       "type": "shell",
-      "command": "/workspaces/startWeb.sh",
+      "command": "/immich-devcontainer/startWeb.sh",
       "presentation": {
         "echo": true,
         "reveal": "always",

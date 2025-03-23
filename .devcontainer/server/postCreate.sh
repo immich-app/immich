@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck source=common.sh
-source /workspaces/common.sh
+source /immich-devcontainer/common.sh
 
 sudo chown node -R "${IMMICH_WORKSPACE}/.vscode" \
     "${IMMICH_WORKSPACE}/cli/node_modules" \

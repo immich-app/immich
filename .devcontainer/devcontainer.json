@@ -42,5 +42,5 @@
   "overrideCommand": true,
   "workspaceFolder": "/workspaces/immich",
   "remoteUser": "node",
-  "postCreateCommand": "/workspaces/postCreate.sh"
+  "postCreateCommand": "/immich-devcontainer/postCreate.sh"
 }
