@@ -1,26 +1,46 @@
 {
-  "name": "Immich",
-  "service": "immich-devcontainer",
-  "dockerComposeFile": [
-    "docker-compose.yml",
-    "../docker/docker-compose.dev.yml"
-  ],
+  "name": "Immich - Backend and Frontend",
+  "service": "immich-devcontainer-server",
+  "dockerComposeFile": ["server/docker-compose.yml"],
   "customizations": {
     "vscode": {
       "extensions": [
-        "Dart-Code.dart-code",
-        "Dart-Code.flutter",
         "dbaeumer.vscode-eslint",
-        "dcmdev.dcm-vscode-extension",
         "esbenp.prettier-vscode",
-        "svelte.svelte-vscode"
+        "svelte.svelte-vscode",
+        "ms-vscode-remote.remote-containers",
+        "foxundermoon.shell-format",
+        "timonwong.shellcheck",
+        "rvest.vs-code-prettier-eslint",
+        "bluebrown.yamlfmt",
+        "vkrishna04.cspell-sync",
+        "vitest.explorer",
+        "ms-playwright.playwright"
       ]
     }
   },
-  "forwardPorts": [],
-  "initializeCommand": "bash .devcontainer/scripts/initializeCommand.sh",
-  "onCreateCommand": "bash .devcontainer/scripts/onCreateCommand.sh",
+  "forwardPorts": [3000, 9231, 9230, 2283],
+  "portsAttributes": {
+    "3000": {
+      "label": "Immich - Frontend HTTP",
+      "description": "The frontend of the Immich project",
+      "onAutoForward": "openBrowserOnce"
+    },
+    "2283": {
+      "label": "Immich - API Server - HTTP",
+      "description": "The API server of the Immich project"
+    },
+    "9231": {
+      "label": "Immich - API Server - DEBUG",
+      "description": "The API server of the Immich project"
+    },
+    "9230": {
+      "label": "Immich - Workers - DEBUG",
+      "description": "The workers of the Immich project"
+    }
+  },
   "overrideCommand": true,
-  "workspaceFolder": "/immich",
-  "remoteUser": "node"
+  "workspaceFolder": "/workspaces/immich",
+  "remoteUser": "node",
+  "postCreateCommand": "/workspaces/postCreate.sh"
 }

@@ -162,3 +162,14 @@ ENTRYPOINT ["tini", "--"]
 CMD ["./start.sh"]
 
 HEALTHCHECK CMD python3 healthcheck.py
+
+FROM prod AS devcontainer
+
+RUN apt-get update && apt-get install inetutils-ping sudo git -y
+RUN groupadd -g 1000 node
+RUN useradd -u 1000 -g 1000 -m node
+RUN usermod -aG sudo node
+RUN usermod -s /bin/bash node
+RUN echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN mkdir -p /workspaces/immich
+RUN chown node -R /workspaces
