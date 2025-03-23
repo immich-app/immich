@@ -9,7 +9,7 @@ WORKSPACES_DIR="/workspaces"
 IMMICH_DIR="$WORKSPACES_DIR/immich"
 
 # Find directories excluding /workspaces/immich
-mapfile -t other_dirs < <(find "$WORKSPACES_DIR" -mindepth 1 -maxdepth 1 -type d ! -path "$IMMICH_DIR")
+mapfile -t other_dirs < <(find "$WORKSPACES_DIR" -mindepth 1 -maxdepth 1 -type d ! -path "$IMMICH_DIR" ! -name ".*")
 
 if [ ${#other_dirs[@]} -gt 1 ]; then
     echo "Error: More than one directory found in $WORKSPACES_DIR other than $IMMICH_DIR."
