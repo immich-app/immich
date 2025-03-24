@@ -814,6 +814,35 @@ describe(MediaService.name, () => {
         'upload/thumbs/user-id/as/se/asset-id-fullsize.jpeg',
       );
     });
+
+    it('should respect encoding options when generating full-size preview', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true, format: ImageFormat.WEBP, quality: 90 } } });
+      mocks.media.extract.mockResolvedValue(true);
+      mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
+      // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
+      mocks.asset.getById.mockResolvedValue(assetStub.imageHif);
+
+      await sut.handleGenerateThumbnails({ id: assetStub.image.id });
+
+      expect(mocks.media.decodeImage).toHaveBeenCalledOnce();
+      expect(mocks.media.decodeImage).toHaveBeenCalledWith(assetStub.imageHif.originalPath, {
+        colorspace: Colorspace.P3,
+        processInvalidImages: false,
+      });
+
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledTimes(3);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        rawBuffer,
+        {
+          colorspace: Colorspace.P3,
+          format: ImageFormat.WEBP,
+          quality: 90,
+          processInvalidImages: false,
+          raw: rawInfo,
+        },
+        'upload/thumbs/user-id/as/se/asset-id-fullsize.webp',
+      );
+    });
   });
 
   describe('handleQueueVideoConversion', () => {

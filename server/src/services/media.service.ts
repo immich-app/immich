@@ -251,7 +251,7 @@ export class MediaService extends BaseService {
     if (shouldConvertFullsize) {
       // unset size to decode fullsize image
       decodeOptions.size = undefined;
-      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.preview.format);
+      fullsizePath = StorageCore.getImagePath(asset, AssetPathType.FULLSIZE, image.fullsize.format);
     }
 
     if (shouldExtractEmbedded) {
