@@ -1,7 +1,7 @@
 import { HttpException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
-import { basename, extname, isAbsolute, resolve } from 'node:path';
+import { basename, extname, isAbsolute } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -64,13 +64,13 @@ export const sendFile = async (
 
     // configure options for serving
     const options: SendFileOptions = { dotfiles: 'allow' };
-    let filePath = file.path;
-    if (!isAbsolute(filePath)) {
-      filePath = resolve(filePath);
+    if (!isAbsolute(file.path)) {
+      options.root = process.cwd();
     }
-    await access(filePath, constants.R_OK);
 
-    return await _sendFile(filePath, options);
+    await access(file.path, constants.R_OK);
+
+    return await _sendFile(file.path, options);
   } catch (error: Error | any) {
     // ignore client-closed connection
     if (isConnectionAborted(error) || res.headersSent) {
