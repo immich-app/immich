@@ -3,14 +3,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/backup/backup_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
-import 'package:immich_mobile/providers/immich_logo_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
@@ -29,8 +27,7 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final bool isEnableAutoBackup =
         backupState.backgroundBackup || backupState.autoBackup;
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
-    final immichLogo = ref.watch(immichLogoProvider);
-    final user = Store.tryGet(StoreKey.currentUser);
+    final user = ref.watch(currentUserProvider);
     final isDarkTheme = context.isDarkTheme;
     const widgetSize = 30.0;
 
@@ -158,17 +155,6 @@ class ImmichAppBar extends ConsumerWidget implements PreferredSizeWidget {
             children: [
               Builder(
                 builder: (context) {
-                  final today = DateTime.now();
-                  if (today.month == 4 && today.day == 1) {
-                    if (immichLogo.value == null) {
-                      return const SizedBox.shrink();
-                    }
-                    return Image.memory(
-                      immichLogo.value!,
-                      fit: BoxFit.cover,
-                      height: 80,
-                    );
-                  }
                   return Padding(
                     padding: const EdgeInsets.only(top: 3.0),
                     child: SvgPicture.asset(

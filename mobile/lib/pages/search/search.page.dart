@@ -701,25 +701,25 @@ class SearchPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   SearchFilterChip(
-                    icon: Icons.people_alt_rounded,
+                    icon: Icons.people_alt_outlined,
                     onTap: showPeoplePicker,
                     label: 'search_filter_people'.tr(),
                     currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.location_pin,
+                    icon: Icons.location_on_outlined,
                     onTap: showLocationPicker,
                     label: 'search_filter_location'.tr(),
                     currentFilter: locationCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.camera_alt_rounded,
+                    icon: Icons.camera_alt_outlined,
                     onTap: showCameraPicker,
                     label: 'search_filter_camera'.tr(),
                     currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.date_range_rounded,
+                    icon: Icons.date_range_outlined,
                     onTap: showDatePicker,
                     label: 'search_filter_date'.tr(),
                     currentFilter: dateRangeCurrentFilterWidget.value,

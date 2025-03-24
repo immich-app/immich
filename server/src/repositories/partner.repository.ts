@@ -18,16 +18,13 @@ export enum PartnerDirection {
 
 const withSharedBy = (eb: ExpressionBuilder<DB, 'partners'>) => {
   return jsonObjectFrom(
-    eb.selectFrom('users as sharedBy').select(columns.userDto).whereRef('sharedBy.id', '=', 'partners.sharedById'),
+    eb.selectFrom('users as sharedBy').select(columns.user).whereRef('sharedBy.id', '=', 'partners.sharedById'),
   ).as('sharedBy');
 };
 
 const withSharedWith = (eb: ExpressionBuilder<DB, 'partners'>) => {
   return jsonObjectFrom(
-    eb
-      .selectFrom('users as sharedWith')
-      .select(columns.userDto)
-      .whereRef('sharedWith.id', '=', 'partners.sharedWithId'),
+    eb.selectFrom('users as sharedWith').select(columns.user).whereRef('sharedWith.id', '=', 'partners.sharedWithId'),
   ).as('sharedWith');
 };
 

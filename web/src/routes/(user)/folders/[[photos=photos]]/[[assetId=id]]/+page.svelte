@@ -98,7 +98,19 @@
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) => {
+          if (data.pathAssets && data.pathAssets.length > 0) {
+            for (const id of ids) {
+              const asset = data.pathAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }
+        }}
+      />
 
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
@@ -142,7 +154,13 @@
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer assets={data.pathAssets} {assetInteraction} {viewport} showAssetName={true} />
+        <GalleryViewer
+          assets={data.pathAssets}
+          {assetInteraction}
+          {viewport}
+          showAssetName={true}
+          pageHeaderOffset={54}
+        />
       </div>
     {/if}
   </section>
