@@ -96,6 +96,18 @@ export const CLIP_MODEL_INFO: Record<string, ModelInfo> = {
   'ViT-SO400M-14-SigLIP-384__webli': { dimSize: 1152 },
   'nllb-clip-large-siglip__mrl': { dimSize: 1152 },
   'nllb-clip-large-siglip__v1': { dimSize: 1152 },
+  'ViT-B-16-SigLIP2__webli': { dimSize: 768 },
+  'ViT-B-32-SigLIP2-256__webli': { dimSize: 768 },
+  'ViT-L-16-SigLIP2-256__webli': { dimSize: 1024 },
+  'ViT-L-16-SigLIP2-384__webli': { dimSize: 1024 },
+  'ViT-L-16-SigLIP2-512__webli': { dimSize: 1024 },
+  'ViT-SO400M-14-SigLIP2__webli': { dimSize: 1152 },
+  'ViT-SO400M-14-SigLIP2-378__webli': { dimSize: 1152 },
+  'ViT-SO400M-16-SigLIP2-256__webli': { dimSize: 1152 },
+  'ViT-SO400M-16-SigLIP2-384__webli': { dimSize: 1152 },
+  'ViT-SO400M-16-SigLIP2-512__webli': { dimSize: 1152 },
+  'ViT-gopt-16-SigLIP2-256__webli': { dimSize: 1536 },
+  'ViT-gopt-16-SigLIP2-384__webli': { dimSize: 1536 },
 };
 
 type SharpRotationData = {

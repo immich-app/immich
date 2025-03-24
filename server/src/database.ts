@@ -1,5 +1,5 @@
-import { sql } from 'kysely';
-import { AssetStatus, AssetType, Permission } from 'src/enum';
+import { UserMetadataEntity } from 'src/entities/user-metadata.entity';
+import { AssetStatus, AssetType, Permission, UserStatus } from 'src/enum';
 
 export type AuthUser = {
   id: string;
@@ -44,6 +44,20 @@ export type User = {
   email: string;
   profileImagePath: string;
   profileChangedAt: Date;
+};
+
+export type UserAdmin = User & {
+  storageLabel: string | null;
+  shouldChangePassword: boolean;
+  isAdmin: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  oauthId: string;
+  quotaSizeInBytes: number | null;
+  quotaUsageInBytes: number;
+  status: UserStatus;
+  metadata: UserMetadataEntity[];
 };
 
 export type Asset = {
@@ -92,9 +106,20 @@ export type AuthSession = {
   id: string;
 };
 
+export type Partner = {
+  sharedById: string;
+  sharedBy: User;
+  sharedWithId: string;
+  sharedWith: User;
+  createdAt: Date;
+  updatedAt: Date;
+  updateId: string;
+  inTimeline: boolean;
+};
+
+const userColumns = ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'] as const;
+
 export const columns = {
-  ackEpoch: (columnName: 'createdAt' | 'updatedAt' | 'deletedAt') =>
-    sql.raw<string>(`extract(epoch from "${columnName}")::text`).as('ackEpoch'),
   authUser: [
     'users.id',
     'users.name',
@@ -114,7 +139,21 @@ export const columns = {
     'shared_links.allowDownload',
     'shared_links.password',
   ],
-  userDto: ['id', 'name', 'email', 'profileImagePath', 'profileChangedAt'],
+  user: userColumns,
+  userAdmin: [
+    ...userColumns,
+    'createdAt',
+    'updatedAt',
+    'deletedAt',
+    'isAdmin',
+    'status',
+    'oauthId',
+    'profileImagePath',
+    'shouldChangePassword',
+    'storageLabel',
+    'quotaSizeInBytes',
+    'quotaUsageInBytes',
+  ],
   tagDto: ['id', 'value', 'createdAt', 'updatedAt', 'color', 'parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   syncAsset: [

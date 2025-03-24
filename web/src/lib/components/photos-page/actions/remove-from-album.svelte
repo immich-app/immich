@@ -23,7 +23,7 @@
 
   const removeFromAlbum = async () => {
     const isConfirmed = await dialogController.show({
-      prompt: $t('remove_assets_album_confirmation', { values: { count: getAssets().size } }),
+      prompt: $t('remove_assets_album_confirmation', { values: { count: getAssets().length } }),
     });
 
     if (!isConfirmed) {

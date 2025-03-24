@@ -1,22 +1,22 @@
 <script lang="ts">
-  import Icon from '$lib/components/elements/icon.svelte';
-  import { mdiClose, mdiInformationOutline } from '@mdi/js';
-  import Portal from '$lib/components/shared-components/portal/portal.svelte';
-  import Button from '$lib/components/elements/buttons/button.svelte';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-  import LicenseModal from '$lib/components/shared-components/purchasing/purchase-modal.svelte';
-  import { purchaseStore } from '$lib/stores/purchase.store';
-  import { t } from 'svelte-i18n';
   import { goto } from '$app/navigation';
-  import { AppRoute } from '$lib/constants';
-  import { getAccountAge } from '$lib/utils/auth';
-  import { fade } from 'svelte/transition';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import Icon from '$lib/components/elements/icon.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
-  import { updateMyPreferences } from '@immich/sdk';
-  import { handleError } from '$lib/utils/handle-error';
-  import { preferences } from '$lib/stores/user.store';
-  import { getButtonVisibility } from '$lib/utils/purchase-utils';
+  import Portal from '$lib/components/shared-components/portal/portal.svelte';
+  import LicenseModal from '$lib/components/shared-components/purchasing/purchase-modal.svelte';
   import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { purchaseStore } from '$lib/stores/purchase.store';
+  import { preferences } from '$lib/stores/user.store';
+  import { getAccountAge } from '$lib/utils/auth';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getButtonVisibility } from '$lib/utils/purchase-utils';
+  import { updateMyPreferences } from '@immich/sdk';
+  import { Button } from '@immich/ui';
+  import { mdiClose, mdiInformationOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import { fade } from 'svelte/transition';
 
   let showMessage = $state(false);
   let isOpen = $state(false);
@@ -121,14 +121,14 @@
 
 <Portal target="body">
   {#if showMessage}
-    <div
+    <dialog
+      open
       class="w-[500px] absolute bottom-[75px] left-[255px] bg-gray-50 dark:border-gray-800 border border-gray-200 dark:bg-immich-dark-gray dark:text-white text-black rounded-3xl z-10 shadow-2xl px-8 py-6"
       transition:fade={{ duration: 150 }}
       onmouseover={() => (hoverMessage = true)}
       onmouseleave={() => (hoverMessage = false)}
       onfocus={() => (hoverMessage = true)}
       onblur={() => (hoverMessage = false)}
-      role="dialog"
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
@@ -159,15 +159,30 @@
         </p>
       </div>
 
-      <Button class="mt-2" fullwidth onclick={openPurchaseModal}>{$t('purchase_button_buy_immich')}</Button>
+      <Button shape="round" class="mt-2" fullWidth onclick={openPurchaseModal}
+        >{$t('purchase_button_buy_immich')}</Button
+      >
       <div class="mt-3 flex gap-4">
-        <Button size="sm" fullwidth shadow={false} color="transparent-gray" onclick={() => hideButton(true)}>
+        <Button shape="round" size="small" fullWidth color="secondary" variant="ghost" onclick={() => hideButton(true)}>
           {$t('purchase_button_never_show_again')}
         </Button>
-        <Button size="sm" fullwidth shadow={false} color="transparent-gray" onclick={() => hideButton(false)}>
+        <Button
+          shape="round"
+          size="small"
+          fullWidth
+          color="secondary"
+          variant="ghost"
+          onclick={() => hideButton(false)}
+        >
           {$t('purchase_button_reminder')}
         </Button>
       </div>
-    </div>
+    </dialog>
   {/if}
 </Portal>
+
+<style>
+  dialog {
+    margin: 0;
+  }
+</style>

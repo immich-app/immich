@@ -357,12 +357,6 @@
                   </ButtonContextMenu>
                 </td>
               </tr>
-              {#if renameLibrary === index}
-                <!-- svelte-ignore node_invalid_placement_ssr -->
-                <div transition:slide={{ duration: 250 }}>
-                  <LibraryRenameForm {library} onSubmit={handleUpdate} onCancel={() => (renameLibrary = undefined)} />
-                </div>
-              {/if}
               {#if editImportPaths === index}
                 <!-- svelte-ignore node_invalid_placement_ssr -->
                 <div transition:slide={{ duration: 250 }}>
@@ -394,3 +388,11 @@
     </div>
   </section>
 </UserPageLayout>
+
+{#if renameLibrary !== undefined}
+  <LibraryRenameForm
+    library={libraries[renameLibrary]}
+    onSubmit={handleUpdate}
+    onCancel={() => (renameLibrary = undefined)}
+  />
+{/if}

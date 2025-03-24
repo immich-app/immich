@@ -1,9 +1,9 @@
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:isar/isar.dart';
 
 class IsarStoreRepository extends IsarDatabaseRepository
@@ -78,7 +78,9 @@ class IsarStoreRepository extends IsarDatabaseRepository
         const (DateTime) => entity.intValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(entity.intValue!),
-        const (User) => await UserRepository(_db).getByDbId(entity.intValue!),
+        const (UserDto) => entity.strValue == null
+            ? null
+            : await IsarUserRepository(_db).getByUserId(entity.strValue!),
         _ => null,
       } as T?;
 
@@ -88,9 +90,9 @@ class IsarStoreRepository extends IsarDatabaseRepository
       const (String) => (null, value as String),
       const (bool) => ((value as bool) ? 1 : 0, null),
       const (DateTime) => ((value as DateTime).millisecondsSinceEpoch, null),
-      const (User) => (
-          (await UserRepository(_db).update(value as User)).isarId,
+      const (UserDto) => (
           null,
+          (await IsarUserRepository(_db).update(value as UserDto)).id,
         ),
       _ => throw UnsupportedError(
           "Unsupported primitive type: ${key.type} for key: ${key.name}",

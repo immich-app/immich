@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+/** @deprecated delete after coming up with a migration workflow for kysely */
 @Entity('partners')
 export class PartnerEntity {
   @PrimaryColumn('uuid')

@@ -13,6 +13,7 @@ type OnIntersectCallback = (entryOrElement: IntersectionObserverEntry | HTMLElem
 type OnSeparateCallback = (element: HTMLElement) => unknown;
 type IntersectionObserverActionProperties = {
   key?: string;
+  disabled?: boolean;
   /** Function to execute when the element leaves the viewport */
   onSeparate?: OnSeparateCallback;
   /** Function to execute when the element enters the viewport */
@@ -83,8 +84,15 @@ const observe = (key: HTMLElement | string, target: HTMLElement, properties: Int
 };
 
 function configure(key: HTMLElement | string, element: HTMLElement, properties: IntersectionObserverActionProperties) {
-  elementToConfig.set(key, properties);
-  observe(key, element, properties);
+  if (properties.disabled) {
+    const config = elementToConfig.get(key);
+    const { observer } = config || {};
+    observer?.unobserve(element);
+    elementToConfig.delete(key);
+  } else {
+    elementToConfig.set(key, properties);
+    observe(key, element, properties);
+  }
 }
 
 function _intersectionObserver(

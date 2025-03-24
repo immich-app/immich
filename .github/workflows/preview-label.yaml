@@ -11,10 +11,10 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: mshick/add-pr-comment@v2
+      - uses: mshick/add-pr-comment@b8f338c590a895d50bcbfa6c5859251edc8952fc # v2
         with:
-          message-id: "preview-status"
-          message: "Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.cloud/"
+          message-id: 'preview-status'
+          message: 'Deploying preview environment to https://pr-${{ github.event.pull_request.number }}.preview.internal.immich.cloud/'
 
   remove-label:
     runs-on: ubuntu-latest
@@ -22,7 +22,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
           script: |
             github.rest.issues.removeLabel({

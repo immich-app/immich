@@ -1,15 +1,25 @@
+import { Kysely } from 'kysely';
+import { DateTime } from 'luxon';
+import { DB } from 'src/db';
+import { JobName, JobStatus } from 'src/enum';
 import { UserService } from 'src/services/user.service';
 import { TestContext, TestFactory } from 'test/factory';
-import { getKyselyDB, newTestService } from 'test/utils';
+import { getKyselyDB, newTestService, ServiceMocks } from 'test/utils';
+
+const setup = async (db: Kysely<DB>) => {
+  const context = await TestContext.from(db).withUser({ isAdmin: true }).create();
+  const { sut, mocks } = newTestService(UserService, context);
+
+  return { sut, mocks, context };
+};
 
 describe.concurrent(UserService.name, () => {
   let sut: UserService;
   let context: TestContext;
+  let mocks: ServiceMocks;
 
   beforeAll(async () => {
-    const db = await getKyselyDB();
-    context = await TestContext.from(db).withUser({ isAdmin: true }).create();
-    ({ sut } = newTestService(UserService, context));
+    ({ sut, context, mocks } = await setup(await getKyselyDB()));
   });
 
   describe('create', () => {
@@ -111,6 +121,52 @@ describe.concurrent(UserService.name, () => {
 
       const getResponse = await sut.getLicense(authDto);
       expect(getResponse).toEqual(after);
+    });
+  });
+
+  describe('handleUserDeleteCheck', () => {
+    it('should work when there are no deleted users', async () => {
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should work when there is a user to delete', async () => {
+      const { sut, context, mocks } = await setup(await getKyselyDB());
+      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 25 }).toJSDate() });
+
+      await context.createUser(user);
+
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
+    });
+
+    it('should skip a recently deleted user', async () => {
+      const { sut, context, mocks } = await setup(await getKyselyDB());
+      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 5 }).toJSDate() });
+
+      await context.createUser(user);
+
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+    });
+
+    it('should respect a custom user delete delay', async () => {
+      const db = await getKyselyDB();
+      const { sut, context, mocks } = await setup(db);
+      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 25 }).toJSDate() });
+      await context.createUser(user);
+
+      const config = await sut.getConfig({ withCache: false });
+      config.user.deleteDelay = 30;
+
+      await sut.updateConfig(config);
+
+      await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
     });
   });
 });

@@ -1,5 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
 import 'package:immich_mobile/interfaces/activity_api.interface.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -60,7 +60,7 @@ class ActivityApiRepository extends ApiRepository
         type: dto.type == ReactionType.comment
             ? ActivityType.comment
             : ActivityType.like,
-        user: User.fromSimpleUserDto(dto.user),
+        user: UserConverter.fromSimpleUserDto(dto.user),
         assetId: dto.assetId,
         comment: dto.comment,
       );
