@@ -948,14 +948,13 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([faceStub.noPerson1.id]),
-        newPersonId: faceStub.withBirthDate.person.id,
+        newPersonId: faceStub.withBirthDate.person?.id,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([faceStub.face1.id]),
-        newPersonId: faceStub.withBirthDate.person.id,
+        newPersonId: faceStub.withBirthDate.person?.id,
       });
     });
-
 
     it('should create a new person if the face is a core point with no person', async () => {
       const faces = [

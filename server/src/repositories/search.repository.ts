@@ -359,7 +359,9 @@ export class SearchRepository {
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.deletedAt', 'is', null)
           .$if(!!hasPerson, (qb) => qb.where('asset_faces.personId', 'is not', null))
-          .$if(!!minBirthDate, (qb) => qb.where((eb) => eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)])))
+          .$if(!!minBirthDate, (qb) =>
+            qb.where((eb) => eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)])),
+          )
           .orderBy(sql`face_search.embedding <=> ${embedding}`)
           .limit(numResults),
       )
