@@ -25,7 +25,12 @@
   import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { isFaceEditMode } from '$lib/stores/face-edit.svelte';
   import { preferences, user } from '$lib/stores/user.store';
-  import type { OnLink, OnUnlink } from '$lib/utils/actions';
+  import {
+    updateStackedAssetInTimeline,
+    updateUnstackedAssetInTimeline,
+    type OnLink,
+    type OnUnlink,
+  } from '$lib/utils/actions';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { AssetTypeEnum } from '@immich/sdk';
   import { mdiDotsVertical, mdiPlus } from '@mdi/js';
@@ -100,8 +105,8 @@
       {#if assetInteraction.selectedAssets.length > 1 || isAssetStackSelected}
         <StackAction
           unstack={isAssetStackSelected}
-          onStack={(assetIds) => assetStore.removeAssets(assetIds)}
-          onUnstack={(assets) => assetStore.addAssets(assets)}
+          onStack={(result) => updateStackedAssetInTimeline(assetStore, result)}
+          onUnstack={(assets) => updateUnstackedAssetInTimeline(assetStore, assets)}
         />
       {/if}
       {#if isLinkActionAvailable}
