@@ -140,7 +140,8 @@ class ControlBottomAppBar extends HookConsumerWidget {
         ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(
-            iconData: unarchive ? Icons.unarchive : Icons.archive,
+            iconData:
+                unarchive ? Icons.unarchive_outlined : Icons.archive_outlined,
             label: (unarchive
                     ? "control_bottom_app_bar_unarchive"
                     : "control_bottom_app_bar_archive")
@@ -198,7 +199,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 85),
             child: ControlBoxButton(
-              iconData: Icons.no_cell_rounded,
+              iconData: Icons.no_cell_outlined,
               label: "control_bottom_app_bar_delete_from_local".tr(),
               onPressed: enabled
                   ? () {
