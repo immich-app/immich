@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.dart'
     as entity;
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_mobile/utils/diff.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 import 'package:openapi/api.dart';
@@ -487,6 +488,9 @@ class Asset {
   }
 
   static int compareById(Asset a, Asset b) => a.id.compareTo(b.id);
+
+  static int compareByLocalId(Asset a, Asset b) =>
+      compareToNullable(a.localId, b.localId);
 
   static int compareByChecksum(Asset a, Asset b) =>
       a.checksum.compareTo(b.checksum);

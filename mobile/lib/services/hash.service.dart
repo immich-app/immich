@@ -1,27 +1,27 @@
+// ignore_for_file: avoid-unsafe-collection-methods
+
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
+import 'package:immich_mobile/domain/models/device_asset.model.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
-import 'package:immich_mobile/interfaces/album_media.interface.dart';
-import 'package:immich_mobile/interfaces/asset.interface.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
-import 'package:immich_mobile/repositories/asset.repository.dart';
-import 'package:immich_mobile/services/background.service.dart';
-import 'package:immich_mobile/entities/android_device_asset.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/device_asset.entity.dart';
-import 'package:immich_mobile/entities/ios_device_asset.entity.dart';
-import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/interfaces/album_media.interface.dart';
+import 'package:immich_mobile/providers/infrastructure/device_asset.provider.dart';
+import 'package:immich_mobile/repositories/album_media.repository.dart';
+import 'package:immich_mobile/services/background.service.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
   HashService(
-    this._assetRepository,
+    this._deviceAssetRepository,
     this._backgroundService,
     this._albumMediaRepository,
   );
-  final IAssetRepository _assetRepository;
+  final IDeviceAssetRepository _deviceAssetRepository;
   final BackgroundService _backgroundService;
   final IAlbumMediaRepository _albumMediaRepository;
   final _log = Logger('HashService');
@@ -50,122 +50,168 @@ class HashService {
 
   /// Processes a list of local [Asset]s, storing their hash and returning only those
   /// that were successfully hashed. Hashes are looked up in a DB table
-  /// [AndroidDeviceAsset] / [IOSDeviceAsset] by local id. Only missing
-  /// entries are newly hashed and added to the DB table.
+  /// [DeviceAsset] by local id. Only missing entries are newly hashed and added to the DB table.
   Future<List<Asset>> _hashAssets(List<Asset> assets) async {
-    const int batchFileCount = 128;
-    const int batchDataSize = 1024 * 1024 * 1024; // 1GB
+    assets.sort(Asset.compareByLocalId);
+    final hashesInDB = await _deviceAssetRepository
+        .getForIds(assets.map((a) => a.localId!).toList());
+    if (hashesInDB.length < assets.length) {
+      _log.fine(
+        "Missing hashes for ${assets.length - hashesInDB.length} assets",
+      );
+      final len = assets.length - hashesInDB.length;
+      hashesInDB.addAll(
+        List.filled(
+          len,
+          DeviceAsset(
+            assetId: "--",
+            hash: Uint8List.fromList([]),
+            modifiedTime: DateTime.now(),
+          ),
+        ),
+      );
+    }
+    hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));
 
-    final ids = assets
-        .map(Platform.isAndroid ? (a) => a.localId!.toInt() : (a) => a.localId!)
-        .toList();
-    final List<DeviceAsset?> hashes =
-        await _assetRepository.getDeviceAssetsById(ids);
-    final List<DeviceAsset> toAdd = [];
-    final List<String> toHash = [];
+    int bytesProcessed = 0;
+    final hashedAssets = <Asset>[];
+    final toBeHashed = <_AssetPath>[];
+    final toBeDeleted = <String>[];
 
-    int bytes = 0;
-
-    for (int i = 0; i < assets.length; i++) {
-      if (hashes[i] != null) {
+    for (final (index, asset) in assets.indexed) {
+      if (hashesInDB.elementAtOrNull(index) != null &&
+          hashesInDB[index].assetId == assets[index].localId &&
+          hashesInDB[index].hash.isNotEmpty &&
+          hashesInDB[index]
+              .modifiedTime
+              .isAtSameMomentAs(assets[index].fileModifiedAt)) {
+        // localID is matching and the asset is not modified, reuse the hash
+        asset.byteHash = hashesInDB[index].hash;
+        hashedAssets.add(asset);
         continue;
       }
 
       File? file;
-
       try {
-        file = await assets[i].local!.originFile;
+        file = await assets[index].local!.originFile;
       } catch (error, stackTrace) {
         _log.warning(
-          "Error getting file to hash for asset ${assets[i].localId}, name: ${assets[i].fileName}, created on: ${assets[i].fileCreatedAt}, skipping",
+          "Error getting file to hash for asset ${assets[index].localId ?? '<N/A>'}, name: ${assets[index].fileName}, created on: ${assets[index].fileCreatedAt}, skipping",
           error,
           stackTrace,
         );
       }
 
       if (file == null) {
-        final fileName = assets[i].fileName;
-
+        final fileName = assets[index].fileName;
         _log.warning(
-          "Failed to get file for asset ${assets[i].localId}, name: $fileName, created on: ${assets[i].fileCreatedAt}, skipping",
+          "Failed to get file for asset ${assets[index].localId ?? '<N/A>'}, name: $fileName, created on: ${assets[index].fileCreatedAt}, skipping",
         );
+        // We do not have a matching meta in DeviceAsset and we cannot get the file. Skip this asset.
+        toBeDeleted.add(assets[index].localId!);
         continue;
       }
-      bytes += await file.length();
-      toHash.add(file.path);
-      final deviceAsset = Platform.isAndroid
-          ? AndroidDeviceAsset(id: ids[i] as int, hash: const [])
-          : IOSDeviceAsset(id: ids[i] as String, hash: const []);
-      toAdd.add(deviceAsset);
-      hashes[i] = deviceAsset;
-      if (toHash.length == batchFileCount || bytes >= batchDataSize) {
-        await _processBatch(toHash, toAdd);
-        toAdd.clear();
-        toHash.clear();
-        bytes = 0;
+
+      bytesProcessed += await file.length();
+      toBeHashed.add(_AssetPath(asset: asset, path: file.path));
+
+      if (toBeHashed.length == kHashAssetsFileLimit ||
+          bytesProcessed >= kHashAssetsSizeLimit) {
+        hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
+        toBeHashed.clear();
+        toBeDeleted.clear();
+        bytesProcessed = 0;
       }
     }
-    if (toHash.isNotEmpty) {
-      await _processBatch(toHash, toAdd);
+
+    if (toBeHashed.isNotEmpty) {
+      hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
+      toBeHashed.clear();
+      toBeDeleted.clear();
     }
-    return _getHashedAssets(assets, hashes);
+
+    if (toBeDeleted.isNotEmpty) {
+      await _deviceAssetRepository.deleteIds(toBeDeleted);
+    }
+
+    return hashedAssets;
   }
 
-  /// Processes a batch of files and saves any successfully hashed
-  /// values to the DB table.
-  Future<void> _processBatch(
-    final List<String> toHash,
-    final List<DeviceAsset> toAdd,
+  /// Processes a batch of files and returns a list of successfully hashed assets after saving
+  /// them in [DeviceAssetToHash] for future retrieval
+  Future<List<Asset>> _processBatch(
+    List<_AssetPath> toBeHashed,
+    List<String> toBeDeleted,
   ) async {
-    final hashes = await _hashFiles(toHash);
-    bool anyNull = false;
-    for (int j = 0; j < hashes.length; j++) {
-      if (hashes[j]?.length == 20) {
-        toAdd[j].hash = hashes[j]!;
+    final hashes = await _hashFiles(toBeHashed.map((e) => e.path).toList());
+    assert(
+      hashes.length == toBeHashed.length,
+      "Number of Hashes returned from platform should be the same as the input",
+    );
+
+    final hashedAssets = <Asset>[];
+    final toBeAdded = <DeviceAsset>[];
+
+    for (final (index, hash) in hashes.indexed) {
+      final asset = toBeHashed.elementAtOrNull(index)?.asset;
+      if (asset != null && hash?.length == 20) {
+        asset.byteHash = hash!;
+        hashedAssets.add(asset);
+        toBeAdded.add(
+          DeviceAsset(
+            assetId: asset.localId!,
+            hash: hash,
+            modifiedTime: asset.fileModifiedAt,
+          ),
+        );
       } else {
-        _log.warning("Failed to hash file ${toHash[j]}, skipping");
-        anyNull = true;
+        _log.warning("Failed to hash file ${asset?.localId ?? '<null>'}");
+        if (asset != null) {
+          toBeDeleted.add(asset.localId!);
+        }
       }
     }
-    final validHashes = anyNull
-        ? toAdd.where((e) => e.hash.length == 20).toList(growable: false)
-        : toAdd;
 
-    await _assetRepository
-        .transaction(() => _assetRepository.upsertDeviceAssets(validHashes));
-    _log.fine("Hashed ${validHashes.length}/${toHash.length} assets");
+    // Update the DB for future retrieval
+    await _deviceAssetRepository.transaction(() async {
+      await _deviceAssetRepository.updateAll(toBeAdded);
+      await _deviceAssetRepository.deleteIds(toBeDeleted);
+    });
+
+    _log.fine("Hashed ${hashedAssets.length}/${toBeHashed.length} assets");
+    return hashedAssets;
   }
 
-  /// Hashes the given files and returns a list of the same length
-  /// files that could not be hashed have a `null` value
+  /// Hashes the given files and returns a list of the same length.
+  /// Files that could not be hashed will have a `null` value
   Future<List<Uint8List?>> _hashFiles(List<String> paths) async {
-    final List<Uint8List?>? hashes =
-        await _backgroundService.digestFiles(paths);
-    if (hashes == null) {
-      throw Exception("Hashing ${paths.length} files failed");
-    }
-    return hashes;
-  }
-
-  /// Returns all successfully hashed [Asset]s with their hash value set
-  List<Asset> _getHashedAssets(
-    List<Asset> assets,
-    List<DeviceAsset?> hashes,
-  ) {
-    final List<Asset> result = [];
-    for (int i = 0; i < assets.length; i++) {
-      if (hashes[i] != null && hashes[i]!.hash.isNotEmpty) {
-        assets[i].byteHash = hashes[i]!.hash;
-        result.add(assets[i]);
+    try {
+      final hashes = await _backgroundService.digestFiles(paths);
+      if (hashes != null) {
+        return hashes;
       }
+      _log.severe("Hashing ${paths.length} files failed");
+    } catch (e, s) {
+      _log.severe("Error occured while hashing assets", e, s);
     }
-    return result;
+    return List.filled(paths.length, null);
+  }
+}
+
+class _AssetPath {
+  final Asset asset;
+  final String path;
+
+  const _AssetPath({required this.asset, required this.path});
+
+  _AssetPath copyWith({Asset? asset, String? path}) {
+    return _AssetPath(asset: asset ?? this.asset, path: path ?? this.path);
   }
 }
 
 final hashServiceProvider = Provider(
   (ref) => HashService(
-    ref.watch(assetRepositoryProvider),
+    ref.watch(deviceAssetRepositoryProvider),
     ref.watch(backgroundServiceProvider),
     ref.watch(albumMediaRepositoryProvider),
   ),
