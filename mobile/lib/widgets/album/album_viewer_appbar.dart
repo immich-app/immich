@@ -189,13 +189,13 @@ class AlbumViewerAppbar extends HookConsumerWidget
           ).tr(),
         ),
         ListTile(
-          leading: const Icon(Icons.share_rounded),
+          leading: const Icon(Icons.link_rounded),
           onTap: () {
             context.pushRoute(SharedLinkEditRoute(albumId: album.remoteId));
             context.pop();
           },
           title: const Text(
-            "control_bottom_app_bar_share",
+            "control_bottom_app_bar_share_link",
             style: TextStyle(fontWeight: FontWeight.w500),
           ).tr(),
         ),
