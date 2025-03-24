@@ -55,22 +55,6 @@ class HashService {
     assets.sort(Asset.compareByLocalId);
     final hashesInDB = await _deviceAssetRepository
         .getForIds(assets.map((a) => a.localId!).toList());
-    if (hashesInDB.length < assets.length) {
-      _log.fine(
-        "Missing hashes for ${assets.length - hashesInDB.length} assets",
-      );
-      final len = assets.length - hashesInDB.length;
-      hashesInDB.addAll(
-        List.filled(
-          len,
-          DeviceAsset(
-            assetId: "--",
-            hash: Uint8List.fromList([]),
-            modifiedTime: DateTime.now(),
-          ),
-        ),
-      );
-    }
     hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));
 
     int bytesProcessed = 0;
