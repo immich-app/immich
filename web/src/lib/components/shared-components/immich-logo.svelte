@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { Theme } from '$lib/constants';
-  import { colorTheme } from '$lib/stores/preferences.store';
-  import { immichLogo, immichLogoInlineDark, immichLogoInlineLight, immichLogoJson } from '@immich/ui';
+  import { immichLogoJson } from '@immich/ui';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
   import type { HTMLImgAttributes } from 'svelte/elements';
@@ -9,11 +7,10 @@
   interface Props extends HTMLImgAttributes {
     noText?: boolean;
     draggable?: boolean;
-
     class?: string | undefined;
   }
 
-  let { noText = false, draggable = false, width, class: cssClass }: Props = $props();
+  let { noText = false, draggable = false, class: cssClass }: Props = $props();
   const viewBox = $derived(`0 0 ${noText ? '260' : '792'} 266.25`);
   const today = DateTime.now().toLocal();
 </script>
