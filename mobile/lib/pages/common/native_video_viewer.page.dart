@@ -373,7 +373,6 @@ class NativeVideoViewerPage extends HookConsumerWidget {
     );
 
     useOnAppLifecycleStateChange((_, state) async {
-      print('AppLifecycleState: $state');
       if (state == AppLifecycleState.resumed && shouldPlayOnForeground.value) {
         controller.value?.play();
       } else if (state == AppLifecycleState.paused) {
