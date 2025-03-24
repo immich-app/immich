@@ -40,7 +40,7 @@
     'aria-haspopup'?: boolean;
     tabindex?: number | undefined | null;
     role?: string | undefined | null;
-    onclick: (e: MouseEvent) => void;
+    onclick?: (e: MouseEvent) => void;
     disabled?: boolean;
   }
 

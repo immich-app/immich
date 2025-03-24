@@ -1,7 +1,7 @@
 import { QueryParameter } from '$lib/constants';
-import type { MetadataSearchDto } from '@immich/sdk';
+import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
 
-export function getMetadataSearchQuery(metadata: MetadataSearchDto) {
+export function getMetadataSearchQuery(metadata: SmartSearchDto | MetadataSearchDto) {
   const searchParams = new URLSearchParams({
     [QueryParameter.QUERY]: JSON.stringify(metadata),
   });

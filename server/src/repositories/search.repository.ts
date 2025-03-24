@@ -173,6 +173,10 @@ export interface AssetDuplicateSearch {
   userIds: string[];
 }
 
+export interface AssetSimilaritySearch extends Omit<SmartSearchOptions, 'embedding'> {
+  searchAssetId: string;
+}
+
 export interface FaceSearchResult {
   distance: number;
   id: string;
@@ -259,6 +263,35 @@ export class SearchRepository {
       .limit(size);
     const { rows } = await sql`${lessThan} union all ${greaterThan} limit ${size}`.execute(this.db);
     return rows as any as AssetEntity[];
+  }
+
+  @GenerateSql({
+    params: [
+      { page: 1, size: 200 },
+      {
+        takenAfter: DummyValue.DATE,
+        assetId: DummyValue.UUID,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  async searchSimilar(pagination: SearchPaginationOptions, options: AssetSimilaritySearch): Paginated<AssetEntity> {
+    const { searchAssetId, ...otherOptions } = options;
+
+    const { embedding } = await this.db
+      .selectFrom('smart_search')
+      .where('assetId', '=', options.searchAssetId)
+      .select('embedding')
+      .executeTakeFirstOrThrow(() => new Error('Asset was not found or has no smart search data.'));
+
+    // piggybacks the searchSmart() method
+    return this.searchSmart(pagination, {
+      ...otherOptions,
+      embedding,
+    });
   }
 
   @GenerateSql({

@@ -8,6 +8,7 @@
   import DownloadAction from '$lib/components/asset-viewer/actions/download-action.svelte';
   import FavoriteAction from '$lib/components/asset-viewer/actions/favorite-action.svelte';
   import RestoreAction from '$lib/components/asset-viewer/actions/restore-action.svelte';
+  import SearchSimilarAction from '$lib/components/asset-viewer/actions/search-similar-action.svelte';
   import SetAlbumCoverAction from '$lib/components/asset-viewer/actions/set-album-cover-action.svelte';
   import SetFeaturedPhotoAction from '$lib/components/asset-viewer/actions/set-person-featured-action.svelte';
   import SetProfilePictureAction from '$lib/components/asset-viewer/actions/set-profile-picture-action.svelte';
@@ -19,7 +20,7 @@
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/button-context-menu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
   import { AppRoute } from '$lib/constants';
-  import { user } from '$lib/stores/user.store';
+  import { preferences, user } from '$lib/stores/user.store';
   import { photoZoomState } from '$lib/stores/zoom-image.store';
   import { getAssetJobName, getSharedLink } from '$lib/utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
@@ -89,6 +90,8 @@
   const sharedLink = getSharedLink();
   let isOwner = $derived($user && asset.ownerId === $user?.id);
   let showDownloadButton = $derived(sharedLink ? sharedLink.allowDownload : !asset.isOffline);
+  let isSharingEnabled = $derived(!sharedLink && $preferences.sharedLinks.enabled);
+  let isShared = $derived(sharedLink && sharedLink.id);
   // $: showEditorButton =
   //   isOwner &&
   //   asset.type === AssetTypeEnum.Image &&
@@ -107,7 +110,7 @@
     <CloseAction {onClose} />
   </div>
   <div class="flex gap-2 overflow-x-auto text-white" data-testid="asset-viewer-navbar-actions">
-    {#if !asset.isTrashed && $user}
+    {#if !asset.isTrashed && isSharingEnabled}
       <ShareAction {asset} />
     {/if}
     {#if asset.isOffline}
@@ -115,6 +118,9 @@
     {/if}
     {#if asset.livePhotoVideoId}
       {@render motionPhoto?.()}
+    {/if}
+    {#if !isShared}
+      <SearchSimilarAction {asset} />
     {/if}
     {#if asset.type === AssetTypeEnum.Image}
       <CircleIconButton
@@ -164,7 +170,9 @@
           <RestoreAction {asset} {onAction} />
         {:else}
           <AddToAlbumAction {asset} {onAction} />
-          <AddToAlbumAction {asset} {onAction} shared />
+          {#if isSharingEnabled}
+            <AddToAlbumAction {asset} {onAction} shared />
+          {/if}
         {/if}
 
         {#if isOwner}
