@@ -18,7 +18,6 @@ import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/utils/hooks/interval_hook.dart';
-import 'package:immich_mobile/utils/lifecycle_handler.dart';
 import 'package:immich_mobile/widgets/asset_viewer/custom_video_player_controls.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -373,29 +372,20 @@ class NativeVideoViewerPage extends HookConsumerWidget {
       const [],
     );
 
-    useEffect(
-      () {
-        final observer = LifecycleEventHandler(
-          onResume: () async {
-            if (shouldPlayOnForeground.value) {
-              controller.value?.play();
-            }
-          },
-          onPause: () async {
-            final videoPlaying = await controller.value?.isPlaying();
-            if (videoPlaying ?? true) {
-              shouldPlayOnForeground.value = true;
-              controller.value?.pause();
-            } else {
-              shouldPlayOnForeground.value = false;
-            }
-          },
-        );
-        WidgetsBinding.instance.addObserver(observer);
-        return () => WidgetsBinding.instance.removeObserver(observer);
-      },
-      [],
-    );
+    useOnAppLifecycleStateChange((_, state) async {
+      print('AppLifecycleState: $state');
+      if (state == AppLifecycleState.resumed && shouldPlayOnForeground.value) {
+        controller.value?.play();
+      } else if (state == AppLifecycleState.paused) {
+        final videoPlaying = await controller.value?.isPlaying();
+        if (videoPlaying ?? true) {
+          shouldPlayOnForeground.value = true;
+          controller.value?.pause();
+        } else {
+          shouldPlayOnForeground.value = false;
+        }
+      }
+    });
 
     return Stack(
       children: [
