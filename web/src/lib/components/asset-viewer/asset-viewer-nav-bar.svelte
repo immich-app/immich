@@ -181,7 +181,7 @@
           {#if asset.type === AssetTypeEnum.Image}
             <SetProfilePictureAction {asset} />
           {/if}
-          <ArchiveAction {asset} {onAction} />
+          <ArchiveAction {asset} {onAction} {preAction} />
           <MenuOption
             icon={mdiUpload}
             onClick={() => openFileUploadDialog({ multiple: false, assetId: asset.id })}
@@ -190,7 +190,7 @@
           {#if !asset.isArchived && !asset.isTrashed}
             <MenuOption
               icon={mdiImageSearch}
-              onClick={() => goto(`${AppRoute.PHOTOS}?at=${asset.id}`)}
+              onClick={() => goto(`${AppRoute.PHOTOS}?at=${stack?.primaryAssetId ?? asset.id}`)}
               text={$t('view_in_timeline')}
             />
           {/if}

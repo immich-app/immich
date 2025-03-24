@@ -38,12 +38,12 @@ services:
     image: immich-machine-learning:latest
     # extends:
     #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
       args:
-        - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+        - DEVICE=cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
     ports:
       - 3003:3003
     volumes:
@@ -77,22 +77,12 @@ services:
       - 5432:5432
     healthcheck:
       test: >-
-        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1;
-        Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align
-        --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')";
-        echo "checksum failure count is $$Chksum";
-        [ "$$Chksum" = '0' ] || exit 1
+        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1; Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
       interval: 5m
       start_interval: 30s
       start_period: 5m
     command: >-
-      postgres
-      -c shared_preload_libraries=vectors.so
-      -c 'search_path="$$user", public, vectors'
-      -c logging_collector=on
-      -c max_wal_size=2GB
-      -c shared_buffers=512MB
-      -c wal_compression=on
+      postgres -c shared_preload_libraries=vectors.so -c 'search_path="$$user", public, vectors' -c logging_collector=on -c max_wal_size=2GB -c shared_buffers=512MB -c wal_compression=on
     restart: always
 
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
@@ -100,7 +90,7 @@ services:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:6927e0919a144aa7616fd0137d4816816d42f6b816de3af269ab065250859a62
+    image: prom/prometheus@sha256:502ad90314c7485892ce696cb14a99fceab9fc27af29f4b427f41bd39701a199
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -109,7 +99,7 @@ services:
   # add data source for http://immich-prometheus:9090 to get started
   immich-grafana:
     container_name: immich_grafana
-    command: ['./run.sh', '-disable-reporting']
+    command: [ './run.sh', '-disable-reporting' ]
     ports:
       - 3000:3000
     image: grafana/grafana:11.5.2-ubuntu@sha256:8b5858c447e06fd7a89006b562ba7bba7c4d5813600c7982374c41852adefaeb

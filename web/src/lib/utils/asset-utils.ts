@@ -4,14 +4,14 @@ import type { InterpolationValues } from '$lib/components/i18n/format-message';
 import { NotificationType, notificationController } from '$lib/components/shared-components/notification/notification';
 import { AppRoute } from '$lib/constants';
 import type { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-import { isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
+import { assetsSnapshot, isSelectingAllAssets, type AssetStore } from '$lib/stores/assets-store.svelte';
 import { downloadManager } from '$lib/stores/download';
 import { preferences } from '$lib/stores/user.store';
 import { downloadRequest, getKey, withError } from '$lib/utils';
 import { createAlbum } from '$lib/utils/album-utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
+import { navigate } from '$lib/utils/navigation';
 import {
   addAssetsToAlbum as addAssets,
   createStack,
@@ -367,7 +367,7 @@ export const getAssetType = (type: AssetTypeEnum) => {
   }
 };
 
-export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserResponseDto | null): string[] => {
+export const getSelectedAssets = (assets: AssetResponseDto[], user: UserResponseDto | null): string[] => {
   const ids = [...assets].filter((a) => user && a.ownerId === user.id).map((a) => a.id);
 
   const numberOfIssues = [...assets].filter((a) => user && a.ownerId !== user.id).length;
@@ -381,9 +381,14 @@ export const getSelectedAssets = (assets: Set<AssetResponseDto>, user: UserRespo
   return ids;
 };
 
-export const stackAssets = async (assets: AssetResponseDto[], showNotification = true) => {
+export type StackResponse = {
+  stack?: StackResponseDto;
+  toDeleteIds: string[];
+};
+
+export const stackAssets = async (assets: AssetResponseDto[], showNotification = true): Promise<StackResponse> => {
   if (assets.length < 2) {
-    return false;
+    return { stack: undefined, toDeleteIds: [] };
   }
 
   const $t = get(t);
@@ -396,7 +401,7 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
         type: NotificationType.Info,
         button: {
           text: $t('view_stack'),
-          onClick: () => assetViewingStore.setAssetId(stack.primaryAssetId),
+          onClick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
         },
       });
     }
@@ -405,10 +410,13 @@ export const stackAssets = async (assets: AssetResponseDto[], showNotification =
       asset.stack = index === 0 ? { id: stack.id, assetCount: stack.assets.length, primaryAssetId: asset.id } : null;
     }
 
-    return assets.slice(1).map((asset) => asset.id);
+    return {
+      stack,
+      toDeleteIds: assets.slice(1).map((asset) => asset.id),
+    };
   } catch (error) {
     handleError(error, $t('errors.failed_to_stack_assets'));
-    return false;
+    return { stack: undefined, toDeleteIds: [] };
   }
 };
 
@@ -474,15 +482,10 @@ export const selectAllAssets = async (assetStore: AssetStore, assetInteraction: 
       await assetStore.loadBucket(bucket.bucketDate);
 
       if (!get(isSelectingAllAssets)) {
+        assetInteraction.clearMultiselect();
         break; // Cancelled
       }
-      assetInteraction.selectAssets(bucket.assets);
-
-      // We use setTimeout to allow the UI to update. Otherwise, this may
-      // cause a long delay between the start of 'select all' and the
-      // effective update of the UI, depending on the number of assets
-      // to select
-      await delay(0);
+      assetInteraction.selectAssets(assetsSnapshot(bucket.getAssets()));
     }
   } catch (error) {
     const $t = get(t);

@@ -9,6 +9,7 @@ import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/asset.service.dart';
+import 'package:immich_mobile/utils/hash.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:logging/logging.dart';
 
@@ -81,7 +82,7 @@ class DescriptionInput extends HookConsumerWidget {
     }
 
     return TextField(
-      enabled: owner?.isarId == asset.ownerId,
+      enabled: fastHash(owner?.id ?? '') == asset.ownerId,
       focusNode: focusNode,
       onTap: () => isFocus.value = true,
       onChanged: (value) {

@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/memory.provider.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:immich_mobile/services/asset.service.dart';
 import 'package:immich_mobile/services/etag.service.dart';
 import 'package:immich_mobile/services/exif.service.dart';
 import 'package:immich_mobile/services/sync.service.dart';
-import 'package:immich_mobile/services/user.service.dart';
 import 'package:logging/logging.dart';
 
 final assetProvider = StateNotifierProvider<AssetNotifier, bool>((ref) {
@@ -31,7 +32,7 @@ class AssetNotifier extends StateNotifier<bool> {
   final SyncService _syncService;
   final ETagService _etagService;
   final ExifService _exifService;
-  final StateNotifierProviderRef _ref;
+  final Ref _ref;
   final log = Logger('AssetNotifier');
   bool _getAllAssetInProgress = false;
   bool _deleteInProgress = false;
@@ -59,7 +60,7 @@ class AssetNotifier extends StateNotifier<bool> {
         await clearAllAssets();
         log.info("Manual refresh requested, cleared assets and albums from db");
       }
-      final users = await _userService.getUsersFromServer();
+      final users = await _syncService.getUsersFromServer();
       bool changedUsers = false;
       if (users != null) {
         changedUsers = await _syncService.syncUsersFromServer(users);
@@ -86,7 +87,7 @@ class AssetNotifier extends StateNotifier<bool> {
       _assetService.clearTable(),
       _exifService.clearTable(),
       _albumService.clearTable(),
-      _userService.clearTable(),
+      _userService.deleteAll(),
       _etagService.clearTable(),
     ]);
   }

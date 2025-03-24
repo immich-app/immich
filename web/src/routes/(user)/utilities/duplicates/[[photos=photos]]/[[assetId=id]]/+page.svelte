@@ -23,15 +23,12 @@
 
   interface Props {
     data: PageData;
-    isShowKeyboardShortcut?: boolean;
-    isShowDuplicateInfo?: boolean;
   }
 
-  let {
-    data = $bindable(),
-    isShowKeyboardShortcut = $bindable(false),
-    isShowDuplicateInfo = $bindable(false),
-  }: Props = $props();
+  let { data = $bindable() }: Props = $props();
+
+  let isShowKeyboardShortcut = $state(false);
+  let isShowDuplicateInfo = $state(false);
 
   interface Shortcuts {
     general: ExplainedShortcut[];
@@ -186,7 +183,6 @@
         shape="round"
         variant="ghost"
         color="secondary"
-        size="large"
         icon={mdiKeyboard}
         title={$t('show_keyboard_shortcuts')}
         onclick={() => (isShowKeyboardShortcut = !isShowKeyboardShortcut)}

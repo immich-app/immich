@@ -9,7 +9,7 @@ abstract final class ExifDtoConverter {
       orientation: dto.orientation,
       timeZone: dto.timeZone,
       dateTimeOriginal: dto.dateTimeOriginal,
-      isFlipped: _isOrientationFlipped(dto.orientation),
+      isFlipped: isOrientationFlipped(dto.orientation),
       latitude: dto.latitude?.toDouble(),
       longitude: dto.longitude?.toDouble(),
       city: dto.city,
@@ -25,7 +25,7 @@ abstract final class ExifDtoConverter {
     );
   }
 
-  static bool _isOrientationFlipped(String? orientation) {
+  static bool isOrientationFlipped(String? orientation) {
     final value = orientation == null ? null : int.tryParse(orientation);
     if (value == null) {
       return false;

@@ -36,6 +36,7 @@ describe('SessionService', () => {
           updateId: 'uuid-v7',
         },
       ]);
+      mocks.session.delete.mockResolvedValue();
 
       await expect(sut.handleCleanup()).resolves.toEqual(JobStatus.SUCCESS);
       expect(mocks.session.delete).toHaveBeenCalledWith('123');
@@ -71,6 +72,7 @@ describe('SessionService', () => {
   describe('logoutDevices', () => {
     it('should logout all devices', async () => {
       mocks.session.getByUserId.mockResolvedValue([sessionStub.inactive, sessionStub.valid] as any[]);
+      mocks.session.delete.mockResolvedValue();
 
       await sut.deleteAll(authStub.user1);
 
@@ -83,6 +85,7 @@ describe('SessionService', () => {
   describe('logoutDevice', () => {
     it('should logout the device', async () => {
       mocks.access.authDevice.checkOwnerAccess.mockResolvedValue(new Set(['token-1']));
+      mocks.session.delete.mockResolvedValue();
 
       await sut.delete(authStub.user1, 'token-1');
 

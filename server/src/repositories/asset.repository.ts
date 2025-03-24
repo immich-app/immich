@@ -23,6 +23,7 @@ import {
 } from 'src/entities/asset.entity';
 import { AssetFileType, AssetOrder, AssetStatus, AssetType } from 'src/enum';
 import { AssetSearchOptions, SearchExploreItem, SearchExploreItemSet } from 'src/repositories/search.repository';
+import { StorageAsset } from 'src/types';
 import { anyUuid, asUuid, removeUndefinedKeys, unnest } from 'src/utils/database';
 import { globToSqlPattern } from 'src/utils/misc';
 import { Paginated, PaginationOptions, paginationHelper } from 'src/utils/pagination';
@@ -290,7 +291,6 @@ export class AssetRepository {
       .select((eb) => eb.fn.jsonAgg(eb.table('res')).as('assets'))
       .groupBy(sql`("localDateTime" at time zone 'UTC')::date`)
       .orderBy(sql`("localDateTime" at time zone 'UTC')::date`, 'desc')
-      .limit(10)
       .execute();
   }
 
@@ -550,7 +550,7 @@ export class AssetRepository {
     return this.getById(asset.id, { exifInfo: true, faces: { person: true } }) as Promise<AssetEntity>;
   }
 
-  async remove(asset: AssetEntity): Promise<void> {
+  async remove(asset: { id: string }): Promise<void> {
     await this.db.deleteFrom('assets').where('id', '=', asUuid(asset.id)).execute();
   }
 
@@ -602,6 +602,46 @@ export class AssetRepository {
       .where('exif.livePhotoCID', '=', livePhotoCID)
       .limit(1)
       .executeTakeFirst() as Promise<AssetEntity | undefined>;
+  }
+
+  private storageTemplateAssetQuery() {
+    return this.db
+      .selectFrom('assets')
+      .innerJoin('exif', 'assets.id', 'exif.assetId')
+      .select([
+        'assets.id',
+        'assets.ownerId',
+        'assets.type',
+        'assets.checksum',
+        'assets.originalPath',
+        'assets.isExternal',
+        'assets.sidecarPath',
+        'assets.originalFileName',
+        'assets.livePhotoVideoId',
+        'assets.fileCreatedAt',
+        'exif.timeZone',
+        'exif.fileSizeInByte',
+      ])
+      .where('assets.deletedAt', 'is', null)
+      .where('assets.fileCreatedAt', 'is not', null);
+  }
+
+  getStorageTemplateAsset(id: string): Promise<StorageAsset | undefined> {
+    return this.storageTemplateAssetQuery().where('assets.id', '=', id).executeTakeFirst() as Promise<
+      StorageAsset | undefined
+    >;
+  }
+
+  streamStorageTemplateAssets() {
+    return this.storageTemplateAssetQuery().stream() as AsyncIterableIterator<StorageAsset>;
+  }
+
+  streamDeletedAssets(trashedBefore: Date) {
+    return this.db
+      .selectFrom('assets')
+      .select(['id', 'isOffline'])
+      .where('assets.deletedAt', '<=', trashedBefore)
+      .stream();
   }
 
   @GenerateSql(
@@ -927,8 +967,8 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', asUuid(ownerId))
-      .where('isVisible', '=', true)
-      .where('updatedAt', '<=', updatedUntil)
+      .where('assets.isVisible', '=', true)
+      .where('assets.updatedAt', '<=', updatedUntil)
       .$if(!!lastId, (qb) => qb.where('assets.id', '>', lastId!))
       .orderBy('assets.id')
       .limit(limit)
@@ -955,8 +995,8 @@ export class AssetRepository {
       )
       .select((eb) => eb.fn.toJson(eb.table('stacked_assets')).as('stack'))
       .where('assets.ownerId', '=', anyUuid(options.userIds))
-      .where('isVisible', '=', true)
-      .where('updatedAt', '>', options.updatedAfter)
+      .where('assets.isVisible', '=', true)
+      .where('assets.updatedAt', '>', options.updatedAfter)
       .limit(options.limit)
       .execute() as any as Promise<AssetEntity[]>;
   }

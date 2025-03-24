@@ -1,7 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { clickOutside } from '$lib/actions/click-outside';
-  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import SkipLink from '$lib/components/elements/buttons/skip-link.svelte';
   import HelpAndFeedbackModal from '$lib/components/shared-components/help-and-feedback-modal.svelte';
   import ImmichLogo from '$lib/components/shared-components/immich-logo.svelte';
@@ -68,14 +67,40 @@
 
       <section class="flex place-items-center justify-end gap-1 md:gap-2 w-full sm:w-auto">
         {#if $featureFlags.search}
-          <CircleIconButton
+          <IconButton
+            color="secondary"
+            shape="round"
+            variant="ghost"
+            size="large"
+            icon={mdiMagnify}
             href={AppRoute.SEARCH}
             id="search-button"
             class="sm:hidden"
             title={$t('go_to_search')}
-            icon={mdiMagnify}
-            padding="2"
-            onclick={() => {}}
+            aria-label={$t('go_to_search')}
+          />
+        {/if}
+
+        {#if !page.url.pathname.includes('/admin') && showUploadButton}
+          <Button
+            leadingIcon={mdiTrayArrowUp}
+            onclick={onUploadClick}
+            class="hidden lg:flex"
+            variant="ghost"
+            size="medium"
+            color="secondary"
+            >{$t('upload')}
+          </Button>
+          <IconButton
+            color="secondary"
+            shape="round"
+            variant="ghost"
+            size="large"
+            onclick={onUploadClick}
+            title={$t('upload')}
+            aria-label={$t('upload')}
+            icon={mdiTrayArrowUp}
+            class="lg:hidden"
           />
         {/if}
 
@@ -90,31 +115,13 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            size="giant"
+            size="large"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
             aria-label={$t('support_and_feedback')}
           />
         </div>
-
-        {#if !page.url.pathname.includes('/admin') && showUploadButton}
-          <Button
-            leadingIcon={mdiTrayArrowUp}
-            onclick={onUploadClick}
-            class="hidden lg:flex"
-            variant="ghost"
-            color="secondary"
-            >{$t('upload')}
-          </Button>
-          <CircleIconButton
-            onclick={onUploadClick}
-            title={$t('upload')}
-            icon={mdiTrayArrowUp}
-            class="lg:hidden"
-            padding="2"
-          />
-        {/if}
 
         <div
           use:clickOutside={{

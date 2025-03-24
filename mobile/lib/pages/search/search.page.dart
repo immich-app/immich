@@ -517,8 +517,6 @@ class SearchPage extends HookConsumerWidget {
           return Icons.abc_rounded;
         case TextSearchType.description:
           return Icons.text_snippet_outlined;
-        default:
-          return Icons.search_rounded;
       }
     }
 
@@ -634,9 +632,9 @@ class SearchPage extends HookConsumerWidget {
             borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
               colors: [
-                context.colorScheme.primary.withOpacity(0.075),
-                context.colorScheme.primary.withOpacity(0.09),
-                context.colorScheme.primary.withOpacity(0.075),
+                context.colorScheme.primary.withValues(alpha: 0.075),
+                context.colorScheme.primary.withValues(alpha: 0.09),
+                context.colorScheme.primary.withValues(alpha: 0.075),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -703,25 +701,25 @@ class SearchPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   SearchFilterChip(
-                    icon: Icons.people_alt_rounded,
+                    icon: Icons.people_alt_outlined,
                     onTap: showPeoplePicker,
                     label: 'search_filter_people'.tr(),
                     currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.location_pin,
+                    icon: Icons.location_on_outlined,
                     onTap: showLocationPicker,
                     label: 'search_filter_location'.tr(),
                     currentFilter: locationCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.camera_alt_rounded,
+                    icon: Icons.camera_alt_outlined,
                     onTap: showCameraPicker,
                     label: 'search_filter_camera'.tr(),
                     currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.date_range_rounded,
+                    icon: Icons.date_range_outlined,
                     onTap: showDatePicker,
                     label: 'search_filter_date'.tr(),
                     currentFilter: dateRangeCurrentFilterWidget.value,

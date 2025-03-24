@@ -16,9 +16,9 @@ jobs:
       should_run: ${{ steps.found_paths.outputs.mobile == 'true' || steps.should_force.outputs.should_force == 'true' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - id: found_paths
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3
         with:
           filters: |
             mobile:
@@ -38,10 +38,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -49,6 +49,26 @@ jobs:
       - name: Install dependencies
         run: dart pub get
         working-directory: ./mobile
+
+      - name: Run Build Runner
+        run: make build
+        working-directory: ./mobile
+
+      - name: Find file changes
+        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20
+        id: verify-changed-files
+        with:
+          files: |
+            mobile/**/*.g.dart
+            mobile/**/*.gr.dart
+            mobile/**/*.drift.dart
+
+      - name: Verify files have not changed
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "ERROR: Generated files not up to date! Run make_build inside the mobile directory"
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
 
       - name: Run dart analyze
         run: dart analyze --fatal-infos
@@ -61,8 +81,3 @@ jobs:
       - name: Run dart custom_lint
         run: dart run custom_lint
         working-directory: ./mobile
-
-      # Enable after riverpod generator migration is completed
-      # - name: Run dart custom lint
-      #   run: dart run custom_lint
-      #   working-directory: ./mobile

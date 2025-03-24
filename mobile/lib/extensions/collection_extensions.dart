@@ -1,8 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/utils/hash.dart';
 
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({
@@ -58,15 +59,15 @@ extension AssetListExtension on Iterable<Asset> {
   /// Returns the assets that are owned by the user passed to the [owner] param
   /// If [owner] is null, an empty list is returned
   Iterable<Asset> ownedOnly(
-    User? owner, {
+    UserDto? owner, {
     void Function()? errorCallback,
   }) {
     if (owner == null) return [];
-    final userId = owner.isarId;
-    final bool onlyOwned = every((e) => e.ownerId == userId);
+    final isarUserId = fastHash(owner.id);
+    final bool onlyOwned = every((e) => e.ownerId == isarUserId);
     if (!onlyOwned) {
       if (errorCallback != null) errorCallback();
-      return where((a) => a.ownerId == userId);
+      return where((a) => a.ownerId == isarUserId);
     }
     return this;
   }

@@ -6,93 +6,78 @@ version: 1.129.0+187
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: 3.24.5
+  flutter: 3.29.2
 
-isar_version: &isar_version 3.1.8 # define the version to be used
+isar_version: &isar_version 3.1.8
 
 dependencies:
   flutter:
     sdk: flutter
 
-  path_provider_ios:
-  photo_manager: ^3.6.1
-  photo_manager_image_provider: ^2.2.0
-  flutter_hooks: ^0.20.4
-  hooks_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
-  cached_network_image: ^3.3.1
-  flutter_cache_manager: ^3.3.1
-  intl: ^0.19.0
+  async: ^2.11.0
   auto_route: ^9.2.0
-  fluttertoast: ^8.2.4
-  socket_io_client: ^2.0.3+1
-  maplibre_gl: 0.19.0+2
-  geolocator: ^11.0.0 # used to move to current location in map view
-  flutter_udid: ^3.0.0
-  flutter_svg: ^2.0.9
-  package_info_plus: ^8.0.1
-  url_launcher: ^6.2.4
-  http: ^1.1.0
-  cancellation_token_http: ^2.0.0
-  easy_localization: ^3.0.7+1
-  share_plus: ^10.0.0
-  flutter_displaymode: ^0.6.0
-  scrollable_positioned_list: ^0.3.8
-  path: ^1.8.3
-  path_provider: ^2.1.2
+  background_downloader: ^8.5.5
+  cached_network_image: ^3.4.1
+  cancellation_token_http: ^2.1.0
   collection: ^1.18.0
-  http_parser: ^4.0.2
-  flutter_web_auth: 0.6.0
-  easy_image_viewer: ^1.4.0
+  connectivity_plus: ^6.1.3
+  crop_image: ^1.0.16
+  device_info_plus: ^11.3.3
+  dynamic_color: ^1.7.0
+  easy_image_viewer: ^1.5.1
+  easy_localization: ^3.0.7+1
+  file_picker: ^8.0.0+1
+  flutter_cache_manager: ^3.4.1
+  flutter_displaymode: ^0.6.0
+  flutter_hooks: ^0.21.2
+  flutter_local_notifications: ^17.2.1+2
+  flutter_svg: ^2.0.17
+  flutter_udid: ^3.0.0
+  flutter_web_auth_2: ^5.0.0-alpha.0
+  fluttertoast: ^8.2.12
+  geolocator: ^11.0.0
+  hooks_riverpod: ^2.6.1
+  http: ^1.3.0
+  image_picker: ^1.1.2
+  intl: ^0.19.0
+  logging: ^1.3.0
+  maplibre_gl: ^0.21.0
+  network_info_plus: ^6.1.3
+  octo_image: ^2.1.0
+  package_info_plus: ^8.3.0
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  path_provider_foundation: ^2.4.1
+  permission_handler: ^11.4.0
+  photo_manager: ^3.6.4
+  photo_manager_image_provider: ^2.2.0
+  riverpod_annotation: ^2.6.1
+  scrollable_positioned_list: ^0.3.8
+  share_handler: ^0.0.22
+  share_plus: ^10.1.4
+  socket_io_client: ^2.0.3+1
+  thumbhash: 0.1.0+1
+  timezone: ^0.9.4
+  url_launcher: ^6.3.1
+  wakelock_plus: ^1.2.10
+
+  native_video_player:
+    git:
+      url: https://github.com/immich-app/native_video_player
+      ref: '5459d54'
+  openapi:
+    path: openapi
   isar:
     version: *isar_version
     hosted: https://pub.isar-community.dev/
   isar_flutter_libs: # contains Isar Core
     version: *isar_version
     hosted: https://pub.isar-community.dev/
-  permission_handler: ^11.2.0
-  device_info_plus: ^11.0.0
-  connectivity_plus: ^6.0.0
-  wakelock_plus: ^1.1.4
-  flutter_local_notifications: ^17.2.1+2
-  timezone: ^0.9.2
-  octo_image: ^2.0.0
-  thumbhash: 0.1.0+1
-  async: ^2.11.0
-  dynamic_color: ^1.7.0 #package to apply system theme
-  background_downloader: ^8.5.5
-  network_info_plus: ^6.1.1
-  native_video_player:
-    git:
-      url: https://github.com/immich-app/native_video_player
-      ref: '5459d54'
 
-  #image editing packages
-  crop_image: ^1.0.13
-
-  openapi:
-    path: openapi
-
-  # easy to remove packages:
-  image_picker: ^1.0.7 # only used to select user profile image from system gallery -> we can simply select an image from within immich?
-  logging: ^1.2.0
-  file_picker: ^8.0.0+1
-  share_handler: ^0.0.22
-
-# This is uncommented in F-Droid build script
-# Taken from https://github.com/Myzel394/locus/blob/445013d22ec1d759027d4303bd65b30c5c8588c8/pubspec.yaml#L105
 dependency_overrides:
-  # TODO: remove once Isar is updated
   analyzer: ^6.0.0
-  # TODO: remove once analyzer override is removed
   meta: ^1.11.0
-  # TODO: remove once analyzer override is removed
   analyzer_plugin: ^0.11.3
-#f  geolocator_android:
-#f    git:
-#f      url: https://github.com/Zverik/flutter-geolocator.git
-#f      ref: floss
-#f      path: geolocator_android
 
 dev_dependencies:
   flutter_test:
@@ -100,17 +85,17 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   build_runner: ^2.4.8
   auto_route_generator: ^9.0.0
-  flutter_launcher_icons: ^0.14.0
-  flutter_native_splash: ^2.3.9
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.5
   isar_generator:
     version: *isar_version
     hosted: https://pub.isar-community.dev/
   integration_test:
     sdk: flutter
   custom_lint: ^0.6.4
-  riverpod_lint: ^2.3.7
-  riverpod_generator: ^2.3.9
-  mocktail: ^1.0.3
+  riverpod_lint: ^2.6.1
+  riverpod_generator: ^2.6.1
+  mocktail: ^1.0.4
   immich_mobile_immich_lint:
     path: './immich_lint'
   fake_async: ^1.3.1
@@ -145,8 +130,8 @@ flutter_launcher_icons:
   adaptive_icon_background: '#ffffff'
   adaptive_icon_foreground: 'assets/immich-logo-android-adaptive-icon.png'
   image_path_ios: 'assets/immich-logo-w-bg.png'
-  android: 'ic_launcher' # can specify file name here e.g. "ic_launcher"
-  ios: false # can specify file name here e.g. "My-Launcher-Icon
+  android: 'ic_launcher'
+  ios: false
   remove_alpha_ios: true
 
 analyzer:

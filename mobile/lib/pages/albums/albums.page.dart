@@ -106,9 +106,9 @@ class AlbumsPage extends HookConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 gradient: LinearGradient(
                   colors: [
-                    context.colorScheme.primary.withOpacity(0.075),
-                    context.colorScheme.primary.withOpacity(0.09),
-                    context.colorScheme.primary.withOpacity(0.075),
+                    context.colorScheme.primary.withValues(alpha: 0.075),
+                    context.colorScheme.primary.withValues(alpha: 0.09),
+                    context.colorScheme.primary.withValues(alpha: 0.075),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,

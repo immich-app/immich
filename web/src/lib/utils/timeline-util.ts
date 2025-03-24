@@ -1,21 +1,24 @@
 import type { AssetBucket } from '$lib/stores/assets-store.svelte';
 import { locale } from '$lib/stores/preferences.store';
-import { emptyGeometry, type CommonJustifiedLayout } from '$lib/utils/layout-utils';
+import { type CommonJustifiedLayout } from '$lib/utils/layout-utils';
 
 import type { AssetResponseDto } from '@immich/sdk';
-import { groupBy, memoize, sortBy } from 'lodash-es';
-import { DateTime } from 'luxon';
+import { memoize } from 'lodash-es';
+import { DateTime, type LocaleOptions } from 'luxon';
 import { get } from 'svelte/store';
 
 export type DateGroup = {
+  bucket: AssetBucket;
+  index: number;
+  row: number;
+  col: number;
   date: DateTime;
   groupTitle: string;
   assets: AssetResponseDto[];
+  assetsIntersecting: boolean[];
   height: number;
-  heightActual: boolean;
   intersecting: boolean;
   geometry: CommonJustifiedLayout;
-  bucket: AssetBucket;
 };
 export type ScrubberListener = (
   bucketDate: string | undefined,
@@ -39,6 +42,24 @@ export const fromLocalDateTime = (localDateTime: string) =>
 
 export const fromDateTimeOriginal = (dateTimeOriginal: string, timeZone: string) =>
   DateTime.fromISO(dateTimeOriginal, { zone: timeZone });
+
+export type LayoutBox = {
+  aspectRatio: number;
+  top: number;
+  width: number;
+  height: number;
+  left: number;
+  forcedAspectRatio?: boolean;
+};
+
+export function findTotalOffset(element: HTMLElement, stop: HTMLElement) {
+  let offset = 0;
+  while (element.offsetParent && element !== stop) {
+    offset += element.offsetTop;
+    element = element.offsetParent as HTMLElement;
+  }
+  return offset;
+}
 
 export const groupDateFormat: Intl.DateTimeFormatOptions = {
   weekday: 'short',
@@ -78,55 +99,9 @@ export function formatGroupTitle(_date: DateTime): string {
     });
   }
 
-  return date.toLocaleString(groupDateFormat);
+  return getDateLocaleString(date);
 }
+export const getDateLocaleString = (date: DateTime, opts?: LocaleOptions): string =>
+  date.toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY, opts);
 
-const formatDateGroupTitle = memoize(formatGroupTitle);
-
-export function splitBucketIntoDateGroups(bucket: AssetBucket, locale: string | undefined): DateGroup[] {
-  const grouped = groupBy(bucket.assets, (asset) =>
-    fromLocalDateTime(asset.localDateTime).toLocaleString(groupDateFormat, { locale }),
-  );
-  const sorted = sortBy(grouped, (group) => bucket.assets.indexOf(group[0]));
-  return sorted.map((group) => {
-    const date = fromLocalDateTime(group[0].localDateTime).startOf('day');
-    return {
-      date,
-      groupTitle: formatDateGroupTitle(date),
-      assets: group,
-      height: 0,
-      heightActual: false,
-      intersecting: false,
-      geometry: emptyGeometry,
-      bucket,
-    };
-  });
-}
-
-export type LayoutBox = {
-  aspectRatio: number;
-  top: number;
-  width: number;
-  height: number;
-  left: number;
-  forcedAspectRatio?: boolean;
-};
-
-export function calculateWidth(boxes: LayoutBox[]): number {
-  let width = 0;
-  for (const box of boxes) {
-    if (box.top < 100) {
-      width = box.left + box.width;
-    }
-  }
-  return width;
-}
-
-export function findTotalOffset(element: HTMLElement, stop: HTMLElement) {
-  let offset = 0;
-  while (element.offsetParent && element !== stop) {
-    offset += element.offsetTop;
-    element = element.offsetParent as HTMLElement;
-  }
-  return offset;
-}
+export const formatDateGroupTitle = memoize(formatGroupTitle);

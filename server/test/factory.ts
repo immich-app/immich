@@ -1,5 +1,5 @@
 import { Insertable, Kysely } from 'kysely';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
 import { Assets, DB, Partners, Sessions, Users } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -29,13 +29,15 @@ import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { StackRepository } from 'src/repositories/stack.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SyncRepository } from 'src/repositories/sync.repository';
+import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
-import { newLoggingRepositoryMock } from 'test/repositories/logger.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
+import { newUuid } from 'test/small.factory';
+import { automock } from 'test/utils';
 
 class CustomWritable extends Writable {
   private data = '';
@@ -54,12 +56,10 @@ class CustomWritable extends Writable {
   }
 }
 
-type Asset = Insertable<Assets>;
+type Asset = Partial<Insertable<Assets>>;
 type User = Partial<Insertable<Users>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
-
-export const newUuid = () => randomUUID() as string;
 
 export class TestFactory {
   private assets: Asset[] = [];
@@ -161,10 +161,6 @@ export class TestFactory {
   }
 
   async create() {
-    for (const asset of this.assets) {
-      await this.context.createAsset(asset);
-    }
-
     for (const user of this.users) {
       await this.context.createUser(user);
     }
@@ -175,6 +171,10 @@ export class TestFactory {
 
     for (const session of this.sessions) {
       await this.context.createSession(session);
+    }
+
+    for (const asset of this.assets) {
+      await this.context.createAsset(asset);
     }
 
     return this.context;
@@ -206,6 +206,7 @@ export class TestContext {
   sharedLink: SharedLinkRepository;
   stack: StackRepository;
   storage: StorageRepository;
+  systemMetadata: SystemMetadataRepository;
   sync: SyncRepository;
   telemetry: TelemetryRepository;
   trash: TrashRepository;
@@ -213,8 +214,8 @@ export class TestContext {
   versionHistory: VersionHistoryRepository;
   view: ViewRepository;
 
-  private constructor(private db: Kysely<DB>) {
-    const logger = newLoggingRepositoryMock() as unknown as LoggingRepository;
+  private constructor(public db: Kysely<DB>) {
+    const logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
     const config = new ConfigRepository();
 
     this.access = new AccessRepository(this.db);
@@ -242,6 +243,7 @@ export class TestContext {
     this.stack = new StackRepository(this.db);
     this.storage = new StorageRepository(logger);
     this.sync = new SyncRepository(this.db);
+    this.systemMetadata = new SystemMetadataRepository(this.db);
     this.telemetry = newTelemetryRepositoryMock() as unknown as TelemetryRepository;
     this.trash = new TrashRepository(this.db);
     this.user = new UserRepository(this.db);

@@ -18,11 +18,9 @@
 
   const handleStack = async () => {
     const selectedAssets = [...getOwnedAssets()];
-    const ids = await stackAssets(selectedAssets);
-    if (ids) {
-      onStack?.(ids);
-      clearSelect();
-    }
+    const result = await stackAssets(selectedAssets);
+    onStack?.(result);
+    clearSelect();
   };
 
   const handleUnstack = async () => {
