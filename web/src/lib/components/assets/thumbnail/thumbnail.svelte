@@ -166,7 +166,7 @@
     use:press={() => ({ timeframe: 350, triggerBeforeFinished: true })}
     use:tap={() => ({ timeframe: 350 })}
     onpress={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : onSelect?.($state.snapshot(asset)))}
-    ontap={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : callClickHandlers)}
+    ontap={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : callClickHandlers())}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
