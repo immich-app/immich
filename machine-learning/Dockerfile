@@ -114,6 +114,8 @@ COPY --from=builder-armnn \
 
 FROM prod-cpu AS prod-rknn
 
+ADD --checksum=sha256:73993ed4b440460825f21611731564503cc1d5a0c123746477da6cd574f34885 https://github.com/airockchip/rknn-toolkit2/raw/refs/tags/v2.3.0/rknpu2/runtime/Linux/librknn_api/aarch64/librknnrt.so /usr/lib/
+
 FROM prod-${DEVICE} AS prod
 
 ARG DEVICE

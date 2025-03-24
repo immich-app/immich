@@ -1120,7 +1120,6 @@ export class AssetStore {
         }
         if (changedGeometry) {
           changedBuckets.add(bucket);
-          break;
         }
       }
     }
