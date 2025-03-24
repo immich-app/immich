@@ -1,8 +1,12 @@
 <script lang="ts">
+  import Icon from '$lib/components/elements/icon.svelte';
   import type { AssetStore, LiteBucket } from '$lib/stores/assets-store.svelte';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
   import { fromLocalDateTime, type ScrubberListener } from '$lib/utils/timeline-util';
+  import { mdiPlay } from '@mdi/js';
   import { clamp } from 'lodash-es';
   import { DateTime } from 'luxon';
+  import { onMount } from 'svelte';
   import { fade, fly } from 'svelte/transition';
 
   interface Props {
@@ -209,6 +213,62 @@
 
     void onScrub?.(bucketDate, scrollPercent, bucketPercentY);
   };
+  const getTouch = (event: TouchEvent) => {
+    if (event.touches.length === 1) {
+      return event.touches[0];
+    }
+    return null;
+  };
+  const onTouchStart = (event: TouchEvent) => {
+    const touch = getTouch(event);
+    if (!touch) {
+      isHover = false;
+      return;
+    }
+    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+    const isHoverScrollbar = elements.some(({ id }) => {
+      return id === 'immich-scrubbable-scrollbar' || id === 'time-label';
+    });
+
+    isHover = isHoverScrollbar;
+
+    if (isHoverScrollbar) {
+      handleMouseEvent({
+        clientY: touch.clientY,
+        isDragging: true,
+      });
+    }
+  };
+  const onTouchEnd = () => {
+    if (isHover) {
+      isHover = false;
+    }
+    handleMouseEvent({
+      clientY,
+      isDragging: false,
+    });
+  };
+  const onTouchMove = (event: TouchEvent) => {
+    const touch = getTouch(event);
+    if (touch && isDragging) {
+      handleMouseEvent({
+        clientY: touch.clientY,
+      });
+      event.preventDefault();
+    } else {
+      isHover = false;
+    }
+  };
+  onMount(() => {
+    const opts = {
+      passive: false,
+    };
+    globalThis.addEventListener('touchmove', onTouchMove, opts);
+    return () => {
+      globalThis.removeEventListener('touchmove', onTouchMove);
+    };
+  });
+  const usingMobileDevice = $derived(mobileDevice.hoverNone);
 </script>
 
 <svelte:window
@@ -216,6 +276,9 @@
   onmousemove={({ clientY }) => (isDragging || isHover) && handleMouseEvent({ clientY })}
   onmousedown={({ clientY }) => isHover && handleMouseEvent({ clientY, isDragging: true })}
   onmouseup={({ clientY }) => handleMouseEvent({ clientY, isDragging: false })}
+  ontouchstart={onTouchStart}
+  ontouchend={onTouchEnd}
+  ontouchcancel={onTouchEnd}
 />
 
 <div
@@ -237,8 +300,9 @@
   onmouseenter={() => (isHover = true)}
   onmouseleave={() => (isHover = false)}
   onkeydown={(event) => onScrubKeyDown?.(event, event.currentTarget)}
+  draggable="false"
 >
-  {#if hoverLabel && (isHover || isDragging)}
+  {#if !usingMobileDevice && hoverLabel && (isHover || isDragging)}
     <div
       id="time-label"
       class={[
@@ -251,8 +315,34 @@
       {hoverLabel}
     </div>
   {/if}
+  {#if usingMobileDevice && ((assetStore.scrolling && scrollHoverLabel) || isHover || isDragging)}
+    <div
+      id="time-label"
+      class="rounded-l-full w-[32px] pl-2 text-white bg-immich-primary dark:bg-gray-600 hover:cursor-pointer select-none"
+      style:top="{scrollY + HOVER_DATE_HEIGHT - 25}px"
+      style:height="50px"
+      style:right="0"
+      style:position="absolute"
+      in:fade={{ duration: 200 }}
+      out:fade={{ duration: 200 }}
+    >
+      <Icon path={mdiPlay} size="20" class="-rotate-90 relative top-[9px] -right-[2px]" />
+      <Icon path={mdiPlay} size="20" class="rotate-90 relative top-[1px] -right-[2px]" />
+      {#if (assetStore.scrolling && scrollHoverLabel) || isHover || isDragging}
+        <p
+          transition:fade={{ duration: 200 }}
+          style:bottom={50 / 2 - 30 / 2 + 'px'}
+          style:right="36px"
+          style:width="fit-content"
+          class="truncate pointer-events-none absolute text-sm rounded-full w-[32px] py-2 px-4 text-white bg-immich-primary/90 dark:bg-gray-500 hover:cursor-pointer select-none font-semibold"
+        >
+          {scrollHoverLabel}
+        </p>
+      {/if}
+    </div>
+  {/if}
   <!-- Scroll Position Indicator Line -->
-  {#if !isDragging}
+  {#if !usingMobileDevice && !isDragging}
     <div
       class="absolute right-0 h-[2px] w-10 bg-immich-primary dark:bg-immich-dark-primary"
       style:top="{scrollY + HOVER_DATE_HEIGHT}px"
@@ -280,21 +370,14 @@
       data-time-segment-bucket-date={segment.date}
       data-label={segment.dateFormatted}
       style:height={segment.height + 'px'}
-      aria-label={segment.dateFormatted + ' ' + segment.count}
     >
-      {#if segment.hasLabel}
-        <div
-          aria-label={segment.dateFormatted + ' ' + segment.count}
-          class="absolute right-[1.25rem] top-[-16px] z-10 text-[12px] dark:text-immich-dark-fg font-immich-mono"
-        >
+      {#if !usingMobileDevice && segment.hasLabel}
+        <div class="absolute right-[1.25rem] top-[-16px] z-10 text-[12px] dark:text-immich-dark-fg font-immich-mono">
           {segment.date.year}
         </div>
       {/if}
-      {#if segment.hasDot}
-        <div
-          aria-label={segment.dateFormatted + ' ' + segment.count}
-          class="absolute right-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"
-        ></div>
+      {#if !usingMobileDevice && segment.hasDot}
+        <div class="absolute right-[0.75rem] bottom-0 h-[4px] w-[4px] rounded-full bg-gray-300"></div>
       {/if}
     </div>
   {/each}
