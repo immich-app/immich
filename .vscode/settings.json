@@ -40,7 +40,5 @@
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
-  },
-  "debug.javascript.autoAttachFilter": "smart",
-  "eslint.workingDirectories": ["./server", "./web"]
+  }
 }

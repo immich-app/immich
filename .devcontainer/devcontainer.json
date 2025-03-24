@@ -1,0 +1,26 @@
+{
+  "name": "Immich",
+  "service": "immich-devcontainer",
+  "dockerComposeFile": [
+    "docker-compose.yml",
+    "../docker/docker-compose.dev.yml"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Dart-Code.dart-code",
+        "Dart-Code.flutter",
+        "dbaeumer.vscode-eslint",
+        "dcmdev.dcm-vscode-extension",
+        "esbenp.prettier-vscode",
+        "svelte.svelte-vscode"
+      ]
+    }
+  },
+  "forwardPorts": [],
+  "initializeCommand": "bash .devcontainer/scripts/initializeCommand.sh",
+  "onCreateCommand": "bash .devcontainer/scripts/onCreateCommand.sh",
+  "overrideCommand": true,
+  "workspaceFolder": "/immich",
+  "remoteUser": "node"
+}

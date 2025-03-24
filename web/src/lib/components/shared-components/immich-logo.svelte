@@ -6,7 +6,7 @@
 
   interface Props extends HTMLImgAttributes {
     noText?: boolean;
-    draggable?: boolean;
+    class?: string | undefined;
     class?: string | undefined;
   }
 
