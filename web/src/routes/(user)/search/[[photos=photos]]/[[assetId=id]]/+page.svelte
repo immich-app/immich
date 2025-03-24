@@ -42,7 +42,7 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
-  import { tick } from 'svelte';
+  import { onMount, tick, setContext } from 'svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import { preferences } from '$lib/stores/user.store';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
@@ -76,7 +76,8 @@
     terms;
     setTimeout(() => {
       handlePromiseError(onSearchQueryUpdate());
-    });
+    }
+    setContext('onSearchQueryUpdate', { onSearchQueryUpdate });
   });
 
   const onEscape = () => {
