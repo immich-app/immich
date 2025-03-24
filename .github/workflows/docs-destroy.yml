@@ -13,17 +13,17 @@ jobs:
 
       - name: Destroy Docs Subdomain
         env:
-          TF_VAR_prefix_name: "pr-${{ github.event.number }}"
-          TF_VAR_prefix_event_type: "pr"
+          TF_VAR_prefix_name: 'pr-${{ github.event.number }}'
+          TF_VAR_prefix_event_type: 'pr'
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           TF_STATE_POSTGRES_CONN_STR: ${{ secrets.TF_STATE_POSTGRES_CONN_STR }}
         uses: gruntwork-io/terragrunt-action@9559e51d05873b0ea467c42bbabcb5c067642ccc # v2
         with:
-          tg_version: "0.58.12"
-          tofu_version: "1.7.1"
-          tg_dir: "deployment/modules/cloudflare/docs"
-          tg_command: "destroy -refresh=false"
+          tg_version: '0.58.12'
+          tofu_version: '1.7.1'
+          tg_dir: 'deployment/modules/cloudflare/docs'
+          tg_command: 'destroy -refresh=false'
 
       - name: Comment
         uses: actions-cool/maintain-one-comment@4b2dbf086015f892dcb5e8c1106f5fccd6c1476b # v3
