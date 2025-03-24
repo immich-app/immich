@@ -27,7 +27,6 @@
   let { title, description } = $state(meta);
   let isOwned = $derived($user ? $user.id === sharedLink?.userId : false);
   let password = $state('');
-  let innerWidth: number = $state(0);
 
   const handlePasswordSubmit = async () => {
     try {
@@ -54,8 +53,6 @@
   };
 </script>
 
-<svelte:window bind:innerWidth />
-
 <svelte:head>
   <title>{title}</title>
   <meta name="description" content={description} />
@@ -64,7 +61,7 @@
   <header>
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink width={innerWidth} />
+        <ImmichLogoSmallLink />
       {/snippet}
 
       {#snippet trailing()}

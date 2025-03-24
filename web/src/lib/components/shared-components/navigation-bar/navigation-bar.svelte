@@ -43,8 +43,6 @@
   onMount(async () => {
     info = userInteraction.aboutInfo ?? (await getAboutInfo());
   });
-  const iconSize = $derived(mobileDevice.maxMd ? 'small' : 'large');
-  const avatarSize = $derived(mobileDevice.maxMd ? 'sm' : 'md');
 </script>
 
 <svelte:window bind:innerWidth />
@@ -62,7 +60,7 @@
     class="grid h-full grid-cols-[theme(spacing.18)_auto] items-center border-b bg-immich-bg py-2 dark:border-b-immich-dark-gray dark:bg-immich-dark-bg md:grid-cols-[theme(spacing.64)_auto]"
   >
     <a data-sveltekit-preload-data="hover" class="ml-4" href={AppRoute.PHOTOS}>
-      <ImmichLogo width="55%" noText={innerWidth < 768} />
+      <ImmichLogo class="max-md:h-[48px] h-[50px]" noText={mobileDevice.maxMd} />
     </a>
     <div class="flex justify-between gap-4 lg:gap-8 pr-6">
       <div class="hidden w-full max-w-5xl flex-1 tall:pl-0 sm:block">
@@ -77,7 +75,7 @@
             color="secondary"
             shape="round"
             variant="ghost"
-            size={iconSize}
+            size="medium"
             icon={mdiMagnify}
             href={AppRoute.SEARCH}
             id="search-button"
@@ -93,7 +91,7 @@
             onclick={onUploadClick}
             class="hidden lg:flex"
             variant="ghost"
-            size={iconSize}
+            size="medium"
             color="secondary"
             >{$t('upload')}
           </Button>
@@ -101,7 +99,7 @@
             color="secondary"
             shape="round"
             variant="ghost"
-            size={iconSize}
+            size="medium"
             onclick={onUploadClick}
             title={$t('upload')}
             aria-label={$t('upload')}
@@ -121,7 +119,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
-            size={iconSize}
+            size="medium"
             title={$t('support_and_feedback')}
             icon={mdiHelpCircleOutline}
             onclick={() => (shouldShowHelpPanel = !shouldShowHelpPanel)}
@@ -145,7 +143,7 @@
             onclick={() => (shouldShowAccountInfoPanel = !shouldShowAccountInfoPanel)}
           >
             {#key $user}
-              <UserAvatar user={$user} size={avatarSize} showTitle={false} interactive />
+              <UserAvatar user={$user} size="md" showTitle={false} interactive />
             {/key}
           </button>
 

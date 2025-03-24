@@ -70,7 +70,7 @@
   font-family: 'Overpass', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */
   --navbar-height: calc(theme(spacing.18) + 4px);
-  --navbar-height-md: calc(theme(spacing.18) + 4px - 10px);
+  --navbar-height-md: calc(theme(spacing.18) + 4px - 14px);
 }
 
 :root.dark {

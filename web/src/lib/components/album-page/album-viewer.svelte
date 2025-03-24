@@ -29,7 +29,6 @@
   let { sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-  let innerWidth: number = $state(0);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
@@ -56,7 +55,6 @@
       }
     },
   }}
-  bind:innerWidth
 />
 
 <header>
@@ -74,7 +72,7 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink width={innerWidth} />
+        <ImmichLogoSmallLink />
       {/snippet}
 
       {#snippet trailing()}
