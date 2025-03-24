@@ -8,13 +8,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/interfaces/person_api.interface.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_grid/multiselect_grid.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/search/search_filter/camera_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/display_option_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/filter_bottom_sheet_scaffold.dart';
@@ -640,51 +640,21 @@ class SearchPage extends HookConsumerWidget {
               end: Alignment.bottomRight,
             ),
           ),
-          child: TextField(
+          child: SearchField(
+            hintText: searchHintText.value,
             key: const Key('search_text_field'),
             controller: textSearchController,
-            decoration: InputDecoration(
-              contentPadding: prefilter != null
-                  ? const EdgeInsets.only(left: 24)
-                  : const EdgeInsets.all(8),
-              prefixIcon: prefilter != null
-                  ? null
-                  : Icon(
-                      getSearchPrefixIcon(),
-                      color: context.colorScheme.primary,
-                    ),
-              hintText: searchHintText.value,
-              hintStyle: context.textTheme.bodyLarge?.copyWith(
-                color: context.themeData.colorScheme.onSurfaceSecondary,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceDim,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceContainer,
-                ),
-              ),
-              disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.surfaceDim,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(25),
-                borderSide: BorderSide(
-                  color: context.colorScheme.primary.withAlpha(100),
-                ),
-              ),
-            ),
+            contentPadding: prefilter != null
+                ? const EdgeInsets.only(left: 24)
+                : const EdgeInsets.all(8),
+            prefixIcon: prefilter != null
+                ? null
+                : Icon(
+                    getSearchPrefixIcon(),
+                    color: context.colorScheme.primary,
+                  ),
             onSubmitted: handleTextSubmitted,
             focusNode: ref.watch(searchInputFocusProvider),
-            onTapOutside: (_) => ref.read(searchInputFocusProvider).unfocus(),
           ),
         ),
       ),
@@ -701,25 +671,25 @@ class SearchPage extends HookConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 children: [
                   SearchFilterChip(
-                    icon: Icons.people_alt_rounded,
+                    icon: Icons.people_alt_outlined,
                     onTap: showPeoplePicker,
                     label: 'search_filter_people'.tr(),
                     currentFilter: peopleCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.location_pin,
+                    icon: Icons.location_on_outlined,
                     onTap: showLocationPicker,
                     label: 'search_filter_location'.tr(),
                     currentFilter: locationCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.camera_alt_rounded,
+                    icon: Icons.camera_alt_outlined,
                     onTap: showCameraPicker,
                     label: 'search_filter_camera'.tr(),
                     currentFilter: cameraCurrentFilterWidget.value,
                   ),
                   SearchFilterChip(
-                    icon: Icons.date_range_rounded,
+                    icon: Icons.date_range_outlined,
                     onTap: showDatePicker,
                     label: 'search_filter_date'.tr(),
                     currentFilter: dateRangeCurrentFilterWidget.value,
