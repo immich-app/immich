@@ -15,6 +15,7 @@ class SearchField extends StatelessWidget {
     this.contentPadding = const EdgeInsets.only(left: 24),
     this.prefixIcon,
     this.suffixIcon,
+    this.filled = false,
   });
 
   final FocusNode? focusNode;
@@ -27,6 +28,7 @@ class SearchField extends StatelessWidget {
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool autofocus;
+  final bool filled;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class SearchField extends StatelessWidget {
       onSubmitted: onSubmitted,
       decoration: InputDecoration(
         contentPadding: contentPadding,
-        filled: true,
+        filled: filled,
         fillColor: context.primaryColor.withValues(alpha: 0.1),
         hintStyle: context.textTheme.bodyLarge?.copyWith(
           color: context.themeData.colorScheme.onSurfaceSecondary,
@@ -46,25 +48,25 @@ class SearchField extends StatelessWidget {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
           borderSide: BorderSide(
-            color: context.colorScheme.surfaceContainerHighest,
+            color: context.colorScheme.surfaceDim,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
           borderSide: BorderSide(
-            color: context.colorScheme.surfaceContainerHighest,
+            color: context.colorScheme.surfaceContainer,
           ),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
           borderSide: BorderSide(
-            color: context.colorScheme.surfaceContainerHighest,
+            color: context.colorScheme.surfaceDim,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(25),
           borderSide: BorderSide(
-            color: context.colorScheme.primary.withAlpha(150),
+            color: context.colorScheme.primary.withAlpha(100),
           ),
         ),
         prefixIcon: prefixIcon,
