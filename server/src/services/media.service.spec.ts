@@ -816,7 +816,9 @@ describe(MediaService.name, () => {
     });
 
     it('should respect encoding options when generating full-size preview', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({ image: { fullsize: { enabled: true, format: ImageFormat.WEBP, quality: 90 } } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        image: { fullsize: { enabled: true, format: ImageFormat.WEBP, quality: 90 } },
+      });
       mocks.media.extract.mockResolvedValue(true);
       mocks.media.getImageDimensions.mockResolvedValue({ width: 3840, height: 2160 });
       // HEIF/HIF image taken by cameras are not web-friendly, only has limited support on Safari.
