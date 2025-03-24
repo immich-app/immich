@@ -134,13 +134,13 @@
     }
   };
 
-  let useOriginalByDefault = $derived($alwaysLoadOriginalFile);
-
   // when true, will force loading of the original image
   let forceUseOriginal: boolean = $derived(asset.originalMimeType === 'image/gif' || $photoZoomState.currentZoom > 1);
 
   const targetImageSize = $derived(
-    useOriginalByDefault || forceUseOriginal || originalImageLoaded ? AssetMediaSize.Fullsize : AssetMediaSize.Preview,
+    $alwaysLoadOriginalFile || forceUseOriginal || originalImageLoaded
+      ? AssetMediaSize.Fullsize
+      : AssetMediaSize.Preview,
   );
 
   const onload = () => {
