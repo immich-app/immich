@@ -7,9 +7,9 @@ from typing import Any, ClassVar
 
 from huggingface_hub import snapshot_download
 
-import ann.ann
-import app.sessions.rknn as rknn
-from app.sessions.ort import OrtSession
+import immich_ml.sessions.ann.loader
+import immich_ml.sessions.rknn as rknn
+from immich_ml.sessions.ort import OrtSession
 
 from ..config import clean_name, log, settings
 from ..schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
@@ -171,7 +171,7 @@ class InferenceModel(ABC):
     def _model_format_default(self) -> ModelFormat:
         if rknn.is_available:
             return ModelFormat.RKNN
-        elif ann.ann.is_available and settings.ann:
+        elif immich_ml.sessions.ann.loader.is_available and settings.ann:
             return ModelFormat.ARMNN
         else:
             return ModelFormat.ONNX

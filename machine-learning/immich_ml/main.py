@@ -18,9 +18,9 @@ from PIL.Image import Image
 from pydantic import ValidationError
 from starlette.formparsers import MultiPartParser
 
-from app.models import get_model_deps
-from app.models.base import InferenceModel
-from app.models.transforms import decode_pil
+from immich_ml.models import get_model_deps
+from immich_ml.models.base import InferenceModel
+from immich_ml.models.transforms import decode_pil
 
 from .config import PreloadModelData, log, settings
 from .models.cache import ModelCache

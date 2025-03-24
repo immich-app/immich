@@ -1,5 +1,5 @@
-from app.config import clean_name
-from app.schemas import ModelSource
+from immich_ml.config import clean_name
+from immich_ml.schemas import ModelSource
 
 _OPENCLIP_MODELS = {
     "RN101__openai",
