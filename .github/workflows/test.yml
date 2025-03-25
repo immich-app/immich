@@ -365,7 +365,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2
+        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -384,8 +384,8 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - name: Install uv
-        uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5
-      - uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        uses: astral-sh/setup-uv@22695119d769bdb6f7032ad67b9bca0ef8c4a174 # v5
+      - uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
         # TODO: add caching when supported (https://github.com/actions/setup-python/pull/818)
         # with:
         #   python-version: 3.11
@@ -417,10 +417,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4
         with:
           node-version-file: './.github/.nvmrc'
 
@@ -466,7 +466,7 @@ jobs:
         run: make open-api
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
         with:
           files: |
@@ -528,7 +528,7 @@ jobs:
         run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
         with:
           files: |
@@ -547,7 +547,7 @@ jobs:
           DB_URL: postgres://postgres:postgres@localhost:5432/immich
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-sql-files
         with:
           files: |
