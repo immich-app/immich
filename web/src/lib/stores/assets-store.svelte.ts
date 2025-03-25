@@ -1183,10 +1183,25 @@ export class AssetStore {
       return;
     }
 
-    for (const group of bucket.dateGroups) {
-      const index = group.intersetingAssets.findIndex((ia) => ia.id === asset.id);
-      if (index > 0) {
-        return group.intersetingAssets[index - 1].asset;
+    // Find which date group contains this asset
+    for (let groupIndex = 0; groupIndex < bucket.dateGroups.length; groupIndex++) {
+      const group = bucket.dateGroups[groupIndex];
+      const assetIndex = group.intersetingAssets.findIndex((ia) => ia.id === asset.id);
+
+      if (assetIndex !== -1) {
+        // If not the first asset in this group, return the previous one
+        if (assetIndex > 0) {
+          return group.intersetingAssets[assetIndex - 1].asset;
+        }
+
+        // If there are previous date groups in this bucket, check the previous one
+        if (groupIndex > 0) {
+          const prevGroup = bucket.dateGroups[groupIndex - 1];
+          return prevGroup.intersetingAssets.at(-1)?.asset;
+        }
+
+        // Otherwise, we need to look in the previous bucket
+        break;
       }
     }
 
@@ -1211,15 +1226,29 @@ export class AssetStore {
       return;
     }
 
-    for (const group of bucket.dateGroups) {
-      const index = group.intersetingAssets.findIndex((ia) => ia.id === asset.id);
-      if (index !== -1 && index < group.intersetingAssets.length - 1) {
-        return group.intersetingAssets[index + 1].asset;
+    // Find which date group contains this asset
+    for (let groupIndex = 0; groupIndex < bucket.dateGroups.length; groupIndex++) {
+      const group = bucket.dateGroups[groupIndex];
+      const assetIndex = group.intersetingAssets.findIndex((ia) => ia.id === asset.id);
+
+      if (assetIndex !== -1) {
+        // If not the last asset in this group, return the next one
+        if (assetIndex < group.intersetingAssets.length - 1) {
+          return group.intersetingAssets[assetIndex + 1].asset;
+        }
+
+        // If there are more date groups in this bucket, check the next one
+        if (groupIndex < bucket.dateGroups.length - 1) {
+          return bucket.dateGroups[groupIndex + 1].intersetingAssets[0]?.asset;
+        }
+
+        // Otherwise, we need to look in the next bucket
+        break;
       }
     }
 
     let bucketIndex = this.buckets.indexOf(bucket) + 1;
-    while (bucketIndex < this.buckets.length - 1) {
+    while (bucketIndex < this.buckets.length) {
       bucket = this.buckets[bucketIndex];
       await this.loadBucket(bucket.bucketDate);
       const next = bucket.dateGroups[0]?.intersetingAssets[0]?.asset;
