@@ -124,6 +124,9 @@
     }}
     onseeking={() => (isScrubbing = true)}
     onseeked={() => (isScrubbing = false)}
+    onplaying={(e) => {
+      e.currentTarget.focus();
+    }}
     onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}
     bind:volume={$videoViewerVolume}
