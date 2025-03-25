@@ -154,8 +154,10 @@
     {zoom}
     attributionControl={false}
     diffStyleUpdates={true}
-    on:load={(event) => event.detail.setMaxZoom(18)}
-    on:load={(event) => event.detail.on('click', handleMapClick)}
+    onload={(event) => {
+      event.setMaxZoom(18);
+      event.on('click', handleMapClick);
+    }}
     bind:map
   >
     {#snippet children({ map }: { map: maplibregl.Map })}
@@ -171,8 +173,7 @@
       {#if showSettingsModal !== undefined}
         <Control>
           <ControlGroup>
-            <ControlButton on:click={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton
-            >
+            <ControlButton onclick={() => (showSettingsModal = true)}><Icon path={mdiCog} size="100%" /></ControlButton>
           </ControlGroup>
         </Control>
       {/if}
@@ -180,7 +181,7 @@
       {#if onOpenInMapView}
         <Control position="top-right">
           <ControlGroup>
-            <ControlButton on:click={() => onOpenInMapView()}>
+            <ControlButton onclick={() => onOpenInMapView()}>
               <Icon title={$t('open_in_map_view')} path={mdiMap} size="100%" />
             </ControlButton>
           </ControlGroup>
@@ -198,9 +199,9 @@
         <MarkerLayer
           applyToClusters
           asButton
-          on:click={(event) => handlePromiseError(handleClusterClick(event.detail.feature.properties?.cluster_id, map))}
+          onclick={(event) => handlePromiseError(handleClusterClick(event.feature.properties?.cluster_id, map))}
         >
-          {#snippet children({ feature }: { feature: maplibregl.Feature })}
+          {#snippet children({ feature })}
             <div
               class="rounded-full w-[40px] h-[40px] bg-immich-primary text-immich-gray flex justify-center items-center font-mono font-bold shadow-lg hover:bg-immich-dark-primary transition-all duration-200 hover:text-immich-dark-bg opacity-90"
             >
@@ -211,9 +212,9 @@
         <MarkerLayer
           applyToClusters={false}
           asButton
-          on:click={(event) => {
+          onclick={(event) => {
             if (!popup) {
-              handleAssetClick(event.detail.feature.properties?.id, map);
+              handleAssetClick(event.feature.properties?.id, map);
             }
           }}
         >
