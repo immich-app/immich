@@ -1,30 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["local>immich-app/.github:renovate-config"],
-  "schedule": "on tuesday",
   "packageRules": [
-    {
-      "matchFileNames": [
-        "cli/**",
-        "docs/**",
-        "e2e/**",
-        "open-api/**",
-        "server/**",
-        "web/**"
-      ],
-      "groupName": "typescript-projects",
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "matchPackageNames": [
-        "!exiftool{/,}**",
-        "!reflect-metadata{/,}**",
-        "!node",
-        "!@types/node",
-        "!@mapbox/mapbox-gl-rtl-text"
-      ]
-    },
     {
       "matchFileNames": [
         "machine-learning/**"
