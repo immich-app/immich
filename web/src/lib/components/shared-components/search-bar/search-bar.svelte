@@ -212,7 +212,7 @@
         type="text"
         name="q"
         id="main-search-bar"
-        class="w-full transition-all border-2 px-14 py-4 text-immich-fg/75 dark:text-immich-dark-fg
+        class="w-full transition-all border-2 px-14 py-4 max-md:py-2 text-immich-fg/75 dark:text-immich-dark-fg
         {grayTheme ? 'dark:bg-immich-dark-gray' : 'dark:bg-immich-dark-bg'}
         {showSuggestions && isSearchSuggestions ? 'rounded-t-3xl' : 'rounded-3xl bg-gray-200'}
         {$isSearchEnabled && !showFilter ? 'border-gray-200 dark:border-gray-700 bg-white' : 'border-transparent'}"

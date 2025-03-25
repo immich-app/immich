@@ -100,7 +100,7 @@
       <div class="flex justify-between w-full place-items-center place-content-center">
         <div class="flex place-items-center place-content-center gap-1">
           <div class="h-6 w-6">
-            <ImmichLogo noText />
+            <ImmichLogo noText class="h-[24px]" />
           </div>
           <p class="flex text-immich-primary dark:text-immich-dark-primary font-medium">
             {$t('purchase_button_buy_immich')}
@@ -132,7 +132,7 @@
     >
       <div class="flex justify-between place-items-center">
         <div class="h-10 w-10">
-          <ImmichLogo noText />
+          <ImmichLogo noText class="h-[32px]" />
         </div>
         <CircleIconButton
           icon={mdiClose}

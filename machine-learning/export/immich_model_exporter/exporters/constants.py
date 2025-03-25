@@ -8,6 +8,11 @@ class ModelSource(StrEnum):
     OPENCLIP = "openclip"
 
 
+class ModelTask(StrEnum):
+    FACIAL_RECOGNITION = "facial-recognition"
+    SEARCH = "clip"
+
+
 class SourceMetadata(NamedTuple):
     name: str
     link: str
@@ -20,6 +25,13 @@ SOURCE_TO_METADATA = {
     ModelSource.INSIGHTFACE: SourceMetadata(
         "InsightFace", "https://github.com/deepinsight/insightface/tree/master", "facial recognition"
     ),
+}
+
+
+SOURCE_TO_TASK = {
+    ModelSource.MCLIP: ModelTask.SEARCH,
+    ModelSource.OPENCLIP: ModelTask.SEARCH,
+    ModelSource.INSIGHTFACE: ModelTask.FACIAL_RECOGNITION,
 }
 
 RKNN_SOCS = ["rk3566", "rk3568", "rk3576", "rk3588"]
