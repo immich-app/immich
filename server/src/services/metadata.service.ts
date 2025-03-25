@@ -80,7 +80,6 @@ type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['Re
 
 type Dates = {
   dateTimeOriginal: Date;
-  modifyDate: Date;
   localDateTime: Date;
 };
 
@@ -203,7 +202,7 @@ export class MetadataService extends BaseService {
 
       // dates
       dateTimeOriginal: dates.dateTimeOriginal,
-      modifyDate: dates.modifyDate,
+      modifyDate: stats.mtime,
       timeZone: dates.timeZone,
 
       // gps
@@ -214,7 +213,7 @@ export class MetadataService extends BaseService {
       city: geo.city,
 
       // image/file
-      fileSizeInByte: Number.parseInt(exifTags.FileSize!),
+      fileSizeInByte: stats.size,
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
@@ -248,14 +247,14 @@ export class MetadataService extends BaseService {
         id: asset.id,
         duration: exifTags.Duration?.toString() ?? null,
         localDateTime: dates.localDateTime,
-        fileCreatedAt: exifData.dateTimeOriginal ?? undefined,
-        fileModifiedAt: exifData.modifyDate ?? undefined,
+        fileCreatedAt: dates.dateTimeOriginal ?? undefined,
+        fileModifiedAt: stats.mtime,
       }),
       this.applyTagList(asset, exifTags),
     ];
 
     if (this.isMotionPhoto(asset, exifTags)) {
-      promises.push(this.applyMotionPhotos(asset, exifTags, exifData.fileSizeInByte!, dates));
+      promises.push(this.applyMotionPhotos(asset, exifTags, dates, stats));
     }
 
     if (isFaceImportEnabled(metadata) && this.hasTaggedFaces(exifTags)) {
@@ -434,7 +433,7 @@ export class MetadataService extends BaseService {
     return asset.type === AssetType.IMAGE && !!(tags.MotionPhoto || tags.MicroVideo);
   }
 
-  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags, fileSize: number, dates: Dates) {
+  private async applyMotionPhotos(asset: AssetEntity, tags: ImmichTags, dates: Dates, stats: Stats) {
     const isMotionPhoto = tags.MotionPhoto;
     const isMicroVideo = tags.MicroVideo;
     const videoOffset = tags.MicroVideoOffset;
@@ -468,7 +467,7 @@ export class MetadataService extends BaseService {
     this.logger.debug(`Starting motion photo video extraction for asset ${asset.id}: ${asset.originalPath}`);
 
     try {
-      const position = fileSize - length - padding;
+      const position = stats.size - length - padding;
       let video: Buffer;
       // Samsung MotionPhoto video extraction
       //     HEIC-encoded
@@ -512,7 +511,7 @@ export class MetadataService extends BaseService {
           libraryId: asset.libraryId,
           type: AssetType.VIDEO,
           fileCreatedAt: dates.dateTimeOriginal,
-          fileModifiedAt: dates.modifyDate,
+          fileModifiedAt: stats.mtime,
           localDateTime: dates.localDateTime,
           checksum,
           ownerId: asset.ownerId,
@@ -675,12 +674,7 @@ export class MetadataService extends BaseService {
       dateTimeOriginal,
       timeZone,
       localDateTime,
-      modifyDate: stats.mtime,
     };
-  }
-
-  private toDate(date: string | ExifDateTime): Date {
-    return typeof date === 'string' ? new Date(date) : date.toDate();
   }
 
   private hasGeo(tags: ImmichTags): tags is ImmichTags & { GPSLatitude: number; GPSLongitude: number } {
