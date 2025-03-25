@@ -1038,7 +1038,7 @@ export class AssetStore {
       let bucket = this.getBucketByDate(year, month);
 
       if (!bucket) {
-        bucket = new AssetBucket(this, utc, 1);
+        bucket = new AssetBucket(this, utc, 1, this.#options.order);
         this.buckets.push(bucket);
       }
       bucket.addAssets([asset]);
