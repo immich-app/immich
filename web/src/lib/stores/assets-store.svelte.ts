@@ -9,7 +9,14 @@ import {
 } from '$lib/utils/layout-utils';
 import { formatDateGroupTitle, fromLocalDateTime } from '$lib/utils/timeline-util';
 import { TUNABLES } from '$lib/utils/tunables';
-import { getAssetInfo, getTimeBucket, getTimeBuckets, TimeBucketSize, type AssetResponseDto } from '@immich/sdk';
+import {
+  AssetOrder,
+  getAssetInfo,
+  getTimeBucket,
+  getTimeBuckets,
+  TimeBucketSize,
+  type AssetResponseDto,
+} from '@immich/sdk';
 import { debounce, isEqual, throttle } from 'lodash-es';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
@@ -126,10 +133,15 @@ export class AssetDateGroup {
     this.dayOfMonth = dayOfMonth;
   }
 
-  sortAssets() {
+  sortAssets(sortOrder: AssetOrder = AssetOrder.Desc) {
     this.intersetingAssets.sort((a, b) => {
       const aDate = DateTime.fromISO(a.asset!.fileCreatedAt).toUTC();
       const bDate = DateTime.fromISO(b.asset!.fileCreatedAt).toUTC();
+
+      if (sortOrder === AssetOrder.Asc) {
+        return aDate.diff(bDate).milliseconds;
+      }
+
       return bDate.diff(aDate).milliseconds;
     });
   }
@@ -232,7 +244,7 @@ export class AssetBucket {
   #bucketHeight: number = $state(0);
   #top: number = $state(0);
   #initialCount: number = 0;
-
+  #sortOrder: AssetOrder = AssetOrder.Desc;
   // --- should be private, but is used by AssetStore ---
 
   bucketCount: number = $derived(
@@ -248,9 +260,10 @@ export class AssetBucket {
   readonly month: number;
   readonly year: number;
 
-  constructor(store: AssetStore, utcDate: DateTime, initialCount: number) {
+  constructor(store: AssetStore, utcDate: DateTime, initialCount: number, order: AssetOrder = AssetOrder.Desc) {
     this.store = store;
     this.#initialCount = initialCount;
+    this.#sortOrder = order;
 
     const year = utcDate.get('year');
     const month = utcDate.get('month');
@@ -317,6 +330,10 @@ export class AssetBucket {
   }
 
   sortDateGroups() {
+    if (this.#sortOrder === AssetOrder.Asc) {
+      this.dateGroups.sort((a, b) => a.date.diff(b.date).milliseconds);
+    }
+
     this.dateGroups.sort((a, b) => b.date.diff(a.date).milliseconds);
   }
 
@@ -398,10 +415,10 @@ export class AssetBucket {
       }
     }
     for (const group of changedDateGroups) {
-      group.sortAssets();
+      group.sortAssets(this.#sortOrder);
     }
     for (const group of newDateGroups) {
-      group.sortAssets();
+      group.sortAssets(this.#sortOrder);
     }
     if (newDateGroups.size > 0) {
       this.sortDateGroups();
@@ -756,7 +773,7 @@ export class AssetStore {
 
     this.buckets = timebuckets.map((bucket) => {
       const utcDate = DateTime.fromISO(bucket.timeBucket).toUTC();
-      return new AssetBucket(this, utcDate, bucket.count);
+      return new AssetBucket(this, utcDate, bucket.count, this.#options.order);
     });
     this.albumAssets.clear();
     this.#updateViewportGeometry(false);
@@ -1033,7 +1050,7 @@ export class AssetStore {
     });
 
     for (const dateGroup of updatedDateGroups) {
-      dateGroup.sortAssets();
+      dateGroup.sortAssets(this.#options.order);
     }
     for (const bucket of updatedBuckets) {
       bucket.sortDateGroups();
