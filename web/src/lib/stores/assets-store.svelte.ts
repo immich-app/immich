@@ -330,9 +330,11 @@ export class AssetBucket {
   }
 
   sortDateGroups() {
-    this.dateGroups.sort((a, b) =>
-      this.#sortOrder === AssetOrder.Asc ? a.date.diff(b.date).milliseconds : b.date.diff(a.date).milliseconds,
-    );
+    if (this.#sortOrder === AssetOrder.Asc) {
+      this.dateGroups.sort((a, b) => a.date.diff(b.date).milliseconds);
+    }
+
+    this.dateGroups.sort((a, b) => b.date.diff(a.date).milliseconds);
   }
 
   runAssetOperation(ids: Set<string>, operation: AssetOperation) {
