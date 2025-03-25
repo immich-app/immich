@@ -461,6 +461,9 @@ describe(AssetService.name, () => {
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
       expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', latitude: 0, longitude: 0 } },
+      ]);
     });
 
     it('should update exif table if latitude field is provided', async () => {
@@ -482,6 +485,9 @@ describe(AssetService.name, () => {
         latitude: 30,
         longitude: 50,
       });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SIDECAR_WRITE, data: { id: 'asset-1', dateTimeOriginal, latitude: 30, longitude: 50 } },
+      ]);
     });
   });
 
