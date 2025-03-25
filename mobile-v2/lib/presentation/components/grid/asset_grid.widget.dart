@@ -9,12 +9,10 @@ import 'package:immich_mobile/domain/models/render_list_element.model.dart';
 import 'package:immich_mobile/i18n/strings.g.dart';
 import 'package:immich_mobile/presentation/components/common/page_empty.widget.dart';
 import 'package:immich_mobile/presentation/components/grid/asset_grid.state.dart';
-import 'package:immich_mobile/presentation/components/grid/asset_render_grid.widget.dart';
 import 'package:immich_mobile/presentation/components/grid/draggable_scrollbar.dart';
 import 'package:immich_mobile/presentation/components/image/immich_image.widget.dart';
 import 'package:immich_mobile/presentation/components/image/immich_thumbnail.widget.dart';
 import 'package:immich_mobile/utils/constants/size_constants.dart';
-import 'package:immich_mobile/utils/extensions/async_snapshot.extension.dart';
 import 'package:immich_mobile/utils/extensions/build_context.extension.dart';
 import 'package:immich_mobile/utils/extensions/color.extension.dart';
 import 'package:intl/intl.dart';
@@ -177,7 +175,7 @@ class _Section extends StatelessWidget {
           }
 
           if (section is RenderListDayHeaderElement) {
-            return Text(section.header);
+            return _DayHeader(text: section.header);
           }
 
           if (section is! RenderListAssetElement) {
@@ -194,7 +192,7 @@ class _Section extends StatelessWidget {
               ? Future.value([])
               : context
                   .read<AssetGridCubit>()
-                  .loadAssets(section.assetCount, section.assetCount);
+                  .loadAssets(section.assetOffset, section.assetCount);
           return FutureBuilder(
             future: assetsToRender,
             builder: (_, snap) => Column(
@@ -202,7 +200,7 @@ class _Section extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 for (int i = 0; i < rows; i++)
-                  scrolling || snap.isWaiting
+                  scrolling || !snap.hasData
                       ? _PlaceholderRow(
                           key: ValueKey(i),
                           number: assetsPerRow,
@@ -266,115 +264,6 @@ class _AssetRow extends StatelessWidget {
   }
 }
 
-class ImAssetGrid extends StatefulWidget {
-  /// The padding for the grid
-  final double? topPadding;
-
-  const ImAssetGrid({this.topPadding, super.key});
-
-  @override
-  State createState() => _ImAssetGridState();
-}
-
-class _ImAssetGridState extends State<ImAssetGrid> {
-  final ItemScrollController _itemScrollController = ItemScrollController();
-  final ScrollOffsetController _scrollOffsetController =
-      ScrollOffsetController();
-  final ItemPositionsListener _itemPositionsListener =
-      ItemPositionsListener.create();
-
-  Text? _labelBuilder(List<RenderListElement> elements, int currentPosition) {
-    final element = elements.elementAtOrNull(currentPosition);
-    if (element == null) {
-      return null;
-    }
-
-    return Text(
-      DateFormat.yMMMM().format(element.date),
-      style: TextStyle(
-        color: context.colorScheme.onSurface,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) =>
-      BlocBuilder<AssetGridCubit, AssetGridState>(
-        builder: (_, state) {
-          final elements = state.renderList.elements;
-
-          if (state.renderList.totalCount == 0) {
-            return const _ImGridEmpty();
-          }
-
-          // Append padding if required
-          if (widget.topPadding != null &&
-              elements.firstOrNull is! RenderListPaddingElement) {
-            elements.insert(
-              0,
-              RenderListPaddingElement.beforeElement(
-                top: widget.topPadding!,
-                before: elements.firstOrNull,
-              ),
-            );
-          } else if (widget.topPadding == null &&
-              elements.firstOrNull is RenderListPaddingElement) {
-            elements.removeAt(0);
-          }
-
-          final EdgeInsets? padding = null;
-
-          final grid = ScrollablePositionedList.builder(
-            itemCount: state.renderList.elements.length,
-            itemBuilder: (_, sectionIndex) {
-              // ignore: avoid-unsafe-collection-methods
-              final section = elements[sectionIndex];
-
-              return switch (section) {
-                RenderListPaddingElement() => Padding(
-                    padding: EdgeInsets.only(top: section.topPadding),
-                  ),
-                RenderListMonthHeaderElement() =>
-                  _MonthHeader(text: section.header),
-                RenderListDayHeaderElement() => Text(section.header),
-                RenderListAssetElement() => ImStaticGrid(section: section),
-              };
-            },
-            itemScrollController: _itemScrollController,
-            itemPositionsListener: _itemPositionsListener,
-            scrollOffsetController: _scrollOffsetController,
-            padding: padding,
-            addRepaintBoundaries: true,
-          );
-
-          return DraggableScrollbar.semicircle(
-            alwaysVisibleScrollThumb: true,
-            controller: _itemScrollController,
-            itemPositionsListener: _itemPositionsListener,
-            scrollStateListener:
-                context.read<AssetGridCubit>().setDragScrolling,
-            backgroundColor: context.colorScheme.surfaceContainerHighest,
-            foregroundColor: context.colorScheme.onSurface,
-            padding: EdgeInsets.only(top: 120),
-            heightOffset: 100,
-            scrollbarAnimationDuration: const Duration(milliseconds: 300),
-            scrollbarTimeToFade: const Duration(milliseconds: 1000),
-            labelTextBuilder: (int position) =>
-                _labelBuilder(elements, position),
-            labelConstraints: const BoxConstraints(maxHeight: 28),
-            child: grid,
-          );
-        },
-        // no.of elements are not equal or is modified
-        buildWhen: (previous, current) =>
-            (previous.renderList.elements.length !=
-                current.renderList.elements.length) ||
-            !previous.renderList.modifiedTime
-                .isAtSameMomentAs(current.renderList.modifiedTime),
-      );
-}
-
 class _ImGridEmpty extends StatelessWidget {
   const _ImGridEmpty();
 
@@ -394,26 +283,6 @@ class _ImGridEmpty extends StatelessWidget {
 }
 
 extension ListExtension<E> on List<E> {
-  List<E> uniqueConsecutive({
-    int Function(E a, E b)? compare,
-    void Function(E a, E b)? onDuplicate,
-  }) {
-    compare ??= (E a, E b) => a == b ? 0 : 1;
-    int i = 1, j = 1;
-    for (; i < length; i++) {
-      if (compare(this[i - 1], this[i]) != 0) {
-        if (i != j) {
-          this[j] = this[i];
-        }
-        j++;
-      } else if (onDuplicate != null) {
-        onDuplicate(this[i - 1], this[i]);
-      }
-    }
-    length = length == 0 ? 0 : j;
-    return this;
-  }
-
   ListSlice<E> nestedSlice(int start, int end) {
     if (this is ListSlice) {
       final ListSlice<E> self = this as ListSlice<E>;

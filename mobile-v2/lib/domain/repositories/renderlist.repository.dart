@@ -16,7 +16,7 @@ class RenderListRepository with LogMixin implements IRenderListRepository {
     final assetCountExp = _db.asset.id.count();
     final createdTimeExp = _db.asset.createdTime;
     final modifiedTimeExp = _db.asset.modifiedTime.max();
-    final monthYearExp = createdTimeExp.strftime('%m-%Y');
+    final monthYearExp = createdTimeExp.strftime('%d-%m-%Y');
 
     final query = _db.asset.selectOnly()
       ..addColumns([assetCountExp, createdTimeExp, modifiedTimeExp])
@@ -40,7 +40,7 @@ class RenderListRepository with LogMixin implements IRenderListRepository {
           }
 
           return [
-            RenderListMonthHeaderElement(date: createdTime),
+            RenderListDayHeaderElement(date: createdTime),
             RenderListAssetElement(
               date: createdTime,
               assetCount: assetCount,
@@ -63,7 +63,7 @@ class RenderListRepository with LogMixin implements IRenderListRepository {
     final assetCountExp = _db.asset.id.count();
     final createdTimeExp = _db.asset.createdTime;
     final modifiedTimeExp = _db.asset.modifiedTime.max();
-    final monthYearExp = createdTimeExp.strftime('%m-%Y');
+    final monthYearExp = createdTimeExp.strftime('%d-%m-%Y');
 
     final query = _db.asset.selectOnly()
       ..addColumns([assetCountExp, createdTimeExp, modifiedTimeExp])
@@ -86,7 +86,7 @@ class RenderListRepository with LogMixin implements IRenderListRepository {
       }
 
       return [
-        RenderListMonthHeaderElement(date: createdTime),
+        RenderListDayHeaderElement(date: createdTime),
         RenderListAssetElement(
           date: createdTime,
           assetCount: assetCount,

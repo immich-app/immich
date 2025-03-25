@@ -73,9 +73,11 @@ class RenderListMonthHeaderElement extends RenderListElement {
 }
 
 class RenderListDayHeaderElement extends RenderListElement {
-  final String header;
+  late final String header;
 
-  const RenderListDayHeaderElement({required super.date, required this.header});
+  RenderListDayHeaderElement({required super.date}) {
+    header = DateFormat.yMMMMd().format(date);
+  }
 
   @override
   String toString() =>

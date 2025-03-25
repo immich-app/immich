@@ -48,3 +48,21 @@ class _MonthHeader extends StatelessWidget {
     );
   }
 }
+
+class _DayHeader extends StatelessWidget {
+  final String text;
+
+  const _DayHeader({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return _HeaderText(
+      text: text,
+      style: context.textTheme.bodyMedium?.copyWith(
+        color: context.colorScheme.onSurface,
+        fontSize: 20.0,
+        fontWeight: FontWeight.w500,
+      ),
+    );
+  }
+}
