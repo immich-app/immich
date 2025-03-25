@@ -598,7 +598,7 @@ class SyncService {
     assert(inDb.isSorted(Asset.compareByChecksum), "inDb not sorted!");
     final int assetCountOnDevice =
         await _albumMediaRepository.getAssetCount(deviceAlbum.localId!);
-    final List<Asset> onDevice = await _hashService.getHashedAssets(
+    final List<Asset> onDevice = await _getHashedAssets(
       deviceAlbum,
       excludedAssets: excludedAssets,
     );
@@ -678,7 +678,7 @@ class SyncService {
     if (totalOnDevice <= lastKnownTotal) {
       return false;
     }
-    final List<Asset> newAssets = await _hashService.getHashedAssets(
+    final List<Asset> newAssets = await _getHashedAssets(
       deviceAlbum,
       modifiedFrom: dbAlbum.modifiedAt.add(const Duration(seconds: 1)),
       modifiedUntil: deviceAlbum.modifiedAt,
@@ -720,7 +720,7 @@ class SyncService {
     Set<String>? excludedAssets,
   ]) async {
     _log.info("Syncing a new local album to DB: ${album.name}");
-    final assets = await _hashService.getHashedAssets(
+    final assets = await _getHashedAssets(
       album,
       excludedAssets: excludedAssets,
     );
@@ -822,6 +822,28 @@ class SyncService {
         }
       }
     }
+  }
+
+  /// Returns all assets that were successfully hashed
+  Future<List<Asset>> _getHashedAssets(
+    Album album, {
+    int start = 0,
+    int end = 0x7fffffffffffffff,
+    DateTime? modifiedFrom,
+    DateTime? modifiedUntil,
+    Set<String>? excludedAssets,
+  }) async {
+    final entities = await _albumMediaRepository.getAssets(
+      album.localId!,
+      start: start,
+      end: end,
+      modifiedFrom: modifiedFrom,
+      modifiedUntil: modifiedUntil,
+    );
+    final filtered = excludedAssets == null
+        ? entities
+        : entities.where((e) => !excludedAssets.contains(e.localId!)).toList();
+    return _hashService.hashAssets(filtered);
   }
 
   List<Asset> _removeDuplicates(List<Asset> assets) {

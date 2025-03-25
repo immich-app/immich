@@ -7,51 +7,26 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/interfaces/device_asset.interface.dart';
 import 'package:immich_mobile/domain/models/device_asset.model.dart';
-import 'package:immich_mobile/entities/album.entity.dart';
 import 'package:immich_mobile/entities/asset.entity.dart';
-import 'package:immich_mobile/interfaces/album_media.interface.dart';
 import 'package:immich_mobile/providers/infrastructure/device_asset.provider.dart';
-import 'package:immich_mobile/repositories/album_media.repository.dart';
 import 'package:immich_mobile/services/background.service.dart';
 import 'package:logging/logging.dart';
 
 class HashService {
-  HashService(
-    this._deviceAssetRepository,
-    this._backgroundService,
-    this._albumMediaRepository,
-  );
+  HashService({
+    required IDeviceAssetRepository deviceAssetRepository,
+    required BackgroundService backgroundService,
+  })  : _deviceAssetRepository = deviceAssetRepository,
+        _backgroundService = backgroundService;
+
   final IDeviceAssetRepository _deviceAssetRepository;
   final BackgroundService _backgroundService;
-  final IAlbumMediaRepository _albumMediaRepository;
   final _log = Logger('HashService');
-
-  /// Returns all assets that were successfully hashed
-  Future<List<Asset>> getHashedAssets(
-    Album album, {
-    int start = 0,
-    int end = 0x7fffffffffffffff,
-    DateTime? modifiedFrom,
-    DateTime? modifiedUntil,
-    Set<String>? excludedAssets,
-  }) async {
-    final entities = await _albumMediaRepository.getAssets(
-      album.localId!,
-      start: start,
-      end: end,
-      modifiedFrom: modifiedFrom,
-      modifiedUntil: modifiedUntil,
-    );
-    final filtered = excludedAssets == null
-        ? entities
-        : entities.where((e) => !excludedAssets.contains(e.localId!)).toList();
-    return _hashAssets(filtered);
-  }
 
   /// Processes a list of local [Asset]s, storing their hash and returning only those
   /// that were successfully hashed. Hashes are looked up in a DB table
   /// [DeviceAsset] by local id. Only missing entries are newly hashed and added to the DB table.
-  Future<List<Asset>> _hashAssets(List<Asset> assets) async {
+  Future<List<Asset>> hashAssets(List<Asset> assets) async {
     assets.sort(Asset.compareByLocalId);
     final hashesInDB = await _deviceAssetRepository
         .getForIds(assets.map((a) => a.localId!).toList());
@@ -195,8 +170,7 @@ class _AssetPath {
 
 final hashServiceProvider = Provider(
   (ref) => HashService(
-    ref.watch(deviceAssetRepositoryProvider),
-    ref.watch(backgroundServiceProvider),
-    ref.watch(albumMediaRepositoryProvider),
+    deviceAssetRepository: ref.watch(deviceAssetRepositoryProvider),
+    backgroundService: ref.watch(backgroundServiceProvider),
   ),
 );
