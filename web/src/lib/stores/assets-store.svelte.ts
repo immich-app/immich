@@ -439,7 +439,15 @@ export class AssetBucket {
       }
     }
     this.#bucketHeight = height;
-    store.updateIntersections();
+    if (store.topIntersectingBucket) {
+      const currentIndex = store.buckets.indexOf(store.topIntersectingBucket);
+      // if the bucket is 'before' the last intersecting bucket in the sliding window
+      // then adjust the scroll position by the delta, to compensate for the bucket
+      // size adjustment
+      if (currentIndex > 0 && index <= currentIndex) {
+        store.compensateScrollCallback?.(bucketHeightDelta);
+      }
+    }
   }
   get bucketHeight() {
     return this.#bucketHeight;
