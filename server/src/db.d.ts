@@ -4,8 +4,9 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { OnThisDayData } from 'src/entities/memory.entity';
 import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
+import { UserTable } from 'src/tables/user.table';
+import { OnThisDayData } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -410,26 +411,6 @@ export interface UserMetadata {
   value: Json;
 }
 
-export interface Users {
-  createdAt: Generated<Timestamp>;
-  deletedAt: Timestamp | null;
-  email: string;
-  id: Generated<string>;
-  isAdmin: Generated<boolean>;
-  name: Generated<string>;
-  oauthId: Generated<string>;
-  password: Generated<string>;
-  profileChangedAt: Generated<Timestamp>;
-  profileImagePath: Generated<string>;
-  quotaSizeInBytes: Int8 | null;
-  quotaUsageInBytes: Generated<Int8>;
-  shouldChangePassword: Generated<boolean>;
-  status: Generated<string>;
-  storageLabel: string | null;
-  updatedAt: Generated<Timestamp>;
-  updateId: Generated<string>;
-}
-
 export interface UsersAudit {
   id: Generated<string>;
   userId: string;
@@ -495,7 +476,7 @@ export interface DB {
   tags_closure: TagsClosure;
   typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
-  users: Users;
+  users: UserTable;
   users_audit: UsersAudit;
   'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
   version_history: VersionHistory;

@@ -1,11 +1,15 @@
+import { SystemConfig } from 'src/config';
 import {
   AssetType,
   DatabaseExtension,
   ExifOrientation,
   ImageFormat,
   JobName,
+  MemoryType,
   QueueName,
+  StorageFolder,
   SyncEntityType,
+  SystemMetadataKey,
   TranscodeTarget,
   VideoCodec,
 } from 'src/enum';
@@ -454,3 +458,27 @@ export type StorageAsset = {
   sidecarPath: string | null;
   fileSizeInByte: number | null;
 };
+
+export type OnThisDayData = { year: number };
+
+export interface MemoryData {
+  [MemoryType.ON_THIS_DAY]: OnThisDayData;
+}
+
+export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
+export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
+export type MemoriesState = {
+  /** memories have already been created through this date */
+  lastOnThisDayDate: string;
+};
+
+export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
+  [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
+  [SystemMetadataKey.FACIAL_RECOGNITION_STATE]: { lastRun?: string };
+  [SystemMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: Date };
+  [SystemMetadataKey.REVERSE_GEOCODING_STATE]: { lastUpdate?: string; lastImportFileName?: string };
+  [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
+  [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
+  [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
+  [SystemMetadataKey.MEMORIES_STATE]: MemoriesState;
+}

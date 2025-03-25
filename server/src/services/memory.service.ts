@@ -4,9 +4,9 @@ import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { OnThisDayData } from 'src/entities/memory.entity';
 import { JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { OnThisDayData } from 'src/types';
 import { addAssets, getMyPartnerIds, removeAssets } from 'src/utils/asset.util';
 
 const DAYS = 3;
