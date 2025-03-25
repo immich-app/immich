@@ -164,7 +164,21 @@
   };
 
   function getSearchType(): 'smart' | 'metadata' | 'description' {
-    return (localStorage.getItem('searchQueryType') as 'smart' | 'metadata' | 'description') || 'smart';
+    const searchType = localStorage.getItem('searchQueryType');
+    switch (searchType) {
+      case 'smart': {
+        return 'smart';
+      }
+      case 'metadata': {
+        return 'metadata';
+      }
+      case 'description': {
+        return 'description';
+      }
+      default: {
+        return 'smart';
+      }
+    }
   }
 
   function getSearchTypeText(): string {
