@@ -134,8 +134,11 @@ export class AssetService extends BaseService {
     const { ids, dateTimeOriginal, latitude, longitude, ...options } = dto;
     await this.requireAccess({ auth, permission: Permission.ASSET_UPDATE, ids });
 
-    for (const id of ids) {
-      await this.updateMetadata({ id, dateTimeOriginal, latitude, longitude });
+    if (dateTimeOriginal !== undefined || latitude !== undefined || longitude !== undefined) {
+      await this.assetRepository.updateAllExif(ids, { dateTimeOriginal, latitude, longitude });
+      await this.jobRepository.queueAll(
+        ids.map((id) => ({ name: JobName.SIDECAR_WRITE, data: { id, dateTimeOriginal, latitude, longitude } })),
+      );
     }
 
     if (
