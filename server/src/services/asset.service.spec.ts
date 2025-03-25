@@ -460,6 +460,28 @@ describe(AssetService.name, () => {
         rating: undefined,
       });
       expect(mocks.asset.updateAll).toHaveBeenCalled();
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], { latitude: 0, longitude: 0 });
+    });
+
+    it('should update exif table if latitude field is provided', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      const dateTimeOriginal = new Date().toISOString();
+      await sut.updateAll(authStub.admin, {
+        ids: ['asset-1'],
+        latitude: 30,
+        longitude: 50,
+        dateTimeOriginal,
+        isArchived: undefined,
+        isFavorite: false,
+        duplicateId: undefined,
+        rating: undefined,
+      });
+      expect(mocks.asset.updateAll).toHaveBeenCalled();
+      expect(mocks.asset.updateAllExif).toHaveBeenCalledWith(['asset-1'], {
+        dateTimeOriginal,
+        latitude: 30,
+        longitude: 50,
+      });
     });
   });
 
