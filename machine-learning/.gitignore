@@ -12,6 +12,9 @@ onnx__*
 *.pos_embed
 vocab.txt
 export/immich_model_exporter/models/**/README.md
+export/**/results/*.json
+export/**/root
+*.armnn
 tokenizer.json
 tokenizer_config.json
 special_tokens_map.json

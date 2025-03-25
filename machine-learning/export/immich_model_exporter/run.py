@@ -1,6 +1,10 @@
 import subprocess
+from pathlib import Path
 
 from exporters.constants import ModelSource
+
+from immich_model_exporter import clean_name
+from immich_model_exporter.exporters.constants import SOURCE_TO_TASK
 
 mclip = [
     "M-CLIP/LABSE-Vit-L-14",
@@ -74,10 +78,28 @@ insightface = [
 
 
 def export_models(models: list[str], source: ModelSource) -> None:
+    profiling_dir = Path("profiling")
+    profiling_dir.mkdir(exist_ok=True)
     for model in models:
         try:
-            print(f"Exporting model {model}")
-            subprocess.check_call(["python", "-m", "immich_model_exporter.export", model, source])
+            model_dir = f"models/{clean_name(model)}"
+            task = SOURCE_TO_TASK[source]
+
+            print(f"Processing model {model}")
+            subprocess.check_call(["python", "-m", "immich_model_exporter", "export", model, source])
+            subprocess.check_call(
+                [
+                    "python",
+                    "-m",
+                    "immich_model_exporter",
+                    "profile",
+                    model_dir,
+                    task,
+                    "--output_path",
+                    profiling_dir / f"{model}.json",
+                ]
+            )
+            subprocess.check_call(["python", "-m", "immich_model_exporter", "upload", model_dir])
         except Exception as e:
             print(f"Failed to export model {model}: {e}")
 
@@ -86,3 +108,64 @@ if __name__ == "__main__":
     export_models(mclip, ModelSource.MCLIP)
     export_models(openclip, ModelSource.OPENCLIP)
     export_models(insightface, ModelSource.INSIGHTFACE)
+
+    Path("results").mkdir(exist_ok=True)
+    subprocess.check_call(
+        [
+            "python",
+            "clip_benchmark",
+            "eval",
+            "--pretrained_model",
+            *[name.replace("__", ",") for name in openclip],
+            "--task",
+            "zeroshot_retrieval",
+            "--dataset",
+            "crossmodal3600",
+            "--batch_size",
+            "64",
+            "--language",
+            "ar",
+            "bn",
+            "cs",
+            "da",
+            "de",
+            "el",
+            "en",
+            "es",
+            "fa",
+            "fi",
+            "fil",
+            "fr",
+            "he",
+            "hi",
+            "hr",
+            "hu",
+            "id",
+            "it",
+            "ja",
+            "ko",
+            "mi",
+            "nl",
+            "no",
+            "pl",
+            "pt",
+            "quz",
+            "ro",
+            "ru",
+            "sv",
+            "sw",
+            "te",
+            "th",
+            "tr",
+            "uk",
+            "vi",
+            "zh",
+            "--recall_k",
+            "1",
+            "5",
+            "10",
+            "--no_amp",
+            "--output",
+            "results/{dataset}_{language}_{model}_{pretrained}.json",
+        ]
+    )
