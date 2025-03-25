@@ -1,3 +1,20 @@
 {
-  "about": "متعلق"
+  "about": "متعلق",
+  "account": "اکاؤنٹ",
+  "account_settings": "اکاؤنٹ کی ترتیبات",
+  "action": "عمل",
+  "actions": "اعمال",
+  "active": "فعال",
+  "activity": "سرگرمی",
+  "add": "شامل کریں",
+  "add_a_description": "تفصیل شامل کریں",
+  "add_a_location": "مقام شامل کریں",
+  "add_a_name": "نام شامل کریں",
+  "add_a_title": "عنوان شامل کریں",
+  "add_exclusion_pattern": "خارج کرنے کا نمونہ شامل کریں",
+  "add_import_path": "درآمد کا راستہ شامل کریں",
+  "add_location": "مقام شامل کریں",
+  "add_more_users": "مزید صارفین شامل کریں",
+  "add_partner": "ساتھی شامل کریں",
+  "add_path": "راستہ شامل کریں"
 }
