@@ -1,12 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Job } from 'bullmq';
+import { Injectable } from '@nestjs/common';
 import { ContainerDirectoryItem, ExifDateTime, Maybe, Tags } from 'exiftool-vendored';
 import { firstDateTime } from 'exiftool-vendored/dist/FirstDateTime';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { Duration } from 'luxon';
 import { Stats } from 'node:fs';
-import { constants } from 'node:fs/promises';
 import path from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
@@ -37,9 +35,8 @@ import { ImmichTags } from 'src/repositories/metadata.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { isFaceImportEnabled } from 'src/utils/misc';
-import { paginationHelper, usePagination } from 'src/utils/pagination';
+import { usePagination } from 'src/utils/pagination';
 import { upsertTags } from 'src/utils/tag';
-import { assetStub } from 'test/fixtures/asset.stub';
 
 /** look for a date from these tags (in order) */
 const EXIF_DATE_TAGS: Array<keyof Tags> = [
@@ -280,7 +277,6 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SIDECAR_QUEUE_SYNC_FILES, queue: QueueName.SIDECAR })
   async handleQueueSidecarSyncFiles(job: JobOf<JobName.SIDECAR_QUEUE_SYNC_FILES>): Promise<JobStatus> {
-    this.logger.debug(`Starting sidebar file sync for ${job}`);
     const sidecarPaths = this.storageRepository.walk({
       pathsToCrawl: job.paths,
       includeHidden: false,
@@ -293,7 +289,6 @@ export class MetadataService extends BaseService {
     let sidecarCount = 0;
 
     for await (const chunk of sidecarPaths) {
-      this.logger.debug(`Crawling sidecar batch: ${chunk.length} sidecar(s)`);
       sidecarCount += chunk.length;
 
       const paths = await this.assetFileRepository.filterNewSidecarPaths(chunk);
@@ -315,7 +310,7 @@ export class MetadataService extends BaseService {
       }
     }
     this.logger.log(
-      `Finished sidebar crawl, ${sidecarCount} file(s) found on disk and queued ${sidecarImportCount} file(s) for import`,
+      `Finished sidecar crawl, ${sidecarCount} file(s) found on disk and queued ${sidecarImportCount} file(s) for import`,
     );
 
     return JobStatus.SUCCESS;
@@ -323,6 +318,7 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SIDECAR_SYNC_FILES, queue: QueueName.SIDECAR })
   async handleSidecarSyncFiles(job: JobOf<JobName.SIDECAR_SYNC_FILES>): Promise<JobStatus> {
+    this.logger.debug(`Sidecar sync files: ${job.paths}`);
     const sidecarImports = job.paths.map((sidecarPath) => ({
       path: path.normalize(sidecarPath),
       type: AssetFileType.SIDECAR,
@@ -350,8 +346,8 @@ export class MetadataService extends BaseService {
     return JobStatus.SUCCESS;
   }
 
-  @OnJob({ name: JobName.SIDECAR_QUEUE_SYNC_ASSETS, queue: QueueName.SIDECAR })
-  async handleQueueSyncSidecarAssets(): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_QUEUE_SYNC_EXISTING, queue: QueueName.SIDECAR })
+  async handleQueueSyncSidecarExisting(): Promise<JobStatus> {
     const totalCount = await this.assetFileRepository.getSidecarCount();
     if (!totalCount) {
       this.logger.log(`No known sidecars, no need to check`);
@@ -366,7 +362,7 @@ export class MetadataService extends BaseService {
         progressCount += chunk.length;
 
         await this.jobRepository.queue({
-          name: JobName.SIDECAR_SYNC_ASSETS,
+          name: JobName.SIDECAR_SYNC_EXISTING,
           data: {
             ids: chunk.map((id) => id),
             progressCount,
@@ -411,14 +407,14 @@ export class MetadataService extends BaseService {
       data: { paths },
     });
 
-    await this.jobRepository.queue({ name: JobName.SIDECAR_QUEUE_SYNC_ASSETS, data: {} });
+    await this.jobRepository.queue({ name: JobName.SIDECAR_QUEUE_SYNC_EXISTING, data: {} });
   }
 
-  @OnJob({ name: JobName.SIDECAR_SYNC_ASSETS, queue: QueueName.SIDECAR })
-  async handleSidecarSyncAssets(job: JobOf<JobName.SIDECAR_SYNC_ASSETS>): Promise<JobStatus> {
+  @OnJob({ name: JobName.SIDECAR_SYNC_EXISTING, queue: QueueName.SIDECAR })
+  async handleSidecarSyncExisting(job: JobOf<JobName.SIDECAR_SYNC_EXISTING>): Promise<JobStatus> {
     const sidecars = await this.assetFileRepository.getByIds(job.ids);
 
-    const sidecarIdsToRemove: string[] = [];
+    let removedSidecars = 0;
     const sidecarIdsToRemap: string[] = [];
     const assetsToUpdate: string[] = [];
 
@@ -433,7 +429,9 @@ export class MetadataService extends BaseService {
       switch (action) {
         case AssetSyncResult.OFFLINE: {
           this.logger.debug(`Will remove sidecar ${sidecar.path}`);
-          sidecarIdsToRemove.push(sidecar.id);
+          await this.assetFileRepository.remove({ id: sidecar.id });
+          this.jobRepository.queue({ name: JobName.SIDECAR_ASSET_MAPPING, data: { id: sidecar.assetId } });
+          removedSidecars++;
           break;
         }
         case AssetSyncResult.UPDATE: {
@@ -449,21 +447,17 @@ export class MetadataService extends BaseService {
           }
           break;
         }
-        /*default: {
+        default: {
           this.logger.error(`Unknown sidecar asset sync result ${action} for sidecar ${sidecar.id}: ${sidecar.path}`);
           return JobStatus.FAILED;
-        }*/
+        }
       }
-      this.logger.debug(`Sidecar ${sidecar.path} has been checked: ${i}`);
+      this.logger.debug(`Sidecar ${sidecar.path} has been checked`);
     }
 
     this.logger.debug(`Now checking batch of ${sidecars.length} existing sidecar(s)`);
 
     const promises = [];
-    if (sidecarIdsToRemove.length > 0) {
-      // FIXME: how do we handle the removal in case of two sidecars?
-      promises.push(this.assetFileRepository.removeAll(sidecarIdsToRemove));
-    }
 
     if (assetsToUpdate.length > 0) {
       promises.push(
@@ -481,8 +475,7 @@ export class MetadataService extends BaseService {
 
     this.logger.debug(`Finished checking batch of ${sidecars.length} existing sidecar(s)`);
 
-    const remainingCount =
-      sidecars.length - sidecarIdsToRemove.length - assetsToUpdate.length - sidecarIdsToRemap.length;
+    const remainingCount = sidecars.length - removedSidecars - assetsToUpdate.length - sidecarIdsToRemap.length;
 
     let progress = '';
     if (job.progressCount && job.totalCount) {
@@ -491,7 +484,7 @@ export class MetadataService extends BaseService {
     }
 
     this.logger.log(
-      `Checked existing sidecar(s): ${sidecarIdsToRemove.length} removed, ${assetsToUpdate.length} updated, ${sidecarIdsToRemap.length} remapped, ${remainingCount} unchanged of current batch of ${sidecars.length} ${progress}.`,
+      `Checked existing sidecar(s): ${removedSidecars} removed, ${assetsToUpdate.length} updated, ${sidecarIdsToRemap.length} remapped, ${remainingCount} unchanged of current batch of ${sidecars.length} ${progress}.`,
     );
 
     return JobStatus.SUCCESS;
@@ -502,7 +495,7 @@ export class MetadataService extends BaseService {
       // File not found on disk or permission error
 
       this.logger.debug(
-        `Asset ${sidecar.path} is no longer on disk or is inaccessible because of permissions, marking removing`,
+        `Sidecar ${sidecar.path} is no longer on disk or is inaccessible because of permissions, removing`,
       );
       return AssetSyncResult.OFFLINE;
     }
@@ -525,7 +518,8 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SIDECAR_MAPPING, queue: QueueName.SIDECAR })
   async handleSidecarMapping(job: JobOf<JobName.SIDECAR_MAPPING>): Promise<JobStatus> {
-    const sidecar = await this.assetFileRepository.getById(job.id);
+    this.logger.debug(`Starting sidecar mapping of ${job.id}`);
+    const sidecar = (await this.assetFileRepository.getById(job.id)) as SidecarAssetFileEntity | undefined;
 
     if (!sidecar || sidecar.type !== AssetFileType.SIDECAR) {
       return JobStatus.FAILED;
@@ -539,23 +533,13 @@ export class MetadataService extends BaseService {
     }
 
     let storeSidecar = false;
+    let purgeAssetId = false;
 
     if (!sidecar.assetId) {
       const filePath = path.parse(sidecar.path);
       const pathWithoutExtension = filePath.dir + '/' + filePath.name;
 
       const assets = await this.assetRepository.getLikeOriginalPath(pathWithoutExtension);
-      const allAssets = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
-        this.assetRepository.getAll(options, {}),
-      );
-
-      for await (const assets of allAssets) {
-        for (const asset of assets) {
-          this.logger.debug(`Asset: ${asset.originalPath}`);
-        }
-      }
-
-      this.logger.verbose(`Found ${assets.length} matching asset(s) for sidecar ${sidecar.id}: ${sidecar.path}`);
 
       if (assets.length === 0) {
         this.logger.verbose(
@@ -566,7 +550,6 @@ export class MetadataService extends BaseService {
       }
 
       if (assets.length !== 1) {
-        // This is the unlikely event where we for example have an asset.xmp sidecar, but both asset.jpg and asset.png exist
         this.logger.error(
           `Ambiguous sidecar, ignoring ${sidecar.id}: ${sidecar.path}. Please ensure there is at most one file matching this sidecar, found ${assets.map((asset) => asset.originalPath).join(', ')}`,
         );
@@ -591,7 +574,11 @@ export class MetadataService extends BaseService {
       currentSidecarsForAsset.push(...(sidecar as SidecarAssetFileEntity[]));
     }
 
+    this.logger.debug(
+      `Found ${currentSidecarsForAsset.length} existing sidecar(s): ${currentSidecarsForAsset.map((sidecar) => sidecar.path).join(', ')}`,
+    );
     if (currentSidecarsForAsset.length === 0) {
+      this.logger.debug(`No other sidecars found for asset`);
       // No existing sidecar for this asset, store the new one
       storeSidecar = true;
     } else {
@@ -607,17 +594,62 @@ export class MetadataService extends BaseService {
         );
         await this.assetFileRepository.update({ ...currentSidecar, assetId: null });
         storeSidecar = true;
+      } else {
+        purgeAssetId = true;
       }
     }
 
     if (storeSidecar) {
-      await this.assetFileRepository.update(sidecar);
+      await this.assetFileRepository.update({ ...sidecar, assetId: purgeAssetId ? null : sidecar.assetId });
 
       await this.jobRepository.queue({
         name: JobName.METADATA_EXTRACTION,
         data: { id: sidecar.assetId, source: 'upload' },
       });
     }
+
+    return JobStatus.SUCCESS;
+  }
+
+  @OnJob({ name: JobName.SIDECAR_ASSET_MAPPING, queue: QueueName.SIDECAR })
+  async handleAssetSidecarMapping(job: JobOf<JobName.SIDECAR_ASSET_MAPPING>): Promise<JobStatus> {
+    this.logger.debug(`Starting sidecar asset mapping of ${job.id}`);
+    const asset = await this.assetRepository.getById(job.id);
+
+    if (!asset) {
+      return JobStatus.FAILED;
+    }
+
+    this.logger.debug(`Asset: ${asset.id}: ${asset.originalPath}`);
+
+    const sidecars = await this.assetFileRepository.getSidecarsLikePath(asset.originalPath);
+
+    const sidecar = sidecars.shift();
+
+    if (!sidecar) {
+      return JobStatus.SUCCESS;
+    }
+
+    if (!sidecar.assetId) {
+      sidecar.assetId = asset.id;
+      await this.assetFileRepository.update(sidecar);
+    }
+
+    const otherSidecar = sidecars.shift() as SidecarAssetFileEntity;
+
+    if (otherSidecar && otherSidecar.assetId) {
+      await this.assetFileRepository.update({ id: otherSidecar.id, assetId: null });
+    }
+
+    if (sidecars.length > 0) {
+      this.logger.error(`Too many sidecars found for asset ${asset.id}: ${asset.originalPath}`);
+      return JobStatus.FAILED;
+    }
+
+    await this.jobRepository.queue({
+      name: JobName.METADATA_EXTRACTION,
+      data: { id: asset.id, source: 'upload' },
+    });
 
     return JobStatus.SUCCESS;
   }
@@ -707,12 +739,14 @@ export class MetadataService extends BaseService {
 
     let sidecars: SidecarAssetFileEntity[] = [];
 
-    for await (const sidecar of sidecarPagination) {
-      this.logger.verbose(`Found sidecar(s) for asset ${asset.id}: ${sidecar}`);
-      sidecars.push(...(sidecar as SidecarAssetFileEntity[]));
+    for await (const sidecars of sidecarPagination) {
+      this.logger.verbose(`Found sidecar(s) for asset ${asset.id}`);
+      sidecars.push(...(sidecars as SidecarAssetFileEntity[]));
     }
 
-    this.logger.debug(`Found ${sidecars.length} sidecar(s) for asset ${asset.originalPath}: ${sidecars}`);
+    this.logger.debug(
+      `Found ${sidecars.length} sidecar(s) for asset ${asset.originalPath}: ${sidecars.map((sidecar) => sidecar.path).join(', ')}`,
+    );
 
     if (sidecars.length > 1) {
       throw new Error(`Multiple sidecars found for asset ${asset.id}: ${asset.originalPath}`);

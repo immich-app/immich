@@ -423,7 +423,7 @@ export class AssetRepository {
     return this.db
       .selectFrom('assets')
       .selectAll('assets')
-      .where('originalPath', 'like', `${originalPath}.__`)
+      .where('originalPath', 'like', `${originalPath}%`)
       .execute() as any as Promise<AssetEntity[]>;
   }
 
@@ -1061,11 +1061,7 @@ export class AssetRepository {
   @GenerateSql({
     params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
   })
-  async detectOfflineExternalSidecars(
-    libraryId: string,
-    importPaths: string[],
-    exclusionPatterns: string[],
-  ): Promise<DeleteResult> {
+  async deleteExternalSidecars(libraryId: string, importPaths: string[], exclusionPatterns: string[]) {
     const paths = importPaths.map((importPath) => `${importPath}%`);
     const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
 
@@ -1082,7 +1078,8 @@ export class AssetRepository {
           eb('asset_files.path', 'like', exclusions.join('|')),
         ]),
       )
-      .executeTakeFirstOrThrow();
+      .returning(['asset_files.id', 'asset_files.assetId'])
+      .stream();
   }
 
   @GenerateSql({

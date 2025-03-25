@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Test1741731070431 implements MigrationInterface {
-  name = 'Test1741731070431';
+export class SidecarInAssetFiles1741731070431 implements MigrationInterface {
+  name = 'SidecarInAssetFiles1741731070431';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN "sidecarPath"`);

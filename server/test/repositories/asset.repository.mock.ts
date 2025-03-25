@@ -8,7 +8,7 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     createAll: vitest.fn(),
     deleteAll: vitest.fn(),
     detectOfflineExternalAssets: vitest.fn(),
-    detectOfflineExternalSidecars: vitest.fn(),
+    deleteExternalSidecars: vitest.fn(),
     filterNewExternalAssetPaths: vitest.fn(),
     findLivePhotoMatch: vitest.fn(),
     getAll: vitest.fn().mockResolvedValue({ items: [], hasNextPage: false }),

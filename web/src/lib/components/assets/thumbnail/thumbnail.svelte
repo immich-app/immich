@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { press, tap } from 'svelte-gestures';
+
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
@@ -23,6 +25,7 @@
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { TUNABLES } from '$lib/utils/tunables';
   import { thumbhash } from '$lib/actions/thumbhash';
+  import { mobileDevice } from '$lib/stores/mobile-device.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -71,6 +74,7 @@
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
+  let isTouchDevice = $derived(mobileDevice.hoverNone);
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
@@ -100,6 +104,9 @@
     onClick?.($state.snapshot(asset));
   };
   const handleClick = (e: MouseEvent) => {
+    if (isTouchDevice) {
+      return;
+    }
     if (e.ctrlKey || e.metaKey) {
       return;
     }
@@ -109,6 +116,9 @@
   };
 
   const onMouseEnter = () => {
+    if (isTouchDevice) {
+      return;
+    }
     mouseOver = true;
     onMouseEvent?.({ isMouseOver: true, selectedGroupIndex: groupIndex });
   };
@@ -138,6 +148,13 @@
 
   <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
      the navigation url on scroll. Replace this with button for now. -->
+
+  <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web.
+      The defaults are as follows:
+      fast: 200ms
+      default: 500ms
+      slow: ??ms
+      -->
   <div
     class="group"
     style:width="{width}px"
@@ -146,6 +163,10 @@
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
+    use:press={() => ({ timeframe: 350, triggerBeforeFinished: true })}
+    use:tap={() => ({ timeframe: 350 })}
+    onpress={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : onSelect?.($state.snapshot(asset)))}
+    ontap={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : callClickHandlers())}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
@@ -161,7 +182,7 @@
     onfocus={handleFocus}
     data-testid="container-with-tabindex"
   >
-    {#if mouseOver && !disableMouseOver}
+    {#if !isTouchDevice && mouseOver && !disableMouseOver}
       <!-- lazy show the url on mouse over-->
       <a
         class="absolute z-30 {className} top-[41px]"
@@ -208,11 +229,12 @@
       class:rounded-xl={selected}
     >
       <!-- Gradient overlay on hover -->
-      <div
-        class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
-        class:rounded-xl={selected}
-      ></div>
-
+      {#if !isTouchDevice}
+        <div
+          class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
+          class:rounded-xl={selected}
+        ></div>
+      {/if}
       <!-- Outline on focus -->
       <div
         class="absolute size-full group-focus-visible:outline outline-4 -outline-offset-4 outline-immich-primary"

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, DB } from 'src/db';
@@ -119,15 +119,15 @@ export class AssetFileRepository {
       .execute()) as any as Promise<AssetFileEntity[]>;
   }
 
-  async getSidecarsLikePath(assetPath: string): Promise<AssetFileEntity | undefined> {
+  async getSidecarsLikePath(assetPath: string): Promise<AssetFileEntity[]> {
     const assetPathWithoutExtension = assetPath.replace(/[^.]+$/, '');
     return this.db
       .selectFrom('asset_files')
       .selectAll('asset_files')
       .where('asset_files.path', 'like', `${assetPathWithoutExtension}%`)
       .where('asset_files.type', '=', AssetFileType.SIDECAR)
-      .limit(1)
-      .executeTakeFirst() as any as Promise<AssetFileEntity | undefined>;
+      .orderBy(sql`LENGTH(asset_files.path)`, 'desc')
+      .execute() as any as Promise<AssetFileEntity[]>;
   }
 
   @GenerateSql({
@@ -137,22 +137,14 @@ export class AssetFileRepository {
     const result = await this.db
       .selectFrom(unnest(paths).as('path'))
       .select('path')
-      .where((eb) =>
-        eb.not(
-          eb.exists(this.db.selectFrom('asset_files').select('path').whereRef('asset_files.path', '=', eb.ref('path'))),
-        ),
-      )
+      .except(sql<any>`SELECT path FROM asset_files`)
       .execute();
 
-    return result.map((row) => row.path as string);
+    return result.map((row) => row.path);
   }
 
   async remove(assetFile: { id: string }): Promise<void> {
     await this.db.deleteFrom('asset_files').where('id', '=', asUuid(assetFile.id)).execute();
-  }
-
-  async removeAll(ids: string[]): Promise<void> {
-    await this.db.deleteFrom('asset_files').where('id', 'in', anyUuid(ids)).execute();
   }
 
   streamSidecarIds() {

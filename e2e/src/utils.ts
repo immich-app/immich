@@ -154,6 +154,7 @@ export const utils = {
         // TODO e2e test for deleting a stack, since it is quite complex
         'asset_stack',
         'libraries',
+        'asset_files',
         'shared_links',
         'person',
         'albums',

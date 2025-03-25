@@ -8,9 +8,13 @@
   import { t } from 'svelte-i18n';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
 
-  export let stack: StackResponseDto;
-  export let asset: AssetResponseDto;
-  export let onAction: OnAction;
+  interface Props {
+    stack: StackResponseDto;
+    asset: AssetResponseDto;
+    onAction: OnAction;
+  }
+
+  let { stack, asset, onAction }: Props = $props();
 
   const handleKeepThisDeleteOthers = async () => {
     const isConfirmed = await dialogController.show({

@@ -1,5 +1,5 @@
-title: "[Feature] feature-name-goes-here"
-labels: ["feature"]
+title: '[Feature] feature-name-goes-here'
+labels: ['feature']
 
 body:
   - type: markdown
@@ -13,7 +13,7 @@ body:
     attributes:
       label: I have searched the existing feature requests, both open and closed, to make sure this is not a duplicate request.
       options:
-        - label: "Yes"
+        - label: 'Yes'
           required: true
 
   - type: textarea

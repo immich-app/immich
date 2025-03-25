@@ -232,7 +232,7 @@ describe(JobService.name, () => {
 
     const tests: Array<{ item: JobItem; jobs: JobName[] }> = [
       {
-        item: { name: JobName.SIDECAR_SYNC_ASSETS, data: { ids: ['asset-1'] } },
+        item: { name: JobName.SIDECAR_SYNC_EXISTING, data: { ids: ['asset-1'] } },
         jobs: [JobName.METADATA_EXTRACTION],
       },
       {

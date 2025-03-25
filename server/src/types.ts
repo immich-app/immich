@@ -337,10 +337,11 @@ export type JobItem =
   // Sidecars
   | { name: JobName.SIDECAR_QUEUE_SCAN; data?: IBaseJob }
   | { name: JobName.SIDECAR_QUEUE_SYNC_FILES; data: ISidecarSyncJob }
-  | { name: JobName.SIDECAR_QUEUE_SYNC_ASSETS; data?: IBaseJob }
+  | { name: JobName.SIDECAR_QUEUE_SYNC_EXISTING; data?: IBaseJob }
   | { name: JobName.SIDECAR_SYNC_FILES; data: IPathBatchJob }
-  | { name: JobName.SIDECAR_SYNC_ASSETS; data: IBatchEntityJob }
+  | { name: JobName.SIDECAR_SYNC_EXISTING; data: IBatchEntityJob }
   | { name: JobName.SIDECAR_MAPPING; data: IEntityJob }
+  | { name: JobName.SIDECAR_ASSET_MAPPING; data: IEntityJob }
   | { name: JobName.SIDECAR_WRITE; data: ISidecarWriteJob }
 
   // Facial Recognition

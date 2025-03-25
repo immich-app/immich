@@ -3,7 +3,7 @@ import { R_OK } from 'node:constants';
 import { Stats } from 'node:fs';
 import path, { basename, isAbsolute, parse } from 'node:path';
 import picomatch from 'picomatch';
-import { JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
+import { JOBS_ASSET_PAGINATION_SIZE, JOBS_LIBRARY_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
@@ -16,6 +16,7 @@ import {
   ValidateLibraryImportPathResponseDto,
   ValidateLibraryResponseDto,
 } from 'src/dtos/library.dto';
+import { SidecarAssetFileEntity } from 'src/entities/asset-files.entity';
 import { AssetEntity } from 'src/entities/asset.entity';
 import {
   AssetFileType,
@@ -264,7 +265,7 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
-    await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.METADATA_EXTRACTION, data: { id } })));
+    await this.jobRepository.queueAll(assetIds.map((id) => ({ name: JobName.SIDECAR_ASSET_MAPPING, data: { id } })));
 
     return JobStatus.SUCCESS;
   }
@@ -696,26 +697,61 @@ export class LibraryService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const totalCount = await this.assetRepository.getLibraryAssetCount(job.id);
-    if (!totalCount) {
+    const totalAssetCount = await this.assetRepository.getLibraryAssetCount(job.id);
+
+    // FIXME: if >0 sidecars??
+    if (!totalAssetCount) {
       this.logger.log(`Library ${library.id} is empty, no need to check assets`);
       return JobStatus.SUCCESS;
     }
 
     this.logger.log(
-      `Checking ${totalCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
+      `Checking ${totalAssetCount} sidecar(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
-    const deletedSidecarResult = await this.assetRepository.detectOfflineExternalSidecars(
+    const deletedSidecars = await this.assetRepository.deleteExternalSidecars(
       library.id,
       library.importPaths,
       library.exclusionPatterns,
     );
 
-    const deletedSidecarCount = Number(deletedSidecarResult.numDeletedRows);
+    let sidecarChunk: string[] = [];
+    const queueSidecarChunk = async () => {
+      if (sidecarChunk.length > 0) {
+        await this.jobRepository.queueAll(
+          sidecarChunk.map((assetId) => ({
+            name: JobName.SIDECAR_ASSET_MAPPING,
+            data: { id: assetId },
+          })),
+        );
+        sidecarChunk = [];
+      }
+    };
+
+    let deletedSidecarCount = 0;
+
+    for await (const sidecar of deletedSidecars) {
+      if (sidecar.assetId) {
+        sidecarChunk.push(sidecar.assetId);
+        if (sidecarChunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
+          await queueSidecarChunk();
+        }
+      }
+      deletedSidecarCount++;
+    }
+
+    await queueSidecarChunk();
 
     this.logger.log(
       `${deletedSidecarCount} sidecar(s) were removed due to import paths and/or exclusion pattern(s) in library ${library.id}`,
+    );
+
+    await this.jobRepository.queue({
+      name: JobName.SIDECAR_QUEUE_SYNC_EXISTING,
+    });
+
+    this.logger.log(
+      `Checking ${totalAssetCount} asset(s) against import paths and exclusion patterns in library ${library.id}...`,
     );
 
     const offlineAssetsResult = await this.assetRepository.detectOfflineExternalAssets(
@@ -727,10 +763,10 @@ export class LibraryService extends BaseService {
     const affectedAssetCount = Number(offlineAssetsResult.numUpdatedRows);
 
     this.logger.log(
-      `${affectedAssetCount} asset(s) out of ${totalCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
+      `${affectedAssetCount} asset(s) out of ${totalAssetCount} were offlined due to import paths and/or exclusion pattern(s) in library ${library.id}`,
     );
 
-    if (affectedAssetCount === totalCount) {
+    if (affectedAssetCount === totalAssetCount) {
       return JobStatus.SUCCESS;
     }
 
@@ -749,15 +785,15 @@ export class LibraryService extends BaseService {
             exclusionPatterns: library.exclusionPatterns,
             assetIds: chunk.map((id) => id),
             progressCount,
-            totalCount,
+            totalCount: totalAssetCount,
           },
         });
         chunk = [];
 
-        const completePercentage = ((100 * progressCount) / totalCount).toFixed(1);
+        const completePercentage = ((100 * progressCount) / totalAssetCount).toFixed(1);
 
         this.logger.log(
-          `Queued check of ${progressCount} of ${totalCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
+          `Queued check of ${progressCount} of ${totalAssetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
         );
       }
     };
