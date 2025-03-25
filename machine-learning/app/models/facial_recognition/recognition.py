@@ -20,9 +20,8 @@ class FaceRecognizer(InferenceModel):
     depends = [(ModelType.DETECTION, ModelTask.FACIAL_RECOGNITION)]
     identity = (ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION)
 
-    def __init__(self, model_name: str, min_score: float = 0.7, **model_kwargs: Any) -> None:
+    def __init__(self, model_name: str, **model_kwargs: Any) -> None:
         super().__init__(model_name, **model_kwargs)
-        self.min_score = model_kwargs.pop("minScore", min_score)
         max_batch_size = settings.max_batch_size.facial_recognition if settings.max_batch_size else None
         self.batch_size = max_batch_size if max_batch_size else self._batch_size_default
 
@@ -32,7 +31,7 @@ class FaceRecognizer(InferenceModel):
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(
-            self.model_path.with_suffix(".onnx").as_posix(),
+            self.model_path_for_format(ModelFormat.ONNX).as_posix(),
             session=session,
         )
         return session

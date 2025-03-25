@@ -26,43 +26,48 @@ class CuratedPeopleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: imageSize + 50,
-      child: ListView.separated(
+      width: double.infinity,
+      child: SingleChildScrollView(
         padding: padding,
         scrollDirection: Axis.horizontal,
-        separatorBuilder: (context, index) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final person = content[index];
-          final headers = ApiService.getRequestHeaders();
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => onTap?.call(person, index),
-                child: SizedBox(
-                  height: imageSize,
-                  child: Material(
-                    shape: const CircleBorder(side: BorderSide.none),
-                    elevation: 3,
-                    child: CircleAvatar(
-                      maxRadius: imageSize / 2,
-                      backgroundImage: NetworkImage(
-                        getFaceThumbnailUrl(person.id),
-                        headers: headers,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(content.length, (index) {
+            final person = content[index];
+            final headers = ApiService.getRequestHeaders();
+            return Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () => onTap?.call(person, index),
+                    child: SizedBox(
+                      height: imageSize,
+                      child: Material(
+                        shape: const CircleBorder(side: BorderSide.none),
+                        elevation: 3,
+                        child: CircleAvatar(
+                          maxRadius: imageSize / 2,
+                          backgroundImage: NetworkImage(
+                            getFaceThumbnailUrl(person.id),
+                            headers: headers,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: imageSize,
+                    child: _buildPersonLabel(context, person, index),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              SizedBox(
-                width: imageSize,
-                child: _buildPersonLabel(context, person, index),
-              ),
-            ],
-          );
-        },
-        itemCount: content.length,
+            );
+          }),
+        ),
       ),
     );
   }
@@ -86,12 +91,22 @@ class CuratedPeopleRow extends StatelessWidget {
         ).tr(),
       );
     }
-    return Text(
-      person.label,
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
-      style: context.textTheme.labelLarge,
-      maxLines: 2,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          person.label,
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
+          style: context.textTheme.labelLarge,
+          maxLines: 2,
+        ),
+        if (person.subtitle != null)
+          Text(
+            person.subtitle!,
+            textAlign: TextAlign.center,
+          ),
+      ],
     );
   }
 }

@@ -4,7 +4,7 @@
   import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
   import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
   import type { AlbumResponseDto, SharedLinkResponseDto, UserResponseDto } from '@immich/sdk';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { cancelMultiselect, downloadAlbum } from '$lib/utils/asset-utils';
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import DownloadAction from '../photos-page/actions/download-action.svelte';
@@ -29,11 +29,13 @@
   let { sharedLink, user = undefined }: Props = $props();
 
   const album = sharedLink.album as AlbumResponseDto;
-  let innerWidth: number = $state(0);
 
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStore = new AssetStore({ albumId: album.id, order: album.order });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ albumId: album.id, order: album.order }));
+  onDestroy(() => assetStore.destroy());
+
   const assetInteraction = new AssetInteraction();
 
   dragAndDropFilesStore.subscribe((value) => {
@@ -41,9 +43,6 @@
       handlePromiseError(fileUploadHandler(value.files, album.id));
       dragAndDropFilesStore.set({ isDragging: false, files: [] });
     }
-  });
-  onDestroy(() => {
-    assetStore.destroy();
   });
 </script>
 
@@ -56,7 +55,6 @@
       }
     },
   }}
-  bind:innerWidth
 />
 
 <header>
@@ -74,7 +72,7 @@
   {:else}
     <ControlAppBar showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink width={innerWidth} />
+        <ImmichLogoSmallLink />
       {/snippet}
 
       {#snippet trailing()}
@@ -100,7 +98,9 @@
   {/if}
 </header>
 
-<main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+<main
+  class="relative h-screen overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+>
   <AssetGrid enableRouting={true} {album} {assetStore} {assetInteraction}>
     <section class="pt-8 md:pt-24">
       <!-- ALBUM TITLE -->

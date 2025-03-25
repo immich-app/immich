@@ -70,6 +70,7 @@
   font-family: 'Overpass', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */
   --navbar-height: calc(theme(spacing.18) + 4px);
+  --navbar-height-md: calc(theme(spacing.18) + 4px - 14px);
 }
 
 :root.dark {
@@ -135,32 +136,13 @@ input:focus-visible {
   }
 
   /* width */
-  .immich-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  /* Track */
-  .immich-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 16px;
-  }
-
-  /* Handle */
-  .immich-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(85, 86, 87, 0.408);
-    border-radius: 16px;
-  }
-
-  /* Handle on hover */
-  .immich-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
-    border-radius: 16px;
+  .immich-scrollbar {
+    scrollbar-width: thin;
   }
 
   /* Hidden scrollbar */
   /* width */
-  .scrollbar-hidden::-webkit-scrollbar {
-    display: none;
+  .scrollbar-hidden {
     scrollbar-width: none;
   }
 

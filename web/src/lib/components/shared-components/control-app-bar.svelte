@@ -5,7 +5,7 @@
   import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
   import { fly } from 'svelte/transition';
   import { mdiClose } from '@mdi/js';
-  import { isSelectingAllAssets } from '$lib/stores/assets.store';
+  import { isSelectingAllAssets } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -69,7 +69,7 @@
 <div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
   <div
     id="asset-selection-app-bar"
-    class={`grid ${multiRow ? 'grid-cols-[100%] md:grid-cols-[25%_50%_25%]' : 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]'} justify-between lg:grid-cols-[25%_50%_25%] ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
+    class={`grid ${multiRow ? 'grid-cols-[100%] md:grid-cols-[25%_50%_25%]' : 'grid-cols-[10%_80%_10%] sm:grid-cols-[25%_50%_25%]'} justify-between lg:grid-cols-[25%_50%_25%] ${appBarBorder} mx-2 my-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
       forceDark && 'bg-immich-dark-gray text-white'
     }`}
   >

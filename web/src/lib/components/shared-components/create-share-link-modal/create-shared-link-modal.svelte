@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Button from '$lib/components/elements/buttons/button.svelte';
   import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
   import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
   import { SettingInputFieldType } from '$lib/constants';
@@ -8,7 +7,7 @@
   import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
-  import { HStack, IconButton, Input } from '@immich/ui';
+  import { Button, HStack, IconButton, Input } from '@immich/ui';
   import { mdiContentCopy, mdiLink } from '@mdi/js';
   import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -242,9 +241,9 @@
 
     {#snippet stickyBottom()}
       {#if editingLink}
-        <Button size="sm" fullwidth onclick={handleEditLink}>{$t('confirm')}</Button>
+        <Button fullWidth onclick={handleEditLink}>{$t('confirm')}</Button>
       {:else}
-        <Button size="sm" fullwidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
+        <Button fullWidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
       {/if}
     {/snippet}
   </FullScreenModal>
@@ -256,14 +255,13 @@
           <QRCode value={sharedLink} width={modalWidth} />
         </div>
       </div>
-      <HStack class="w-full p-3">
+      <HStack class="w-full pt-3" gap={1}>
         <Input bind:value={sharedLink} disabled class="flex flex-row" />
         <div>
           <IconButton
             variant="ghost"
             shape="round"
             color="secondary"
-            size="large"
             icon={mdiContentCopy}
             onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
             aria-label={$t('copy_link_to_clipboard')}

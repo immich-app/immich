@@ -17,13 +17,14 @@
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, AssetAction, QueryParameter, SettingInputFieldType } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { deleteTag, getAllTags, updateTag, upsertTags, type TagResponseDto } from '@immich/sdk';
   import { Button, HStack, Text } from '@immich/ui';
   import { mdiPencil, mdiPlus, mdiTag, mdiTagMultiple, mdiTrashCanOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { onDestroy } from 'svelte';
 
   interface Props {
     data: PageData;
@@ -39,8 +40,9 @@
   const buildMap = (tags: TagResponseDto[]) => {
     return Object.fromEntries(tags.map((tag) => [tag.value, tag]));
   };
-
-  const assetStore = new AssetStore({});
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ deferInit: !tag, tagId }));
+  onDestroy(() => assetStore.destroy());
 
   let tags = $state<TagResponseDto[]>([]);
   $effect(() => {
@@ -51,10 +53,6 @@
   let tag = $derived(currentPath ? tagsMap[currentPath] : null);
   let tagId = $derived(tag?.id);
   let tree = $derived(buildTree(tags.map((tag) => tag.value)));
-
-  $effect.pre(() => {
-    void assetStore.updateOptions({ tagId });
-  });
 
   const handleNavigation = async (tag: string) => {
     await navigateToView(normalizeTreePath(`${data.path || ''}/${tag}`));

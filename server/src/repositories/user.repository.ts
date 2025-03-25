@@ -1,30 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns, UserAdmin } from 'src/database';
 import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
-import { UserStatus } from 'src/enum';
+import { AssetType, UserStatus } from 'src/enum';
 import { asUuid } from 'src/utils/database';
-
-const columns = [
-  'id',
-  'email',
-  'createdAt',
-  'profileImagePath',
-  'isAdmin',
-  'shouldChangePassword',
-  'deletedAt',
-  'oauthId',
-  'updatedAt',
-  'storageLabel',
-  'name',
-  'quotaSizeInBytes',
-  'quotaUsageInBytes',
-  'status',
-  'profileChangedAt',
-] as const;
 
 type Upsert = Insertable<DbUserMetadata>;
 
@@ -57,7 +41,7 @@ export class UserRepository {
 
     return this.db
       .selectFrom('users')
-      .select(columns)
+      .select(columns.userAdmin)
       .select(withMetadata)
       .where('users.id', '=', userId)
       .$if(!options.withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
@@ -76,7 +60,7 @@ export class UserRepository {
   getAdmin(): Promise<UserEntity | undefined> {
     return this.db
       .selectFrom('users')
-      .select(columns)
+      .select(columns.userAdmin)
       .where('users.isAdmin', '=', true)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<UserEntity | undefined>;
@@ -98,7 +82,7 @@ export class UserRepository {
   getByEmail(email: string, withPassword?: boolean): Promise<UserEntity | undefined> {
     return this.db
       .selectFrom('users')
-      .select(columns)
+      .select(columns.userAdmin)
       .$if(!!withPassword, (eb) => eb.select('password'))
       .where('email', '=', email)
       .where('users.deletedAt', 'is', null)
@@ -109,7 +93,7 @@ export class UserRepository {
   getByStorageLabel(storageLabel: string): Promise<UserEntity | undefined> {
     return this.db
       .selectFrom('users')
-      .select(columns)
+      .select(columns.userAdmin)
       .where('users.storageLabel', '=', storageLabel)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<UserEntity | undefined>;
@@ -119,35 +103,36 @@ export class UserRepository {
   getByOAuthId(oauthId: string): Promise<UserEntity | undefined> {
     return this.db
       .selectFrom('users')
-      .select(columns)
+      .select(columns.userAdmin)
       .where('users.oauthId', '=', oauthId)
       .where('users.deletedAt', 'is', null)
       .executeTakeFirst() as Promise<UserEntity | undefined>;
   }
 
-  getDeletedUsers(): Promise<UserEntity[]> {
-    return this.db
-      .selectFrom('users')
-      .select(columns)
-      .where('users.deletedAt', 'is not', null)
-      .execute() as unknown as Promise<UserEntity[]>;
+  @GenerateSql({ params: [DateTime.now().minus({ years: 1 })] })
+  getDeletedAfter(target: DateTime) {
+    return this.db.selectFrom('users').select(['id']).where('users.deletedAt', '<', target.toJSDate()).execute();
   }
 
-  getList({ withDeleted }: UserListFilter = {}): Promise<UserEntity[]> {
+  @GenerateSql(
+    { name: 'with deleted', params: [{ withDeleted: true }] },
+    { name: 'without deleted', params: [{ withDeleted: false }] },
+  )
+  getList({ withDeleted }: UserListFilter = {}) {
     return this.db
       .selectFrom('users')
-      .select(columns)
+      .select(columns.userAdmin)
       .select(withMetadata)
       .$if(!withDeleted, (eb) => eb.where('users.deletedAt', 'is', null))
       .orderBy('createdAt', 'desc')
-      .execute() as unknown as Promise<UserEntity[]>;
+      .execute() as Promise<UserAdmin[]>;
   }
 
   async create(dto: Insertable<Users>): Promise<UserEntity> {
     return this.db
       .insertInto('users')
       .values(dto)
-      .returning(columns)
+      .returning(columns.userAdmin)
       .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
 
@@ -157,7 +142,7 @@ export class UserRepository {
       .set(dto)
       .where('users.id', '=', asUuid(id))
       .where('users.deletedAt', 'is', null)
-      .returning(columns)
+      .returning(columns.userAdmin)
       .returning(withMetadata)
       .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
@@ -167,7 +152,7 @@ export class UserRepository {
       .updateTable('users')
       .set({ status: UserStatus.ACTIVE, deletedAt: null })
       .where('users.id', '=', asUuid(id))
-      .returning(columns)
+      .returning(columns.userAdmin)
       .returning(withMetadata)
       .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
@@ -209,11 +194,11 @@ export class UserRepository {
       .select((eb) => [
         eb.fn
           .countAll()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', 'IMAGE'), eb('assets.isVisible', '=', true)]))
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.IMAGE), eb('assets.isVisible', '=', true)]))
           .as('photos'),
         eb.fn
           .countAll()
-          .filterWhere((eb) => eb.and([eb('assets.type', '=', 'VIDEO'), eb('assets.isVisible', '=', true)]))
+          .filterWhere((eb) => eb.and([eb('assets.type', '=', AssetType.VIDEO), eb('assets.isVisible', '=', true)]))
           .as('videos'),
         eb.fn
           .coalesce(eb.fn.sum('exif.fileSizeInByte').filterWhere('assets.libraryId', 'is', null), eb.lit(0))
@@ -222,7 +207,9 @@ export class UserRepository {
           .coalesce(
             eb.fn
               .sum('exif.fileSizeInByte')
-              .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'IMAGE')])),
+              .filterWhere((eb) =>
+                eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', AssetType.IMAGE)]),
+              ),
             eb.lit(0),
           )
           .as('usagePhotos'),
@@ -230,7 +217,9 @@ export class UserRepository {
           .coalesce(
             eb.fn
               .sum('exif.fileSizeInByte')
-              .filterWhere((eb) => eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', 'VIDEO')])),
+              .filterWhere((eb) =>
+                eb.and([eb('assets.libraryId', 'is', null), eb('assets.type', '=', AssetType.VIDEO)]),
+              ),
             eb.lit(0),
           )
           .as('usageVideos'),

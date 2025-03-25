@@ -63,6 +63,14 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
       Name?: string;
     }[];
   };
+
+  Device?: {
+    Manufacturer?: string;
+    ModelName?: string;
+  };
+
+  AndroidMake?: string;
+  AndroidModel?: string;
 }
 
 @Injectable()
@@ -73,7 +81,7 @@ export class MetadataRepository {
     inferTimezoneFromDatestamps: true,
     inferTimezoneFromTimeStamp: true,
     useMWG: true,
-    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength'],
+    numericTags: [...DefaultReadTaskOptions.numericTags, 'FocalLength', 'FileSize'],
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     // Enable exiftool LFS to parse metadata for files larger than 2GB.

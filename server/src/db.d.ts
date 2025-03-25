@@ -4,7 +4,8 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { Permission, SyncEntityType } from 'src/enum';
+import { OnThisDayData } from 'src/entities/memory.entity';
+import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -118,6 +119,13 @@ export interface AssetJobStatus {
   thumbnailAt: Timestamp | null;
 }
 
+export interface AssetsAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  assetId: string;
+  ownerId: string;
+}
+
 export interface Assets {
   checksum: Buffer;
   createdAt: Generated<Timestamp>;
@@ -145,7 +153,7 @@ export interface Assets {
   stackId: string | null;
   status: Generated<AssetsStatusEnum>;
   thumbhash: Buffer | null;
-  type: string;
+  type: AssetType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
@@ -167,6 +175,8 @@ export interface Audit {
 
 export interface Exif {
   assetId: string;
+  updateId: Generated<string>;
+  updatedAt: Generated<Timestamp>;
   autoStackId: string | null;
   bitsPerSample: number | null;
   city: string | null;
@@ -231,7 +241,7 @@ export interface Libraries {
 
 export interface Memories {
   createdAt: Generated<Timestamp>;
-  data: Json;
+  data: OnThisDayData;
   deletedAt: Timestamp | null;
   hideAt: Timestamp | null;
   id: Generated<string>;
@@ -240,7 +250,7 @@ export interface Memories {
   ownerId: string;
   seenAt: Timestamp | null;
   showAt: Timestamp | null;
-  type: string;
+  type: MemoryType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
@@ -458,6 +468,7 @@ export interface DB {
   asset_job_status: AssetJobStatus;
   asset_stack: AssetStack;
   assets: Assets;
+  assets_audit: AssetsAudit;
   audit: Audit;
   exif: Exif;
   face_search: FaceSearch;

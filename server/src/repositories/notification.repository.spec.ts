@@ -1,11 +1,12 @@
+import { LoggingRepository } from 'src/repositories/logging.repository';
 import { EmailRenderRequest, EmailTemplate, NotificationRepository } from 'src/repositories/notification.repository';
-import { newFakeLoggingRepository } from 'test/repositories/logger.repository.mock';
+import { automock } from 'test/utils';
 
 describe(NotificationRepository.name, () => {
   let sut: NotificationRepository;
 
   beforeEach(() => {
-    sut = new NotificationRepository(newFakeLoggingRepository());
+    sut = new NotificationRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
   describe('renderEmail', () => {

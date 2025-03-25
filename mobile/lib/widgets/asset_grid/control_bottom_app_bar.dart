@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -125,18 +127,21 @@ class ControlBottomAppBar extends HookConsumerWidget {
       return [
         if (hasRemote)
           ControlBoxButton(
-            iconData: Icons.share_rounded,
+            iconData: Platform.isAndroid
+                ? Icons.share_rounded
+                : Icons.ios_share_rounded,
             label: "control_bottom_app_bar_share".tr(),
-            onPressed: enabled ? () => onShare(false) : null,
+            onPressed: enabled ? () => onShare(true) : null,
           ),
         ControlBoxButton(
-          iconData: Icons.ios_share_rounded,
-          label: "control_bottom_app_bar_share_to".tr(),
-          onPressed: enabled ? () => onShare(true) : null,
+          iconData: Icons.link_rounded,
+          label: "control_bottom_app_bar_share_link".tr(),
+          onPressed: enabled ? () => onShare(false) : null,
         ),
         if (hasRemote && onArchive != null)
           ControlBoxButton(
-            iconData: unarchive ? Icons.unarchive : Icons.archive,
+            iconData:
+                unarchive ? Icons.unarchive_outlined : Icons.archive_outlined,
             label: (unarchive
                     ? "control_bottom_app_bar_unarchive"
                     : "control_bottom_app_bar_archive")
@@ -194,7 +199,7 @@ class ControlBottomAppBar extends HookConsumerWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 85),
             child: ControlBoxButton(
-              iconData: Icons.no_cell_rounded,
+              iconData: Icons.no_cell_outlined,
               label: "control_bottom_app_bar_delete_from_local".tr(),
               onPressed: enabled
                   ? () {

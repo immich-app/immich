@@ -6,7 +6,7 @@ part of 'map_service.provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$mapServiceHash() => r'2f68c07ac6cd5c74ec8be3bd2df91f4db673b79e';
+String _$mapServiceHash() => r'7b26bcd231ed5728ac51fe015dddbf8f91491abb';
 
 /// See also [mapService].
 @ProviderFor(mapService)
@@ -19,6 +19,8 @@ final mapServiceProvider = AutoDisposeProvider<MapSerivce>.internal(
   allTransitiveDependencies: null,
 );
 
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
 typedef MapServiceRef = AutoDisposeProviderRef<MapSerivce>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

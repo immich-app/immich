@@ -19,7 +19,7 @@ class SessionsApi {
   /// Performs an HTTP 'DELETE /sessions' operation and returns the [Response].
   Future<Response> deleteAllSessionsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/sessions';
+    final apiPath = r'/sessions';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -32,7 +32,7 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -55,7 +55,7 @@ class SessionsApi {
   /// * [String] id (required):
   Future<Response> deleteSessionWithHttpInfo(String id,) async {
     // ignore: prefer_const_declarations
-    final path = r'/sessions/{id}'
+    final apiPath = r'/sessions/{id}'
       .replaceAll('{id}', id);
 
     // ignore: prefer_final_locals
@@ -69,7 +69,7 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'DELETE',
       queryParams,
       postBody,
@@ -92,7 +92,7 @@ class SessionsApi {
   /// Performs an HTTP 'GET /sessions' operation and returns the [Response].
   Future<Response> getSessionsWithHttpInfo() async {
     // ignore: prefer_const_declarations
-    final path = r'/sessions';
+    final apiPath = r'/sessions';
 
     // ignore: prefer_final_locals
     Object? postBody;
@@ -105,7 +105,7 @@ class SessionsApi {
 
 
     return apiClient.invokeAPI(
-      path,
+      apiPath,
       'GET',
       queryParams,
       postBody,

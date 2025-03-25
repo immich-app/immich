@@ -1,4 +1,5 @@
 import {
+  AssetType,
   DatabaseExtension,
   ExifOrientation,
   ImageFormat,
@@ -208,17 +209,23 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
-export interface ILibraryFileJob extends IEntityJob {
-  ownerId: string;
-  assetPath: string;
+export interface ILibraryFileJob {
+  libraryId: string;
+  paths: string[];
+  progressCounter?: number;
+  totalAssets?: number;
 }
 
-export interface ILibraryAssetJob extends IEntityJob {
+export interface ILibraryBulkIdsJob {
+  libraryId: string;
   importPaths: string[];
   exclusionPatterns: string[];
+  assetIds: string[];
+  progressCounter: number;
+  totalAssets: number;
 }
 
-export interface IBulkEntityJob extends IBaseJob {
+export interface IBulkEntityJob {
   ids: string[];
 }
 
@@ -354,10 +361,11 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
-  | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
-  | { name: JobName.LIBRARY_SYNC_ASSET; data: ILibraryAssetJob }
+  | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }
+  | { name: JobName.LIBRARY_ASSET_REMOVAL; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
@@ -430,4 +438,19 @@ export interface IBulkAsset {
 export type SyncAck = {
   type: SyncEntityType;
   updateId: string;
+};
+
+export type StorageAsset = {
+  id: string;
+  ownerId: string;
+  livePhotoVideoId: string | null;
+  type: AssetType;
+  isExternal: boolean;
+  checksum: Buffer;
+  timeZone: string | null;
+  fileCreatedAt: Date;
+  originalPath: string;
+  originalFileName: string;
+  sidecarPath: string | null;
+  fileSizeInByte: number | null;
 };

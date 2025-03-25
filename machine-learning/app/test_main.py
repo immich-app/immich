@@ -25,6 +25,7 @@ from app.models.facial_recognition.detection import FaceDetector
 from app.models.facial_recognition.recognition import FaceRecognizer
 from app.sessions.ann import AnnSession
 from app.sessions.ort import OrtSession
+from app.sessions.rknn import RknnSession, run_inference
 
 from .config import Settings, settings
 from .models.base import InferenceModel
@@ -68,6 +69,14 @@ class TestBase:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", model_format=ModelFormat.ARMNN)
 
         assert encoder.model_format == ModelFormat.ARMNN
+
+    def test_sets_default_model_format_to_rknn_if_available(self, mocker: MockerFixture) -> None:
+        mocker.patch.object(settings, "rknn", True)
+        mocker.patch("app.sessions.rknn.is_available", True)
+
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai")
+
+        assert encoder.model_format == ModelFormat.RKNN
 
     def test_casts_cache_dir_string_to_path(self) -> None:
         cache_dir = "/test_cache"
@@ -125,7 +134,7 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            ignore_patterns=["*.armnn"],
+            ignore_patterns=["*.armnn", "*.rknn"],
         )
 
     def test_download_downloads_armnn_if_preferred_format(self, snapshot_download: mock.Mock) -> None:
@@ -136,7 +145,18 @@ class TestBase:
             "immich-app/ViT-B-32__openai",
             cache_dir=encoder.cache_dir,
             local_dir=encoder.cache_dir,
-            ignore_patterns=[],
+            ignore_patterns=["*.rknn"],
+        )
+
+    def test_download_downloads_rknn_if_preferred_format(self, snapshot_download: mock.Mock) -> None:
+        encoder = OpenClipTextualEncoder("ViT-B-32__openai", model_format=ModelFormat.RKNN)
+        encoder.download()
+
+        snapshot_download.assert_called_once_with(
+            "immich-app/ViT-B-32__openai",
+            cache_dir=encoder.cache_dir,
+            local_dir=encoder.cache_dir,
+            ignore_patterns=["*.armnn"],
         )
 
     def test_throws_exception_if_model_path_does_not_exist(
@@ -160,6 +180,7 @@ class TestOrtSession:
     OV_EP = ["OpenVINOExecutionProvider", "CPUExecutionProvider"]
     CUDA_EP_OUT_OF_ORDER = ["CPUExecutionProvider", "CUDAExecutionProvider"]
     TRT_EP = ["TensorrtExecutionProvider", "CUDAExecutionProvider", "CPUExecutionProvider"]
+    ROCM_EP = ["ROCMExecutionProvider", "CPUExecutionProvider"]
 
     @pytest.mark.providers(CPU_EP)
     def test_sets_cpu_provider(self, providers: list[str]) -> None:
@@ -199,6 +220,12 @@ class TestOrtSession:
 
         assert session.providers == self.CUDA_EP
 
+    @pytest.mark.providers(ROCM_EP)
+    def test_uses_rocm(self, providers: list[str]) -> None:
+        session = OrtSession("ViT-B-32__openai")
+
+        assert session.providers == self.ROCM_EP
+
     def test_sets_provider_kwarg(self) -> None:
         providers = ["CUDAExecutionProvider"]
         session = OrtSession("ViT-B-32__openai", providers=providers)
@@ -215,19 +242,33 @@ class TestOrtSession:
             {"arena_extend_strategy": "kSameAsRequested"},
         ]
 
-    def test_sets_device_id_for_openvino(self) -> None:
+    def test_sets_provider_options_for_openvino(self) -> None:
+        model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
-        session = OrtSession("ViT-B-32__openai", providers=["OpenVINOExecutionProvider"])
+        session = OrtSession(model_path, providers=["OpenVINOExecutionProvider"])
 
-        assert session.provider_options[0]["device_type"] == "GPU.1"
+        assert session.provider_options == [
+            {
+                "device_type": "GPU.1",
+                "precision": "FP32",
+                "cache_dir": "/cache/ViT-B-32__openai/textual/openvino",
+            }
+        ]
 
-    def test_sets_device_id_for_cuda(self) -> None:
+    def test_sets_provider_options_for_cuda(self) -> None:
         os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
 
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
 
-        assert session.provider_options[0]["device_id"] == "1"
+        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+
+    def test_sets_provider_options_for_rocm(self) -> None:
+        os.environ["MACHINE_LEARNING_DEVICE_ID"] = "1"
+
+        session = OrtSession("ViT-B-32__openai", providers=["ROCMExecutionProvider"])
+
+        assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
 
     def test_sets_provider_options_kwarg(self) -> None:
         session = OrtSession(
@@ -324,6 +365,33 @@ class TestAnnSession:
         session.run(None, input_feed)
 
         ann_session.return_value.execute.assert_called_once_with(123, [input1, input2])
+        assert np_spy.call_count == 2
+        np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
+
+
+class TestRknnSession:
+    def test_creates_rknn_session(self, rknn_session: mock.Mock, info: mock.Mock, mocker: MockerFixture) -> None:
+        model_path = mock.MagicMock(spec=Path)
+        tpe = 1
+        mocker.patch("app.sessions.rknn.soc_name", "rk3566")
+        mocker.patch("app.sessions.rknn.is_available", True)
+        RknnSession(model_path)
+
+        rknn_session.assert_called_once_with(model_path=model_path.as_posix(), tpes=tpe, func=run_inference)
+
+        info.assert_has_calls([mock.call(f"Loaded RKNN model from {model_path} with {tpe} threads.")])
+
+    def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
+        rknn_session.return_value.load.return_value = 123
+        np_spy = mocker.spy(np, "ascontiguousarray")
+        mocker.patch("app.sessions.rknn.soc_name", "rk3566")
+        session = RknnSession(Path("ViT-B-32__openai"))
+        [input1, input2] = [np.random.rand(1, 3, 224, 224).astype(np.float32) for _ in range(2)]
+        input_feed = {"input.1": input1, "input.2": input2}
+
+        session.run(None, input_feed)
+
+        rknn_session.return_value.put.assert_called_once_with([input1, input2])
         np_spy.call_count == 2
         np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
 
@@ -457,11 +525,14 @@ class TestCLIP:
 
 
 class TestFaceRecognition:
-    def test_set_min_score(self, mocker: MockerFixture) -> None:
-        mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache", min_score=0.5)
+    def test_set_min_score(self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
-        assert face_recognizer.min_score == 0.5
+        face_detector = FaceDetector("buffalo_s", min_score=0.5, cache_dir="test_cache")
+        face_detector.load()
+
+        assert face_detector.min_score == 0.5
+        assert face_detector.model.det_thresh == 0.5
 
     def test_detection(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
         mocker.patch.object(FaceDetector, "load")
@@ -826,9 +897,7 @@ class TestLoad:
         mock_model.clear_cache.assert_not_called()
         mock_model.load.assert_not_called()
 
-    async def test_falls_back_to_onnx_if_other_format_does_not_exist(
-        self, exception: mock.Mock, warning: mock.Mock
-    ) -> None:
+    async def test_falls_back_to_onnx_if_other_format_does_not_exist(self, warning: mock.Mock) -> None:
         mock_model = mock.Mock(spec=InferenceModel)
         mock_model.model_name = "test_model_name"
         mock_model.model_type = ModelType.VISUAL
@@ -843,8 +912,9 @@ class TestLoad:
 
         mock_model.clear_cache.assert_not_called()
         assert mock_model.load.call_count == 2
-        exception.assert_called_once_with(error)
-        warning.assert_called_once_with("ARMNN is available, but model 'test_model_name' does not support it.")
+        warning.assert_called_once_with(
+            "ARMNN is available, but model 'test_model_name' does not support it.", exc_info=error
+        )
         mock_model.model_format = ModelFormat.ONNX
 
 

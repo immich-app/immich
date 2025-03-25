@@ -7,7 +7,7 @@
   import TreeItemThumbnails from '$lib/components/shared-components/tree/tree-item-thumbnails.svelte';
   import TreeItems from '$lib/components/shared-components/tree/tree-items.svelte';
   import { AppRoute, QueryParameter } from '$lib/constants';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { foldersStore } from '$lib/stores/folders.svelte';
   import { buildTree, normalizeTreePath } from '$lib/utils/tree-utils';
   import { mdiDotsVertical, mdiFolder, mdiFolderHome, mdiFolderOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
@@ -98,9 +98,21 @@
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} />
         <AddToAlbum onAddToAlbum={() => cancelMultiselect(assetInteraction)} shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) => {
+          if (data.pathAssets && data.pathAssets.length > 0) {
+            for (const id of ids) {
+              const asset = data.pathAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }
+        }}
+      />
 
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem />
         <ChangeDate menuItem />
         <ChangeLocation menuItem />
@@ -142,7 +154,13 @@
     <!-- Assets -->
     {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
-        <GalleryViewer assets={data.pathAssets} {assetInteraction} {viewport} showAssetName={true} />
+        <GalleryViewer
+          assets={data.pathAssets}
+          {assetInteraction}
+          {viewport}
+          showAssetName={true}
+          pageHeaderOffset={54}
+        />
       </div>
     {/if}
   </section>
