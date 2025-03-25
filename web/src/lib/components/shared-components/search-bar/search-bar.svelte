@@ -165,6 +165,10 @@
 
   function getSearchType(): 'smart' | 'metadata' | 'description' {
     const t = localStorage.getItem('searchQueryType');
+    if (t == null) {
+      return 'smart';
+    }
+
     return t === 'smart' || t === 'description' ? t : 'metadata';
   }
 
