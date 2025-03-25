@@ -74,14 +74,9 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStoreOptions = { isArchived: false, personId: data.person.id };
-  const assetStore = new AssetStore(assetStoreOptions);
-
-  $effect(() => {
-    // Check to trigger rebuild the timeline when navigating between people from the info panel
-    assetStoreOptions.personId = data.person.id;
-    handlePromiseError(assetStore.updateOptions(assetStoreOptions));
-  });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
+  onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -154,7 +149,7 @@
   });
 
   const handleUnmerge = () => {
-    assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetStore.removeAssets(assetInteraction.selectedAssets.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -249,12 +244,14 @@
 
   const handleSuggestPeople = (person2: PersonResponseDto) => {
     isEditingName = false;
-    potentialMergePeople = [];
-    personName = person.name;
-    personMerge1 = person;
-    personMerge2 = person2;
-    isSuggestionSelectedByUser = true;
-    viewMode = PersonPageViewMode.SUGGEST_MERGE;
+    if (person.id !== person2.id) {
+      potentialMergePeople = [];
+      personName = person.name;
+      personMerge1 = person;
+      personMerge2 = person2;
+      isSuggestionSelectedByUser = true;
+      viewMode = PersonPageViewMode.SUGGEST_MERGE;
+    }
   };
 
   const changeName = async () => {
@@ -360,9 +357,6 @@
     await updateAssetCount();
   };
 
-  onDestroy(() => {
-    assetStore.destroy();
-  });
   let person = $derived(data.person);
 
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
@@ -376,7 +370,7 @@
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={assetInteraction.selectedAssetsArray.map((a) => a.id)}
+    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}
@@ -418,7 +412,14 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} />
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) =>
+          assetStore.updateAssetOperation(ids, (asset) => {
+            asset.isFavorite = isFavorite;
+            return { remove: false };
+          })}
+      />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
@@ -485,7 +486,7 @@
 </header>
 
 <main
-  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {

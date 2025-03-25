@@ -31,7 +31,7 @@ class FaceRecognizer(InferenceModel):
             self._add_batch_axis(self.model_path)
             session = self._make_session(self.model_path)
         self.model = ArcFaceONNX(
-            self.model_path.with_suffix(".onnx").as_posix(),
+            self.model_path_for_format(ModelFormat.ONNX).as_posix(),
             session=session,
         )
         return session
