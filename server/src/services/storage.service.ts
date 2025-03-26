@@ -100,66 +100,66 @@ export class StorageService extends BaseService {
 }
 
 
-  @OnJob({ name: JobName.DELETE_FILES, queue: QueueName.BACKGROUND_TASK })
-  async handleDeleteFiles(job: JobOf<JobName.DELETE_FILES>): Promise<JobStatus> {
-    const { files } = job;
+@OnJob({ name: JobName.DELETE_FILES, queue: QueueName.BACKGROUND_TASK })
+async handleDeleteFiles(job: JobOf<JobName.DELETE_FILES>): Promise<JobStatus> {
+  const { files } = job;
 
-    // TODO: one job per file
-    for (const file of files) {
-      if (!file) {
-        continue;
-      }
-
-      try {
-        await this.storageRepository.unlink(file);
-      } catch (error: any) {
-        this.logger.warn('Unable to remove file from disk', error);
-      }
+  // TODO: one job per file
+  for (const file of files) {
+    if (!file) {
+      continue;
     }
 
-    return JobStatus.SUCCESS;
-  }
-
-  private async verifyReadAccess(folder: StorageFolder) {
-    const { internalPath, externalPath } = this.getMountFilePaths(folder);
     try {
-      await this.storageRepository.readFile(internalPath);
-    } catch (error) {
-      this.logger.error(`Failed to read ${internalPath}: ${error}`);
-      throw new ImmichStartupError(`Failed to read "${externalPath} - ${docsMessage}"`);
+      await this.storageRepository.unlink(file);
+    } catch (error: any) {
+      this.logger.warn('Unable to remove file from disk', error);
     }
   }
 
-  private async createMountFile(folder: StorageFolder) {
-    const { folderPath, internalPath, externalPath } = this.getMountFilePaths(folder);
-    try {
-      this.storageRepository.mkdirSync(folderPath);
-      await this.storageRepository.createFile(internalPath, Buffer.from(`${Date.now()}`));
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-        this.logger.warn('Found existing mount file, skipping creation');
-        return;
-      }
-      this.logger.error(`Failed to create ${internalPath}: ${error}`);
-      throw new ImmichStartupError(`Failed to create "${externalPath} - ${docsMessage}"`);
+  return JobStatus.SUCCESS;
+}
+
+private async verifyReadAccess(folder: StorageFolder) {
+  const { internalPath, externalPath } = this.getMountFilePaths(folder);
+  try {
+    await this.storageRepository.readFile(internalPath);
+  } catch (error) {
+    this.logger.error(`Failed to read ${internalPath}: ${error}`);
+    throw new ImmichStartupError(`Failed to read "${externalPath} - ${docsMessage}"`);
+  }
+}
+
+private async createMountFile(folder: StorageFolder) {
+  const { folderPath, internalPath, externalPath } = this.getMountFilePaths(folder);
+  try {
+    this.storageRepository.mkdirSync(folderPath);
+    await this.storageRepository.createFile(internalPath, Buffer.from(`${Date.now()}`));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+      this.logger.warn('Found existing mount file, skipping creation');
+      return;
     }
+    this.logger.error(`Failed to create ${internalPath}: ${error}`);
+    throw new ImmichStartupError(`Failed to create "${externalPath} - ${docsMessage}"`);
   }
+}
 
-  private async verifyWriteAccess(folder: StorageFolder) {
-    const { internalPath, externalPath } = this.getMountFilePaths(folder);
-    try {
-      await this.storageRepository.overwriteFile(internalPath, Buffer.from(`${Date.now()}`));
-    } catch (error) {
-      this.logger.error(`Failed to write ${internalPath}: ${error}`);
-      throw new ImmichStartupError(`Failed to write "${externalPath} - ${docsMessage}"`);
-    }
+private async verifyWriteAccess(folder: StorageFolder) {
+  const { internalPath, externalPath } = this.getMountFilePaths(folder);
+  try {
+    await this.storageRepository.overwriteFile(internalPath, Buffer.from(`${Date.now()}`));
+  } catch (error) {
+    this.logger.error(`Failed to write ${internalPath}: ${error}`);
+    throw new ImmichStartupError(`Failed to write "${externalPath} - ${docsMessage}"`);
   }
+}
 
-  private getMountFilePaths(folder: StorageFolder) {
-    const folderPath = StorageCore.getBaseFolder(folder);
-    const internalPath = join(folderPath, '.immich');
-    const externalPath = `<UPLOAD_LOCATION>/${folder}/.immich`;
+private getMountFilePaths(folder: StorageFolder) {
+  const folderPath = StorageCore.getBaseFolder(folder);
+  const internalPath = join(folderPath, '.immich');
+  const externalPath = `<UPLOAD_LOCATION>/${folder}/.immich`;
 
-    return { folderPath, internalPath, externalPath };
-  }
+  return { folderPath, internalPath, externalPath };
+}
 }
