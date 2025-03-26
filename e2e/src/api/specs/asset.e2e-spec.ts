@@ -1141,7 +1141,7 @@ describe('/asset', () => {
             fNumber: 8,
             focalLength: 97,
             iso: 100,
-            lensModel: 'E PZ 18-105mm F4 G OSS',
+            lensModel: 'Sony E PZ 18-105mm F4 G OSS',
             fileSizeInByte: 25_001_984,
             dateTimeOriginal: '2016-09-27T10:51:44+00:00',
             orientation: '1',
