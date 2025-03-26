@@ -1063,7 +1063,7 @@ export class AssetRepository {
       .where('libraryId', '=', asUuid(libraryId))
       .where((eb) =>
         eb.or([
-          sql<boolean>`${sql.ref('originalPath')} not like all (${paths})`,
+          eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
           eb('originalPath', 'like', exclusions.join('|')),
         ]),
       )
