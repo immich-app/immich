@@ -233,7 +233,10 @@ export class StorageRepository {
 
   private asGlob(pathToCrawl: string): string {
     const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');
-    const extensions = `*{${mimeTypes.getSupportedFileExtensions().join(',')}}`;
+    const extensions = `*{${mimeTypes
+      .getSupportedFileExtensions()
+      .map((extension) => `${extension}*( )`)
+      .join(',')}}`;
     return `${escapedPath}/**/${extensions}`;
   }
 }

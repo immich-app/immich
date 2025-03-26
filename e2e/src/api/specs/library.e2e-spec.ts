@@ -306,6 +306,26 @@ describe('/libraries', () => {
       expect(assets.count).toBe(1);
     });
 
+    const whitespaces = [' ', '  ', '       '];
+    it.each(whitespaces)('should import new asset with trailing whitespace %s in filename', async (whitespace) => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/folder/`],
+      });
+
+      utils.createImageFile(`${testAssetDir}/temp/folder/assetA.png${whitespace}`);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+      expect(assets.items).toEqual(
+        expect.arrayContaining([expect.objectContaining({ originalPath: expect.stringContaining(`assetA.png`) })]),
+      );
+
+      rmSync(`${testAssetDir}/temp/folder`, { recursive: true, force: true });
+    });
+
     it('should process metadata and thumbnails for external asset', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
