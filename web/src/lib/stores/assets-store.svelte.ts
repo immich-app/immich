@@ -39,9 +39,7 @@ export type AssetStoreOptions = Omit<AssetApiGetTimeBucketsRequest, 'size'> & {
   timelineAlbumId?: string;
   deferInit?: boolean;
 };
-export type AssetStoreLayoutOptions = {
-  rowHeight: number;
-};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function updateObject(target: any, source: any): boolean {
   if (!target) {
@@ -578,7 +576,6 @@ export class AssetStore {
 
   // --- private
   static #INIT_OPTIONS = {};
-  #rowHeight = 235;
   #viewportHeight = $state(0);
   #viewportWidth = $state(0);
   #scrollTop = $state(0);
@@ -621,7 +618,6 @@ export class AssetStore {
     const changed = value !== this.#viewportWidth;
     this.#viewportWidth = value;
     this.suspendTransitions = true;
-    this.#rowHeight = value < 850 ? 100 : 235;
     // side-effect - its ok!
     void this.#updateViewportGeometry(changed);
   }
@@ -797,11 +793,6 @@ export class AssetStore {
     this.#updateViewportGeometry(false);
   }
 
-  updateLayoutOptions(options: AssetStoreLayoutOptions) {
-    this.#rowHeight = options.rowHeight;
-    this.refreshLayout();
-  }
-
   async #init(options: AssetStoreOptions) {
     // doing the following outside of the task reduces flickr
     this.isInitialized = false;
@@ -871,11 +862,10 @@ export class AssetStore {
 
   createLayoutOptions() {
     const viewportWidth = this.viewportWidth;
-
     return {
       spacing: 2,
       heightTolerance: 0.15,
-      rowHeight: this.#rowHeight,
+      rowHeight: 235,
       rowWidth: Math.floor(viewportWidth),
     };
   }
