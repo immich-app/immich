@@ -226,7 +226,7 @@ export class MetadataService extends BaseService {
       fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
-      lensModel: exifTags.LensID ?? exifTags.LensSpec ?? exifTags.LensType ?? exifTags.LensModel ?? null,
+      lensModel: exifTags.LensID ?? exifTags.LensType ?? exifTags.LensSpec ?? exifTags.LensModel ?? null,
       fNumber: validate(exifTags.FNumber),
       focalLength: validate(exifTags.FocalLength),
 
