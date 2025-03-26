@@ -153,7 +153,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     state = state.copyWith(
       deviceId: deviceId,
-      userId: user.uid,
+      userId: user.id,
       userEmail: user.email,
       isAuthenticated: true,
       name: user.name,

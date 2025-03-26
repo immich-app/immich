@@ -149,7 +149,7 @@
   });
 
   const handleUnmerge = () => {
-    assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetStore.removeAssets(assetInteraction.selectedAssets.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -244,12 +244,14 @@
 
   const handleSuggestPeople = (person2: PersonResponseDto) => {
     isEditingName = false;
-    potentialMergePeople = [];
-    personName = person.name;
-    personMerge1 = person;
-    personMerge2 = person2;
-    isSuggestionSelectedByUser = true;
-    viewMode = PersonPageViewMode.SUGGEST_MERGE;
+    if (person.id !== person2.id) {
+      potentialMergePeople = [];
+      personName = person.name;
+      personMerge1 = person;
+      personMerge2 = person2;
+      isSuggestionSelectedByUser = true;
+      viewMode = PersonPageViewMode.SUGGEST_MERGE;
+    }
   };
 
   const changeName = async () => {
@@ -368,7 +370,7 @@
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={assetInteraction.selectedAssetsArray.map((a) => a.id)}
+    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}
@@ -484,7 +486,7 @@
 </header>
 
 <main
-  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {

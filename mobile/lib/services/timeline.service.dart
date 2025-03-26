@@ -28,21 +28,21 @@ class TimelineService {
     this._userService,
   );
 
-  Future<List<int>> getTimelineUserIds() async {
+  Future<List<String>> getTimelineUserIds() async {
     final me = _userService.getMyUser();
     return _timelineRepository.getTimelineUserIds(me.id);
   }
 
-  Stream<List<int>> watchTimelineUserIds() async* {
+  Stream<List<String>> watchTimelineUserIds() async* {
     final me = _userService.getMyUser();
     yield* _timelineRepository.watchTimelineUsers(me.id);
   }
 
-  Stream<RenderList> watchHomeTimeline(int userId) {
+  Stream<RenderList> watchHomeTimeline(String userId) {
     return _timelineRepository.watchHomeTimeline(userId, _getGroupByOption());
   }
 
-  Stream<RenderList> watchMultiUsersTimeline(List<int> userIds) {
+  Stream<RenderList> watchMultiUsersTimeline(List<String> userIds) {
     return _timelineRepository.watchMultiUsersTimeline(
       userIds,
       _getGroupByOption(),
@@ -83,10 +83,10 @@ class TimelineService {
     GroupAssetsBy? groupBy,
   ) {
     GroupAssetsBy groupOption = GroupAssetsBy.none;
-    if (groupBy != null) {
-      groupOption = groupBy;
-    } else {
+    if (groupBy == null) {
       groupOption = _getGroupByOption();
+    } else {
+      groupOption = groupBy;
     }
 
     return _timelineRepository.getTimelineFromAssets(

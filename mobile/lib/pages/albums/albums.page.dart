@@ -17,6 +17,7 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_thumbnail_card.dart';
 import 'package:immich_mobile/widgets/common/immich_app_bar.dart';
 import 'package:immich_mobile/widgets/common/immich_thumbnail.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 
 @RoutePage()
 class AlbumsPage extends HookConsumerWidget {
@@ -33,7 +34,7 @@ class AlbumsPage extends HookConsumerWidget {
     final searchController = useTextEditingController();
     final debounceTimer = useRef<Timer?>(null);
     final filterMode = useState(QuickFilterMode.all);
-    final userId = ref.watch(currentUserProvider)?.uid;
+    final userId = ref.watch(currentUserProvider)?.id;
     final searchFocusNode = useFocusNode();
 
     toggleViewMode() {
@@ -115,46 +116,17 @@ class AlbumsPage extends HookConsumerWidget {
                   transform: const GradientRotation(0.5 * pi),
                 ),
               ),
-              child: TextField(
+              child: SearchField(
                 autofocus: false,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
-                      color: context.colorScheme.surfaceDim,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
-                      color: context.colorScheme.surfaceContainer,
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
-                      color: context.colorScheme.surfaceDim,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: BorderSide(
-                      color: context.colorScheme.primary.withAlpha(100),
-                    ),
-                  ),
-                  hintText: 'search_albums'.tr(),
-                  hintStyle: context.textTheme.bodyLarge?.copyWith(
-                    color: context.colorScheme.onSurfaceSecondary,
-                  ),
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
-                          onPressed: clearSearch,
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                contentPadding: const EdgeInsets.all(16),
+                hintText: 'search_albums'.tr(),
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: clearSearch,
+                      )
+                    : null,
                 controller: searchController,
                 onChanged: (_) =>
                     onSearch(searchController.text, filterMode.value),

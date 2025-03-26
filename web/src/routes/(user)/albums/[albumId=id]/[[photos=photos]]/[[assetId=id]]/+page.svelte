@@ -249,7 +249,7 @@
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
   const handleAddAssets = async () => {
-    const assetIds = timelineInteraction.selectedAssetsArray.map((asset) => asset.id);
+    const assetIds = timelineInteraction.selectedAssets.map((asset) => asset.id);
 
     try {
       const results = await addAssetsToAlbum({
@@ -364,7 +364,7 @@
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
-    if (assetInteraction.selectedAssets.size === 1) {
+    if (assetInteraction.selectedAssets.length === 1) {
       const [firstAsset] = assetInteraction.selectedAssets;
       assetInteraction.clearMultiselect();
       await updateThumbnail(firstAsset.id);
@@ -435,7 +435,7 @@
   });
   const isShared = $derived(viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : album.albumUsers.length > 0);
   const isSelectionMode = $derived(
-    viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
+    viewMode === AlbumPageViewMode.SELECT_ASSETS ? true : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
   );
   const singleSelect = $derived(
     viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : viewMode === AlbumPageViewMode.SELECT_THUMBNAIL,
@@ -479,7 +479,7 @@
           {#if assetInteraction.isAllUserOwned}
             <ChangeDate menuItem />
             <ChangeLocation menuItem />
-            {#if assetInteraction.selectedAssets.size === 1}
+            {#if assetInteraction.selectedAssets.length === 1}
               <MenuOption
                 text={$t('set_as_album_cover')}
                 icon={mdiImageOutline}
@@ -574,7 +574,7 @@
               {#if !timelineInteraction.selectionActive}
                 {$t('add_to_album')}
               {:else}
-                {$t('selected_count', { values: { count: timelineInteraction.selectedAssets.size } })}
+                {$t('selected_count', { values: { count: timelineInteraction.selectedAssets.length } })}
               {/if}
             </p>
           {/snippet}
@@ -603,7 +603,9 @@
       {/if}
     {/if}
 
-    <main class="relative h-screen overflow-hidden bg-immich-bg px-6 pt-[var(--navbar-height)] dark:bg-immich-dark-bg">
+    <main
+      class="relative h-screen overflow-hidden bg-immich-bg px-6 max-md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+    >
       <AssetGrid
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}

@@ -34,7 +34,7 @@ final currentUserProvider =
   return CurrentUserProvider(ref.watch(userServiceProvider));
 });
 
-class TimelineUserIdsProvider extends StateNotifier<List<int>> {
+class TimelineUserIdsProvider extends StateNotifier<List<String>> {
   TimelineUserIdsProvider(this._timelineService) : super([]) {
     _timelineService.getTimelineUserIds().then((users) => state = users);
     streamSub = _timelineService
@@ -42,7 +42,7 @@ class TimelineUserIdsProvider extends StateNotifier<List<int>> {
         .listen((users) => state = users);
   }
 
-  late final StreamSubscription<List<int>> streamSub;
+  late final StreamSubscription<List<String>> streamSub;
   final TimelineService _timelineService;
 
   @override
@@ -53,6 +53,6 @@ class TimelineUserIdsProvider extends StateNotifier<List<int>> {
 }
 
 final timelineUsersIdsProvider =
-    StateNotifierProvider<TimelineUserIdsProvider, List<int>>((ref) {
+    StateNotifierProvider<TimelineUserIdsProvider, List<String>>((ref) {
   return TimelineUserIdsProvider(ref.watch(timelineServiceProvider));
 });

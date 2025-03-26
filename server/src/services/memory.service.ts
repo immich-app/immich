@@ -74,13 +74,13 @@ export class MemoryService extends BaseService {
 
   async search(auth: AuthDto, dto: MemorySearchDto) {
     const memories = await this.memoryRepository.search(auth.user.id, dto);
-    return memories.map((memory) => mapMemory(memory));
+    return memories.map((memory) => mapMemory(memory, auth));
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
     await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
     const memory = await this.findOrFail(id);
-    return mapMemory(memory);
+    return mapMemory(memory, auth);
   }
 
   async create(auth: AuthDto, dto: MemoryCreateDto) {
@@ -104,7 +104,7 @@ export class MemoryService extends BaseService {
       allowedAssetIds,
     );
 
-    return mapMemory(memory);
+    return mapMemory(memory, auth);
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
@@ -116,7 +116,7 @@ export class MemoryService extends BaseService {
       seenAt: dto.seenAt,
     });
 
-    return mapMemory(memory);
+    return mapMemory(memory, auth);
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {

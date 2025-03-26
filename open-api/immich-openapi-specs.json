@@ -5712,6 +5712,7 @@
             "required": false,
             "in": "query",
             "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -7655,7 +7656,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "1.129.0",
+    "version": "1.130.2",
     "contact": {}
   },
   "tags": [],

@@ -35,6 +35,8 @@
     onPrevious?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onNext?: (() => Promise<AssetResponseDto | undefined>) | undefined;
     onRandom?: (() => Promise<AssetResponseDto | undefined>) | undefined;
+    pageHeaderOffset?: number;
+    slidingWindowOffset?: number;
   }
 
   let {
@@ -49,6 +51,8 @@
     onPrevious = undefined,
     onNext = undefined,
     onRandom = undefined,
+    slidingWindowOffset = 0,
+    pageHeaderOffset = 0,
   }: Props = $props();
 
   let { isViewing: isViewerOpen, asset: viewingAsset, setAsset } = assetViewingStore;
@@ -59,11 +63,14 @@
     const _assets = assets;
     updateSlidingWindow();
 
+    const rowWidth = Math.floor(viewport.width);
+    const rowHeight = rowWidth < 850 ? 100 : 235;
+
     geometry = getJustifiedLayoutFromAssets(_assets, {
       spacing: 2,
       heightTolerance: 0.15,
-      rowHeight: 235,
-      rowWidth: Math.floor(viewport.width),
+      rowHeight,
+      rowWidth,
     });
   });
 
@@ -83,7 +90,7 @@
           height: geometry.getHeight(i),
         };
         // 54 is the content height of the asset-selection-app-bar
-        const layoutTopWithOffset = layout.top + 54;
+        const layoutTopWithOffset = layout.top + pageHeaderOffset;
         const layoutBottom = layoutTopWithOffset + layout.height;
 
         const display = layoutTopWithOffset < slidingWindow.bottom && layoutBottom > slidingWindow.top;
@@ -106,7 +113,7 @@
 
   const updateSlidingWindow = () => {
     const v = $state.snapshot(viewport);
-    const top = document.scrollingElement?.scrollTop || 0;
+    const top = (document.scrollingElement?.scrollTop || 0) - slidingWindowOffset;
     const bottom = top + v.height;
     const w = {
       top,
@@ -169,9 +176,9 @@
     // Select/deselect already loaded assets
     if (deselect) {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
-        assetInteraction.removeAssetFromMultiselectGroup(candidate);
+        assetInteraction.removeAssetFromMultiselectGroup(candidate.id);
       }
-      assetInteraction.removeAssetFromMultiselectGroup(asset);
+      assetInteraction.removeAssetFromMultiselectGroup(asset.id);
     } else {
       for (const candidate of assetInteraction.assetSelectionCandidates) {
         assetInteraction.selectAsset(candidate);
@@ -217,7 +224,7 @@
   };
 
   const onDelete = () => {
-    const hasTrashedAsset = assetInteraction.selectedAssetsArray.some((asset) => asset.isTrashed);
+    const hasTrashedAsset = assetInteraction.selectedAssets.some((asset) => asset.isTrashed);
 
     if ($showDeleteModal && (!isTrashEnabled || hasTrashedAsset)) {
       isShowDeleteConfirmation = true;
@@ -245,7 +252,7 @@
   };
 
   const toggleArchive = async () => {
-    const ids = await archiveAssets(assetInteraction.selectedAssetsArray, !assetInteraction.isAllArchived);
+    const ids = await archiveAssets(assetInteraction.selectedAssets, !assetInteraction.isAllArchived);
     if (ids) {
       assets = assets.filter((asset) => !ids.includes(asset.id));
       deselectAllAssets();
@@ -306,6 +313,10 @@
       if (onNext) {
         asset = await onNext();
       } else {
+        if (currentViewAssetIndex >= assets.length - 1) {
+          return false;
+        }
+
         currentViewAssetIndex = currentViewAssetIndex + 1;
         asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
       }
@@ -352,6 +363,10 @@
       if (onPrevious) {
         asset = await onPrevious();
       } else {
+        if (currentViewAssetIndex <= 0) {
+          return false;
+        }
+
         currentViewAssetIndex = currentViewAssetIndex - 1;
         asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
       }
@@ -407,7 +422,7 @@
   };
 
   let isTrashEnabled = $derived($featureFlags.loaded && $featureFlags.trash);
-  let idsSelectedAssets = $derived(assetInteraction.selectedAssetsArray.map(({ id }) => id));
+  let idsSelectedAssets = $derived(assetInteraction.selectedAssets.map(({ id }) => id));
 
   $effect(() => {
     if (!lastAssetMouseEvent) {
@@ -438,7 +453,7 @@
 
 {#if isShowDeleteConfirmation}
   <DeleteAssetDialog
-    size={assetInteraction.selectedAssets.size}
+    size={assetInteraction.selectedAssets.length}
     onCancel={() => (isShowDeleteConfirmation = false)}
     onConfirm={() => handlePromiseError(trashOrDelete(true))}
   />
@@ -454,7 +469,7 @@
     style:height={assetLayouts.containerHeight + 'px'}
     style:width={assetLayouts.containerWidth - 1 + 'px'}
   >
-    {#each assetLayouts.assetLayout as layout (layout.asset.id)}
+    {#each assetLayouts.assetLayout as layout, index (layout.asset.id + '-' + index)}
       {@const asset = layout.asset}
 
       {#if layout.display}
@@ -480,7 +495,7 @@
             {asset}
             selected={assetInteraction.hasSelectedAsset(asset.id)}
             selectionCandidate={assetInteraction.hasSelectionCandidate(asset.id)}
-            focussed={assetInteraction.isFocussedAsset(asset)}
+            focussed={assetInteraction.isFocussedAsset(asset.id)}
             thumbnailWidth={layout.width}
             thumbnailHeight={layout.height}
           />
