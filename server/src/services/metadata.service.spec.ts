@@ -1200,18 +1200,42 @@ describe(MetadataService.name, () => {
     });
 
     it.each([
-      { Make: '1', Model: '2', Device: { Manufacturer: '3', ModelName: '4' }, AndroidMake: '4', AndroidModel: '5' },
-      { Device: { Manufacturer: '1', ModelName: '2' }, AndroidMake: '3', AndroidModel: '4' },
-      { AndroidMake: '1', AndroidModel: '2' },
-    ])('should read camera make and model correct place %s', async (metaData) => {
+      {
+        exif: {
+          Make: '1',
+          Model: '2',
+          Device: { Manufacturer: '3', ModelName: '4' },
+          AndroidMake: '4',
+          AndroidModel: '5',
+        },
+        expected: { make: '1', model: '2' },
+      },
+      {
+        exif: { Device: { Manufacturer: '1', ModelName: '2' }, AndroidMake: '3', AndroidModel: '4' },
+        expected: { make: '1', model: '2' },
+      },
+      { exif: { AndroidMake: '1', AndroidModel: '2' }, expected: { make: '1', model: '2' } },
+    ])('should read camera make and model $exif -> $expected', async ({ exif, expected }) => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
-      mockReadTags(metaData);
+      mockReadTags(exif);
+
+      await sut.handleMetadataExtraction({ id: assetStub.image.id });
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(expect.objectContaining(expected));
+    });
+
+    it.each([
+      { exif: { LensID: '1', LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '1' },
+      { exif: { LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '2' },
+      { exif: { LensType: '3', LensModel: '4' }, expected: '3' },
+      { exif: { LensModel: '4' }, expected: '4' },
+    ])('should read camera lens information $exif -> $expected', async ({ exif, expected }) => {
+      mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
+      mockReadTags(exif);
 
       await sut.handleMetadataExtraction({ id: assetStub.image.id });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
-          make: '1',
-          model: '2',
+          lensModel: expected,
         }),
       );
     });
