@@ -76,8 +76,8 @@ class HashService {
       bytesProcessed += await file.length();
       toBeHashed.add(_AssetPath(asset: asset, path: file.path));
 
-      if (toBeHashed.length == kHashAssetsFileLimit ||
-          bytesProcessed >= kHashAssetsSizeLimit) {
+      if (toBeHashed.length == kBatchHashAssetsLimit ||
+          bytesProcessed >= kBatchHashSizeLimit) {
         hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
         toBeHashed.clear();
         toBeDeleted.clear();
