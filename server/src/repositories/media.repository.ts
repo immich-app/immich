@@ -44,7 +44,7 @@ export class MediaRepository {
   async extract(input: string, output: string): Promise<boolean> {
     try {
       await exiftool.extractBinaryTag('JpgFromRaw2', input, output);
-    } catch (error: any) {
+    } catch {
       try {
         await exiftool.extractJpgFromRaw(input, output);
       } catch (error: any) {
