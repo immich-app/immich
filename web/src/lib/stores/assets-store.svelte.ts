@@ -403,8 +403,12 @@ export class AssetBucket {
         }
         if (dateGroup) {
           const intersectingAsset = new IntersectingAsset(dateGroup, asset);
-          dateGroup.intersetingAssets.push(intersectingAsset);
-          changedDateGroups.add(dateGroup);
+          if (dateGroup.intersetingAssets.some((a) => a.id === asset.id)) {
+            console.error(`Ignoring attempt to add duplicate asset ${asset.id} to ${dateGroup.groupTitle}`);
+          } else {
+            dateGroup.intersetingAssets.push(intersectingAsset);
+            changedDateGroups.add(dateGroup);
+          }
         } else {
           dateGroup = new AssetDateGroup(this, this.dateGroups.length, date, day);
           dateGroup.intersetingAssets.push(new IntersectingAsset(dateGroup, asset));
@@ -1001,6 +1005,11 @@ export class AssetStore {
     }
 
     const result = await bucket.loader?.execute(async (signal: AbortSignal) => {
+      if (!!bucket.getFirstAsset()) {
+        // this happens when a bucket was created by an event instead of via a loadBucket call
+        // so no need to load the bucket, it already has assets
+        return;
+      }
       const assets = await getTimeBucket(
         {
           ...this.#options,
