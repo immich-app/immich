@@ -1,5 +1,6 @@
 // ignore_for_file: avoid-unsafe-collection-methods
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -45,8 +46,9 @@ class HashService {
               .modifiedTime
               .isAtSameMomentAs(assets[index].fileModifiedAt)) {
         // localID is matching and the asset is not modified, reuse the hash
-        asset.byteHash = hashesInDB[index].hash;
-        hashedAssets.add(asset);
+        hashedAssets.add(
+          asset.copyWith(checksum: base64.encode(hashesInDB[index].hash)),
+        );
         continue;
       }
 
@@ -114,8 +116,7 @@ class HashService {
     for (final (index, hash) in hashes.indexed) {
       final asset = toBeHashed.elementAtOrNull(index)?.asset;
       if (asset != null && hash?.length == 20) {
-        asset.byteHash = hash!;
-        hashedAssets.add(asset);
+        hashedAssets.add(asset.copyWith(checksum: base64.encode(hash!)));
         toBeAdded.add(
           DeviceAsset(
             assetId: asset.localId!,

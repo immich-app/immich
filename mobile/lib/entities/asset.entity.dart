@@ -359,7 +359,7 @@ class Asset {
       // take most values from newer asset
       // keep vales that can never be set by the asset not in DB
       if (a.isRemote) {
-        return a._copyWith(
+        return a.copyWith(
           id: id,
           localId: localId,
           width: a.width ?? width,
@@ -367,7 +367,7 @@ class Asset {
           exifInfo: a.exifInfo?.copyWith(assetId: id) ?? exifInfo,
         );
       } else if (isRemote) {
-        return _copyWith(
+        return copyWith(
           localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
@@ -375,7 +375,7 @@ class Asset {
         );
       } else {
         // TODO: Revisit this and remove all bool field assignments
-        return a._copyWith(
+        return a.copyWith(
           id: id,
           remoteId: remoteId,
           livePhotoVideoId: livePhotoVideoId,
@@ -395,7 +395,7 @@ class Asset {
       // fill in potentially missing values, i.e. merge assets
       if (a.isRemote) {
         // values from remote take precedence
-        return _copyWith(
+        return copyWith(
           remoteId: a.remoteId,
           width: a.width,
           height: a.height,
@@ -417,7 +417,7 @@ class Asset {
         );
       } else {
         // add only missing values (and set isLocal to true)
-        return _copyWith(
+        return copyWith(
           localId: localId ?? a.localId,
           width: width ?? a.width,
           height: height ?? a.height,
@@ -428,7 +428,7 @@ class Asset {
     }
   }
 
-  Asset _copyWith({
+  Asset copyWith({
     Id? id,
     String? checksum,
     String? remoteId,
