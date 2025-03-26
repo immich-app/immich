@@ -1063,7 +1063,10 @@ export class AssetRepository {
       .where('isExternal', '=', true)
       .where('libraryId', '=', asUuid(libraryId))
       .where((eb) =>
-        eb.or([eb('originalPath', 'not like', paths.join('|')), eb('originalPath', 'like', exclusions.join('|'))]),
+        eb.or([
+          eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
+          eb('originalPath', 'like', exclusions.join('|')),
+        ]),
       )
       .executeTakeFirstOrThrow();
   }

@@ -532,20 +532,13 @@ export class MetadataService extends BaseService {
       return JobStatus.FAILED;
     }
 
-    let storeSidecar = false;
-    let purgeAssetId = false;
-
     if (!sidecar.assetId) {
       const filePath = path.parse(sidecar.path);
-      const pathWithoutExtension = filePath.dir + '/' + filePath.name;
 
-      const assets = await this.assetRepository.getLikeOriginalPath(pathWithoutExtension);
+      const assets = await this.assetRepository.getLikeOriginalPath(filePath.dir + '/' + filePath.name);
 
       if (assets.length === 0) {
-        this.logger.verbose(
-          `No matching asset found for sidecar ${sidecar.id}: ${sidecar.path}, ${pathWithoutExtension}`,
-        );
-        await this.assetFileRepository.update({ ...sidecar, assetId: null });
+        this.logger.verbose(`No matching asset found for sidecar ${sidecar.id}: ${sidecar.path}`);
         return JobStatus.SUCCESS;
       }
 
@@ -556,64 +549,17 @@ export class MetadataService extends BaseService {
         return JobStatus.FAILED;
       }
 
-      const asset = assets[0];
-
-      this.logger.verbose(`Mapping sidecar ${sidecar.id}: ${sidecar.path} to asset ${asset.id}: ${asset.originalPath}`);
-
-      storeSidecar = true;
-      sidecar.assetId = asset.id;
-    }
-
-    const currentSidecarsForAsset: SidecarAssetFileEntity[] = [];
-
-    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
-      this.assetFileRepository.getAll(options, { assetId: sidecar.assetId, type: AssetFileType.SIDECAR }),
-    );
-
-    for await (const sidecar of sidecarPagination) {
-      currentSidecarsForAsset.push(...(sidecar as SidecarAssetFileEntity[]));
-    }
-
-    this.logger.debug(
-      `Found ${currentSidecarsForAsset.length} existing sidecar(s): ${currentSidecarsForAsset.map((sidecar) => sidecar.path).join(', ')}`,
-    );
-    if (currentSidecarsForAsset.length === 0) {
-      this.logger.debug(`No other sidecars found for asset`);
-      // No existing sidecar for this asset, store the new one
-      storeSidecar = true;
-    } else {
-      const currentSidecar = currentSidecarsForAsset[0];
-      if (currentSidecar.id === sidecar.id) {
-        // Sidecar is already stored, do nothing
-        return JobStatus.SUCCESS;
-      }
-
-      if (sidecar.path.length > currentSidecar.path.length) {
-        this.logger.verbose(
-          `Replacing sidecar ${currentSidecar.path} with ${sidecar.path} for asset ${sidecar.assetId}`,
-        );
-        await this.assetFileRepository.update({ ...currentSidecar, assetId: null });
-        storeSidecar = true;
-      } else {
-        purgeAssetId = true;
-      }
-    }
-
-    if (storeSidecar) {
-      this.logger.debug(
-        `Storing sidecar: ${JSON.stringify({ ...sidecar, assetId: purgeAssetId ? null : sidecar.assetId })}`,
+      this.logger.verbose(
+        `Mapping sidecar ${sidecar.id}: ${sidecar.path} to asset ${assets[0].id}: ${assets[0].originalPath}`,
       );
-      if (purgeAssetId) {
-        await this.assetFileRepository.update({ ...sidecar, assetId: null });
-      } else {
-        await this.assetFileRepository.updateAssetId(sidecar.id, sidecar.assetId);
-      }
 
-      await this.jobRepository.queue({
-        name: JobName.METADATA_EXTRACTION,
-        data: { id: sidecar.assetId, source: 'upload' },
-      });
+      await this.assetFileRepository.update({ ...sidecar, assetId: assets[0].id });
     }
+
+    await this.jobRepository.queue({
+      name: JobName.METADATA_EXTRACTION,
+      data: { id: sidecar.assetId, source: 'upload' },
+    });
 
     return JobStatus.SUCCESS;
   }
@@ -634,30 +580,11 @@ export class MetadataService extends BaseService {
 
     const sidecars = await this.assetFileRepository.getSidecarsLikePath(pathWithoutExtension);
 
-    const sidecar = sidecars.shift();
-
-    this.logger.debug(`Asset mapping sidecar: ${JSON.stringify(sidecar)}`);
-
-    if (!sidecar) {
-      // No sidecar found, so exit here
-      return JobStatus.SUCCESS;
-    }
-
-    if (!sidecar.assetId) {
-      this.logger.debug(`Storing asset mapping sidecar: ${JSON.stringify(sidecar)}`);
-      await this.assetFileRepository.updateAssetId(sidecar.id, asset.id);
-    }
-
-    // Sidecars are returned from repo sorted by path length, so we choose file.jpg.xmp before file.xmp
-    const otherSidecar = sidecars.shift();
-
-    if (otherSidecar && otherSidecar.assetId) {
-      await this.assetFileRepository.update({ id: otherSidecar.id, assetId: null });
-    }
-
-    if (sidecars.length > 0) {
-      this.logger.error(`Too many sidecars found for asset ${asset.id}: ${asset.originalPath}`);
-      return JobStatus.FAILED;
+    for (const sidecar of sidecars) {
+      if (!sidecar.assetId) {
+        this.logger.debug(`Storing asset mapping sidecar: ${JSON.stringify(sidecar)}`);
+        await this.assetFileRepository.update({ ...sidecar, assetId: asset.id });
+      }
     }
 
     await this.jobRepository.queue({
@@ -748,26 +675,7 @@ export class MetadataService extends BaseService {
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
     this.logger.verbose(`Getting exif tags for asset ${asset.id}: ${asset.originalPath}`);
 
-    const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
-      this.assetFileRepository.getAll(options, { assetId: asset.id, type: AssetFileType.SIDECAR }),
-    );
-
-    let sidecars: SidecarAssetFileEntity[] = [];
-
-    for await (const foundSidecar of sidecarPagination) {
-      this.logger.verbose(`Found sidecar(s) for asset ${asset.id}: ${JSON.stringify(foundSidecar)}`);
-      sidecars.push(...(foundSidecar as SidecarAssetFileEntity[]));
-    }
-
-    this.logger.debug(
-      `Found ${sidecars.length} sidecar(s) for asset ${asset.originalPath}: ${sidecars.map((sidecar) => sidecar.path).join(', ')}`,
-    );
-
-    if (sidecars.length > 1) {
-      throw new Error(`Multiple sidecars found for asset ${asset.id}: ${asset.originalPath}`);
-    }
-
-    const sidecar = sidecars[0];
+    const sidecar = await this.assetFileRepository.getSidecarForAsset(asset.id);
 
     if (!sidecar && asset.type === AssetType.IMAGE) {
       const tagResult = await this.metadataRepository.readTags(asset.originalPath);

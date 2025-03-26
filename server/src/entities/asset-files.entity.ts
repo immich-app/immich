@@ -4,18 +4,12 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType } from 'src/enum';
 import { AssetFileSearchOptions } from 'src/repositories/search.repository';
 import { asUuid } from 'src/utils/database';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Unique('UQ_assetId_type', ['assetId', 'type'])
+@Index('UQ_assetId_type', ['assetId', 'type'], {
+  unique: true,
+  where: `"type" IS NOT ${AssetFileType.SIDECAR}`,
+})
 @Entity('asset_files')
 export class AssetFileEntity {
   @PrimaryGeneratedColumn('uuid')
