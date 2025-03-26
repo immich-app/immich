@@ -75,6 +75,8 @@ Future<void> _migrateDeviceAsset(Isar db) async {
           .findAll())
       .map((a) => _DeviceAsset(assetId: a.localId!, dateTime: a.fileModifiedAt))
       .toList();
+  debugPrint("Device Asset Ids length - ${ids.length}");
+  debugPrint("Local Asset Ids length - ${localAssets.length}");
   ids.sort((a, b) => a.assetId.compareTo(b.assetId));
   localAssets.sort((a, b) => a.assetId.compareTo(b.assetId));
   final List<DeviceAssetEntity> toAdd = [];
@@ -101,6 +103,7 @@ Future<void> _migrateDeviceAsset(Isar db) async {
       debugPrint('Local asset not found in DeviceAsset: ${asset.assetId}');
     },
   );
+  debugPrint("Total number of device assets migrated - ${toAdd.length}");
   await db.writeTxn(() async {
     await db.deviceAssetEntitys.putAll(toAdd);
   });
