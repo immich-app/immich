@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { press, tap } from 'svelte-gestures';
-
   import Icon from '$lib/components/elements/icon.svelte';
   import { ProjectionType } from '$lib/constants';
   import { getAssetThumbnailUrl, isSharedLink } from '$lib/utils';
@@ -126,6 +124,43 @@
   const onMouseLeave = () => {
     mouseOver = false;
   };
+
+  function longPress(element: HTMLElement, { onLongPress, onTap }: { onLongPress: () => any; onTap: () => any }) {
+    let timer: ReturnType<typeof setTimeout>;
+    let didLongPress = false;
+    let startElement: EventTarget | null;
+    let didMove = false;
+    const start = (event: TouchEvent) => {
+      startElement = event.target;
+      timer = setTimeout(() => {
+        didLongPress = true;
+        onLongPress();
+        event.preventDefault();
+      }, 350);
+    };
+    const move = () => {
+      didMove = true;
+    };
+    const end = (event: TouchEvent) => {
+      if (!didLongPress && !didMove && event.target === startElement) {
+        startElement = null;
+        onTap();
+      }
+      didLongPress = false;
+      clearTimeout(timer);
+    };
+    element.addEventListener('touchmove', move);
+    element.addEventListener('touchstart', start);
+    element.addEventListener('touchend', end);
+
+    return {
+      destroy: () => {
+        element.removeEventListener('touchmove', move);
+        element.removeEventListener('touchstart', start);
+        element.removeEventListener('touchend', end);
+      },
+    };
+  }
 </script>
 
 <div
@@ -163,10 +198,7 @@
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
-    use:press={() => ({ timeframe: 350, triggerBeforeFinished: true })}
-    use:tap={() => ({ timeframe: 350 })}
-    onpress={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : onSelect?.($state.snapshot(asset)))}
-    ontap={(evt) => (evt.detail.pointerType === 'mouse' ? void 0 : callClickHandlers())}
+    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)), onTap: callClickHandlers }}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
