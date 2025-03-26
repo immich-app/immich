@@ -138,43 +138,11 @@ export class AlbumRepository {
         .selectFrom('assets')
         .innerJoin('albums_assets_assets as album_assets', 'album_assets.assetsId', 'assets.id')
         .select('album_assets.albumsId as albumId')
-        .select((eb) =>
-          eb.fn
-            .min<any>(
-              sql`
-                ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
-                                                    ::date
-              `,
-            )
-            .as('startDate'),
-        )
-        .select((eb) =>
-          eb.fn
-            .max<any>(
-              sql`
-                ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
-                                                    ::date
-              `,
-            )
-            .as('endDate'),
-        )
+        .select((eb) => eb.fn.min(sql<Date>`("assets"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
+        .select((eb) => eb.fn.max(sql<Date>`("assets"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('endDate'))
         // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
-        .select((eb) =>
-          eb.fn
-            .max<any>(
-              sql`
-                ("assets"."updatedAt" AT TIME ZONE 'UTC'::text)
-                                                    ::date
-              `,
-            )
-            .as('lastModifiedAssetTimestamp'),
-        )
-        .select((eb) =>
-          sql<number>`
-            ${eb.fn.count('assets.id')}
-                  ::int
-          `.as('assetCount'),
-        )
+        .select((eb) => eb.fn.max('assets.updatedAt').as('lastModifiedAssetTimestamp'))
+        .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
         .where('album_assets.albumsId', 'in', ids)
         .where('assets.deletedAt', 'is', null)
         .groupBy('album_assets.albumsId')
