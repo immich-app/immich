@@ -12,6 +12,7 @@ export interface AlbumAssetCount {
   assetCount: number;
   startDate: Date | null;
   endDate: Date | null;
+  lastModifiedAssetTimestamp: Date | null;
 }
 
 export interface AlbumInfoOptions {
@@ -132,18 +133,53 @@ export class AlbumRepository {
       return [];
     }
 
-    return this.db
-      .selectFrom('albums')
-      .innerJoin('albums_assets_assets as album_assets', 'album_assets.albumsId', 'albums.id')
-      .innerJoin('assets', 'assets.id', 'album_assets.assetsId')
-      .select('albums.id as albumId')
-      .select((eb) => eb.fn.min('assets.localDateTime').as('startDate'))
-      .select((eb) => eb.fn.max('assets.localDateTime').as('endDate'))
-      .select((eb) => sql<number>`${eb.fn.count('assets.id')}::int`.as('assetCount'))
-      .where('albums.id', 'in', ids)
-      .where('assets.deletedAt', 'is', null)
-      .groupBy('albums.id')
-      .execute();
+    return (
+      this.db
+        .selectFrom('assets')
+        .innerJoin('albums_assets_assets as album_assets', 'album_assets.assetsId', 'assets.id')
+        .select('album_assets.albumsId as albumId')
+        .select((eb) =>
+          eb.fn
+            .min<any>(
+              sql`
+              ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
+                                                  ::date
+            `,
+            )
+            .as('startDate'),
+        )
+        .select((eb) =>
+          eb.fn
+            .max<any>(
+              sql`
+              ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
+                                                  ::date
+            `,
+            )
+            .as('endDate'),
+        )
+        // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+        .select((eb) =>
+          eb.fn
+            .max<any>(
+              sql`
+              ("assets"."updatedAt" AT TIME ZONE 'UTC'::text)
+                                                  ::date
+            `,
+            )
+            .as('lastModifiedAssetTimestamp'),
+        )
+        .select((eb) =>
+          sql<number>`
+          ${eb.fn.count('assets.id')}
+                ::int
+        `.as('assetCount'),
+        )
+        .where('album_assets.albumsId', 'in', ids)
+        .where('assets.deletedAt', 'is', null)
+        .groupBy('album_assets.albumsId')
+        .execute()
+    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

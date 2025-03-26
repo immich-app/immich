@@ -58,19 +58,15 @@ export class AlbumService extends BaseService {
       albumMetadata[metadata.albumId] = metadata;
     }
 
-    return Promise.all(
-      albums.map(async (album) => {
-        const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
-        return {
-          ...mapAlbumWithoutAssets(album),
-          sharedLinks: undefined,
-          startDate: albumMetadata[album.id]?.startDate ?? undefined,
-          endDate: albumMetadata[album.id]?.endDate ?? undefined,
-          assetCount: albumMetadata[album.id]?.assetCount ?? 0,
-          lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
-        };
-      }),
-    );
+    return albums.map((album) => ({
+      ...mapAlbumWithoutAssets(album),
+      sharedLinks: undefined,
+      startDate: albumMetadata[album.id]?.startDate ?? undefined,
+      endDate: albumMetadata[album.id]?.endDate ?? undefined,
+      assetCount: albumMetadata[album.id]?.assetCount ?? 0,
+      // lastModifiedAssetTimestamp is only used in mobile app, please remove if not need
+      lastModifiedAssetTimestamp: albumMetadata[album.id]?.lastModifiedAssetTimestamp ?? undefined,
+    }));
   }
 
   async get(auth: AuthDto, id: string, dto: AlbumInfoDto): Promise<AlbumResponseDto> {
