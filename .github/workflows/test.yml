@@ -404,7 +404,7 @@ jobs:
           uv run mypy --strict immich_ml/
       - name: Run tests and coverage
         run: |
-          uv run pytest immich_ml --cov=immich_ml --cov-report term-missing
+          uv run pytest test_main.py --cov=immich_ml --cov-report term-missing
 
   github-files-formatting:
     name: .github Files Formatting
