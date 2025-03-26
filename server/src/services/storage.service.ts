@@ -40,6 +40,11 @@ export class StorageService extends BaseService {
           await this.verifyReadAccess(folder);
           await this.verifyWriteAccess(folder);
 
+          // Ensure README.TXT is created in UPLOAD and LIBRARY folders only
+          if ([StorageFolder.UPLOAD, StorageFolder.LIBRARY].includes(folder)) {
+            await this.createReadmeFile(folder);
+          }
+
           if (!flags.mountChecks[folder]) {
             flags.mountChecks[folder] = true;
             updated = true;
@@ -62,6 +67,39 @@ export class StorageService extends BaseService {
       }
     });
   }
+
+  async createReadmeFile(folder: StorageFolder) {
+    const { folderPath } = this.getMountFilePaths(folder);
+    const readmePath = join(folderPath, 'README.TXT');
+    const warningMessage = `WARNING: Do not modify/delete the contents of the Upload folder as it may cause unexpected errors and database incompatibilities.\n\n` +
+                           `Please refer to the documentation for more information:\n` +
+                           `https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations`;
+
+    try {
+      let exists = false;
+      try {
+        await this.storageRepository.stat(readmePath);
+        exists = true;
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error;
+        }
+      }
+
+      if (exists) {
+        this.logger.log('README.TXT already exists, skipping creation');
+        return;
+      }
+
+      await this.storageRepository.createFile(readmePath, Buffer.from(warningMessage));
+      this.logger.log(`README.TXT file created at ${readmePath}`);
+    } catch (error) {
+      this.logger.error(`Failed to create README.TXT in ${folderPath}: ${error}`);
+      throw new ImmichStartupError(`Failed to create README.TXT in "${folderPath} - ${docsMessage}"`);
+    }
+  }
+}
+
 
   @OnJob({ name: JobName.DELETE_FILES, queue: QueueName.BACKGROUND_TASK })
   async handleDeleteFiles(job: JobOf<JobName.DELETE_FILES>): Promise<JobStatus> {
