@@ -125,7 +125,7 @@
     mouseOver = false;
   };
 
-  function longPress(element: HTMLElement, { onLongPress, onTap }: { onLongPress: () => any; onTap: () => any }) {
+  function longPress(element: HTMLElement, { onLongPress, onTap }: { onLongPress: () => void; onTap: () => void }) {
     let timer: ReturnType<typeof setTimeout>;
     let didLongPress = false;
     let startElement: EventTarget | null;
@@ -180,9 +180,6 @@
       out:fade={{ duration: THUMBHASH_FADE_DURATION }}
     ></canvas>
   {/if}
-
-  <!-- svelte queries for all links on afterNavigate, leading to performance problems in asset-grid which updates
-     the navigation url on scroll. Replace this with button for now. -->
 
   <!-- as of iOS17, there is a preference for long press speed, which is not available for mobile web.
       The defaults are as follows:
