@@ -1005,7 +1005,7 @@ export class AssetStore {
     }
 
     const result = await bucket.loader?.execute(async (signal: AbortSignal) => {
-      if (!!bucket.getFirstAsset()) {
+      if (bucket.getFirstAsset()) {
         // this happens when a bucket was created by an event instead of via a loadBucket call
         // so no need to load the bucket, it already has assets
         return;
