@@ -74,7 +74,7 @@
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
-  let isTouchDevice = $derived(mobileDevice.hoverNone);
+  let isTouchDevice = $derived(mobileDevice.pointerCoarse);
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);

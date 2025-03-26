@@ -268,7 +268,7 @@
       globalThis.removeEventListener('touchmove', onTouchMove);
     };
   });
-  const usingMobileDevice = $derived(mobileDevice.hoverNone);
+  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 </script>
 
 <svelte:window
