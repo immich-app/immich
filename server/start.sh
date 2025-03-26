@@ -2,15 +2,6 @@
 
 echo "Initializing Immich $IMMICH_SOURCE_REF"
 
-cat <<EOF > /usr/src/app/upload/upload/README.txt
-WARNING: Do not modify/delete the contents of the Upload folder as it may cause unexpected errors and database incompatibilities.
-
-Please refer to the documentation for more information:
-https://immich.app/docs/administration/backup-and-restore#asset-types-and-storage-locations
-EOF
-
-echo "README.txt created in /usr/src/app/upload/upload"
-
 lib_path="/usr/lib/$(arch)-linux-gnu/libmimalloc.so.2"
 export LD_PRELOAD="$lib_path"
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/lib/jellyfin-ffmpeg/lib"
