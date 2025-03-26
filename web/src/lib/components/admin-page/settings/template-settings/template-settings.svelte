@@ -11,15 +11,10 @@
   import { mdiEyeOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
 
   interface Props {
     savedConfig: SystemConfigDto;
-    defaultConfig: SystemConfigDto;
     config: SystemConfigDto;
-    disabled?: boolean;
-    onReset: SettingsResetEvent;
-    onSave: SettingsSaveEvent;
   }
 
   let { savedConfig, config = $bindable() }: Props = $props();
