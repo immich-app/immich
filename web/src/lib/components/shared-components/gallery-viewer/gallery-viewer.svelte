@@ -313,6 +313,10 @@
       if (onNext) {
         asset = await onNext();
       } else {
+        if (currentViewAssetIndex >= assets.length - 1) {
+          return false;
+        }
+
         currentViewAssetIndex = currentViewAssetIndex + 1;
         asset = currentViewAssetIndex < assets.length ? assets[currentViewAssetIndex] : undefined;
       }
@@ -359,6 +363,10 @@
       if (onPrevious) {
         asset = await onPrevious();
       } else {
+        if (currentViewAssetIndex <= 0) {
+          return false;
+        }
+
         currentViewAssetIndex = currentViewAssetIndex - 1;
         asset = currentViewAssetIndex >= 0 ? assets[currentViewAssetIndex] : undefined;
       }
@@ -461,7 +469,7 @@
     style:height={assetLayouts.containerHeight + 'px'}
     style:width={assetLayouts.containerWidth - 1 + 'px'}
   >
-    {#each assetLayouts.assetLayout as layout (layout.asset.id)}
+    {#each assetLayouts.assetLayout as layout, index (layout.asset.id + '-' + index)}
       {@const asset = layout.asset}
 
       {#if layout.display}

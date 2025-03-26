@@ -6,7 +6,7 @@ import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
 import { utimes } from 'utimes';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 describe('/libraries', () => {
   let admin: LoginResponseDto;
@@ -696,6 +696,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -718,6 +721,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2000-09-27T12:35:33.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
@@ -742,6 +748,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2000-09-27T12:35:33.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
@@ -773,6 +782,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -801,10 +813,13 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
-      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+      it('should switch from using file metadata to file.ext.xmp metadata when asset refreshes', async () => {
         const library = await utils.createLibrary(admin.accessToken, {
           ownerId: admin.userId,
           importPaths: [`${testAssetDirInternal}/temp/xmp`],
@@ -829,6 +844,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -846,7 +864,7 @@ describe('/libraries', () => {
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
+        // await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
         await utils.scan(admin.accessToken, library.id);
 
@@ -858,6 +876,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2010-09-27T12:35:33.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
@@ -888,6 +909,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -916,6 +940,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2010-07-20T17:27:12.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });

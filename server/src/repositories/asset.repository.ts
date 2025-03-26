@@ -201,6 +201,16 @@ export class AssetRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID], { model: DummyValue.STRING }] })
+  @Chunked()
+  async updateAllExif(ids: string[], options: Updateable<Exif>): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+
+    await this.db.updateTable('exif').set(options).where('assetId', 'in', ids).execute();
+  }
+
   async upsertJobStatus(...jobStatus: Insertable<AssetJobStatus>[]): Promise<void> {
     if (jobStatus.length === 0) {
       return;

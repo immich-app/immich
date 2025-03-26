@@ -75,6 +75,52 @@ export class AssetFileRepository {
     return this.getById(assetFile.id) as Promise<AssetFileEntity>;
   }
 
+  async updateAssetId(id: string, assetId: string) {
+    // Thread safe way of updating assetId, picking the sidecar with the longest path
+    return this.db.transaction().execute(async (trx) => {
+      // Check the current assetId for the given asset_files.id
+      const currentAssetFile = await trx
+        .selectFrom('asset_files')
+        .select(['assetId', 'path'])
+        .where('id', '=', asUuid(id))
+        .executeTakeFirst();
+
+      if (!currentAssetFile) {
+        return;
+      }
+
+      // If assetId is already set, compare paths
+      if (currentAssetFile.assetId !== assetId) {
+        const conflictingAssetFile = await trx
+          .selectFrom('asset_files')
+          .select(['id', 'path'])
+          .where('assetId', '=', asUuid(assetId))
+          .executeTakeFirst();
+
+        if (conflictingAssetFile) {
+          // Compare paths
+          if (conflictingAssetFile.path.length > currentAssetFile.path.length) {
+            // Do not update if the conflicting path is longer
+            return;
+          } else {
+            await trx
+              .updateTable('asset_files')
+              .set({ assetId: null })
+              .where('id', '=', asUuid(conflictingAssetFile.id))
+              .execute();
+          }
+        }
+      }
+
+      // Update the assetId if it is null or the conditions are met
+      await trx
+        .updateTable('asset_files')
+        .set({ assetId: asUuid(assetId) })
+        .where('id', '=', asUuid(id))
+        .execute();
+    });
+  }
+
   async upsert(file: Pick<Insertable<AssetFiles>, 'id' | 'assetId' | 'path' | 'type'>): Promise<AssetFileEntity> {
     if (!file.assetId && file.type !== AssetFileType.SIDECAR) {
       throw new Error('Asset ID is required for file upsert');
@@ -119,12 +165,11 @@ export class AssetFileRepository {
       .execute()) as any as Promise<AssetFileEntity[]>;
   }
 
-  async getSidecarsLikePath(assetPath: string): Promise<AssetFileEntity[]> {
-    const assetPathWithoutExtension = assetPath.replace(/[^.]+$/, '');
+  async getSidecarsLikePath(path: string): Promise<AssetFileEntity[]> {
     return this.db
       .selectFrom('asset_files')
       .selectAll('asset_files')
-      .where('asset_files.path', 'like', `${assetPathWithoutExtension}%`)
+      .where('asset_files.path', 'like', `${path}%`)
       .where('asset_files.type', '=', AssetFileType.SIDECAR)
       .orderBy(sql`LENGTH(asset_files.path)`, 'desc')
       .execute() as any as Promise<AssetFileEntity[]>;

@@ -430,7 +430,7 @@ export class MetadataService extends BaseService {
         case AssetSyncResult.OFFLINE: {
           this.logger.debug(`Will remove sidecar ${sidecar.path}`);
           await this.assetFileRepository.remove({ id: sidecar.id });
-          this.jobRepository.queue({ name: JobName.SIDECAR_ASSET_MAPPING, data: { id: sidecar.assetId } });
+          await this.jobRepository.queue({ name: JobName.SIDECAR_ASSET_MAPPING, data: { id: sidecar.assetId } });
           removedSidecars++;
           break;
         }
@@ -600,7 +600,14 @@ export class MetadataService extends BaseService {
     }
 
     if (storeSidecar) {
-      await this.assetFileRepository.update({ ...sidecar, assetId: purgeAssetId ? null : sidecar.assetId });
+      this.logger.debug(
+        `Storing sidecar: ${JSON.stringify({ ...sidecar, assetId: purgeAssetId ? null : sidecar.assetId })}`,
+      );
+      if (purgeAssetId) {
+        await this.assetFileRepository.update({ ...sidecar, assetId: null });
+      } else {
+        await this.assetFileRepository.updateAssetId(sidecar.id, sidecar.assetId);
+      }
 
       await this.jobRepository.queue({
         name: JobName.METADATA_EXTRACTION,
@@ -622,20 +629,27 @@ export class MetadataService extends BaseService {
 
     this.logger.debug(`Asset: ${asset.id}: ${asset.originalPath}`);
 
-    const sidecars = await this.assetFileRepository.getSidecarsLikePath(asset.originalPath);
+    const filePath = path.parse(asset.originalPath);
+    const pathWithoutExtension = filePath.dir + '/' + filePath.name;
+
+    const sidecars = await this.assetFileRepository.getSidecarsLikePath(pathWithoutExtension);
 
     const sidecar = sidecars.shift();
 
+    this.logger.debug(`Asset mapping sidecar: ${JSON.stringify(sidecar)}`);
+
     if (!sidecar) {
+      // No sidecar found, so exit here
       return JobStatus.SUCCESS;
     }
 
     if (!sidecar.assetId) {
-      sidecar.assetId = asset.id;
-      await this.assetFileRepository.update(sidecar);
+      this.logger.debug(`Storing asset mapping sidecar: ${JSON.stringify(sidecar)}`);
+      await this.assetFileRepository.updateAssetId(sidecar.id, asset.id);
     }
 
-    const otherSidecar = sidecars.shift() as SidecarAssetFileEntity;
+    // Sidecars are returned from repo sorted by path length, so we choose file.jpg.xmp before file.xmp
+    const otherSidecar = sidecars.shift();
 
     if (otherSidecar && otherSidecar.assetId) {
       await this.assetFileRepository.update({ id: otherSidecar.id, assetId: null });
@@ -733,15 +747,16 @@ export class MetadataService extends BaseService {
 
   private async getExifTags(asset: AssetEntity): Promise<ImmichTags> {
     this.logger.verbose(`Getting exif tags for asset ${asset.id}: ${asset.originalPath}`);
+
     const sidecarPagination = usePagination(JOBS_ASSET_PAGINATION_SIZE, (options) =>
       this.assetFileRepository.getAll(options, { assetId: asset.id, type: AssetFileType.SIDECAR }),
     );
 
     let sidecars: SidecarAssetFileEntity[] = [];
 
-    for await (const sidecars of sidecarPagination) {
-      this.logger.verbose(`Found sidecar(s) for asset ${asset.id}`);
-      sidecars.push(...(sidecars as SidecarAssetFileEntity[]));
+    for await (const foundSidecar of sidecarPagination) {
+      this.logger.verbose(`Found sidecar(s) for asset ${asset.id}: ${JSON.stringify(foundSidecar)}`);
+      sidecars.push(...(foundSidecar as SidecarAssetFileEntity[]));
     }
 
     this.logger.debug(

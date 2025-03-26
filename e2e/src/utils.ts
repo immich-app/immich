@@ -26,7 +26,9 @@ import {
   createStack,
   createUserAdmin,
   deleteAssets,
+  deleteLibrary,
   getAllJobsStatus,
+  getAllLibraries,
   getAssetInfo,
   getConfig,
   getConfigDefaults,
@@ -167,6 +169,32 @@ export const utils = {
         'system_metadata',
         'tags',
       ];
+
+      const sql: string[] = [];
+
+      for (const table of tables) {
+        if (table === 'system_metadata') {
+          sql.push(`DELETE FROM "system_metadata" where "key" NOT IN ('reverse-geocoding-state', 'system-flags');`);
+        } else {
+          sql.push(`DELETE FROM ${table} CASCADE;`);
+        }
+      }
+
+      await client.query(sql.join('\n'));
+    } catch (error) {
+      console.error('Failed to reset database', error);
+      throw error;
+    }
+  },
+
+  resetAssets: async (tables?: string[]) => {
+    try {
+      if (!client) {
+        client = new pg.Client(dbUrl);
+        await client.connect();
+      }
+
+      tables = tables || ['asset_files'];
 
       const sql: string[] = [];
 
@@ -463,6 +491,10 @@ export const utils = {
 
   createLibrary: (accessToken: string, dto: CreateLibraryDto) =>
     createLibrary({ createLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
+
+  getAllLibraries: (accessToken: string) => getAllLibraries({ headers: asBearerAuth(accessToken) }),
+
+  deleteLibrary: (accessToken: string, id: string) => deleteLibrary({ id }, { headers: asBearerAuth(accessToken) }),
 
   validateLibrary: (accessToken: string, id: string, dto: ValidateLibraryDto) =>
     validate({ id, validateLibraryDto: dto }, { headers: asBearerAuth(accessToken) }),
