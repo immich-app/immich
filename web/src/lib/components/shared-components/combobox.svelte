@@ -1,4 +1,6 @@
 <script lang="ts" module>
+  import { get } from 'svelte/store';
+
   export type ComboBoxOption = {
     id?: string;
     label: string;
@@ -28,7 +30,6 @@
   import { generateId } from '$lib/utils/generate-id';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { t } from 'svelte-i18n';
-  import { get } from 'svelte/store';
 
   interface Props {
     label: string;
@@ -282,7 +283,6 @@
       class:cursor-pointer={!isActive}
       class="immich-form-input text-sm text-left w-full !pr-12 transition-all"
       id={inputId}
-      onclick={activate}
       onfocus={activate}
       oninput={onInput}
       role="combobox"
@@ -366,7 +366,7 @@
           aria-disabled={true}
           class="text-left w-full px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-default aria-selected:bg-gray-200 aria-selected:dark:bg-gray-700"
           id={`${listboxId}-${0}`}
-          onclick={() => closeDropdown()}
+          onclick={closeDropdown}
         >
           {allowCreate ? searchQuery : $t('no_results')}
         </li>
