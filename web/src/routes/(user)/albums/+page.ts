@@ -1,17 +1,20 @@
+import { albumListingStore } from '$lib/stores/album-listing.store';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getAllAlbums } from '@immich/sdk';
 import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  const sharedAlbums = await getAllAlbums({ shared: true });
-  const albums = await getAllAlbums({});
+  const { isCached } = await albumListingStore.getAlbums();
   const $t = await getFormatter();
 
+  if (isCached) {
+    // The album data might be old, refetch
+    // non-awaited async
+    albumListingStore.refetchAlbums();
+  }
+
   return {
-    albums,
-    sharedAlbums,
     meta: {
       title: $t('albums'),
     },
