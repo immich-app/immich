@@ -75,14 +75,13 @@ export class AlbumService extends BaseService {
     const withAssets = dto.withoutAssets === undefined ? true : !dto.withoutAssets;
     const album = await this.findOrFail(id, { withAssets });
     const [albumMetadataForIds] = await this.albumRepository.getMetadataForIds([album.id]);
-    const lastModifiedAsset = await this.assetRepository.getLastUpdatedAssetForAlbumId(album.id);
 
     return {
       ...mapAlbum(album, withAssets, auth),
       startDate: albumMetadataForIds?.startDate ?? undefined,
       endDate: albumMetadataForIds?.endDate ?? undefined,
       assetCount: albumMetadataForIds?.assetCount ?? 0,
-      lastModifiedAssetTimestamp: lastModifiedAsset?.updatedAt,
+      lastModifiedAssetTimestamp: albumMetadataForIds?.lastModifiedAssetTimestamp ?? undefined,
     };
   }
 

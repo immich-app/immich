@@ -142,9 +142,9 @@ export class AlbumRepository {
           eb.fn
             .min<any>(
               sql`
-              ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
-                                                  ::date
-            `,
+                ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
+                                                    ::date
+              `,
             )
             .as('startDate'),
         )
@@ -152,9 +152,9 @@ export class AlbumRepository {
           eb.fn
             .max<any>(
               sql`
-              ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
-                                                  ::date
-            `,
+                ("assets"."localDateTime" AT TIME ZONE 'UTC'::text)
+                                                    ::date
+              `,
             )
             .as('endDate'),
         )
@@ -163,17 +163,17 @@ export class AlbumRepository {
           eb.fn
             .max<any>(
               sql`
-              ("assets"."updatedAt" AT TIME ZONE 'UTC'::text)
-                                                  ::date
-            `,
+                ("assets"."updatedAt" AT TIME ZONE 'UTC'::text)
+                                                    ::date
+              `,
             )
             .as('lastModifiedAssetTimestamp'),
         )
         .select((eb) =>
           sql<number>`
-          ${eb.fn.count('assets.id')}
-                ::int
-        `.as('assetCount'),
+            ${eb.fn.count('assets.id')}
+                  ::int
+          `.as('assetCount'),
         )
         .where('album_assets.albumsId', 'in', ids)
         .where('assets.deletedAt', 'is', null)
