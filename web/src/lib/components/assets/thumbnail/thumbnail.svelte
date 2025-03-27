@@ -187,7 +187,7 @@
     role="link"
   >
     <!-- Select asset button  -->
-    {#if !isTouchDevice && mouseOver}
+    {#if !usingMobileDevice && mouseOver}
       <!-- lazy show the url on mouse over-->
       <a
         class={['absolute  z-10 w-full top-0 bottom-0', className]}
@@ -232,7 +232,7 @@
       <!-- icon overlay -->
       <div>
         <!-- Gradient overlay on hover -->
-        {#if !isTouchDevice && !disabled}
+        {#if !usingMobileDevice && !disabled}
           <div
             class={[
               'absolute h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
