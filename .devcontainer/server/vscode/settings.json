@@ -1,0 +1,41 @@
+{
+  "editor.formatOnSave": true,
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode",
+    "editor.tabSize": 2
+  },
+  "svelte.enable-ts-plugin": true,
+  "eslint.validate": ["javascript", "svelte"],
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off",
+    "editor.defaultFormatter": "Dart-Code.dart-code"
+  },
+  "cSpell.words": ["immich"],
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.spec.ts,${capture}.mock.ts"
+  },
+  "debug.javascript.autoAttachFilter": "disabled",
+  "eslint.workingDirectories": ["./server", "./web"]
+}
