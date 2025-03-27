@@ -70,17 +70,7 @@
   };
 
   const onFocusOut = () => {
-    const focusOutTimer = setTimeout(() => {
-      if (searchStore.isSearchEnabled) {
-        searchStore.preventRaceConditionSearchBar = true;
-      }
-
-      closeDropdown();
-      searchStore.isSearchEnabled = false;
-      showFilter = false;
-    }, 100);
-
-    clearTimeout(focusOutTimer);
+    searchStore.isSearchEnabled = false;
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
