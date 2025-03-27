@@ -15,11 +15,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getByAlbumId: vitest.fn(),
     getByChecksum: vitest.fn(),
     getByChecksums: vitest.fn(),
-    getByDayOfYear: vitest.fn(),
     getByDeviceIds: vitest.fn(),
     getById: vitest.fn(),
-    getByIds: vitest.fn().mockResolvedValue([]),
-    getByIdsWithAllRelations: vitest.fn().mockResolvedValue([]),
     getByLibraryIdAndOriginalPath: vitest.fn(),
     getLikeOriginalPath: vitest.fn(),
     getByUserId: vitest.fn(),
@@ -39,10 +36,8 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     updateAll: vitest.fn(),
     updateByLibraryId: vitest.fn(),
     updateDuplicates: vitest.fn(),
-    upsertExif: vitest.fn(),
     streamStorageTemplateAssets: vitest.fn(),
     getStorageTemplateAsset: vitest.fn(),
     streamDeletedAssets: vitest.fn(),
-    upsertJobStatus: vitest.fn(),
   };
 };

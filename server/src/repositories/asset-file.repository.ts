@@ -114,6 +114,7 @@ export class AssetFileRepository {
     }
 
     const values = files.map((row) => ({ ...row, assetId: row.assetId ? asUuid(row.assetId) : null }));
+
     return (await this.db
       .insertInto('asset_files')
       .values(values)

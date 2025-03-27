@@ -2,8 +2,8 @@
 
 -- AssetFileRepository.getByIds
 select
-  "assets".*
+  "asset_files".*
 from
-  "assets"
+  "asset_files"
 where
-  "assets"."id" = any ($1::uuid[])
+  "asset_files"."id" = any ($1::uuid[])

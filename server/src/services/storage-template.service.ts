@@ -203,7 +203,7 @@ export class StorageTemplateService extends BaseService {
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
         });
-       /* if (sidecarPath) {
+        /* if (sidecarPath) {
           await this.storageCore.moveFile({
             entityId: id,
             pathType: AssetPathType.SIDECAR,

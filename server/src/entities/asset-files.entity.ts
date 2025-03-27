@@ -8,7 +8,7 @@ import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedCol
 
 @Index('UQ_assetId_type', ['assetId', 'type'], {
   unique: true,
-  where: `"type" IS NOT ${AssetFileType.SIDECAR}`,
+  where: `"type" <> '${AssetFileType.SIDECAR}'`,
 })
 @Entity('asset_files')
 export class AssetFileEntity {
