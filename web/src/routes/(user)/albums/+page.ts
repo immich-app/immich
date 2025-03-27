@@ -5,16 +5,16 @@ import type { PageLoad } from './$types';
 
 export const load = (async () => {
   await authenticate();
-  const { albums, sharedAlbums, isCached } = await albumListingStore.getAlbums();
+  const { isCached } = await albumListingStore.getAlbums();
   const $t = await getFormatter();
 
-  // The album data might be old, refetch
-  // non-awaited async
-  if (isCached) albumListingStore.refetchAlbums();
+  if (isCached) {
+    // The album data might be old, refetch
+    // non-awaited async
+    albumListingStore.refetchAlbums();
+  }
 
   return {
-    albums,
-    sharedAlbums,
     meta: {
       title: $t('albums'),
     },

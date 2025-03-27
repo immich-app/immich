@@ -18,6 +18,14 @@ function createAlbumListingStore() {
   const albums = writable<AlbumResponseDto[]>([]);
   const sharedAlbums = writable<AlbumResponseDto[]>([]);
 
+  // data must be cleared on logout
+  const reset = () => {
+    albums.set([]);
+    sharedAlbums.set([]);
+    isLoadedAtLeastOnce.set(false);
+    isLoading.set(false);
+  };
+
   const fetchJob = () =>
     Promise.all([getAllAlbums({}), getAllAlbums({ shared: true })]).then(([_albums, _sharedAlbums]) => {
       albums.set(_albums);
@@ -60,6 +68,7 @@ function createAlbumListingStore() {
     getAlbums: getAlbums,
     refetchAlbums: refetchAlbums,
     ensureLoaded: ensureLoaded,
+    reset: reset,
   };
 }
 

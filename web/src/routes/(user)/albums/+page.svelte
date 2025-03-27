@@ -11,12 +11,14 @@
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
+  import { albumListingStore } from '$lib/stores/album-listing.store';
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
+  let { albums, sharedAlbums } = albumListingStore;
 
   let searchQuery = $state('');
   let albumGroups: string[] = $state([]);
@@ -44,8 +46,8 @@
   </div>
 
   <Albums
-    ownedAlbums={data.albums}
-    sharedAlbums={data.sharedAlbums}
+    ownedAlbums={$albums}
+    sharedAlbums={$sharedAlbums}
     userSettings={$albumViewSettings}
     allowEdit
     {searchQuery}
