@@ -40,7 +40,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { preferences, user } from '$lib/stores/user.store';
   import { handlePromiseError } from '$lib/utils';
-  import { downloadAlbum, cancelMultiselect } from '$lib/utils/asset-utils';
+  import { downloadAlbum, cancelMultiselect, addAssetsToAlbum } from '$lib/utils/asset-utils';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { handleError } from '$lib/utils/handle-error';
   import {
@@ -55,7 +55,6 @@
     AssetOrder,
     ReactionLevel,
     ReactionType,
-    addAssetsToAlbum,
     addUsersToAlbum,
     createActivity,
     deleteActivity,
@@ -248,21 +247,12 @@
   const refreshAlbum = async () => {
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
+
   const handleAddAssets = async () => {
     const assetIds = timelineInteraction.selectedAssets.map((asset) => asset.id);
 
     try {
-      const results = await addAssetsToAlbum({
-        id: album.id,
-        bulkIdsDto: { ids: assetIds },
-      });
-
-      const count = results.filter(({ success }) => success).length;
-      notificationController.show({
-        type: NotificationType.Info,
-        message: $t('assets_added_count', { values: { count } }),
-      });
-
+      await addAssetsToAlbum(album.id, assetIds, true, false);
       await refreshAlbum();
 
       timelineInteraction.clearMultiselect();
