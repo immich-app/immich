@@ -24,6 +24,7 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
+  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
