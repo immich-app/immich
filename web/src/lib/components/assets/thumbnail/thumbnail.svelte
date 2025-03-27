@@ -35,10 +35,12 @@
     focussed?: boolean;
     selectionCandidate?: boolean;
     disabled?: boolean;
+    disableLinkMouseOver?: boolean;
     readonly?: boolean;
     showArchiveIcon?: boolean;
     showStackedIcon?: boolean;
-
+    imageClass?: ClassValue;
+    dimmed?: boolean;
     onClick?: ((asset: AssetResponseDto) => void) | undefined;
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
@@ -56,6 +58,7 @@
     focussed = false,
     selectionCandidate = false,
     disabled = false,
+    disableLinkMouseOver = false,
     readonly = false,
     showArchiveIcon = false,
     showStackedIcon = true,
@@ -64,6 +67,8 @@
     onMouseEvent = undefined,
     handleFocus = undefined,
     class: className = '',
+    imageClass = '',
+    dimmed = false,
   }: Props = $props();
 
   let {
@@ -187,10 +192,10 @@
     role="link"
   >
     <!-- Select asset button  -->
-    {#if !usingMobileDevice && mouseOver}
+    {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
       <!-- lazy show the url on mouse over-->
       <a
-        class={['absolute  z-10 w-full top-0 bottom-0', className]}
+        class={['absolute  z-10 w-full top-0 bottom-0']}
         style:cursor="unset"
         href={currentUrlReplaceAssetId(asset.id)}
         onclick={(evt) => evt.preventDefault()}
@@ -240,6 +245,17 @@
             ]}
           ></div>
         {/if}
+        <!-- Dimmed support -->
+
+        {#if dimmed && !mouseOver}
+          <div
+            id="a"
+            class={[
+              'absolute h-full w-full z-30 bg-gradient-to-b from-black/25 via-[transparent_25%]  bg-gray-700/40',
+              { 'rounded-xl': selected },
+            ]}
+          ></div>
+        {/if}
         <!-- Outline on focus -->
         <div
           class={[
@@ -285,6 +301,7 @@
         {/if}
       </div>
       <ImageThumbnail
+        class={imageClass}
         url={getAssetThumbnailUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"

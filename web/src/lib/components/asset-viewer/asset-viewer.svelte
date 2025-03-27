@@ -597,25 +597,26 @@
       <div class="relative w-full whitespace-nowrap transition-all">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
-            class="{stackedAsset.id == asset.id
-              ? '-translate-y-[1px]'
-              : '-translate-y-0'} inline-block px-1 transition-transform"
+            class={[
+              'inline-block px-1 transition-transform',
+              stackedAsset.id === asset.id ? '-translate-y-[0px]' : '-translate-y-0',
+            ]}
           >
             <Thumbnail
-              class="{stackedAsset.id == asset.id
-                ? 'bg-transparent border-2 border-white'
-                : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+              imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
+              dimmed={stackedAsset.id !== asset.id}
               asset={stackedAsset}
               onClick={(stackedAsset) => {
                 asset = stackedAsset;
               }}
               onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
               readonly
-              thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+              thumbnailSize={stackedAsset.id === asset.id ? 65 : 60}
               showStackedIcon={false}
+              disableLinkMouseOver
             />
 
-            {#if stackedAsset.id == asset.id}
+            {#if stackedAsset.id === asset.id}
               <div class="w-full flex place-items-center place-content-center">
                 <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
               </div>
