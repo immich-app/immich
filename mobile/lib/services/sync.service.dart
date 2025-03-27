@@ -765,6 +765,11 @@ class SyncService {
     album.thumbnail.value = thumb;
     try {
       await _albumRepository.create(album);
+      final int assetCount =
+          await _albumMediaRepository.getAssetCount(album.localId!);
+      await _eTagRepository.upsertAll([
+        ETag(id: album.eTagKeyAssetCount, assetCount: assetCount),
+      ]);
       _log.info("Added a new local album to DB: ${album.name}");
     } catch (e) {
       _log.severe("Failed to add new local album ${album.name} to DB", e);

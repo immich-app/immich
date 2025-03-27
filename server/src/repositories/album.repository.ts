@@ -68,7 +68,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'albums'>) => {
       eb
         .selectFrom('assets')
         .selectAll('assets')
-        .innerJoin('exif', 'assets.id', 'exif.assetId')
+        .leftJoin('exif', 'assets.id', 'exif.assetId')
         .select((eb) => eb.table('exif').as('exifInfo'))
         .innerJoin('albums_assets_assets', 'albums_assets_assets.assetsId', 'assets.id')
         .whereRef('albums_assets_assets.albumsId', '=', 'albums.id')

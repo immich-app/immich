@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Setup Flutter SDK
-        uses: subosito/flutter-action@44ac965b96f18d999802d4b807e3256d5a3f9fa1 # v2
+        uses: subosito/flutter-action@e938fdf56512cc96ef2f93601a5a40bde3801046 # v2
         with:
           channel: 'stable'
           flutter-version-file: ./mobile/pubspec.yaml
@@ -55,7 +55,7 @@ jobs:
         working-directory: ./mobile
 
       - name: Find file changes
-        uses: tj-actions/verify-changed-files@6ed7632824d235029086612d4330d659005af687 # v20
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
         id: verify-changed-files
         with:
           files: |
