@@ -101,10 +101,8 @@
     }
     onClick?.($state.snapshot(asset));
   };
+
   const handleClick = (e: MouseEvent) => {
-    if (isTouchDevice) {
-      return;
-    }
     if (e.ctrlKey || e.metaKey) {
       return;
     }
@@ -125,37 +123,19 @@
     mouseOver = false;
   };
 
-  function longPress(element: HTMLElement, { onLongPress, onTap }: { onLongPress: () => void; onTap: () => void }) {
+  function longPress(element: HTMLElement, { onLongPress }: { onLongPress: () => void }) {
     let timer: ReturnType<typeof setTimeout>;
-    let didLongPress = false;
-    let startElement: EventTarget | null;
-    let didMove = false;
     const start = (event: TouchEvent) => {
-      startElement = event.target;
       timer = setTimeout(() => {
-        didLongPress = true;
         onLongPress();
         event.preventDefault();
       }, 350);
     };
-    const move = () => {
-      didMove = true;
-    };
-    const end = (event: TouchEvent) => {
-      if (!didLongPress && !didMove && event.target === startElement) {
-        startElement = null;
-        onTap();
-      }
-      didLongPress = false;
-      clearTimeout(timer);
-    };
-    element.addEventListener('touchmove', move);
+    const end = () => clearTimeout(timer);
     element.addEventListener('touchstart', start);
     element.addEventListener('touchend', end);
-
     return {
       destroy: () => {
-        element.removeEventListener('touchmove', move);
         element.removeEventListener('touchstart', start);
         element.removeEventListener('touchend', end);
       },
@@ -195,7 +175,7 @@
     class:cursor-pointer={!disabled}
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
-    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)), onTap: callClickHandlers }}
+    use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
     onkeydown={(evt) => {
       if (evt.key === 'Enter') {
         callClickHandlers();
