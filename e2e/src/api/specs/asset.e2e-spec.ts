@@ -1163,7 +1163,7 @@ describe('/asset', () => {
             fNumber: 22,
             focalLength: 25,
             iso: 100,
-            lensModel: 'E 25mm F2',
+            lensModel: 'Zeiss Batis 25mm F2',
             fileSizeInByte: 49_512_448,
             dateTimeOriginal: '2016-01-08T14:08:01+00:00',
             orientation: '1',
