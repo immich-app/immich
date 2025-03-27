@@ -293,7 +293,7 @@ class SearchFilter {
       context: context ?? this.context,
       filename: filename ?? this.filename,
       description: description ?? this.description,
-      language: language,
+      language: language ?? this.language,
       people: people ?? this.people,
       location: location ?? this.location,
       camera: camera ?? this.camera,
