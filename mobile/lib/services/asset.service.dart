@@ -390,9 +390,7 @@ class AssetService {
   Future<double> getAspectRatio(Asset asset) async {
     if (asset.isRemote) {
       asset = await loadExif(asset);
-    }
-
-    if (asset.isLocal) {
+    } else if (asset.isLocal) {
       await asset.localAsync;
     }
 
