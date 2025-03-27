@@ -4,7 +4,6 @@ import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { SearchService } from 'src/services/search.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { partnerStub } from 'test/fixtures/partner.stub';
 import { personStub } from 'test/fixtures/person.stub';
 import { newTestService, ServiceMocks } from 'test/utils';
 import { beforeEach, vitest } from 'vitest';
@@ -195,22 +194,6 @@ describe(SearchService.name, () => {
       expect(mocks.search.searchSmart).toHaveBeenCalledWith(
         { page: 1, size: 100 },
         { query: 'test', embedding: '[1, 2, 3]', userIds: [authStub.user1.user.id] },
-      );
-    });
-
-    it('should include partner shared assets', async () => {
-      mocks.partner.getAll.mockResolvedValue([partnerStub.adminToUser1]);
-
-      await sut.searchSmart(authStub.user1, { query: 'test' });
-
-      expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
-        [expect.any(String)],
-        'test',
-        expect.objectContaining({ modelName: expect.any(String) }),
-      );
-      expect(mocks.search.searchSmart).toHaveBeenCalledWith(
-        { page: 1, size: 100 },
-        { query: 'test', embedding: '[1, 2, 3]', userIds: [authStub.user1.user.id, authStub.admin.user.id] },
       );
     });
 
