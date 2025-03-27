@@ -1185,7 +1185,7 @@ describe('/asset', () => {
             fNumber: 4,
             focalLength: 18.098,
             iso: 80,
-            lensModel: "Unknown 6-30mm",
+            lensModel: 'Unknown 6-30mm',
             fileSizeInByte: 11_113_617,
             dateTimeOriginal: '2015-12-27T09:55:40+00:00',
             latitude: null,
