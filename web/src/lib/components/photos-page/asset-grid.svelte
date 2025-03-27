@@ -83,7 +83,7 @@
   let bottomSectionHeight = 60;
   let leadout = $state(false);
 
-  const usingMobileDevice = $derived(mobileDevice.hoverNone);
+  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
 
   const scrollTo = (top: number) => {
     element?.scrollTo({ top });
