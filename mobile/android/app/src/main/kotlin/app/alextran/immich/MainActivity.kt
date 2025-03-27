@@ -20,8 +20,8 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "file_trash"
-    private val REQUEST_MANAGE_STORAGE = 1001
-    private val REQUEST_TRASH_FILE = 1002
+    private val PERMISSION_REQUEST_CODE = 1001
+
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -36,7 +36,6 @@ class MainActivity : FlutterActivity() {
                             val success = moveToTrash(fileName)
                             result.success(success)
                         } else {
-                            requestManageStoragePermission()
                             result.error("PERMISSION_DENIED", "Storage permission required", null)
                         }
                     } else {
@@ -50,7 +49,6 @@ class MainActivity : FlutterActivity() {
                             val success = untrashImage(fileName)
                             result.success(success)
                         } else {
-                            requestManageStoragePermission()
                             result.error("PERMISSION_DENIED", "Storage permission required", null)
                         }
                     } else {
@@ -58,11 +56,40 @@ class MainActivity : FlutterActivity() {
                     }
                 }
                 "requestManageStoragePermission" -> {
-                    requestManageStoragePermission()
-                    result.success(true)
+                  if (!hasManageStoragePermission()) {
+                      requestManageStoragePermission(result)
+                  } else {
+                      Log.e("Manage storage permission", "Permission already granted")
+                      result.success(true)
+                  }
                 }
+
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private var pendingResult: MethodChannel.Result? = null
+
+    private fun requestManageStoragePermission(result: MethodChannel.Result) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        pendingResult = result // Store the result callback
+
+        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+        intent.data = Uri.parse("package:$packageName")
+        startActivityForResult(intent, PERMISSION_REQUEST_CODE)
+    } else {
+        result.success(true)
+    }
+}
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            val granted = hasManageStoragePermission()
+            pendingResult?.success(granted)
+            pendingResult = null
         }
     }
 
@@ -71,14 +98,6 @@ class MainActivity : FlutterActivity() {
             Environment.isExternalStorageManager()
         } else {
             true
-        }
-    }
-
-    private fun requestManageStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-            intent.data = Uri.parse("package:$packageName")
-            startActivity(intent)
         }
     }
 
