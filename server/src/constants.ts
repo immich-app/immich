@@ -24,6 +24,12 @@ export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   vchord: 'VectorChord',
 } as const;
 
+export const VECTOR_EXTENSIONS = [
+  DatabaseExtension.VECTORCHORD,
+  DatabaseExtension.VECTORS,
+  DatabaseExtension.VECTOR,
+] as const;
+
 export const SALT_ROUNDS = 10;
 
 export const IWorker = 'IWorker';

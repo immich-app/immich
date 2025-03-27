@@ -67,8 +67,7 @@ export class DatabaseService extends BaseService {
     }
 
     await this.databaseRepository.withLock(DatabaseLock.Migrations, async () => {
-      const envData = this.configRepository.getEnv();
-      const extension = envData.database.vectorExtension;
+      const extension = await this.databaseRepository.getVectorExtension();
       const name = EXTENSION_NAMES[extension];
       const extensionRange = this.databaseRepository.getExtensionVersionRange(extension);
 

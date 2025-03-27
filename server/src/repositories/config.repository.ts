@@ -75,7 +75,7 @@ export interface EnvData {
   database: {
     config: { typeorm: PostgresConnectionOptions & DatabaseConnectionParams; kysely: PostgresConnectionConfig };
     skipMigrations: boolean;
-    vectorExtension: VectorExtension;
+    vectorExtension?: VectorExtension;
   };
 
   licensePublicKey: {
@@ -260,7 +260,7 @@ const getEnv = (): EnvData => {
     },
   };
 
-  let vectorExtension: VectorExtension;
+  let vectorExtension: VectorExtension | undefined;
   switch (dto.DB_VECTOR_EXTENSION) {
     case 'pgvector':
       vectorExtension = DatabaseExtension.VECTOR;
@@ -271,8 +271,6 @@ const getEnv = (): EnvData => {
     case 'vectorchord':
       vectorExtension = DatabaseExtension.VECTORCHORD;
       break;
-    default:
-      vectorExtension = DatabaseExtension.VECTORCHORD;
   }
 
   return {

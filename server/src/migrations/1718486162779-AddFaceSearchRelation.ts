@@ -1,12 +1,10 @@
 import { DatabaseExtension } from 'src/enum';
-import { ConfigRepository } from 'src/repositories/config.repository';
-import { createVectorIndex } from 'src/repositories/database.repository';
+import { createVectorIndex, getVectorExtension } from 'src/repositories/database.repository';
 import { MigrationInterface, QueryRunner } from 'typeorm';
-
-const vectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
 
 export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const vectorExtension = await getVectorExtension(queryRunner);
     if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);
@@ -53,6 +51,7 @@ export class AddFaceSearchRelation1718486162779 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    const vectorExtension = await getVectorExtension(queryRunner);
     if (vectorExtension === DatabaseExtension.VECTORS) {
       await queryRunner.query(`SET search_path TO "$user", public, vectors`);
       await queryRunner.query(`SET vectors.pgvector_compatibility=on`);

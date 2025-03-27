@@ -9,6 +9,7 @@ import semver from 'semver';
 import {
   EXTENSION_NAMES,
   POSTGRES_VERSION_RANGE,
+  VECTOR_EXTENSIONS,
   VECTOR_VERSION_RANGE,
   VECTORCHORD_VERSION_RANGE,
   VECTORS_VERSION_RANGE,
@@ -20,7 +21,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
 import { isValidInteger } from 'src/validation';
-import { DataSource } from 'typeorm';
+import { DataSource, QueryRunner } from 'typeorm';
 
 export function createVectorIndex(vectorExtension: VectorExtension, tableName: string, indexName: string): string {
   switch (vectorExtension) {
@@ -49,9 +50,33 @@ export function createVectorIndex(vectorExtension: VectorExtension, tableName: s
   }
 }
 
+let cachedVectorExtension: VectorExtension | undefined;
+export async function getVectorExtension(runner: Kysely<DB> | QueryRunner): Promise<VectorExtension> {
+  if (cachedVectorExtension) {
+    return cachedVectorExtension;
+  }
+
+  cachedVectorExtension = new ConfigRepository().getEnv().database.vectorExtension;
+  if (!cachedVectorExtension) {
+    let availableExtensions: { name: VectorExtension }[];
+    const query = `SELECT name FROM pg_available_extensions WHERE name IN (${VECTOR_EXTENSIONS})`;
+    if (runner instanceof Kysely) {
+      const { rows } = await sql.raw<{ name: VectorExtension }>(query).execute(runner);
+      availableExtensions = rows;
+    } else {
+      availableExtensions = (await runner.query(query)) as { name: VectorExtension }[];
+    }
+    const extensionNames = availableExtensions.map((row) => row.name);
+    cachedVectorExtension = VECTOR_EXTENSIONS.find((ext) => extensionNames.includes(ext));
+  }
+  if (!cachedVectorExtension) {
+    throw new Error(`No vector extension found. Available extensions: ${VECTOR_EXTENSIONS.join(', ')}`);
+  }
+  return cachedVectorExtension;
+}
+
 @Injectable()
 export class DatabaseRepository {
-  private vectorExtension: VectorExtension;
   private readonly asyncLock = new AsyncLock();
 
   constructor(
@@ -59,12 +84,15 @@ export class DatabaseRepository {
     private logger: LoggingRepository,
     private configRepository: ConfigRepository,
   ) {
-    this.vectorExtension = configRepository.getEnv().database.vectorExtension;
     this.logger.setContext(DatabaseRepository.name);
   }
 
   async shutdown() {
     await this.db.destroy();
+  }
+
+  getVectorExtension(): Promise<VectorExtension> {
+    return getVectorExtension(this.db);
   }
 
   @GenerateSql({ params: [DatabaseExtension.VECTORS] })
@@ -136,6 +164,7 @@ export class DatabaseRepository {
 
   async reindex(index: VectorIndex): Promise<void> {
     this.logger.log(`Reindexing ${index}`);
+    const vectorExtension = await getVectorExtension(this.db);
     const table = await this.getIndexTable(index);
     if (!table) {
       this.logger.warn(`Could not find table for index ${index}`);
@@ -145,12 +174,12 @@ export class DatabaseRepository {
     await this.db.transaction().execute(async (tx) => {
       await sql`DROP INDEX IF EXISTS ${sql.raw(index)}`.execute(this.db);
       await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
-      const schema = this.vectorExtension === DatabaseExtension.VECTORS ? 'vectors.' : '';
+      const schema = vectorExtension === DatabaseExtension.VECTORS ? 'vectors.' : '';
       await sql`
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
         SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
-      await sql.raw(createVectorIndex(this.vectorExtension, table, index)).execute(tx);
+      await sql.raw(createVectorIndex(vectorExtension, table, index)).execute(tx);
     });
   }
 
@@ -162,7 +191,7 @@ export class DatabaseRepository {
     }>`SELECT indexdef, indexname FROM pg_indexes WHERE indexname = ANY(ARRAY[${names}])`.execute(this.db);
 
     let keyword: string;
-    switch (this.vectorExtension) {
+    switch (await getVectorExtension(this.db)) {
       case DatabaseExtension.VECTOR:
         keyword = 'using hnsw';
         break;
@@ -172,8 +201,6 @@ export class DatabaseRepository {
       case DatabaseExtension.VECTORS:
         keyword = 'using vectors';
         break;
-      default:
-        throw new Error(`Unsupported vector extension: '${this.vectorExtension}'`);
     }
 
     return names.map(

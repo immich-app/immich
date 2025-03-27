@@ -1,7 +1,7 @@
 import { SystemConfig } from 'src/config';
+import { VECTOR_EXTENSIONS } from 'src/constants';
 import {
   AssetType,
-  DatabaseExtension,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -393,7 +393,7 @@ export type JobItem =
   | { name: JobName.MEMORIES_CLEANUP; data?: IBaseJob }
   | { name: JobName.MEMORIES_CREATE; data?: IBaseJob };
 
-export type VectorExtension = DatabaseExtension.VECTOR | DatabaseExtension.VECTORS | DatabaseExtension.VECTORCHORD;
+export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 
 export type DatabaseConnectionURL = {
   connectionType: 'url';
