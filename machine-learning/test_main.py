@@ -18,19 +18,18 @@ from PIL import Image
 from pytest import MonkeyPatch
 from pytest_mock import MockerFixture
 
-from app.main import load, preload_models
-from app.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
-from app.models.clip.visual import OpenClipVisualEncoder
-from app.models.facial_recognition.detection import FaceDetector
-from app.models.facial_recognition.recognition import FaceRecognizer
-from app.sessions.ann import AnnSession
-from app.sessions.ort import OrtSession
-from app.sessions.rknn import RknnSession, run_inference
-
-from .config import Settings, settings
-from .models.base import InferenceModel
-from .models.cache import ModelCache
-from .schemas import ModelFormat, ModelTask, ModelType
+from immich_ml.config import Settings, settings
+from immich_ml.main import load, preload_models
+from immich_ml.models.base import InferenceModel
+from immich_ml.models.cache import ModelCache
+from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
+from immich_ml.models.clip.visual import OpenClipVisualEncoder
+from immich_ml.models.facial_recognition.detection import FaceDetector
+from immich_ml.models.facial_recognition.recognition import FaceRecognizer
+from immich_ml.schemas import ModelFormat, ModelTask, ModelType
+from immich_ml.sessions.ann import AnnSession
+from immich_ml.sessions.ort import OrtSession
+from immich_ml.sessions.rknn import RknnSession, run_inference
 
 
 class TestBase:
@@ -47,7 +46,7 @@ class TestBase:
 
     def test_sets_default_model_format(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", True)
-        mocker.patch("ann.ann.is_available", False)
+        mocker.patch("immich_ml.sessions.ann.loader.is_available", False)
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
@@ -55,7 +54,7 @@ class TestBase:
 
     def test_sets_default_model_format_to_armnn_if_available(self, path: mock.Mock, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", True)
-        mocker.patch("ann.ann.is_available", True)
+        mocker.patch("immich_ml.sessions.ann.loader.is_available", True)
         path.suffix = ".armnn"
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir=path)
@@ -64,7 +63,7 @@ class TestBase:
 
     def test_sets_model_format_kwarg(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "ann", False)
-        mocker.patch("ann.ann.is_available", False)
+        mocker.patch("immich_ml.sessions.ann.loader.is_available", False)
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai", model_format=ModelFormat.ARMNN)
 
@@ -72,7 +71,7 @@ class TestBase:
 
     def test_sets_default_model_format_to_rknn_if_available(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "rknn", True)
-        mocker.patch("app.sessions.rknn.is_available", True)
+        mocker.patch("immich_ml.sessions.rknn.is_available", True)
 
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
@@ -294,7 +293,7 @@ class TestOrtSession:
         assert session.sess_options.intra_op_num_threads == 0
 
     def test_sets_default_sess_options_sets_threads_if_non_cpu_and_set_threads(self, mocker: MockerFixture) -> None:
-        mock_settings = mocker.patch("app.sessions.ort.settings", autospec=True)
+        mock_settings = mocker.patch("immich_ml.sessions.ort.settings", autospec=True)
         mock_settings.model_inter_op_threads = 2
         mock_settings.model_intra_op_threads = 4
 
@@ -373,8 +372,8 @@ class TestRknnSession:
     def test_creates_rknn_session(self, rknn_session: mock.Mock, info: mock.Mock, mocker: MockerFixture) -> None:
         model_path = mock.MagicMock(spec=Path)
         tpe = 1
-        mocker.patch("app.sessions.rknn.soc_name", "rk3566")
-        mocker.patch("app.sessions.rknn.is_available", True)
+        mocker.patch("immich_ml.sessions.rknn.soc_name", "rk3566")
+        mocker.patch("immich_ml.sessions.rknn.is_available", True)
         RknnSession(model_path)
 
         rknn_session.assert_called_once_with(model_path=model_path.as_posix(), tpes=tpe, func=run_inference)
@@ -384,7 +383,7 @@ class TestRknnSession:
     def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
         rknn_session.return_value.load.return_value = 123
         np_spy = mocker.spy(np, "ascontiguousarray")
-        mocker.patch("app.sessions.rknn.soc_name", "rk3566")
+        mocker.patch("immich_ml.sessions.rknn.soc_name", "rk3566")
         session = RknnSession(Path("ViT-B-32__openai"))
         [input1, input2] = [np.random.rand(1, 3, 224, 224).astype(np.float32) for _ in range(2)]
         input_feed = {"input.1": input1, "input.2": input2}
@@ -434,7 +433,7 @@ class TestCLIP:
 
         mocked = mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
         mocked.run.return_value = [[self.embedding]]
-        mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True)
+        mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True)
 
         clip_encoder = OpenClipTextualEncoder("ViT-B-32__openai", cache_dir="test_cache")
         embedding_str = clip_encoder.predict("test search query")
@@ -454,7 +453,7 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
@@ -480,7 +479,7 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
@@ -505,7 +504,7 @@ class TestCLIP:
         mocker.patch.object(MClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(MClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_attention_mask = [randint(0, 1) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids, attention_mask=mock_attention_mask)
@@ -597,12 +596,12 @@ class TestFaceRecognition:
     def test_recognition_adds_batch_axis_for_ort(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
-        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
         update_dims = mocker.patch(
-            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
         )
-        mocker.patch("app.models.base.InferenceModel.download")
-        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
         ort_session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
         ort_session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=(1, 800))]
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
@@ -631,12 +630,12 @@ class TestFaceRecognition:
     def test_recognition_does_not_add_batch_axis_if_exists(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
-        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
         update_dims = mocker.patch(
-            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
         )
-        mocker.patch("app.models.base.InferenceModel.download")
-        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
         inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
@@ -655,12 +654,12 @@ class TestFaceRecognition:
     def test_recognition_does_not_add_batch_axis_for_armnn(
         self, ann_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
-        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
         update_dims = mocker.patch(
-            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
         )
-        mocker.patch("app.models.base.InferenceModel.download")
-        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".armnn"
 
         inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
@@ -679,12 +678,12 @@ class TestFaceRecognition:
     def test_recognition_does_not_add_batch_axis_for_openvino(
         self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
-        onnx = mocker.patch("app.models.facial_recognition.recognition.onnx", autospec=True)
+        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
         update_dims = mocker.patch(
-            "app.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
         )
-        mocker.patch("app.models.base.InferenceModel.download")
-        mocker.patch("app.models.facial_recognition.recognition.ArcFaceONNX")
+        mocker.patch("immich_ml.models.base.InferenceModel.download")
+        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
         inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
@@ -733,13 +732,13 @@ class TestCache:
         )
         assert len(model_cache.cache._cache) == 2
 
-    @mock.patch("app.models.cache.OptimisticLock", autospec=True)
+    @mock.patch("immich_ml.models.cache.OptimisticLock", autospec=True)
     async def test_model_ttl(self, mock_lock_cls: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache()
         await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
         mock_lock_cls.return_value.__aenter__.return_value.cas.assert_called_with(mock.ANY, ttl=100)
 
-    @mock.patch("app.models.cache.SimpleMemoryCache.expire")
+    @mock.patch("immich_ml.models.cache.SimpleMemoryCache.expire")
     async def test_revalidate_get(self, mock_cache_expire: mock.Mock, mock_get_model: mock.Mock) -> None:
         model_cache = ModelCache(revalidate=True)
         await model_cache.get("test_model_name", ModelType.RECOGNITION, ModelTask.FACIAL_RECOGNITION, ttl=100)
@@ -784,7 +783,7 @@ class TestCache:
         assert settings.preload.clip.visual == "ViT-B-32__openai"
 
         model_cache = ModelCache()
-        monkeypatch.setattr("app.main.model_cache", model_cache)
+        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
 
         await preload_models(settings.preload)
         mock_get_model.assert_has_calls(
@@ -807,7 +806,7 @@ class TestCache:
         assert settings.preload.facial_recognition.recognition == "buffalo_s"
 
         model_cache = ModelCache()
-        monkeypatch.setattr("app.main.model_cache", model_cache)
+        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
 
         await preload_models(settings.preload)
         mock_get_model.assert_has_calls(
@@ -832,7 +831,7 @@ class TestCache:
         assert settings.preload.facial_recognition.detection == "buffalo_s"
 
         model_cache = ModelCache()
-        monkeypatch.setattr("app.main.model_cache", model_cache)
+        monkeypatch.setattr("immich_ml.main.model_cache", model_cache)
 
         await preload_models(settings.preload)
         mock_get_model.assert_has_calls(

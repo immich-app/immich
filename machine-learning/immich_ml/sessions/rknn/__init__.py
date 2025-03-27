@@ -6,8 +6,8 @@ from typing import Any, NamedTuple
 import numpy as np
 from numpy.typing import NDArray
 
-from app.config import log, settings
-from app.schemas import SessionNode
+from immich_ml.config import log, settings
+from immich_ml.schemas import SessionNode
 
 from .rknnpool import RknnPoolExecutor, is_available, soc_name
 

@@ -1,9 +1,9 @@
 from typing import Any
 
-from app.models.base import InferenceModel
-from app.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
-from app.models.clip.visual import OpenClipVisualEncoder
-from app.schemas import ModelSource, ModelTask, ModelType
+from immich_ml.models.base import InferenceModel
+from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEncoder
+from immich_ml.models.clip.visual import OpenClipVisualEncoder
+from immich_ml.schemas import ModelSource, ModelTask, ModelType
 
 from .constants import get_model_source
 from .facial_recognition.detection import FaceDetector

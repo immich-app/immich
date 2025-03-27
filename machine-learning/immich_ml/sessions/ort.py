@@ -7,8 +7,8 @@ import numpy as np
 import onnxruntime as ort
 from numpy.typing import NDArray
 
-from app.models.constants import SUPPORTED_PROVIDERS
-from app.schemas import SessionNode
+from immich_ml.models.constants import SUPPORTED_PROVIDERS
+from immich_ml.schemas import SessionNode
 
 from ..config import log, settings
 

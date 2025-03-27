@@ -51,12 +51,12 @@ class Settings(BaseSettings):
         protected_namespaces=("settings_",),
     )
 
-    cache_folder: Path = Path("/cache")
+    cache_folder: Path = (Path.home() / ".cache" / "immich_ml").resolve()
     model_ttl: int = 300
     model_ttl_poll_s: int = 10
-    host: str = "0.0.0.0"
-    port: int = 3003
     workers: int = 1
+    worker_timeout: int = 300
+    http_keepalive_timeout_s: int = 2
     test_full: bool = False
     request_threads: int = os.cpu_count() or 4
     model_inter_op_threads: int = 0
@@ -74,9 +74,11 @@ class Settings(BaseSettings):
         return os.environ.get("MACHINE_LEARNING_DEVICE_ID", "0")
 
 
-class LogSettings(BaseSettings):
+class NonPrefixedSettings(BaseSettings):
     model_config = SettingsConfigDict(case_sensitive=False)
 
+    immich_host: str = "[::]"
+    immich_port: int = 3003
     immich_log_level: str = "info"
     no_color: bool = False
 
@@ -100,14 +102,14 @@ LOG_LEVELS: dict[str, int] = {
 }
 
 settings = Settings()
-log_settings = LogSettings()
+non_prefixed_settings = NonPrefixedSettings()
 
-LOG_LEVEL = LOG_LEVELS.get(log_settings.immich_log_level.lower(), logging.INFO)
+LOG_LEVEL = LOG_LEVELS.get(non_prefixed_settings.immich_log_level.lower(), logging.INFO)
 
 
 class CustomRichHandler(RichHandler):
     def __init__(self) -> None:
-        console = Console(color_system="standard", no_color=log_settings.no_color)
+        console = Console(color_system="standard", no_color=non_prefixed_settings.no_color)
         self.excluded = ["uvicorn", "starlette", "fastapi"]
         super().__init__(
             show_path=False,

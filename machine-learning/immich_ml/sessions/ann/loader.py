@@ -7,7 +7,7 @@ from typing import Any, Protocol, TypeVar
 import numpy as np
 from numpy.typing import NDArray
 
-from app.config import log
+from immich_ml.config import log
 
 try:
     CDLL("libmali.so")  # fail if libmali.so is not mounted into container

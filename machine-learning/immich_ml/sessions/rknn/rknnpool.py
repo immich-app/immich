@@ -10,8 +10,8 @@ from typing import Callable
 import numpy as np
 from numpy.typing import NDArray
 
-from app.config import log
-from app.models.constants import RKNN_COREMASK_SUPPORTED_SOCS, RKNN_SUPPORTED_SOCS
+from immich_ml.config import log
+from immich_ml.models.constants import RKNN_COREMASK_SUPPORTED_SOCS, RKNN_SUPPORTED_SOCS
 
 
 def get_soc(device_tree_path: Path | str) -> str | None:

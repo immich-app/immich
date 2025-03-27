@@ -4,8 +4,8 @@ from aiocache.backends.memory import SimpleMemoryCache
 from aiocache.lock import OptimisticLock
 from aiocache.plugins import TimingPlugin
 
-from app.models import from_model_type
-from app.models.base import InferenceModel
+from immich_ml.models import from_model_type
+from immich_ml.models.base import InferenceModel
 
 from ..schemas import ModelTask, ModelType, has_profiling
 

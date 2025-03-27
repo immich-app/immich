@@ -8,10 +8,10 @@ import numpy as np
 from numpy.typing import NDArray
 from tokenizers import Encoding, Tokenizer
 
-from app.config import log
-from app.models.base import InferenceModel
-from app.models.transforms import clean_text, serialize_np_array
-from app.schemas import ModelSession, ModelTask, ModelType
+from immich_ml.config import log
+from immich_ml.models.base import InferenceModel
+from immich_ml.models.transforms import clean_text, serialize_np_array
+from immich_ml.schemas import ModelSession, ModelTask, ModelType
 
 
 class BaseCLIPTextualEncoder(InferenceModel):

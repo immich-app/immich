@@ -6,10 +6,10 @@ from typing import Any, NamedTuple
 import numpy as np
 from numpy.typing import NDArray
 
-from ann.ann import Ann
-from app.schemas import SessionNode
+from immich_ml.config import log, settings
+from immich_ml.schemas import SessionNode
 
-from ..config import log, settings
+from .loader import Ann
 
 
 class AnnSession:

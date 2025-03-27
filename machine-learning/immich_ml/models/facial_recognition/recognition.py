@@ -10,10 +10,17 @@ from numpy.typing import NDArray
 from onnx.tools.update_model_dims import update_inputs_outputs_dims
 from PIL import Image
 
-from app.config import log, settings
-from app.models.base import InferenceModel
-from app.models.transforms import decode_cv2, serialize_np_array
-from app.schemas import FaceDetectionOutput, FacialRecognitionOutput, ModelFormat, ModelSession, ModelTask, ModelType
+from immich_ml.config import log, settings
+from immich_ml.models.base import InferenceModel
+from immich_ml.models.transforms import decode_cv2, serialize_np_array
+from immich_ml.schemas import (
+    FaceDetectionOutput,
+    FacialRecognitionOutput,
+    ModelFormat,
+    ModelSession,
+    ModelTask,
+    ModelType,
+)
 
 
 class FaceRecognizer(InferenceModel):
