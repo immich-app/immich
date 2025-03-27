@@ -210,6 +210,9 @@ class LoginForm extends HookConsumerWidget {
             .getOAuthServerUrl(sanitizeUrl(serverEndpointController.text));
 
         isLoading.value = true;
+
+        // Invalidate all api repository provider instance to take into account new access token
+        invalidateAllApiRepositoryProviders(ref);
       } catch (error, stack) {
         log.severe('Error getting OAuth server Url: $error', stack);
 
