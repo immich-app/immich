@@ -579,6 +579,9 @@ export class AssetStore {
   initTask = new CancellableTask(
     () => {
       this.isInitialized = true;
+      if (this.#options.albumId || this.#options.personId) {
+        return;
+      }
       this.connect();
     },
     () => {

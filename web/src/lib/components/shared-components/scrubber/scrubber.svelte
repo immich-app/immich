@@ -14,7 +14,6 @@
     timelineBottomOffset?: number;
     height?: number;
     assetStore: AssetStore;
-    invisible?: boolean;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
     scrubBucket?: { bucketDate: string | undefined };
@@ -268,7 +267,7 @@
       globalThis.removeEventListener('touchmove', onTouchMove);
     };
   });
-  const usingMobileDevice = $derived(mobileDevice.hoverNone);
+  const usingMobileDevice = $derived(mobileDevice.pointerCoarse);
   const width = $derived(isDragging ? '100vw' : usingMobileDevice ? '20px' : '60px');
 </script>
 
