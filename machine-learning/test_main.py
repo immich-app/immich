@@ -504,7 +504,7 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
@@ -524,7 +524,7 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
@@ -545,7 +545,7 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
@@ -566,7 +566,7 @@ class TestCLIP:
         mocker.patch.object(OpenClipTextualEncoder, "model_cfg", clip_model_cfg)
         mocker.patch.object(OpenClipTextualEncoder, "tokenizer_cfg", clip_tokenizer_cfg)
         mocker.patch.object(InferenceModel, "_make_session", autospec=True).return_value
-        mock_tokenizer = mocker.patch("app.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
+        mock_tokenizer = mocker.patch("immich_ml.models.clip.textual.Tokenizer.from_file", autospec=True).return_value
         mock_ids = [randint(0, 50000) for _ in range(77)]
         mock_tokenizer.encode.return_value = SimpleNamespace(ids=mock_ids)
 
