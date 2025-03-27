@@ -165,7 +165,7 @@
       default: 500ms
       slow: ??ms
       -->
-  <div
+  <a
     class="group"
     style:width="{width}px"
     style:height="{height}px"
@@ -189,20 +189,6 @@
     onfocus={handleFocus}
     data-testid="container-with-tabindex"
   >
-    {#if !usingMobileDevice && mouseOver && !disableMouseOver}
-      <!-- lazy show the url on mouse over-->
-      <a
-        class="absolute z-30 {className} top-[41px]"
-        style:cursor="unset"
-        style:width="{width}px"
-        style:height="{height}px"
-        href={currentUrlReplaceAssetId(asset.id)}
-        onclick={(evt) => evt.preventDefault()}
-        tabindex={-1}
-        aria-label="Thumbnail URL"
-      >
-      </a>
-    {/if}
     <div class="absolute z-20 {className}" style:width="{width}px" style:height="{height}px">
       <!-- Select asset button  -->
       {#if !readonly && (mouseOver || selected || selectionCandidate)}
