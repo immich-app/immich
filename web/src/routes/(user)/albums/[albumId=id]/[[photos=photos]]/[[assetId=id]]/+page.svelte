@@ -394,7 +394,7 @@
     }
   });
 
-  let album = $state(data.album);
+  let album = $derived(data.album);
   let albumId = $derived(album.id);
 
   $effect(() => {
@@ -404,6 +404,7 @@
   });
 
   let assetStore = new AssetStore();
+
   $effect(() => {
     if (viewMode === AlbumPageViewMode.VIEW) {
       void assetStore.updateOptions({ albumId, order: albumOrder });
