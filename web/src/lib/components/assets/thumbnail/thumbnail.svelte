@@ -72,7 +72,7 @@
     IMAGE_THUMBNAIL: { THUMBHASH_FADE_DURATION },
   } = TUNABLES;
 
-  let isTouchDevice = $derived(mobileDevice.hoverNone);
+  let usingMobileDevice = $derived(mobileDevice.pointerCoarse);
   let focussableElement: HTMLElement | undefined = $state();
   let mouseOver = $state(false);
   let loaded = $state(false);
@@ -112,7 +112,7 @@
   };
 
   const onMouseEnter = () => {
-    if (isTouchDevice) {
+    if (usingMobileDevice) {
       return;
     }
     mouseOver = true;
@@ -191,7 +191,7 @@
     onfocus={handleFocus}
     data-testid="container-with-tabindex"
   >
-    {#if !isTouchDevice && mouseOver && !disableMouseOver}
+    {#if !usingMobileDevice && mouseOver && !disableMouseOver}
       <!-- lazy show the url on mouse over-->
       <a
         class="absolute z-30 {className} top-[41px]"
@@ -238,7 +238,7 @@
       class:rounded-xl={selected}
     >
       <!-- Gradient overlay on hover -->
-      {#if !isTouchDevice}
+      {#if !usingMobileDevice}
         <div
           class="absolute z-10 h-full w-full bg-gradient-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100"
           class:rounded-xl={selected}
