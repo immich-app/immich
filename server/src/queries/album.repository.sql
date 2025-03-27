@@ -93,7 +93,7 @@ select
           "exif" as "exifInfo"
         from
           "assets"
-          inner join "exif" on "assets"."id" = "exif"."assetId"
+          left join "exif" on "assets"."id" = "exif"."assetId"
           inner join "albums_assets_assets" on "albums_assets_assets"."assetsId" = "assets"."id"
         where
           "albums_assets_assets"."albumsId" = "albums"."id"

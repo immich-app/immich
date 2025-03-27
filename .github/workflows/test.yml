@@ -395,10 +395,10 @@ jobs:
           uv sync --extra cpu
       - name: Lint with ruff
         run: |
-          uv run ruff check --output-format=github app export
+          uv run ruff check --output-format=github app
       - name: Check black formatting
         run: |
-          uv run black --check app export
+          uv run black --check app
       - name: Run mypy type checking
         run: |
           uv run mypy --strict app/
