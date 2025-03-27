@@ -187,7 +187,7 @@
     "oauth_issuer_url": "Emitentul URL",
     "oauth_mobile_redirect_uri": "URI de redirecționare mobilă",
     "oauth_mobile_redirect_uri_override": "Înlocuire URI de redirecționare mobilă",
-    "oauth_mobile_redirect_uri_override_description": "Activați atunci când furnizorul OAuth nu permite un URI mobil, precum '{callback}'",
+    "oauth_mobile_redirect_uri_override_description": "Activați atunci când furnizorul OAuth nu permite un URI mobil, precum ''{callback}''",
     "oauth_profile_signing_algorithm": "Algoritm de semnare a profilului",
     "oauth_profile_signing_algorithm_description": "Algoritm folosit pentru a semna profilul utilizatorului.",
     "oauth_scope": "Domeniul de aplicare",
