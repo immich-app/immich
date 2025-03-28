@@ -11,7 +11,7 @@
   import SearchBar from '$lib/components/elements/search-bar.svelte';
   import { AppRoute } from '$lib/constants';
   import { t } from 'svelte-i18n';
-  import { albumListingStore } from '$lib/stores/album-listing.store';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
   interface Props {
     data: PageData;

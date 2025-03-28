@@ -65,10 +65,10 @@ function createAlbumListingStore() {
     albums: readonly(albums),
     sharedAlbums: readonly(sharedAlbums),
     isLoading: readonly(isLoading),
-    getAlbums: getAlbums,
-    refetchAlbums: refetchAlbums,
-    ensureLoaded: ensureLoaded,
-    reset: reset,
+    getAlbums,
+    refetchAlbums,
+    ensureLoaded,
+    reset,
   };
 }
 
