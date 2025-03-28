@@ -172,7 +172,9 @@
       slow: ??ms
       -->
   <div
-    class={['group w-full top-[0px] bottom-[0px]', { 'curstor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute  top-[0px] bottom-[0px]', { 'curstor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    style:width="inherit"
+    style:height="inherit"
     onmouseenter={onMouseEnter}
     onmouseleave={onMouseLeave}
     use:longPress={{ onLongPress: () => onSelect?.($state.snapshot(asset)) }}
@@ -248,13 +250,7 @@
         <!-- Dimmed support -->
 
         {#if dimmed && !mouseOver}
-          <div
-            id="a"
-            class={[
-              'absolute h-full w-full z-30 bg-gradient-to-b from-black/25 via-[transparent_25%]  bg-gray-700/40',
-              { 'rounded-xl': selected },
-            ]}
-          ></div>
+          <div id="a" class={['absolute h-full w-full z-30  bg-gray-700/40', { 'rounded-xl': selected }]}></div>
         {/if}
         <!-- Outline on focus -->
         <div

@@ -594,13 +594,11 @@
       id="stack-slideshow"
       class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
     >
-      <div class="relative w-full whitespace-nowrap transition-all">
+      <div class="relative w-full whitespace-nowrap">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
-            class={[
-              'inline-block px-1 transition-transform',
-              stackedAsset.id === asset.id ? '-translate-y-[0px]' : '-translate-y-0',
-            ]}
+            class={['inline-block px-1 relative transition-all pb-2']}
+            style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
               imageClass={{ 'border-2 border-white': stackedAsset.id === asset.id }}
