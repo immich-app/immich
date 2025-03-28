@@ -5,12 +5,18 @@ import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 class UserMetadataEntity extends Table {
   const UserMetadataEntity();
 
-  TextColumn get userId =>
-      text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
+  BlobColumn get userId =>
+      blob().references(UserEntity, #id, onDelete: KeyAction.cascade)();
   TextColumn get preferences => text().map(userPreferenceConverter)();
 
   @override
   Set<Column> get primaryKey => {userId};
+
+  @override
+  bool get isStrict => true;
+
+  @override
+  bool get withoutRowId => true;
 }
 
 final JsonTypeConverter2<UserPreferences, String, Object?>

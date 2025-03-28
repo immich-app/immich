@@ -77,11 +77,11 @@ class User {
 class UserEntity extends Table {
   const UserEntity();
 
-  TextColumn get id => text()();
+  BlobColumn get id => blob()();
   TextColumn get name => text()();
   BoolColumn get isAdmin => boolean().withDefault(const Constant(false))();
   TextColumn get email => text()();
-  TextColumn get profileImagePath => text().withDefault(const Constant(''))();
+  TextColumn get profileImagePath => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   // Quota
   IntColumn get quotaSizeInBytes => integer().nullable()();
@@ -89,4 +89,10 @@ class UserEntity extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  bool get isStrict => true;
+
+  @override
+  bool get withoutRowId => true;
 }
