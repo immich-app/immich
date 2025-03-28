@@ -32,7 +32,8 @@
     "kysely:codegen": "npx kysely-codegen --include-pattern=\"(public|vectors).*\" --dialect postgres --url postgres://postgres:postgres@localhost/immich --log-level debug --out-file=./src/db.d.ts",
     "sync:open-api": "node ./dist/bin/sync-open-api.js",
     "sync:sql": "node ./dist/bin/sync-sql.js",
-    "email:dev": "email dev -p 3050 --dir src/emails"
+    "email:dev": "email dev -p 3050 --dir src/emails",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.1",
@@ -134,6 +135,7 @@
     "kysely-codegen": "^0.18.0",
     "mock-fs": "^5.2.0",
     "node-addon-api": "^8.3.0",
+    "patch-package": "^8.0.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.0.2",
     "prettier-plugin-organize-imports": "^4.0.0",
