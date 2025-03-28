@@ -247,6 +247,7 @@ export const sharedLinkStub = {
           sidecarPath: null,
           deletedAt: null,
           duplicateId: null,
+          isDirty: false,
         },
       ],
     },

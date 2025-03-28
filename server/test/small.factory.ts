@@ -125,6 +125,7 @@ const assetFactory = (asset: Partial<Asset> = {}) => ({
   isFavorite: false,
   isOffline: false,
   isVisible: true,
+  isDirty: false,
   libraryId: null,
   livePhotoVideoId: null,
   localDateTime: newDate(),

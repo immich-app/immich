@@ -4,6 +4,7 @@ import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.respons
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetFileEntity } from 'src/entities/asset-files.entity';
+import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType, AssetType, Permission } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -16,6 +17,8 @@ import { checkAccess } from 'src/utils/access';
 const getFileByType = (files: AssetFileEntity[] | undefined, type: AssetFileType) => {
   return (files || []).find((file) => file.type === type);
 };
+
+export const getSidecarPath = (asset: AssetEntity) => `${asset.originalPath}.xmp`;
 
 export const getAssetFiles = (files?: AssetFileEntity[]) => ({
   previewFile: getFileByType(files, AssetFileType.PREVIEW),
