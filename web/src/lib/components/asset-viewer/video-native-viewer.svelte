@@ -38,6 +38,7 @@
   let isLoading = $state(true);
   let assetFileUrl = $state('');
   let forceMuted = $state(false);
+  let isScrubbing = $state(false);
 
   onMount(() => {
     if (videoPlayer) {
@@ -55,8 +56,10 @@
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
     try {
-      await video.play();
-      onVideoStarted();
+      if (!video.paused && !isScrubbing) {
+        await video.play();
+        onVideoStarted();
+      }
     } catch (error) {
       if (error instanceof DOMException && error.name === 'NotAllowedError' && !forceMuted) {
         await tryForceMutedPlay(video);
@@ -118,6 +121,11 @@
       if (!forceMuted) {
         $videoViewerMuted = e.currentTarget.muted;
       }
+    }}
+    onseeking={() => (isScrubbing = true)}
+    onseeked={() => (isScrubbing = false)}
+    onplaying={(e) => {
+      e.currentTarget.focus();
     }}
     onclose={() => onClose()}
     muted={forceMuted || $videoViewerMuted}

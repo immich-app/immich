@@ -1,19 +1,4 @@
 import { Expression, sql } from 'kysely';
-import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-
-/**
- * Allows optional values unlike the regular Between and uses MoreThanOrEqual
- * or LessThanOrEqual when only one parameter is specified.
- */
-export function OptionalBetween<T>(from?: T, to?: T) {
-  if (from && to) {
-    return Between(from, to);
-  } else if (from) {
-    return MoreThanOrEqual(from);
-  } else if (to) {
-    return LessThanOrEqual(to);
-  }
-}
 
 export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uuid`;
 
@@ -32,16 +17,3 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
 
   return update;
 };
-
-/**
- * Mainly for type debugging to make VS Code display a more useful tooltip.
- * Source: https://stackoverflow.com/a/69288824
- */
-export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-
-/** Recursive version of {@link Expand} from the same source. */
-export type ExpandRecursively<T> = T extends object
-  ? T extends infer O
-    ? { [K in keyof O]: ExpandRecursively<O[K]> }
-    : never
-  : T;
