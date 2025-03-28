@@ -66,6 +66,7 @@ export class StorageTemplateService extends BaseService {
     compiled: HandlebarsTemplateDelegate<any>;
     raw: string;
     needsAlbum: boolean;
+    needsAlbumMetadata: boolean;
   } | null = null;
 
   private get template() {
@@ -269,12 +270,15 @@ export class StorageTemplateService extends BaseService {
         const albums = await this.albumRepository.getByAssetId(asset.ownerId, asset.id);
         const album = albums?.[0];
         if (album) {
-          const [metadata] = await this.albumRepository.getMetadataForIds([album.id])
           albumName = album.albumName || null;
           albumCreatedAt = album.createdAt || null;
           albumUpdatedAt = album.updatedAt || null;
-          albumStartDate = metadata?.startDate || null;
-          albumEndDate = metadata?.endDate || null;
+
+          if (this.template.needsAlbumMetadata) {
+            const [metadata] = await this.albumRepository.getMetadataForIds([album.id])
+            albumStartDate = metadata?.startDate || null;
+            albumEndDate = metadata?.endDate || null;
+          }
         }
       }
 
@@ -346,6 +350,7 @@ export class StorageTemplateService extends BaseService {
       raw: template,
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
       needsAlbum: template.includes('album'),
+      needsAlbumMetadata: (template.includes('album-startDate') || template.includes('album-endDate')),
     };
   }
 
