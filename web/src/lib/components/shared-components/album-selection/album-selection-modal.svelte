@@ -12,7 +12,7 @@
     AlbumModalRowType,
     isSelectableRowType,
   } from '$lib/components/shared-components/album-selection/album-selection-utils';
-  import { albumListingStore } from '$lib/stores/album-listing.store';
+  import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 
   let { ensureLoaded: albumsEnsureLoaded, albums, isLoading } = albumListingStore;
   let recentAlbums: AlbumResponseDto[] = $derived(
