@@ -90,4 +90,10 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   @override
   Set<Column> get primaryKey => {id};
+
+  @override
+  bool get isStrict => true;
+
+  @override
+  bool get withoutRowId => true;
 }
