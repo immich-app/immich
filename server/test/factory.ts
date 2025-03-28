@@ -216,6 +216,7 @@ export class TestContext {
   view: ViewRepository;
 
   private constructor(public db: Kysely<DB>) {
+    // eslint-disable-next-line no-sparse-arrays
     const logger = automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false });
     const config = new ConfigRepository();
 

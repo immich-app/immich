@@ -236,7 +236,6 @@ export class UserRepository {
       stat.usage = Number(stat.usage);
       stat.usagePhotos = Number(stat.usagePhotos);
       stat.usageVideos = Number(stat.usageVideos);
-      stat.quotaSizeInBytes = stat.quotaSizeInBytes;
     }
 
     return stats;
