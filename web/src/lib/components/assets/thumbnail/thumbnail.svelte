@@ -45,7 +45,6 @@
     onSelect?: ((asset: AssetResponseDto) => void) | undefined;
     onMouseEvent?: ((event: { isMouseOver: boolean; selectedGroupIndex: number }) => void) | undefined;
     handleFocus?: (() => void) | undefined;
-    class?: ClassValue;
   }
 
   let {
@@ -66,7 +65,6 @@
     onSelect = undefined,
     onMouseEvent = undefined,
     handleFocus = undefined,
-    class: className = '',
     imageClass = '',
     dimmed = false,
   }: Props = $props();
