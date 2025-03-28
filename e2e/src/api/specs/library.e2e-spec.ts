@@ -823,6 +823,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -845,6 +848,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2000-09-27T12:35:33.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
@@ -870,6 +876,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -881,13 +890,11 @@ describe('/libraries', () => {
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
         await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
         await utils.scan(admin.accessToken, library.id);
 
@@ -900,6 +907,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -910,13 +920,9 @@ describe('/libraries', () => {
         });
 
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
-
         await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
-
         await utils.scan(admin.accessToken, library.id);
 
         const { assets: newAssets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
@@ -928,22 +934,23 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
-      it('should switch from using file metadata to file.xmp metadata when asset refreshes', async () => {
+      it('should switch from using file metadata to file.ext.xmp metadata when asset refreshes', async () => {
         const library = await utils.createLibrary(admin.accessToken, {
           ownerId: admin.userId,
           importPaths: [`${testAssetDirInternal}/temp/xmp`],
         });
 
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
         await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
         await utils.scan(admin.accessToken, library.id);
 
@@ -955,6 +962,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2000-09-27T12:35:33.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
@@ -967,13 +977,11 @@ describe('/libraries', () => {
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
         await utils.scan(admin.accessToken, library.id);
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2010.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
         await utils.scan(admin.accessToken, library.id);
 
@@ -986,6 +994,9 @@ describe('/libraries', () => {
           }),
         ]);
 
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
+
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
 
@@ -997,12 +1008,10 @@ describe('/libraries', () => {
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.nef.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
         await utils.scan(admin.accessToken, library.id);
 
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.nef.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
         await utils.scan(admin.accessToken, library.id);
 
@@ -1014,6 +1023,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2010-07-20T17:27:12.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });
@@ -1026,12 +1038,10 @@ describe('/libraries', () => {
 
         cpSync(`${testAssetDir}/metadata/xmp/dates/2000.xmp`, `${testAssetDir}/temp/xmp/glarus.xmp`);
         cpSync(`${testAssetDir}/formats/raw/Nikon/D80/glarus.nef`, `${testAssetDir}/temp/xmp/glarus.nef`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_000);
 
         await utils.scan(admin.accessToken, library.id);
 
         unlinkSync(`${testAssetDir}/temp/xmp/glarus.xmp`);
-        await utimes(`${testAssetDir}/temp/xmp/glarus.nef`, 447_775_200_001);
 
         await utils.scan(admin.accessToken, library.id);
 
@@ -1043,6 +1053,9 @@ describe('/libraries', () => {
             fileCreatedAt: '2010-07-20T17:27:12.000Z',
           }),
         ]);
+
+        await utils.deleteLibrary(admin.accessToken, library.id);
+        await utils.resetAssets();
 
         rmSync(`${testAssetDir}/temp/xmp`, { recursive: true, force: true });
       });

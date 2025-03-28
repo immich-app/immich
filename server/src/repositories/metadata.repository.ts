@@ -73,6 +73,8 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   AndroidModel?: string;
 }
 
+type TagResult = { success: true; tags: ImmichTags } | { success: false; error: 'ENOENT' | 'OTHER'; message?: string };
+
 @Injectable()
 export class MetadataRepository {
   private exiftool = new ExifTool({
@@ -101,11 +103,19 @@ export class MetadataRepository {
     await this.exiftool.end();
   }
 
-  readTags(path: string): Promise<ImmichTags> {
-    return this.exiftool.read(path).catch((error) => {
-      this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
-      return {};
-    }) as Promise<ImmichTags>;
+  async readTags(path: string): Promise<TagResult> {
+    try {
+      const tags = await this.exiftool.read(path);
+      return { success: true, tags: tags as ImmichTags };
+    } catch (error: any) {
+      if (error?.message?.startsWith('File not found')) {
+        this.logger.warn(`File not found (${path})`);
+        return { success: false, error: 'ENOENT', message: `File not found: ${path}` };
+      } else {
+        this.logger.warn(`Error reading exif data (${path}): ${error}`, error?.stack);
+        return { success: false, error: 'OTHER', message: error.message };
+      }
+    }
   }
 
   extractBinaryTag(path: string, tagName: string): Promise<Buffer> {

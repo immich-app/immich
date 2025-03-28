@@ -1,13 +1,14 @@
 import { Insertable, Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
-import { Assets, DB, Partners, Sessions, Users } from 'src/db';
+import { Assets, DB, Libraries, Partners, Sessions, Users } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { AuditRepository } from 'src/repositories/audit.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
@@ -58,6 +59,7 @@ class CustomWritable extends Writable {
 
 type Asset = Partial<Insertable<Assets>>;
 type User = Partial<Insertable<Users>>;
+type Library = Partial<Insertable<Libraries>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
 
@@ -113,6 +115,21 @@ export class TestFactory {
       ...defaults,
       ...user,
       id: userId,
+    };
+  }
+
+  static library(library: Library = {}, ownerId: string) {
+    const libraryId = library.id || newUuid();
+    const defaults: Insertable<Libraries> = {
+      name: library.name || 'Library',
+      importPaths: library.importPaths || [],
+      ownerId: library.ownerId || ownerId,
+      exclusionPatterns: [],
+    };
+
+    return {
+      ...defaults,
+      id: libraryId,
     };
   }
 
@@ -188,6 +205,7 @@ export class TestContext {
   album: AlbumRepository;
   apiKey: ApiKeyRepository;
   asset: AssetRepository;
+  assetFile: AssetFileRepository;
   audit: AuditRepository;
   config: ConfigRepository;
   library: LibraryRepository;
@@ -224,6 +242,7 @@ export class TestContext {
     this.album = new AlbumRepository(this.db);
     this.apiKey = new ApiKeyRepository(this.db);
     this.asset = new AssetRepository(this.db);
+    this.assetFile = new AssetFileRepository(this.db);
     this.audit = new AuditRepository(this.db);
     this.config = config;
     this.library = new LibraryRepository(this.db);

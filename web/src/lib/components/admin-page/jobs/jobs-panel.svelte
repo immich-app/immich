@@ -85,8 +85,7 @@
       title: $getJobName(JobName.Sidecar),
       icon: mdiFileXmlBox,
       subtitle: $t('admin.sidecar_job_description'),
-      allText: $t('sync'),
-      missingText: $t('discover'),
+      missingText: $t('rescan'),
       disabled: !$featureFlags.sidecar,
     },
     [JobName.SmartSearch]: {
@@ -101,7 +100,6 @@
       icon: mdiContentDuplicate,
       title: $getJobName(JobName.DuplicateDetection),
       subtitle: $t('admin.duplicate_detection_job_description'),
-      allText: $t('all'),
       missingText: $t('missing'),
       disabled: !$featureFlags.duplicateDetection,
     },

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
+import { DeleteResult, Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
-import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
+import { AssetJobStatus, Assets, DB, Exif } from 'src/db';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import {
   AssetEntity,
@@ -428,6 +428,15 @@ export class AssetRepository {
       .executeTakeFirst() as any as Promise<AssetEntity | undefined>;
   }
 
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getLikeOriginalPath(originalPath: string): Promise<AssetEntity[]> {
+    return this.db
+      .selectFrom('assets')
+      .selectAll('assets')
+      .where('originalPath', 'like', `${originalPath}%`)
+      .execute() as any as Promise<AssetEntity[]>;
+  }
+
   async getAll(
     pagination: PaginationOptions,
     { orderDirection, ...options }: AssetSearchOptions = {},
@@ -435,6 +444,30 @@ export class AssetRepository {
     const builder = searchAssetBuilder(this.db, options)
       .select(withFiles)
       .orderBy('assets.createdAt', orderDirection ?? 'asc')
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0);
+    const items = await builder.execute();
+    return paginationHelper(items as any as AssetEntity[], pagination.take);
+  }
+
+  async getAllFiles(
+    pagination: PaginationOptions,
+    { orderDirection, ...options }: AssetSearchOptions = {},
+  ): Paginated<AssetEntity> {
+    const builder = searchAssetBuilder(this.db, options)
+      .select(withFiles)
+      .orderBy('assets.createdAt', orderDirection ?? 'asc')
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0);
+    const items = await builder.execute();
+    return paginationHelper(items as any as AssetEntity[], pagination.take);
+  }
+
+  async getAllInLibrary(pagination: PaginationOptions, libraryId: string): Paginated<AssetEntity> {
+    const builder = this.db
+      .selectFrom('assets')
+      .select('id')
+      .where('libraryId', '=', asUuid(libraryId))
       .limit(pagination.take + 1)
       .offset(pagination.skip ?? 0);
     const items = await builder.execute();
@@ -625,7 +658,6 @@ export class AssetRepository {
         'assets.checksum',
         'assets.originalPath',
         'assets.isExternal',
-        'assets.sidecarPath',
         'assets.originalFileName',
         'assets.livePhotoVideoId',
         'assets.fileCreatedAt',
@@ -694,9 +726,8 @@ export class AssetRepository {
           .where('assets.isVisible', '=', true),
       )
       .$if(property === WithoutProperty.SIDECAR, (qb) =>
-        qb
-          .where((eb) => eb.or([eb('assets.sidecarPath', '=', ''), eb('assets.sidecarPath', 'is', null)]))
-          .where('assets.isVisible', '=', true),
+        // TODO: is this the right join?
+        qb.leftJoin('asset_files', 'assetId', 'assets.id').where('asset_files.type', '=', AssetFileType.SIDECAR),
       )
       .$if(property === WithoutProperty.SMART_SEARCH, (qb) =>
         qb
@@ -1011,36 +1042,6 @@ export class AssetRepository {
       .execute() as any as Promise<AssetEntity[]>;
   }
 
-  async upsertFile(file: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>): Promise<void> {
-    const value = { ...file, assetId: asUuid(file.assetId) };
-    await this.db
-      .insertInto('asset_files')
-      .values(value)
-      .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
-          path: eb.ref('excluded.path'),
-        })),
-      )
-      .execute();
-  }
-
-  async upsertFiles(files: Pick<Insertable<AssetFiles>, 'assetId' | 'path' | 'type'>[]): Promise<void> {
-    if (files.length === 0) {
-      return;
-    }
-
-    const values = files.map((row) => ({ ...row, assetId: asUuid(row.assetId) }));
-    await this.db
-      .insertInto('asset_files')
-      .values(values)
-      .onConflict((oc) =>
-        oc.columns(['assetId', 'type']).doUpdateSet((eb) => ({
-          path: eb.ref('excluded.path'),
-        })),
-      )
-      .execute();
-  }
-
   @GenerateSql({
     params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
   })
@@ -1068,6 +1069,30 @@ export class AssetRepository {
         ]),
       )
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({
+    params: [{ libraryId: DummyValue.UUID, importPaths: [DummyValue.STRING], exclusionPatterns: [DummyValue.STRING] }],
+  })
+  async deleteExternalSidecars(libraryId: string, importPaths: string[], exclusionPatterns: string[]) {
+    const paths = importPaths.map((importPath) => `${importPath}%`);
+    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+
+    return this.db
+      .deleteFrom('asset_files')
+      .using('assets')
+      .whereRef('asset_files.assetId', '=', 'assets.id')
+      .where('asset_files.type', '=', AssetFileType.SIDECAR)
+      .where('assets.isExternal', '=', true)
+      .where('assets.libraryId', '=', asUuid(libraryId))
+      .where((eb) =>
+        eb.or([
+          eb('asset_files.path', 'not like', paths.join('|')),
+          eb('asset_files.path', 'like', exclusions.join('|')),
+        ]),
+      )
+      .returning(['asset_files.id', 'asset_files.assetId'])
+      .stream();
   }
 
   @GenerateSql({

@@ -1,28 +1,29 @@
+import { Kysely, sql } from 'kysely';
+import { DB } from 'src/db';
 import { AssetEntity } from 'src/entities/asset.entity';
 import { AssetFileType } from 'src/enum';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  Unique,
-  UpdateDateColumn,
-} from 'typeorm';
+import { AssetFileSearchOptions } from 'src/repositories/search.repository';
+import { asUuid } from 'src/utils/database';
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
-@Unique('UQ_assetId_type', ['assetId', 'type'])
+@Index('UQ_assetId_type', ['assetId', 'type'], {
+  unique: true,
+  where: `"type" <> '${AssetFileType.SIDECAR}'`,
+})
 @Entity('asset_files')
 export class AssetFileEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
   @Index('IDX_asset_files_assetId')
-  @Column()
+  @Column({ nullable: true, default: null })
   assetId!: string;
 
   @ManyToOne(() => AssetEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   asset?: AssetEntity;
+
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  fileModifiedAt!: Date | null;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
@@ -39,4 +40,22 @@ export class AssetFileEntity {
 
   @Column()
   path!: string;
+}
+
+export type SidecarAssetFileEntity = AssetFileEntity & {
+  // Sidecar files are discovered on disk without immediately knowing if there's a corresponding asset
+  assetId: string | null;
+  asset: AssetEntity | null;
+};
+
+export function searchAssetFileBuilder(kysely: Kysely<DB>, options: AssetFileSearchOptions) {
+  return kysely
+    .selectFrom('asset_files')
+    .selectAll('asset_files')
+    .$if(!!options.id, (qb) => qb.where('asset_files.id', '=', asUuid(options.id!)))
+    .$if(!!options.assetId, (qb) => qb.where('asset_files.assetId', '=', asUuid(options.assetId!)))
+    .$if(!!options.path, (qb) =>
+      qb.where(sql`f_unaccent(asset_files."path")`, 'ilike', sql`'%' || f_unaccent(${options.path}) || '%'`),
+    )
+    .$if(!!options.type, (qb) => qb.where('asset_files.type', '=', options.type!));
 }

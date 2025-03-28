@@ -341,7 +341,7 @@ describe(MediaService.name, () => {
         raw: rawInfo,
       });
 
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+      expect(mocks.assetFile.upsertAll).toHaveBeenCalledWith([
         {
           assetId: 'asset-id',
           type: AssetFileType.PREVIEW,
@@ -377,7 +377,7 @@ describe(MediaService.name, () => {
           twoPass: false,
         }),
       );
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+      expect(mocks.assetFile.upsertAll).toHaveBeenCalledWith([
         {
           assetId: 'asset-id',
           type: AssetFileType.PREVIEW,
@@ -412,7 +412,7 @@ describe(MediaService.name, () => {
           twoPass: false,
         }),
       );
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
+      expect(mocks.assetFile.upsertAll).toHaveBeenCalledWith([
         {
           assetId: 'asset-id',
           type: AssetFileType.PREVIEW,
