@@ -1,21 +1,16 @@
-import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
-import typescriptEslint from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
 import eslintPluginSvelte from 'eslint-plugin-svelte';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import parser from 'svelte-eslint-parser';
+import typescriptEslint from 'typescript-eslint';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
 
-export default [
+export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
@@ -33,16 +28,15 @@ export default [
       '**/package-lock.json',
       '**/yarn.lock',
       '**/svelte.config.js',
-      'eslint.config.mjs',
+      'eslint.config.js',
       'postcss.config.cjs',
       'tailwind.config.js',
       'coverage',
     ],
   },
-  ...compat.extends('plugin:@typescript-eslint/recommended'),
+  typescriptEslint.configs.recommended,
   {
     plugins: {
-      '@typescript-eslint': typescriptEslint,
       svelte: eslintPluginSvelte,
     },
 
@@ -53,7 +47,7 @@ export default [
         NodeJS: true,
       },
 
-      parser: tsParser,
+      parser: typescriptEslint.parser,
       ecmaVersion: 2022,
       sourceType: 'module',
 
@@ -100,8 +94,8 @@ export default [
       sourceType: 'script',
 
       parserOptions: {
-        parser: '@typescript-eslint/parser',
+        parser: typescriptEslint.parser,
       },
     },
   },
-];
+);
