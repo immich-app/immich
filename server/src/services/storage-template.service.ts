@@ -54,8 +54,6 @@ interface RenderMetadata {
   filename: string;
   extension: string;
   albumName: string | null;
-  albumCreatedAt: Date | null;
-  albumUpdatedAt: Date | null;
   albumStartDate: Date | null;
   albumEndDate: Date | null;
 }
@@ -104,8 +102,6 @@ export class StorageTemplateService extends BaseService {
         filename: 'IMG_123',
         extension: 'jpg',
         albumName: 'album',
-        albumCreatedAt: new Date(),
-        albumUpdatedAt: new Date(),
         albumStartDate: new Date(),
         albumEndDate: new Date()
       });
@@ -262,8 +258,6 @@ export class StorageTemplateService extends BaseService {
       }
 
       let albumName = null;
-      let albumCreatedAt = null;
-      let albumUpdatedAt = null;
       let albumStartDate = null;
       let albumEndDate = null;
       if (this.template.needsAlbum) {
@@ -271,8 +265,6 @@ export class StorageTemplateService extends BaseService {
         const album = albums?.[0];
         if (album) {
           albumName = album.albumName || null;
-          albumCreatedAt = album.createdAt || null;
-          albumUpdatedAt = album.updatedAt || null;
 
           if (this.template.needsAlbumMetadata) {
             const [metadata] = await this.albumRepository.getMetadataForIds([album.id])
@@ -287,8 +279,6 @@ export class StorageTemplateService extends BaseService {
         filename: sanitized,
         extension,
         albumName,
-        albumCreatedAt,
-        albumUpdatedAt,
         albumStartDate,
         albumEndDate,
       });
@@ -355,7 +345,7 @@ export class StorageTemplateService extends BaseService {
   }
 
   private render(template: HandlebarsTemplateDelegate<any>, options: RenderMetadata) {
-    const { filename, extension, asset, albumName, albumCreatedAt, albumUpdatedAt, albumStartDate, albumEndDate } = options;
+    const { filename, extension, asset, albumName, albumStartDate, albumEndDate } = options;
     const substitutions: Record<string, string> = {
       filename,
       ext: extension,
@@ -375,8 +365,6 @@ export class StorageTemplateService extends BaseService {
       substitutions[token] = dt.toFormat(token);
       if (albumName) {
         // Use system time zone for album dates to ensure all assets get the exact same date.
-        substitutions["album-createdAt-" + token] = albumCreatedAt ? DateTime.fromJSDate(albumCreatedAt, { zone: systemTimeZone }).toFormat(token) : '';
-        substitutions["album-updatedAt-" + token] = albumUpdatedAt ? DateTime.fromJSDate(albumUpdatedAt, { zone: systemTimeZone }).toFormat(token) : '';
         substitutions["album-startDate-" + token] = albumStartDate ? DateTime.fromJSDate(albumStartDate, { zone: systemTimeZone }).toFormat(token) : '';
         substitutions["album-endDate-" + token] = albumEndDate ? DateTime.fromJSDate(albumEndDate, { zone: systemTimeZone }).toFormat(token) : '';
       }
