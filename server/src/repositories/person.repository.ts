@@ -9,7 +9,6 @@ import { PersonEntity } from 'src/entities/person.entity';
 import { SourceType } from 'src/enum';
 import { removeUndefinedKeys } from 'src/utils/database';
 import { Paginated, PaginationOptions } from 'src/utils/pagination';
-import { FindOptionsRelations } from 'typeorm';
 
 export interface PersonSearchOptions {
   minimumFaceCount: number;
@@ -247,7 +246,7 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   getFaceByIdWithAssets(
     id: string,
-    relations?: FindOptionsRelations<AssetFaceEntity>,
+    relations?: { faceSearch?: boolean },
     select?: SelectFaceOptions,
   ): Promise<AssetFaceEntity | undefined> {
     return this.db

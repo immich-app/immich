@@ -20,14 +20,13 @@
 
   interface Props {
     person: PersonResponseDto;
-    preload?: boolean;
     onSetBirthDate: () => void;
     onMergePeople: () => void;
     onHidePerson: () => void;
     onToggleFavorite: () => void;
   }
 
-  let { person, preload = false, onSetBirthDate, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
+  let { person, onSetBirthDate, onMergePeople, onHidePerson, onToggleFavorite }: Props = $props();
 
   let showVerticalDots = $state(false);
 </script>
@@ -48,7 +47,6 @@
     <div class="w-full h-full rounded-xl brightness-95 filter">
       <ImageThumbnail
         shadow
-        {preload}
         url={getPeopleThumbnailUrl(person)}
         altText={person.name}
         title={person.name}

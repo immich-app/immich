@@ -525,7 +525,7 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
+        run: npm run migrations:generate TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
@@ -538,7 +538,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
-          cat ./src/migrations/*-TestMigration.ts
+          cat ./src/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

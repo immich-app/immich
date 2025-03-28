@@ -3,11 +3,12 @@ import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns, UserAdmin } from 'src/database';
-import { DB, UserMetadata as DbUserMetadata, Users } from 'src/db';
+import { DB, UserMetadata as DbUserMetadata } from 'src/db';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { UserMetadata, UserMetadataItem } from 'src/entities/user-metadata.entity';
 import { UserEntity, withMetadata } from 'src/entities/user.entity';
 import { AssetType, UserStatus } from 'src/enum';
+import { UserTable } from 'src/tables/user.table';
 import { asUuid } from 'src/utils/database';
 
 type Upsert = Insertable<DbUserMetadata>;
@@ -128,7 +129,7 @@ export class UserRepository {
       .execute() as Promise<UserAdmin[]>;
   }
 
-  async create(dto: Insertable<Users>): Promise<UserEntity> {
+  async create(dto: Insertable<UserTable>): Promise<UserEntity> {
     return this.db
       .insertInto('users')
       .values(dto)
@@ -136,7 +137,7 @@ export class UserRepository {
       .executeTakeFirst() as unknown as Promise<UserEntity>;
   }
 
-  update(id: string, dto: Updateable<Users>): Promise<UserEntity> {
+  update(id: string, dto: Updateable<UserTable>): Promise<UserEntity> {
     return this.db
       .updateTable('users')
       .set(dto)

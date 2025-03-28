@@ -14,7 +14,6 @@
     timelineBottomOffset?: number;
     height?: number;
     assetStore: AssetStore;
-    invisible?: boolean;
     scrubOverallPercent?: number;
     scrubBucketPercent?: number;
     scrubBucket?: { bucketDate: string | undefined };

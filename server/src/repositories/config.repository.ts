@@ -316,9 +316,9 @@ const getEnv = (): EnvData => {
       config: {
         typeorm: {
           type: 'postgres',
-          entities: [`${folders.dist}/entities` + '/*.entity.{js,ts}'],
+          entities: [],
           migrations: [`${folders.dist}/migrations` + '/*.{js,ts}'],
-          subscribers: [`${folders.dist}/subscribers` + '/*.{js,ts}'],
+          subscribers: [],
           migrationsRun: false,
           synchronize: false,
           connectTimeoutMS: 10_000, // 10 seconds

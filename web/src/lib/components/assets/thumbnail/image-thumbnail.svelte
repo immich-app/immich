@@ -18,10 +18,8 @@
     circle?: boolean;
     hidden?: boolean;
     border?: boolean;
-    preload?: boolean;
     hiddenIconClass?: string;
     onComplete?: (() => void) | undefined;
-    onClick?: (() => void) | undefined;
   }
 
   let {
