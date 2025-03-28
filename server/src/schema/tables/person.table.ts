@@ -1,3 +1,5 @@
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Check,
   Column,
@@ -9,8 +11,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { AssetFaceTable } from 'src/tables/asset-face.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table('person')
 @Check({ name: 'CHK_b0f82b0ed662bfc24fbb58bb45', expression: `"birthDate" <= CURRENT_DATE` })

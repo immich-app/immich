@@ -1,7 +1,7 @@
 import { AlbumUserRole } from 'src/enum';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import { Column, ForeignKeyColumn, Index, Table } from 'src/sql-tools';
-import { AlbumTable } from 'src/tables/album.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table({ name: 'albums_shared_users_users', primaryConstraintName: 'PK_7df55657e0b2e8b626330a0ebc8' })
 // Pre-existing indices from original album <--> user ManyToMany mapping
