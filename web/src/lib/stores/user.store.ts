@@ -1,4 +1,4 @@
-import { albumListingStore } from '$lib/stores/album-listing.store';
+import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 import { purchaseStore } from '$lib/stores/purchase.store';
 import { type UserAdminResponseDto, type UserPreferencesResponseDto } from '@immich/sdk';
 import { writable } from 'svelte/store';
