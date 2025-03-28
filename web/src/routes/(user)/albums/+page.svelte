@@ -29,7 +29,7 @@
     </div>
   {/snippet}
 
-  <div class="xl:hidden">
+  <div class="xl:hidden flex gap-2">
     <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
       <GroupTab
         label={$t('show_albums')}
@@ -38,7 +38,7 @@
         onSelect={(selected) => ($albumViewSettings.filter = selected)}
       />
     </div>
-    <div class="w-60">
+    <div class="w-fit h-14 py-2">
       <SearchBar placeholder={$t('search_albums')} bind:name={searchQuery} showLoadingSpinner={false} />
     </div>
   </div>
