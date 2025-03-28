@@ -28,6 +28,7 @@ import {
   deleteAssets,
   getAllJobsStatus,
   getAssetInfo,
+  getConfig,
   getConfigDefaults,
   login,
   scanLibrary,
@@ -121,6 +122,7 @@ const execPromise = promisify(exec);
 const onEvent = ({ event, id }: { event: EventType; id: string }) => {
   // console.log(`Received event: ${event} [id=${id}]`);
   const set = events[event];
+
   set.add(id);
 
   const idCallback = idCallbacks[id];
@@ -415,6 +417,8 @@ export const utils = {
     rmSync(path, { recursive: true });
   },
 
+  getSystemConfig: (accessToken: string) => getConfig({ headers: asBearerAuth(accessToken) }),
+
   getAssetInfo: (accessToken: string, id: string) => getAssetInfo({ id }, { headers: asBearerAuth(accessToken) }),
 
   checkExistingAssets: (accessToken: string, checkExistingAssetsDto: CheckExistingAssetsDto) =>
@@ -489,7 +493,7 @@ export const utils = {
         value: accessToken,
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: true,
         secure: false,
         sameSite: 'Lax',
@@ -499,7 +503,7 @@ export const utils = {
         value: 'password',
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: true,
         secure: false,
         sameSite: 'Lax',
@@ -509,7 +513,7 @@ export const utils = {
         value: 'true',
         domain,
         path: '/',
-        expires: 1_742_402_728,
+        expires: 2_058_028_213,
         httpOnly: false,
         secure: false,
         sameSite: 'Lax',

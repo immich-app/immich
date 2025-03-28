@@ -30,6 +30,13 @@ As mentioned above, you should make your own backup of these together with the a
 You can adjust the schedule and amount of kept backups in the [admin settings](http://my.immich.app/admin/system-settings?isOpen=backup).  
 By default, Immich will keep the last 14 backups and create a new backup every day at 2:00 AM.
 
+#### Trigger Backup
+
+You are able to trigger a backup in the [admin job status page](http://my.immich.app/admin/jobs-status).
+Visit the page, open the "Create job" modal from the top right, select "Backup Database" and click "Confirm".
+A job will run and trigger a backup, you can verify this worked correctly by checking the logs or the backup folder.
+This backup will count towards the last X backups that will be kept based on your settings.
+
 #### Restoring
 
 We hope to make restoring simpler in future versions, for now you can find the backups in the `UPLOAD_LOCATION/backups` folder on your host.  
@@ -53,7 +60,7 @@ docker compose create           # Create Docker containers for Immich apps witho
 docker start immich_postgres    # Start Postgres server
 sleep 10                        # Wait for Postgres server to start up
 # Check the database user if you deviated from the default
-gunzip < "/path/to/backup/dump.sql.gz" \
+gunzip --stdout "/path/to/backup/dump.sql.gz" \
 | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" \
 | docker exec -i immich_postgres psql --dbname=postgres --username=<DB_USERNAME>  # Restore Backup
 docker compose up -d            # Start remainder of Immich apps
@@ -76,8 +83,8 @@ docker compose create                             # Create Docker containers for
 docker start immich_postgres                      # Start Postgres server
 sleep 10                                          # Wait for Postgres server to start up
 docker exec -it immich_postgres bash              # Enter the Docker shell and run the following command
-# Check the database user if you deviated from the default. If your backup ends in `.gz`, replace `cat` with `gunzip`
-cat < "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=postgres --username=<DB_USERNAME>
+# Check the database user if you deviated from the default. If your backup ends in `.gz`, replace `cat` with `gunzip --stdout`
+cat "/dump.sql" | sed "s/SELECT pg_catalog.set_config('search_path', '', false);/SELECT pg_catalog.set_config('search_path', 'public, pg_catalog', true);/g" | psql --dbname=postgres --username=<DB_USERNAME>
 exit                                              # Exit the Docker shell
 docker compose up -d                              # Start remainder of Immich apps
 ```

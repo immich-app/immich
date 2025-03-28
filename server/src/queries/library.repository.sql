@@ -2,34 +2,7 @@
 
 -- LibraryRepository.get
 select
-  "libraries".*,
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "users"."id",
-          "users"."email",
-          "users"."createdAt",
-          "users"."profileImagePath",
-          "users"."isAdmin",
-          "users"."shouldChangePassword",
-          "users"."deletedAt",
-          "users"."oauthId",
-          "users"."updatedAt",
-          "users"."storageLabel",
-          "users"."name",
-          "users"."quotaSizeInBytes",
-          "users"."quotaUsageInBytes",
-          "users"."status",
-          "users"."profileChangedAt"
-        from
-          "users"
-        where
-          "users"."id" = "libraries"."ownerId"
-      ) as obj
-  ) as "owner"
+  "libraries".*
 from
   "libraries"
 where
@@ -38,34 +11,7 @@ where
 
 -- LibraryRepository.getAll
 select
-  "libraries".*,
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "users"."id",
-          "users"."email",
-          "users"."createdAt",
-          "users"."profileImagePath",
-          "users"."isAdmin",
-          "users"."shouldChangePassword",
-          "users"."deletedAt",
-          "users"."oauthId",
-          "users"."updatedAt",
-          "users"."storageLabel",
-          "users"."name",
-          "users"."quotaSizeInBytes",
-          "users"."quotaUsageInBytes",
-          "users"."status",
-          "users"."profileChangedAt"
-        from
-          "users"
-        where
-          "users"."id" = "libraries"."ownerId"
-      ) as obj
-  ) as "owner"
+  "libraries".*
 from
   "libraries"
 where
@@ -75,34 +21,7 @@ order by
 
 -- LibraryRepository.getAllDeleted
 select
-  "libraries".*,
-  (
-    select
-      to_json(obj)
-    from
-      (
-        select
-          "users"."id",
-          "users"."email",
-          "users"."createdAt",
-          "users"."profileImagePath",
-          "users"."isAdmin",
-          "users"."shouldChangePassword",
-          "users"."deletedAt",
-          "users"."oauthId",
-          "users"."updatedAt",
-          "users"."storageLabel",
-          "users"."name",
-          "users"."quotaSizeInBytes",
-          "users"."quotaUsageInBytes",
-          "users"."status",
-          "users"."profileChangedAt"
-        from
-          "users"
-        where
-          "users"."id" = "libraries"."ownerId"
-      ) as obj
-  ) as "owner"
+  "libraries".*
 from
   "libraries"
 where

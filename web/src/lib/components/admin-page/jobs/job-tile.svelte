@@ -185,7 +185,7 @@
     {#if !disabled && !multipleButtons && isIdle}
       <JobTileButton color="light-gray" onClick={() => onCommand({ command: JobCommand.Start, force: false })}>
         <Icon path={mdiPlay} size="48" />
-        {$t('start').toUpperCase()}
+        {missingText}
       </JobTileButton>
     {/if}
   </div>

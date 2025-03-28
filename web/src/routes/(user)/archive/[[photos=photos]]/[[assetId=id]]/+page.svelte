@@ -12,20 +12,23 @@
   import AssetSelectControlBar from '$lib/components/photos-page/asset-select-control-bar.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
   import { AssetAction } from '$lib/constants';
-  import { AssetStore } from '$lib/stores/assets.store';
+
   import type { PageData } from './$types';
   import { mdiPlus, mdiDotsVertical } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import { onDestroy } from 'svelte';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
 
   interface Props {
     data: PageData;
   }
 
   let { data }: Props = $props();
+  const assetStore = new AssetStore();
+  void assetStore.updateOptions({ isArchived: true });
+  onDestroy(() => assetStore.destroy());
 
-  const assetStore = new AssetStore({ isArchived: true });
   const assetInteraction = new AssetInteraction();
 
   const handleEscape = () => {
@@ -34,10 +37,6 @@
       return;
     }
   };
-
-  onDestroy(() => {
-    assetStore.destroy();
-  });
 </script>
 
 {#if assetInteraction.selectionActive}
@@ -45,15 +44,29 @@
     assets={assetInteraction.selectedAssets}
     clearSelect={() => assetInteraction.clearMultiselect()}
   >
-    <ArchiveAction unarchive onArchive={(assetIds) => assetStore.removeAssets(assetIds)} />
+    <ArchiveAction
+      unarchive
+      onArchive={(ids, isArchived) =>
+        assetStore.updateAssetOperation(ids, (asset) => {
+          asset.isArchived = isArchived;
+          return { remove: false };
+        })}
+    />
     <CreateSharedLink />
     <SelectAllAssets {assetStore} {assetInteraction} />
     <ButtonContextMenu icon={mdiPlus} title={$t('add_to')}>
       <AddToAlbum />
       <AddToAlbum shared />
     </ButtonContextMenu>
-    <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-    <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+    <FavoriteAction
+      removeFavorite={assetInteraction.isAllFavorite}
+      onFavorite={(ids, isFavorite) =>
+        assetStore.updateAssetOperation(ids, (asset) => {
+          asset.isFavorite = isFavorite;
+          return { remove: false };
+        })}
+    />
+    <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
       <DownloadAction menuItem />
       <DeleteAssets menuItem onAssetDelete={(assetIds) => assetStore.removeAssets(assetIds)} />
     </ButtonContextMenu>

@@ -25,7 +25,7 @@
   import AssignFaceSidePanel from './assign-face-side-panel.svelte';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
-  import { photoViewerImgElement } from '$lib/stores/assets.store';
+  import { photoViewerImgElement } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
   import { dialogController } from '$lib/components/shared-components/dialog/dialog';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
@@ -221,7 +221,7 @@
           <LoadingSpinner />
         </div>
       {:else}
-        {#each peopleWithFaces as face, index}
+        {#each peopleWithFaces as face, index (face.id)}
           {@const personName = face.person ? face.person?.name : $t('face_unassigned')}
           <div class="relative z-[20001] h-[115px] w-[95px]">
             <div

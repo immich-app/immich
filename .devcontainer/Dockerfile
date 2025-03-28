@@ -1,10 +1,10 @@
-ARG BASEIMAGE=mcr.microsoft.com/devcontainers/typescript-node:22@sha256:9791f4aa527774bc370c6bd2f6705ce5a686f1e6f204badd8dfaacce28c631ae
+ARG BASEIMAGE=mcr.microsoft.com/devcontainers/typescript-node:22@sha256:2ef23730ec68d8511ec8e6e0b82550ca728b256805d81f60ed890f3bfb21cfb9
 FROM ${BASEIMAGE}
 
 # Flutter SDK
 # https://flutter.dev/docs/development/tools/sdk/releases?tab=linux
 ENV FLUTTER_CHANNEL="stable"
-ENV FLUTTER_VERSION="3.24.5"
+ENV FLUTTER_VERSION="3.29.1"
 ENV FLUTTER_HOME=/flutter
 ENV PATH=${PATH}:${FLUTTER_HOME}/bin
 

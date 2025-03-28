@@ -455,11 +455,11 @@ export class PersonService extends BaseService {
       return JobStatus.SKIPPED;
     }
 
-    const face = await this.personRepository.getFaceByIdWithAssets(
-      id,
-      { person: true, asset: true, faceSearch: true },
-      ['id', 'personId', 'sourceType'],
-    );
+    const face = await this.personRepository.getFaceByIdWithAssets(id, { faceSearch: true }, [
+      'id',
+      'personId',
+      'sourceType',
+    ]);
     if (!face || !face.asset) {
       this.logger.warn(`Face ${id} not found`);
       return JobStatus.FAILED;

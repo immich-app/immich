@@ -39,6 +39,10 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.MEMORIES_CREATE };
     }
 
+    case ManualJobName.BACKUP_DATABASE: {
+      return { name: JobName.BACKUP_DATABASE };
+    }
+
     default: {
       throw new BadRequestException('Invalid job name');
     }
@@ -70,7 +74,7 @@ export class JobService extends BaseService {
   }
 
   async handleCommand(queueName: QueueName, dto: JobCommandDto): Promise<JobStatusDto> {
-    this.logger.debug(`Handling command: queue=${queueName},force=${dto.force}`);
+    this.logger.debug(`Handling command: queue=${queueName},command=${dto.command},force=${dto.force}`);
 
     switch (dto.command) {
       case JobCommand.START: {
@@ -170,7 +174,7 @@ export class JobService extends BaseService {
       }
 
       case QueueName.LIBRARY: {
-        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SYNC_ALL, data: { force } });
+        return this.jobRepository.queue({ name: JobName.LIBRARY_QUEUE_SCAN_ALL, data: { force } });
       }
 
       case QueueName.BACKUP_DATABASE: {
@@ -255,11 +259,6 @@ export class JobService extends BaseService {
             this.eventRepository.clientSend('on_asset_update', asset.ownerId, mapAsset(asset));
           }
         }
-        await this.jobRepository.queue({ name: JobName.LINK_LIVE_PHOTOS, data: item.data });
-        break;
-      }
-
-      case JobName.LINK_LIVE_PHOTOS: {
         await this.jobRepository.queue({ name: JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE, data: item.data });
         break;
       }

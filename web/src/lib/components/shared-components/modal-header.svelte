@@ -28,7 +28,7 @@
 <div class="flex place-items-center justify-between px-5 pb-3">
   <div class="flex gap-2 place-items-center">
     {#if showLogo}
-      <ImmichLogo noText={true} width={32} />
+      <ImmichLogo noText={true} class="h-[40px]" />
     {:else if icon}
       <Icon path={icon} size={24} ariaHidden={true} class="text-immich-primary dark:text-immich-dark-primary" />
     {/if}
@@ -37,5 +37,5 @@
     </h1>
   </div>
 
-  <CircleIconButton onclick={onClose} icon={mdiClose} size={'20'} title={$t('close')} />
+  <CircleIconButton onclick={onClose} icon={mdiClose} size="20" title={$t('close')} />
 </div>

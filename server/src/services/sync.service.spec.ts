@@ -3,7 +3,7 @@ import { AssetEntity } from 'src/entities/asset.entity';
 import { SyncService } from 'src/services/sync.service';
 import { assetStub } from 'test/fixtures/asset.stub';
 import { authStub } from 'test/fixtures/auth.stub';
-import { partnerStub } from 'test/fixtures/partner.stub';
+import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const untilDate = new Date(2024);
@@ -38,10 +38,15 @@ describe(SyncService.name, () => {
 
   describe('getChangesForDeltaSync', () => {
     it('should return a response requiring a full sync when partners are out of sync', async () => {
-      mocks.partner.getAll.mockResolvedValue([partnerStub.adminToUser1]);
+      const partner = factory.partner();
+      const auth = factory.auth({ id: partner.sharedWithId });
+
+      mocks.partner.getAll.mockResolvedValue([partner]);
+
       await expect(
-        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [authStub.user1.user.id] }),
+        sut.getDeltaSync(authStub.user1, { updatedAfter: new Date(), userIds: [auth.user.id] }),
       ).resolves.toEqual({ needsFullSync: true, upserted: [], deleted: [] });
+
       expect(mocks.asset.getChangedDeltaSync).toHaveBeenCalledTimes(0);
       expect(mocks.audit.getAfter).toHaveBeenCalledTimes(0);
     });

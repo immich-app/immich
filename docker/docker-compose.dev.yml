@@ -25,7 +25,7 @@ services:
       context: ../
       dockerfile: server/Dockerfile
       target: dev
-    restart: always
+    restart: unless-stopped
     volumes:
       - ../server:/usr/src/app
       - ../open-api:/usr/src/open-api
@@ -95,12 +95,12 @@ services:
     image: immich-machine-learning-dev:latest
     # extends:
     #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
       args:
-        - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+        - DEVICE=cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
     ports:
       - 3003:3003
     volumes:
@@ -122,7 +122,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
     env_file:
       - .env
     environment:

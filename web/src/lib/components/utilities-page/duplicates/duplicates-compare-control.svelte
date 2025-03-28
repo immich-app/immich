@@ -24,6 +24,7 @@
   const { isViewing: showAssetViewer, asset: viewingAsset, setAsset } = assetViewingStore;
   const getAssetIndex = (id: string) => assets.findIndex((asset) => asset.id === id);
 
+  // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
 
@@ -62,7 +63,7 @@
 
   const onRandom = () => {
     if (assets.length <= 0) {
-      return Promise.resolve(null);
+      return Promise.resolve(undefined);
     }
     const index = Math.floor(Math.random() * assets.length);
     const asset = assets[index];

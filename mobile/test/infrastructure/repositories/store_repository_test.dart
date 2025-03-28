@@ -3,7 +3,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/interfaces/store.interface.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/user.entity.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:isar/isar.dart';
@@ -86,7 +86,7 @@ void main() {
     });
 
     test('converts user', () async {
-      User? user = await sut.tryGet(StoreKey.currentUser);
+      UserDto? user = await sut.tryGet(StoreKey.currentUser);
       expect(user, isNull);
       await sut.insert(StoreKey.currentUser, _kTestUser);
       user = await sut.tryGet(StoreKey.currentUser);

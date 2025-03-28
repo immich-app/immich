@@ -69,6 +69,13 @@ program
       .default(4),
   )
   .addOption(new Option('--delete', 'Delete local assets after upload').env('IMMICH_DELETE_ASSETS'))
+  .addOption(new Option('--no-progress', 'Hide progress bars').env('IMMICH_PROGRESS_BAR').default(true))
+  .addOption(
+    new Option('--watch', 'Watch for changes and upload automatically')
+      .env('IMMICH_WATCH_CHANGES')
+      .default(false)
+      .implies({ progress: false }),
+  )
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => upload(paths, program.opts(), options));
 

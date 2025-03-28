@@ -38,12 +38,12 @@ services:
     image: immich-machine-learning:latest
     # extends:
     #   file: hwaccel.ml.yml
-    #   service: cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+    #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
     build:
       context: ../machine-learning
       dockerfile: Dockerfile
       args:
-        - DEVICE=cpu # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference
+        - DEVICE=cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference
     ports:
       - 3003:3003
     volumes:
@@ -63,7 +63,7 @@ services:
 
   database:
     container_name: immich_postgres
-    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:90724186f0a3517cf6914295b5ab410db9ce23190a2d9d0b9dd6463e3fa298f0
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
     env_file:
       - .env
     environment:
@@ -77,22 +77,12 @@ services:
       - 5432:5432
     healthcheck:
       test: >-
-        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1;
-        Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align
-        --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')";
-        echo "checksum failure count is $$Chksum";
-        [ "$$Chksum" = '0' ] || exit 1
+        pg_isready --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" || exit 1; Chksum="$$(psql --dbname="$${POSTGRES_DB}" --username="$${POSTGRES_USER}" --tuples-only --no-align --command='SELECT COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database')"; echo "checksum failure count is $$Chksum"; [ "$$Chksum" = '0' ] || exit 1
       interval: 5m
       start_interval: 30s
       start_period: 5m
     command: >-
-      postgres
-      -c shared_preload_libraries=vectors.so
-      -c 'search_path="$$user", public, vectors'
-      -c logging_collector=on
-      -c max_wal_size=2GB
-      -c shared_buffers=512MB
-      -c wal_compression=on
+      postgres -c shared_preload_libraries=vectors.so -c 'search_path="$$user", public, vectors' -c logging_collector=on -c max_wal_size=2GB -c shared_buffers=512MB -c wal_compression=on
     restart: always
 
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
@@ -100,7 +90,7 @@ services:
     container_name: immich_prometheus
     ports:
       - 9090:9090
-    image: prom/prometheus@sha256:5888c188cf09e3f7eebc97369c3b2ce713e844cdbd88ccf36f5047c958aea120
+    image: prom/prometheus@sha256:502ad90314c7485892ce696cb14a99fceab9fc27af29f4b427f41bd39701a199
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
@@ -109,10 +99,10 @@ services:
   # add data source for http://immich-prometheus:9090 to get started
   immich-grafana:
     container_name: immich_grafana
-    command: ['./run.sh', '-disable-reporting']
+    command: [ './run.sh', '-disable-reporting' ]
     ports:
       - 3000:3000
-    image: grafana/grafana:11.5.1-ubuntu@sha256:9a4ab78cec1a2ec7d1ca5dfd5aacec6412706a1bc9e971fc7184e2f6696a63f5
+    image: grafana/grafana:11.5.2-ubuntu@sha256:8b5858c447e06fd7a89006b562ba7bba7c4d5813600c7982374c41852adefaeb
     volumes:
       - grafana-data:/var/lib/grafana
 

@@ -4,7 +4,6 @@
   import Icon from '$lib/components/elements/icon.svelte';
   import { TUNABLES } from '$lib/utils/tunables';
   import { mdiEyeOffOutline } from '@mdi/js';
-  import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
 
   interface Props {
@@ -19,10 +18,8 @@
     circle?: boolean;
     hidden?: boolean;
     border?: boolean;
-    preload?: boolean;
     hiddenIconClass?: string;
     onComplete?: (() => void) | undefined;
-    onClick?: (() => void) | undefined;
   }
 
   let {
@@ -37,7 +34,6 @@
     circle = false,
     hidden = false,
     border = false,
-    preload = true,
     hiddenIconClass = 'text-white',
     onComplete = undefined,
   }: Props = $props();
@@ -49,8 +45,6 @@
   let loaded = $state(false);
   let errored = $state(false);
 
-  let img = $state<HTMLImageElement>();
-
   const setLoaded = () => {
     loaded = true;
     onComplete?.();
@@ -59,11 +53,13 @@
     errored = true;
     onComplete?.();
   };
-  onMount(() => {
-    if (img?.complete) {
-      setLoaded();
+
+  function mount(elem: HTMLImageElement) {
+    if (elem.complete) {
+      loaded = true;
+      onComplete?.();
     }
-  });
+  }
 
   let optionalClasses = $derived(
     [
@@ -82,10 +78,9 @@
   <BrokenAsset class={optionalClasses} width={widthStyle} height={heightStyle} />
 {:else}
   <img
-    bind:this={img}
+    use:mount
     onload={setLoaded}
     onerror={setErrored}
-    loading={preload ? 'eager' : 'lazy'}
     style:width={widthStyle}
     style:height={heightStyle}
     style:filter={hidden ? 'grayscale(50%)' : 'none'}

@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/entities/backup_album.entity.dart';
 import 'package:immich_mobile/services/album.service.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../domain/service.mock.dart';
 import '../fixtures/album.stub.dart';
 import '../fixtures/asset.stub.dart';
 import '../fixtures/user.stub.dart';
@@ -29,6 +31,8 @@ void main() {
     albumMediaRepository = MockAlbumMediaRepository();
     albumApiRepository = MockAlbumApiRepository();
 
+    when(() => userService.getMyUser()).thenReturn(UserStub.user1);
+
     when(() => albumRepository.transaction<void>(any())).thenAnswer(
       (call) => (call.positionalArguments.first as Function).call(),
     );
@@ -37,8 +41,8 @@ void main() {
     );
 
     sut = AlbumService(
-      userService,
       syncService,
+      userService,
       entityService,
       albumRepository,
       assetRepository,
@@ -83,7 +87,9 @@ void main() {
 
   group('refreshRemoteAlbums', () {
     test('is working', () async {
-      when(() => userService.refreshUsers()).thenAnswer((_) async => true);
+      when(() => syncService.getUsersFromServer()).thenAnswer((_) async => []);
+      when(() => syncService.syncUsersFromServer(any()))
+          .thenAnswer((_) async => true);
       when(() => albumApiRepository.getAll(shared: true))
           .thenAnswer((_) async => [AlbumStub.sharedWithUser]);
 
@@ -99,7 +105,8 @@ void main() {
       ).thenAnswer((_) async => true);
       final result = await sut.refreshRemoteAlbums();
       expect(result, true);
-      verify(() => userService.refreshUsers()).called(1);
+      verify(() => syncService.getUsersFromServer()).called(1);
+      verify(() => syncService.syncUsersFromServer([])).called(1);
       verify(() => albumApiRepository.getAll(shared: true)).called(1);
       verify(() => albumApiRepository.getAll(shared: null)).called(1);
       verify(
@@ -200,7 +207,7 @@ void main() {
       when(
         () => albumRepository.addUsers(
           AlbumStub.emptyAlbum,
-          AlbumStub.emptyAlbum.sharedUsers.toList(),
+          AlbumStub.emptyAlbum.sharedUsers.map((u) => u.toDto()).toList(),
         ),
       ).thenAnswer((_) async => AlbumStub.emptyAlbum);
 

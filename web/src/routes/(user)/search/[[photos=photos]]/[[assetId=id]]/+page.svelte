@@ -1,6 +1,6 @@
 <script lang="ts">
   import { afterNavigate, goto } from '$app/navigation';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
   import Icon from '$lib/components/elements/icon.svelte';
   import AddToAlbum from '$lib/components/photos-page/actions/add-to-album.svelte';
@@ -22,17 +22,17 @@
   import { preventRaceConditionSearchBar } from '$lib/stores/search.store';
   import { shortcut } from '$lib/actions/shortcut';
   import {
+    type AlbumResponseDto,
     type AssetResponseDto,
+    getPerson,
+    getTagById,
+    type MetadataSearchDto,
     searchAssets,
     searchSmart,
-    getPerson,
     type SmartSearchDto,
-    type MetadataSearchDto,
-    type AlbumResponseDto,
-    getTagById,
   } from '@immich/sdk';
   import { mdiArrowLeft, mdiDotsVertical, mdiImageOffOutline, mdiPlus, mdiSelectAll } from '@mdi/js';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -42,7 +42,7 @@
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
   import { t } from 'svelte-i18n';
-  import { onMount, tick } from 'svelte';
+  import { tick } from 'svelte';
   import AssetJobActions from '$lib/components/photos-page/actions/asset-job-actions.svelte';
   import { preferences } from '$lib/stores/user.store';
   import TagAction from '$lib/components/photos-page/actions/tag-action.svelte';
@@ -57,7 +57,7 @@
   // manually and navigate back to that.
   let previousRoute = $state(AppRoute.EXPLORE as string);
 
-  let nextPage: number | null = 1;
+  let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
   let searchResultAssets: AssetResponseDto[] = $state([]);
   let isLoading = $state(true);
@@ -67,15 +67,17 @@
   const assetInteraction = new AssetInteraction();
 
   type SearchTerms = MetadataSearchDto & Pick<SmartSearchDto, 'query'>;
-  let searchQuery = $derived($page.url.searchParams.get(QueryParameter.QUERY));
-
-  onMount(() => {
-    if (terms && $featureFlags.loaded) {
-      handlePromiseError(onSearchQueryUpdate());
-    }
-  });
-
+  let searchQuery = $derived(page.url.searchParams.get(QueryParameter.QUERY));
+  let smartSearchEnabled = $derived($featureFlags.loaded && $featureFlags.smartSearch);
   let terms = $derived(searchQuery ? JSON.parse(searchQuery) : {});
+
+  $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    terms;
+    setTimeout(() => {
+      handlePromiseError(onSearchQueryUpdate());
+    });
+  });
 
   const onEscape = () => {
     if ($showAssetViewer) {
@@ -83,7 +85,7 @@
     }
 
     if (assetInteraction.selectionActive) {
-      assetInteraction.selectedAssets.clear();
+      assetInteraction.selectedAssets = [];
       return;
     }
     if (!$preventRaceConditionSearchBar) {
@@ -100,7 +102,7 @@
 
   afterNavigate(({ from }) => {
     // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== $page.route.id) {
+    if (from?.url && from.route.id !== page.route.id) {
       previousRoute = from.url.href;
     }
     const route = from?.route?.id;
@@ -134,11 +136,15 @@
     nextPage = 1;
     searchResultAssets = [];
     searchResultAlbums = [];
-    await loadNextPage();
+    await loadNextPage(true);
   }
 
-  export const loadNextPage = async () => {
+  // eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
+  export const loadNextPage = async (force?: boolean) => {
     if (!nextPage || searchResultAssets.length >= MAX_ASSET_COUNT) {
+      return;
+    }
+    if (isLoading && !force) {
       return;
     }
     isLoading = true;
@@ -152,14 +158,14 @@
 
     try {
       const { albums, assets } =
-        'query' in searchDto && $featureFlags.smartSearch
+        'query' in searchDto && smartSearchEnabled
           ? await searchSmart({ smartSearchDto: searchDto })
           : await searchAssets({ metadataSearchDto: searchDto });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
 
-      nextPage = assets.nextPage ? Number(assets.nextPage) : null;
+      nextPage = Number(assets.nextPage) || 0;
     } catch (error) {
       handleError(error, $t('loading_search_results_failed'));
     } finally {
@@ -230,9 +236,9 @@
     return tagNames.join(', ');
   }
 
-  const triggerAssetUpdate = () => (searchResultAssets = searchResultAssets);
-
   const onAddToAlbum = (assetIds: string[]) => {
+    cancelMultiselect(assetInteraction);
+
     if (terms.isNotInAlbum.toString() == 'true') {
       const assetIdSet = new Set(assetIds);
       searchResultAssets = searchResultAssets.filter((a: AssetResponseDto) => !assetIdSet.has(a.id));
@@ -259,13 +265,23 @@
           <AddToAlbum {onAddToAlbum} />
           <AddToAlbum shared {onAddToAlbum} />
         </ButtonContextMenu>
-        <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={triggerAssetUpdate} />
+        <FavoriteAction
+          removeFavorite={assetInteraction.isAllFavorite}
+          onFavorite={(ids, isFavorite) => {
+            for (const id of ids) {
+              const asset = searchResultAssets.find((asset) => asset.id === id);
+              if (asset) {
+                asset.isFavorite = isFavorite;
+              }
+            }
+          }}
+        />
 
-        <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+        <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
           <ChangeDate menuItem />
           <ChangeLocation menuItem />
-          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} onArchive={triggerAssetUpdate} />
+          <ArchiveAction menuItem unarchive={assetInteraction.isAllArchived} />
           {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
             <TagAction menuItem />
           {/if}
@@ -278,13 +294,12 @@
   {:else}
     <div class="fixed z-[100] top-0 left-0 w-full">
       <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+        <div
+          class="-z-[1] bg-immich-bg dark:bg-immich-dark-bg"
+          style="position:absolute;top:0;left:0;right:0;bottom:0;"
+        ></div>
         <div class="w-full flex-1 pl-4">
-          <SearchBar
-            grayTheme={false}
-            value={terms?.query ?? ''}
-            searchQuery={terms}
-            onSearch={() => handlePromiseError(onSearchQueryUpdate())}
-          />
+          <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
         </div>
       </ControlAppBar>
     </div>
@@ -331,45 +346,44 @@
 {/if}
 
 <section
-  class="relative mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
+  class="mb-12 bg-immich-bg dark:bg-immich-dark-bg m-4"
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >
-  <section class="immich-scrollbar relative overflow-y-auto">
-    {#if searchResultAlbums.length > 0}
-      <section>
-        <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
-        <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
+  {#if searchResultAlbums.length > 0}
+    <section>
+      <div class="ml-6 text-4xl font-medium text-black/70 dark:text-white/80">{$t('albums').toUpperCase()}</div>
+      <AlbumCardGroup albums={searchResultAlbums} showDateRange showItemCount />
 
-        <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
-          {$t('photos_and_videos').toUpperCase()}
-        </div>
-      </section>
-    {/if}
-    <section id="search-content" class="relative bg-immich-bg dark:bg-immich-dark-bg">
-      {#if searchResultAssets.length > 0}
-        <GalleryViewer
-          assets={searchResultAssets}
-          {assetInteraction}
-          onIntersected={loadNextPage}
-          showArchiveIcon={true}
-          {viewport}
-        />
-      {:else if !isLoading}
-        <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
-          <div class="flex flex-col content-center items-center text-center">
-            <Icon path={mdiImageOffOutline} size="3.5em" />
-            <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
-            <p class="text-base font-normal">{$t('no_results_description')}</p>
-          </div>
-        </div>
-      {/if}
-
-      {#if isLoading}
-        <div class="flex justify-center py-16 items-center">
-          <LoadingSpinner size="48" />
-        </div>
-      {/if}
+      <div class="m-6 text-4xl font-medium text-black/70 dark:text-white/80">
+        {$t('photos_and_videos').toUpperCase()}
+      </div>
     </section>
+  {/if}
+  <section id="search-content">
+    {#if searchResultAssets.length > 0}
+      <GalleryViewer
+        assets={searchResultAssets}
+        {assetInteraction}
+        onIntersected={loadNextPage}
+        showArchiveIcon={true}
+        {viewport}
+        pageHeaderOffset={54}
+      />
+    {:else if !isLoading}
+      <div class="flex min-h-[calc(66vh_-_11rem)] w-full place-content-center items-center dark:text-white">
+        <div class="flex flex-col content-center items-center text-center">
+          <Icon path={mdiImageOffOutline} size="3.5em" />
+          <p class="mt-5 text-3xl font-medium">{$t('no_results')}</p>
+          <p class="text-base font-normal">{$t('no_results_description')}</p>
+        </div>
+      </div>
+    {/if}
+
+    {#if isLoading}
+      <div class="flex justify-center py-16 items-center">
+        <LoadingSpinner size="48" />
+      </div>
+    {/if}
   </section>
 </section>

@@ -4,7 +4,9 @@
  */
 
 import type { ColumnType } from 'kysely';
-import { Permission, SyncEntityType } from 'src/enum';
+import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
+import { UserTable } from 'src/tables/user.table';
+import { OnThisDayData } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;
 
@@ -118,6 +120,13 @@ export interface AssetJobStatus {
   thumbnailAt: Timestamp | null;
 }
 
+export interface AssetsAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  assetId: string;
+  ownerId: string;
+}
+
 export interface Assets {
   checksum: Buffer;
   createdAt: Generated<Timestamp>;
@@ -145,7 +154,7 @@ export interface Assets {
   stackId: string | null;
   status: Generated<AssetsStatusEnum>;
   thumbhash: Buffer | null;
-  type: string;
+  type: AssetType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
@@ -167,6 +176,8 @@ export interface Audit {
 
 export interface Exif {
   assetId: string;
+  updateId: Generated<string>;
+  updatedAt: Generated<Timestamp>;
   autoStackId: string | null;
   bitsPerSample: number | null;
   city: string | null;
@@ -231,7 +242,7 @@ export interface Libraries {
 
 export interface Memories {
   createdAt: Generated<Timestamp>;
-  data: Json;
+  data: OnThisDayData;
   deletedAt: Timestamp | null;
   hideAt: Timestamp | null;
   id: Generated<string>;
@@ -240,7 +251,7 @@ export interface Memories {
   ownerId: string;
   seenAt: Timestamp | null;
   showAt: Timestamp | null;
-  type: string;
+  type: MemoryType;
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
@@ -270,6 +281,13 @@ export interface NaturalearthCountries {
   coordinates: string;
   id: Generated<number>;
   type: string;
+}
+
+export interface PartnersAudit {
+  deletedAt: Generated<Timestamp>;
+  id: Generated<string>;
+  sharedById: string;
+  sharedWithId: string;
 }
 
 export interface Partners {
@@ -315,7 +333,6 @@ export interface SessionSyncCheckpoints {
   updatedAt: Generated<Timestamp>;
   updateId: Generated<string>;
 }
-
 
 export interface SharedLinkAsset {
   assetsId: string;
@@ -394,26 +411,6 @@ export interface UserMetadata {
   value: Json;
 }
 
-export interface Users {
-  createdAt: Generated<Timestamp>;
-  deletedAt: Timestamp | null;
-  email: string;
-  id: Generated<string>;
-  isAdmin: Generated<boolean>;
-  name: Generated<string>;
-  oauthId: Generated<string>;
-  password: Generated<string>;
-  profileChangedAt: Generated<Timestamp>;
-  profileImagePath: Generated<string>;
-  quotaSizeInBytes: Int8 | null;
-  quotaUsageInBytes: Generated<Int8>;
-  shouldChangePassword: Generated<boolean>;
-  status: Generated<string>;
-  storageLabel: string | null;
-  updatedAt: Generated<Timestamp>;
-  updateId: Generated<string>;
-}
-
 export interface UsersAudit {
   id: Generated<string>;
   userId: string;
@@ -452,6 +449,7 @@ export interface DB {
   asset_job_status: AssetJobStatus;
   asset_stack: AssetStack;
   assets: Assets;
+  assets_audit: AssetsAudit;
   audit: Audit;
   exif: Exif;
   face_search: FaceSearch;
@@ -462,6 +460,7 @@ export interface DB {
   migrations: Migrations;
   move_history: MoveHistory;
   naturalearth_countries: NaturalearthCountries;
+  partners_audit: PartnersAudit;
   partners: Partners;
   person: Person;
   sessions: Sessions;
@@ -477,7 +476,7 @@ export interface DB {
   tags_closure: TagsClosure;
   typeorm_metadata: TypeormMetadata;
   user_metadata: UserMetadata;
-  users: Users;
+  users: UserTable;
   users_audit: UsersAudit;
   'vectors.pg_vector_index_stat': VectorsPgVectorIndexStat;
   version_history: VersionHistory;

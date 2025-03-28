@@ -71,7 +71,7 @@ hospedada no Nível Gratuito da Oracle VM em Amsterdam com um processador 2.4Ghz
 quad-core ARM64 e 24GB de RAM.
 
 No aplicativo para dispositivos móveis, você pode usar
-`https://demo.immich.app/api` no campo `Server Endpoint URL`
+`https://demo.immich.app` no campo `Server Endpoint URL`
 
 ### Credenciais de login
 

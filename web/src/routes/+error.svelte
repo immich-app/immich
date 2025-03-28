@@ -1,6 +1,6 @@
 <script>
   import { page } from '$app/state';
-  import Error from '$lib/components/error.svelte';
+  import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
 </script>
 
-<Error error={page.error}></Error>
+<ErrorLayout error={page.error}></ErrorLayout>

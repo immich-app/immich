@@ -39,6 +39,7 @@ describe(TrashService.name, () => {
 
     it('should restore a batch of assets', async () => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset1', 'asset2']));
+      mocks.trash.restoreAll.mockResolvedValue(0);
 
       await sut.restoreAssets(authStub.user1, { ids: ['asset1', 'asset2'] });
 

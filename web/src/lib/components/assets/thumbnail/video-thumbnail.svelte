@@ -3,12 +3,8 @@
   import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { mdiAlertCircleOutline, mdiPauseCircleOutline, mdiPlayCircleOutline } from '@mdi/js';
   import Icon from '$lib/components/elements/icon.svelte';
-  import { AssetStore } from '$lib/stores/assets.store';
-  import { generateId } from '$lib/utils/generate-id';
-  import { onDestroy } from 'svelte';
 
   interface Props {
-    assetStore?: AssetStore | undefined;
     url: string;
     durationInSeconds?: number;
     enablePlayback?: boolean;
@@ -20,7 +16,6 @@
   }
 
   let {
-    assetStore = undefined,
     url,
     durationInSeconds = 0,
     enablePlayback = $bindable(false),
@@ -31,7 +26,6 @@
     pauseIcon = mdiPauseCircleOutline,
   }: Props = $props();
 
-  const componentId = generateId();
   let remainingSeconds = $state(durationInSeconds);
   let loading = $state(true);
   let error = $state(false);
@@ -49,48 +43,28 @@
     }
   });
   const onMouseEnter = () => {
-    if (assetStore) {
-      assetStore.taskManager.queueScrollSensitiveTask({
-        componentId,
-        task: () => {
-          if (playbackOnIconHover) {
-            enablePlayback = true;
-          }
-        },
-      });
-    } else {
-      if (playbackOnIconHover) {
-        enablePlayback = true;
-      }
+    if (playbackOnIconHover) {
+      enablePlayback = true;
     }
   };
 
   const onMouseLeave = () => {
-    if (assetStore) {
-      assetStore.taskManager.queueScrollSensitiveTask({
-        componentId,
-        task: () => {
-          if (playbackOnIconHover) {
-            enablePlayback = false;
-          }
-        },
-      });
-    } else {
-      if (playbackOnIconHover) {
-        enablePlayback = false;
-      }
+    if (playbackOnIconHover) {
+      enablePlayback = false;
     }
   };
-
-  onDestroy(() => {
-    assetStore?.taskManager.removeAllTasksForComponent(componentId);
-  });
 </script>
 
 <div class="absolute right-0 top-0 z-20 flex place-items-center gap-1 text-xs font-medium text-white">
   {#if showTime}
     <span class="pt-2">
-      {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
+      {#if remainingSeconds < 60}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('m:ss')}
+      {:else if remainingSeconds < 3600}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('mm:ss')}
+      {:else}
+        {Duration.fromObject({ seconds: remainingSeconds }).toFormat('h:mm:ss')}
+      {/if}
     </span>
   {/if}
 

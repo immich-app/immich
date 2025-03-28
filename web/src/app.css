@@ -70,6 +70,7 @@
   font-family: 'Overpass', sans-serif;
   /* Used by layouts to ensure proper spacing between navbar and content */
   --navbar-height: calc(theme(spacing.18) + 4px);
+  --navbar-height-md: calc(theme(spacing.18) + 4px - 14px);
 }
 
 :root.dark {
@@ -127,7 +128,7 @@ input:focus-visible {
 
 @layer utilities {
   .immich-form-input {
-    @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-400 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
+    @apply rounded-xl bg-slate-200 px-3 py-3 text-sm focus:border-immich-primary disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100 dark:bg-gray-600 dark:text-immich-dark-fg dark:disabled:bg-gray-800 dark:disabled:text-gray-200;
   }
 
   .immich-form-label {
@@ -135,32 +136,13 @@ input:focus-visible {
   }
 
   /* width */
-  .immich-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  /* Track */
-  .immich-scrollbar::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 16px;
-  }
-
-  /* Handle */
-  .immich-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(85, 86, 87, 0.408);
-    border-radius: 16px;
-  }
-
-  /* Handle on hover */
-  .immich-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #4250afad;
-    border-radius: 16px;
+  .immich-scrollbar {
+    scrollbar-width: thin;
   }
 
   /* Hidden scrollbar */
   /* width */
-  .scrollbar-hidden::-webkit-scrollbar {
-    display: none;
+  .scrollbar-hidden {
     scrollbar-width: none;
   }
 

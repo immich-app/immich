@@ -195,6 +195,14 @@ describe(JobService.name, () => {
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.QUEUE_FACIAL_RECOGNITION, data: { force: false } });
     });
 
+    it('should handle a start backup database command', async () => {
+      mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
+
+      await sut.handleCommand(QueueName.BACKUP_DATABASE, { command: JobCommand.START, force: false });
+
+      expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.BACKUP_DATABASE, data: { force: false } });
+    });
+
     it('should throw a bad request when an invalid queue is used', async () => {
       mocks.job.getQueueStatus.mockResolvedValue({ isActive: false, isPaused: false });
 
@@ -233,10 +241,6 @@ describe(JobService.name, () => {
       },
       {
         item: { name: JobName.METADATA_EXTRACTION, data: { id: 'asset-1' } },
-        jobs: [JobName.LINK_LIVE_PHOTOS],
-      },
-      {
-        item: { name: JobName.LINK_LIVE_PHOTOS, data: { id: 'asset-1' } },
         jobs: [JobName.STORAGE_TEMPLATE_MIGRATION_SINGLE],
       },
       {

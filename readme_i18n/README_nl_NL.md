@@ -61,7 +61,7 @@ De belangrijkste documentatie, inclusief installatie handleidingen, zijn te vind
 
 Je kunt de demo [hier](https://demo.immich.app/) bekijken. De demo server is actief op een Free-tier Oracle VM in Amsterdam met een 2.4GHz quad-core ARM64 CPU en 24GB RAM.
 
-Voor de mobiele app kun je gebruik maken van `https://demo.immich.app/api` voor de `Server Endpoint URL`
+Voor de mobiele app kun je gebruik maken van `https://demo.immich.app` voor de `Server Endpoint URL`
 
 ### Login gegevens
 

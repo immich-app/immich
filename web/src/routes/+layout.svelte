@@ -3,7 +3,7 @@
   import { page } from '$app/state';
   import { shortcut } from '$lib/actions/shortcut';
   import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-  import Error from '$lib/components/error.svelte';
+  import ErrorLayout from '$lib/components/layouts/ErrorLayout.svelte';
   import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
   import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
   import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
@@ -17,11 +17,11 @@
   import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
   import { copyToClipboard, setKey } from '$lib/utils';
   import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
-  import { onDestroy, onMount, type Snippet } from 'svelte';
-  import { run } from 'svelte/legacy';
   import { setTranslations } from '@immich/ui';
-  import '../app.css';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
+  import { run } from 'svelte/legacy';
+  import '../app.css';
 
   interface Props {
     children?: Snippet;
@@ -141,7 +141,7 @@
 />
 
 {#if page.data.error}
-  <Error error={page.data.error}></Error>
+  <ErrorLayout error={page.data.error}></ErrorLayout>
 {:else}
   {@render children?.()}
 {/if}

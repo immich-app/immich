@@ -4,8 +4,8 @@
 
   export interface AssetControlContext {
     // Wrap assets in a function, because context isn't reactive.
-    getAssets: () => Set<AssetResponseDto>; // All assets includes partners' assets
-    getOwnedAssets: () => Set<AssetResponseDto>; // Only assets owned by the user
+    getAssets: () => AssetResponseDto[]; // All assets includes partners' assets
+    getOwnedAssets: () => AssetResponseDto[]; // Only assets owned by the user
     clearSelect: () => void;
   }
 
@@ -20,7 +20,7 @@
   import type { Snippet } from 'svelte';
 
   interface Props {
-    assets: Set<AssetResponseDto>;
+    assets: AssetResponseDto[];
     clearSelect: () => void;
     ownerId?: string | undefined;
     children?: Snippet;
@@ -30,8 +30,7 @@
 
   setContext({
     getAssets: () => assets,
-    getOwnedAssets: () =>
-      ownerId === undefined ? assets : new Set([...assets].filter((asset) => asset.ownerId === ownerId)),
+    getOwnedAssets: () => (ownerId === undefined ? assets : assets.filter((asset) => asset.ownerId === ownerId)),
     clearSelect,
   });
 </script>
@@ -39,8 +38,8 @@
 <ControlAppBar onClose={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
   {#snippet leading()}
     <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
-      <p class="block sm:hidden">{assets.size}</p>
-      <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.size } })}</p>
+      <p class="block sm:hidden">{assets.length}</p>
+      <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.length } })}</p>
     </div>
   {/snippet}
   {#snippet trailing()}

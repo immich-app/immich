@@ -404,7 +404,7 @@ export class SearchRepository {
           .where('assets.ownerId', '=', anyUuid(userIds))
           .where('assets.isVisible', '=', true)
           .where('assets.isArchived', '=', false)
-          .where('assets.type', '=', 'IMAGE')
+          .where('assets.type', '=', AssetType.IMAGE)
           .where('assets.deletedAt', 'is', null)
           .orderBy('city')
           .limit(1);
@@ -421,7 +421,7 @@ export class SearchRepository {
                 .where('assets.ownerId', '=', anyUuid(userIds))
                 .where('assets.isVisible', '=', true)
                 .where('assets.isArchived', '=', false)
-                .where('assets.type', '=', 'IMAGE')
+                .where('assets.type', '=', AssetType.IMAGE)
                 .where('assets.deletedAt', 'is', null)
                 .whereRef('exif.city', '>', 'cte.city')
                 .orderBy('city')

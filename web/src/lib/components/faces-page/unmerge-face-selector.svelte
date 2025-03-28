@@ -131,7 +131,7 @@
       <div class="flex gap-4">
         <Button
           title={$t('create_new_person_hint')}
-          size={'sm'}
+          size="sm"
           disabled={disableButtons || hasSelection}
           onclick={handleCreate}
         >
@@ -143,7 +143,7 @@
           <span class="ml-2"> {$t('create_new_person')}</span></Button
         >
         <Button
-          size={'sm'}
+          size="sm"
           title={$t('reassing_hint')}
           disabled={disableButtons || !hasSelection}
           onclick={handleReassign}

@@ -1,10 +1,15 @@
+import { SystemConfig } from 'src/config';
 import {
+  AssetType,
   DatabaseExtension,
   ExifOrientation,
   ImageFormat,
   JobName,
+  MemoryType,
   QueueName,
+  StorageFolder,
   SyncEntityType,
+  SystemMetadataKey,
   TranscodeTarget,
   VideoCodec,
 } from 'src/enum';
@@ -36,6 +41,15 @@ export type MemoryItem =
   | Awaited<ReturnType<IMemoryRepository['search']>>[0];
 
 export type SessionItem = Awaited<ReturnType<ISessionRepository['getByUserId']>>[0];
+
+export type TagItem = {
+  id: string;
+  value: string;
+  createdAt: Date;
+  updatedAt: Date;
+  color: string | null;
+  parentId: string | null;
+};
 
 export interface CropOptions {
   top: number;
@@ -199,17 +213,23 @@ export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
 
-export interface ILibraryFileJob extends IEntityJob {
-  ownerId: string;
-  assetPath: string;
+export interface ILibraryFileJob {
+  libraryId: string;
+  paths: string[];
+  progressCounter?: number;
+  totalAssets?: number;
 }
 
-export interface ILibraryAssetJob extends IEntityJob {
+export interface ILibraryBulkIdsJob {
+  libraryId: string;
   importPaths: string[];
   exclusionPatterns: string[];
+  assetIds: string[];
+  progressCounter: number;
+  totalAssets: number;
 }
 
-export interface IBulkEntityJob extends IBaseJob {
+export interface IBulkEntityJob {
   ids: string[];
 }
 
@@ -303,7 +323,6 @@ export type JobItem =
   // Metadata Extraction
   | { name: JobName.QUEUE_METADATA_EXTRACTION; data: IBaseJob }
   | { name: JobName.METADATA_EXTRACTION; data: IEntityJob }
-  | { name: JobName.LINK_LIVE_PHOTOS; data: IEntityJob }
   // Sidecar Scanning
   | { name: JobName.QUEUE_SIDECAR; data: IBaseJob }
   | { name: JobName.SIDECAR_DISCOVERY; data: IEntityJob }
@@ -346,12 +365,13 @@ export type JobItem =
   | { name: JobName.ASSET_DELETION_CHECK; data?: IBaseJob }
 
   // Library Management
-  | { name: JobName.LIBRARY_SYNC_FILE; data: ILibraryFileJob }
+  | { name: JobName.LIBRARY_SYNC_FILES; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_FILES; data: IEntityJob }
   | { name: JobName.LIBRARY_QUEUE_SYNC_ASSETS; data: IEntityJob }
-  | { name: JobName.LIBRARY_SYNC_ASSET; data: ILibraryAssetJob }
+  | { name: JobName.LIBRARY_SYNC_ASSETS; data: ILibraryBulkIdsJob }
+  | { name: JobName.LIBRARY_ASSET_REMOVAL; data: ILibraryFileJob }
   | { name: JobName.LIBRARY_DELETE; data: IEntityJob }
-  | { name: JobName.LIBRARY_QUEUE_SYNC_ALL; data?: IBaseJob }
+  | { name: JobName.LIBRARY_QUEUE_SCAN_ALL; data?: IBaseJob }
   | { name: JobName.LIBRARY_QUEUE_CLEANUP; data: IBaseJob }
 
   // Notification
@@ -423,3 +443,42 @@ export type SyncAck = {
   type: SyncEntityType;
   updateId: string;
 };
+
+export type StorageAsset = {
+  id: string;
+  ownerId: string;
+  livePhotoVideoId: string | null;
+  type: AssetType;
+  isExternal: boolean;
+  checksum: Buffer;
+  timeZone: string | null;
+  fileCreatedAt: Date;
+  originalPath: string;
+  originalFileName: string;
+  sidecarPath: string | null;
+  fileSizeInByte: number | null;
+};
+
+export type OnThisDayData = { year: number };
+
+export interface MemoryData {
+  [MemoryType.ON_THIS_DAY]: OnThisDayData;
+}
+
+export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
+export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
+export type MemoriesState = {
+  /** memories have already been created through this date */
+  lastOnThisDayDate: string;
+};
+
+export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
+  [SystemMetadataKey.ADMIN_ONBOARDING]: { isOnboarded: boolean };
+  [SystemMetadataKey.FACIAL_RECOGNITION_STATE]: { lastRun?: string };
+  [SystemMetadataKey.LICENSE]: { licenseKey: string; activationKey: string; activatedAt: Date };
+  [SystemMetadataKey.REVERSE_GEOCODING_STATE]: { lastUpdate?: string; lastImportFileName?: string };
+  [SystemMetadataKey.SYSTEM_CONFIG]: DeepPartial<SystemConfig>;
+  [SystemMetadataKey.SYSTEM_FLAGS]: DeepPartial<SystemFlags>;
+  [SystemMetadataKey.VERSION_CHECK_STATE]: VersionCheckMetadata;
+  [SystemMetadataKey.MEMORIES_STATE]: MemoriesState;
+}

@@ -1,13 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { JsonObject } from 'src/db';
 import { OnJob } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, mapMemory } from 'src/dtos/memory.dto';
-import { OnThisDayData } from 'src/entities/memory.entity';
 import { JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { OnThisDayData } from 'src/types';
 import { addAssets, getMyPartnerIds, removeAssets } from 'src/utils/asset.util';
 
 const DAYS = 3;
@@ -75,13 +74,13 @@ export class MemoryService extends BaseService {
 
   async search(auth: AuthDto, dto: MemorySearchDto) {
     const memories = await this.memoryRepository.search(auth.user.id, dto);
-    return memories.map((memory) => mapMemory(memory));
+    return memories.map((memory) => mapMemory(memory, auth));
   }
 
   async get(auth: AuthDto, id: string): Promise<MemoryResponseDto> {
     await this.requireAccess({ auth, permission: Permission.MEMORY_READ, ids: [id] });
     const memory = await this.findOrFail(id);
-    return mapMemory(memory);
+    return mapMemory(memory, auth);
   }
 
   async create(auth: AuthDto, dto: MemoryCreateDto) {
@@ -97,7 +96,7 @@ export class MemoryService extends BaseService {
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data: dto.data as unknown as JsonObject,
+        data: dto.data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         seenAt: dto.seenAt,
@@ -105,7 +104,7 @@ export class MemoryService extends BaseService {
       allowedAssetIds,
     );
 
-    return mapMemory(memory);
+    return mapMemory(memory, auth);
   }
 
   async update(auth: AuthDto, id: string, dto: MemoryUpdateDto): Promise<MemoryResponseDto> {
@@ -117,7 +116,7 @@ export class MemoryService extends BaseService {
       seenAt: dto.seenAt,
     });
 
-    return mapMemory(memory);
+    return mapMemory(memory, auth);
   }
 
   async remove(auth: AuthDto, id: string): Promise<void> {

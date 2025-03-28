@@ -518,8 +518,18 @@ class ApiClient {
           return SyncAckDto.fromJson(value);
         case 'SyncAckSetDto':
           return SyncAckSetDto.fromJson(value);
+        case 'SyncAssetDeleteV1':
+          return SyncAssetDeleteV1.fromJson(value);
+        case 'SyncAssetExifV1':
+          return SyncAssetExifV1.fromJson(value);
+        case 'SyncAssetV1':
+          return SyncAssetV1.fromJson(value);
         case 'SyncEntityType':
           return SyncEntityTypeTypeTransformer().decode(value);
+        case 'SyncPartnerDeleteV1':
+          return SyncPartnerDeleteV1.fromJson(value);
+        case 'SyncPartnerV1':
+          return SyncPartnerV1.fromJson(value);
         case 'SyncRequestType':
           return SyncRequestTypeTypeTransformer().decode(value);
         case 'SyncStreamDto':

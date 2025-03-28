@@ -45,7 +45,7 @@
           onclick={() => {}}
         />
       </li>
-      {#each pathSegments as segment, index}
+      {#each pathSegments as segment, index (index)}
         {@const isLastSegment = index === pathSegments.length - 1}
         <li
           class="flex gap-2 items-center font-mono text-sm text-nowrap text-immich-primary dark:text-immich-dark-primary"

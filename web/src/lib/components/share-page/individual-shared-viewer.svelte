@@ -17,7 +17,7 @@
   import { cancelMultiselect } from '$lib/utils/asset-utils';
   import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
   import { NotificationType, notificationController } from '../shared-components/notification/notification';
-  import type { Viewport } from '$lib/stores/assets.store';
+  import type { Viewport } from '$lib/stores/assets-store.svelte';
   import { t } from 'svelte-i18n';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
@@ -30,7 +30,6 @@
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   const assetInteraction = new AssetInteraction();
-  let innerWidth: number = $state(0);
 
   let assets = $derived(sharedLink.assets);
 
@@ -75,8 +74,6 @@
   };
 </script>
 
-<svelte:window bind:innerWidth />
-
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
   {#if assetInteraction.selectionActive}
     <AssetSelectControlBar
@@ -94,7 +91,7 @@
   {:else}
     <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
       {#snippet leading()}
-        <ImmichLogoSmallLink width={innerWidth} />
+        <ImmichLogoSmallLink />
       {/snippet}
 
       {#snippet trailing()}

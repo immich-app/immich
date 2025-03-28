@@ -33,7 +33,7 @@
   import { AppRoute, PersonPageViewMode, QueryParameter, SessionStorageKey } from '$lib/constants';
   import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
   import { assetViewingStore } from '$lib/stores/asset-viewing.store';
-  import { AssetStore } from '$lib/stores/assets.store';
+  import { AssetStore } from '$lib/stores/assets-store.svelte';
   import { preferences } from '$lib/stores/user.store';
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
@@ -62,6 +62,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import { locale } from '$lib/stores/preferences.store';
+  import { DateTime } from 'luxon';
 
   interface Props {
     data: PageData;
@@ -72,18 +74,9 @@
   let numberOfAssets = $state(data.statistics.assets);
   let { isViewing: showAssetViewer } = assetViewingStore;
 
-  const assetStoreOptions = { isArchived: false, personId: data.person.id };
-  const assetStore = new AssetStore(assetStoreOptions);
-
-  $effect(() => {
-    // Check to trigger rebuild the timeline when navigating between people from the info panel
-    const change = assetStoreOptions.personId !== data.person.id;
-    assetStoreOptions.personId = data.person.id;
-    handlePromiseError(assetStore.updateOptions(assetStoreOptions));
-    if (change) {
-      assetStore.triggerUpdate();
-    }
-  });
+  const assetStore = new AssetStore();
+  $effect(() => void assetStore.updateOptions({ isArchived: false, personId: data.person.id }));
+  onDestroy(() => assetStore.destroy());
 
   const assetInteraction = new AssetInteraction();
 
@@ -156,7 +149,7 @@
   });
 
   const handleUnmerge = () => {
-    $assetStore.removeAssets(assetInteraction.selectedAssetsArray.map((a) => a.id));
+    assetStore.removeAssets(assetInteraction.selectedAssets.map((a) => a.id));
     assetInteraction.clearMultiselect();
     viewMode = PersonPageViewMode.VIEW_ASSETS;
   };
@@ -251,12 +244,14 @@
 
   const handleSuggestPeople = (person2: PersonResponseDto) => {
     isEditingName = false;
-    potentialMergePeople = [];
-    personName = person.name;
-    personMerge1 = person;
-    personMerge2 = person2;
-    isSuggestionSelectedByUser = true;
-    viewMode = PersonPageViewMode.SUGGEST_MERGE;
+    if (person.id !== person2.id) {
+      potentialMergePeople = [];
+      personName = person.name;
+      personMerge1 = person;
+      personMerge2 = person2;
+      isSuggestionSelectedByUser = true;
+      viewMode = PersonPageViewMode.SUGGEST_MERGE;
+    }
   };
 
   const changeName = async () => {
@@ -358,13 +353,10 @@
   };
 
   const handleDeleteAssets = async (assetIds: string[]) => {
-    $assetStore.removeAssets(assetIds);
+    assetStore.removeAssets(assetIds);
     await updateAssetCount();
   };
 
-  onDestroy(() => {
-    assetStore.destroy();
-  });
   let person = $derived(data.person);
 
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
@@ -378,7 +370,7 @@
 
 {#if viewMode === PersonPageViewMode.UNASSIGN_ASSETS}
   <UnMergeFaceSelector
-    assetIds={assetInteraction.selectedAssetsArray.map((a) => a.id)}
+    assetIds={assetInteraction.selectedAssets.map((a) => a.id)}
     personAssets={person}
     onClose={() => (viewMode = PersonPageViewMode.VIEW_ASSETS)}
     onConfirm={handleUnmerge}
@@ -420,8 +412,15 @@
         <AddToAlbum />
         <AddToAlbum shared />
       </ButtonContextMenu>
-      <FavoriteAction removeFavorite={assetInteraction.isAllFavorite} onFavorite={() => assetStore.triggerUpdate()} />
-      <ButtonContextMenu icon={mdiDotsVertical} title={$t('add')}>
+      <FavoriteAction
+        removeFavorite={assetInteraction.isAllFavorite}
+        onFavorite={(ids, isFavorite) =>
+          assetStore.updateAssetOperation(ids, (asset) => {
+            asset.isFavorite = isFavorite;
+            return { remove: false };
+          })}
+      />
+      <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename="{person.name || 'immich'}.zip" />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}
@@ -433,7 +432,7 @@
         <ArchiveAction
           menuItem
           unarchive={assetInteraction.isAllArchived}
-          onArchive={(assetIds) => $assetStore.removeAssets(assetIds)}
+          onArchive={(assetIds) => assetStore.removeAssets(assetIds)}
         />
         {#if $preferences.tags.enabled && assetInteraction.isAllUserOwned}
           <TagAction menuItem />
@@ -487,7 +486,7 @@
 </header>
 
 <main
-  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
+  class="relative h-screen overflow-hidden bg-immich-bg tall:ml-4 md:pt-[var(--navbar-height-md)] pt-[var(--navbar-height)] dark:bg-immich-dark-bg"
   use:scrollMemoryClearer={{
     routeStartsWith: AppRoute.PEOPLE,
     beforeClear: () => {
@@ -543,12 +542,28 @@
                     heightStyle="3.375rem"
                   />
                   <div
-                    class="flex flex-col justify-center text-left px-4 h-14 text-immich-primary dark:text-immich-dark-primary"
+                    class="flex flex-col justify-center text-left px-4 text-immich-primary dark:text-immich-dark-primary"
                   >
                     <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
-                    <p class="absolute w-fit text-sm text-gray-500 dark:text-immich-gray bottom-0">
+                    <p class="text-sm text-gray-500 dark:text-immich-gray">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
+                    {#if person.birthDate}
+                      <p class="text-sm text-gray-500 dark:text-immich-gray">
+                        {$t('person_birthdate', {
+                          values: {
+                            date: DateTime.fromISO(person.birthDate).toLocaleString(
+                              {
+                                month: 'numeric',
+                                day: 'numeric',
+                                year: 'numeric',
+                              },
+                              { locale: $locale },
+                            ),
+                          },
+                        })}
+                      </p>
+                    {/if}
                   </div>
                 </button>
               </div>
