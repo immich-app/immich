@@ -1,4 +1,4 @@
-import { albumListingStore } from '$lib/stores/album-listing.store';
+import { albumListingStore } from '$lib/stores/album-listing.store.svelte';
 import { authenticate } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
 import type { PageLoad } from './$types';
