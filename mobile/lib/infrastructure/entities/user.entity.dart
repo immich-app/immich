@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
+import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/utils/hash.dart';
 import 'package:isar/isar.dart';
 
@@ -74,7 +75,7 @@ class User {
       );
 }
 
-class UserEntity extends Table {
+class UserEntity extends Table with DriftDefaultsMixin {
   const UserEntity();
 
   BlobColumn get id => blob()();
@@ -89,10 +90,4 @@ class UserEntity extends Table {
 
   @override
   Set<Column> get primaryKey => {id};
-
-  @override
-  bool get isStrict => true;
-
-  @override
-  bool get withoutRowId => true;
 }
