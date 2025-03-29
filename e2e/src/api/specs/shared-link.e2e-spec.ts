@@ -117,7 +117,7 @@ describe('/shared-links', () => {
       const resp = await request(shareUrl).get(`/${linkWithAssets.key}`);
       expect(resp.status).toBe(200);
       expect(resp.header['content-type']).toContain('text/html');
-      expect(resp.text).toContain(`<meta property="og:image" content="http://`);
+      expect(resp.text).toContain(`<meta property="og:image" content="https://my.immich.app`);
     });
   });
 
