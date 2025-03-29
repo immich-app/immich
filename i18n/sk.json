@@ -1079,6 +1079,8 @@
   "remove_from_album": "Odstrániť z albumu",
   "remove_from_favorites": "Odstrániť z obľúbených",
   "remove_from_shared_link": "Odstrániť zo zdieľaného odkazu",
+  "remove_memory": "Odstrániť spomienku",
+  "remove_photo_from_memory": "Odstrániť fotografiu z tejto spomienky",
   "remove_url": "Odstrániť URL",
   "remove_user": "Odstrániť používateľa",
   "removed_api_key": "Odstrániť API kľúč: {name}",
