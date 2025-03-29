@@ -38,7 +38,7 @@
   <section
     id="memory-lane"
     bind:this={memoryLaneElement}
-    class="relative mt-5 overflow-x-scroll overflow-y-hidden whitespace-nowrap transition-all"
+    class="relative mt-5 mx-2 overflow-x-scroll overflow-y-hidden whitespace-nowrap transition-all"
     style="scrollbar-width:none"
     use:resizeObserver={({ width }) => (offsetWidth = width)}
     onscroll={onScroll}
