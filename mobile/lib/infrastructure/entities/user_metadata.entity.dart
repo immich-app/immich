@@ -12,12 +12,6 @@ class UserMetadataEntity extends Table with DriftDefaultsMixin {
 
   @override
   Set<Column> get primaryKey => {userId};
-
-  @override
-  bool get isStrict => true;
-
-  @override
-  bool get withoutRowId => true;
 }
 
 final JsonTypeConverter2<UserPreferences, String, Object?>

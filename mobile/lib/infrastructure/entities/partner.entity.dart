@@ -15,10 +15,4 @@ class PartnerEntity extends Table with DriftDefaultsMixin {
 
   @override
   Set<Column> get primaryKey => {sharedById, sharedWithId};
-
-  @override
-  bool get isStrict => true;
-
-  @override
-  bool get withoutRowId => true;
 }
