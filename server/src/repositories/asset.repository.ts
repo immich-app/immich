@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, UpdateResult, Updateable, sql } from 'kysely';
+import { Insertable, Kysely, Selectable, UpdateResult, Updateable, sql } from 'kysely';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFiles, AssetJobStatus, Assets, DB, Exif } from 'src/db';
@@ -1038,6 +1038,17 @@ export class AssetRepository {
           path: eb.ref('excluded.path'),
         })),
       )
+      .execute();
+  }
+
+  async deleteFiles(files: Pick<Selectable<AssetFiles>, 'id'>[]): Promise<void> {
+    if (files.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('asset_files')
+      .where('id', '=', anyUuid(files.map((file) => file.id)))
       .execute();
   }
 
