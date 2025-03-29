@@ -121,7 +121,7 @@ class SqlGenerator {
 
     for (const key of this.getPropertyNames(instance)) {
       const target = instance[key];
-      if (!(target instanceof Function)) {
+      if (!(typeof target === 'function')) {
         continue;
       }
 

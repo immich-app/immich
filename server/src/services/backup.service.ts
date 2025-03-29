@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { default as path } from 'node:path';
+import path from 'node:path';
 import semver from 'semver';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';

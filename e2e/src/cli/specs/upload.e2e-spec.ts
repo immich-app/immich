@@ -22,7 +22,7 @@ const tests: Test[] = [
   },
   {
     test: 'should support paths with an asterisk',
-    paths: [`/photos\*/image1.jpg`],
+    paths: [`/photos*/image1.jpg`],
     files: {
       '/photos*/image1.jpg': true,
       '/photos*/image2.jpg': false,
@@ -40,7 +40,7 @@ const tests: Test[] = [
   },
   {
     test: 'should support paths with a single quote',
-    paths: [`/photos\'/image1.jpg`],
+    paths: [`/photos'/image1.jpg`],
     files: {
       "/photos'/image1.jpg": true,
       "/photos'/image2.jpg": false,
@@ -49,7 +49,7 @@ const tests: Test[] = [
   },
   {
     test: 'should support paths with a double quote',
-    paths: [`/photos\"/image1.jpg`],
+    paths: [`/photos"/image1.jpg`],
     files: {
       '/photos"/image1.jpg': true,
       '/photos"/image2.jpg': false,
@@ -67,7 +67,7 @@ const tests: Test[] = [
   },
   {
     test: 'should support paths with an opening brace',
-    paths: [`/photos\{/image1.jpg`],
+    paths: [`/photos{/image1.jpg`],
     files: {
       '/photos{/image1.jpg': true,
       '/photos{/image2.jpg': false,
@@ -76,7 +76,7 @@ const tests: Test[] = [
   },
   {
     test: 'should support paths with a closing brace',
-    paths: [`/photos\}/image1.jpg`],
+    paths: [`/photos}/image1.jpg`],
     files: {
       '/photos}/image1.jpg': true,
       '/photos}/image2.jpg': false,

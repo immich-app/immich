@@ -91,7 +91,9 @@ export class MachineLearningRepository {
         signal: AbortSignal.timeout(MACHINE_LEARNING_PING_TIMEOUT),
       });
       active = response.ok;
-    } catch {}
+    } catch {
+      // nothing to do here
+    }
     this.setUrlAvailability(url, active);
     return active;
   }

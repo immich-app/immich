@@ -9,6 +9,7 @@ import { MetadataService } from 'src/services/metadata.service';
 import { automock, newRandomImage, newTestService, ServiceMocks } from 'test/utils';
 
 const metadataRepository = new MetadataRepository(
+  // eslint-disable-next-line no-sparse-arrays
   automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }),
 );
 
