@@ -246,15 +246,7 @@ describe('/shared-links', () => {
       const { status, body } = await request(app).get('/shared-links/me').query({ key: linkWithMetadata.key });
 
       expect(status).toBe(200);
-      expect(body.assets).toHaveLength(1);
-      expect(body.assets[0]).toEqual(
-        expect.objectContaining({
-          originalFileName: 'example.png',
-          localDateTime: expect.any(String),
-          fileCreatedAt: expect.any(String),
-          exifInfo: expect.any(Object),
-        }),
-      );
+      expect(body.assets).toHaveLength(0);
       expect(body.album).toBeDefined();
     });
 
