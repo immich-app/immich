@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/interfaces/sync_stream.interface.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -17,7 +18,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
   Future<bool> deleteUsersV1(SyncUserDeleteV1 data) async {
     try {
       await _db.managers.userEntity
-          .filter((row) => row.id.equals(data.userId))
+          .filter((row) => row.id.equals(data.userId.toUuidByte()))
           .delete();
       return true;
     } catch (e, s) {
@@ -35,7 +36,7 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
 
     try {
       await _db.userEntity.insertOne(
-        companion.copyWith(id: Value(data.id)),
+        companion.copyWith(id: Value(data.id.toUuidByte())),
         onConflict: DoUpdate((_) => companion),
       );
       return true;
@@ -51,8 +52,8 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
       await _db.managers.partnerEntity
           .filter(
             (row) =>
-                row.sharedById.id.equals(data.sharedById) &
-                row.sharedWithId.id.equals(data.sharedWithId),
+                row.sharedById.id.equals(data.sharedById.toUuidByte()) &
+                row.sharedWithId.id.equals(data.sharedWithId.toUuidByte()),
           )
           .delete();
       return true;
@@ -70,14 +71,14 @@ class DriftSyncStreamRepository extends DriftDatabaseRepository
     try {
       await _db.partnerEntity.insertOne(
         companion.copyWith(
-          sharedById: Value(data.sharedById),
-          sharedWithId: Value(data.sharedWithId),
+          sharedById: Value(data.sharedById.toUuidByte()),
+          sharedWithId: Value(data.sharedWithId.toUuidByte()),
         ),
         onConflict: DoUpdate((_) => companion),
       );
       return true;
     } catch (e, s) {
-      _logger.severe('Error while processing SyncUserV1', e, s);
+      _logger.severe('Error while processing SyncPartnerV1', e, s);
       return false;
     }
   }
