@@ -43,14 +43,18 @@ export class MediaRepository {
 
   async extract(input: string, output: string): Promise<boolean> {
     try {
-      await exiftool.extractJpgFromRaw(input, output);
-    } catch (error: any) {
-      this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
+      await exiftool.extractBinaryTag('JpgFromRaw2', input, output);
+    } catch {
       try {
-        await exiftool.extractPreview(input, output);
+        await exiftool.extractJpgFromRaw(input, output);
       } catch (error: any) {
-        this.logger.debug('Could not extract preview from image', error.message);
-        return false;
+        this.logger.debug('Could not extract JPEG from image, trying preview', error.message);
+        try {
+          await exiftool.extractPreview(input, output);
+        } catch (error: any) {
+          this.logger.debug('Could not extract preview from image', error.message);
+          return false;
+        }
       }
     }
 
