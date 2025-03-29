@@ -1,5 +1,4 @@
 import { getAllAlbums, type AlbumResponseDto } from '@immich/sdk';
-import { get, readonly, writable } from 'svelte/store';
 
 // Album Listing Store
 // For use in ui elements such as
@@ -13,58 +12,67 @@ type AlbumsListingResponse = {
 };
 
 function createAlbumListingStore() {
-  const isLoadedAtLeastOnce = writable<boolean>(false);
-  const isLoading = writable<boolean>(false);
-  const albums = writable<AlbumResponseDto[]>([]);
-  const sharedAlbums = writable<AlbumResponseDto[]>([]);
+  let isLoadedAtLeastOnce = $state(false);
+  let isLoading = $state(false);
+  let albums = $state<AlbumResponseDto[]>([]);
+  let sharedAlbums = $state<AlbumResponseDto[]>([]);
 
   // data must be cleared on logout
   const reset = () => {
-    albums.set([]);
-    sharedAlbums.set([]);
-    isLoadedAtLeastOnce.set(false);
-    isLoading.set(false);
+    albums = [];
+    sharedAlbums = [];
+    isLoadedAtLeastOnce = false;
+    isLoading = false;
   };
 
   const fetchJob = () =>
     Promise.all([getAllAlbums({}), getAllAlbums({ shared: true })]).then(([_albums, _sharedAlbums]) => {
-      albums.set(_albums);
-      sharedAlbums.set(_sharedAlbums);
+      albums = _albums;
+      sharedAlbums = _sharedAlbums;
       return [_albums, _sharedAlbums];
     });
 
-  const refetchAlbums = async (): Promise<AlbumsListingResponse> => {
-    isLoading.set(true);
+  const refetchAlbums = async (): Promise<void> => {
+    if (isLoading) {
+      return;
+    }
+    isLoading = true;
     try {
-      const [_albums, _sharedAlbums] = await fetchJob();
-      isLoadedAtLeastOnce.set(true);
-      return {
-        albums: _albums,
-        sharedAlbums: _sharedAlbums,
-        isCached: false,
-      };
+      await fetchJob();
+      isLoadedAtLeastOnce = true;
     } finally {
-      isLoading.set(false);
+      isLoading = false;
     }
   };
 
   const getAlbums = async (): Promise<AlbumsListingResponse> => {
-    if (get(isLoadedAtLeastOnce)) {
+    if (isLoadedAtLeastOnce) {
       return {
-        albums: get(albums),
-        sharedAlbums: get(sharedAlbums),
+        albums: $state.snapshot(albums),
+        sharedAlbums: $state.snapshot(sharedAlbums),
         isCached: true,
       };
     }
-    return refetchAlbums();
+    await refetchAlbums();
+    return {
+      albums: $state.snapshot(albums),
+      sharedAlbums: $state.snapshot(sharedAlbums),
+      isCached: false,
+    };
   };
 
   const ensureLoaded = () => getAlbums();
 
   return {
-    albums: readonly(albums),
-    sharedAlbums: readonly(sharedAlbums),
-    isLoading: readonly(isLoading),
+    get albums() {
+      return $state.snapshot(albums);
+    },
+    get sharedAlbums() {
+      return $state.snapshot(sharedAlbums);
+    },
+    get isLoading() {
+      return $state.snapshot(isLoading);
+    },
     getAlbums,
     refetchAlbums,
     ensureLoaded,

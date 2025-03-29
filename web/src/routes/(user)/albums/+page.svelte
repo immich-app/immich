@@ -18,7 +18,6 @@
   }
 
   let { data }: Props = $props();
-  let { albums, sharedAlbums } = albumListingStore;
 
   let searchQuery = $state('');
   let albumGroups: string[] = $state([]);
@@ -46,8 +45,8 @@
   </div>
 
   <Albums
-    ownedAlbums={$albums}
-    sharedAlbums={$sharedAlbums}
+    ownedAlbums={albumListingStore.albums}
+    sharedAlbums={albumListingStore.sharedAlbums}
     userSettings={$albumViewSettings}
     allowEdit
     {searchQuery}
