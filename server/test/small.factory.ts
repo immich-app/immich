@@ -12,6 +12,12 @@ export const newUuids = () =>
 export const newDate = () => new Date();
 export const newUpdateId = () => 'uuid-v7';
 export const newSha1 = () => Buffer.from('this is a fake hash');
+export const newEmbedding = () => {
+  const embedding = Array.from({ length: 512 })
+    .fill(0)
+    .map(() => Math.random());
+  return '[' + embedding + ']';
+};
 
 const authFactory = ({ apiKey, ...user }: Partial<AuthUser> & { apiKey?: Partial<AuthApiKey> } = {}) => {
   const auth: AuthDto = {
