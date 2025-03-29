@@ -104,6 +104,7 @@ class HashService {
     List<_AssetPath> toBeHashed,
     List<String> toBeDeleted,
   ) async {
+    _log.info("Hashing ${toBeHashed.length} files");
     final hashes = await _hashFiles(toBeHashed.map((e) => e.path).toList());
     assert(
       hashes.length == toBeHashed.length,
