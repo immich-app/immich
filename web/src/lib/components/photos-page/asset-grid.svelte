@@ -165,7 +165,13 @@
   const updateIsScrolling = () => (assetStore.scrolling = true);
   // note: don't throttle, debounch, or otherwise do this function async - it causes flicker
   const updateSlidingWindow = () => assetStore.updateSlidingWindow(element?.scrollTop || 0);
-  const compensateScrollCallback = (delta: number) => element?.scrollBy(0, delta);
+  const compensateScrollCallback = ({ delta, top }: { delta?: number; top?: number }) => {
+    if (delta) {
+      element?.scrollBy(0, delta);
+    } else if (top) {
+      element?.scrollTo({ top });
+    }
+  };
   const topSectionResizeObserver: OnResizeCallback = ({ height }) => (assetStore.topSectionHeight = height);
 
   onMount(() => {
