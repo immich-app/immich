@@ -18,7 +18,7 @@
 
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
-  let selectedIds = $state(new SvelteSet<string>());
+  let selectedIds = new SvelteSet<string>();
   let disabled = $derived(selectedIds.size === 0);
   let allowCreate: boolean = $state(true);
 

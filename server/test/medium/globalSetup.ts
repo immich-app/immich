@@ -1,8 +1,14 @@
+import { FileMigrationProvider, Kysely, Migrator } from 'kysely';
+import { PostgresJSDialect } from 'kysely-postgres-js';
+import { mkdir, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import { parse } from 'pg-connection-string';
+import postgres, { Notice } from 'postgres';
 import { GenericContainer, Wait } from 'testcontainers';
 import { DataSource } from 'typeorm';
 
 const globalSetup = async () => {
-  const postgres = await new GenericContainer('tensorchord/pgvecto-rs:pg14-v0.2.0')
+  const postgresContainer = await new GenericContainer('tensorchord/pgvecto-rs:pg14-v0.2.0')
     .withExposedPorts(5432)
     .withEnvironment({
       POSTGRES_PASSWORD: 'postgres',
@@ -29,7 +35,7 @@ const globalSetup = async () => {
     .withWaitStrategy(Wait.forAll([Wait.forLogMessage('database system is ready to accept connections', 2)]))
     .start();
 
-  const postgresPort = postgres.getMappedPort(5432);
+  const postgresPort = postgresContainer.getMappedPort(5432);
   const postgresUrl = `postgres://postgres:postgres@localhost:${postgresPort}/immich`;
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
 
@@ -55,6 +61,73 @@ const globalSetup = async () => {
   await dataSource.initialize();
   await dataSource.runMigrations();
   await dataSource.destroy();
+
+  // for whatever reason, importing from test/utils causes vitest to crash
+  // eslint-disable-next-line unicorn/prefer-module
+  const migrationFolder = join(__dirname, '..', 'schema/migrations');
+  // TODO remove after we have at least one kysely migration
+  await mkdir(migrationFolder, { recursive: true });
+
+  const parsed = parse(process.env.IMMICH_TEST_POSTGRES_URL!);
+
+  const parsedOptions = {
+    ...parsed,
+    ssl: false,
+    host: parsed.host ?? undefined,
+    port: parsed.port ? Number(parsed.port) : undefined,
+    database: parsed.database ?? undefined,
+  };
+
+  const driverOptions = {
+    ...parsedOptions,
+    onnotice: (notice: Notice) => {
+      if (notice['severity'] !== 'NOTICE') {
+        console.warn('Postgres notice:', notice);
+      }
+    },
+    max: 10,
+    types: {
+      date: {
+        to: 1184,
+        from: [1082, 1114, 1184],
+        serialize: (x: Date | string) => (x instanceof Date ? x.toISOString() : x),
+        parse: (x: string) => new Date(x),
+      },
+      bigint: {
+        to: 20,
+        from: [20],
+        parse: (value: string) => Number.parseInt(value),
+        serialize: (value: number) => value.toString(),
+      },
+    },
+    connection: {
+      TimeZone: 'UTC',
+    },
+  };
+
+  const db = new Kysely({
+    dialect: new PostgresJSDialect({ postgres: postgres({ ...driverOptions, max: 1, database: 'postgres' }) }),
+  });
+
+  // TODO just call `databaseRepository.migrate()` (probably have to wait until TypeOrm is gone)
+  const migrator = new Migrator({
+    db,
+    migrationLockTableName: 'kysely_migrations_lock',
+    migrationTableName: 'kysely_migrations',
+    provider: new FileMigrationProvider({
+      fs: { readdir },
+      path: { join },
+      migrationFolder,
+    }),
+  });
+
+  const { error } = await migrator.migrateToLatest();
+  if (error) {
+    console.error('Unable to run kysely migrations', error);
+    throw error;
+  }
+
+  await db.destroy();
 };
 
 export default globalSetup;
