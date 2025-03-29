@@ -52,8 +52,8 @@ jobs:
         uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9
         with:
           default_author: github_actions
-          message: 'chore: version ${{ env.IMMICH_VERSION }}'
-          tag: ${{ env.IMMICH_VERSION }}
+          message: 'chore: version ${{ env.IMMICH_VERSION }}-pu'
+          tag: ${{ env.IMMICH_VERSION }}-pu
           push: true
 
   build_mobile:
