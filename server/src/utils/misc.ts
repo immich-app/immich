@@ -45,7 +45,7 @@ export const getMethodNames = (instance: any) => {
 };
 
 export const getExternalDomain = (server: SystemConfig['server'], port: number) =>
-  server.externalDomain || `http://localhost:${port}`;
+  server.externalDomain || `https://my.immich.app`;
 
 /**
  * @returns a list of strings representing the keys of the object in dot notation
