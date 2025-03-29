@@ -59,6 +59,9 @@ void main() {
     final MockAlbumMediaRepository albumMediaRepository =
         MockAlbumMediaRepository();
     final MockAlbumApiRepository albumApiRepository = MockAlbumApiRepository();
+    final MockAppSettingService appSettingService = MockAppSettingService();
+    final MockLocalFilesManagerRepository localFilesManagerRepository =
+        MockLocalFilesManagerRepository();
     final MockPartnerApiRepository partnerApiRepository =
         MockPartnerApiRepository();
     final MockUserApiRepository userApiRepository = MockUserApiRepository();
@@ -105,6 +108,8 @@ void main() {
         userRepository,
         userService,
         eTagRepository,
+        appSettingService,
+        localFilesManagerRepository,
         partnerApiRepository,
         userApiRepository,
       );
