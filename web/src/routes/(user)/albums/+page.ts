@@ -9,8 +9,8 @@ export const load = (async () => {
   const $t = await getFormatter();
 
   if (isCached) {
-    // The album data might be old, refetch
-    // non-awaited async
+    // The album data might be old, refetch but don't wait as we have data already
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     albumListingStore.refetchAlbums();
   }
 
