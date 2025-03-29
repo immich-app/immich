@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, type Snippet } from 'svelte';
+  import { fade } from 'svelte/transition';
   import { groupBy } from 'lodash-es';
   import { addUsersToAlbum, deleteAlbum, type AlbumUserAddDto, type AlbumResponseDto, isHttpError } from '@immich/sdk';
   import { mdiDeleteOutline, mdiShareVariantOutline, mdiFolderDownloadOutline, mdiRenameOutline } from '@mdi/js';
@@ -14,6 +15,7 @@
   import AlbumsTable from '$lib/components/album-page/albums-table.svelte';
   import AlbumCardGroup from '$lib/components/album-page/album-card-group.svelte';
   import UserSelectionModal from '$lib/components/album-page/user-selection-modal.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { downloadAlbum } from '$lib/utils/asset-utils';
   import { normalizeSearchString } from '$lib/utils/string-utils';
@@ -49,6 +51,7 @@
     allowEdit?: boolean;
     showOwner?: boolean;
     albumGroupIds?: string[];
+    isLoading?: boolean;
     empty?: Snippet;
   }
 
@@ -60,6 +63,7 @@
     allowEdit = false,
     showOwner = false,
     albumGroupIds = $bindable([]),
+    isLoading = false,
     empty,
   }: Props = $props();
 
@@ -360,6 +364,16 @@
     showShareByURLModal = false;
   };
 </script>
+
+{#if isLoading}
+  <div
+    class="absolute flex place-items-center place-content-center top-5 right-5 h-8 pointer-events-none"
+    in:fade
+    out:fade
+  >
+    <LoadingSpinner />
+  </div>
+{/if}
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}
