@@ -73,6 +73,9 @@ dependencies:
   isar_flutter_libs: # contains Isar Core
     version: *isar_version
     hosted: https://pub.isar-community.dev/
+  # DB
+  drift: ^2.23.1
+  drift_flutter: ^0.2.4
 
 dependency_overrides:
   analyzer: ^6.0.0
@@ -99,6 +102,8 @@ dev_dependencies:
   immich_mobile_immich_lint:
     path: './immich_lint'
   fake_async: ^1.3.1
+  # Drift generator
+  drift_dev: ^2.23.1
 
 flutter:
   uses-material-design: true
