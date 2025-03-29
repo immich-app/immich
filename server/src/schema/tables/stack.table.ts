@@ -1,6 +1,6 @@
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import { ForeignKeyColumn, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table('asset_stack')
 export class StackTable {
