@@ -246,7 +246,7 @@
     "storage_template_migration_info": "Lagringsmallen kommer konvertera alla filändelser till gemena bokstäver. Ändringar gäller endast för nya resurser, för att retoaktivt tillämpa mallen på befintliga resurser kör <link>{job}</link>.",
     "storage_template_migration_job": "Lagringsmall migreringsjobb",
     "storage_template_more_details": "För mer information om den här funktionen se <template-link>Lagringsmall</template-link> och dess <implications-link>konsekvenser</implications-link>",
-    "storage_template_onboarding_description": "Vid aktivering organiserar denna funktion automatiskt filer baserat på en användardefinierad mall. På grunda av stabilitetsproblem är denna funktion avstängd som standard, för mer information se <link>dokumentation</link>.",
+    "storage_template_onboarding_description": "Vid aktivering organiserar denna funktion automatiskt filer baserat på en användardefinierad mall. På grund av stabilitetsproblem är denna funktion avstängd som standard, för mer information se <link>dokumentation</link>.",
     "storage_template_path_length": "Uppskattad längdbegränsning på sökväg: <b>{length, number}</b>/{limit, number}",
     "storage_template_settings": "Lagringsmall",
     "storage_template_settings_description": "Hantera mappstruktur och filnamn för uppladdade resurser",
