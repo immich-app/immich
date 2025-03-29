@@ -328,6 +328,10 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Fix branding in trsnslations
+        run: |
+          sed -i 's/Immich/PixelUnion/g' i18n/*.json
+
       - name: Generate cache key suffix
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
