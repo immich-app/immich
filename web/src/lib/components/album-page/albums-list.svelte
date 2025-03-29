@@ -14,6 +14,7 @@
   import AlbumShareModal from '$lib/modals/AlbumShareModal.svelte';
   import QrCodeModal from '$lib/modals/QrCodeModal.svelte';
   import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+  import LoadingSpinner from '$lib/components/shared-components/loading-spinner.svelte';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -52,6 +53,7 @@
     allowEdit?: boolean;
     showOwner?: boolean;
     albumGroupIds?: string[];
+    isLoading?: boolean;
     empty?: Snippet;
   }
 
@@ -63,6 +65,7 @@
     allowEdit = false,
     showOwner = false,
     albumGroupIds = $bindable([]),
+    isLoading = false,
     empty,
   }: Props = $props();
 
@@ -374,6 +377,16 @@
     }
   };
 </script>
+
+{#if isLoading}
+  <div
+    class="absolute flex place-items-center place-content-center top-5 right-5 h-8 pointer-events-none"
+    in:fade
+    out:fade
+  >
+    <LoadingSpinner />
+  </div>
+{/if}
 
 {#if albums.length > 0}
   {#if userSettings.view === AlbumViewMode.Cover}

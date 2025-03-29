@@ -47,6 +47,7 @@
   <Albums
     ownedAlbums={albumListingStore.albums}
     sharedAlbums={albumListingStore.sharedAlbums}
+    isLoading={albumListingStore.isLoading}
     userSettings={$albumViewSettings}
     allowEdit
     {searchQuery}
