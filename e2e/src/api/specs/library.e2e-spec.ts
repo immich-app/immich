@@ -454,6 +454,133 @@ describe('/libraries', () => {
       utils.removeImageFile(`${testAssetDir}/temp/folder${char}2/asset2.png`);
     });
 
+    it('should respect exclusion patterns when using multiple import paths', async () => {
+      // https://github.com/immich-app/immich/issues/17121
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/exclusion/`, `${testAssetDirInternal}/temp/exclusion2/`],
+      });
+
+      const excludedFolder = `Raw`;
+
+      utils.createImageFile(`${testAssetDir}/temp/exclusion/asset1.png`);
+      utils.createImageFile(`${testAssetDir}/temp/exclusion/${excludedFolder}/asset2.png`);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+            expect.objectContaining({ originalPath: expect.stringContaining(`${excludedFolder}/asset2.png`) }),
+          ]),
+        );
+      }
+
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+            expect.objectContaining({ originalPath: expect.stringContaining(`${excludedFolder}/asset2.png`) }),
+          ]),
+        );
+      }
+
+      await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: [`**/${excludedFolder}/**`] });
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual([
+          expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+        ]);
+      }
+
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual([
+          expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+        ]);
+      }
+
+      utils.removeImageFile(`${testAssetDir}/temp/exclusion/asset1.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/exclusion/${excludedFolder}/asset2.png`);
+    });
+
+    const annoyingExclusionPatterns = ['@', '#', '$', '%', '^', '&', '='];
+
+    it.each(annoyingExclusionPatterns)('should support exclusion patterns with %s', async (char) => {
+      const library = await utils.createLibrary(admin.accessToken, {
+        ownerId: admin.userId,
+        importPaths: [`${testAssetDirInternal}/temp/exclusion/`],
+      });
+
+      const excludedFolder = `${char}folder`;
+
+      utils.createImageFile(`${testAssetDir}/temp/exclusion/asset1.png`);
+      utils.createImageFile(`${testAssetDir}/temp/exclusion/${excludedFolder}/asset2.png`);
+
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+            expect.objectContaining({ originalPath: expect.stringContaining(`${excludedFolder}/asset2.png`) }),
+          ]),
+        );
+      }
+
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+            expect.objectContaining({ originalPath: expect.stringContaining(`${excludedFolder}/asset2.png`) }),
+          ]),
+        );
+      }
+
+      await utils.updateLibrary(admin.accessToken, library.id, { exclusionPatterns: [`**/${excludedFolder}/**`] });
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual([
+          expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+        ]);
+      }
+
+      await utils.scan(admin.accessToken, library.id);
+
+      {
+        const { assets } = await utils.searchAssets(admin.accessToken, { libraryId: library.id });
+
+        expect(assets.items).toEqual([
+          expect.objectContaining({ originalPath: expect.stringContaining(`/asset1.png`) }),
+        ]);
+      }
+
+      utils.removeImageFile(`${testAssetDir}/temp/exclusion/asset1.png`);
+      utils.removeImageFile(`${testAssetDir}/temp/exclusion/${excludedFolder}/asset2.png`);
+    });
+
     it('should reimport a modified file', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,

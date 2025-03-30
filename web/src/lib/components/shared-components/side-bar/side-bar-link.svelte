@@ -13,7 +13,6 @@
     flippedLogo?: boolean;
     isSelected?: boolean;
     preloadData?: boolean;
-    moreInformation?: Snippet;
     dropDownContent?: Snippet;
     dropdownOpen?: boolean;
   }

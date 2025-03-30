@@ -1,7 +1,7 @@
 import { Insertable, Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { Writable } from 'node:stream';
-import { Assets, DB, Partners, Sessions, Users } from 'src/db';
+import { Assets, DB, Partners, Sessions } from 'src/db';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -35,6 +35,7 @@ import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
+import { UserTable } from 'src/schema/tables/user.table';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { newUuid } from 'test/small.factory';
 import { automock } from 'test/utils';
@@ -57,7 +58,7 @@ class CustomWritable extends Writable {
 }
 
 type Asset = Partial<Insertable<Assets>>;
-type User = Partial<Insertable<Users>>;
+type User = Partial<Insertable<UserTable>>;
 type Session = Omit<Insertable<Sessions>, 'token'> & { token?: string };
 type Partner = Insertable<Partners>;
 
@@ -103,7 +104,7 @@ export class TestFactory {
 
   static user(user: User = {}) {
     const userId = user.id || newUuid();
-    const defaults: Insertable<Users> = {
+    const defaults: Insertable<UserTable> = {
       email: `${userId}@immich.cloud`,
       name: `User ${userId}`,
       deletedAt: null,

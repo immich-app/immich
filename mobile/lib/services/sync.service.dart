@@ -4,7 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/interfaces/exif.interface.dart';
 import 'package:immich_mobile/domain/interfaces/user.interface.dart';
-import 'package:immich_mobile/domain/interfaces/user_api.repository.dart';
+import 'package:immich_mobile/domain/interfaces/user_api.interface.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/album.entity.dart';
@@ -737,6 +737,11 @@ class SyncService {
     album.thumbnail.value = thumb;
     try {
       await _albumRepository.create(album);
+      final int assetCount =
+          await _albumMediaRepository.getAssetCount(album.localId!);
+      await _eTagRepository.upsertAll([
+        ETag(id: album.eTagKeyAssetCount, assetCount: assetCount),
+      ]);
       _log.info("Added a new local album to DB: ${album.name}");
     } catch (e) {
       _log.severe("Failed to add new local album ${album.name} to DB", e);

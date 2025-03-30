@@ -33,7 +33,6 @@
     onNextAsset?: (() => void) | null;
     copyImage?: () => Promise<void>;
     zoomToggle?: (() => void) | null;
-    onClose?: () => void;
   }
 
   let {
