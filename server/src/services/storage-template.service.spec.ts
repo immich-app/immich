@@ -181,6 +181,60 @@ describe(StorageTemplateService.name, () => {
       });
     });
 
+    it('should handle album startDate', async () => {
+      const asset = assetStub.storageAsset();
+      const user = userStub.user1;
+      const album = albumStub.oneAsset;
+      const config = structuredClone(defaults);
+      config.storageTemplate.template =
+        '{{#if album}}{{album-startDate-y}}/{{album-startDate-MM}} - {{album}}{{else}}{{y}}/{{MM}}/{{/if}}/{{filename}}';
+
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.asset.getStorageTemplateAsset.mockResolvedValueOnce(asset);
+      mocks.album.getByAssetId.mockResolvedValueOnce([album]);
+      mocks.album.getMetadataForIds.mockResolvedValueOnce([
+        {
+          startDate: asset.fileCreatedAt,
+          endDate: asset.fileCreatedAt,
+        },
+      ]);
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+
+      const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month} - ${album.albumName}/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.ORIGINAL,
+      });
+    });
+
+    it('should handle else condition from album startDate', async () => {
+      const asset = assetStub.storageAsset();
+      const user = userStub.user1;
+      const config = structuredClone(defaults);
+      config.storageTemplate.template =
+        '{{#if album}}{{album-startDate-y}}/{{album-startDate-MM}} - {{album}}{{else}}{{y}}/{{MM}}/{{/if}}/{{filename}}';
+
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.asset.getStorageTemplateAsset.mockResolvedValueOnce(asset);
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.SUCCESS);
+
+      const month = (asset.fileCreatedAt.getMonth() + 1).toString().padStart(2, '0');
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: `upload/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${month}/${asset.originalFileName}`,
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.ORIGINAL,
+      });
+    });
+
     it('should migrate previously failed move from original path when it still exists', async () => {
       mocks.user.get.mockResolvedValue(userStub.user1);
 
