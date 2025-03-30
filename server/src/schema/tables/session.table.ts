@@ -1,3 +1,4 @@
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   ColumnIndex,
@@ -8,7 +9,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { UserTable } from 'src/tables/user.table';
 
 @Table({ name: 'sessions', primaryConstraintName: 'PK_48cb6b5c20faa63157b3c1baf7f' })
 export class SessionTable {

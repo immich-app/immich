@@ -1,6 +1,6 @@
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { SharedLinkTable } from 'src/schema/tables/shared-link.table';
 import { ColumnIndex, ForeignKeyColumn, Table } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
-import { SharedLinkTable } from 'src/tables/shared-link.table';
 
 @Table('shared_link__asset')
 export class SharedLinkAssetTable {

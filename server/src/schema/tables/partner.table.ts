@@ -1,3 +1,4 @@
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   ColumnIndex,
@@ -7,7 +8,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { UserTable } from 'src/tables/user.table';
 
 @Table('partners')
 export class PartnerTable {

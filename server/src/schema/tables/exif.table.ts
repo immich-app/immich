@@ -1,5 +1,5 @@
+import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ColumnIndex, ForeignKeyColumn, Table, UpdateDateColumn, UpdateIdColumn } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
 
 @Table('exif')
 export class ExifTable {

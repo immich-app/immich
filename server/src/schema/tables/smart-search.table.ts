@@ -1,5 +1,5 @@
+import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ColumnIndex, ForeignKeyColumn, Table } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
 
 @Table({ name: 'smart_search', primaryConstraintName: 'smart_search_pkey' })
 export class SmartSearchTable {
