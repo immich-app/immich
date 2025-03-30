@@ -426,6 +426,9 @@ from
 where
   "assets"."ownerId" = $1::uuid
   and "assets"."isVisible" = $2
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "assets"."updatedAt" <= $3
   and "assets"."id" > $4
 order by
@@ -456,6 +459,9 @@ from
 where
   "assets"."ownerId" = any ($1::uuid[])
   and "assets"."isVisible" = $2
+  and "assets"."fileCreatedAt" is not null
+  and "assets"."fileModifiedAt" is not null
+  and "assets"."localDateTime" is not null
   and "assets"."updatedAt" > $3
 limit
   $4
