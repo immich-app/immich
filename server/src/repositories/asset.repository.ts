@@ -683,8 +683,15 @@ export class AssetRepository {
       .$if(property === WithoutProperty.EXIF, (qb) =>
         qb
           .leftJoin('asset_job_status as job_status', 'assets.id', 'job_status.assetId')
-          .where((eb) => eb.or([eb('job_status.metadataExtractedAt', 'is', null), eb('assetId', 'is', null)]))
-          .where('assets.isVisible', '=', true),
+          .where((eb) =>
+            eb.or([
+              eb('job_status.metadataExtractedAt', 'is', null),
+              eb('assetId', 'is', null),
+              eb('assets.fileCreatedAt', 'is', null),
+              eb('assets.fileModifiedAt', 'is', null),
+              eb('assets.localDateTime', 'is', null),
+            ]),
+          ),
       )
       .$if(property === WithoutProperty.FACES, (qb) =>
         qb
