@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnJob } from 'src/decorators';
+import { OnJob, Chunked } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
@@ -241,13 +241,10 @@ export class PersonService extends BaseService {
     return results;
   }
 
+  @Chunked()
   private async delete(people: PersonEntity[]) {
-    const batchSize = 10000;
     await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
-    for (let i = 0; i < people.length; i += batchSize) {
-      const batch = people.slice(i, i + batchSize);
-      await this.personRepository.delete(batch);
-    }
+    await this.personRepository.delete(people);
     this.logger.debug(`Deleted ${people.length} people`);
   }
 
