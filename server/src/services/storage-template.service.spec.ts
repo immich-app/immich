@@ -68,6 +68,7 @@ describe(StorageTemplateService.name, () => {
           '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
           '{{y}}/{{MM}}/{{filename}}',
           '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+          '{{#if album}}{{album-startDate-y}}/{{album}}{{else}}{{y}}/Other/{{MM}}{{/if}}/{{filename}}',
           '{{y}}/{{MMM}}/{{filename}}',
           '{{y}}/{{MMMM}}/{{filename}}',
           '{{y}}/{{MM}}/{{dd}}/{{filename}}',

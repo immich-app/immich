@@ -28,6 +28,7 @@ const storagePresets = [
   '{{y}}/{{MMMM}}-{{dd}}/{{filename}}',
   '{{y}}/{{MM}}/{{filename}}',
   '{{y}}/{{#if album}}{{album}}{{else}}Other/{{MM}}{{/if}}/{{filename}}',
+  '{{#if album}}{{album-startDate-y}}/{{album}}{{else}}{{y}}/Other/{{MM}}{{/if}}/{{filename}}',
   '{{y}}/{{MMM}}/{{filename}}',
   '{{y}}/{{MMMM}}/{{filename}}',
   '{{y}}/{{MM}}/{{dd}}/{{filename}}',
@@ -103,7 +104,7 @@ export class StorageTemplateService extends BaseService {
         extension: 'jpg',
         albumName: 'album',
         albumStartDate: new Date(),
-        albumEndDate: new Date()
+        albumEndDate: new Date(),
       });
     } catch (error) {
       this.logger.warn(`Storage template validation failed: ${JSON.stringify(error)}`);
@@ -267,7 +268,7 @@ export class StorageTemplateService extends BaseService {
           albumName = album.albumName || null;
 
           if (this.template.needsAlbumMetadata) {
-            const [metadata] = await this.albumRepository.getMetadataForIds([album.id])
+            const [metadata] = await this.albumRepository.getMetadataForIds([album.id]);
             albumStartDate = metadata?.startDate || null;
             albumEndDate = metadata?.endDate || null;
           }
@@ -340,7 +341,7 @@ export class StorageTemplateService extends BaseService {
       raw: template,
       compiled: handlebar.compile(template, { knownHelpers: undefined, strict: true }),
       needsAlbum: template.includes('album'),
-      needsAlbumMetadata: (template.includes('album-startDate') || template.includes('album-endDate')),
+      needsAlbumMetadata: template.includes('album-startDate') || template.includes('album-endDate'),
     };
   }
 
@@ -365,8 +366,12 @@ export class StorageTemplateService extends BaseService {
       substitutions[token] = dt.toFormat(token);
       if (albumName) {
         // Use system time zone for album dates to ensure all assets get the exact same date.
-        substitutions["album-startDate-" + token] = albumStartDate ? DateTime.fromJSDate(albumStartDate, { zone: systemTimeZone }).toFormat(token) : '';
-        substitutions["album-endDate-" + token] = albumEndDate ? DateTime.fromJSDate(albumEndDate, { zone: systemTimeZone }).toFormat(token) : '';
+        substitutions['album-startDate-' + token] = albumStartDate
+          ? DateTime.fromJSDate(albumStartDate, { zone: systemTimeZone }).toFormat(token)
+          : '';
+        substitutions['album-endDate-' + token] = albumEndDate
+          ? DateTime.fromJSDate(albumEndDate, { zone: systemTimeZone }).toFormat(token)
+          : '';
       }
     }
 
