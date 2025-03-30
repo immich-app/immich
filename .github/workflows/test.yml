@@ -395,16 +395,16 @@ jobs:
           uv sync --extra cpu
       - name: Lint with ruff
         run: |
-          uv run ruff check --output-format=github app export
+          uv run ruff check --output-format=github immich_ml
       - name: Check black formatting
         run: |
-          uv run black --check app export
+          uv run black --check immich_ml
       - name: Run mypy type checking
         run: |
-          uv run mypy --strict app/
+          uv run mypy --strict immich_ml/
       - name: Run tests and coverage
         run: |
-          uv run pytest app --cov=app --cov-report term-missing
+          uv run pytest --cov=immich_ml --cov-report term-missing
 
   github-files-formatting:
     name: .github Files Formatting
@@ -525,7 +525,7 @@ jobs:
 
       - name: Generate new migrations
         continue-on-error: true
-        run: npm run typeorm:migrations:generate ./src/migrations/TestMigration
+        run: npm run migrations:generate TestMigration
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20
@@ -538,7 +538,7 @@ jobs:
         run: |
           echo "ERROR: Generated migration files not up to date!"
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
-          cat ./src/migrations/*-TestMigration.ts
+          cat ./src/*-TestMigration.ts
           exit 1
 
       - name: Run SQL generation

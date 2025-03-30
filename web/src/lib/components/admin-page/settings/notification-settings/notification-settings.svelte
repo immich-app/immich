@@ -170,7 +170,7 @@
       </div>
     </form>
   </div>
-  <TemplateSettings {defaultConfig} {config} {savedConfig} {onReset} {onSave} />
+  <TemplateSettings {config} {savedConfig} />
 
   <SettingButtonsRow
     onReset={(options) => onReset({ ...options, configKeys: ['notifications', 'templates'] })}
