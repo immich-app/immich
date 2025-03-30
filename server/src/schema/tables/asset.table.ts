@@ -1,5 +1,8 @@
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/entities/asset.entity';
 import { AssetStatus, AssetType } from 'src/enum';
+import { LibraryTable } from 'src/schema/tables/library.table';
+import { StackTable } from 'src/schema/tables/stack.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   ColumnIndex,
@@ -12,9 +15,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { LibraryTable } from 'src/tables/library.table';
-import { StackTable } from 'src/tables/stack.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table('assets')
 // Checksums must be unique per user and library

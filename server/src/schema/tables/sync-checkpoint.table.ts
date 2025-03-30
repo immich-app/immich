@@ -1,4 +1,5 @@
 import { SyncEntityType } from 'src/enum';
+import { SessionTable } from 'src/schema/tables/session.table';
 import {
   Column,
   ColumnIndex,
@@ -9,7 +10,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { SessionTable } from 'src/tables/session.table';
 
 @Table('session_sync_checkpoints')
 export class SessionSyncCheckpointTable {

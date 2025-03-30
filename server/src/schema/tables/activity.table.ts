@@ -1,3 +1,6 @@
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Check,
   Column,
@@ -10,9 +13,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { AlbumTable } from 'src/tables/album.table';
-import { AssetTable } from 'src/tables/asset.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table('activity')
 @Index({

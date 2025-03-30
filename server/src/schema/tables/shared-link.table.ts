@@ -1,4 +1,6 @@
 import { SharedLinkType } from 'src/enum';
+import { AlbumTable } from 'src/schema/tables/album.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   ColumnIndex,
@@ -8,8 +10,6 @@ import {
   Table,
   Unique,
 } from 'src/sql-tools';
-import { AlbumTable } from 'src/tables/album.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table('shared_links')
 @Unique({ name: 'UQ_sharedlink_key', columns: ['key'] })
