@@ -1226,7 +1226,7 @@ describe(MetadataService.name, () => {
     it.each([
       { exif: { LensID: '1', LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '1' },
       { exif: { LensSpec: '2', LensType: '3', LensModel: '4' }, expected: '3' },
-      { exif: { LensType: '3', LensModel: '4' }, expected: '3' },
+      { exif: { LensSpec: '2', LensModel: '4' }, expected: '2' },
       { exif: { LensModel: '4' }, expected: '4' },
     ])('should read camera lens information $exif -> $expected', async ({ exif, expected }) => {
       mocks.asset.getByIds.mockResolvedValue([assetStub.image]);
