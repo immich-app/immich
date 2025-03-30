@@ -216,13 +216,15 @@ export class StorageTemplateService extends BaseService {
     });
   }
 
-  private async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
+  async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
     const { storageLabel, filename } = metadata;
 
     try {
+      const filenameWithoutExtension = path.basename(filename, path.extname(filename));
+
       const source = asset.originalPath;
       let extension = path.extname(source).split('.').pop() as string;
-      const sanitized = sanitize(path.basename(filename, `.${extension}`));
+      const sanitized = sanitize(path.basename(filenameWithoutExtension, `.${extension}`));
       extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });
 

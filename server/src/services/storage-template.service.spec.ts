@@ -548,4 +548,58 @@ describe(StorageTemplateService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalled();
     });
   });
+
+  describe('getTemplatePath extension handling', () => {
+    it('should not create double extensions when filename has lower extension', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.heic',
+      });
+
+      const result = await sut.getTemplatePath(asset, {
+        filename: 'IMG_7065.HEIC',
+        storageLabel: 'user-id',
+      });
+
+      expect(result).toStrictEqual('upload/library/user-id/2022/2022-06-19/IMG_7065.heic');
+    });
+
+    it('should not create double extensions when filename has uppercase extension', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.HEIC',
+      });
+
+      const result = await sut.getTemplatePath(asset, {
+        filename: 'IMG_7065.HEIC',
+        storageLabel: 'user-id',
+      });
+
+      expect(result).toStrictEqual('upload/library/user-id/2022/2022-06-19/IMG_7065.heic');
+    });
+
+    it('should normalize the filename to lowercase (JPEG > jpg)', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPEG',
+      });
+
+      const result = await sut.getTemplatePath(asset, {
+        filename: 'IMG_7065.JPEG',
+        storageLabel: 'user-id',
+      });
+
+      expect(result).toStrictEqual('upload/library/user-id/2022/2022-06-19/IMG_7065.jpg');
+    });
+
+    it('should normalize the filename to lowercase (JPG > jpg)', async () => {
+      const asset = assetStub.storageAsset({
+        originalPath: 'upload/library/user-id/2022/2022-06-19/IMG_7065.JPG',
+      });
+
+      const result = await sut.getTemplatePath(asset, {
+        filename: 'IMG_7065.JPG',
+        storageLabel: 'user-id',
+      });
+
+      expect(result).toStrictEqual('upload/library/user-id/2022/2022-06-19/IMG_7065.jpg');
+    });
+  });
 });
