@@ -1,4 +1,5 @@
 import { MemoryType } from 'src/enum';
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   ColumnIndex,
@@ -10,7 +11,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { UserTable } from 'src/tables/user.table';
 import { MemoryData } from 'src/types';
 
 @Table('memories')

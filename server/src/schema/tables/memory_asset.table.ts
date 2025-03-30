@@ -1,6 +1,6 @@
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { MemoryTable } from 'src/schema/tables/memory.table';
 import { ColumnIndex, ForeignKeyColumn, Table } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
-import { MemoryTable } from 'src/tables/memory.table';
 
 @Table('memories_assets_assets')
 export class MemoryAssetTable {

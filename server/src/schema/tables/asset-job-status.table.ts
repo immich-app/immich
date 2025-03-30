@@ -1,5 +1,5 @@
+import { AssetTable } from 'src/schema/tables/asset.table';
 import { Column, ForeignKeyColumn, Table } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
 
 @Table('asset_job_status')
 export class AssetJobStatusTable {

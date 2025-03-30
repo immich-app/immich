@@ -1,5 +1,5 @@
+import { TagTable } from 'src/schema/tables/tag.table';
 import { ColumnIndex, ForeignKeyColumn, PrimaryColumn, Table } from 'src/sql-tools';
-import { TagTable } from 'src/tables/tag.table';
 
 @Table('tags_closure')
 export class TagClosureTable {

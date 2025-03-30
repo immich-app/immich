@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 import { Theme, defaultLang } from '$lib/constants';
 import { getPreferredLocale } from '$lib/utils/i18n';
-import { persisted } from 'svelte-local-storage-store';
+import { persisted } from 'svelte-persisted-store';
 import { get } from 'svelte/store';
 
 export interface ThemeSetting {
