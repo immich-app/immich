@@ -216,7 +216,7 @@ export class StorageTemplateService extends BaseService {
     });
   }
 
-  async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
+  private async getTemplatePath(asset: StorageAsset, metadata: MoveAssetMetadata): Promise<string> {
     const { storageLabel, filename } = metadata;
 
     try {
