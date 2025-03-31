@@ -531,6 +531,24 @@ class SystemConfigGeneratedImageDto {
   size!: number;
 }
 
+class SystemConfigGeneratedFullsizeImageDto {
+  @IsBoolean()
+  @Type(() => Boolean)
+  @ApiProperty({ type: 'boolean' })
+  enabled!: boolean;
+
+  @IsEnum(ImageFormat)
+  @ApiProperty({ enumName: 'ImageFormat', enum: ImageFormat })
+  format!: ImageFormat;
+
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  @Type(() => Number)
+  @ApiProperty({ type: 'integer' })
+  quality!: number;
+}
+
 export class SystemConfigImageDto {
   @Type(() => SystemConfigGeneratedImageDto)
   @ValidateNested()
@@ -541,6 +559,11 @@ export class SystemConfigImageDto {
   @ValidateNested()
   @IsObject()
   preview!: SystemConfigGeneratedImageDto;
+
+  @Type(() => SystemConfigGeneratedFullsizeImageDto)
+  @ValidateNested()
+  @IsObject()
+  fullsize!: SystemConfigGeneratedFullsizeImageDto;
 
   @IsEnum(Colorspace)
   @ApiProperty({ enumName: 'Colorspace', enum: Colorspace })
