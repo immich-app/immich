@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
 import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
-import { mkdir, readdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import semver from 'semver';
 import { EXTENSION_NAMES, POSTGRES_VERSION_RANGE, VECTOR_VERSION_RANGE, VECTORS_VERSION_RANGE } from 'src/constants';
@@ -212,8 +213,11 @@ export class DatabaseRepository {
 
     // eslint-disable-next-line unicorn/prefer-module
     const migrationFolder = join(__dirname, '..', 'schema/migrations');
+
     // TODO remove after we have at least one kysely migration
-    await mkdir(migrationFolder, { recursive: true });
+    if (!existsSync(migrationFolder)) {
+      return;
+    }
 
     this.logger.debug('Running kysely migrations');
     const migrator = new Migrator({
