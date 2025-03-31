@@ -13,7 +13,7 @@ const setup = async (db: Kysely<DB>) => {
   return { sut, mocks, context };
 };
 
-describe.concurrent(UserService.name, () => {
+describe(UserService.name, () => {
   let sut: UserService;
   let context: TestContext;
   let mocks: ServiceMocks;
@@ -124,22 +124,31 @@ describe.concurrent(UserService.name, () => {
     });
   });
 
-  describe('handleUserDeleteCheck', () => {
+  describe.sequential('handleUserDeleteCheck', () => {
+    beforeEach(async () => {
+      // These tests specifically have to be sequential otherwise we hit race conditions with config changes applying in incorrect tests
+      const config = await sut.getConfig({ withCache: false });
+      config.user.deleteDelay = 7;
+      await sut.updateConfig(config);
+    });
+
     it('should work when there are no deleted users', async () => {
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+      expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
 
     it('should work when there is a user to delete', async () => {
       const { sut, context, mocks } = await setup(await getKyselyDB());
-      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 25 }).toJSDate() });
+      const user = TestFactory.user({ deletedAt: DateTime.now().minus({ days: 60 }).toJSDate() });
 
       await context.createUser(user);
 
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.USER_DELETION, data: { id: user.id } }]);
+      expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([
+        { name: JobName.USER_DELETION, data: { id: user.id } },
+      ]);
     });
 
     it('should skip a recently deleted user', async () => {
@@ -150,7 +159,7 @@ describe.concurrent(UserService.name, () => {
 
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+      expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
 
     it('should respect a custom user delete delay', async () => {
@@ -166,7 +175,7 @@ describe.concurrent(UserService.name, () => {
 
       await expect(sut.handleUserDeleteCheck()).resolves.toEqual(JobStatus.SUCCESS);
 
-      expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
+      expect(mocks.job.queueAll).toHaveBeenCalledExactlyOnceWith([]);
     });
   });
 });

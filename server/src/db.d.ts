@@ -5,7 +5,7 @@
 
 import type { ColumnType } from 'kysely';
 import { AssetType, MemoryType, Permission, SyncEntityType } from 'src/enum';
-import { UserTable } from 'src/tables/user.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import { OnThisDayData } from 'src/types';
 
 export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[] : ArrayTypeImpl<T>;

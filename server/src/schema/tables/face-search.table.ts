@@ -1,5 +1,5 @@
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { Column, ColumnIndex, ForeignKeyColumn, Table } from 'src/sql-tools';
-import { AssetFaceTable } from 'src/tables/asset-face.table';
 
 @Table({ name: 'face_search', primaryConstraintName: 'face_search_pkey' })
 export class FaceSearchTable {

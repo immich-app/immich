@@ -1,7 +1,7 @@
 import { SourceType } from 'src/enum';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { PersonTable } from 'src/schema/tables/person.table';
 import { Column, DeleteDateColumn, ForeignKeyColumn, Index, PrimaryGeneratedColumn, Table } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
-import { PersonTable } from 'src/tables/person.table';
 
 @Table({ name: 'asset_faces' })
 @Index({ name: 'IDX_asset_faces_assetId_personId', columns: ['assetId', 'personId'] })

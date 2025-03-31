@@ -35,7 +35,7 @@
     "authentication_settings_disable_all": "Biztosan letiltod az összes bejelentkezési módot? A bejelentkezés teljesen le lesz tiltva.",
     "authentication_settings_reenable": "Az újbóli engedélyezéshez használj egy<link>Szerver Parancsot</link>.",
     "background_task_job": "Háttérfeladatok",
-    "backup_database": "Tartalék Adatbázis",
+    "backup_database": "Adatbázis Biztonsági Mentése",
     "backup_database_enable_description": "Adatbázis biztonsági mentések engedélyezése",
     "backup_keep_last_amount": "Megőrizendő korábbi biztonsági mentések száma",
     "backup_settings": "Biztonsági mentés beállításai",

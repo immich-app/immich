@@ -1,4 +1,6 @@
 import { AssetOrder } from 'src/enum';
+import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 import {
   Column,
   ColumnIndex,
@@ -10,8 +12,6 @@ import {
   UpdateDateColumn,
   UpdateIdColumn,
 } from 'src/sql-tools';
-import { AssetTable } from 'src/tables/asset.table';
-import { UserTable } from 'src/tables/user.table';
 
 @Table({ name: 'albums', primaryConstraintName: 'PK_7f71c7b5bc7c87b8f94c9a93a00' })
 export class AlbumTable {
