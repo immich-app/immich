@@ -342,7 +342,7 @@ void main() {
           // Same timestamp to reuse deviceAsset
           deviceAsset2.copyWith(modifiedTime: asset2.fileModifiedAt),
           deviceAsset1,
-          deviceAsset3.copyWith(assetId: "image0"),
+          deviceAsset3.copyWith(assetId: asset4.localId!),
         ],
       );
 

@@ -32,51 +32,66 @@ class HashService {
   /// that were successfully hashed. Hashes are looked up in a DB table
   /// [DeviceAsset] by local id. Only missing entries are newly hashed and added to the DB table.
   Future<List<Asset>> hashAssets(List<Asset> assets) async {
-    // Get all DB entries - guaranteed to be a subset of assets
-    final hashesInDB = await _deviceAssetRepository
-        .getForIds(assets.map((a) => a.localId!).toList());
+    assets.sort(Asset.compareByLocalId);
 
-    // Create a lookup map - since every DB entry has a matching asset,
-    // this map will be no larger than assets.length
-    final Map<String, DeviceAsset> deviceAssetMap = {
-      for (final asset in hashesInDB) asset.assetId: asset,
-    };
+    // Get and sort DB entries - guaranteed to be a subset of assets
+    final hashesInDB = await _deviceAssetRepository.getForIds(
+      assets.map((a) => a.localId!).toList(),
+    );
+    hashesInDB.sort((a, b) => a.assetId.compareTo(b.assetId));
+
+    int assetIndex = 0;
+    int dbIndex = 0;
 
     int bytesProcessed = 0;
     final hashedAssets = <Asset>[];
     final toBeHashed = <_AssetPath>[];
     final toBeDeleted = <String>[];
 
-    for (final asset in assets) {
-      final deviceAsset = deviceAssetMap[asset.localId];
+    while (assetIndex < assets.length) {
+      final asset = assets[assetIndex];
+      DeviceAsset? matchingDbEntry;
 
-      if (deviceAsset != null &&
-          deviceAsset.modifiedTime.isAtSameMomentAs(asset.fileModifiedAt)) {
-        // We have a valid hash that matches the file timestamp - reuse it
+      if (dbIndex < hashesInDB.length) {
+        final deviceAsset = hashesInDB[dbIndex];
+        if (deviceAsset.assetId == asset.localId) {
+          matchingDbEntry = deviceAsset;
+          dbIndex++;
+        }
+      }
+
+      if (matchingDbEntry != null &&
+          matchingDbEntry.hash.isNotEmpty &&
+          matchingDbEntry.modifiedTime.isAtSameMomentAs(asset.fileModifiedAt)) {
+        // Reuse the existing hash
         hashedAssets.add(
-          asset.copyWith(checksum: base64.encode(deviceAsset.hash)),
+          asset.copyWith(checksum: base64.encode(matchingDbEntry.hash)),
         );
+        assetIndex++;
         continue;
       }
 
       final file = await _tryGetAssetFile(asset);
       if (file == null) {
-        // We don't have the file, skip and delete the DB entry
-        if (deviceAsset != null) {
-          toBeDeleted.add(deviceAsset.assetId);
+        // Can't access file, delete any DB entry
+        if (matchingDbEntry != null) {
+          toBeDeleted.add(matchingDbEntry.assetId);
         }
-        continue;
+      } else {
+        bytesProcessed += await file.length();
+        toBeHashed.add(_AssetPath(asset: asset, path: file.path));
+
+        if (_shouldProcessBatch(toBeHashed.length, bytesProcessed)) {
+          hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
+          toBeHashed.clear();
+          toBeDeleted.clear();
+          bytesProcessed = 0;
+        }
       }
 
-      bytesProcessed += await file.length();
-      toBeHashed.add(_AssetPath(asset: asset, path: file.path));
-      if (_shouldProcessBatch(toBeHashed.length, bytesProcessed)) {
-        hashedAssets.addAll(await _processBatch(toBeHashed, toBeDeleted));
-        toBeHashed.clear();
-        toBeDeleted.clear();
-        bytesProcessed = 0;
-      }
+      assetIndex++;
     }
+    assert(dbIndex == hashesInDB.length, "All hashes should've been processed");
 
     // Process any remaining files
     if (toBeHashed.isNotEmpty) {
