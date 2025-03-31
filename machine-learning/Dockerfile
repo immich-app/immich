@@ -67,7 +67,7 @@ FROM python:3.11-slim-bookworm@sha256:7029b00486ac40bed03e36775b864d3f3d39dcbdf1
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
-FROM prod-cpu AS prod-openvino
+FROM python:3.11-slim-bookworm@sha256:7029b00486ac40bed03e36775b864d3f3d39dcbdf19cd45e6a52d541e6c178f0 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
@@ -81,6 +81,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04@sha256:94c1577b2cd9dd6c0312dc04dff9cb2fdce2b268018abc3d7c2dbcacf1155000 AS prod-cuda
+
+ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq libcudnn9-cuda-12 && \
@@ -149,6 +151,7 @@ RUN echo "hard core 0" >> /etc/security/limits.conf && \
     echo 'ulimit -S -c 0 > /dev/null 2>&1' >> /etc/profile
 
 COPY --from=builder /opt/venv /opt/venv
+COPY scripts/healthcheck.py .
 COPY immich_ml immich_ml
 
 ARG BUILD_ID
