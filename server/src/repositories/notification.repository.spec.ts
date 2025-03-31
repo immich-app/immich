@@ -6,6 +6,7 @@ describe(NotificationRepository.name, () => {
   let sut: NotificationRepository;
 
   beforeEach(() => {
+    // eslint-disable-next-line no-sparse-arrays
     sut = new NotificationRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
   });
 
